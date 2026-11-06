@@ -25,7 +25,7 @@ noncomputable def stoppedReflectionMass (γ : ℝ) (τ : ℝ≥0)
 This connects the lifetime-marked Williams law to the literal last-cut mass
 `DOZZ.twoSidedReflectionCutMass`. -/
 theorem stopped_reflection_mass_lastExit
-    (γ c : ℝ) (qplus qminus : BrownianPath) (Z : Measure ℝ) :
+    γ c qplus qminus (Z : Measure ℝ) :
     stoppedReflectionMass γ (negativeLastExitTime qminus c)
       (qplus, stopBrownianPath qminus (negativeLastExitTime qminus c)) Z =
         twoSidedReflectionCutMass γ c (fun _ : Unit => (qplus,qminus))
@@ -40,20 +40,17 @@ theorem stopped_reflection_mass_lastExit
     · rw [twoSidedConditionedValue, dite_eq_left hs,
         twoSidedConditionedValue, dite_eq_left hs]
     · have hnn : 0 ≤ -s := neg_nonneg.mpr (le_of_not_ge hs)
-      have hle : NNReal.mk (-s) hnn ≤ negativeLastExitTime qminus c := by
-        rw [← NNReal.coe_le_coe, NNReal.coe_mk]
-        linarith only [hcut]
       rw [twoSidedConditionedValue, dite_eq_right hs,
         twoSidedConditionedValue, dite_eq_right hs]
       change γ * qminus (min (NNReal.mk (-s) hnn) (negativeLastExitTime qminus c)) =
         γ * qminus (NNReal.mk (-s) hnn)
-      rw [min_eq_left hle]
+      rw [min_eq_left (show NNReal.mk (-s) hnn ≤ negativeLastExitTime qminus c by rw [← NNReal.coe_le_coe, NNReal.coe_mk]; linarith only [hcut])]
   · rw [ite_eq_right hcut, ite_eq_right hcut]
 
 /-- The polar integral is the exponential maximum times the mass of the maximum-centered
 split, truncated by its actual pre-maximum lifetime. Only the deterministic zero atom of the
 lateral measure is removed; there is no stopping or restart at a last exit in this identity. -/
-theorem williams_polar_split (γ ν : ℝ) (p : BrownianPath)
+theorem williams_polar_split γ ν (p : BrownianPath)
     (Z : Measure ℝ) (hZ0 : Z {0} = 0) :
     (∫⁻ t, (if 0 < t then ENNReal.ofReal
       (Real.exp (γ * (p (Real.toNNReal t) - ν * t))) else 0) ∂Z) =
@@ -64,7 +61,7 @@ theorem williams_polar_split (γ ν : ℝ) (p : BrownianPath)
   let σ := driftedBrownianMaximumTime ν p
   let B := williamsSplitPaths ν p
   let m := driftedBrownianMaximum ν p
-  have hf : Measurable (fun s : ℝ => if -(σ : ℝ) ≤ s then ENNReal.ofReal
+  have hf : Measurable (fun s => if -(σ : ℝ) ≤ s then ENNReal.ofReal
       (Real.exp (γ * twoSidedConditionedValue (fun _ : Unit => B) () s)) else 0) :=
     Measurable.ite measurableSet_Ici
       ((measurable_twoSidedConditionedValue (fun _ : Unit => B) ()).const_mul γ).exp.ennreal_ofReal
@@ -73,7 +70,7 @@ theorem williams_polar_split (γ ν : ℝ) (p : BrownianPath)
     (if -(σ : ℝ) ≤ s then ENNReal.ofReal
       (Real.exp (γ * twoSidedConditionedValue (fun _ : Unit => B) () s)) else 0)
         ∂Z.map (fun s => s - (σ : ℝ))
-  have hshift : Measurable (fun s : ℝ => s - (σ : ℝ)) := by fun_prop
+  have hshift : Measurable (fun s => s - (σ : ℝ)) := by fun_prop
   rw [lintegral_map hf hshift,
     ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   apply lintegral_congr_ae
@@ -92,8 +89,7 @@ theorem williams_polar_split (γ ν : ℝ) (p : BrownianPath)
     congr 2
     ring
   · have htneg : t < 0 := lt_of_le_of_ne (le_of_not_gt ht) ht0
-    have hcut : ¬ -(σ : ℝ) ≤ t - (σ : ℝ) := by linarith only [htneg]
-    simp only [ite_eq_right ht, ite_eq_right hcut, mul_zero]
+    simp only [ite_eq_right ht, ite_eq_right (show ¬ -(σ : ℝ) ≤ t - (σ : ℝ) by linarith only [htneg]), mul_zero]
 
 
 end DOZZ.Proofs

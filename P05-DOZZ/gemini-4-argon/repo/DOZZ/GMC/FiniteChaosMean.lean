@@ -17,17 +17,6 @@ open scoped Distributions NNReal
 
 namespace DOZZ.Proofs
 
-private lemma coordinate_law {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z) (i : ι) :
-    ∃ v : ℝ≥0, P.map (fun ω => Z ω i) = gaussianReal (0 : ℝ) v := by
-  classical
-  let e : ι → ℝ := Pi.single i (1 : ℝ)
-  obtain ⟨v, hv⟩ := (hZ.2.2 e).2
-  refine ⟨v, ?_⟩
-  have hsum : (fun ω => ∑ j, e j * Z ω j) = fun ω => Z ω i := by
-    funext ω
-    simp [e, Pi.single_apply]
-  simpa only [hsum] using hv
 
 /-- A coordinate of a centered jointly Gaussian vector has the centered Gaussian law whose
 variance is its covariance-form diagonal. -/
@@ -36,31 +25,29 @@ lemma coordinate_mean_variance {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
     ∃ v : ℝ≥0, P.map (fun ω => Z ω i) = gaussianReal (0 : ℝ) v ∧
       (∫ ω, Z ω i ∂P) = 0 ∧ gaussianVariance P (fun ω => Z ω i) = (v : ℝ) := by
   classical
-  obtain ⟨v, hmap⟩ := coordinate_law P Z hZ i
+  have coordinate_law : ∃ v : ℝ≥0, P.map (fun ω => Z ω i) = gaussianReal (0 : ℝ) v := by
+    classical
+    let e : ι → ℝ := Pi.single i (1 : ℝ)
+    obtain ⟨v, hv⟩ := (hZ.2.2 e).2
+    refine ⟨v, ?_⟩
+    simpa only [(show (fun ω => ∑ j, e j * Z ω j) = fun ω => Z ω i by funext ω; simp [e, Pi.single_apply])] using hv
+  obtain ⟨v, hmap⟩ := coordinate_law
   let Zi : Ω → ℝ := fun ω => Z ω i
   have hZi : AEMeasurable Zi P := hZ.2.1 i
-  have hIdMap : Integrable id (P.map Zi) := by
-    rw [hmap]
-    exact ProbabilityTheory.IsGaussian.integrable_id
-  have hmeanMap := integral_map hZi hIdMap.aestronglyMeasurable
   have hmean : (∫ ω, Zi ω ∂P) = 0 := by
     calc
-      ∫ ω, Zi ω ∂P = ∫ x, x ∂P.map Zi := hmeanMap.symm
+      ∫ ω, Zi ω ∂P = ∫ x, x ∂P.map Zi := (integral_map hZi (show Integrable id (P.map Zi) by rw [hmap]; exact ProbabilityTheory.IsGaussian.integrable_id).aestronglyMeasurable).symm
       _ = 0 := by rw [hmap, integral_id_gaussianReal]
   have hvarMap : Var[id; P.map Zi] = Var[Zi; P] := by
     simpa only [Function.comp_def, id_def] using
       (variance_map (X := id) (Y := Zi) (μ := P)
         (aemeasurable_id) hZi)
-  have hvarP : Var[Zi; P] = (v : ℝ) := by
-    change P.map Zi = gaussianReal (0 : ℝ) v at hmap
-    rw [hmap, variance_id_gaussianReal] at hvarMap
-    exact hvarMap.symm
   have hvarEq : Var[Zi; P] = gaussianVariance P Zi := by
     rw [variance_eq_integral hZi, hmean, gaussianVariance, gaussianCovariance]
     congr 1
     funext ω
     simp [pow_two]
-  exact ⟨v, hmap, hmean, hvarEq.symm.trans hvarP⟩
+  exact ⟨v, hmap, hmean, hvarEq.symm.trans (by change P.map Zi = gaussianReal (0 : ℝ) v at hmap; rw [hmap, variance_id_gaussianReal] at hvarMap; exact hvarMap.symm)⟩
 
 /-- Each coordinate Wick exponential is integrable and has expectation one. -/
 theorem wick_exponential_integrable_expectation
@@ -73,20 +60,10 @@ theorem wick_exponential_integrable_expectation
         gaussianVariance P (fun ω => Z ω i)) ∂P) = 1 := by
   obtain ⟨v, hmap, _, hvar⟩ := coordinate_mean_variance P Z hZ i
   let Zi : Ω → ℝ := fun ω => Z ω i
-  have hZi : AEMeasurable Zi P := hZ.2.1 i
+  have hZi := hZ.2.1 i
   have hExpMap : Integrable (fun x : ℝ => Real.exp (γ * x)) (P.map Zi) := by
     rw [hmap]
     exact integrable_exp_mul_gaussianReal γ
-  have hExp : Integrable (fun ω => Real.exp (γ * Zi ω)) P := by
-    simpa only [Function.comp_def] using
-      (integrable_map_measure hExpMap.aestronglyMeasurable hZi).mp hExpMap
-  have hWick : Integrable
-      (fun ω => Real.exp (γ * Zi ω - γ ^ 2 / 2 * gaussianVariance P Zi)) P := by
-    convert hExp.const_mul (Real.exp (-(γ ^ 2 / 2 * gaussianVariance P Zi))) using 1
-    ext ω
-    rw [show γ * Zi ω - γ ^ 2 / 2 * gaussianVariance P Zi =
-      -(γ ^ 2 / 2 * gaussianVariance P Zi) + γ * Zi ω by ring]
-    rw [Real.exp_add]
   have hmgf : (∫ ω, Real.exp (γ * Zi ω) ∂P) =
       Real.exp ((v : ℝ) * γ ^ 2 / 2) := by
     calc
@@ -96,7 +73,7 @@ theorem wick_exponential_integrable_expectation
         change P.map Zi = gaussianReal (0 : ℝ) v at hmap
         rw [hmap, mgf_id_gaussianReal]
         simp
-  refine ⟨hWick, ?_⟩
+  refine ⟨(by convert (show Integrable (fun ω => Real.exp (γ * Zi ω)) P by simpa only [Function.comp_def] using (integrable_map_measure hExpMap.aestronglyMeasurable hZi).mp hExpMap).const_mul (Real.exp (-(γ ^ 2 / 2 * gaussianVariance P Zi))) using 1; ext ω; rw [show γ * Zi ω - γ ^ 2 / 2 * gaussianVariance P Zi = -(γ ^ 2 / 2 * gaussianVariance P Zi) + γ * Zi ω by ring]; rw [Real.exp_add]), ?_⟩
   calc
     ∫ ω, Real.exp (γ * Zi ω - γ ^ 2 / 2 * gaussianVariance P Zi) ∂P
         = ∫ ω, Real.exp (γ * Zi ω) *
@@ -141,14 +118,11 @@ theorem finiteChaosMass_integral {Ω ι : Type*} [MeasurableSpace Ω] [Fintype �
     (γ * Z ω i - γ ^ 2 / 2 * gaussianVariance P (fun ω => Z ω i))
   have hterm : ∀ i, Integrable (term i) P := by
     intro i
-    have h := (wick_exponential_integrable_expectation P Z hZ i γ).1
-    exact h.const_mul (a i)
-  have hsumInt : Integrable (fun ω => ∑ i, term i ω) P := by
-    exact integrable_finsetSum Finset.univ fun i hi => hterm i
+    exact ((wick_exponential_integrable_expectation P Z hZ i γ).1).const_mul (a i)
   have hmass : finiteChaosMass P Z a γ = fun ω => ∑ i, term i ω := by
     funext ω
     simp [finiteChaosMass, term]
-  refine ⟨hmass ▸ hsumInt, ?_⟩
+  refine ⟨hmass ▸ (by exact integrable_finsetSum Finset.univ fun i hi => hterm i), ?_⟩
   rw [hmass, integral_finsetSum]
   · apply Finset.sum_congr rfl
     intro i hi

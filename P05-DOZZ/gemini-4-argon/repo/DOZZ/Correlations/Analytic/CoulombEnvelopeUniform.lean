@@ -21,15 +21,15 @@ namespace DOZZ.Proofs
 lower disk mass supplies the negative endpoint; the uniform Seiberg moment estimate
 `coulombMass_moment_uniform_pos` supplies the positive endpoint. -/
 theorem coulomb_envelope_uniform_moment
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (z : Fin N → ℂ) (hz : Function.Injective z)
-    (δ R Zs A g : ℝ) (hδ : 0 < δ) (hδ8 : δ ≤ 1 / 8) (hR : 1 ≤ R)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    z (hz : Function.Injective z)
+    δ R Zs A g (hδ : 0 < δ) (hδ8 : δ ≤ 1 / 8) (hR : 1 ≤ R)
     (hZs : 0 ≤ Zs) (hg : 0 < g)
     (hsep : ∀ j k, j ≠ k → 2 * δ ≤ ‖z j - z k‖)
     (hzn : ∑ j, ‖z j‖ ≤ Zs) (hzR : ∀ i, 2 * ‖z i‖ ≤ R)
-    (center : ℂ) (c : ℝ≥0∞) (hc : c ≠ 0) (hc' : c ≠ ⊤)
+    center (c : ℝ≥0∞) (hc : c ≠ 0) (hc' : c ≠ ⊤)
     (lo hi q : ℝ) (hlo : lo ≤ 0) (hhi : 0 ≤ hi) (hq : 1 ≤ q) :
     ∃ K : ℝ≥0∞, K < ⊤ ∧ ∀ (α : Fin N → ℝ) (αinf : ℝ),
       (∀ i, |α i| ≤ A) → |αinf| ≤ A → (∀ i, α i < Q γ) → αinf < Q γ →
@@ -40,20 +40,7 @@ theorem coulomb_envelope_uniform_moment
         (coulombMass γ (M ω) α z αinf).toReal ^ hi) ^ q ∂P) ≤ K := by
   let : IsProbabilityMeasure P := hX.1
   let L (ω : Ω) := c * M ω (Metric.ball center (1 / 8))
-  have hLm : AEMeasurable L P := by
-    simpa only [L, Pi.mul_def] using aemeasurable_const.mul
-      (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
-        Metric.isOpen_ball.measurableSet)
-  have hLp : ∀ᵐ ω ∂P, L ω ≠ 0 ∧ L ω ≠ ⊤ := by
-    have hb := open_mass_pos_finite_ae P X hX γ hγ hγ2 M hM
-      (Metric.ball center (1 / 8)) Metric.isOpen_ball Metric.isBounded_ball
-      (Metric.nonempty_ball.mpr (by norm_num))
-    filter_upwards [hb] with ω hω
-    exact ⟨mul_ne_zero hc hω.1, ENNReal.mul_ne_top hc' hω.2⟩
   let KL := ∫⁻ ω, L ω ^ (lo * q) ∂P
-  have hKL : KL < ⊤ := scaled_disk_negative_moment
-    P X hX γ hγ hγ2 M hM center (1 / 8) (by norm_num) le_rfl c hc hc'
-      (lo * q) (mul_nonpos_of_nonpos_of_nonneg hlo (by linarith))
   obtain ⟨KU, hKU, hUbound⟩ : ∃ KU : ℝ≥0∞, KU < ⊤ ∧
       ∀ (α : Fin N → ℝ) (αinf : ℝ), (∀ i, |α i| ≤ A) → |αinf| ≤ A →
         hi * q + g ≤ 4 / γ ^ 2 →
@@ -71,11 +58,11 @@ theorem coulomb_envelope_uniform_moment
         (mul_pos (lt_of_le_of_ne hhi (Ne.symm hzero)) (by linarith)) hbulk hroot hinfty
   refine ⟨(2 : ℝ≥0∞) ^ (q - 1) * (KL + KU), ENNReal.mul_lt_top
     (ENNReal.rpow_lt_top_of_nonneg (by linarith) (by norm_num))
-    (ENNReal.add_lt_top.mpr ⟨hKL, hKU⟩), ?_⟩
+    (ENNReal.add_lt_top.mpr ⟨(scaled_disk_negative_moment P X hX γ hγ hγ2 M hM center (1 / 8) (by norm_num) le_rfl c hc hc' (lo * q) (mul_nonpos_of_nonpos_of_nonneg hlo (by linarith))), hKU⟩), ?_⟩
   intro α αinf hα hinf ha hiinf hbulk hroot hinfty
   exact mass_envelope_moment_le P L
-    (fun ω => coulombMass γ (M ω) α z αinf) hLm
-    (gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf) hLp
+    (fun ω => coulombMass γ (M ω) α z αinf) (by simpa only [L, Pi.mul_def] using aemeasurable_const.mul (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _ Metric.isOpen_ball.measurableSet))
+    (gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf) (by filter_upwards [(open_mass_pos_finite_ae P X hX γ hγ hγ2 M hM (Metric.ball center (1 / 8)) Metric.isOpen_ball Metric.isBounded_ball (Metric.nonempty_ball.mpr (by norm_num)))] with ω hω; exact ⟨mul_ne_zero hc hω.1, ENNReal.mul_ne_top hc' hω.2⟩)
     (coulomb_mass_pos_finite_ae P X hX γ hγ hγ2 M hM z hz α αinf ha hiinf)
     lo hi q hq KL KU le_rfl (hUbound α αinf hα hinf hbulk hroot hinfty)
 

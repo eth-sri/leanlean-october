@@ -20,7 +20,7 @@ namespace DOZZ.Proofs
 /-- Kahane's comparison for concave powers `0 < p < 1` of continuum field chaos. -/
 theorem kahane_field_power_concave
     {ΩX ΩY S : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [MeasurableSpace S]
-    (PX : Measure ΩX) (PY : Measure ΩY) (Φ : ΩX → S → ℝ) (Ψ : ΩY → S → ℝ)
+    (PX : Measure ΩX) (PY : Measure ΩY) Φ Ψ
     (hΦ : DOZZ.IsCenteredGaussianField PX Φ) (hΨ : DOZZ.IsCenteredGaussianField PY Ψ)
     (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
     (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ p : ℝ) (hp : 0 < p ∧ p < 1)
@@ -31,14 +31,14 @@ theorem kahane_field_power_concave
     ∫⁻ ω, DOZZ.fieldChaosMass PX Φ ν h γ ω ^ p ∂PX ≥
       ∫⁻ ω, DOZZ.fieldChaosMass PY Ψ ν h γ ω ^ p ∂PY := by
   classical
-  have hPXzero := hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)
-  have hPYzero := hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)
+  have hPXzero := hΦ.2 0 (fun i => Fin.elim0 i)
+  have hPYzero := hΨ.2 0 (fun i => Fin.elim0 i)
   let : IsProbabilityMeasure PX := hPXzero.1
   let : IsProbabilityMeasure PY := hPYzero.1
   by_cases hνzero : ν = 0
   · have hmassX (ω : ΩX) : DOZZ.fieldChaosMass PX Φ ν h γ ω = 0 := by
       simp [DOZZ.fieldChaosMass, hνzero]
-    have hmassY (ω : ΩY) : DOZZ.fieldChaosMass PY Ψ ν h γ ω = 0 := by
+    have hmassY ω : DOZZ.fieldChaosMass PY Ψ ν h γ ω = 0 := by
       simp [DOZZ.fieldChaosMass, hνzero]
     simp [hmassX, hmassY, ENNReal.zero_rpow_of_pos hp.1,
       hPXzero.1.measure_univ, hPYzero.1.measure_univ]
@@ -46,20 +46,15 @@ theorem kahane_field_power_concave
   have hνf : νf ≠ 0 := by
     intro hzero
     apply hνzero
-    have hcoerce := congrArg (fun μ : FiniteMeasure S => (μ : Measure S)) hzero
-    simpa [νf] using hcoerce
+    simpa [νf] using (congrArg (fun μ : FiniteMeasure S => (μ : Measure S)) hzero)
   have hS : Nonempty S := by
-    have hUniv : ν Set.univ ≠ 0 := Measure.measure_univ_ne_zero.mpr hνzero
-    obtain ⟨x, _⟩ := nonempty_of_measure_ne_zero hUniv
+    obtain ⟨x, _⟩ := nonempty_of_measure_ne_zero (Measure.measure_univ_ne_zero.mpr hνzero)
     exact ⟨x⟩
   let : Nonempty S := hS
   let ρ : Measure S := νf.normalize
   have hρprob : IsProbabilityMeasure ρ := by dsimp [ρ]; infer_instance
   let : IsProbabilityMeasure ρ := hρprob
   let α : ℝ := ∫ x, (h x : ℝ) ∂ρ
-  have hαnonneg : 0 ≤ α := by
-    dsimp [α]
-    exact integral_nonneg_of_ae (ae_of_all _ fun x => NNReal.coe_nonneg (h x))
   by_cases hαzero : α = 0
   · have hmassX := centeredGaussianField_fieldChaosMass_eq_zero_of_zero_weight_integral
       PX Φ νf h hh hhb γ (by simpa [α, ρ] using hαzero)
@@ -68,17 +63,7 @@ theorem kahane_field_power_concave
     simp [show ν = (νf : Measure S) by rfl, hmassX, hmassY,
       ENNReal.zero_rpow_of_pos hp.1, hPXzero.1.measure_univ,
       hPYzero.1.measure_univ]
-  have hαpos : 0 < α := lt_of_le_of_ne hαnonneg (Ne.symm hαzero)
-  have hcov' : ∀ᵐ xy ∂(νf : Measure S).prod νf,
-      DOZZ.gaussianCovariance PX (fun ω => Φ ω xy.1) (fun ω => Φ ω xy.2) ≤
-        DOZZ.gaussianCovariance PY (fun ω => Ψ ω xy.1) (fun ω => Ψ ω xy.2) := by
-    filter_upwards [hcov] with xy hxy
-    simpa [DOZZ.gaussianCovariance] using hxy
-  have hdiag' : ∀ᵐ x ∂(νf : Measure S),
-      DOZZ.gaussianVariance PX (fun ω => Φ ω x) ≤
-        DOZZ.gaussianVariance PY (fun ω => Ψ ω x) := by
-    filter_upwards [hdiag] with x hx
-    simpa [DOZZ.gaussianVariance, DOZZ.gaussianCovariance, pow_two] using hx
+  have hαpos : 0 < α := lt_of_le_of_ne (by dsimp [α]; exact integral_nonneg_of_ae (ae_of_all _ fun x => NNReal.coe_nonneg (h x))) (Ne.symm hαzero)
   let MX : ΩX → ℝ≥0∞ := fun ω => DOZZ.fieldChaosMass PX Φ ν h γ ω
   let MY : ΩY → ℝ≥0∞ := fun ω => DOZZ.fieldChaosMass PY Ψ ν h γ ω
   let mX : ΩX → ℝ := fun ω => if (MX ω).toReal = 0 then 1 else (MX ω).toReal
@@ -123,27 +108,21 @@ theorem kahane_field_power_concave
           (DOZZ.fieldChaosMass PY Ψ ν h γ ω).toReal)
     exact fieldChaosMass_eq_ofReal_modified_toReal_ae
       PY Ψ hΨ νf hνf h hh hhb γ (by simpa [ρ, α] using hαpos)
-  have htoRealEqX : ∀ᵐ ω ∂PX, (MX ω).toReal = mX ω := by
-    filter_upwards [hmassEqX] with ω hω
-    rw [hω, ENNReal.toReal_ofReal (le_of_lt (hmX ω))]
-  have htoRealEqY : ∀ᵐ ω ∂PY, (MY ω).toReal = mY ω := by
-    filter_upwards [hmassEqY] with ω hω
-    rw [hω, ENNReal.toReal_ofReal (le_of_lt (hmY ω))]
-  have hLap (s : ℝ) (hs : 0 ≤ s) :
+  have hLap s (hs : 0 ≤ s) :
       ∫⁻ ω, ENNReal.ofReal (Real.exp (-(s * mX ω))) ∂PX ≤
         ∫⁻ ω, ENNReal.ofReal (Real.exp (-(s * mY ω))) ∂PY := by
     calc
       _ = ∫⁻ ω, ENNReal.ofReal (Real.exp (-(s * (MX ω).toReal))) ∂PX := by
         apply lintegral_congr_ae
-        filter_upwards [htoRealEqX] with ω hω
+        filter_upwards [(show ∀ᵐ ω ∂PX, (MX ω).toReal = mX ω by filter_upwards [hmassEqX] with ω hω; rw [hω, ENNReal.toReal_ofReal (le_of_lt (hmX ω))])] with ω hω
         rw [hω]
       _ ≤ ∫⁻ ω, ENNReal.ofReal (Real.exp (-(s * (MY ω).toReal))) ∂PY := by
         simpa [νf, MX, MY] using
           kahane_field_laplace_of_nonzero_finite_measure_eq
-            PX PY Φ Ψ hΦ hΨ νf hνf h hh hhb γ s hs hcov' hdiag'
+            PX PY Φ Ψ hΦ hΨ νf hνf h hh hhb γ s hs (by filter_upwards [hcov] with xy hxy; simpa [DOZZ.gaussianCovariance] using hxy) (by filter_upwards [hdiag] with x hx; simpa [DOZZ.gaussianVariance, DOZZ.gaussianCovariance, pow_two] using hx)
       _ = ∫⁻ ω, ENNReal.ofReal (Real.exp (-(s * mY ω))) ∂PY := by
         apply lintegral_congr_ae
-        filter_upwards [htoRealEqY] with ω hω
+        filter_upwards [(show ∀ᵐ ω ∂PY, (MY ω).toReal = mY ω by filter_upwards [hmassEqY] with ω hω; rw [hω, ENNReal.toReal_ofReal (le_of_lt (hmY ω))])] with ω hω
         rw [hω]
   let c : ℝ := (∫ t in Ioi (0 : ℝ), Real.rpowIntegrand₀₁ p t 1 ∂volume)⁻¹
   have hcpos : 0 < c := by
@@ -154,53 +133,23 @@ theorem kahane_field_power_concave
     ENNReal.ofReal (Real.rpowIntegrand₀₁ p t (mX ω))
   let fY : ΩY → ℝ → ℝ≥0∞ := fun ω t =>
     ENNReal.ofReal (Real.rpowIntegrand₀₁ p t (mY ω))
-  have hfX : AEMeasurable (Function.uncurry fX) (PX.prod νt) := by
-    have hkernel : Measurable (fun z : ℝ × ℝ =>
-        Real.rpowIntegrand₀₁ p z.1 z.2) := by
-      unfold Real.rpowIntegrand₀₁
-      fun_prop
-    have hpair : AEMeasurable (fun z : ΩX × ℝ => (z.2, mX z.1)) (PX.prod νt) :=
-      measurable_snd.aemeasurable.prodMk hmXMeas.aemeasurable.comp_fst
-    exact (hkernel.comp_aemeasurable hpair).ennreal_ofReal
-  have hfY : AEMeasurable (Function.uncurry fY) (PY.prod νt) := by
-    have hkernel : Measurable (fun z : ℝ × ℝ =>
-        Real.rpowIntegrand₀₁ p z.1 z.2) := by
-      unfold Real.rpowIntegrand₀₁
-      fun_prop
-    have hpair : AEMeasurable (fun z : ΩY × ℝ => (z.2, mY z.1)) (PY.prod νt) :=
-      measurable_snd.aemeasurable.prodMk hmYMeas.aemeasurable.comp_fst
-    exact (hkernel.comp_aemeasurable hpair).ennreal_ofReal
-  have hpointX (ω : ΩX) :
+  have hpointX ω :
       ENNReal.rpow (ENNReal.ofReal (mX ω)) p =
         ENNReal.ofReal c * ∫⁻ t, fX ω t ∂νt := by
     change ENNReal.ofReal (mX ω) ^ p = _
     rw [ENNReal.ofReal_rpow_of_pos (hmX ω)]
-    have hkernelInt : IntegrableOn
-        (fun t => Real.rpowIntegrand₀₁ p t (mX ω)) (Ioi (0 : ℝ)) volume :=
-      Real.integrableOn_rpowIntegrand₀₁_Ioi ⟨hp.1, hp.2⟩ (hmX0 ω)
-    have hkernelNonneg : 0 ≤ᵐ[volume.restrict (Ioi (0 : ℝ))]
-        (fun t => Real.rpowIntegrand₀₁ p t (mX ω)) := by
-      filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-      exact Real.rpowIntegrand₀₁_nonneg hp.1 (le_of_lt ht) (hmX0 ω)
-    have hkernelL := ofReal_integral_eq_lintegral_ofReal hkernelInt hkernelNonneg
+    have hkernelL := ofReal_integral_eq_lintegral_ofReal (Real.integrableOn_rpowIntegrand₀₁_Ioi ⟨hp.1, hp.2⟩ (hmX0 ω)) (by filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht; exact Real.rpowIntegrand₀₁_nonneg hp.1 (le_of_lt ht) (hmX0 ω))
     rw [show (mX ω) ^ p = c *
           ∫ t in Ioi (0 : ℝ), Real.rpowIntegrand₀₁ p t (mX ω) ∂volume by
           simpa [c] using Real.rpow_eq_const_mul_integral
             ⟨hp.1, hp.2⟩ (hmX0 ω),
       ENNReal.ofReal_mul hcpos.le, hkernelL]
-  have hpointY (ω : ΩY) :
+  have hpointY ω :
       ENNReal.rpow (ENNReal.ofReal (mY ω)) p =
         ENNReal.ofReal c * ∫⁻ t, fY ω t ∂νt := by
     change ENNReal.ofReal (mY ω) ^ p = _
     rw [ENNReal.ofReal_rpow_of_pos (hmY ω)]
-    have hkernelInt : IntegrableOn
-        (fun t => Real.rpowIntegrand₀₁ p t (mY ω)) (Ioi (0 : ℝ)) volume :=
-      Real.integrableOn_rpowIntegrand₀₁_Ioi ⟨hp.1, hp.2⟩ (hmY0 ω)
-    have hkernelNonneg : 0 ≤ᵐ[volume.restrict (Ioi (0 : ℝ))]
-        (fun t => Real.rpowIntegrand₀₁ p t (mY ω)) := by
-      filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-      exact Real.rpowIntegrand₀₁_nonneg hp.1 (le_of_lt ht) (hmY0 ω)
-    have hkernelL := ofReal_integral_eq_lintegral_ofReal hkernelInt hkernelNonneg
+    have hkernelL := ofReal_integral_eq_lintegral_ofReal (Real.integrableOn_rpowIntegrand₀₁_Ioi ⟨hp.1, hp.2⟩ (hmY0 ω)) (by filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht; exact Real.rpowIntegrand₀₁_nonneg hp.1 (le_of_lt ht) (hmY0 ω))
     rw [show (mY ω) ^ p = c *
           ∫ t in Ioi (0 : ℝ), Real.rpowIntegrand₀₁ p t (mY ω) ∂volume by
           simpa [c] using Real.rpow_eq_const_mul_integral
@@ -218,7 +167,7 @@ theorem kahane_field_power_concave
         lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
       _ = ENNReal.ofReal c * ∫⁻ t, ∫⁻ ω, fX ω t ∂PX ∂νt := by
         congr 1
-        exact lintegral_lintegral_swap hfX
+        exact lintegral_lintegral_swap (by exact ((show Measurable (fun z : ℝ × ℝ => Real.rpowIntegrand₀₁ p z.1 z.2) by unfold Real.rpowIntegrand₀₁; fun_prop).comp_aemeasurable (measurable_snd.aemeasurable.prodMk hmXMeas.aemeasurable.comp_fst)).ennreal_ofReal)
   have hRepY :
       ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (mY ω)) p ∂PY =
         ENNReal.ofReal c *
@@ -231,19 +180,14 @@ theorem kahane_field_power_concave
         lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
       _ = ENNReal.ofReal c * ∫⁻ t, ∫⁻ ω, fY ω t ∂PY ∂νt := by
         congr 1
-        exact lintegral_lintegral_swap hfY
-  have hkernelOrder (t : ℝ) (ht : 0 < t) :
+        exact lintegral_lintegral_swap (by exact ((show Measurable (fun z : ℝ × ℝ => Real.rpowIntegrand₀₁ p z.1 z.2) by unfold Real.rpowIntegrand₀₁; fun_prop).comp_aemeasurable (measurable_snd.aemeasurable.prodMk hmYMeas.aemeasurable.comp_fst)).ennreal_ofReal)
+  have hkernelOrder t (ht : 0 < t) :
       ∫⁻ ω, fY ω t ∂PY ≤ ∫⁻ ω, fX ω t ∂PX := by
-    have hfrac := laplace_order_fraction_expectation PX PY mX mY
-      hmXMeas.aemeasurable hmYMeas.aemeasurable hmX0 hmY0 hLap t ht
-    have hfracIntX := resolvent_fraction_integrable PX mX hmXMeas.aemeasurable hmX0 t ht
-    have hfracIntY := resolvent_fraction_integrable PY mY hmYMeas.aemeasurable hmY0 t ht
-    have hcoef : 0 ≤ t ^ (p - 1) := Real.rpow_nonneg (le_of_lt ht) _
-    have hkernelEqX (ω : ΩX) : Real.rpowIntegrand₀₁ p t (mX ω) =
+    have hkernelEqX ω : Real.rpowIntegrand₀₁ p t (mX ω) =
         t ^ (p - 1) * (mX ω / (t + mX ω)) := by
       rw [Real.rpowIntegrand₀₁_eq_pow_div ⟨hp.1, hp.2⟩ ht.le (hmX0 ω)]
       ring
-    have hkernelEqY (ω : ΩY) : Real.rpowIntegrand₀₁ p t (mY ω) =
+    have hkernelEqY ω : Real.rpowIntegrand₀₁ p t (mY ω) =
         t ^ (p - 1) * (mY ω / (t + mY ω)) := by
       rw [Real.rpowIntegrand₀₁_eq_pow_div ⟨hp.1, hp.2⟩ ht.le (hmY0 ω)]
       ring
@@ -252,19 +196,15 @@ theorem kahane_field_power_concave
         fun ω => t ^ (p - 1) * (mX ω / (t + mX ω)) by
           funext ω
           exact hkernelEqX ω]
-      exact (hfracIntX.const_mul (t ^ (p - 1))).congr
+      exact ((resolvent_fraction_integrable PX mX hmXMeas.aemeasurable hmX0 t ht).const_mul (t ^ (p - 1))).congr
         (Filter.Eventually.of_forall fun ω => by ring)
     have hkerIntY : Integrable (fun ω => Real.rpowIntegrand₀₁ p t (mY ω)) PY := by
       rw [show (fun ω => Real.rpowIntegrand₀₁ p t (mY ω)) =
         fun ω => t ^ (p - 1) * (mY ω / (t + mY ω)) by
           funext ω
           exact hkernelEqY ω]
-      exact (hfracIntY.const_mul (t ^ (p - 1))).congr
+      exact ((resolvent_fraction_integrable PY mY hmYMeas.aemeasurable hmY0 t ht).const_mul (t ^ (p - 1))).congr
         (Filter.Eventually.of_forall fun ω => by ring)
-    have hkerNonnegX : ∀ ω, 0 ≤ Real.rpowIntegrand₀₁ p t (mX ω) :=
-      fun ω => Real.rpowIntegrand₀₁_nonneg hp.1 ht.le (hmX0 ω)
-    have hkerNonnegY : ∀ ω, 0 ≤ Real.rpowIntegrand₀₁ p t (mY ω) :=
-      fun ω => Real.rpowIntegrand₀₁_nonneg hp.1 ht.le (hmY0 ω)
     have hkerReal :
         ∫ ω, Real.rpowIntegrand₀₁ p t (mY ω) ∂PY ≤
           ∫ ω, Real.rpowIntegrand₀₁ p t (mX ω) ∂PX := by
@@ -277,12 +217,8 @@ theorem kahane_field_power_concave
             funext ω
             exact hkernelEqY ω,
         integral_const_mul, integral_const_mul]
-      exact mul_le_mul_of_nonneg_left hfrac hcoef
-    have hlinX := ofReal_integral_eq_lintegral_ofReal hkerIntX
-      (Filter.Eventually.of_forall hkerNonnegX)
-    have hlinY := ofReal_integral_eq_lintegral_ofReal hkerIntY
-      (Filter.Eventually.of_forall hkerNonnegY)
-    rw [← hlinY, ← hlinX]
+      exact mul_le_mul_of_nonneg_left (laplace_order_fraction_expectation PX PY mX mY hmXMeas.aemeasurable hmYMeas.aemeasurable hmX0 hmY0 hLap t ht) (Real.rpow_nonneg (le_of_lt ht) _)
+    rw [← (ofReal_integral_eq_lintegral_ofReal hkerIntY (Filter.Eventually.of_forall (fun ω => Real.rpowIntegrand₀₁_nonneg hp.1 ht.le (hmY0 ω)))), ← (ofReal_integral_eq_lintegral_ofReal hkerIntX (Filter.Eventually.of_forall (fun ω => Real.rpowIntegrand₀₁_nonneg hp.1 ht.le (hmX0 ω))))]
     exact ENNReal.ofReal_le_ofReal hkerReal
   have houter :
       ∫⁻ t in Ioi (0 : ℝ), ∫⁻ ω, fY ω t ∂PY ∂volume ≤

@@ -10,7 +10,7 @@ open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- A bounded exterior spatial expectation gives a quadratic Taylor error, which is little-o
 of every power below two. No value at the origin is required. -/
-theorem fusion_quadratic_time_error (E : ℂ → ℂ) (a : ℂ) (κ C : ℝ)
+theorem fusion_quadratic_time_error (E : ℂ → ℂ) a κ C
     (hC : 0 ≤ C) (hκ : κ < 2)
     (hE : ∀ z : ℂ, z ≠ 0 → ‖z‖ ≤ 1 / 4 → ‖E z‖ ≤ C) :
     IsComplexLittleOAtZero κ (fun z : ℂ => a * z ^ 2 *
@@ -20,15 +20,13 @@ theorem fusion_quadratic_time_error (E : ℂ → ℂ) (a : ℂ) (κ C : ℝ)
   have hb := time_integral_bound E C 0 (1 / 4) hC (by norm_num) (by norm_num)
     (fun w hw hw4 => by simpa only [Real.rpow_zero, mul_one] using hE w hw hw4) z hz hz4
   simp only [Real.rpow_zero, mul_one, zero_add, div_one] at hb
-  rw [norm_mul, norm_mul, norm_pow]
-  have he : κ + (2 - κ) = (2 : ℝ) := by ring
-  rw [he, Real.rpow_two]
+  rw [norm_mul, norm_mul, norm_pow, (show κ + (2 - κ) = (2 : ℝ) by ring), Real.rpow_two]
   calc
     _ ≤ (‖a‖ * ‖z‖ ^ 2) * C := mul_le_mul_of_nonneg_left hb (by positivity)
     _ = _ := by ring
 /-- A bounded exterior spatial expectation gives a quadratic Taylor error, which is little-o
 of every power below two. No value at the origin is required. -/
-theorem fusion_mixed_quadratic_time_error (E : ℂ → ℂ) (a : ℂ) (κ C : ℝ)
+theorem fusion_mixed_quadratic_time_error (E : ℂ → ℂ) a κ C
     (hC : 0 ≤ C) (hκ : κ < 2)
     (hE : ∀ z : ℂ, z ≠ 0 → ‖z‖ ≤ 1 / 4 → ‖E z‖ ≤ C) :
     IsComplexLittleOAtZero κ (fun z : ℂ => a * z * star z *
@@ -38,9 +36,7 @@ theorem fusion_mixed_quadratic_time_error (E : ℂ → ℂ) (a : ℂ) (κ C : �
   have hb := time_integral_bound E C 0 (1 / 4) hC (by norm_num) (by norm_num)
     (fun w hw hw4 => by simpa only [Real.rpow_zero, mul_one] using hE w hw hw4) z hz hz4
   simp only [Real.rpow_zero, mul_one, zero_add, div_one] at hb
-  rw [norm_mul, norm_mul, norm_mul, norm_star]
-  have he : κ + (2 - κ) = (2 : ℝ) := by ring
-  rw [he, Real.rpow_two]
+  rw [norm_mul, norm_mul, norm_mul, norm_star, (show κ + (2 - κ) = (2 : ℝ) by ring), Real.rpow_two]
   calc
     _ ≤ (‖a‖ * ‖z‖ * ‖z‖) * C := mul_le_mul_of_nonneg_left hb (by positivity)
     _ = _ := by ring

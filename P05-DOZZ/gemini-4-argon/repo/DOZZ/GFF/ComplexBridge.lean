@@ -35,7 +35,7 @@ theorem volume_preserving_complexToVecTwo :
   simpa [complexToVecTwo] using Complex.volume_preserving_equiv_pi
 
 /-- The GaussianFields Euclidean norm transported to `Vec 2` is the complex norm. -/
-theorem euclideanNorm_complexToVecTwo (z : ℂ) :
+theorem euclideanNorm_complexToVecTwo z :
     GaussianFields.euclideanNorm (complexToVecTwo z) = ‖z‖ := by
   rw [complexToVecTwo, GaussianFields.euclideanNorm,
     GaussianFields.euclideanNormSq_eq_sum, Complex.measurableEquivPi_apply,
@@ -47,7 +47,7 @@ theorem euclideanNorm_complexToVecTwo (z : ℂ) :
 
 /-- The continuous linear coordinate bridge and the measurable coordinate bridge have the same
 underlying map. -/
-theorem complexLinearEquivVecTwo_apply (z : ℂ) :
+theorem complexLinearEquivVecTwo_apply z :
     complexLinearEquivVecTwo z = complexToVecTwo z := by
   funext i
   fin_cases i <;>
@@ -57,7 +57,7 @@ theorem complexLinearEquivVecTwo_apply (z : ℂ) :
 
 /-- The measurable coordinate bridge preserves subtraction, since it is the same coordinate map
 as the continuous real-linear equivalence. -/
-theorem complexToVecTwo_sub (z w : ℂ) :
+theorem complexToVecTwo_sub z w :
     complexToVecTwo (z - w) = complexToVecTwo z - complexToVecTwo w := by
   rw [← complexLinearEquivVecTwo_apply, ← complexLinearEquivVecTwo_apply,
     ← complexLinearEquivVecTwo_apply]

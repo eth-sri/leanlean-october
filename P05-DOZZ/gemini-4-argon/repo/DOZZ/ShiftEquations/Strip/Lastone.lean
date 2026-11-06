@@ -19,8 +19,8 @@ namespace DOZZ.Proofs
 /-- The limit `-4` of [KRV, Lemma 10.6], with the target charge order and sign of erratum K7 (see
 docs/ERRATA-AND-DEVIATIONS.md). -/
 theorem structureConstant_lastone_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ ε : ℝ)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (M : Ω → Measure ℂ) γ μ ε
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hε : 0 < ε ∧ ε < min (Q γ) (2 / γ))
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :

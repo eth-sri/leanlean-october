@@ -35,33 +35,22 @@ theorem affineSoftMax_integral_tendsto
     Tendsto (fun n : ℕ => ∫ ω, affineSoftMax a b ((n : ℝ) + 1) (m ω) ∂P) atTop
       (𝓝 (∫ ω, affineMax a b (m ω) ∂P)) := by
   obtain ⟨C, hC, hbound⟩ := affineMax_linear_growth a b
-  let L : ℝ := Real.log (Fintype.card κ : ℝ)
+  let L := Real.log (Fintype.card κ : ℝ)
   have hL : 0 ≤ L := Real.log_nonneg (by exact_mod_cast Fintype.card_pos)
-  let bound : Ω → ℝ := fun ω => C * (‖m ω‖ + 1) + L
-  have hboundInt : Integrable bound P :=
-    ((hm.norm.add (integrable_const 1)).const_mul C).add (integrable_const L)
-  apply tendsto_integral_of_dominated_convergence bound
+  apply tendsto_integral_of_dominated_convergence (fun ω => C * (‖m ω‖ + 1) + L)
   · intro n
-    have hcont : Continuous (affineSoftMax a b ((n : ℝ) + 1)) :=
-      continuous_iff_continuousAt.mpr fun x =>
-        (affineSoftMax_hasDerivAt a b _ x (by positivity)).continuousAt
-    exact (hcont.measurable.comp_aemeasurable hm.aemeasurable).aestronglyMeasurable
-  · exact hboundInt
+    exact ((continuous_iff_continuousAt.mpr fun x => (affineSoftMax_hasDerivAt a b _ x (by positivity)).continuousAt).measurable.comp_aemeasurable hm.aemeasurable).aestronglyMeasurable
+  · exact (((hm.norm.add (integrable_const 1)).const_mul C).add (integrable_const L))
   · intro n
     filter_upwards [] with ω
     have h := affineSoftMax_bounds a b ((n : ℝ) + 1) (m ω) (by positivity)
-    have herr : L / ((n : ℝ) + 1) ≤ L := by
-      apply (div_le_iff₀ (by positivity : 0 < (n : ℝ) + 1)).mpr
-      nlinarith only [hL, (Nat.cast_nonneg n : (0 : ℝ) ≤ (n : ℝ))]
     have habs : |affineSoftMax a b ((n : ℝ) + 1) (m ω)| ≤
         |affineMax a b (m ω)| + L := by
       rw [abs_le]
       constructor
       · linarith only [h.1, hL, neg_le_abs (affineMax a b (m ω))]
-      · linarith only [h.2, herr, le_abs_self (affineMax a b (m ω))]
-    have hlinear : |affineMax a b (m ω)| ≤ C * (‖m ω‖ + 1) := by
-      simpa only [Real.norm_eq_abs] using hbound (m ω)
-    exact habs.trans (add_le_add hlinear le_rfl)
+      · linarith only [h.2, (show L / ((n : ℝ) + 1) ≤ L by apply (div_le_iff₀ (by positivity : 0 < (n : ℝ) + 1)).mpr; nlinarith only [hL, (Nat.cast_nonneg n : (0 : ℝ) ≤ (n : ℝ))]), le_abs_self (affineMax a b (m ω))]
+    exact habs.trans (add_le_add (by simpa only [Real.norm_eq_abs] using hbound (m ω)) le_rfl)
   · exact ae_of_all _ fun ω => affineSoftMax_tendsto a b (m ω)
 
 /-- Finite maxima of affine functions have the covariance-ordered Kahane expectation inequality. -/
@@ -69,9 +58,9 @@ theorem kahane_finite_affine_max
     {ΩX ΩY ι κ : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY]
     [Fintype ι] [Fintype κ] [Nonempty κ]
     (PX : Measure ΩX) (PY : Measure ΩY)
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
+    X Y
     (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
-    (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i) (γ : ℝ) (c d : κ → ℝ)
+    (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i) γ (c d : κ → ℝ)
     (hcov : ∀ i j,
       DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) ≤
         DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j)) :
@@ -79,8 +68,6 @@ theorem kahane_finite_affine_max
       ∫ ω, affineMax c d (DOZZ.finiteChaosMass PY Y a γ ω) ∂PY := by
   let : IsProbabilityMeasure PX := hX.1
   let : IsProbabilityMeasure PY := hY.1
-  have hmX := (finiteChaosMass_integral PX X hX a γ).1
-  have hmY := (finiteChaosMass_integral PY Y hY a γ).1
   have horder (n : ℕ) :
       (∫ ω, affineSoftMax c d ((n : ℝ) + 1) (DOZZ.finiteChaosMass PX X a γ ω) ∂PX) ≤
         ∫ ω, affineSoftMax c d ((n : ℝ) + 1) (DOZZ.finiteChaosMass PY Y a γ ω) ∂PY := by
@@ -96,8 +83,8 @@ theorem kahane_finite_affine_max
       affineSoftMaxSlopeSum affineSoftMaxSlopeSquareSum
     fun_prop
   exact le_of_tendsto_of_tendsto
-    (affineSoftMax_integral_tendsto PX _ hmX c d)
-    (affineSoftMax_integral_tendsto PY _ hmY c d) (Filter.Eventually.of_forall horder)
+    (affineSoftMax_integral_tendsto PX _ ((finiteChaosMass_integral PX X hX a γ).1) c d)
+    (affineSoftMax_integral_tendsto PY _ ((finiteChaosMass_integral PY Y hY a γ).1) c d) (Filter.Eventually.of_forall horder)
 
 
 end DOZZ.Proofs

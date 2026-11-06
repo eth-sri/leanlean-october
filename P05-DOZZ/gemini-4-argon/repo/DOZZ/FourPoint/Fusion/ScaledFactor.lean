@@ -20,9 +20,9 @@ noncomputable def fusionScaledFactor {Ω : Type*} [MeasurableSpace Ω]
     (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ y z (M ω) ^ s ∂P).toReal else 0
 
 theorem fusionScaledFactor_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ s : ℝ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    α₁ α₂ α₃ s :
     Measurable (fun q : ℂ × ℂ => fusionScaledFactor P M γ α₁ α₂ α₃ s q.1 q.2) := by
   apply Measurable.ite
   · exact measurableSet_lt (measurable_fst.mul measurable_snd).norm measurable_const
@@ -32,9 +32,9 @@ theorem fusionScaledFactor_measurable {Ω : Type*} [MeasurableSpace Ω]
 
 /-- A uniform inverse moment bound also controls the entire remaining scaled factor. -/
 theorem fusionScaledFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ s : ℝ) (hs : s ≤ 0) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    α₁ α₂ α₃ s (hs : s ≤ 0) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ y z : ℂ, ‖z‖ ≤ 1 →
       |fusionScaledFactor P M γ α₁ α₂ α₃ s y z| ≤ B := by
   obtain ⟨C, hC, hbound⟩ := fusionMovingMass_inverse_moment_uniform P X hX γ hγ hγ2 M hM
@@ -65,33 +65,17 @@ theorem fusionScaledFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
 
 /-- At each nonzero rescaled root the remaining factor tends to the common inverse expectation. -/
 theorem fusionScaledFactor_tendsto {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hα : γ / 2 ≤ α₁) (hα₁ : α₁ < 2 / γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (y : ℂ) (hy : y ≠ 0)
-    (s : ℝ) (hs : s < 0) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    α₁ α₂ α₃ (hα : γ / 2 ≤ α₁) (hα₁ : α₁ < 2 / γ)
+    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) y (hy : y ≠ 0)
+    s (hs : s < 0) :
     Tendsto (fusionScaledFactor P M γ α₁ α₂ α₃ s y) (nhds 0)
       (nhds ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ y 0 (M ω) ^ s ∂P).toReal)) := by
-  have he := fusionMovingMass_inverse_expectation P X hX γ hγ hγ2 M hM α₁ α₂ α₃
-    hα hα₁ hα₂ hα₃ y hy s hs
-  have hfin := fusionMovingMass_inverse_expectation_finite P X hX γ hγ hγ2 M hM
-    α₁ α₂ α₃ s hs.le y
-  have he' := (ENNReal.continuousAt_toReal hfin.ne).tendsto.comp he
-  have hw : Tendsto (fun z : ℂ => ‖y * z - 1‖ ^ (-γ * α₂)) (nhds 0) (nhds 1) := by
-    have hn : Tendsto (fun z : ℂ => ‖y * z - 1‖) (nhds 0) (nhds 1) := by
-      have hc : Continuous (fun z : ℂ => y * z - (1 : ℂ)) :=
-        (continuous_const.mul continuous_id).sub continuous_const
-      simpa using hc.norm.tendsto (0 : ℂ)
-    simpa only [Function.comp_def, Real.one_rpow] using
-      (Real.continuousAt_rpow_const 1 (-γ * α₂) (Or.inl one_ne_zero)).tendsto.comp hn
-  have hcut : ∀ᶠ z : ℂ in nhds 0, ‖y * z‖ < 1 / 2 := by
-    have hn : Tendsto (fun z : ℂ => ‖y * z‖) (nhds 0) (nhds 0) := by
-      simpa using (continuous_const.mul continuous_id).norm.tendsto (0 : ℂ)
-    exact hn.eventually_lt_const (by norm_num)
-  have h := hw.mul he'
+  have h := (show Tendsto (fun z => ‖y * z - 1‖ ^ (-γ * α₂)) (nhds 0) (nhds 1) by simpa only [Function.comp_def, Real.one_rpow] using (Real.continuousAt_rpow_const 1 (-γ * α₂) (Or.inl one_ne_zero)).tendsto.comp (by simpa using ((continuous_const.mul continuous_id).sub continuous_const : Continuous (fun z => y * z - (1 : ℂ))).norm.tendsto (0 : ℂ))).mul ((ENNReal.continuousAt_toReal (fusionMovingMass_inverse_expectation_finite P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le y).ne).tendsto.comp (fusionMovingMass_inverse_expectation P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα hα₁ hα₂ hα₃ y hy s hs))
   simp only [one_mul, Function.comp_def] at h
   apply h.congr'
-  filter_upwards [hcut] with z hz
+  filter_upwards [(show ∀ᶠ z : ℂ in nhds 0, ‖y * z‖ < 1 / 2 by exact (show Tendsto (fun z => ‖y * z‖) (nhds 0) (nhds 0) by simpa using (continuous_const.mul continuous_id).norm.tendsto (0 : ℂ)).eventually_lt_const (by norm_num))] with z hz
   simp only [fusionScaledFactor, ite_eq_left hz]
 
 end DOZZ.Proofs

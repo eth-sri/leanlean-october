@@ -16,9 +16,9 @@ namespace DOZZ.Proofs
 
 /-- Rooting a complex spatial observable follows from the two signed real identities. -/
 theorem fusion_rooted_complex_integral {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (f : ℂ → ℂ) (hf : Measurable f)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    f (hf : Measurable f)
     (hfi : ∀ᵐ ω ∂P, Integrable f (M ω))
     (G : Measure ℂ → ℝ≥0∞) (hG : Measurable G)
     (hb : (∫⁻ u, ENNReal.ofReal ‖f u‖ *
@@ -29,20 +29,10 @@ theorem fusion_rooted_complex_integral {Ω : Type*} [MeasurableSpace Ω]
     (∫ ω, ((G (M ω)).toReal : ℂ) * (∫ u, f u ∂M ω) ∂P) =
       ∫ u, f u * ((∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P).toReal : ℂ)
         ∂gmcReferenceMeasure := by
-  have hbr : (∫⁻ u, ENNReal.ofReal |(f u).re| *
-      (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure) < ⊤ := by
-    apply lt_of_le_of_lt (lintegral_mono ?_) hb
-    intro u
-    exact mul_le_mul' (ENNReal.ofReal_le_ofReal (Complex.abs_re_le_norm _)) le_rfl
-  have hbi : (∫⁻ u, ENNReal.ofReal |(f u).im| *
-      (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure) < ⊤ := by
-    apply lt_of_le_of_lt (lintegral_mono ?_) hb
-    intro u
-    exact mul_le_mul' (ENNReal.ofReal_le_ofReal (Complex.abs_im_le_norm _)) le_rfl
   obtain ⟨hLr, hRr, her⟩ := fusion_rooted_real_integral P X hX γ hγ hγ2 M hM
-    (fun u => (f u).re) (Complex.measurable_re.comp hf) (hfi.mono fun _ h => h.re) G hG hbr
+    (fun u => (f u).re) (Complex.measurable_re.comp hf) (hfi.mono fun _ h => h.re) G hG (by apply lt_of_le_of_lt (lintegral_mono ?_) hb; intro u; exact mul_le_mul' (ENNReal.ofReal_le_ofReal (Complex.abs_re_le_norm _)) le_rfl)
   obtain ⟨hLi, hRi, hei⟩ := fusion_rooted_real_integral P X hX γ hγ hγ2 M hM
-    (fun u => (f u).im) (Complex.measurable_im.comp hf) (hfi.mono fun _ h => h.im) G hG hbi
+    (fun u => (f u).im) (Complex.measurable_im.comp hf) (hfi.mono fun _ h => h.im) G hG (by apply lt_of_le_of_lt (lintegral_mono ?_) hb; intro u; exact mul_le_mul' (ENNReal.ofReal_le_ofReal (Complex.abs_im_le_norm _)) le_rfl)
   let L := fun ω => ((G (M ω)).toReal : ℂ) * (∫ u, f u ∂M ω)
   let R := fun u => f u * ((∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P).toReal : ℂ)
   have heLr : (fun ω => (G (M ω)).toReal * (∫ u, (f u).re ∂M ω)) =ᵐ[P]
@@ -57,13 +47,7 @@ theorem fusion_rooted_complex_integral {Ω : Type*} [MeasurableSpace Ω]
     exact congrArg (fun r => (G (M ω)).toReal * r) (integral_im hω)
   have hLint : Integrable L P := Integrable.re_im_iff.mp
     ⟨hLr.congr heLr, hLi.congr heLi⟩
-  have hRre : Integrable (fun u => (R u).re) gmcReferenceMeasure := by
-    simpa only [R, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
-      using hRr
-  have hRim : Integrable (fun u => (R u).im) gmcReferenceMeasure := by
-    simpa only [R, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, mul_zero, zero_add]
-      using hRi
-  have hRint : Integrable R gmcReferenceMeasure := Integrable.re_im_iff.mp ⟨hRre, hRim⟩
+  have hRint : Integrable R gmcReferenceMeasure := Integrable.re_im_iff.mp ⟨(show Integrable (fun u => (R u).re) gmcReferenceMeasure by simpa only [R, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero] using hRr), (show Integrable (fun u => (R u).im) gmcReferenceMeasure by simpa only [R, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, mul_zero, zero_add] using hRi)⟩
   refine ⟨hLint, hRint, ?_⟩
   change (∫ ω, L ω ∂P) = ∫ u, R u ∂gmcReferenceMeasure
   apply Complex.ext

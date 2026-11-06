@@ -17,7 +17,7 @@ namespace DOZZ.Proofs
 
 /-- Change variables in the rooted local integral, retaining the full signed complex kernel. -/
 theorem fusion_localR2_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ s : ℝ) (z : ℂ) (hz : z ≠ 0) :
     (∫ x in Metric.ball (0 : ℂ) (1 / 2),
@@ -55,22 +55,11 @@ theorem fusion_localR2_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
       simp only [F, Set.indicator_of_notMem hyB, fusionScaledFactor, ite_eq_right hyz,
         Complex.ofReal_zero, mul_zero]
   have hscale := fusion_integral_mul_complex F z hz
-  have hcalc : (∫ y : ℂ, F (y * z)) =
-      ((‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) / ‖z‖ ^ (2 : ℕ) : ℝ) : ℂ) *
-      (∫ y : ℂ, (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℝ) *
-        (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)) := by
-    rw [← integral_const_mul]
-    exact integral_congr_ae hpoint
-  rw [hcalc] at hscale
-  have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
-  have hp : ‖z‖ ^ (2 : ℕ) * (‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) / ‖z‖ ^ (2 : ℕ)) =
-      ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) := by
-    rw [mul_div_cancel₀ _ (pow_ne_zero 2 hr.ne')]
+  rw [(show (∫ y : ℂ, F (y * z)) = ((‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) / ‖z‖ ^ (2 : ℕ) : ℝ) : ℂ) * (∫ y : ℂ, (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℝ) * (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)) by rw [← integral_const_mul]; exact integral_congr_ae hpoint)] at hscale
   calc
     _ = ∫ x : ℂ, F x := (integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)).symm
     _ = _ := hscale
     _ = _ := by
-      rw [← mul_assoc]
-      rw [← Complex.ofReal_mul, hp]
+      rw [← mul_assoc, ← Complex.ofReal_mul, (show ‖z‖ ^ (2 : ℕ) * (‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) / ‖z‖ ^ (2 : ℕ)) = ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) by rw [mul_div_cancel₀ _ (pow_ne_zero 2 (norm_pos_iff.mpr hz).ne')])]
 
 end DOZZ.Proofs

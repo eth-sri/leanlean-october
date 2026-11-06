@@ -16,7 +16,7 @@ namespace DOZZ.Proofs
 theorem polynomial_shift_size (x a : ℝ) (hx : 1 ≤ x) (ha : 0 ≤ a) :
     0 < x^(1-a)/4 ∧ x^(1-a)/4 ≤ x/4 ∧
       (x^(1-a)/4)/x = x^(-a)/4 := by
-  have hx0 : 0 < x := zero_lt_one.trans_le hx
+  have hx0 := zero_lt_one.trans_le hx
   refine ⟨by positivity,?_,?_⟩
   · apply div_le_div_of_nonneg_right _ (by norm_num)
     calc x^(1-a) ≤ x^(1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hx (sub_le_self _ ha)
@@ -30,28 +30,18 @@ theorem polynomial_shift_relative (x a s : ℝ) (hx : 1 ≤ x) (ha : 0 ≤ a)
     let y := (x+s*h)/x
     y ∈ Icc (1/2 : ℝ) (3/2 : ℝ) ∧ |y-1| ≤ x^(-a) := by
   dsimp only
-  have hx0 : 0 < x := zero_lt_one.trans_le hx
-  have hsize := polynomial_shift_size x a hx ha
-  have hidentity : (x+s*(x^(1-a)/4))/x-1 = s*((x^(1-a)/4)/x) := by
-    field_simp
-    ring
-  have hd : |(x+s*(x^(1-a)/4))/x-1| = |s| *(x^(-a)/4) := by
-    rw [hidentity,abs_mul,hsize.2.2,abs_of_nonneg (div_nonneg (Real.rpow_nonneg hx0.le (-a)) (by norm_num : (0 : ℝ) ≤ 4))]
-  have hpow1 : x^(-a) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hx (neg_nonpos.mpr ha)
+  have hx0 := zero_lt_one.trans_le hx
   have hbound : |(x+s*(x^(1-a)/4))/x-1| ≤ x^(-a)/2 := by
-    rw [hd]
-    have hb := mul_le_mul_of_nonneg_right hs (by positivity : 0 ≤ x^(-a)/4)
-    linarith only [hb]
-  have hhalf : |(x+s*(x^(1-a)/4))/x-1| ≤ 1/2 :=
-    hbound.trans (div_le_div_of_nonneg_right hpow1 (by norm_num))
+    rw [(show |(x+s*(x^(1-a)/4))/x-1| = |s| *(x^(-a)/4) by rw [(show (x+s*(x^(1-a)/4))/x-1 = s*((x^(1-a)/4)/x) by field_simp; ring),abs_mul,(polynomial_shift_size x a hx ha).2.2,abs_of_nonneg (div_nonneg (Real.rpow_nonneg hx0.le (-a)) (by norm_num : (0 : ℝ) ≤ 4))])]
+    linarith only [(mul_le_mul_of_nonneg_right hs (by positivity : 0 ≤ x^(-a)/4))]
   refine ⟨?_,hbound.trans (by have hp := Real.rpow_nonneg hx0.le (-a); linarith only [hp])⟩
-  obtain ⟨hl,hu⟩ := abs_le.mp hhalf
+  obtain ⟨hl,hu⟩ := abs_le.mp (hbound.trans (div_le_div_of_nonneg_right (Real.rpow_le_one_of_one_le_of_nonpos hx (neg_nonpos.mpr ha)) (by norm_num)))
   constructor <;> linarith only [hl,hu]
 
 theorem polynomial_shift_moment_rate (x a r R p η : ℝ)
     (hx : 1 ≤ x) (hrR : r ≤ R) (hslack : p+η ≤ (1-a)*r) :
     (x^(1-a)/4)^(-r) ≤ 4^R*x^(-p-η) := by
-  have hx0 : 0 < x := zero_lt_one.trans_le hx
+  have hx0 := zero_lt_one.trans_le hx
   have he : (x^(1-a)/4)^(-r) = 4^r*x^(-(1-a)*r) := by
     rw [Real.div_rpow (Real.rpow_nonneg hx0.le _) (by norm_num),
       ← Real.rpow_mul hx0.le,Real.rpow_neg (by norm_num : (0 : ℝ) ≤ 4),div_inv_eq_mul,mul_comm]

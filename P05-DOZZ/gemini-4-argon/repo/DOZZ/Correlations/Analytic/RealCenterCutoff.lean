@@ -18,11 +18,11 @@ namespace DOZZ.Proofs
 which the actual normalized cutoff family is eventually holomorphic and has uniform summable
 increments. All moment and geometric margins are constructed from the literal inequalities. -/
 theorem real_center_cutoff_estimates
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (z : Fin N → ℂ) (hz : Function.Injective z) (α : Fin (N + 1) → ℝ)
+    Xc (hc : IsCircleAverage P X Xc)
+    z (hz : Function.Injective z) (α : Fin (N + 1) → ℝ)
     (ha : ∀ i, α i < Q γ)
     (hp : (2 * Q γ - ∑ i, α i) / γ < 4 / γ ^ 2)
     (hpi : ∀ i, (2 * Q γ - ∑ j, α j) / γ < 2 / γ * (Q γ - α i)) :
@@ -43,28 +43,25 @@ theorem real_center_cutoff_estimates
   obtain ⟨δ, hδ, hδ8, hsep⟩ := separated_geometry z hz
   let Zs := ∑ i, ‖z i‖
   let R := 1 + 2 * Zs
-  have hZs : 0 ≤ Zs := Finset.sum_nonneg (fun i _ => norm_nonneg _)
   obtain ⟨hR, hzR⟩ := coulomb_exterior_radius_bounds z
   obtain ⟨radius, hradius, hbox⟩ := complex_charge_budget_neighborhood γ α
     A a lo hi b hA haa hlop hphi hb
   obtain ⟨K, κ, d, hK, hκ, hd, hdec⟩ := normalized_cutoff_exponential_polydisc
-    P X hX γ hγ hγ2 M hM Xc hc z hz δ R Zs A a gap m g lo hi q b hδ hδ8 hR hZs
+    P X hX γ hγ hγ2 M hM Xc hc z hz δ R Zs A a gap m g lo hi q b hδ hδ8 hR (Finset.sum_nonneg (fun i _ => norm_nonneg _))
       hsep le_rfl hzR hgap hgapQ hm hm1 hms hg hlo hhi hq hbulk hroot
         α radius hradius hbox
   obtain ⟨S, hS, hsub, hthin⟩ := polydisc_thin_imaginary α radius hradius d hd
   refine ⟨S, hS, K, κ, hK, hκ, ?_⟩
   filter_upwards [hdec, retained_cutoff_geometry_eventually z δ R hδ] with n hn hgeo
-  have hr : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg _
-  have hball := exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) hr hgeo.2.2.2
   have hne : (retainedRegion z (n : ℝ)).Nonempty :=
-    (Metric.nonempty_ball.mpr (by norm_num : (0 : ℝ) < 1 / 8)).mono hball
+    (Metric.nonempty_ball.mpr (by norm_num : (0 : ℝ) < 1 / 8)).mono (exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) (Nat.cast_nonneg _) hgeo.2.2.2)
   constructor
   · apply (normalized_vertex_moment_holomorphic P X hX γ hγ hγ2 M hM Xc hc
       (retainedRegion z (n : ℝ)) (retainedRegion_isOpen z _)
       (retainedRegion_isBounded z _) hne z (n : ℝ)).2.mono
     intro β hβ
     change (complexMomentPower γ β).re < 4 / γ ^ 2
-    have he := (hbox β (hsub hβ)).2.2.2.1
+    have := (hbox β (hsub hβ)).2.2.2.1
     have hhiq : hi ≤ hi * q := by nlinarith
     linarith
   · intro β hβ

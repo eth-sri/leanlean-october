@@ -43,14 +43,10 @@ theorem truncated_williams_tail_sandwich
       by_cases hc : c ≤ q.1
       · exact Or.inl (he.trans_le (mul_le_mul_of_nonneg_right (hq hc) (Real.exp_nonneg _)))
       · have hm : q.1 < c := lt_of_not_ge hc
-        have h : x < Jc q.2*Real.exp (γ*c) := he.trans_le
-          (mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr
-            (mul_le_mul_of_nonneg_left hm.le hγ.le)) (hJc0 q.2))
-        have hh := mul_lt_mul_of_pos_right h (Real.exp_pos (-γ*c))
-        have hexp : γ*c+(-γ*c) = 0 := by ring
-        rw [mul_assoc, ← Real.exp_add, hexp, Real.exp_zero, mul_one] at hh
+        have hh := mul_lt_mul_of_pos_right (he.trans_le (mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_left hm.le hγ.le)) (hJc0 q.2))) (Real.exp_pos (-γ*c))
+        rw [mul_assoc, ← Real.exp_add, (show γ*c+(-γ*c) = 0 by ring), Real.exp_zero, mul_one] at hh
         exact Or.inr ⟨mem_univ _, hh⟩
-    have hprob : (μ.prod P).real Ec ≤ (μ.prod P).real (E ∪ (univ ×ˢ T)) :=
+    have : (μ.prod P).real Ec ≤ (μ.prod P).real (E ∪ (univ ×ˢ T)) :=
       ENNReal.toReal_mono (measure_ne_top _ _) (measure_mono_ae hinc)
     have hu := measureReal_union_le (μ := μ.prod P) E (univ ×ˢ T)
     have ht : (μ.prod P).real (univ ×ˢ T) = P.real T := by

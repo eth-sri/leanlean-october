@@ -23,9 +23,9 @@ The complete hypergeometric physical normalization, `real_gauss_solution_physica
 supplies nonresonance, connection coefficients and their ratio. Physical continuity at zero and
 root fusion identify its coefficient with the three-point constant. -/
 theorem degenerateFourPoint_diagonal_classification_of_BPZ {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+    {H}
     (hH : IsGaussHypergeometricFamily H)
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hχ : χ = γ / 2 ∨ χ = 2 / γ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
@@ -49,11 +49,9 @@ theorem degenerateFourPoint_diagonal_classification_of_BPZ {Ω : Type*} [Measura
     rcases hχ with rfl | rfl
     · exact div_pos hγ (by norm_num)
     · exact div_pos (by norm_num) hγ
-  have hcont := fourPointT_continuousAt_zero P X M γ μ χ α₁ α₂ α₃
-    hγ hγ₂ hχpos hα₁ hα₂ hα₃ hs hX hM
   have hnorm := real_gauss_solution_physical_normalization hH γ χ α₁ α₂ α₃
     hγ hγ₂ hχ hs hα₁ hα₂ hα₃
-    (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) hBPZ hcont
+    (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) hBPZ (fourPointT_continuousAt_zero P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hχpos hα₁ hα₂ hα₃ hs hX hM)
   rw [fourPointT_zero_eq_structureConstant P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ
     (by linarith) hα₂ hα₃ (by linarith) hX hM] at hnorm
   exact hnorm

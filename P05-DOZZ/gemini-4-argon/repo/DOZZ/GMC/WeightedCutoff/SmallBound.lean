@@ -27,26 +27,19 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_small_bound
     P X hX Xc hXc Γ hΓ T hT K hK
   obtain ⟨D, hD, hchart⟩ := cutoffWeightedGmcBallMoment_compact_gamma_chart
     P X hX Xc hXc Γ hΓ hΓ2 T hT hTadm
-  let E : ℝ≥0∞ := ENNReal.ofReal A * D
+  let E := ENNReal.ofReal A * D
   have hE : E < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top hD
-  let C : ℝ := E.toReal + 1
+  let C := E.toReal + 1
   have hC : 0 < C := by dsimp [C]; positivity
-  have hEC : E ≤ ENNReal.ofReal C := by
-    rw [← ENNReal.ofReal_toReal hE.ne]
-    apply ENNReal.ofReal_le_ofReal
-    dsimp [C]
-    linarith
   refine ⟨C, hC, ?_⟩
   intro γ hγ t ht z hz R δ hR hRhalf hδ hδR
-  have hfirst := hmove γ hγ t ht z hz R δ hR hRhalf hδ hδR
-  have hsecond := hchart γ hγ t ht 0 R δ hR hRhalf (by simp; linarith) hδ hδR
   calc
-    _ ≤ ENNReal.ofReal A * _ := hfirst
-    _ ≤ ENNReal.ofReal A * (D * _) := mul_le_mul_right hsecond _
+    _ ≤ ENNReal.ofReal A * _ := (hmove γ hγ t ht z hz R δ hR hRhalf hδ hδR)
+    _ ≤ ENNReal.ofReal A * (D * _) := mul_le_mul_right (hchart γ hγ t ht 0 R δ hR hRhalf (by simp; linarith) hδ hδR) _
     _ = E * ENNReal.ofReal (R ^ weightedCutoffMomentScaleExponent γ t.1 t.2) :=
       (mul_assoc _ _ _).symm
     _ ≤ ENNReal.ofReal C * ENNReal.ofReal (R ^ weightedCutoffMomentScaleExponent γ t.1 t.2) :=
-      mul_le_mul_left hEC _
+      mul_le_mul_left (by rw [← ENNReal.ofReal_toReal hE.ne]; apply ENNReal.ofReal_le_ofReal; dsimp [C]; linarith) _
     _ = _ := (ENNReal.ofReal_mul hC.le).symm
 
 end DOZZ.Proofs

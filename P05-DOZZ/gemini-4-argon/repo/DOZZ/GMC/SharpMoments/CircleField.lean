@@ -30,8 +30,8 @@ open CirclePotential
 /-- The circle average at a fixed radius is a jointly measurable centered Gaussian field. -/
 theorem circleAverage_isCenteredGaussianField
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) r :
     IsCenteredGaussianField P (fun ω x => Xc ω x r) :=
   ⟨hXc.1 r, fun _ x => circleAverage_finite_family_jointly_gaussian P X hX Xc hXc
     (fun i => (x i, r))⟩
@@ -40,9 +40,9 @@ theorem circleAverage_isCenteredGaussianField
 against the restricted reference measure. -/
 theorem regularizedGMC_apply_eq_fieldChaosMass
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
-    (A : Set ℂ) (hA : MeasurableSet A) (ω : Ω) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) γ r
+    A (hA : MeasurableSet A) ω :
     regularizedGMC P Xc γ r ω A =
       fieldChaosMass P (fun ω x => Xc ω x r) (gmcReferenceMeasure.restrict A)
         (fun _ => 1) γ ω := by
@@ -56,9 +56,9 @@ theorem regularizedGMC_apply_eq_fieldChaosMass
 field with that weight against the restricted reference measure. -/
 theorem regularizedGMC_weighted_eq_fieldChaosMass
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
-    (A : Set ℂ) (hA : MeasurableSet A) (w : ℂ → ℝ≥0) (hw : Measurable w) (ω : Ω) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) γ r
+    A (hA : MeasurableSet A) (w : ℂ → ℝ≥0) (hw : Measurable w) ω :
     (∫⁻ x in A, (w x : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
       fieldChaosMass P (fun ω x => Xc ω x r) (gmcReferenceMeasure.restrict A) w γ ω := by
   let _ := hX.1
@@ -76,8 +76,8 @@ theorem regularizedGMC_weighted_eq_fieldChaosMass
 the equator kernel. -/
 theorem circleField_covariance_eq
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (x y : ℂ) (r : ℝ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) x y r :
     ∫ ω, Xc ω x r * Xc ω y r ∂P = circleKernel x r y r :=
   isCircleAverage_covariance P X hX Xc hXc x y r r
 
@@ -85,9 +85,9 @@ theorem circleField_covariance_eq
 uniform chart remainder. -/
 theorem circleField_covariance_le_log
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (R r : ℝ) (hR : 0 ≤ R) (hr : 0 ≤ r)
-    (x y : ℂ) (hx : ‖x‖ ≤ R) (hy : ‖y‖ ≤ R) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) R r (hR : 0 ≤ R) (hr : 0 ≤ r)
+    x y (hx : ‖x‖ ≤ R) (hy : ‖y‖ ≤ R) :
     ∫ ω, Xc ω x r * Xc ω y r ∂P ≤
       Real.log (1 / max ‖x - y‖ (Real.exp (-r))) + (Real.log 3 + 2 * Real.log (1 + R)) := by
   rw [circleField_covariance_eq P X hX Xc hXc x y r]
@@ -99,9 +99,9 @@ theorem circleField_covariance_le_log
 uniform chart remainder. -/
 theorem circleField_covariance_ge_log
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (R r : ℝ) (hR : 0 ≤ R) (hr : 0 ≤ r)
-    (x y : ℂ) (hx : ‖x‖ ≤ R) (hy : ‖y‖ ≤ R) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) R r (hR : 0 ≤ R) (hr : 0 ≤ r)
+    x y (hx : ‖x‖ ≤ R) (hy : ‖y‖ ≤ R) :
     Real.log (1 / max ‖x - y‖ (Real.exp (-r))) - (Real.log 3 + 2 * Real.log (1 + R)) ≤
       ∫ ω, Xc ω x r * Xc ω y r ∂P := by
   rw [circleField_covariance_eq P X hX Xc hXc x y r]
@@ -112,17 +112,15 @@ theorem circleField_covariance_ge_log
 /-- Circle covariances are nonnegative as soon as the two circles stay within unit distance. -/
 theorem circleField_covariance_nonneg
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (x y : ℂ) (r : ℝ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) x y r
     (hclose : ‖x - y‖ + 2 * Real.exp (-r) ≤ 1) :
     0 ≤ ∫ ω, Xc ω x r * Xc ω y r ∂P := by
   rw [circleField_covariance_eq P X hX Xc hXc x y r, circleKernel_eq]
   have ha : 0 < Real.exp (-r) := Real.exp_pos _
   have hreg : 0 ≤ regAvg y r := by
     unfold regAvg
-    have hI : CircleIntegrable (fun v => Real.log (normPlus v)) y (Real.exp (-r)) :=
-      continuous_log_normPlus.continuousOn.circleIntegrable'
-    have := Real.circleAverage_mono (circleIntegrable_const 0 y (Real.exp (-r))) hI
+    have := Real.circleAverage_mono (circleIntegrable_const 0 y (Real.exp (-r))) continuous_log_normPlus.continuousOn.circleIntegrable'
       (fun v _ => log_normPlus_nonneg v)
     rwa [Real.circleAverage_const] at this
   have hpoint : ∀ u ∈ Metric.sphere x |Real.exp (-r)|, 0 ≤ innerPot y r u := by
@@ -131,15 +129,11 @@ theorem circleField_covariance_nonneg
     have huy : ‖u - y‖ ≤ 1 := by
       have := norm_sub_le_norm_sub_add_norm_sub u x y
       linarith
-    have hmax : max ‖u - y‖ (Real.exp (-r)) ≤ 1 :=
-      max_le huy (by linarith [norm_nonneg (x - y)])
-    have hlog : Real.log (max ‖u - y‖ (Real.exp (-r))) ≤ 0 :=
-      Real.log_nonpos (le_max_of_le_right ha.le) hmax
+    have : Real.log (max ‖u - y‖ (Real.exp (-r))) ≤ 0 :=
+      Real.log_nonpos (le_max_of_le_right ha.le) (max_le huy (by linarith [norm_nonneg (x - y)]))
     unfold innerPot
     linarith [log_normPlus_nonneg u]
-  have hI : CircleIntegrable (innerPot y r) x (Real.exp (-r)) :=
-    (continuous_innerPot y r).continuousOn.circleIntegrable'
-  have := Real.circleAverage_mono (circleIntegrable_const 0 x (Real.exp (-r))) hI hpoint
+  have := Real.circleAverage_mono (circleIntegrable_const 0 x (Real.exp (-r))) ((continuous_innerPot y r).continuousOn.circleIntegrable') hpoint
   rwa [Real.circleAverage_const] at this
 
 end DOZZ.Proofs

@@ -14,7 +14,7 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- The mixed exterior kernel is the complex cast of the norm of the pure kernel. -/
-theorem fusion_exteriorMixedKernel_integrable (γ α₁ α₂ α₃ : ℝ) (z : ℂ)
+theorem fusion_exteriorMixedKernel_integrable γ α₁ α₂ α₃ z
     (hz : ‖z‖ ≤ 1 / 4) (μ : Measure ℂ)
     (hkernel : (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ) < ⊤) :
     IntegrableOn (fun x : ℂ => (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (‖x - z‖ ^ 2 : ℝ))

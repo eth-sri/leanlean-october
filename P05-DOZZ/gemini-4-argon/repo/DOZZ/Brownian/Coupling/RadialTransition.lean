@@ -37,12 +37,9 @@ theorem lintegral_radialGaussianVectorMeasure (t : ℝ≥0) (ht : 0 < t)
     (∫⁻ w, f w ∂radialGaussianVectorMeasure t) =
       ∫⁻ w, (ENNReal.ofReal (radialGaussianConstant t) *
         ENNReal.ofReal (Real.exp (-‖w‖ ^ 2 / (2 * (t : ℝ))))) * f w := by
-  have hpdf : Measurable (fun z : Fin 3 → ℝ => ∏ i, gaussianPDF 0 t (z i)) := by
-    exact Finset.measurable_prod Finset.univ (fun i _ =>
-      (measurable_gaussianPDF _ _).comp (measurable_pi_apply i))
   rw [radialGaussianVectorMeasure, lintegral_map hf (PiLp.continuous_toLp 2 _).measurable,
     pi_gaussianReal_withDensity _ t ht.ne',
-    lintegral_withDensity_eq_lintegral_mul volume hpdf (show Measurable (fun z : Fin 3 → ℝ => f (WithLp.toLp 2 z)) from hf.comp (PiLp.continuous_toLp 2 _).measurable)]
+    lintegral_withDensity_eq_lintegral_mul volume (by exact Finset.measurable_prod Finset.univ (fun i _ => (measurable_gaussianPDF _ _).comp (measurable_pi_apply i))) (show Measurable (fun z : Fin 3 → ℝ => f (WithLp.toLp 2 z)) from hf.comp (PiLp.continuous_toLp 2 _).measurable)]
   have hproduct (z : Fin 3 → ℝ) : (∏ i, gaussianPDF 0 t (z i)) =
       ENNReal.ofReal (radialGaussianConstant t) * ENNReal.ofReal (Real.exp (-‖WithLp.toLp 2 z‖ ^ 2 / (2 * (t : ℝ)))) := by
     simpa using three_gaussianPDF_product 0 t ht.ne' z
@@ -53,46 +50,35 @@ theorem lintegral_radialGaussianVectorMeasure (t : ℝ≥0) (ht : 0 < t)
         ENNReal.ofReal (Real.exp (-‖w‖ ^ 2 / (2 * (t : ℝ))))) * f w) from
       (measurable_const.mul (by fun_prop)).mul hf)
 
-/-- Rotations and reflections preserve the actual centered Gaussian law. -/
-theorem radialGaussianVectorMeasure_map_isometry (t : ℝ≥0) (ht : 0 < t)
-    (L : EuclideanSpace ℝ (Fin 3) ≃ₗᵢ[ℝ] EuclideanSpace ℝ (Fin 3)) :
-    (radialGaussianVectorMeasure t).map L = radialGaussianVectorMeasure t := by
-  apply Measure.ext_of_lintegral
-  intro f hf
-  rw [lintegral_map hf L.continuous.measurable,
-    lintegral_radialGaussianVectorMeasure t ht _ (show Measurable (fun w => f (L w)) from hf.comp L.continuous.measurable),
-    lintegral_radialGaussianVectorMeasure t ht f hf]
-  have hm : Measurable (fun w : EuclideanSpace ℝ (Fin 3) =>
-      (ENNReal.ofReal (radialGaussianConstant t) *
-        ENNReal.ofReal (Real.exp (-‖w‖ ^ 2 / (2 * (t : ℝ))))) * f w) :=
-    (measurable_const.mul (by fun_prop)).mul hf
-  have h := L.measurePreserving.lintegral_comp hm
-  simpa only [L.norm_map] using h
 
 /-- The nonnegative first-axis vector of a given radius. -/
 noncomputable def radialAxisVector (x : ℝ) : EuclideanSpace ℝ (Fin 3) :=
   WithLp.toLp 2 (fun i => if i = 0 then x else 0)
 
 /-- Its Euclidean norm is exactly the absolute radius. -/
-theorem norm_radialAxisVector (x : ℝ) : ‖radialAxisVector x‖ = |x| := by
+theorem norm_radialAxisVector x : ‖radialAxisVector x‖ = |x| := by
   apply (sq_eq_sq₀ (norm_nonneg _) (abs_nonneg _)).mp
   rw [EuclideanSpace.real_norm_sq_eq, sq_abs]
   simp [radialAxisVector]
 
-/-- A Householder reflection sends every vector to the positive longitudinal axis. -/
-theorem exists_radialAxisIsometry (z : EuclideanSpace ℝ (Fin 3)) :
-    ∃ L : EuclideanSpace ℝ (Fin 3) ≃ₗᵢ[ℝ] EuclideanSpace ℝ (Fin 3),
-      L z = radialAxisVector ‖z‖ := by
-  refine ⟨Submodule.reflection (ℝ ∙ (z - radialAxisVector ‖z‖))ᗮ, ?_⟩
-  apply Submodule.reflection_sub
-  rw [norm_radialAxisVector, abs_of_nonneg (norm_nonneg _)]
 
 /-- Rotating the mean preserves every norm test, as an identity of actual Gaussian integrals. -/
-theorem lintegral_radialGaussian_rotate_mean (z : EuclideanSpace ℝ (Fin 3))
+theorem lintegral_radialGaussian_rotate_mean z
     (t : ℝ≥0) (ht : 0 < t) (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ w, F ‖z + w‖ ∂radialGaussianVectorMeasure t) =
       ∫⁻ w, F ‖radialAxisVector ‖z‖ + w‖ ∂radialGaussianVectorMeasure t := by
-  obtain ⟨L, hL⟩ := exists_radialAxisIsometry z
+  have exists_radialAxisIsometry : ∃ L : EuclideanSpace ℝ (Fin 3) ≃ₗᵢ[ℝ] EuclideanSpace ℝ (Fin 3), L z = radialAxisVector ‖z‖ := by
+    refine ⟨Submodule.reflection (ℝ ∙ (z - radialAxisVector ‖z‖))ᗮ, ?_⟩
+    apply Submodule.reflection_sub
+    rw [norm_radialAxisVector, abs_of_nonneg (norm_nonneg _)]
+  have radialGaussianVectorMeasure_map_isometry (L : EuclideanSpace ℝ (Fin 3) ≃ₗᵢ[ℝ] EuclideanSpace ℝ (Fin 3)) : (radialGaussianVectorMeasure t).map L = radialGaussianVectorMeasure t := by
+    apply Measure.ext_of_lintegral
+    intro f hf
+    rw [lintegral_map hf L.continuous.measurable,
+      lintegral_radialGaussianVectorMeasure t ht _ (show Measurable (fun w => f (L w)) from hf.comp L.continuous.measurable),
+      lintegral_radialGaussianVectorMeasure t ht f hf]
+    simpa only [L.norm_map] using (L.measurePreserving.lintegral_comp ((measurable_const.mul (by fun_prop)).mul hf : Measurable (fun w : EuclideanSpace ℝ (Fin 3) => (ENNReal.ofReal (radialGaussianConstant t) * ENNReal.ofReal (Real.exp (-‖w‖ ^ 2 / (2 * (t : ℝ))))) * f w)))
+  obtain ⟨L, hL⟩ := exists_radialAxisIsometry
   calc
     _ = ∫⁻ w, F ‖radialAxisVector ‖z‖ + L w‖ ∂radialGaussianVectorMeasure t := by
       apply lintegral_congr
@@ -101,42 +87,37 @@ theorem lintegral_radialGaussian_rotate_mean (z : EuclideanSpace ℝ (Fin 3))
     _ = _ := by
       rw [← lintegral_map (show Measurable (fun w => F ‖radialAxisVector ‖z‖ + w‖) from
         hF.comp (continuous_const.add continuous_id).norm.measurable) L.continuous.measurable,
-        radialGaussianVectorMeasure_map_isometry t ht L]
+        radialGaussianVectorMeasure_map_isometry L]
 
-/-- Axis translation of the centered Cartesian Gaussian gives the actual independent shifted law. -/
-theorem radialGaussianVectorMeasure_axis_add_map (x : ℝ) (t : ℝ≥0) :
-    (radialGaussianVectorMeasure t).map (fun w => radialAxisVector x + w) =
-      (Measure.pi (fun i : Fin 3 => gaussianReal (if i = 0 then x else 0) t)).map (WithLp.toLp 2) := by
-  let shift := fun z : Fin 3 → ℝ => fun i => z i + (if i = 0 then x else 0)
-  have hshift : Measurable shift := measurable_pi_iff.mpr fun i => (measurable_pi_apply i).add_const _
-  have hpi : (Measure.pi (fun _ : Fin 3 => gaussianReal 0 t)).map shift =
-      Measure.pi (fun i : Fin 3 => gaussianReal (if i = 0 then x else 0) t) := by
-    change (Measure.pi (fun _ : Fin 3 => gaussianReal 0 t)).map
-      (fun z i => z i + (if i = 0 then x else 0)) = _
-    rw [Measure.pi_map_pi (f := fun i u => u + (if i = 0 then x else 0))
-      (fun _ => (measurable_id.add_const _).aemeasurable)]
-    congr 1
-    funext i
-    simpa using gaussianReal_map_add_const (μ := 0) (v := t) (if i = 0 then x else 0)
-  rw [← hpi, radialGaussianVectorMeasure,
-    Measure.map_map (PiLp.continuous_toLp 2 _).measurable hshift,
-    Measure.map_map (show Measurable (fun w : EuclideanSpace ℝ (Fin 3) => radialAxisVector x + w) from
-      (continuous_const.add continuous_id).measurable) (PiLp.continuous_toLp 2 _).measurable]
-  congr 1
-  funext z
-  apply WithLp.ofLp_injective
-  funext i
-  exact add_comm _ _
 
 /-- The ordinary Brownian Gaussian increment has the exact BES(3) norm kernel from every nonzero vector. -/
-theorem lintegral_radialGaussian_transition (z : EuclideanSpace ℝ (Fin 3)) (hz : z ≠ 0)
+theorem lintegral_radialGaussian_transition z (hz : z ≠ 0)
     (t : ℝ≥0) (ht : 0 < t) (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ w, F ‖z + w‖ ∂radialGaussianVectorMeasure t) =
       ∫⁻ y, F y * ENNReal.ofReal (conditionedPositiveTransitionDensity 0 t ‖z‖ y) := by
+  have radialGaussianVectorMeasure_axis_add_map x (t : ℝ≥0) : (radialGaussianVectorMeasure t).map (fun w => radialAxisVector x + w) = (Measure.pi (fun i => gaussianReal (if i = 0 then x else 0) t)).map (WithLp.toLp 2) := by
+    have hpi : (Measure.pi (fun _ : Fin 3 => gaussianReal 0 t)).map (fun z : Fin 3 → ℝ => fun i => z i + (if i = 0 then x else 0)) =
+        Measure.pi (fun i => gaussianReal (if i = 0 then x else 0) t) := by
+      change (Measure.pi (fun _ : Fin 3 => gaussianReal 0 t)).map
+        (fun z i => z i + (if i = 0 then x else 0)) = _
+      rw [Measure.pi_map_pi (f := fun i u => u + (if i = 0 then x else 0))
+        (fun _ => (measurable_id.add_const _).aemeasurable)]
+      congr 1
+      funext i
+      simpa using gaussianReal_map_add_const (μ := 0) (v := t) (if i = 0 then x else 0)
+    rw [← hpi, radialGaussianVectorMeasure,
+      Measure.map_map (PiLp.continuous_toLp 2 _).measurable (measurable_pi_iff.mpr fun i => (measurable_pi_apply i).add_const _),
+      Measure.map_map (show Measurable (fun w => radialAxisVector x + w) from
+        (continuous_const.add continuous_id).measurable) (PiLp.continuous_toLp 2 _).measurable]
+    congr 1
+    funext z
+    apply WithLp.ofLp_injective
+    funext i
+    exact add_comm _ _
   rw [lintegral_radialGaussian_rotate_mean z t ht F hF]
-  rw [← lintegral_map (show Measurable (fun w : EuclideanSpace ℝ (Fin 3) => F ‖w‖) from hF.comp continuous_norm.measurable) (show Measurable (fun w : EuclideanSpace ℝ (Fin 3) => radialAxisVector ‖z‖ + w) from
+  rw [← lintegral_map (show Measurable (fun w => F ‖w‖) from hF.comp continuous_norm.measurable) (show Measurable (fun w => radialAxisVector ‖z‖ + w) from
       (continuous_const.add continuous_id).measurable),
-    radialGaussianVectorMeasure_axis_add_map, lintegral_map (show Measurable (fun w : EuclideanSpace ℝ (Fin 3) => F ‖w‖) from hF.comp continuous_norm.measurable)
+    radialGaussianVectorMeasure_axis_add_map, lintegral_map (show Measurable (fun w => F ‖w‖) from hF.comp continuous_norm.measurable)
       (PiLp.continuous_toLp 2 _).measurable]
   exact lintegral_three_gaussian_axis_transition ‖z‖ (norm_pos_iff.mpr hz) t ht F hF
 
@@ -161,15 +142,7 @@ theorem radialGaussianVectorMeasure_eq_withDensity (t : ℝ≥0) (ht : 0 < t) :
     lintegral_withDensity_eq_lintegral_mul volume (measurable_radialGaussianVectorDensity t) hf]
   rfl
 
-/-- The isotropic heat density is even. -/
-theorem radialGaussianVectorDensity_neg (t : ℝ≥0) (w : EuclideanSpace ℝ (Fin 3)) :
-    radialGaussianVectorDensity t (-w) = radialGaussianVectorDensity t w := by
-  simp only [radialGaussianVectorDensity, norm_neg]
 
-/-- Heat-density symmetry keeps the two actual vector operands. -/
-theorem radialGaussianVectorDensity_sub_comm (t : ℝ≥0) (z w : EuclideanSpace ℝ (Fin 3)) :
-    radialGaussianVectorDensity t (z - w) = radialGaussianVectorDensity t (w - z) := by
-  rw [← neg_sub w z, radialGaussianVectorDensity_neg]
 
 /-- Joint spatial measurability of the translated heat density. -/
 theorem measurable_radialGaussianVectorDensity_sub (t : ℝ≥0) :
@@ -178,7 +151,7 @@ theorem measurable_radialGaussianVectorDensity_sub (t : ℝ≥0) :
   (measurable_radialGaussianVectorDensity t).comp (measurable_snd.sub measurable_fst)
 
 /-- Translating the actual Gaussian increment gives the literal heat kernel from the chosen start. -/
-theorem radialGaussianVectorMeasure_add_map_eq_density (z : EuclideanSpace ℝ (Fin 3))
+theorem radialGaussianVectorMeasure_add_map_eq_density z
     (t : ℝ≥0) (ht : 0 < t) :
     (radialGaussianVectorMeasure t).map (fun w => z + w) =
       (volume : Measure (EuclideanSpace ℝ (Fin 3))).withDensity
@@ -193,8 +166,7 @@ theorem radialGaussianVectorMeasure_add_map_eq_density (z : EuclideanSpace ℝ (
         (measurable_radialGaussianVectorDensity t).comp (measurable_id.sub_const z)) hf]
   have hm : Measurable (fun w => radialGaussianVectorDensity t (w - z) * f w) :=
     ((measurable_radialGaussianVectorDensity t).comp (measurable_id.sub_const z)).mul hf
-  have h := (measurePreserving_add_left (volume : Measure (EuclideanSpace ℝ (Fin 3))) z).lintegral_comp hm
-  simpa only [add_sub_cancel_left, radialGaussianVectorDensity, Pi.mul_apply] using h
+  simpa only [add_sub_cancel_left, radialGaussianVectorDensity, Pi.mul_apply] using ((measurePreserving_add_left (volume : Measure (EuclideanSpace ℝ (Fin 3))) z).lintegral_comp hm)
 
 /-- Radial heat convolution depends only on the radius of the starting vector. -/
 noncomputable def radialHeatConvolution (t : ℝ≥0) (F : ℝ → ℝ≥0∞)
@@ -208,45 +180,43 @@ theorem measurable_radialHeatConvolution (t : ℝ≥0) (F : ℝ → ℝ≥0∞) 
 
 /-- Equal starting radii give exactly the same radial heat convolution. -/
 theorem radialHeatConvolution_eq_of_norm_eq (t : ℝ≥0) (ht : 0 < t)
-    (F : ℝ → ℝ≥0∞) (hF : Measurable F) (z w : EuclideanSpace ℝ (Fin 3)) (hzw : ‖z‖ = ‖w‖) :
+    (F : ℝ → ℝ≥0∞) (hF : Measurable F) z w (hzw : ‖z‖ = ‖w‖) :
     radialHeatConvolution t F z = radialHeatConvolution t F w := by
   unfold radialHeatConvolution
   rw [lintegral_radialGaussian_rotate_mean z t ht F hF,
     lintegral_radialGaussian_rotate_mean w t ht F hF, hzw]
 
-/-- Cartesian heat convolution of a radial profile is its actual Gaussian radial convolution. -/
-theorem lintegral_radial_heat_density (t : ℝ≥0) (ht : 0 < t)
-    (F : ℝ → ℝ≥0∞) (hF : Measurable F) (z : EuclideanSpace ℝ (Fin 3)) :
-    (∫⁻ w, radialGaussianVectorDensity t (w - z) * F ‖w‖) = radialHeatConvolution t F z := by
-  change (∫⁻ w, ((fun w => radialGaussianVectorDensity t (w - z)) *
-    (fun w : EuclideanSpace ℝ (Fin 3) => F ‖w‖)) w) = _
-  rw [← lintegral_withDensity_eq_lintegral_mul volume
-    (show Measurable (fun w => radialGaussianVectorDensity t (w - z)) from
-      (measurable_radialGaussianVectorDensity t).comp (measurable_id.sub_const z))
-    (show Measurable (fun w : EuclideanSpace ℝ (Fin 3) => F ‖w‖) from hF.comp continuous_norm.measurable),
-    ← radialGaussianVectorMeasure_add_map_eq_density z t ht,
-    lintegral_map (show Measurable (fun w : EuclideanSpace ℝ (Fin 3) => F ‖w‖) from hF.comp continuous_norm.measurable)
-      (show Measurable (fun w => z + w) from (continuous_const.add continuous_id).measurable)]
-  rfl
 
 /-- The same convolution uses the reversed heat density pointwise. -/
 theorem lintegral_radial_heat_density_reverse (t : ℝ≥0) (ht : 0 < t)
-    (F : ℝ → ℝ≥0∞) (hF : Measurable F) (z : EuclideanSpace ℝ (Fin 3)) :
+    (F : ℝ → ℝ≥0∞) (hF : Measurable F) z :
     (∫⁻ w, radialGaussianVectorDensity t (z - w) * F ‖w‖) = radialHeatConvolution t F z := by
+  have lintegral_radial_heat_density : (∫⁻ w, radialGaussianVectorDensity t (w - z) * F ‖w‖) = radialHeatConvolution t F z := by
+    change (∫⁻ w, ((fun w => radialGaussianVectorDensity t (w - z)) *
+      (fun w : EuclideanSpace ℝ (Fin 3) => F ‖w‖)) w) = _
+    rw [← lintegral_withDensity_eq_lintegral_mul volume
+      (show Measurable (fun w => radialGaussianVectorDensity t (w - z)) from
+        (measurable_radialGaussianVectorDensity t).comp (measurable_id.sub_const z))
+      (show Measurable (fun w : EuclideanSpace ℝ (Fin 3) => F ‖w‖) from hF.comp continuous_norm.measurable),
+      ← radialGaussianVectorMeasure_add_map_eq_density z t ht,
+      lintegral_map (show Measurable (fun w : EuclideanSpace ℝ (Fin 3) => F ‖w‖) from hF.comp continuous_norm.measurable)
+        (show Measurable (fun w => z + w) from (continuous_const.add continuous_id).measurable)]
+    rfl
+  have radialGaussianVectorDensity_sub_comm w : radialGaussianVectorDensity t (z - w) = radialGaussianVectorDensity t (w - z) := by
+    have radialGaussianVectorDensity_neg (t : ℝ≥0) w : radialGaussianVectorDensity t (-w) = radialGaussianVectorDensity t w := by
+      simp only [radialGaussianVectorDensity, norm_neg]
+    rw [← neg_sub w z, radialGaussianVectorDensity_neg]
   calc
     _ = ∫⁻ w, radialGaussianVectorDensity t (w - z) * F ‖w‖ := by
       apply lintegral_congr
       intro w
-      rw [radialGaussianVectorDensity_sub_comm t z w]
-    _ = _ := lintegral_radial_heat_density t ht F hF z
+      rw [radialGaussianVectorDensity_sub_comm w]
+    _ = _ := lintegral_radial_heat_density
 
 /-- Actual vector evaluations have the same centered Gaussian law as the increment kernel. -/
 theorem wienerTriple_vectorEval_hasLaw (t : ℝ≥0) :
     HasLaw (fun V : BrownianTriple => WithLp.toLp 2 (fun i : Fin 3 => V i t))
       (radialGaussianVectorMeasure t) wienerTripleMeasure := by
-  have hmap : HasLaw (WithLp.toLp 2 : (Fin 3 → ℝ) → EuclideanSpace ℝ (Fin 3))
-      (radialGaussianVectorMeasure t) (Measure.pi (fun _ : Fin 3 => gaussianReal 0 t)) :=
-    ⟨(PiLp.continuous_toLp 2 _).measurable.aemeasurable, rfl⟩
-  exact hmap.comp (wienerTriple_eval_hasLaw t)
+  exact (⟨(PiLp.continuous_toLp 2 _).measurable.aemeasurable, rfl⟩ : HasLaw (WithLp.toLp 2 : (Fin 3 → ℝ) → EuclideanSpace ℝ (Fin 3)) (radialGaussianVectorMeasure t) (Measure.pi (fun _ : Fin 3 => gaussianReal 0 t))).comp (wienerTriple_eval_hasLaw t)
 
 end DOZZ.Proofs

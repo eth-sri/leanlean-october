@@ -23,7 +23,7 @@ theorem symmetry_integral_shift_cancel (μ : Measure ℂ) [IsFiniteMeasure μ]
 /-- Reflection and correlated re-pinning identify the ordinary limiting chaos on the same
 probability space, rather than just identifying its marginal law. -/
 theorem isGMCOf_symmetryRepinnedChaos
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     IsGMCOf P (symmetryRepinnedField X (fun ω => Xc ω 1 0)) γ
@@ -35,26 +35,26 @@ theorem isGMCOf_symmetryRepinnedChaos
   intro f
   let φ : ContinuousMap ℂ ℂ := ⟨fun x => 1 - x, continuous_const.sub continuous_id⟩
   let g := f.compContinuous φ
-  let C : BoundedContinuousFunction ℂ ℝ := BoundedContinuousFunction.const ℂ ‖f‖
+  let C := BoundedContinuousFunction.const ℂ ‖f‖
   let w : ℝ → BoundedContinuousFunction ℂ ℝ := fun r =>
     (symmetryReflectionCutoffWeight γ r).compContinuous φ
   let v := (symmetryReflectionLimitWeight γ).compContinuous φ
-  have hw (r : ℝ) (x : ℂ) : 0 ≤ w r x := by
+  have hw (r : ℝ) x : 0 ≤ w r x := by
     change 0 ≤ symmetryReflectionCutoffWeight γ r (1 - x)
     rw [symmetryReflectionCutoffWeight_apply]
     exact (Real.exp_pos _).le
-  have hv (x : ℂ) : 0 ≤ v x := by
+  have hv x : 0 ≤ v x := by
     change 0 ≤ symmetryReflectionLimitWeight γ (1 - x)
     rw [symmetryReflectionLimitWeight_apply]
     exact (Real.exp_pos _).le
-  have hg (x : ℂ) : 0 ≤ (g + C) x := by
+  have hg x : 0 ≤ (g + C) x := by
     change 0 ≤ f (1 - x) + ‖f‖
     have h := f.norm_coe_le_norm (1 - x)
     rw [Real.norm_eq_abs] at h
     linarith only [neg_abs_le (f (1 - x)), h]
   have hwconv : Tendsto w atTop (𝓝 v) :=
     BoundedContinuousFunction.tendsto_iff_tendstoUniformly.mpr
-      ((symmetryReflectionCutoffWeight_uniform γ).comp (fun x : ℂ => 1 - x))
+      ((symmetryReflectionCutoffWeight_uniform γ).comp (fun x => 1 - x))
   have hA := regularizedGMC_varying_bcf_integral P X hX Xc hXc γ M hM
     (fun r => (g + C) * w r) (fun r x => by
       change 0 ≤ (g + C) x * w r x

@@ -16,12 +16,12 @@ namespace DOZZ.Proofs
 /-- Finite-root decay and inversion give one uniform small-moment bound for the complete
 complement of the retained region. The charge bound stays strictly below `Q`. -/
 theorem retained_complement_moment_decay
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (z : Fin N → ℂ) (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1)
     (hsep : ∀ k j, j ≠ k → 2 * δ ≤ ‖z j - z k‖)
-    (A a gap m : ℝ) (hgap : 0 < gap) (ha : a + gap < Q γ)
+    A a gap m (hgap : 0 < gap) (ha : a + gap < Q γ)
     (hm : 0 < m) (hm1 : m ≤ 1)
     (hms : m < min (4 / γ ^ 2) (2 / γ * (Q γ - (a + gap)))) :
     ∃ K : ℝ≥0∞, K < ⊤ ∧ ∀ (α : Fin N → ℝ) (αinf : ℝ),
@@ -40,12 +40,8 @@ theorem retained_complement_moment_decay
   refine ⟨(∑ i, C i) + D, ENNReal.add_lt_top.mpr
     ⟨ENNReal.sum_lt_top.mpr (fun i _ => hC i), hD⟩, ?_⟩
   intro α αinf hα hinf hαup hinfup r hsmall hlarge hz
-  have hrho : 0 < 2 * Real.exp (-r) := mul_pos (by norm_num) (Real.exp_pos _)
-  have hrecip : 1 / (Real.exp r / 2) = 2 * Real.exp (-r) := by
-    rw [Real.exp_neg]
-    field_simp
   have hi := hext α αinf hα hinfup (Real.exp r / 2) hlarge hz
-  rw [hrecip] at hi
+  rw [(show 1 / (Real.exp r / 2) = 2 * Real.exp (-r) by rw [Real.exp_neg]; field_simp)] at hi
   calc
     _ ≤ (∑ i, ∫⁻ ω, (∫⁻ x in Metric.ball (z i) (2 * Real.exp (-r)),
         coulombWeight γ α z αinf x ∂M ω) ^ m ∂P) +
@@ -55,7 +51,7 @@ theorem retained_complement_moment_decay
     _ ≤ (∑ i, ENNReal.ofReal ((2 * Real.exp (-r)) ^ (γ * gap * m)) * C i) +
         ENNReal.ofReal ((2 * Real.exp (-r)) ^ (γ * gap * m)) * D :=
       add_le_add (Finset.sum_le_sum (fun i _ =>
-        hroot i α αinf hα hinf (hαup i) _ hrho hsmall)) hi
+        hroot i α αinf hα hinf (hαup i) _ (mul_pos (by norm_num) (Real.exp_pos _)) hsmall)) hi
     _ = _ := by rw [← Finset.mul_sum, mul_add]
 
 end DOZZ.Proofs

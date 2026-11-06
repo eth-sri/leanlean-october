@@ -18,10 +18,10 @@ namespace DOZZ.Proofs
 subcritical order, including all inverse orders. -/
 theorem gmc_compact_small_ball_twoSided_bound
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (p : ℝ) (hp : p < 4 / γ ^ 2)
-    (K : Set ℂ) (hK : IsCompact K) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
+    (hM : IsGMCOf P X γ M) p (hp : p < 4 / γ ^ 2)
+    K (hK : IsCompact K) :
     ∃ C : ℝ, 0 < C ∧ ∀ z ∈ K, ∀ r : ℝ, 0 < r → r ≤ 1/8 →
       ENNReal.ofReal (C⁻¹ * r ^ gmcScaleExponent γ p) ≤
         gmcMassMoment P M (Metric.ball z r) p ∧
@@ -30,7 +30,7 @@ theorem gmc_compact_small_ball_twoSided_bound
   obtain ⟨B, hB, hnorm⟩ := hK.isBounded.exists_pos_norm_le
   let R := B+1
   have hR : 0 ≤ R := by dsimp [R]; positivity
-  let T : ℝ≥0∞ := ENNReal.ofReal (Real.exp
+  let T := ENNReal.ofReal (Real.exp
     (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1+R))) / 2 * |p ^ 2-p|)) *
       ENNReal.ofReal ((1+R)^4) ^ |p|
   have hTtop : T ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top
@@ -44,8 +44,7 @@ theorem gmc_compact_small_ball_twoSided_bound
       · exact (ENNReal.ofReal_pos.mpr (by positivity)).ne' h.1
       · exact ENNReal.ofReal_ne_top h.1
   let t := T.toReal
-  have ht : 0 < t := ENNReal.toReal_pos hTpos.ne' hTtop
-  have hT : T = ENNReal.ofReal t := (ENNReal.ofReal_toReal hTtop).symm
+  have ht := ENNReal.toReal_pos hTpos.ne' hTtop
   obtain ⟨C, hC, hlocal⟩ := (gmc_local_twoSided_ball_scaling_iff
     P X hX γ hγ hγ2 M hM (1/8) p (by norm_num) (by norm_num)).mp
       ⟨gmc_reference_ball_moment_pos P X hX γ hγ hγ2 M hM (by norm_num) le_rfl p,
@@ -58,7 +57,7 @@ theorem gmc_compact_small_ball_twoSided_bound
   have hz0 := gmc_ball_moment_transfer P X hX γ hγ hγ2 M hM z 0 r R hr hr8 hR hzR hzeroR p hp
   have h0z := gmc_ball_moment_transfer P X hX γ hγ hγ2 M hM 0 z r R hr hr8 hR hzeroR hzR p hp
   change _ ≤ T * _ at hz0 h0z
-  rw [hT] at hz0 h0z
+  rw [((ENNReal.ofReal_toReal hTtop).symm)] at hz0 h0z
   have href := hlocal 0 r hr hr8 (by simp only [norm_zero, zero_add]; linarith)
   constructor
   · have he : ENNReal.ofReal t⁻¹ * ENNReal.ofReal t = 1 := by

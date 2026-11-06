@@ -11,104 +11,9 @@ open scoped Topology Distributions ENNReal NNReal
 open DOZZ.Assembly
 namespace DOZZ.Proofs
 
-/-- Inversion reverses the radial covariance coordinate. -/
-theorem originRadialCovariance_inversion (s : ℝ) (x : ℂ) :
-    originRadialCovariance (-s) x⁻¹ = originRadialCovariance s x := by
-  simp only [originRadialCovariance, norm_inv, Real.log_inv, neg_neg]
-  simp only [min_def, max_def]
-  split_ifs <;> linarith
 
-/-- The concentric potential of the reversed circle, evaluated at the inverse point,
-is the original circle potential away from zero. -/
-theorem innerPot_origin_inversion (s : ℝ) (x : ℂ) (hx : x ≠ 0) :
-    CirclePotential.innerPot 0 (-s) x⁻¹ = CirclePotential.innerPot 0 s x := by
-  rw [← CirclePotential.integral_gffKernel_circleMeasure,
-    ← CirclePotential.integral_gffKernel_circleMeasure,
-    origin_circleKernelPotential_eq _ _ (inv_ne_zero hx),
-    origin_circleKernelPotential_eq _ _ hx, originRadialCovariance_inversion]
 
-/-- Inverted tests have exactly the reversed concentric source pairing. -/
-theorem circleCross_origin_inversionTest (s : ℝ) (f : TestFn)
-    (hf : tsupport (f : ℂ → ℝ) ⊆ inversionChart) :
-    circleCross 0 (-s) (inversionTest f hf) = circleCross 0 s f := by
-  rw [circleCross_inversionTest]
-  change _ = ∫ x, f x * ∫ w, gffKernel x w ∂circleMeasure 0 s
-  simp_rw [CirclePotential.integral_gffKernel_circleMeasure]
-  apply integral_congr_ae
-  filter_upwards [(volume : Measure ℂ).ae_ne 0] with x hx
-  rw [innerPot_origin_inversion s x hx]
 
-/-- The actual coupled inverted concentric circle is the source circle with its
-logarithmic radius reversed. This supplies the joint radial input, not just its marginal law. -/
-theorem inversionCircle_origin_ae_eq
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (s : ℝ) (Z : Ω → ℝ) (hZ : MemLp Z 2 P)
-    (f : ℕ → TestFn) (hf : ∀ n, tsupport (f n : ℂ → ℝ) ⊆ inversionChart)
-    (hgap : Tendsto (fun n => circleEnergyGap 0 s (f n)) atTop (𝓝 0))
-    (hlim : Tendsto (fun n => eLpNorm (fun ω =>
-      X ω (inversionTest (f n) (hf n)) - Z ω) 2 P) atTop (𝓝 0)) :
-    Z =ᵐ[P] (fun ω => Xc ω 0 (-s)) := by
-  let : IsProbabilityMeasure P := hX.1
-  let U := fun ω => Xc ω 0 (-s)
-  let V := fun ω => Xc ω 0 s
-  have hU : MemLp U 2 P := hc.2.1 _ _
-  have hV : MemLp V 2 P := hc.2.1 _ _
-  have hzeroU : Tendsto (fun _ : ℕ => eLpNorm (fun ω => U ω - U ω) 2 P)
-      atTop (𝓝 0) := by simp only [sub_self, ← Pi.zero_def, eLpNorm_zero]; exact tendsto_const_nhds
-  have hzeroV : Tendsto (fun _ : ℕ => eLpNorm (fun ω => V ω - V ω) 2 P)
-      atTop (𝓝 0) := by simp only [sub_self, ← Pi.zero_def, eLpNorm_zero]; exact tendsto_const_nhds
-  have hinv := tendsto_covariance_of_eLpNorm_sub
-    (fun _ => hU) (fun n => equatorGFF_test_memLp X hX (inversionTest (f n) (hf n)))
-    hU hZ hzeroU hlim
-  have hsrc := tendsto_covariance_of_eLpNorm_sub
-    (fun _ => hV) (fun n => equatorGFF_test_memLp X hX (f n))
-    hV hV hzeroV (hc.2.2 0 s f hgap)
-  have he n : covariance U (fun ω => X ω (inversionTest (f n) (hf n))) P =
-      covariance V (fun ω => X ω (f n)) P := by
-    rw [circleAverage_test_covariance P X Xc hX hc,
-      circleAverage_test_covariance P X Xc hX hc, circleCross_origin_inversionTest]
-  have hmix : covariance U Z P = covariance V V P :=
-    tendsto_nhds_unique (hinv.congr' (Eventually.of_forall he)) hsrc
-  have hselfU : covariance U U P = |s| := by
-    rw [circleAverage_covariance_integral P X Xc hX hc,
-      integral_integral_gffKernel_origin, origin_circle_variance_algebra, abs_neg]
-  have hselfV : covariance V V P = |s| := by
-    rw [circleAverage_covariance_integral P X Xc hX hc,
-      integral_integral_gffKernel_origin, origin_circle_variance_algebra]
-  have hmeanZ : (∫ ω, Z ω ∂P) = 0 := integral_eq_zero_of_eLpNorm_sub
-    (fun n => equatorGFF_test_memLp X hX _) hZ
-    (fun n => equatorGFF_test_integral X hX _) hlim
-  obtain ⟨_, hmean⟩ := circleAverage_isGaussianProcess P X Xc hX hc
-  have hlaw := inversionCircle_fdd_law P X hX P X hX Xc hc
-    (fun _ : Fin 1 => (0, s)) (fun _ => Z) (fun _ => hZ)
-    (fun _ => f) (fun _ => hf) (fun _ => hgap) (fun _ => hlim)
-  have hs := congrArg (fun μ : Measure (Fin 1 → ℝ) => ∫ v, (v 0) ^ 2 ∂μ) hlaw
-  have hZm : AEMeasurable (fun ω (_ : Fin 1) => Z ω) P := AEMeasurable.of_eval fun _ => hZ.aemeasurable
-  have hVm : AEMeasurable (fun ω (_ : Fin 1) => V ω) P := AEMeasurable.of_eval fun _ => hV.aemeasurable
-  rw [integral_map hZm ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable,
-    integral_map hVm ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable] at hs
-  have hselfZ : covariance Z Z P = |s| := by
-    simpa only [covariance, hmeanZ, hmean, sub_zero, ← pow_two, V] using hs.trans
-      (by simpa only [covariance, hmean, sub_zero, ← pow_two, V] using hselfV)
-  have hD : MemLp (fun ω => Z ω - U ω) 2 P := hZ.sub hU
-  have hDmean : (∫ ω, Z ω - U ω ∂P) = 0 := by
-    rw [integral_sub (hZ.integrable (by norm_num)) (hU.integrable (by norm_num)), hmeanZ]
-    change 0 - (∫ ω, Xc ω 0 (-s) ∂P) = 0
-    rw [hmean, sub_zero]
-  have hDcov : covariance (fun ω => Z ω - U ω) (fun ω => Z ω - U ω) P = 0 := by
-    rw [covariance_fun_sub_fun_sub hZ hU hZ hU, covariance_comm Z U,
-      hmix, hselfZ, hselfU, hselfV]
-    ring
-  have hDsquare : (∫ ω, (Z ω - U ω) ^ 2 ∂P) = 0 := by
-    simpa only [covariance, hDmean, sub_zero, ← pow_two] using hDcov
-  have hi : Integrable (fun ω => (Z ω - U ω) ^ 2) P := by
-    have ht : Integrable (fun ω => (Z ω - U ω) * (Z ω - U ω)) P := hD.integrable_mul hD
-    simpa only [pow_two] using ht
-  have hae := (integral_eq_zero_iff_of_nonneg_ae (ae_of_all _ fun _ => sq_nonneg _) hi).mp hDsquare
-  filter_upwards [hae] with ω hω
-  exact sub_eq_zero.mp (sq_eq_zero_iff.mp hω)
 
 /-- Finite-reference spatial law transfer retains arbitrary auxiliary finite coordinates.
 The normalization argument preserves their coupling to the whole sampled field. -/
@@ -137,33 +42,25 @@ theorem spatialIntegral_joint_vector_law_of_fdd_finite
     · exact ae_of_all _ fun ω => by simp only [z', hm, NNReal.coe_zero, zero_mul]; exact integrable_zero _ _ _
     · filter_upwards [hintX j] with ω hω
       rw [hmeasure] at hω
-      have ht : Integrable (fun x => z j x (X ω x)) (ν.normalize : Measure S) :=
-        (integrable_smul_measure (ENNReal.coe_ne_zero.mpr hm) (by finiteness)).mp hω
-      exact ht.const_mul _
+      exact ((integrable_smul_measure (ENNReal.coe_ne_zero.mpr hm) (by finiteness)).mp hω).const_mul _
   have hiY j : ∀ᵐ ω ∂P', Integrable (fun x => z' j x (Y ω x)) (ν.normalize : Measure S) := by
     by_cases hm : ν.mass = 0
     · exact ae_of_all _ fun ω => by simp only [z', hm, NNReal.coe_zero, zero_mul]; exact integrable_zero _ _ _
     · filter_upwards [hintY j] with ω hω
       rw [hmeasure] at hω
-      have ht : Integrable (fun x => z j x (Y ω x)) (ν.normalize : Measure S) :=
-        (integrable_smul_measure (ENNReal.coe_ne_zero.mpr hm) (by finiteness)).mp hω
-      exact ht.const_mul _
-  have he := (chaosLawFDD_of_integrable (ν.normalize : Measure S) X Y V V' z'
-    hV hV' hX hY
-    (fun j => measurable_const.mul (hz j)) hiX hiY hFDD
-    (0 : BoundedContinuousFunction ((Fin k → ℝ) × (Fin m → ℝ)) ℝ)).1
+      exact ((integrable_smul_measure (ENNReal.coe_ne_zero.mpr hm) (by finiteness)).mp hω).const_mul _
   have hmass (a : S → ℝ) : (∫ x, (ν.mass : ℝ) * a x ∂(ν.normalize : Measure S)) =
       ∫ x, a x ∂(ν : Measure S) := by
     rw [hmeasure, integral_smul_nnreal_measure, integral_const_mul]
     rfl
-  simpa only [z', hmass] using he
+  simpa only [z', hmass] using ((chaosLawFDD_of_integrable (ν.normalize : Measure S) X Y V V' z' hV hV' hX hY (fun j => measurable_const.mul (hz j)) hiX hiY hFDD (0 : BoundedContinuousFunction ((Fin k → ℝ) × (Fin m → ℝ)) ℝ)).1)
 
 /-- The cutoff chaos law retains its coupling to auxiliary finite coordinates. -/
 theorem admissibleLogChaos_cutoff_joint_vector_law_of_fdd
     {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
     (P : Measure Ω) (P' : Measure Ω') [IsProbabilityMeasure P] [IsProbabilityMeasure P']
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ) (Z : Ω' → ℝ → ℂ → ℝ)
+    U (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
+    Y Z
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (hZ : IsAdmissibleLogRegularization P' U dens ε₁ Z)
     [IsFiniteMeasure (logRegularizationReference U dens)]
@@ -180,54 +77,24 @@ theorem admissibleLogChaos_cutoff_joint_vector_law_of_fdd
       P'.map (fun ω => (V' ω, fun j => regularizedLogChaosTestMass P' U dens Z γ r ω (f j))) := by
   let ε := Real.exp (-r)
   have hv (x : ℂ) : (∫ ω, Y ω ε x ^ 2 ∂P) = ∫ ω, Z ω ε x ^ 2 ∂P' := by
-    have hMY : Measurable (fun ω => (V ω, fun (_ : Fin 1) => Y ω ε x)) :=
-      hV.prodMk (measurable_pi_iff.mpr (fun _ => (hY.measurableAtScale ε).comp
-        (measurable_id.prodMk measurable_const)))
-    have hMZ : Measurable (fun ω => (V' ω, fun (_ : Fin 1) => Z ω ε x)) :=
-      hV'.prodMk (measurable_pi_iff.mpr (fun _ => (hZ.measurableAtScale ε).comp
-        (measurable_id.prodMk measurable_const)))
     have ht := congrArg (fun μ : Measure ((Fin k → ℝ) × (Fin 1 → ℝ)) => ∫ v, (v.2 0) ^ 2 ∂μ)
       (hfdd 1 (fun _ => x))
     have hφ : Measurable (fun v : (Fin k → ℝ) × (Fin 1 → ℝ) => (v.2 0) ^ 2) := by fun_prop
     change (∫ v, (v.2 0) ^ 2 ∂P.map (fun ω => (V ω, fun (_ : Fin 1) => Y ω ε x))) =
       ∫ v, (v.2 0) ^ 2 ∂P'.map (fun ω => (V' ω, fun (_ : Fin 1) => Z ω ε x)) at ht
-    rw [integral_map hMY.aemeasurable hφ.aestronglyMeasurable,
-      integral_map hMZ.aemeasurable hφ.aestronglyMeasurable] at ht
+    rw [integral_map (hV.prodMk (measurable_pi_iff.mpr (fun _ => (hY.measurableAtScale ε).comp (measurable_id.prodMk measurable_const))) : Measurable (fun ω => (V ω, fun (_ : Fin 1) => Y ω ε x))).aemeasurable hφ.aestronglyMeasurable,
+      integral_map (hV'.prodMk (measurable_pi_iff.mpr (fun _ => (hZ.measurableAtScale ε).comp (measurable_id.prodMk measurable_const))) : Measurable (fun ω => (V' ω, fun (_ : Fin 1) => Z ω ε x))).aemeasurable hφ.aestronglyMeasurable] at ht
     exact ht
   let variance : ℂ → ℝ := fun x => ∫ ω, Y ω ε x ^ 2 ∂P
-  have hvariance : Measurable variance := by
-    have ht := admissibleLogRegularization_variance_measurable P U dens ε₀ Y hY ε
-    simpa only [variance, gaussianVariance, gaussianCovariance, pow_two] using ht
   let ν : FiniteMeasure ℂ := ⟨logRegularizationReference U dens, inferInstance⟩
   let z : Fin m → ℂ → ℝ → ℝ := fun j x t => f j x *
     Real.exp (γ * t - γ ^ 2 / 2 * variance x)
-  have hz j : Measurable (fun p : ℂ × ℝ => z j p.1 p.2) := by
-    dsimp [z]
-    exact ((f j).continuous.measurable.comp measurable_fst).mul
-      ((measurable_const.mul measurable_snd).sub
-        (measurable_const.mul (hvariance.comp measurable_fst))).exp
-  have hiY j : ∀ᵐ ω ∂P, Integrable (fun x => z j x (Y ω ε x)) (ν : Measure ℂ) := by
-    exact admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY
-      (tsupport (f j : ℂ → ℝ)) (hfc j) (hfU j) γ r hrY ‖f j‖ (f j)
-      (f j).continuous.measurable
-      (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
-      (fun x hx => image_eq_zero_of_notMem_tsupport hx)
-  have hiZ j : ∀ᵐ ω ∂P', Integrable (fun x => z j x (Z ω ε x)) (ν : Measure ℂ) := by
-    have ht := admissibleCutoff_integrand_integrable_ae P' U dens ε₁ Z hZ
-      (tsupport (f j : ℂ → ℝ)) (hfc j) (hfU j) γ r hrZ ‖f j‖ (f j)
-      (f j).continuous.measurable
-      (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
-      (fun x hx => image_eq_zero_of_notMem_tsupport hx)
-    simpa only [z, variance, hv, ε, ν, FiniteMeasure.toMeasure_mk] using ht
-  have ht := spatialIntegral_joint_vector_law_of_fdd_finite ν
-    (fun ω x => Y ω ε x) (fun ω x => Z ω ε x) V V' hV hV' z
-    (hY.measurableAtScale ε) (hZ.measurableAtScale ε) hz hiY hiZ hfdd
-  simpa only [z, variance, ν, ε, FiniteMeasure.toMeasure_mk, regularizedLogChaosTestMass, hv] using ht
+  simpa only [z, variance, ν, ε, FiniteMeasure.toMeasure_mk, regularizedLogChaosTestMass, hv] using (spatialIntegral_joint_vector_law_of_fdd_finite ν (fun ω x => Y ω ε x) (fun ω x => Z ω ε x) V V' hV hV' z (hY.measurableAtScale ε) (hZ.measurableAtScale ε) (fun j => by dsimp [z]; exact ((f j).continuous.measurable.comp measurable_fst).mul ((measurable_const.mul measurable_snd).sub (measurable_const.mul ((show Measurable variance by simpa only [variance, gaussianVariance, gaussianCovariance, pow_two] using (admissibleLogRegularization_variance_measurable P U dens ε₀ Y hY ε)).comp measurable_fst))).exp) (fun j => admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY (tsupport (f j : ℂ → ℝ)) (hfc j) (hfU j) γ r hrY ‖f j‖ (f j) (f j).continuous.measurable (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x) (fun x hx => image_eq_zero_of_notMem_tsupport hx)) (fun j => by simpa only [z, variance, hv, ε, ν, FiniteMeasure.toMeasure_mk] using (admissibleCutoff_integrand_integrable_ae P' U dens ε₁ Z hZ (tsupport (f j : ℂ → ℝ)) (hfc j) (hfU j) γ r hrZ ‖f j‖ (f j) (f j).continuous.measurable (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x) (fun x hx => image_eq_zero_of_notMem_tsupport hx))) hfdd)
 
 /-- Appending a fixed random coordinate preserves convergence in measure exactly. -/
 theorem tendstoInMeasure_pair_with_fixed
     {Ω E F : Type*} [MeasurableSpace Ω] [NormedAddCommGroup E] [NormedAddCommGroup F]
-    (P : Measure Ω) (V : Ω → E) (f : ℕ → Ω → F) (g : Ω → F)
+    (P : Measure Ω) (V : Ω → E) (f : ℕ → Ω → F) g
     (h : TendstoInMeasure P f atTop g) :
     TendstoInMeasure P (fun n ω => (V ω, f n ω)) atTop (fun ω => (V ω, g ω)) := by
   rw [tendstoInMeasure_iff_norm] at h ⊢
@@ -239,7 +106,7 @@ auxiliary coordinates on each probability space. -/
 theorem gmc_limit_joint_test_vector_law
     {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
     {P : Measure Ω} {P' : Measure Ω'} [IsFiniteMeasure P] [IsFiniteMeasure P']
-    {k m : ℕ} (V : Ω → Fin k → ℝ) (V' : Ω' → Fin k → ℝ)
+    {k m} (V : Ω → Fin k → ℝ) (V' : Ω' → Fin k → ℝ)
     (hV : AEMeasurable V P) (hV' : AEMeasurable V' P')
     (cutoffX : ℕ → Ω → Fin m → ℝ) (cutoffY : ℕ → Ω' → Fin m → ℝ)
     (limitX : Ω → Fin m → ℝ) (limitY : Ω' → Fin m → ℝ)
@@ -268,12 +135,12 @@ theorem gmc_limit_joint_test_vector_law
 theorem admissibleLogChaos_limit_joint_vector_law_of_fdd
     {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
     (P : Measure Ω) (P' : Measure Ω') [IsProbabilityMeasure P] [IsProbabilityMeasure P']
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ) (Z : Ω' → ℝ → ℂ → ℝ)
+    U (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
+    Y Z
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (hZ : IsAdmissibleLogRegularization P' U dens ε₁ Z)
     [IsFiniteMeasure (logRegularizationReference U dens)]
-    (γ : ℝ) (M : Ω → Measure ℂ) (N : Ω' → Measure ℂ)
+    γ (M : Ω → Measure ℂ) (N : Ω' → Measure ℂ)
     (hM : IsAdmissibleGMCVersion P U dens Y γ M)
     (hN : IsAdmissibleGMCVersion P' U dens Z γ N)
     {k : ℕ} (V : Ω → Fin k → ℝ) (V' : Ω' → Fin k → ℝ)
@@ -287,18 +154,13 @@ theorem admissibleLogChaos_limit_joint_vector_law_of_fdd
     P.map (fun ω => (V ω, fun j => ∫ x, f j x ∂M ω)) =
       P'.map (fun ω => (V' ω, fun j => ∫ x, f j x ∂N ω)) := by
   have hT : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop := tendsto_natCast_atTop_atTop
-  have heps : Tendsto (fun n : ℕ => Real.exp (-(n : ℝ))) atTop (𝓝 (0 : ℝ)) :=
-    Real.tendsto_exp_neg_atTop_nhds_zero.comp hT
-  have hmin : 0 < min ε₀ ε₁ := lt_min hY.cutoffPositive hZ.cutoffPositive
-  obtain ⟨L, hL⟩ := eventually_atTop.mp (heps.eventually (gt_mem_nhds hmin))
+  obtain ⟨L, hL⟩ := eventually_atTop.mp ((Real.tendsto_exp_neg_atTop_nhds_zero.comp hT).eventually (gt_mem_nhds (lt_min hY.cutoffPositive hZ.cutoffPositive)))
   let t : ℕ → ℝ := fun n => ((L + n : ℕ) : ℝ)
   have ht : Tendsto t atTop atTop := by
     simpa only [t, Nat.add_comm, Function.comp_def] using hT.comp (tendsto_add_atTop_nat L)
-  have hb n : Real.exp (-t n) ≤ min ε₀ ε₁ := (hL (L + n) (Nat.le_add_right L n)).le
-  have hmY r j : Measurable (fun ω => regularizedLogChaosTestMass P U dens Y γ r ω (f j)) :=
-    admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ r (f j) (f j).continuous.measurable
-  have hmZ r j : Measurable (fun ω => regularizedLogChaosTestMass P' U dens Z γ r ω (f j)) :=
-    admissibleCutoffIntegral_measurable P' U dens ε₁ Z hZ γ r (f j) (f j).continuous.measurable
+  have hb n := (hL (L + n) (Nat.le_add_right L n)).le
+  have hmY r j := admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ r (f j) (f j).continuous.measurable
+  have hmZ r j := admissibleCutoffIntegral_measurable P' U dens ε₁ Z hZ γ r (f j) (f j).continuous.measurable
   apply gmc_limit_joint_test_vector_law V V' hV.aemeasurable hV'.aemeasurable
     (fun n ω j => regularizedLogChaosTestMass P U dens Y γ (t n) ω (f j))
     (fun n ω j => regularizedLogChaosTestMass P' U dens Z γ (t n) ω (f j))
@@ -329,7 +191,7 @@ theorem admissibleLogChaos_limit_joint_vector_law_of_fdd
 finite-dimensional law. All circles come from one coupled inverted-test construction. -/
 theorem inversionCircle_radial_joint_fdd_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+    X Xc
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (Z : Ω → ℂ → ℝ → ℝ) (f : (ℂ × ℝ) → ℕ → TestFn)
     (hf : ∀ p n, tsupport (f p n : ℂ → ℝ) ⊆ inversionChart)
@@ -337,31 +199,67 @@ theorem inversionCircle_radial_joint_fdd_law
     (hmem : ∀ x r, MemLp (fun ω => Z ω x r) 2 P)
     (hlim : ∀ p, Tendsto (fun n => eLpNorm (fun ω =>
       X ω (inversionTest (f p n) (hf p n)) - Z ω p.1 p.2) 2 P) atTop (𝓝 0))
-    {k m : ℕ} (s : Fin k → ℝ) (q : Fin m → ℂ × ℝ) :
+    {k m} (s : Fin k → ℝ) (q : Fin m → ℂ × ℝ) :
     P.map (fun ω => (fun i => Xc ω 0 (-s i), fun j => Z ω (q j).1 (q j).2)) =
       P.map (fun ω => (fun i => Xc ω 0 (s i), fun j => Xc ω (q j).1 (q j).2)) := by
-  let Q : Fin (k + m) → ℂ × ℝ := Fin.append (fun i => (0, s i)) q
-  have hv := inversionCircle_fdd_law P X hX P X hX Xc hc Q
-    (fun i ω => Z ω (Q i).1 (Q i).2) (fun i => hmem _ _)
-    (fun i => f (Q i)) (fun i => hf (Q i)) (fun i => hgap (Q i)) (fun i => hlim (Q i))
+  have inversionCircle_origin_ae_eq s (Z : Ω → ℝ) (hZ : MemLp Z 2 P) (f : ℕ → TestFn) (hf : ∀ n, tsupport (f n : ℂ → ℝ) ⊆ inversionChart) (hgap : Tendsto (fun n => circleEnergyGap 0 s (f n)) atTop (𝓝 0)) (hlim : Tendsto (fun n => eLpNorm (fun ω => X ω (inversionTest (f n) (hf n)) - Z ω) 2 P) atTop (𝓝 0)) : Z =ᵐ[P] (fun ω => Xc ω 0 (-s)) := by
+    have circleCross_origin_inversionTest s (f : TestFn) (hf : tsupport (f : ℂ → ℝ) ⊆ inversionChart) : circleCross 0 (-s) (inversionTest f hf) = circleCross 0 s f := by
+      have innerPot_origin_inversion x (hx : x ≠ 0) : CirclePotential.innerPot 0 (-s) x⁻¹ = CirclePotential.innerPot 0 s x := by
+        have originRadialCovariance_inversion s x : originRadialCovariance (-s) x⁻¹ = originRadialCovariance s x := by
+          simp only [originRadialCovariance, norm_inv, Real.log_inv, neg_neg]
+          simp only [min_def, max_def]
+          split_ifs <;> linarith
+        rw [← CirclePotential.integral_gffKernel_circleMeasure,
+          ← CirclePotential.integral_gffKernel_circleMeasure,
+          origin_circleKernelPotential_eq _ _ (inv_ne_zero hx),
+          origin_circleKernelPotential_eq _ _ hx, originRadialCovariance_inversion]
+      rw [circleCross_inversionTest]
+      change _ = ∫ x, f x * ∫ w, gffKernel x w ∂circleMeasure 0 s
+      simp_rw [CirclePotential.integral_gffKernel_circleMeasure]
+      apply integral_congr_ae
+      filter_upwards [(volume : Measure ℂ).ae_ne 0] with x hx
+      rw [innerPot_origin_inversion x hx]
+    let : IsProbabilityMeasure P := hX.1
+    let U := fun ω => Xc ω 0 (-s)
+    let V := fun ω => Xc ω 0 s
+    have hU : MemLp U 2 P := hc.2.1 _ _
+    have hV : MemLp V 2 P := hc.2.1 _ _
+    have he n : covariance U (fun ω => X ω (inversionTest (f n) (hf n))) P =
+        covariance V (fun ω => X ω (f n)) P := by
+      rw [circleAverage_test_covariance P X Xc hX hc,
+        circleAverage_test_covariance P X Xc hX hc, circleCross_origin_inversionTest]
+    have hselfV : covariance V V P = |s| := by
+      rw [circleAverage_covariance_integral P X Xc hX hc,
+        integral_integral_gffKernel_origin, origin_circle_variance_algebra]
+    have hmeanZ : (∫ ω, Z ω ∂P) = 0 := integral_eq_zero_of_eLpNorm_sub
+      (fun n => equatorGFF_test_memLp X hX _) hZ
+      (fun n => equatorGFF_test_integral X hX _) hlim
+    obtain ⟨_, hmean⟩ := circleAverage_isGaussianProcess P X Xc hX hc
+    have hs := congrArg (fun μ : Measure (Fin 1 → ℝ) => ∫ v, (v 0) ^ 2 ∂μ) (inversionCircle_fdd_law P X hX P X hX Xc hc (fun _ : Fin 1 => (0, s)) (fun _ => Z) (fun _ => hZ) (fun _ => f) (fun _ => hf) (fun _ => hgap) (fun _ => hlim))
+    rw [integral_map (AEMeasurable.of_eval fun _ => hZ.aemeasurable) ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable,
+      integral_map (AEMeasurable.of_eval fun _ => hV.aemeasurable) ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable] at hs
+    have hD : MemLp (fun ω => Z ω - U ω) 2 P := hZ.sub hU
+    have hDmean : (∫ ω, Z ω - U ω ∂P) = 0 := by
+      rw [integral_sub (hZ.integrable (by norm_num)) (hU.integrable (by norm_num)), hmeanZ]
+      change 0 - (∫ ω, Xc ω 0 (-s) ∂P) = 0
+      rw [hmean, sub_zero]
+    have hi : Integrable (fun ω => (Z ω - U ω) ^ 2) P := by
+      have ht : Integrable (fun ω => (Z ω - U ω) * (Z ω - U ω)) P := hD.integrable_mul hD
+      simpa only [pow_two] using ht
+    filter_upwards [((integral_eq_zero_iff_of_nonneg_ae (ae_of_all _ fun _ => sq_nonneg _) hi).mp (by simpa only [covariance, hDmean, sub_zero, ← pow_two] using (show covariance (fun ω => Z ω - U ω) (fun ω => Z ω - U ω) P = 0 by rw [covariance_fun_sub_fun_sub hZ hU hZ hU, covariance_comm Z U, (tendsto_nhds_unique ((tendsto_covariance_of_eLpNorm_sub (fun _ => hU) (fun n => equatorGFF_test_memLp X hX (inversionTest (f n) (hf n))) hU hZ (by simp only [sub_self, ← Pi.zero_def, eLpNorm_zero]; exact tendsto_const_nhds) hlim).congr' (Eventually.of_forall he)) (tendsto_covariance_of_eLpNorm_sub (fun _ => hV) (fun n => equatorGFF_test_memLp X hX (f n)) hV hV (by simp only [sub_self, ← Pi.zero_def, eLpNorm_zero]; exact tendsto_const_nhds) (hc.2.2 0 s f hgap))), (show covariance Z Z P = |s| by simpa only [covariance, hmeanZ, hmean, sub_zero, ← pow_two, V] using hs.trans (by simpa only [covariance, hmean, sub_zero, ← pow_two, V] using hselfV)), (show covariance U U P = |s| by rw [circleAverage_covariance_integral P X Xc hX hc, integral_integral_gffKernel_origin, origin_circle_variance_algebra, abs_neg]), hselfV]; ring)))] with ω hω
+    exact sub_eq_zero.mp (sq_eq_zero_iff.mp hω)
+  let Q := Fin.append (fun i => (0, s i)) q
   let L : (Fin (k + m) → ℝ) → (Fin k → ℝ) × (Fin m → ℝ) := fun v =>
     (fun i => v (Fin.castAdd m i), fun j => v (Fin.natAdd k j))
   have hL : Measurable L := by fun_prop
-  have hZm : AEMeasurable (fun ω i => Z ω (Q i).1 (Q i).2) P :=
-    AEMeasurable.of_eval fun i => (hmem _ _).aemeasurable
-  have hXm : AEMeasurable (fun ω i => Xc ω (Q i).1 (Q i).2) P :=
-    AEMeasurable.of_eval fun i => (hc.2.1 _ _).aemeasurable
-  have hp := congrArg (fun μ => μ.map L) hv
-  rw [AEMeasurable.map_map_of_aemeasurable hL.aemeasurable hZm,
-    AEMeasurable.map_map_of_aemeasurable hL.aemeasurable hXm] at hp
+  have hp := congrArg (fun μ => μ.map L) (inversionCircle_fdd_law P X hX P X hX Xc hc Q (fun i ω => Z ω (Q i).1 (Q i).2) (fun i => hmem _ _) (fun i => f (Q i)) (fun i => hf (Q i)) (fun i => hgap (Q i)) (fun i => hlim (Q i)))
+  rw [AEMeasurable.map_map_of_aemeasurable hL.aemeasurable (AEMeasurable.of_eval fun i => (hmem _ _).aemeasurable),
+    AEMeasurable.map_map_of_aemeasurable hL.aemeasurable (AEMeasurable.of_eval fun i => (hc.2.1 _ _).aemeasurable)] at hp
   simp only [Function.comp_def, L, Q, Fin.append_left, Fin.append_right] at hp
-  have he : ∀ᵐ ω ∂P, ∀ i, Z ω 0 (s i) = Xc ω 0 (-s i) :=
-    ae_all_iff.mpr fun i => inversionCircle_origin_ae_eq P X Xc hX hc (s i)
-      (fun ω => Z ω 0 (s i)) (hmem _ _) (f (0, s i)) (hf _) (hgap _) (hlim _)
   calc
     _ = P.map (fun ω => (fun i => Z ω 0 (s i), fun j => Z ω (q j).1 (q j).2)) := by
       apply Measure.map_congr
-      filter_upwards [he] with ω hω
+      filter_upwards [(ae_all_iff.mpr fun i => inversionCircle_origin_ae_eq (s i) (fun ω => Z ω 0 (s i)) (hmem _ _) (f (0, s i)) (hf _) (hgap _) (hlim _))] with ω hω
       exact Prod.ext (funext fun i => (hω i).symm) rfl
     _ = _ := hp
 
@@ -378,39 +276,25 @@ theorem originReversedRadialPath_aemeasurable
   intro s
   exact (ContinuousMap.measurable_eval (-s)).comp_aemeasurable hA
 
-/-- The radial removal weight reverses exactly under complex inversion,
-including at its stipulated zero value at the origin. -/
-theorem lateralRadialWeight_inversion (γ : ℝ) (A : TwoSidedPath) (x : ℂ) :
-    lateralRadialWeight γ (originReversedRadialPath A) x⁻¹ = lateralRadialWeight γ A x := by
-  simp only [lateralRadialWeight, norm_inv, inv_eq_zero, Real.log_inv,
-    originReversedRadialPath, ContinuousMap.comp_apply, ContinuousMap.coe_mk,
-    neg_neg, abs_neg]
 
-/-- Inversion of the measure and reversal of its coupled radial path commute with
-radial removal. This identity retains their coupling sample by sample. -/
-theorem originRadialRemovedGMC_inversion_commutes
-    (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) :
-    (M.map (fun x : ℂ => x⁻¹)).withDensity (lateralRadialWeight γ (originReversedRadialPath A)) =
-      (M.withDensity (lateralRadialWeight γ A)).map (fun x : ℂ => x⁻¹) := by
-  have harg : Measurable (fun x : ℂ => ((γ, originReversedRadialPath A), x)) :=
-    measurable_const.prodMk measurable_id
-  have hw : Measurable (lateralRadialWeight γ (originReversedRadialPath A)) :=
-    measurable_lateralRadialWeight.comp harg
-  apply Measure.ext
-  intro S hS
-  rw [withDensity_apply _ hS, Measure.map_apply measurable_inv hS,
-    withDensity_apply _ (hS.preimage measurable_inv), setLIntegral_map hS hw measurable_inv]
-  apply setLIntegral_congr_fun (hS.preimage measurable_inv)
-  intro x _
-  exact lateralRadialWeight_inversion γ A x
 
 /-- The actual polar projection `DOZZ.lateralProjectedGMC` turns simultaneous
 source inversion and radial reversal into reflection of the whole cylinder
 measure. -/
 theorem lateralProjectedGMC_reversed_inversion
-    (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) :
+    γ A (M : Measure ℂ) :
     lateralProjectedGMC γ (originReversedRadialPath A) (M.map (fun x : ℂ => x⁻¹)) =
       (lateralProjectedGMC γ A M).map (fun s : ℝ => -s) := by
+  have originRadialRemovedGMC_inversion_commutes γ A (M : Measure ℂ) : (M.map (fun x : ℂ => x⁻¹)).withDensity (lateralRadialWeight γ (originReversedRadialPath A)) = (M.withDensity (lateralRadialWeight γ A)).map (fun x : ℂ => x⁻¹) := by
+    have hw : Measurable (lateralRadialWeight γ (originReversedRadialPath A)) :=
+      measurable_lateralRadialWeight.comp (measurable_const.prodMk measurable_id : Measurable (fun x => ((γ, originReversedRadialPath A), x)))
+    apply Measure.ext
+    intro S hS
+    rw [withDensity_apply _ hS, Measure.map_apply measurable_inv hS,
+      withDensity_apply _ (hS.preimage measurable_inv), setLIntegral_map hS hw measurable_inv]
+    apply setLIntegral_congr_fun (hS.preimage measurable_inv)
+    intro x _
+    exact (fun x => by simp only [lateralRadialWeight, norm_inv, inv_eq_zero, Real.log_inv, originReversedRadialPath, ContinuousMap.comp_apply, ContinuousMap.coe_mk, neg_neg, abs_neg]) x
   change ((M.map (fun x : ℂ => x⁻¹)).withDensity
     (lateralRadialWeight γ (originReversedRadialPath A))).map (fun x => -Real.log ‖x‖) = _
   rw [originRadialRemovedGMC_inversion_commutes, logRadiusProjection_inversion]

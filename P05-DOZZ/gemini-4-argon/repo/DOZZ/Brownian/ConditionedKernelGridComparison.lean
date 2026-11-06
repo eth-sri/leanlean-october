@@ -49,7 +49,7 @@ theorem conditionedTransitionQuantile_start_add
 
 /-- Increasing the drift raises the common-uniform transition quantile. -/
 theorem conditionedTransitionQuantile_drift_mono
-    {a b t x u : ℝ} (ha : 0 ≤ a) (hab : a ≤ b) (ht : 0 < t) (hx : 0 < x)
+    {a b t x u} (ha : 0 ≤ a) (hab : a ≤ b) (ht : 0 < t) (hx : 0 < x)
     (hu : 0 < u) (hu1 : u < 1) :
     conditionedTransitionQuantile a t x u ≤ conditionedTransitionQuantile b t x u := by
   exact conditionedPositiveTransitionQuantile_drift_le ha hab ht hx hu hu1
@@ -57,7 +57,7 @@ theorem conditionedTransitionQuantile_drift_mono
 /-- Increasing the drift from `a` to `b` raises the common-uniform transition quantile by at most
 `(b-a)t`, including `a=0`. -/
 theorem conditionedTransitionQuantile_drift_add
-    {a b t x u : ℝ} (ha : 0 ≤ a) (hab : a ≤ b) (ht : 0 < t) (hx : 0 < x)
+    {a b t x u} (ha : 0 ≤ a) (hab : a ≤ b) (ht : 0 < t) (hx : 0 < x)
     (hu : 0 < u) (hu1 : u < 1) :
     conditionedTransitionQuantile b t x u ≤
       conditionedTransitionQuantile a t x u + (b - a) * t := by

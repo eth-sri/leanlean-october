@@ -15,7 +15,7 @@ namespace DOZZ.Proofs
 /-- The zero retained inverse weight has the deleted-disk power, uniformly at all
 small radii, by the literal rooted identity and actual spatial integral. -/
 theorem dual_retainedZero_deleted_weight_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ q : ℝ) (hq : 0 ≤ q) (hβ : γ * α₁ < 4) :
     ∃ C : ℝ, 0 < C ∧ ∀ r : ℝ, 0 < r → r ≤ 1 / 2 →
@@ -28,7 +28,7 @@ theorem dual_retainedZero_deleted_weight_bound {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨C₂, hC₂, hs⟩ := dual_deleted_disk_spatial_bound γ α₁ α₂ α₃ hβ
   refine ⟨C₁ * C₂, mul_pos hC₁ hC₂, ?_⟩
   intro r hr hr₁
-  let f : ℂ → ℝ≥0∞ := (Metric.ball (0 : ℂ) r).indicator
+  let f := (Metric.ball (0 : ℂ) r).indicator
     (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x))
   have hf : Measurable f := (ENNReal.measurable_ofReal.comp
     (dual_kernel_measurable γ α₁ α₂ α₃ 0)).indicator measurableSet_ball

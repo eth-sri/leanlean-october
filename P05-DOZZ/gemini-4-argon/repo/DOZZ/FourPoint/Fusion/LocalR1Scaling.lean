@@ -24,26 +24,24 @@ noncomputable def fusionLocalR1 {Ω : Type*} [MeasurableSpace Ω]
           (gammaHalfKernel γ α₁ α₂ α₃ (t * z) x : ℂ) / (x - t * z) ^ 2 ∂M ω) ∂P))
 
 /-- Time scaling cancels the complex phase and leaves the real weight `t^(κ-2)`. -/
-theorem fusion_time_scaling_factor (κ : ℝ) (t : ℝ) (ht : 0 < t) (z : ℂ) (hz : z ≠ 0) :
+theorem fusion_time_scaling_factor (κ t : ℝ) (ht : 0 < t) z (hz : z ≠ 0) :
     z ^ 2 * (‖(t : ℂ) * z‖ ^ κ : ℝ) / ((t : ℂ) * z) ^ 2 =
       (‖z‖ ^ κ : ℝ) * (t ^ (κ - 2) : ℝ) := by
-  have hn : ‖(t : ℂ) * z‖ = t * ‖z‖ := by
-    rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.le]
   have hp : t ^ κ = t ^ (κ - 2) * t ^ (2 : ℕ) := by
     rw [← Real.rpow_natCast, ← Real.rpow_add ht]
     congr 1
     ring
-  rw [hn, Real.mul_rpow ht.le (norm_nonneg _), hp]
+  rw [(show ‖(t : ℂ) * z‖ = t * ‖z‖ by rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.le]), Real.mul_rpow ht.le (norm_nonneg _), hp]
   push_cast
   field_simp [hz, Complex.ofReal_ne_zero.mpr ht.ne']
 
 /-- The exact local `r₁` contribution is the uniformly dominated scaled time integral. -/
 theorem fusionLocalR1_scaled {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hβ : γ ^ 2 / 2 < γ * α₁) (hα₁ : α₁ < 2 / γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p)
-    (z : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4) :
+    α₁ α₂ α₃ (hβ : γ ^ 2 / 2 < γ * α₁) (hα₁ : α₁ < 2 / γ)
+    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) p (hp : 0 ≤ p)
+    z (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4) :
     fusionLocalR1 P M γ α₁ α₂ α₃ p z =
       ((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) *
         (‖z‖ ^ (γ * (Q γ - α₁)) : ℝ) *
@@ -62,8 +60,7 @@ theorem fusionLocalR1_scaled {Ω : Type*} [MeasurableSpace Ω]
           (fusionScaledFactor P M γ α₁ α₂ α₃ (-p - 1) y ((t : ℂ) * z) : ℂ))) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
-    have htz : (t : ℂ) * z ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
+    have htz := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
     have htz4 : ‖(t : ℂ) * z‖ ≤ 1 / 4 := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       calc
@@ -73,9 +70,8 @@ theorem fusionLocalR1_scaled {Ω : Type*} [MeasurableSpace Ω]
       (-p - 1) (by linarith) ((t : ℂ) * z) htz htz4,
       fusion_localR1_reference_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) ((t : ℂ) * z) htz,
       ← hκ]
-    have hfac := fusion_time_scaling_factor κ t htpos z hz
-    have he : κ - 2 = γ ^ 2 / 2 - γ * α₁ := by dsimp only [κ]; linarith only [hκ]
-    rw [he] at hfac
+    have hfac := fusion_time_scaling_factor κ t (lt_of_le_of_ne ht.1 (Ne.symm ht0)) z hz
+    rw [(show κ - 2 = γ ^ 2 / 2 - γ * α₁ by dsimp only [κ]; linarith only [hκ])] at hfac
     push_cast
     calc
       _ = (z ^ 2 * (‖(t : ℂ) * z‖ ^ κ : ℝ) / ((t : ℂ) * z) ^ 2) *

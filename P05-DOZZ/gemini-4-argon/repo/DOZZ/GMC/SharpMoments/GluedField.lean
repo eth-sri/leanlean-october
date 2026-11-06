@@ -29,13 +29,10 @@ namespace DOZZ.Proofs
 
 /-- Coordinatewise rescaling preserves centered joint Gaussianity. -/
 theorem isCenteredJointlyGaussian_coord_mul {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z) (b : ι → ℝ) :
+    (P : Measure Ω) Z (hZ : IsCenteredJointlyGaussian P Z) (b : ι → ℝ) :
     IsCenteredJointlyGaussian P (fun ω i => b i * Z ω i) := by
   refine ⟨hZ.1, fun i => (hZ.2.1 i).const_mul (b i), fun a => ?_⟩
-  have heq : (fun ω => ∑ i, a i * (b i * Z ω i)) = fun ω => ∑ i, (a i * b i) * Z ω i := by
-    funext ω
-    exact Finset.sum_congr rfl (fun i _ => by ring)
-  rw [heq]
+  rw [(show (fun ω => ∑ i, a i * (b i * Z ω i)) = fun ω => ∑ i, (a i * b i) * Z ω i by funext ω; exact Finset.sum_congr rfl (fun i _ => by ring))]
   exact hZ.2.2 (fun i => a i * b i)
 
 
@@ -55,21 +52,9 @@ theorem isCenteredJointlyGaussian_prod_add {Ω₁ Ω₂ ι : Type*} [MeasurableS
     obtain ⟨hm₂, v₂, hv₂⟩ := h₂.2.2 a
     let U : Ω₁ → ℝ := fun ω => ∑ i, a i * Z₁ ω i
     let V : Ω₂ → ℝ := fun ω => ∑ i, a i * Z₂ ω i
-    have heq : (fun q : Ω₁ × Ω₂ => ∑ i, a i * (Z₁ q.1 i + Z₂ q.2 i)) =
-        fun q => U q.1 + V q.2 := by
-      funext q
-      simp only [U, V, mul_add, Finset.sum_add_distrib]
-    rw [heq]
+    rw [(show (fun q : Ω₁ × Ω₂ => ∑ i, a i * (Z₁ q.1 i + Z₂ q.2 i)) = fun q => U q.1 + V q.2 by funext q; simp only [U, V, mul_add, Finset.sum_add_distrib])]
     refine ⟨(hm₁.comp_fst P₂).add (hm₂.comp_snd P₁), ⟨v₁ + v₂, ?_⟩⟩
-    have hind : IndepFun (fun q : Ω₁ × Ω₂ => U q.1) (fun q => V q.2) (P₁.prod P₂) :=
-      indepFun_prod₀ hm₁.aemeasurable hm₂.aemeasurable
-    have hU : HasLaw (fun q : Ω₁ × Ω₂ => U q.1) (gaussianReal 0 v₁) (P₁.prod P₂) :=
-      (⟨hm₁.aemeasurable, hv₁⟩ : HasLaw U (gaussianReal 0 v₁) P₁).comp
-        (measurePreserving_fst (μ := P₁) (ν := P₂)).hasLaw
-    have hV : HasLaw (fun q : Ω₁ × Ω₂ => V q.2) (gaussianReal 0 v₂) (P₁.prod P₂) :=
-      (⟨hm₂.aemeasurable, hv₂⟩ : HasLaw V (gaussianReal 0 v₂) P₂).comp
-        (measurePreserving_snd (μ := P₁) (ν := P₂)).hasLaw
-    have h := gaussianReal_add_gaussianReal_of_indepFun hind hU hV
+    have h := gaussianReal_add_gaussianReal_of_indepFun (indepFun_prod₀ hm₁.aemeasurable hm₂.aemeasurable) ((⟨hm₁.aemeasurable, hv₁⟩ : HasLaw U (gaussianReal 0 v₁) P₁).comp (measurePreserving_fst (μ := P₁) (ν := P₂)).hasLaw) ((⟨hm₂.aemeasurable, hv₂⟩ : HasLaw V (gaussianReal 0 v₂) P₂).comp (measurePreserving_snd (μ := P₁) (ν := P₂)).hasLaw)
     rw [zero_add] at h
     exact h
 
@@ -87,17 +72,11 @@ theorem gaussianCovariance_prod_add {Ω₁ Ω₂ : Type*} [MeasurableSpace Ω₁
     ((hU₁.integrable_mul hV₁).comp_fst P₂)
   have i22 : Integrable (fun q : Ω₁ × Ω₂ => U₂ q.2 * V₂ q.2) (P₁.prod P₂) :=
     ((hU₂.integrable_mul hV₂).comp_snd P₁)
-  have i12 : Integrable (fun q : Ω₁ × Ω₂ => U₁ q.1 * V₂ q.2) (P₁.prod P₂) :=
-    (hU₁.integrable one_le_two).mul_prod (hV₂.integrable one_le_two)
+  have i12 := (hU₁.integrable one_le_two).mul_prod (hV₂.integrable one_le_two)
   have i21 : Integrable (fun q : Ω₁ × Ω₂ => U₂ q.2 * V₁ q.1) (P₁.prod P₂) := by
-    have h := (hV₁.integrable one_le_two).mul_prod (hU₂.integrable one_le_two)
-    refine h.congr (Filter.Eventually.of_forall fun q => ?_)
+    refine ((hV₁.integrable one_le_two).mul_prod (hU₂.integrable one_le_two)).congr (Filter.Eventually.of_forall fun q => ?_)
     exact mul_comm _ _
-  have hexpand : (fun q : Ω₁ × Ω₂ => (U₁ q.1 + U₂ q.2) * (V₁ q.1 + V₂ q.2)) =
-      fun q => (U₁ q.1 * V₁ q.1 + U₂ q.2 * V₂ q.2) + (U₁ q.1 * V₂ q.2 + U₂ q.2 * V₁ q.1) := by
-    funext q
-    ring
-  rw [hexpand,
+  rw [(show (fun q : Ω₁ × Ω₂ => (U₁ q.1 + U₂ q.2) * (V₁ q.1 + V₂ q.2)) = fun q => (U₁ q.1 * V₁ q.1 + U₂ q.2 * V₂ q.2) + (U₁ q.1 * V₂ q.2 + U₂ q.2 * V₁ q.1) by funext q; ring),
     integral_add (f := fun q : Ω₁ × Ω₂ => U₁ q.1 * V₁ q.1 + U₂ q.2 * V₂ q.2)
       (g := fun q : Ω₁ × Ω₂ => U₁ q.1 * V₂ q.2 + U₂ q.2 * V₁ q.1) (i11.add i22) (i12.add i21),
     integral_add (f := fun q : Ω₁ × Ω₂ => U₁ q.1 * V₁ q.1)

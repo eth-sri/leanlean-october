@@ -23,62 +23,7 @@ open scoped Topology
 
 namespace DOZZ.Proofs
 
-private theorem cdfGeneralizedQuantile_lt_iff_exists_rat
-    (μ : Measure ℝ) [IsProbabilityMeasure μ] {u a : ℝ}
-    (hu : 0 < u) (hu1 : u < 1) :
-    cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u < a ↔
-      ∃ q : ℚ, (q : ℝ) < a ∧ u ≤ ProbabilityTheory.cdf μ q := by
-  let F := ProbabilityTheory.cdf μ
-  let S : Set ℝ := {y | u ≤ F y}
-  have hnonempty : S.Nonempty := by
-    have hev : ∀ᶠ y : ℝ in atTop, u < F y :=
-      (ProbabilityTheory.tendsto_cdf_atTop μ).eventually (Ioi_mem_nhds hu1)
-    obtain ⟨y, hy⟩ := Filter.eventually_atTop.1 hev
-    exact ⟨y, le_of_lt (hy y le_rfl)⟩
-  have hbounded : BddBelow S := by
-    have hev : ∀ᶠ y : ℝ in atBot, F y < u :=
-      (ProbabilityTheory.tendsto_cdf_atBot μ).eventually (Iio_mem_nhds hu)
-    obtain ⟨b, hb⟩ := Filter.eventually_atBot.1 hev
-    refine ⟨b, ?_⟩
-    intro y hy
-    change u ≤ F y at hy
-    by_contra hnot
-    exact (not_lt_of_ge hy) (hb y (le_of_lt (lt_of_not_ge hnot)))
-  change sInf S < a ↔ _
-  constructor
-  · intro hqa
-    obtain ⟨q, hqlo, hqhi⟩ := exists_rat_btwn hqa
-    have hqF : u ≤ F q := by
-      by_contra hnot
-      have hlt : F q < u := lt_of_not_ge hnot
-      have hqLower : (q : ℝ) ≤ sInf S := by
-        apply le_csInf hnonempty
-        intro y hy
-        change u ≤ F y at hy
-        by_contra hyq
-        have hyq' : y ≤ (q : ℝ) := le_of_lt (lt_of_not_ge hyq)
-        have hmono := ProbabilityTheory.monotone_cdf μ hyq'
-        exact (not_lt_of_ge hy) (lt_of_le_of_lt hmono hlt)
-      linarith
-    exact ⟨q, hqhi, hqF⟩
-  · rintro ⟨q, hqa, hqF⟩
-    have hqmem : (q : ℝ) ∈ S := hqF
-    have hq : sInf S ≤ (q : ℝ) := csInf_le hbounded hqmem
-    exact hq.trans_lt hqa
 
-private theorem measurable_conditionedTransitionCDF_start
-    {ν t : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (z : ℝ) :
-    Measurable (fun x : Set.Ioi (0 : ℝ) =>
-      ProbabilityTheory.cdf (conditionedPositiveTransitionMeasure ν t x.1) z) := by
-  apply Antitone.measurable
-  intro x y hxy
-  change ProbabilityTheory.cdf
-      (conditionedPositiveTransitionMeasure ν t y.1) z ≤
-    ProbabilityTheory.cdf (conditionedPositiveTransitionMeasure ν t x.1) z
-  rw [conditionedPositiveTransitionMeasure_cdf_eq_integral hν ht y.property,
-    conditionedPositiveTransitionMeasure_cdf_eq_integral hν ht x.property]
-  exact conditionedPositiveTransitionDensity_start_cdf_le
-    hν ht x.property hxy z
 
 /-- The transition quantile restricted to positive starts and uniform levels is measurable in both
 arguments. -/
@@ -86,6 +31,45 @@ theorem measurable_conditionedTransitionQuantileOn
     (ν t : ℝ) (hν : 0 ≤ ν) (ht : 0 < t) :
     Measurable (fun z : Set.Ioi (0 : ℝ) × Set.Ioo (0 : ℝ) 1 =>
       conditionedTransitionQuantile ν t z.1.1 z.2.1) := by
+  have measurable_conditionedTransitionCDF_start z : Measurable (fun x : Set.Ioi (0 : ℝ) => ProbabilityTheory.cdf (conditionedPositiveTransitionMeasure ν t x.1) z) := by
+    apply Antitone.measurable
+    intro x y hxy
+    change ProbabilityTheory.cdf
+        (conditionedPositiveTransitionMeasure ν t y.1) z ≤
+      ProbabilityTheory.cdf (conditionedPositiveTransitionMeasure ν t x.1) z
+    rw [conditionedPositiveTransitionMeasure_cdf_eq_integral hν ht y.property,
+      conditionedPositiveTransitionMeasure_cdf_eq_integral hν ht x.property]
+    exact conditionedPositiveTransitionDensity_start_cdf_le
+      hν ht x.property hxy z
+  have cdfGeneralizedQuantile_lt_iff_exists_rat (μ : Measure ℝ) [IsProbabilityMeasure μ] {u} {a} (hu : 0 < u) (hu1 : u < 1) : cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u < a ↔ ∃ q : ℚ, (q : ℝ) < a ∧ u ≤ ProbabilityTheory.cdf μ q := by
+    let F := ProbabilityTheory.cdf μ
+    let S : Set ℝ := {y | u ≤ F y}
+    have hnonempty : S.Nonempty := by
+      obtain ⟨y, hy⟩ := Filter.eventually_atTop.1 ((ProbabilityTheory.tendsto_cdf_atTop μ).eventually (Ioi_mem_nhds hu1))
+      exact ⟨y, le_of_lt (hy y le_rfl)⟩
+    have hbounded : BddBelow S := by
+      obtain ⟨b, hb⟩ := Filter.eventually_atBot.1 ((ProbabilityTheory.tendsto_cdf_atBot μ).eventually (Iio_mem_nhds hu))
+      refine ⟨b, ?_⟩
+      intro y hy
+      change u ≤ F y at hy
+      by_contra hnot
+      exact (not_lt_of_ge hy) (hb y (le_of_lt (lt_of_not_ge hnot)))
+    change sInf S < a ↔ _
+    constructor
+    · intro hqa
+      obtain ⟨q, hqlo, hqhi⟩ := exists_rat_btwn hqa
+      have hqF : u ≤ F q := by
+        by_contra hnot
+        have : (q : ℝ) ≤ sInf S := by
+          apply le_csInf hnonempty
+          intro y hy
+          change u ≤ F y at hy
+          by_contra hyq
+          exact (not_lt_of_ge hy) (lt_of_le_of_lt (ProbabilityTheory.monotone_cdf μ (le_of_lt (lt_of_not_ge hyq))) (lt_of_not_ge hnot))
+        linarith
+      exact ⟨q, hqhi, hqF⟩
+    · rintro ⟨q, hqa, hqF⟩
+      exact (csInf_le hbounded hqF).trans_lt hqa
   apply measurable_of_Iio
   intro a
   let E : ℚ → Set (Set.Ioi (0 : ℝ) × Set.Ioo (0 : ℝ) 1) := fun q =>
@@ -112,13 +96,7 @@ theorem measurable_conditionedTransitionQuantileOn
   rw [hpre]
   apply MeasurableSet.iUnion
   intro q
-  have hCDF := measurable_conditionedTransitionCDF_start hν ht q.1
-  have hpair : Measurable (fun z : Set.Ioi (0 : ℝ) × Set.Ioo (0 : ℝ) 1 =>
-      (z.2.1, ProbabilityTheory.cdf
-        (conditionedPositiveTransitionMeasure ν t z.1.1) q.1)) := by
-    exact (measurable_subtype_coe.comp measurable_snd).prodMk
-      (hCDF.comp measurable_fst)
-  exact (measurableSet_le measurable_fst measurable_snd).preimage hpair
+  exact (measurableSet_le measurable_fst measurable_snd).preimage ((measurable_subtype_coe.comp measurable_snd).prodMk ((measurable_conditionedTransitionCDF_start q.1).comp measurable_fst))
 
 end DOZZ.Proofs
 

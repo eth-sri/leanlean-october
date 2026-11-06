@@ -22,20 +22,18 @@ namespace DOZZ.Proofs
 
 /-- On real inputs the planar Gauss constant is a real l-ratio, including its
 totalized values. -/
-theorem crossing_planarGauss_real (γ ε : ℝ) :
+theorem crossing_planarGauss_real γ ε :
     (planarGaussConstant (γ ^ 2 / 2) (γ * ε)).re =
       Real.pi / (lR (γ * ε / 2) * lR (-(γ ^ 2) / 4) *
         lR (2 + γ ^ 2 / 4 - γ * ε / 2)) := by
   unfold planarGaussConstant
-  have hneg : -(γ ^ 2 / 2) / 2 = -(γ ^ 2) / 4 := by ring
-  have hlast : 2 - γ * ε / 2 + γ ^ 2 / 2 / 2 = 2 + γ ^ 2 / 4 - γ * ε / 2 := by ring
-  rw [hneg, hlast]
+  rw [(show -(γ ^ 2 / 2) / 2 = -(γ ^ 2) / 4 by ring), (show 2 - γ * ε / 2 + γ ^ 2 / 2 / 2 = 2 + γ ^ 2 / 4 - γ * ε / 2 by ring)]
   simp only [lFun_ofReal_eq_lR, ← Complex.ofReal_mul, ← Complex.ofReal_div,
     Complex.ofReal_re]
 
 /-- Combining the connection ratio and the epsilon-channel fusion coefficient produces the exact
 multiplier `gammaHalfCrossingMultiplier`. No nonzero denominator is hidden here. -/
-theorem crossing_connection_times_fusion (γ μ a ε c : ℝ) :
+theorem crossing_connection_times_fusion γ μ a ε c :
     (lR (gaussParameterA γ (γ / 2) a ε c) *
       lR (gaussParameterB γ (γ / 2) a ε c) /
       (lR (gaussParameterC γ (γ / 2) a) *

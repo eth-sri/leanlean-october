@@ -16,7 +16,7 @@ namespace DOZZ.Proofs
 
 /-- The actual Coulomb density is the local singular density of `DOZZ.localSingularMass` on the
 unit ball. Only the atomless roots themselves are excluded. -/
-theorem residue_local_coulomb_integrand (γ a b c : ℝ) (z w x : ℂ)
+theorem residue_local_coulomb_integrand γ a b c z w x
     (hz : 2 ≤ ‖z‖) (hz8 : ‖z‖ ≤ 8) (hzw : 3 ≤ ‖z - w‖)
     (hx : x ∈ Metric.ball z 1) (hxz : x ≠ z) (hxw : x ≠ w) :
     ENNReal.ofReal (residueLocalWeight γ (a + b + c) b w x) *
@@ -51,7 +51,7 @@ theorem residue_local_coulomb_integrand (γ a b c : ℝ) (z w x : ℂ)
 /-- Exact decomposition, including the entire noncritical root and infinity region in the
 complement. Root atomlessness makes the integrand convention of `DOZZ.coulombMass` at the roots
 irrelevant. -/
-theorem residue_mass_decomposition (γ a b c : ℝ) (z w : ℂ)
+theorem residue_mass_decomposition γ a b c z w
     (hz : 2 ≤ ‖z‖) (hz8 : ‖z‖ ≤ 8) (hzw : 3 ≤ ‖z - w‖)
     (μ : Measure ℂ) (hμz : μ {z} = 0) (hμw : μ {w} = 0) :
     coulombMass γ μ ![a, b] ![z, w] c =
@@ -59,17 +59,7 @@ theorem residue_mass_decomposition (γ a b c : ℝ) (z w : ℂ)
           ENNReal.ofReal (residueLocalWeight γ (a + b + c) b w x) *
             ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * a) else 0 ∂μ) +
       ∫⁻ x, if x ∉ Metric.ball z 1 then coulombWeight γ ![a, b] ![z, w] c x else 0 ∂μ := by
-  have hF : Measurable (residueLocalWeight γ (a + b + c) b w) := by
-    unfold residueLocalWeight
-    fun_prop
-  have hloc : Measurable (fun x : ℂ => if x ∈ Metric.ball z 1 then
-      ENNReal.ofReal (residueLocalWeight γ (a + b + c) b w x) *
-        ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * a) else 0) :=
-    Measurable.ite Metric.isOpen_ball.measurableSet
-      ((ENNReal.measurable_ofReal.comp hF).mul
-        (ENNReal.continuous_rpow_const.measurable.comp (ENNReal.measurable_ofReal.comp (by fun_prop))))
-      measurable_const
-  rw [coulombMass_eq_lintegral_coulombWeight, ← lintegral_add_left hloc]
+  rw [coulombMass_eq_lintegral_coulombWeight, ← lintegral_add_left (Measurable.ite Metric.isOpen_ball.measurableSet ((ENNReal.measurable_ofReal.comp (by unfold residueLocalWeight; fun_prop)).mul (ENNReal.continuous_rpow_const.measurable.comp (ENNReal.measurable_ofReal.comp (by fun_prop)))) measurable_const : Measurable (fun x => if x ∈ Metric.ball z 1 then ENNReal.ofReal (residueLocalWeight γ (a + b + c) b w x) * ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * a) else 0))]
   apply lintegral_congr_ae
   filter_upwards [measure_eq_zero_iff_ae_notMem.mp hμz, measure_eq_zero_iff_ae_notMem.mp hμw]
     with x hxz hxw

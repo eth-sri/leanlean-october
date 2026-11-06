@@ -23,7 +23,7 @@ open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- The point-root covariance against a smooth test is a continuous function of the root. -/
-theorem gffRootCovariance_continuous (f : TestFn) :
+theorem gffRootCovariance_continuous f :
     Continuous (fun u : ℂ => gffRootCovariance u f) := by
   simpa [gffRootCovariance] using continuous_testKernelPotential f
 

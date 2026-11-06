@@ -16,11 +16,11 @@ namespace DOZZ.Proofs
 
 /-- The literal local `r₂` spatial integral equals its rooted reference-measure integral. -/
 theorem fusion_localR2_rooting {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hβ : γ ^ 2 / 2 < γ * α₁) (hα₁ : α₁ < 2 / γ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    α₁ α₂ α₃ (hβ : γ ^ 2 / 2 < γ * α₁) (hα₁ : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (s : ℝ) (hs : s < 0)
-    (z : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4) :
+    z (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4) :
     (∫ ω, ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s).toReal : ℂ) *
       (∫ x in Metric.ball (0 : ℂ) (1 / 2),
         (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (‖x - z‖ ^ 2 : ℝ) ∂M ω) ∂P) =
@@ -30,11 +30,6 @@ theorem fusion_localR2_rooting {Ω : Type*} [MeasurableSpace Ω]
           ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s ∂P).toReal : ℂ) := by
   let B := Metric.ball (0 : ℂ) (1 / 2)
   let f := fun x : ℂ => (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (‖x - z‖ ^ 2 : ℝ)
-  have hf : Measurable f := (Complex.measurable_ofReal.comp
-    ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
-      (measurable_const.prodMk measurable_id))).div (Complex.measurable_ofReal.comp ((measurable_id.sub_const z).norm.pow_const 2))
-  have hβ2 : γ * α₁ < 2 := by have h := (lt_div_iff₀ hγ).mp hα₁; nlinarith
-  have hfi1 := fusion_localSecondKernel_integrable γ α₁ α₂ α₃ (by positivity) hβ hβ2 z hz
   have heq : (fun x : ℂ => (‖B.indicator
       (fun x : ℂ => (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2) x‖ : ℂ)) =
       B.indicator f := by
@@ -43,8 +38,7 @@ theorem fusion_localR2_rooting {Ω : Type*} [MeasurableSpace Ω]
     · rw [Set.indicator_of_mem hx, Set.indicator_of_mem hx, fusion_secondKernel_norm]
       simp only [f, Complex.ofReal_div]
     · simp only [Set.indicator_of_notMem hx, norm_zero, Complex.ofReal_zero]
-  have hfi : Integrable (B.indicator f) gmcReferenceMeasure := heq ▸ hfi1.norm.ofReal
-  have hz1 : z ≠ 1 := by
+  have : z ≠ 1 := by
     intro he
     rw [he, norm_one] at hz4
     norm_num at hz4
@@ -54,9 +48,6 @@ theorem fusion_localR2_rooting {Ω : Type*} [MeasurableSpace Ω]
     · change ‖z‖ ≤ 1; linarith
     · simp
     · simp
-  have hzinj : Function.Injective (![z, 0, 1] : Fin 3 → ℂ) := by
-    intro i j hij
-    fin_cases i <;> fin_cases j <;> simp_all
   have ha : ∀ j : Fin 3, (![-γ / 2, α₁, α₂] : Fin 3 → ℝ) j < Q γ := by
     intro j
     fin_cases j
@@ -68,12 +59,10 @@ theorem fusion_localR2_rooting {Ω : Type*} [MeasurableSpace Ω]
       unfold Q
       linarith
     · exact hα₂
-  have hmfin := fusion_coulombMass_finite_ae P X hX γ hγ hγ2 M hM ![-γ / 2, α₁, α₂]
-    ![z, 0, 1] hzinj α₃ ha hα₃
   have h := (fusion_rooted_coulomb_complex_integral P X hX γ hγ hγ2 M hM
-    ![-γ / 2, α₁, α₂] ![z, 0, 1] hzunit α₃ s hs hmfin (B.indicator f)
-    (hf.indicator Metric.isOpen_ball.measurableSet) hfi).2.2.2
-  have he : (fun x : ℂ => B.indicator f x *
+    ![-γ / 2, α₁, α₂] ![z, 0, 1] hzunit α₃ s hs (fusion_coulombMass_finite_ae P X hX γ hγ hγ2 M hM ![-γ / 2, α₁, α₂] ![z, 0, 1] (by intro i j hij; fin_cases i <;> fin_cases j <;> simp_all) α₃ ha hα₃) (B.indicator f)
+    (((Complex.measurable_ofReal.comp ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (measurable_const.prodMk measurable_id))).div (Complex.measurable_ofReal.comp ((measurable_id.sub_const z).norm.pow_const 2))).indicator Metric.isOpen_ball.measurableSet) (heq ▸ (fusion_localSecondKernel_integrable γ α₁ α₂ α₃ (by positivity) hβ (by have h := (lt_div_iff₀ hγ).mp hα₁; nlinarith) z hz).norm.ofReal)).2.2.2
+  have he : (fun x => B.indicator f x *
       ((∫⁻ ω, coulombMass γ (gmcRootedMeasure γ x (M ω))
         ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s ∂P).toReal : ℂ)) =
       B.indicator (fun x => f x *
@@ -87,7 +76,7 @@ theorem fusion_localR2_rooting {Ω : Type*} [MeasurableSpace Ω]
   change _ = ∫ x, _ ∂volume.restrict B
   rw [gmcReferenceMeasure_restrict_unit_chart B Metric.isOpen_ball.measurableSet
     (fun x hx => by
-      have hx' : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
+      have : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
       linarith)] at h
   simpa only [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] using h
 

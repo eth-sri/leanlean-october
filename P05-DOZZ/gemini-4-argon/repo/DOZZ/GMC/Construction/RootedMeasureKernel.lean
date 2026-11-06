@@ -23,7 +23,7 @@ theorem measurable_lintegral_finite_family
     (f : U × E → ℝ≥0∞) (hf : Measurable f) :
     Measurable (fun u => ∫⁻ x, f (u, x) ∂μ u) := by
   let κ : Kernel U E := ⟨μ, hμ⟩
-  let F : ℕ → SimpleFunc (U × E) ℝ≥0∞ := SimpleFunc.eapprox f
+  let F := SimpleFunc.eapprox f
   have heq : ∀ u x, (⨆ n, F n (u, x)) = f (u, x) :=
     fun u x => SimpleFunc.iSup_eapprox_apply hf (u, x)
   simp_rw [← heq]
@@ -40,11 +40,7 @@ theorem measurable_lintegral_finite_family
   · intro c t ht
     simp only [SimpleFunc.const_zero, SimpleFunc.coe_piecewise, SimpleFunc.coe_const,
       SimpleFunc.coe_zero, Set.piecewise_eq_indicator]
-    have hind : (fun u => ∫⁻ x, t.indicator (fun _ => c) (u, x) ∂μ u) =
-        fun u => c * μ u (Prod.mk u ⁻¹' t) := by
-      funext u
-      exact lintegral_indicator_const_comp (f := Prod.mk u) measurable_prodMk_left ht c
-    rw [← Function.const_def, hind]
+    rw [← Function.const_def, (show (fun u => ∫⁻ x, t.indicator (fun _ => c) (u, x) ∂μ u) = fun u => c * μ u (Prod.mk u ⁻¹' t) by funext u; exact lintegral_indicator_const_comp (f := Prod.mk u) measurable_prodMk_left ht c)]
     exact Measurable.const_mul
       (Kernel.measurable_kernel_prodMk_left_of_finite (κ := κ) ht hfinite) c
   · intro g₁ g₂ _ hm₁ hm₂
@@ -53,9 +49,7 @@ theorem measurable_lintegral_finite_family
         (fun u => ∫⁻ x, g₁ (u, x) ∂μ u) + fun u => ∫⁻ x, g₂ (u, x) ∂μ u := by
       funext u
       rw [Pi.add_apply]
-      have hg : Measurable (fun x : E => g₁ (u, x)) :=
-        g₁.measurable.comp measurable_prodMk_left
-      exact lintegral_add_left hg _
+      exact lintegral_add_left (g₁.measurable.comp measurable_prodMk_left) _
     rw [hadd]
     exact hm₁.add hm₂
 
@@ -81,29 +75,10 @@ theorem measurable_circleAverage_center
     apply hf.comp
     exact (show Continuous (fun q : ℂ × ℝ => circleMap q.1 R q.2) by
       fun_prop [circleMap]).measurable
-  have hint : Measurable (fun u : ℂ =>
-      ∫ θ, f (circleMap u R θ) ∂volume.restrict (Set.Ioc 0 (2 * Real.pi))) :=
-    hg.stronglyMeasurable.integral_prod_right.measurable
   simp only [Real.circleAverage_def, intervalIntegral.integral_of_le
     (by positivity : (0 : ℝ) ≤ 2 * Real.pi), smul_eq_mul]
-  exact measurable_const.mul hint
+  exact measurable_const.mul hg.stronglyMeasurable.integral_prod_right.measurable
 
-/-- The one-circle root potential is jointly measurable in root and spatial point. -/
-theorem measurable_circleRootPotential (r : ℝ) :
-    Measurable (fun q : ℂ × ℂ => ∫ v, gffKernel q.2 v ∂circleMeasure q.1 r) := by
-  have hpin : Measurable (fun u : ℂ =>
-      ∫ v, Real.log (normPlus v) ∂circleMeasure u r) := by
-    have h := measurable_circleAverage_center (fun v => Real.log (normPlus v))
-      continuous_log_normPlus.measurable (Real.exp (-r))
-    simpa only [CirclePotential.integral_circleMeasure_eq_circleAverage
-      continuous_log_normPlus.measurable] using h
-  have hlog : Measurable (fun q : ℂ × ℂ =>
-      Real.log (max (Real.exp (-r)) ‖q.1 - q.2‖)) :=
-    Real.measurable_log.comp (measurable_const.max
-      (measurable_fst.sub measurable_snd).norm)
-  simp_rw [integral_gffKernel_circleMeasure]
-  exact (hlog.neg.add (continuous_log_normPlus.measurable.comp measurable_snd)).add
-    (hpin.comp measurable_fst)
 
 /-- The point potential is jointly measurable, including its prescribed value on the diagonal. -/
 theorem measurable_pointRootPotential :
@@ -117,7 +92,7 @@ theorem measurable_pointRootPotential :
 theorem measurable_gmcRootedMeasure_family
     {Ω : Type*} [MeasurableSpace Ω]
     (M : Ω → Measure ℂ) (hM : Measurable M) (hfinite : ∀ ω, IsFiniteMeasure (M ω))
-    (γ : ℝ) : Measurable (fun q : ℂ × Ω => gmcRootedMeasure γ q.1 (M q.2)) := by
+    γ : Measurable (fun q : ℂ × Ω => gmcRootedMeasure γ q.1 (M q.2)) := by
   apply measurable_withDensity_finite_family (fun q : ℂ × Ω => M q.2)
     (hM.comp measurable_snd) (fun q => hfinite q.2)
     (fun q : (ℂ × Ω) × ℂ => ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel q.1.1 q.2)))
@@ -138,7 +113,7 @@ theorem measurable_circleRootedMeasure_family
     (fun q : (ℂ × Ω) × ℂ => ENNReal.ofReal
       (Real.exp (γ ^ 2 * ∫ v, gffKernel q.2 v ∂circleMeasure q.1.1 r)))
   exact ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
-    (measurable_const.mul ((measurable_circleRootPotential r).comp
+    (measurable_const.mul (((show Measurable (fun q : ℂ × ℂ => ∫ v, gffKernel q.2 v ∂circleMeasure q.1 r) by simp_rw [integral_gffKernel_circleMeasure]; exact ((Real.measurable_log.comp (measurable_const.max (measurable_fst.sub measurable_snd).norm)).neg.add (continuous_log_normPlus.measurable.comp measurable_snd)).add ((show Measurable (fun u : ℂ => ∫ v, Real.log (normPlus v) ∂circleMeasure u r) by simpa only [CirclePotential.integral_circleMeasure_eq_circleAverage continuous_log_normPlus.measurable] using (measurable_circleAverage_center (fun v => Real.log (normPlus v)) continuous_log_normPlus.measurable (Real.exp (-r)))).comp measurable_fst))).comp
       (f := fun q : (ℂ × Ω) × ℂ => (q.1.1, q.2))
       ((measurable_fst.comp measurable_fst).prodMk measurable_snd))))
 
@@ -146,7 +121,7 @@ theorem measurable_circleRootedMeasure_family
 theorem measurable_circleCross_center (r : ℝ) (f : TestFn) :
     Measurable (fun u : ℂ => circleCross u r f) := by
   let k : ℂ → ℝ := fun u => gffRootCovariance u f
-  have hk : Measurable k := (gffRootCovariance_continuous f).measurable
+  have hk := (gffRootCovariance_continuous f).measurable
   have heq : (fun u : ℂ => circleCross u r f) =
       fun u => Real.circleAverage k u (Real.exp (-r)) := by
     funext u

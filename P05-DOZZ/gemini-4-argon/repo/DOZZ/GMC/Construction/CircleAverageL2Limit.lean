@@ -32,7 +32,7 @@ namespace DOZZ.Proofs
 /-- Choose the L² limit using approximants that also converge against every circle potential. -/
 theorem exists_equatorGFF_circle_test_L2_limit_with_cross
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (x : ℂ) (r : ℝ) :
+    (X : Ω → Distr) hX x r :
     ∃ f : ℕ → TestFn, ∃ W : Lp ℝ 2 P,
       Tendsto (fun n => circleEnergyGap x r (f n)) atTop (𝓝 0) ∧
       (∀ y s, Tendsto (fun n => circleCross y s (f n)) atTop
@@ -40,14 +40,13 @@ theorem exists_equatorGFF_circle_test_L2_limit_with_cross
       Tendsto (fun n => (equatorGFF_test_memLp X hX (f n)).toLp
         (fun ω => X ω (f n))) atTop (𝓝 W) := by
   obtain ⟨f, hgap, hcross⟩ := exists_testFn_circleEnergyGap_and_cross_tendsto x r
-  have hCauchy := equatorGFF_testL2_cauchy_of_circleEnergyGap X hX x r f hgap
-  obtain ⟨W, hW⟩ := cauchySeq_tendsto_of_complete hCauchy
+  obtain ⟨W, hW⟩ := cauchySeq_tendsto_of_complete (equatorGFF_testL2_cauchy_of_circleEnergyGap X hX x r f hgap)
   exact ⟨f, W, hgap, hcross, hW⟩
 
 /-- Every vanishing-gap test sequence converges to the same selected L² circle limit. -/
 theorem equatorGFF_testL2_tendsto_to_circle_limit
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (x : ℂ) (r : ℝ)
+    (X : Ω → Distr) hX x r
     (f₀ : ℕ → TestFn) (hgap₀ : Tendsto (fun n => circleEnergyGap x r (f₀ n)) atTop (𝓝 0))
     (W : Lp ℝ 2 P)
     (hW : Tendsto (fun n => (equatorGFF_test_memLp X hX (f₀ n)).toLp
@@ -62,37 +61,29 @@ theorem equatorGFF_testL2_tendsto_to_circle_limit
   let η := ε / 4
   have hη : 0 < η := by dsimp [η]; positivity
   have hδ : 0 < η ^ 2 / 8 := by positivity
-  have hq0 : ∀ᶠ m in atTop, circleEnergyGap x r (f₀ m) < η ^ 2 / 8 :=
-    hgap₀.eventually (gt_mem_nhds hδ)
-  have hnear : ∀ᶠ m in atTop, dist (V m) W < ε / 2 := by
-    exact hW.eventually (Metric.ball_mem_nhds W (by positivity))
-  obtain ⟨m, hm⟩ := (hq0.and hnear).exists
-  have hq : ∀ᶠ n in atTop, circleEnergyGap x r (f n) < η ^ 2 / 8 :=
-    hgap.eventually (gt_mem_nhds hδ)
-  filter_upwards [hq] with n hqn
+  have hnear : ∀ᶠ m in atTop, dist (V m) W < ε / 2 := hW.eventually (Metric.ball_mem_nhds W (by positivity))
+  obtain ⟨m, hm⟩ := ((hgap₀.eventually (gt_mem_nhds hδ)).and hnear).exists
+  filter_upwards [(hgap.eventually (gt_mem_nhds hδ))] with n hqn
   have hnormsq : ‖U n - V m‖ ^ 2 < η ^ 2 := by
-    have heq := equatorGFF_testL2_sub_norm_sq X hX (f n) (f₀ m)
     have hbound := gffCov_sub_le_circleEnergyGaps x r (f n) (f₀ m)
     have hqm := hm.1
     have hnon := circleEnergyGap_nonneg x r (f n)
     have hnon0 := circleEnergyGap_nonneg x r (f₀ m)
     dsimp [U, V] at *
-    rw [heq]
+    rw [(equatorGFF_testL2_sub_norm_sq X hX (f n) (f₀ m))]
     nlinarith
   have hnorm : dist (U n) (V m) < η := by
     rw [dist_eq_norm]
     have hn0 : 0 ≤ ‖U n - V m‖ := norm_nonneg _
     nlinarith
-  have htriangle : dist (U n) W ≤ dist (U n) (V m) + dist (V m) W :=
-    dist_triangle _ _ _
   calc
-    dist (U n) W ≤ dist (U n) (V m) + dist (V m) W := htriangle
+    dist (U n) W ≤ dist (U n) (V m) + dist (V m) W := (dist_triangle _ _ _)
     _ < ε := by dsimp [η] at hnorm; linarith [hnorm, hm.2]
 
 /-- An L² circle limit admits a measurable representative and the literal error convergence. -/
 theorem exists_measurable_equatorGFF_circle_L2_limit
     {Ω : Type*} [mΩ : MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (f : ℕ → TestFn) (W : Lp ℝ 2 P)
+    (X : Ω → Distr) hX (f : ℕ → TestFn) (W : Lp ℝ 2 P)
     (hW : Tendsto (fun n => (equatorGFF_test_memLp X hX (f n)).toLp
       (fun ω => X ω (f n))) atTop (𝓝 W)) :
     ∃ Y : Ω → ℝ, Measurable[equatorGFFRawDistributionSigma X] Y ∧
@@ -103,23 +94,17 @@ theorem exists_measurable_equatorGFF_circle_L2_limit
   let : MeasurableSpace Ω := mΩ
   let U : ℕ → Lp ℝ 2 P := fun n =>
     (equatorGFF_test_memLp X hX (f n)).toLp (fun ω => X ω (f n))
-  have hWT : Tendsto U atTop (𝓝 W) := by simpa only [U] using hW
   let u : ℕ → Ω → ℝ := fun n ω => X ω (f n)
-  have hlim : Tendsto (fun n => eLpNorm (fun ω => u n ω - W ω) 2 P) atTop (𝓝 0) := by
-    exact tendsto_eLpNorm_sub_of_L2_versions P U W u (fun ω => W ω)
+  have hlim : Tendsto (fun n => eLpNorm (fun ω => u n ω - W ω) 2 P) atTop (𝓝 0) := tendsto_eLpNorm_sub_of_L2_versions P U W u (fun ω => W ω)
       (fun n => (equatorGFF_test_memLp X hX (f n)).coeFn_toLp.symm)
-      Filter.EventuallyEq.rfl hWT
-  have hV : MemLp (fun ω => W ω) 2 P := Lp.memLp W
+      Filter.EventuallyEq.rfl (by simpa only [U] using hW)
+  have hV := Lp.memLp W
   obtain ⟨Y, hYm0, hYae⟩ := exists_raw_measurable_version_of_L2_limit
     P m0 u (fun ω => W ω)
     (fun n => measurable_raw_distribution_eval X (f n))
     (fun n => equatorGFF_test_memLp X hX (f n)) hV hlim
   change Measurable[equatorGFFRawDistributionSigma X] Y at hYm0
-  have hmap : Measurable (fun ω => fun g : TestFn => X ω g) :=
-    measurable_pi_iff.mpr (fun g => (hX.2 g).1)
-  have hm0 : m0 ≤ ‹MeasurableSpace Ω› := hmap.comap_le
-  have hYm : Measurable Y := hYm0.mono hm0 le_rfl
-  have hYmem : MemLp Y 2 P := MemLp.ae_eq hYae.symm hV
+  have hm0 : m0 ≤ ‹MeasurableSpace Ω› := (measurable_pi_iff.mpr (fun g => (hX.2 g).1)).comap_le
   have hYlim : Tendsto (fun n => eLpNorm (fun ω => X ω (f n) - Y ω) 2 P)
       atTop (𝓝 0) := by
     have he n : eLpNorm (fun ω => X ω (f n) - Y ω) 2 P =
@@ -128,6 +113,6 @@ theorem exists_measurable_equatorGFF_circle_L2_limit
       filter_upwards [hYae] with ω hω
       rw [hω]
     simpa only [he] using hlim
-  exact ⟨Y, hYm0, hYm, hYmem, hYae, hYlim⟩
+  exact ⟨Y, hYm0, (hYm0.mono hm0 le_rfl), (MemLp.ae_eq hYae.symm hV), hYae, hYlim⟩
 
 end DOZZ.Proofs

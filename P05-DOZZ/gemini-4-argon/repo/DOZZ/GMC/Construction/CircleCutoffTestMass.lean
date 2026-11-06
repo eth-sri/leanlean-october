@@ -22,30 +22,26 @@ namespace DOZZ.Proofs
 `DOZZ.regularizedGMC` have the same test integral at matching logarithmic scale. -/
 theorem circleCutoff_testMass_eq_regularizedGMC
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ r : ℝ) (ω : Ω) (f : BoundedContinuousFunction ℂ ℝ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
+    γ r ω f :
     regularizedLogChaosTestMass P Set.univ (fun x => normPlus x ^ (-4 : ℝ))
         (fun ω ε x => Xc ω x (Real.log (1 / ε))) γ r ω f =
       ∫ x, f x ∂regularizedGMC P Xc γ r ω := by
   classical
   let V : ℂ → ℝ := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
-  have hVmeas : Measurable V := by
+  have : Measurable V := by
     let _ := hX.1
     let q : ℂ → Ω → ℝ := fun x ω' => Xc ω' x r ^ 2
     have hq : Measurable (Function.uncurry q) := by
       have hbase : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r) :=
         (hXc.1 r).comp measurable_swap
-      have hEq : (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) =
-          fun p => Xc p.2 p.1 r * Xc p.2 p.1 r := by
-        funext p
-        ring
       change Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2)
-      rw [hEq]
+      rw [(show (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) = fun p => Xc p.2 p.1 r * Xc p.2 p.1 r by funext p; ring)]
       exact hbase.mul hbase
     change Measurable (fun x => ∫ ω', q x ω' ∂P)
     exact hq.stronglyMeasurable.integral_prod_right.measurable
-  have hweightMeas : Measurable (fun x : ℂ => normPlus x ^ (-4 : ℝ)) := by
+  have hweightMeas : Measurable (fun x => normPlus x ^ (-4 : ℝ)) := by
     unfold normPlus
     fun_prop
   let d₀ : ℂ → ℝ := fun x => normPlus x ^ (-4 : ℝ)
@@ -55,7 +51,7 @@ theorem circleCutoff_testMass_eq_regularizedGMC
   let e₁ : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (d₁ x)
   have hd₀ : Measurable d₀ := hweightMeas
   have hd₁ : Measurable d₁ := by
-    have hfield : Measurable (fun x : ℂ => Xc ω x r) :=
+    have : Measurable (fun x => Xc ω x r) :=
       (hXc.1 r).comp (measurable_const.prodMk measurable_id)
     dsimp [d₁]
     fun_prop
@@ -65,10 +61,10 @@ theorem circleCutoff_testMass_eq_regularizedGMC
     ae_of_all _ (fun x => ENNReal.ofReal_lt_top)
   have he₁top : ∀ᵐ x ∂volume, e₁ x < ∞ :=
     ae_of_all _ (fun x => ENNReal.ofReal_lt_top)
-  have hd₀nonneg (x : ℂ) : 0 ≤ d₀ x := by
+  have hd₀nonneg x : 0 ≤ d₀ x := by
     dsimp [d₀]
     exact Real.rpow_nonneg (le_of_lt (by simp [normPlus])) _
-  have hd₁nonneg (x : ℂ) : 0 ≤ d₁ x := by
+  have hd₁nonneg x : 0 ≤ d₁ x := by
     dsimp [d₁]
     exact mul_nonneg (Real.exp_nonneg _) (Real.rpow_nonneg (le_of_lt (by simp [normPlus])) _)
   have hlog : Real.log (1 / Real.exp (-r)) = r := by

@@ -23,7 +23,7 @@ variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasur
 
 omit [IsProbabilityMeasure P] in
 /-- A truncated logarithm converts directly into Brownian radial time. -/
-theorem neg_log_max_exp_eq_min {a t : ℝ} (ha : 0 < a) :
+theorem neg_log_max_exp_eq_min {a t} (ha : 0 < a) :
     -Real.log (max (Real.exp (-t)) a) = min t (-Real.log a) := by
   rcases le_total (Real.exp (-t)) a with h | h
   · have ht := Real.log_le_log (Real.exp_pos (-t)) h
@@ -35,15 +35,15 @@ theorem neg_log_max_exp_eq_min {a t : ℝ} (ha : 0 < a) :
 
 omit [IsProbabilityMeasure P] in
 /-- The off-center radial origin has the exact variance. -/
-theorem offCenter_origin_variance (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (z : ℂ) (hz : 2 ≤ ‖z‖) :
+theorem offCenter_origin_variance X Xc
+    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) z (hz : 2 ≤ ‖z‖) :
     covariance (fun ω => Xc ω z 0) (fun ω => Xc ω z 0) P = 2 * Real.log ‖z‖ := by
   simpa only [min_self, zero_add] using
     circleAverage_covariance_exterior P X Xc hX hc z hz (r := 0) (s := 0) le_rfl le_rfl
 
 omit [IsProbabilityMeasure P] in
 /-- Concentric Brownian times correspond to the logarithm of the larger geometric radius. -/
-theorem min_neg_log_eq_neg_log_max {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
+theorem min_neg_log_eq_neg_log_max {a b} (ha : 0 < a) (hb : 0 < b) :
     min (-Real.log a) (-Real.log b) = -Real.log (max a b) := by
   rcases le_total a b with h | h
   · have hl := Real.log_le_log ha h

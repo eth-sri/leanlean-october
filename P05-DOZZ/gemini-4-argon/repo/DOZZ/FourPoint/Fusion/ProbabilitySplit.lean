@@ -20,26 +20,18 @@ theorem fusion_probability_split_bound {Ω : Type*} [MeasurableSpace Ω] (P : Me
     (hZr : ∀ᵐ ω ∂P, Zr ω = badr ω + goodr ω) (hZ : ∀ᵐ ω ∂P, Z ω = badl ω + goodl ω)
     (hbr : ∀ᵐ ω ∂P, badr ω ≠ ⊤) (hbl : ∀ᵐ ω ∂P, badl ω ≠ ⊤) (hgr : ∀ᵐ ω ∂P, goodr ω ≠ ⊤)
     (hgl : ∀ᵐ ω ∂P, goodl ω ≠ ⊤)
-    {e : ℝ} (he : 0 < e) {ε : ℝ≥0∞} (hεe : ENNReal.ofReal e ≤ ε) :
+    {e} (he : 0 < e) {ε : ℝ≥0∞} (hεe : ENNReal.ofReal e ≤ ε) :
     P {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤
       P {ω | ENNReal.ofReal (e / 3) ≤ badr ω} +
       P {ω | ENNReal.ofReal (e / 3) ≤ badl ω} +
       P {ω | ENNReal.ofReal (e / 3) ≤ ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|} := by
   set a : ℝ≥0∞ := ENNReal.ofReal (e / 3) with ha
-  have ha0 : a ≠ 0 := (ENNReal.ofReal_pos.mpr (by positivity)).ne'
-  have hat : a ≠ ⊤ := ENNReal.ofReal_ne_top
   set B1 : Set Ω := {ω | a ≤ badr ω} with hB1
   set B2 : Set Ω := {ω | a ≤ badl ω} with hB2
   set B3 : Set Ω := {ω | a ≤ ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|} with hB3
   have hle : {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤ᵐ[P] (B1 ∪ B2 ∪ B3 : Set Ω) := by
     filter_upwards [hZr, hZ, hbr, hbl, hgr, hgl] with ω h1 h2 h3 h4 h5 h6 hA
-    have hA' : ε ≤ ENNReal.ofReal |(Zr ω).toReal - (Z ω).toReal| := by
-      rw [edist_dist, Real.dist_eq] at hA
-      exact hA
-    have he' : e ≤ |(Zr ω).toReal - (Z ω).toReal| :=
-      (ENNReal.ofReal_le_ofReal_iff (abs_nonneg _)).mp (hεe.trans hA')
-    have hsplit := toReal_abs_sub_le_of_split h1 h2 h3 h5 h4 h6
-    rcases le_of_three_le_sum he' hsplit with hx | hx | hx
+    rcases le_of_three_le_sum ((ENNReal.ofReal_le_ofReal_iff (abs_nonneg _)).mp (hεe.trans (by rw [edist_dist, Real.dist_eq] at hA; exact hA))) (toReal_abs_sub_le_of_split h1 h2 h3 h5 h4 h6) with hx | hx | hx
     · left; left
       show a ≤ badr ω
       rw [ha, ← ENNReal.ofReal_toReal h3]

@@ -45,16 +45,13 @@ theorem gammaHalf_crossing_unit_of_full {Ω : Type*} [MeasurableSpace Ω]
     unfold sExp
     congr 1
     ring
-  have hG : Real.Gamma s ≠ 0 := (Real.Gamma_pos_of_pos hspos).ne'
-  have hp : μ ^ (-s) ≠ 0 := (Real.rpow_pos_of_pos hμ (-s)).ne'
-  have hpow : μ ^ (-(s + 1)) = μ ^ (-s) * μ⁻¹ := by
-    rw [show -(s + 1) = -s + -1 by ring, Real.rpow_add hμ, Real.rpow_neg_one]
+  have hG := (Real.Gamma_pos_of_pos hspos).ne'
   rw [residue_structureConstant_eq_unitVolume,
-    residue_structureConstant_eq_unitVolume, hr, hpow] at hfull
+    residue_structureConstant_eq_unitVolume, hr, (show μ ^ (-(s + 1)) = μ ^ (-s) * μ⁻¹ by rw [show -(s + 1) = -s + -1 by ring, Real.rpow_add hμ, Real.rpow_neg_one])] at hfull
   change μ ^ (-s) * Real.Gamma s * _ = _ at hfull
   unfold gammaHalfUnitCrossingMultiplier
   rw [hleft, hright]
-  apply (mul_left_cancel₀ (mul_ne_zero hp hG))
+  apply (mul_left_cancel₀ (mul_ne_zero ((Real.rpow_pos_of_pos hμ (-s)).ne' : μ ^ (-s) ≠ 0) hG))
   calc
     _ = gammaHalfCrossingMultiplier γ μ α' ε α *
         (μ ^ (-s) * μ⁻¹ * Real.Gamma (s + 1) *

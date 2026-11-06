@@ -28,7 +28,7 @@ namespace DOZZ.Proofs
 Its law is pinned by the conditioned entrance law, lateral-law uniqueness, and independence. -/
 theorem reflectionBarR_eq_of_isReflectionData
     {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (γ α : ℝ)
+    (P : Measure Ω) (P' : Measure Ω') γ α
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (B' : Ω' → BrownianPath × BrownianPath) (Z' : Ω' → Measure ℝ)
     (hData : IsReflectionData P γ α B Z) (hData' : IsReflectionData P' γ α B' Z') :
@@ -39,7 +39,7 @@ theorem reflectionBarR_eq_of_isReflectionData
 /-- Well-definedness of the full coefficient follows from that of its reflection moment. -/
 theorem reflectionR_eq_of_isReflectionData
     {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (γ μ α : ℝ)
+    (P : Measure Ω) (P' : Measure Ω') γ μ α
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (B' : Ω' → BrownianPath × BrownianPath) (Z' : Ω' → Measure ℝ)
     (hData : IsReflectionData P γ α B Z) (hData' : IsReflectionData P' γ α B' Z') :

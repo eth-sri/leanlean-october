@@ -66,27 +66,11 @@ theorem compatible_two_root_wick_pair_good_barrier_power_bound_BarrierCauchyLoca
   have hC₀nonneg : 0 ≤ C₀ := by
     dsimp [C₀]
     positivity
-  have hCvC : Cv ≤ C₀ := by dsimp [C₀]; linarith [hCmY, hCmZ, hCyy, hCzz, hCyz]
-  have hCmYC : CmY ≤ C₀ := by dsimp [C₀]; linarith [hCv, hCmZ, hCyy, hCzz, hCyz]
-  have hCmZC : CmZ ≤ C₀ := by dsimp [C₀]; linarith [hCv, hCmY, hCyy, hCzz, hCyz]
   have hCyyC : Cyy ≤ C₀ := by dsimp [C₀]; linarith [hCv, hCmY, hCmZ, hCzz, hCyz]
-  have hCzzC : Czz ≤ C₀ := by dsimp [C₀]; linarith [hCv, hCmY, hCmZ, hCyy, hCyz]
   have hCyzC : Cyz ≤ C₀ := by dsimp [C₀]; linarith [hCv, hCmY, hCmZ, hCyy, hCzz]
   refine ⟨C₀, hC₀nonneg, ?_⟩
   intro k hkcut ε δ hε hεcut₀ hεcut hδ hδcut₁ hδcut κ
     x y hx hy hxy hxypos ρ hρdef hfloor
-  have hrhoCut : ρ ≤ Real.exp (-(k : ℝ)) := by
-    rw [hρdef]
-    exact max_le hxy (max_le hεcut hδcut)
-  have hrhoPos : 0 < ρ := by
-    rw [hρdef]
-    have hεδ : 0 < max ε δ := lt_of_lt_of_le hε (le_max_left _ _)
-    exact lt_of_lt_of_le hεδ (le_max_right _ _)
-  have hrhoLeOne : ρ ≤ 1 :=
-    hrhoCut.trans (Real.exp_le_one_iff.mpr (neg_nonpos.mpr (Nat.cast_nonneg k)))
-  have hdistLeRho : ‖x - y‖ ≤ ρ := by
-    rw [hρdef]
-    exact le_max_left _ _
   let r : ℝ := Real.exp (-(k : ℝ))
   let q : Fin 3 → Bool × ℝ × ℂ := fun i =>
     if i = 0 then (true, r, x) else if i = 1 then (b₁, ε, x) else (b₂, δ, y)
@@ -99,55 +83,34 @@ theorem compatible_two_root_wick_pair_good_barrier_power_bound_BarrierCauchyLoca
     · exact ⟨Real.exp_pos _, hkcut⟩
     · exact ⟨hε, hεcut₀⟩
     · exact ⟨hδ, hδcut₁⟩
-  have hvarV : |gaussianVariance P (fun ω => V ω 0) - (k : ℝ)| ≤ C₀ := by
-    have h := hvar k (le_trans hkcut (min_le_left _ _)) x hx
-    have h' : |gaussianVariance P (fun ω => V ω 0) - (k : ℝ)| ≤ Cv := by
-      simpa [V, q, r] using h
-    exact h'.trans hCvC
   have hcovV₁ : |gaussianCovariance P (fun ω => V ω 0)
       (fun ω => V ω 1) - (k : ℝ)| ≤ C₀ := by
     cases b₁ with
     | false =>
-        have hεcutZ : ε ≤ min ε₁ r := le_min
-          (le_trans hεcut₀ (min_le_right _ _)) hεcut
-        have h := hmixZ k (le_trans hkcut (min_le_left _ _)) ε hε hεcutZ x hx
-        have h' : |gaussianCovariance P (fun ω => V ω 0)
-            (fun ω => V ω 1) - (k : ℝ)| ≤ CmZ := by
-          simpa [V, q, r] using h
-        exact h'.trans hCmZC
+        exact (show |gaussianCovariance P (fun ω => V ω 0) (fun ω => V ω 1) - (k : ℝ)| ≤ CmZ by simpa [V, q, r] using (hmixZ k (le_trans hkcut (min_le_left _ _)) ε hε (le_min (le_trans hεcut₀ (min_le_right _ _)) hεcut) x hx)).trans (by dsimp [C₀]; linarith [hCv, hCmY, hCyy, hCzz, hCyz])
     | true =>
-        have h := hmixY k (le_trans hkcut (min_le_left _ _)) ε hε hεcut x hx
-        have h' : |gaussianCovariance P (fun ω => V ω 0)
-            (fun ω => V ω 1) - (k : ℝ)| ≤ CmY := by
-          simpa [V, q, r] using h
-        exact h'.trans hCmYC
-  have hgeom : max ‖x - y‖ (max r δ) = r := by
-    rw [max_eq_left hδcut, max_eq_right hxy]
+        exact (show |gaussianCovariance P (fun ω => V ω 0) (fun ω => V ω 1) - (k : ℝ)| ≤ CmY by simpa [V, q, r] using (hmixY k (le_trans hkcut (min_le_left _ _)) ε hε hεcut x hx)).trans (by dsimp [C₀]; linarith [hCv, hCmZ, hCyy, hCzz, hCyz])
   have hlog : Real.log (1 / max ‖x - y‖ (max r δ)) = (k : ℝ) := by
-    rw [hgeom]
+    rw [(show max ‖x - y‖ (max r δ) = r by rw [max_eq_left hδcut, max_eq_right hxy])]
     simp [r]
   have hcovV₂ : |gaussianCovariance P (fun ω => V ω 0)
       (fun ω => V ω 2) - (k : ℝ)| ≤ C₀ := by
     cases b₂ with
     | false =>
-        have h := hcovYZ r δ (Real.exp_pos _) (le_trans hkcut (min_le_left _ _))
-          hδ (le_trans hδcut₁ (min_le_right _ _)) x hx y hy
         have h' : |gaussianCovariance P (fun ω => V ω 0)
             (fun ω => V ω 2) - (k : ℝ)| ≤ Cyz := by
           have hbound : |gaussianCovariance P (fun ω => V ω 0)
               (fun ω => V ω 2) - Real.log (1 / max ‖x - y‖ (max r δ))| ≤ Cyz := by
-            simpa [V, q, r] using h
+            simpa [V, q, r] using (hcovYZ r δ (Real.exp_pos _) (le_trans hkcut (min_le_left _ _)) hδ (le_trans hδcut₁ (min_le_right _ _)) x hx y hy)
           rw [hlog] at hbound
           exact hbound
         exact h'.trans hCyzC
     | true =>
-        have h := hcovYY r δ (Real.exp_pos _) (le_trans hkcut (min_le_left _ _))
-          hδ (le_trans hδcut₁ (min_le_left _ _)) x hx y hy
         have h' : |gaussianCovariance P (fun ω => V ω 0)
             (fun ω => V ω 2) - (k : ℝ)| ≤ Cyy := by
           have hbound : |gaussianCovariance P (fun ω => V ω 0)
               (fun ω => V ω 2) - Real.log (1 / max ‖x - y‖ (max r δ))| ≤ Cyy := by
-            simpa [V, q, r] using h
+            simpa [V, q, r] using (hcovYY r δ (Real.exp_pos _) (le_trans hkcut (min_le_left _ _)) hδ (le_trans hδcut₁ (min_le_left _ _)) x hx y hy)
           rw [hlog] at hbound
           exact hbound
         exact h'.trans hCyyC
@@ -164,43 +127,18 @@ theorem compatible_two_root_wick_pair_good_barrier_power_bound_BarrierCauchyLoca
       | true =>
         cases b₂ with
         | true =>
-          have h := hcovYY ε δ hε (le_trans hεcut₀ (min_le_left _ _))
-            hδ (le_trans hδcut₁ (min_le_left _ _)) x hx y hy
-          have h' : |gaussianCovariance P (fun ω => V ω 1)
-              (fun ω => V ω 2) - Real.log (1 / ρ)| ≤ Cyy := by
-            simpa [V, q, hρdef] using h
-          exact h'.trans hCyyC
+          exact (show |gaussianCovariance P (fun ω => V ω 1) (fun ω => V ω 2) - Real.log (1 / ρ)| ≤ Cyy by simpa [V, q, hρdef] using (hcovYY ε δ hε (le_trans hεcut₀ (min_le_left _ _)) hδ (le_trans hδcut₁ (min_le_left _ _)) x hx y hy)).trans hCyyC
         | false =>
-          have h := hcovYZ ε δ hε (le_trans hεcut₀ (min_le_left _ _))
-            hδ (le_trans hδcut₁ (min_le_right _ _)) x hx y hy
-          have h' : |gaussianCovariance P (fun ω => V ω 1)
-              (fun ω => V ω 2) - Real.log (1 / ρ)| ≤ Cyz := by
-            simpa [V, q, hρdef] using h
-          exact h'.trans hCyzC
+          exact (show |gaussianCovariance P (fun ω => V ω 1) (fun ω => V ω 2) - Real.log (1 / ρ)| ≤ Cyz by simpa [V, q, hρdef] using (hcovYZ ε δ hε (le_trans hεcut₀ (min_le_left _ _)) hδ (le_trans hδcut₁ (min_le_right _ _)) x hx y hy)).trans hCyzC
       | false =>
         cases b₂ with
         | true =>
-          have h := hcovYZ δ ε hδ (le_trans hδcut₁ (min_le_left _ _))
-            hε (le_trans hεcut₀ (min_le_right _ _)) y hy x hx
-          have h' : |gaussianCovariance P (fun ω => V ω 1)
-              (fun ω => V ω 2) - Real.log (1 / ρ)| ≤ Cyz := by
-            simpa [V, q, hρdef, hcovComm, norm_sub_rev, max_comm] using h
-          exact h'.trans hCyzC
+          exact (show |gaussianCovariance P (fun ω => V ω 1) (fun ω => V ω 2) - Real.log (1 / ρ)| ≤ Cyz by simpa [V, q, hρdef, hcovComm, norm_sub_rev, max_comm] using (hcovYZ δ ε hδ (le_trans hδcut₁ (min_le_left _ _)) hε (le_trans hεcut₀ (min_le_right _ _)) y hy x hx)).trans hCyzC
         | false =>
-          have h := hcovZZ ε δ hε (le_trans hεcut₀ (min_le_right _ _))
-            hδ (le_trans hδcut₁ (min_le_right _ _)) x hx y hy
-          have h' : |gaussianCovariance P (fun ω => V ω 1)
-              (fun ω => V ω 2) - Real.log (1 / ρ)| ≤ Czz := by
-            simpa [V, q, hρdef] using h
-          exact h'.trans hCzzC
-    have hupper := (abs_le.mp h').2
+          exact (show |gaussianCovariance P (fun ω => V ω 1) (fun ω => V ω 2) - Real.log (1 / ρ)| ≤ Czz by simpa [V, q, hρdef] using (hcovZZ ε δ hε (le_trans hεcut₀ (min_le_right _ _)) hδ (le_trans hδcut₁ (min_le_right _ _)) x hx y hy)).trans (by dsimp [C₀]; linarith [hCv, hCmY, hCmZ, hCyy, hCyz])
+    have := (abs_le.mp h').2
     linarith
   intro η g a hη hη1 hg hag hCk hCeta hgap hκ hκexp
-  have hkpos : 0 < (k : ℝ) := lt_of_le_of_lt hC₀nonneg hCk
-  have hpair := finite_gaussian_wick_pair_good_barrier_power_bound P V hV
-    1 2 0 (by decide) g a C₀ η (k : ℝ) ‖x - y‖ ρ κ hg hag hkpos hη hη1
-    hCeta hgap hvarV hcovV₁ hcovV₂ hrhoPos hrhoLeOne hxypos hdistLeRho hcovRoot hfloor
-    hκ hκexp
-  cases b₁ <;> cases b₂ <;> simpa [V, q, r] using hpair
+  cases b₁ <;> cases b₂ <;> simpa [V, q, r] using (finite_gaussian_wick_pair_good_barrier_power_bound P V hV 1 2 0 (by decide) g a C₀ η (k : ℝ) ‖x - y‖ ρ κ hg hag (lt_of_le_of_lt hC₀nonneg hCk) hη hη1 hCeta hgap (show |gaussianVariance P (fun ω => V ω 0) - (k : ℝ)| ≤ C₀ by exact (show |gaussianVariance P (fun ω => V ω 0) - (k : ℝ)| ≤ Cv by simpa [V, q, r] using (hvar k (le_trans hkcut (min_le_left _ _)) x hx)).trans (by dsimp [C₀]; linarith [hCmY, hCmZ, hCyy, hCzz, hCyz])) hcovV₁ hcovV₂ (show 0 < ρ by rw [hρdef]; exact lt_of_lt_of_le (lt_of_lt_of_le hε (le_max_left _ _)) (le_max_right _ _)) ((show ρ ≤ Real.exp (-(k : ℝ)) by rw [hρdef]; exact max_le hxy (max_le hεcut hδcut)).trans (Real.exp_le_one_iff.mpr (neg_nonpos.mpr (Nat.cast_nonneg k)))) hxypos (by rw [hρdef]; exact le_max_left _ _) hcovRoot hfloor hκ hκexp)
 
 end DOZZ.Proofs

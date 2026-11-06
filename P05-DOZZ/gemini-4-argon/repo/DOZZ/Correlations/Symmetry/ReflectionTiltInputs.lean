@@ -13,7 +13,7 @@ namespace DOZZ.Proofs
 /-- Scalar multiplication preserves the Gaussian closure on the same field. -/
 theorem IsGaussianL2Limit_const_mul_symmetry
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L) (t : ℝ) :
+    L (hL : IsGaussianL2Limit P X L) t :
     IsGaussianL2Limit P X (fun ω => t * L ω) := by
   obtain ⟨hmem, f, hf⟩ := hL
   refine ⟨hmem.const_mul t, (fun n => t • f n), ?_⟩
@@ -29,48 +29,34 @@ theorem IsGaussianL2Limit_const_mul_symmetry
   simp only [hnorm]
   simpa only [mul_zero] using ENNReal.Tendsto.const_mul hf (Or.inr enorm_ne_top)
 
-theorem symmetry_gaussianCovariance_mul_right
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (A L : Ω → ℝ) (t : ℝ) :
-    gaussianCovariance P A (fun ω => t * L ω) = t * gaussianCovariance P A L := by
-  unfold gaussianCovariance
-  have he : (fun ω => A ω * (t * L ω)) = fun ω => t * (A ω * L ω) := by
-    funext ω; ring
-  rw [he, integral_const_mul]
 
 theorem symmetry_gaussianVariance_mul
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (L : Ω → ℝ) (t : ℝ) :
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (L : Ω → ℝ) t :
     gaussianVariance P (fun ω => t * L ω) = t ^ 2 * gaussianVariance P L := by
   unfold gaussianVariance gaussianCovariance
-  have he : (fun ω => (t * L ω) * (t * L ω)) = fun ω => t ^ 2 * (L ω * L ω) := by
-    funext ω; ring
-  rw [he, integral_const_mul]
+  rw [(show (fun ω => (t * L ω) * (t * L ω)) = fun ω => t ^ 2 * (L ω * L ω) by funext ω; ring), integral_const_mul]
 
 /-- The bounded correlation potential for the scaled normalization. -/
 noncomputable def symmetryTiltPotential (t : ℝ) : BoundedContinuousFunction ℂ ℝ :=
   t • (symmetryReflectionPotentialBCF - BoundedContinuousFunction.const ℂ symmetryReflectionKappa)
 
-theorem symmetryTiltPotential_apply (t : ℝ) (x : ℂ) :
+theorem symmetryTiltPotential_apply t x :
     symmetryTiltPotential t x = t * (symmetryReflectionPotential x - symmetryReflectionKappa) := rfl
 
 /-- All scaled correlated normalizations supply the literal uniform covariance premise of tilt. -/
 theorem symmetryTiltPotential_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (t : ℝ) :
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (hX : IsEquatorGFF P X) Xc (hXc : IsCircleAverage P X Xc) t :
     TendstoUniformly (fun r x => gaussianCovariance P
       (fun ω => Xc ω (1 - x) r - Xc ω 1 0) (fun ω => t * Xc ω 1 0))
       (symmetryTiltPotential t) atTop := by
+  have symmetry_gaussianCovariance_mul_right (P : Measure Ω) (A : Ω → ℝ) (L : Ω → ℝ) t : gaussianCovariance P A (fun ω => t * L ω) = t * gaussianCovariance P A L := by
+    unfold gaussianCovariance
+    rw [(show (fun ω => A ω * (t * L ω)) = fun ω => t * (A ω * L ω) by funext ω; ring), integral_const_mul]
   rw [Metric.tendstoUniformly_iff]
   intro ε hε
-  have he : Tendsto (fun r : ℝ => |t| * (2 * Real.exp (-r))) atTop (𝓝 0) := by
-    simpa only [mul_zero, Function.comp_def] using
-      (Real.tendsto_exp_atBot.comp tendsto_neg_atTop_atBot).const_mul 2 |>.const_mul |t|
-  filter_upwards [he.eventually (gt_mem_nhds hε)] with r hr x
+  filter_upwards [(show Tendsto (fun r => |t| * (2 * Real.exp (-r))) atTop (𝓝 0) by simpa only [mul_zero, Function.comp_def] using (Real.tendsto_exp_atBot.comp tendsto_neg_atTop_atBot).const_mul 2 |>.const_mul |t|).eventually (gt_mem_nhds hε)] with r hr x
   rw [symmetry_gaussianCovariance_mul_right, repinned_circle_normalization_covariance P X hX Xc hXc,
     symmetryTiltPotential_apply, Real.dist_eq, ← mul_sub, abs_mul]
-  have hd : |(symmetryReflectionPotential x - symmetryReflectionKappa) -
-      ((∫ z, symmetryReflectionPotential z ∂circleMeasure x r) - symmetryReflectionKappa)| ≤
-      2 * Real.exp (-r) := by
-    rw [sub_sub_sub_cancel_right, abs_sub_comm]
-    exact symmetryReflection_circle_potential_error x r
-  exact (mul_le_mul_of_nonneg_left hd (abs_nonneg t)).trans_lt hr
+  exact (mul_le_mul_of_nonneg_left (by rw [sub_sub_sub_cancel_right, abs_sub_comm]; exact symmetryReflection_circle_potential_error x r) (abs_nonneg t)).trans_lt hr
 end DOZZ.Proofs

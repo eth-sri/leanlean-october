@@ -30,23 +30,15 @@ theorem tendstoInMeasure_L1_approximation
     TendstoInMeasure P f atTop g := by
   apply tendstoInMeasure_uniform_approximation P f g a b hconv
   intro ε hε
-  have hε0 : ENNReal.ofReal ε ≠ 0 := (ENNReal.ofReal_pos.mpr hε).ne'
+  have hε0 := (ENNReal.ofReal_pos.mpr hε).ne'
   refine ⟨fun k => c k / ENNReal.ofReal ε, ?_, ?_, ?_⟩
   · simpa only [ENNReal.zero_div] using ENNReal.Tendsto.div_const hc (Or.inr hε0)
   · intro k n
-    have heq : {ω | ε ≤ ‖f n ω - a k n ω‖} =
-        {ω | ENNReal.ofReal ε ≤ ENNReal.ofReal ‖f n ω - a k n ω‖} := by
-      ext ω
-      exact (ENNReal.ofReal_le_ofReal_iff (norm_nonneg _)).symm
-    rw [heq]
+    rw [(show {ω | ε ≤ ‖f n ω - a k n ω‖} = {ω | ENNReal.ofReal ε ≤ ENNReal.ofReal ‖f n ω - a k n ω‖} by ext ω; exact (ENNReal.ofReal_le_ofReal_iff (norm_nonneg _)).symm)]
     exact (meas_ge_le_lintegral_div (hleftmeas k n) hε0 ENNReal.ofReal_ne_top).trans
       (ENNReal.div_le_div_right (hleft k n) _)
   · intro k
-    have heq : {ω | ε ≤ ‖b k ω - g ω‖} =
-        {ω | ENNReal.ofReal ε ≤ ENNReal.ofReal ‖b k ω - g ω‖} := by
-      ext ω
-      exact (ENNReal.ofReal_le_ofReal_iff (norm_nonneg _)).symm
-    rw [heq]
+    rw [(show {ω | ε ≤ ‖b k ω - g ω‖} = {ω | ENNReal.ofReal ε ≤ ENNReal.ofReal ‖b k ω - g ω‖} by ext ω; exact (ENNReal.ofReal_le_ofReal_iff (norm_nonneg _)).symm)]
     exact (meas_ge_le_lintegral_div (hrightmeas k) hε0 ENNReal.ofReal_ne_top).trans
       (ENNReal.div_le_div_right (hright k) _)
 

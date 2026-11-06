@@ -41,28 +41,19 @@ noncomputable def gaussCutPlaneCanonicalPath (z : gaussCutPlane) :
   · apply Subtype.ext
     simp [f, g]
 
-/-- The canonical path function is continuous on its real parameter interval. -/
-theorem gaussCutPlaneCanonicalPath_continuousOn (z : gaussCutPlane) :
-    ContinuousOn (gaussCutPlanePathFunction (gaussCutPlaneCanonicalPath z))
-      (Icc (0 : ℝ) 1) := by
-  exact (gaussCutPlanePathFunction_continuous _).continuousOn
 
-/-- The canonical path stays in the cut plane. -/
-theorem gaussCutPlaneCanonicalPath_mem (z : gaussCutPlane) (t : ℝ) :
-    gaussCutPlanePathFunction (gaussCutPlaneCanonicalPath z) t ∈ gaussCutPlane :=
-  gaussCutPlanePathFunction_mem _ t
 
 /-- A finite-chain continuation of the ordinary-series state exists along the canonical cut-plane
 path to every point. -/
 theorem exists_gauss_cut_plane_canonical_continuation
-    (a b c : ℂ) (z : gaussCutPlane) :
+    a b c z :
     Nonempty (PathContinuationLift (gaussCutPlanePathFunction (gaussCutPlaneCanonicalPath z))
       (gaussSystemOperator a b c) (ordinaryHypergeometricState a b c (1 / 2 : ℂ))) := by
   apply exists_path_continuation_lift
-    (gaussCutPlaneCanonicalPath_continuousOn z) gaussRegularPlane
+    ((by exact (gaussCutPlanePathFunction_continuous _).continuousOn)) gaussRegularPlane
     gaussRegularPlane_isOpen (gaussSystemOperator a b c)
     (gaussSystemOperator_differentiableOn a b c)
   · intro t ht
-    exact gaussCutPlane_subset_regularPlane (gaussCutPlaneCanonicalPath_mem z t)
+    exact gaussCutPlane_subset_regularPlane ((fun t => gaussCutPlanePathFunction_mem _ t) t)
 
 end DOZZ.Proofs

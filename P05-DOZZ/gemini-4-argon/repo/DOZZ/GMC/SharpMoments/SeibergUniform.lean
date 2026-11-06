@@ -25,7 +25,7 @@ namespace DOZZ.Proofs
 
 /-- A continuous function positive on a compact set dominates every small positive constant
 there. -/
-theorem eventually_le_of_isCompact_of_pos {X : Type*} [TopologicalSpace X] {S : Set X}
+theorem eventually_le_of_isCompact_of_pos {X : Type*} [TopologicalSpace X] {S}
     (hS : IsCompact S) {f : X → ℝ} (hf : ContinuousOn f S) (hpos : ∀ x ∈ S, 0 < f x) :
     ∀ᶠ ε in 𝓝[>] (0 : ℝ), ∀ x ∈ S, ε ≤ f x := by
   rcases S.eq_empty_or_nonempty with hS0 | hSne
@@ -41,8 +41,7 @@ theorem transferConstant_le {γ R t tm : ℝ} (hR : 0 ≤ R) (ht : 0 < t) (htm :
       ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 *
         (tm ^ 2 + tm))) * ENNReal.ofReal ((1 + R) ^ 4) ^ tm := by
   have hc : 0 ≤ γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 := by
-    have h3 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
-    have h1 : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
+    have : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
     positivity
   have habs : |t ^ 2 - t| ≤ tm ^ 2 + tm := by
     calc |t ^ 2 - t| ≤ |t ^ 2| + |t| := abs_sub _ _
@@ -65,9 +64,9 @@ theorem real_rpow_le_rpow_of_le_of_le {a b e f : ℝ} (ha : 1 ≤ a) (hab : a �
 charges and orders with a fixed slack below every threshold. -/
 theorem coulombMass_moment_uniform_pos
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (N : ℕ) {δ : ℝ} (hδ : 0 < δ) (hδ8 : δ ≤ 1 / 8) {Rr : ℝ} (hRr1 : 1 ≤ Rr) {Zs A g : ℝ}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    N {δ} (hδ : 0 < δ) (hδ8 : δ ≤ 1 / 8) {Rr} (hRr1 : 1 ≤ Rr) {Zs A g}
     (hZs : 0 ≤ Zs) (hg : 0 < g) :
     ∃ K : ℝ≥0∞, K < ⊤ ∧ ∀ (z : Fin N → ℂ) (α : Fin N → ℝ) (αinf t : ℝ),
       (∀ j k, j ≠ k → 2 * δ ≤ ‖z j - z k‖) → ∑ j, ‖z j‖ ≤ Zs → (∀ j, 2 * ‖z j‖ ≤ Rr) →
@@ -76,15 +75,12 @@ theorem coulombMass_moment_uniform_pos
       ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ∂P ≤ K := by
   let _ : IsProbabilityMeasure P := hX.1
   have hδ1 : δ ≤ 1 := hδ8.trans (by norm_num)
-  have hRr0 : 0 < Rr := by linarith
-  have h4 : 0 < 4 / γ ^ 2 := by positivity
   set tm : ℝ := max (4 / γ ^ 2 - g) 0 with htm
   have htm0 : 0 ≤ tm := le_max_right _ _
-  have htm4 : tm < 4 / γ ^ 2 := max_lt (by linarith) h4
   obtain ⟨K1, hK1, hK1b⟩ := weightedGmcBallMoment_uniform_center P X hX γ hγ hγ2 M hM δ hδ hδ1 A
     g hg
   obtain ⟨K2, hK2, hK2b⟩ := weightedGmcBallMoment_uniform_center P X hX γ hγ hγ2 M hM (1 / Rr)
-    (by positivity) ((div_le_one hRr0).mpr hRr1) A g hg
+    (by positivity) ((div_le_one (by linarith)).mpr hRr1) A g hg
   set R : ℝ := Zs + 1 with hR
   set Tm : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) /
       2 * (tm ^ 2 + tm))) * ENNReal.ofReal ((1 + R) ^ 4) ^ tm with hTm
@@ -93,8 +89,6 @@ theorem coulombMass_moment_uniform_pos
   set cBm : ℝ≥0∞ := ENNReal.ofReal (((1 + Rr + Zs) / δ) ^ E) with hcBm
   set cEm : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (N * (γ * A))) with hcEm
   set MBm : ℝ≥0∞ := 1 + gmcMassMoment P M (Metric.closedBall 0 Rr) tm with hMBm
-  have hMBmtop : MBm < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top,
-    gmc_bounded_moment_lt_top P X hX γ hγ hγ2 M hM _ Metric.isBounded_closedBall tm htm0 htm4⟩
   have hfin : ∀ x : ℝ≥0∞, x ≠ ⊤ → x ^ tm < ⊤ := fun x hx =>
     ENNReal.rpow_lt_top_of_nonneg htm0 hx
   refine ⟨2 ^ tm * (2 ^ tm * (((N : ℝ≥0∞) + 1) ^ tm * (N * (cRm ^ tm * (Tm * K1))) +
@@ -105,7 +99,7 @@ theorem coulombMass_moment_uniform_pos
     · refine ENNReal.mul_lt_top (hfin _ (by norm_num)) (ENNReal.add_lt_top.mpr ⟨?_, ?_⟩)
       · refine ENNReal.mul_lt_top (hfin _ (by simp)) (ENNReal.mul_lt_top (by simp) ?_)
         exact ENNReal.mul_lt_top (hfin _ ENNReal.ofReal_ne_top) (ENNReal.mul_lt_top hTmtop hK1)
-      · exact ENNReal.mul_lt_top (hfin _ ENNReal.ofReal_ne_top) hMBmtop
+      · exact ENNReal.mul_lt_top (hfin _ ENNReal.ofReal_ne_top) (ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, gmc_bounded_moment_lt_top P X hX γ hγ hγ2 M hM _ Metric.isBounded_closedBall tm htm0 (max_lt (by linarith) (by positivity))⟩)
     · exact ENNReal.mul_lt_top (hfin _ ENNReal.ofReal_ne_top) hK2
   intro z α αinf t hsep hZsum hzRr hαA hαinfA ht htb hti htinf
   have htle : t ≤ tm := (by linarith : t ≤ 4 / γ ^ 2 - g).trans (le_max_left _ _)
@@ -116,12 +110,9 @@ theorem coulombMass_moment_uniform_pos
           rw [abs_mul, abs_of_pos hγ]
           exact mul_le_mul_of_nonneg_left (hαA j) hγ.le
       _ = N * (γ * A) := by simp
-  have hinf : |γ * αinf| ≤ γ * A := by
-    rw [abs_mul, abs_of_pos hγ]
-    exact mul_le_mul_of_nonneg_left hαinfA hγ.le
   have hS : ∑ j, |γ * α j| + |γ * αinf| ≤ E := by
     rw [hE]
-    linarith only [hsumα, hinf]
+    linarith only [hsumα, (show |γ * αinf| ≤ γ * A by rw [abs_mul, abs_of_pos hγ]; exact mul_le_mul_of_nonneg_left hαinfA hγ.le)]
   have hS0 : 0 ≤ ∑ j, |γ * α j| + |γ * αinf| :=
     add_nonneg (Finset.sum_nonneg fun j _ => abs_nonneg _) (abs_nonneg _)
   have hzsum0 : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun j _ => norm_nonneg _
@@ -165,9 +156,6 @@ theorem coulombMass_moment_uniform_pos
       (hK1b (α k) t (hαA k) ht htb (hti k))
   -- the bulk moment
   have hMB : gmcMassMoment P M (Metric.closedBall 0 Rr) t ≤ MBm := by
-    have hm : AEMeasurable (fun ω => M ω (Metric.closedBall 0 Rr) ^ tm) P :=
-      (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
-        Metric.isClosed_closedBall.measurableSet).pow_const tm
     calc gmcMassMoment P M (Metric.closedBall 0 Rr) t
         ≤ ∫⁻ ω, (1 + M ω (Metric.closedBall 0 Rr) ^ tm) ∂P :=
           lintegral_mono fun ω => weightedGrid_ennreal_rpow_le_one_add_rpow _ ht htle
@@ -178,15 +166,13 @@ theorem coulombMass_moment_uniform_pos
   refine (coulombMass_moment_le_pieces P X hX γ hγ hγ2 M hM z α αinf hδ hδ1 hsep hRr1 hzRr t
     ht).trans ?_
   have h2 : (2 : ℝ≥0∞) ^ t ≤ 2 ^ tm := ENNReal.rpow_le_rpow_of_exponent_le (by norm_num) htle
-  have hN : (N : ℝ≥0∞) ^ t ≤ ((N : ℝ≥0∞) + 1) ^ tm :=
-    hpow_le le_self_add le_add_self
   have hsumW : ∑ k, ENNReal.ofReal (((2 + 2 * ∑ j, ‖z j‖) / δ) ^
       (∑ j, |γ * α j| + |γ * αinf|)) ^ t * weightedGmcBallMoment P M γ (α k) (z k) δ t ≤
         N * (cRm ^ tm * (Tm * K1)) := by
     calc _ ≤ ∑ _k : Fin N, cRm ^ tm * (Tm * K1) :=
           Finset.sum_le_sum fun k _ => mul_le_mul' hcR (hW k)
       _ = N * (cRm ^ tm * (Tm * K1)) := by simp
-  exact mul_le_mul' h2 (add_le_add (mul_le_mul' h2 (add_le_add (mul_le_mul' hN hsumW)
+  exact mul_le_mul' h2 (add_le_add (mul_le_mul' h2 (add_le_add (mul_le_mul' (hpow_le le_self_add le_add_self) hsumW)
     (mul_le_mul' hcB hMB))) (mul_le_mul' hcE (hK2b αinf t hαinfA ht htb htinf)))
 
 end DOZZ.Proofs

@@ -20,13 +20,6 @@ noncomputable def stoppedReflectionIntegrand (γ : ℝ)
   if -(z.1.1 : ℝ) ≤ z.2 then
     ENNReal.ofReal (Real.exp (γ * reflectionPairValue z.1.2 z.2)) else 0
 
-theorem measurable_stoppedReflectionIntegrand (γ : ℝ) :
-    Measurable (stoppedReflectionIntegrand γ) := by
-  have hval := measurable_uncurry_reflectionPairValue.comp
-    (measurable_fst.snd.prodMk measurable_snd : Measurable
-      (fun z : (ℝ≥0 × (BrownianPath × BrownianPath)) × ℝ => (z.1.2,z.2)))
-  exact Measurable.ite (measurableSet_le measurable_fst.fst.coe_nnreal_real.neg measurable_snd)
-    ((hval.const_mul γ).exp.ennreal_ofReal) measurable_const
 
 /-- Sum finite restrictions to disjoint shells, so the code is measurable on all input measures. -/
 noncomputable def stoppedReflectionMassCode (γ : ℝ)
@@ -34,24 +27,20 @@ noncomputable def stoppedReflectionMassCode (γ : ℝ)
   ∑' n : ℕ, ∫⁻ s, stoppedReflectionIntegrand γ (z.1,s)
     ∂(finiteRestrictionOnSet (translationShell n) z.2 : Measure ℝ)
 
-theorem measurable_stoppedReflectionMassCode (γ : ℝ) :
+theorem measurable_stoppedReflectionMassCode γ :
     Measurable (stoppedReflectionMassCode γ) := by
   apply Measurable.tsum
   intro n
-  have hi := measurable_lintegral_finiteMeasure_parameter
-    (measurable_stoppedReflectionIntegrand γ)
-  exact hi.comp (measurable_fst.prodMk
+  exact (measurable_lintegral_finiteMeasure_parameter ((by exact Measurable.ite (measurableSet_le measurable_fst.fst.coe_nnreal_real.neg measurable_snd) (((measurable_uncurry_reflectionPairValue.comp (measurable_fst.snd.prodMk measurable_snd : Measurable (fun z : (ℝ≥0 × (BrownianPath × BrownianPath)) × ℝ => (z.1.2,z.2)))).const_mul γ).exp.ennreal_ofReal) measurable_const))).comp (measurable_fst.prodMk
     ((measurable_finiteRestrictionOnSet _ (measurableSet_translationShell n)).comp measurable_snd))
 
 /-- On locally finite measures the measurable code is the literal stopped reflection integral. -/
-theorem stoppedReflectionMassCode_eq (γ : ℝ) (τ : ℝ≥0)
-    (B : BrownianPath × BrownianPath) (Z : Measure ℝ)
+theorem stoppedReflectionMassCode_eq γ (τ : ℝ≥0)
+    B (Z : Measure ℝ)
     (hfin : ∀ a b : ℝ, Z (Icc a b) < ⊤) :
     stoppedReflectionMassCode γ ((τ,B),Z) = stoppedReflectionMass γ τ B Z := by
-  have hshell (n : ℕ) : Z (translationShell n) < ⊤ :=
-    lt_of_le_of_lt (measure_mono (translationShell_subset_window n)) (hfin _ _)
   exact (lintegral_eq_tsum_finiteRestrictionOnSet_translationShell
-    (fun s => stoppedReflectionIntegrand γ ((τ,B),s)) Z hshell).symm
+    (fun s => stoppedReflectionIntegrand γ ((τ,B),s)) Z (fun n => lt_of_le_of_lt (measure_mono (translationShell_subset_window n)) (hfin _ _))).symm
 
 
 end DOZZ.Proofs

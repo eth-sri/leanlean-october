@@ -16,7 +16,7 @@ namespace DOZZ.Proofs
 weighted off-diagonal coefficient vanishes. This version does not normalize either diagonal
 weight, so it also covers zero weights. -/
 theorem real_diagonal_normSq_connection_change
-    (α δ u v w x : ℝ) (f g : ℂ)
+    (α δ u v w x : ℝ) f g
     (hcross : α * u * v + δ * w * x = 0) :
     α * Complex.normSq ((u : ℂ) * f + (v : ℂ) * g) +
         δ * Complex.normSq ((w : ℂ) * f + (x : ℂ) * g) =
@@ -25,12 +25,10 @@ theorem real_diagonal_normSq_connection_change
   have hcrossUV :
       ((u : ℂ) * f * star ((v : ℂ) * g)).re =
         (u * v) * (f * (starRingEnd ℂ) g).re := by
-    have hv : star ((v : ℂ) * g) = (v : ℂ) * star g := by
-      simp [mul_comm]
     calc
       ((u : ℂ) * f * star ((v : ℂ) * g)).re =
           (((u * v : ℝ) : ℂ) * (f * star g)).re := by
-            rw [hv]
+            rw [(show star ((v : ℂ) * g) = (v : ℂ) * star g by simp [mul_comm])]
             apply congrArg Complex.re
             push_cast
             ring
@@ -38,18 +36,15 @@ theorem real_diagonal_normSq_connection_change
   have hcrossWX :
       ((w : ℂ) * f * star ((x : ℂ) * g)).re =
         (w * x) * (f * (starRingEnd ℂ) g).re := by
-    have hx : star ((x : ℂ) * g) = (x : ℂ) * star g := by
-      simp [mul_comm]
     calc
       ((w : ℂ) * f * star ((x : ℂ) * g)).re =
           (((w * x : ℝ) : ℂ) * (f * star g)).re := by
-            rw [hx]
+            rw [(show star ((x : ℂ) * g) = (x : ℂ) * star g by simp [mul_comm])]
             apply congrArg Complex.re
             push_cast
             ring
       _ = (w * x) * (f * star g).re := Complex.re_ofReal_mul _ _
-  rw [Complex.normSq_add, Complex.normSq_add]
-  rw [Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul]
+  rw [Complex.normSq_add, Complex.normSq_add, Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul]
   rw [Complex.normSq_ofReal, Complex.normSq_ofReal,
     Complex.normSq_ofReal, Complex.normSq_ofReal]
   simp only [Complex.star_def] at hcrossUV hcrossWX

@@ -29,7 +29,7 @@ theorem fusion_convexMass_inverse_bound (a b : ℝ≥0∞) (t s : ℝ)
     exact (ennreal_rpow_antitone_of_nonpos h hs).trans le_add_self
 
 /-- Positive finite endpoints give a positive finite segment, including its endpoints. -/
-theorem fusion_convexMass_pos_finite (a b : ℝ≥0∞) (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
+theorem fusion_convexMass_pos_finite (a b : ℝ≥0∞) t (ht : t ∈ Icc (0 : ℝ) 1)
     (ha0 : a ≠ 0) (hat : a ≠ ⊤) (hb0 : b ≠ 0) (hbt : b ≠ ⊤) :
     ENNReal.ofReal t * a + ENNReal.ofReal (1 - t) * b ≠ 0 ∧
       ENNReal.ofReal t * a + ENNReal.ofReal (1 - t) * b ≠ ⊤ := by
@@ -48,7 +48,7 @@ theorem fusion_convexMass_tendstoInMeasure {Ω : Type*} [MeasurableSpace Ω]
     (haf : ∀ n, ∀ᵐ ω ∂P, a n ω ≠ ⊤) (hbf : ∀ n, ∀ᵐ ω ∂P, b n ω ≠ ⊤)
     (hac : TendstoInMeasure P (fun n ω => (a n ω).toReal) atTop (fun ω => (g ω).toReal))
     (hbc : TendstoInMeasure P (fun n ω => (b n ω).toReal) atTop (fun ω => (g ω).toReal))
-    (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
+    t (ht : t ∈ Icc (0 : ℝ) 1) :
     TendstoInMeasure P (fun n ω =>
       (ENNReal.ofReal t * a n ω + ENNReal.ofReal (1 - t) * b n ω).toReal)
       atTop (fun ω => (g ω).toReal) := by
@@ -57,18 +57,15 @@ theorem fusion_convexMass_tendstoInMeasure {Ω : Type*} [MeasurableSpace Ω]
     fun n => (ha n).ennreal_toReal.aestronglyMeasurable
   have hbm : ∀ n, AEStronglyMeasurable (fun ω => (b n ω).toReal) P :=
     fun n => (hb n).ennreal_toReal.aestronglyMeasurable
-  have hfm : ∀ n, AEStronglyMeasurable (f n) P := fun n =>
-    ((ham n).const_mul t).add ((hbm n).const_mul (1 - t))
   have hc : TendstoInMeasure P f atTop (fun ω => (g ω).toReal) := by
-    apply (exists_seq_tendstoInMeasure_atTop_iff hfm).mpr
+    apply (exists_seq_tendstoInMeasure_atTop_iff (fun n => ((ham n).const_mul t).add ((hbm n).const_mul (1 - t)))).mpr
     intro ns hns
     obtain ⟨u, hu, hua⟩ := (exists_seq_tendstoInMeasure_atTop_iff ham).mp hac ns hns
     obtain ⟨v, hv, hvb⟩ := (exists_seq_tendstoInMeasure_atTop_iff hbm).mp hbc (ns ∘ u) (hns.comp hu)
     refine ⟨u ∘ v, hu.comp hv, ?_⟩
     filter_upwards [hua, hvb] with ω hωa hωb
     have h := ((hωa.comp hv.tendsto_atTop).const_mul t).add (hωb.const_mul (1 - t))
-    have he : t * (g ω).toReal + (1 - t) * (g ω).toReal = (g ω).toReal := by ring
-    rw [he] at h
+    rw [(show t * (g ω).toReal + (1 - t) * (g ω).toReal = (g ω).toReal by ring)] at h
     exact h
   apply TendstoInMeasure.congr_left _ hc
   intro n

@@ -16,7 +16,7 @@ namespace DOZZ.Proofs
 
 theorem singular_compact_weighted_lintegral_tendsto
     (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
-    (hf : ∀ x, 0 ≤ f x) (β : ℝ) (hβ : 0 ≤ β) (z : ℂ)
+    (hf : ∀ x, 0 ≤ f x) (β : ℝ) (hβ : 0 ≤ β) z
     (w : ℂ → ℝ≥0∞) (hw : Measurable w) (hwf : ∀ x, w x ≠ ∞) (μ : Measure ℂ) :
     Tendsto (fun n => ∫⁻ x, ENNReal.ofReal (singularCompactTest f hfc β n (x-z)) * w x ∂μ)
       atTop (𝓝 (∫⁻ x, ENNReal.ofReal (f (x-z)) *

@@ -14,13 +14,9 @@ theorem reflected_kernel_coefficient_spatial_limits (γ α h : ℝ) :
       (1-Real.exp (-h)*‖z‖)⁻¹^|γ*α|)) (𝓝 0) (𝓝 (max 1 ((1+Real.exp (-h))^(γ^2/2)))) ∧
     Tendsto (fun z : ℂ => min 1 ((1-Real.exp (-h))^(γ^2/2)*
       (1-Real.exp (-h)*‖z‖)⁻¹^(-|γ*α|))) (𝓝 0) (𝓝 (min 1 ((1-Real.exp (-h))^(γ^2/2)))) := by
-  have hi := (reflected_inner_root_factor_limit (Real.exp (-h)) |γ*α|).const_mul
-    ((1+Real.exp (-h))^(γ^2/2))
-  have hl := (reflected_inner_root_factor_limit (Real.exp (-h)) (-|γ*α|)).const_mul
-    ((1-Real.exp (-h))^(γ^2/2))
   constructor
-  · simpa only [mul_one] using (tendsto_const_nhds (x := (1 : ℝ))).max hi
-  · simpa only [mul_one] using (tendsto_const_nhds (x := (1 : ℝ))).min hl
+  · simpa only [mul_one] using (tendsto_const_nhds (x := (1 : ℝ))).max ((reflected_inner_root_factor_limit (Real.exp (-h)) |γ*α|).const_mul ((1+Real.exp (-h))^(γ^2/2)))
+  · simpa only [mul_one] using (tendsto_const_nhds (x := (1 : ℝ))).min ((reflected_inner_root_factor_limit (Real.exp (-h)) (-|γ*α|)).const_mul ((1-Real.exp (-h))^(γ^2/2)))
 
 theorem reflected_kernel_coefficient_depth_limit (γ : ℝ) :
     Tendsto (fun h : ℝ => (max 1 ((1+Real.exp (-h))^(γ^2/2)),

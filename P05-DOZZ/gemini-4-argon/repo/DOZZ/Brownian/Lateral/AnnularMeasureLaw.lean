@@ -16,12 +16,12 @@ def lateralLawAnnulus (n : ℕ) : Set ℂ :=
   {x | 1 / ((n : ℝ) + 2) < ‖x‖ ∧ ‖x‖ < (n : ℝ) + 2}
 
 /-- The annular exhaustion consists of open sets. -/
-theorem isOpen_lateralLawAnnulus (n : ℕ) : IsOpen (lateralLawAnnulus n) :=
+theorem isOpen_lateralLawAnnulus n : IsOpen (lateralLawAnnulus n) :=
   (isOpen_lt continuous_const continuous_norm).inter
     (isOpen_lt continuous_norm continuous_const)
 
 /-- Its closure is compact and stays away from the origin. -/
-theorem lateralLawAnnulus_closure (n : ℕ) :
+theorem lateralLawAnnulus_closure n :
     IsCompact (closure (lateralLawAnnulus n)) ∧ (0 : ℂ) ∉ closure (lateralLawAnnulus n) := by
   have hs : closure (lateralLawAnnulus n) ⊆
       {x : ℂ | 1 / ((n : ℝ) + 2) ≤ ‖x‖ ∧ ‖x‖ ≤ (n : ℝ) + 2} := by
@@ -34,8 +34,7 @@ theorem lateralLawAnnulus_closure (n : ℕ) :
     intro x hx
     simpa only [Metric.mem_closedBall, dist_zero_right] using (hs hx).2
   · intro h
-    have hn : 0 < 1 / ((n : ℝ) + 2) := by positivity
-    exact (not_le_of_gt hn) (by simpa only [norm_zero] using (hs h).1)
+    exact (not_le_of_gt (show 0 < 1 / ((n : ℝ) + 2) by positivity)) (by simpa only [norm_zero] using (hs h).1)
 
 /-- The annuli increase. -/
 theorem lateralLawAnnulus_monotone : Monotone lateralLawAnnulus := by
@@ -51,16 +50,14 @@ theorem lateralLawAnnulus_exhaustion :
   constructor
   · intro hx
     obtain ⟨n, hn⟩ := mem_iUnion.mp hx
-    have hpos : 0 < ‖x‖ := lt_trans (by positivity) hn.1
-    simpa only [mem_compl_iff, mem_singleton_iff] using norm_pos_iff.mp hpos
+    simpa only [mem_compl_iff, mem_singleton_iff] using norm_pos_iff.mp (lt_trans (by positivity) hn.1)
   · intro hx
-    have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx
     obtain ⟨n, hn⟩ := exists_nat_gt (max ‖x‖ (1 / ‖x‖))
     apply mem_iUnion.mpr
     refine ⟨n, ?_, ?_⟩
     · have ht : 1 / ‖x‖ < (n : ℝ) + 2 := (le_max_right _ _).trans_lt hn |>.trans (by linarith)
       exact (div_lt_iff₀ (by positivity)).mpr
-        (by simpa only [one_mul, mul_comm] using (div_lt_iff₀ hxpos).mp ht)
+        (by simpa only [one_mul, mul_comm] using (div_lt_iff₀ (norm_pos_iff.mpr hx)).mp ht)
     · exact (le_max_left _ _).trans_lt hn |>.trans (by linarith)
 
 private abbrev LateralAnnularOpen :=
@@ -106,12 +103,9 @@ theorem lateral_random_measure_law_of_annular_open_fdd
   have hcode : Measurable lateralAnnularMeasureCode := Measurable.of_comap_le le_rfl
   have hto : @Measurable LateralLocallyFiniteMeasure LateralLocallyFiniteMeasure
       (Subtype.instMeasurableSpace) mOutput id := by
-    rw [measurable_iff_comap_le]
-    rw [MeasurableSpace.comap_id]
+    rw [measurable_iff_comap_le, MeasurableSpace.comap_id]
     let : MeasurableSpace LateralLocallyFiniteMeasure := Subtype.instMeasurableSpace
-    have hcstd : Measurable lateralAnnularMeasureCode := measurable_pi_iff.mpr fun U =>
-      (Measure.measurable_coe U.2.1.measurableSet).comp measurable_subtype_coe
-    exact hcstd.comap_le
+    exact (measurable_pi_iff.mpr fun U => (Measure.measurable_coe U.2.1.measurableSet).comp measurable_subtype_coe).comap_le
   have hom : AEMeasurable outM P :=
     @Measurable.comp_aemeasurable Ω LateralLocallyFiniteMeasure LateralLocallyFiniteMeasure
       _ mOutput P Subtype.instMeasurableSpace outM id hto
@@ -126,7 +120,7 @@ theorem lateral_random_measure_law_of_annular_open_fdd
       (inferInstance : MeasurableSpace ℂ) = borel ℂ := BorelSpace.measurable_eq
       _ = _ := borel_eq_generateFrom_of_subbasis
         (TopologicalSpace.generateFrom_setOfPred_isOpen (inferInstance : TopologicalSpace ℂ)).symm
-  have hrestrict (n : ℕ) : Measurable
+  have hrestrict n : Measurable
       (fun q : LateralLocallyFiniteMeasure => q.1.restrict (lateralLawAnnulus n)) := by
     let : ∀ q : LateralLocallyFiniteMeasure,
         IsFiniteMeasure (q.1.restrict (lateralLawAnnulus n)) := fun q => ⟨by
@@ -138,14 +132,8 @@ theorem lateral_random_measure_law_of_annular_open_fdd
       change IsOpen S at hS
       have hcs : closure (S ∩ lateralLawAnnulus n) ⊆ closure (lateralLawAnnulus n) :=
         closure_mono inter_subset_right
-      have hu : IsOpen (S ∩ lateralLawAnnulus n) ∧
-          IsCompact (closure (S ∩ lateralLawAnnulus n)) ∧
-          (0 : ℂ) ∉ closure (S ∩ lateralLawAnnulus n) :=
-        ⟨hS.inter (isOpen_lateralLawAnnulus n),
-          (lateralLawAnnulus_closure n).1.of_isClosed_subset isClosed_closure hcs,
-          fun h => (lateralLawAnnulus_closure n).2 (hcs h)⟩
       simpa only [lateralAnnularMeasureCode, Measure.restrict_apply hS.measurableSet] using
-        (measurable_pi_iff.mp hcode) ⟨S ∩ lateralLawAnnulus n, hu⟩
+        (measurable_pi_iff.mp hcode) ⟨S ∩ lateralLawAnnulus n, ⟨hS.inter (isOpen_lateralLawAnnulus n), (lateralLawAnnulus_closure n).1.of_isClosed_subset isClosed_closure hcs, fun h => (lateralLawAnnulus_closure n).2 (hcs h)⟩⟩
     · simpa only [lateralAnnularMeasureCode, Measure.restrict_apply_univ] using
         (measurable_pi_iff.mp hcode) ⟨lateralLawAnnulus n,
           isOpen_lateralLawAnnulus n, lateralLawAnnulus_closure n⟩
@@ -171,15 +159,10 @@ theorem lateral_random_measure_law_of_annular_open_fdd
       rcases (mem_measurableCylinders A).1 hA with ⟨s, As, hAs, rfl⟩
       let vm := fun ω (j : s) => M ω j.1.1
       let vn := fun ω (j : s) => N ω j.1.1
-      have hm : AEMeasurable vm P := AEMeasurable.of_eval fun j =>
-        (Measure.measurable_coe j.1.2.1.measurableSet).comp_aemeasurable hM
-      have hn : AEMeasurable vn P := AEMeasurable.of_eval fun j =>
-        (Measure.measurable_coe j.1.2.1.measurableSet).comp_aemeasurable hN
-      have hv := hfdd s (fun j => j.1.1) (fun j => j.1.2)
       have hp : P (vm ⁻¹' As) = P (vn ⁻¹' As) := by
-        have h := congrArg (fun μ => μ As) hv
-        rw [Measure.map_apply_of_aemeasurable hm hAs,
-          Measure.map_apply_of_aemeasurable hn hAs] at h
+        have h := congrArg (fun μ => μ As) (hfdd s (fun j => j.1.1) (fun j => j.1.2))
+        rw [Measure.map_apply_of_aemeasurable (AEMeasurable.of_eval fun j => (Measure.measurable_coe j.1.2.1.measurableSet).comp_aemeasurable hM : AEMeasurable vm P) hAs,
+          Measure.map_apply_of_aemeasurable (AEMeasurable.of_eval fun j => (Measure.measurable_coe j.1.2.1.measurableSet).comp_aemeasurable hN : AEMeasurable vn P) hAs] at h
         exact h
       have hs : MeasurableSet (lateralAnnularMeasureCode ⁻¹' cylinder s As) := by
         apply hcode
@@ -190,31 +173,9 @@ theorem lateral_random_measure_law_of_annular_open_fdd
       exact hp
     · simp only [Measure.map_apply_of_aemeasurable hom MeasurableSet.univ,
         Measure.map_apply_of_aemeasurable hon MeasurableSet.univ, preimage_univ]
-  have he := congrArg (fun μ => μ.map (fun q : LateralLocallyFiniteMeasure => q.1)) hLaw
   simpa only [AEMeasurable.map_map_of_aemeasurable hforget.aemeasurable hom,
-    AEMeasurable.map_map_of_aemeasurable hforget.aemeasurable hon, Function.comp_def] using he
+    AEMeasurable.map_map_of_aemeasurable hforget.aemeasurable hon, Function.comp_def] using (congrArg (fun μ => μ.map (fun q : LateralLocallyFiniteMeasure => q.1)) hLaw)
 
-/-- Removing the radial factor preserves finiteness on every compact subset of the
-punctured plane. Its logarithmic radii lie in a compact interval. -/
-theorem originRadialRemovedGMC_compact_lt_top
-    (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) [IsFiniteMeasure M]
-    (K : Set ℂ) (hK : IsCompact K) (hzero : (0 : ℂ) ∉ K) :
-    M.withDensity (lateralRadialWeight γ A) K < ⊤ := by
-  let r : ℂ → ℝ := fun x => -Real.log ‖x‖
-  have hr : ContinuousOn r K :=
-    (continuous_norm.continuousOn.log (fun x hx =>
-      norm_ne_zero_iff.mpr (fun h => hzero (h ▸ hx)))).neg
-  obtain ⟨a, ha⟩ := (hK.image_of_continuousOn hr).bddBelow
-  obtain ⟨b, hb⟩ := (hK.image_of_continuousOn hr).bddAbove
-  have hsub : K ⊆ r ⁻¹' Icc a b := fun x hx =>
-    ⟨ha ⟨x, hx, rfl⟩, hb ⟨x, hx, rfl⟩⟩
-  have hrm : Measurable r := measurable_neg.comp (Real.measurable_log.comp measurable_norm)
-  calc
-    M.withDensity (lateralRadialWeight γ A) K ≤
-        M.withDensity (lateralRadialWeight γ A) (r ⁻¹' Icc a b) := measure_mono hsub
-    _ = lateralProjectedGMC γ A M (Icc a b) :=
-      (Measure.map_apply hrm measurableSet_Icc).symm
-    _ < ⊤ := lateralProjectedGMC_Icc_ne_top γ A M a b
 
 /-- Bounded continuous integrals of finite random measures are measurable up to null sets. -/
 theorem finiteMeasure_bcf_integral_aemeasurable
@@ -223,20 +184,16 @@ theorem finiteMeasure_bcf_integral_aemeasurable
     (hfin : ∀ ω, IsFiniteMeasure (M ω)) (f : BoundedContinuousFunction ℂ ℝ) :
     AEMeasurable (fun ω => ∫ x, f x ∂M ω) P := by
   let : ∀ ω, IsFiniteMeasure (M ω) := hfin
-  have hp := (Measure.measurable_lintegral
-    (BoundedContinuousFunction.measurable_coe_ennreal_comp f.nnrealPart)).comp_aemeasurable hM
-  have hn := (Measure.measurable_lintegral
-    (BoundedContinuousFunction.measurable_coe_ennreal_comp (-f).nnrealPart)).comp_aemeasurable hM
   have h : AEMeasurable (fun ω =>
       (∫⁻ x, (f.nnrealPart x : ℝ≥0∞) ∂M ω).toReal -
       (∫⁻ x, ((-f).nnrealPart x : ℝ≥0∞) ∂M ω).toReal) P :=
-    hp.ennreal_toReal.sub hn.ennreal_toReal
+    ((Measure.measurable_lintegral (BoundedContinuousFunction.measurable_coe_ennreal_comp f.nnrealPart)).comp_aemeasurable hM).ennreal_toReal.sub ((Measure.measurable_lintegral (BoundedContinuousFunction.measurable_coe_ennreal_comp (-f).nnrealPart)).comp_aemeasurable hM).ennreal_toReal
   simpa only [BoundedContinuousFunction.integral_eq_integral_nnrealPart_sub,
     BoundedContinuousFunction.toReal_lintegral_coe_eq_integral, Function.comp_def, Pi.sub_apply] using h
 
 /-- A test vanishing outside a measurable set has the same integral against its restriction. -/
 theorem lateral_integral_restrict_of_zero_outside
-    (μ : Measure ℂ) (K : Set ℂ) (hK : MeasurableSet K) (f : ℂ → ℝ)
+    (μ : Measure ℂ) K (hK : MeasurableSet K) (f : ℂ → ℝ)
     (hf : ∀ x, x ∉ K → f x = 0) :
     ∫ x, f x ∂μ.restrict K = ∫ x, f x ∂μ := by
   rw [← integral_indicator hK]
@@ -261,30 +218,25 @@ theorem lateral_compact_test_integral_aemeasurable
   change AEMeasurable (fun ω => (M ω).restrict K) P at hr
   have hrf : ∀ ω, IsFiniteMeasure ((M ω).restrict K) := fun ω => ⟨by
     rw [Measure.restrict_apply_univ]; exact hfin ω K hfc hzero⟩
-  have he ω : (∫ x, f x ∂(M ω).restrict K) = ∫ x, f x ∂M ω :=
-    lateral_integral_restrict_of_zero_outside _ K hK f
-      (fun x hx => image_eq_zero_of_notMem_tsupport hx)
-  simpa only [he] using finiteMeasure_bcf_integral_aemeasurable P _ hr hrf f
+  simpa only [(fun ω => lateral_integral_restrict_of_zero_outside _ K hK f (fun x hx => image_eq_zero_of_notMem_tsupport hx))] using finiteMeasure_bcf_integral_aemeasurable P _ hr hrf f
 
-/-- Open-set distance approximations vanish outside the open set. -/
-theorem gmcOpenApprox_zero_outside (U : Set ℂ) (hU : IsOpen U) (n : ℕ)
-    (x : ℂ) (hx : x ∉ U) : gmcOpenApprox U hU n x = 0 := by
-  classical
-  have h : U ≠ univ := fun h => hx (h ▸ mem_univ x)
-  simp [gmcOpenApprox, h, Metric.infDist_zero_of_mem (show x ∈ Uᶜ from hx)]
 
 /-- Every distance approximation has support in the closure of the approximated open set. -/
-theorem gmcOpenApprox_tsupport_subset (U : Set ℂ) (hU : IsOpen U) (n : ℕ) :
+theorem gmcOpenApprox_tsupport_subset U (hU : IsOpen U) (n : ℕ) :
     tsupport (gmcOpenApprox U hU n : ℂ → ℝ) ⊆ closure U := by
+  have gmcOpenApprox_zero_outside x (hx : x ∉ U) : gmcOpenApprox U hU n x = 0 := by
+    classical
+    have h : U ≠ univ := fun h => hx (h ▸ mem_univ x)
+    simp [gmcOpenApprox, h, Metric.infDist_zero_of_mem (show x ∈ Uᶜ from hx)]
   apply closure_mono
   intro x hx
   by_contra h
-  exact hx (gmcOpenApprox_zero_outside U hU n x h)
+  exact hx (gmcOpenApprox_zero_outside x h)
 
 /-- Distance approximations recover the mass of a relatively compact open set under
 any measure finite on its closure. -/
 theorem lateral_openApprox_integral_tendsto
-    (μ : Measure ℂ) (U : Set ℂ) (hU : IsOpen U) (hfin : μ (closure U) < ⊤) :
+    (μ : Measure ℂ) U (hU : IsOpen U) (hfin : μ (closure U) < ⊤) :
     Tendsto (fun n => ∫ x, gmcOpenApprox U hU n x ∂μ) atTop (𝓝 ((μ U).toReal)) := by
   let : IsFiniteMeasure (μ.restrict (closure U)) := ⟨by
     rw [Measure.restrict_apply_univ]; exact hfin⟩
@@ -293,9 +245,7 @@ theorem lateral_openApprox_integral_tendsto
     lateral_integral_restrict_of_zero_outside μ (closure U) isClosed_closure.measurableSet _
       (fun x hx => image_eq_zero_of_notMem_tsupport
         (fun h => hx (gmcOpenApprox_tsupport_subset U hU n h)))
-  have hmass : μ.restrict (closure U) U = μ U := by
-    rw [Measure.restrict_apply hU.measurableSet, inter_eq_left.mpr subset_closure]
-  simpa only [he, hmass] using gmcOpenApprox_integral_tendsto (μ.restrict (closure U)) U hU
+  simpa only [he, (show μ.restrict (closure U) U = μ U by rw [Measure.restrict_apply hU.measurableSet, inter_eq_left.mpr subset_closure])] using gmcOpenApprox_integral_tendsto (μ.restrict (closure U)) U hU
 
 /-- Equality of finite vectors of compact test integrals determines finite vectors of
 relatively compact open-set masses, even for measures with infinite total mass. -/
@@ -346,7 +296,7 @@ theorem lateral_open_mass_fdd_of_compact_test_fdd
       exact ae_of_all _ fun ω => lateral_openApprox_integral_tendsto _ _ (hU (e j)).1
         (hNf ω _ (hU (e j)).2.1 (hU (e j)).2.2)
   let post := fun v : Fin (Fintype.card ι) → ℝ =>
-    fun j : ι => ENNReal.ofReal (v (e.symm j))
+    fun j => ENNReal.ofReal (v (e.symm j))
   have hp : Measurable post := by fun_prop
   have heA : post ∘ A = fun ω j => M ω (U j) := by
     funext ω j
@@ -382,19 +332,6 @@ theorem lateral_random_measure_law_of_compact_test_fdd
     (lateral_open_mass_fdd_of_compact_test_fdd P M N hM hN
       (fun ω => (hMf ω).2) (fun ω => (hNf ω).2) htest)
 
-/-- Every compact subset of the punctured plane fits in a positive lateral chart. -/
-theorem exists_originLateralChart_of_compact
-    (K : Set ℂ) (hK : IsCompact K) (hzero : (0 : ℂ) ∉ K) :
-    ∃ ρ : ℝ, 0 < ρ ∧ K ⊆ originLateralChart ρ := by
-  by_cases hn : K.Nonempty
-  · obtain ⟨x, hx, hmin⟩ := hK.exists_isMinOn hn continuous_norm.continuousOn
-    have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr (fun h => hzero (h ▸ hx))
-    refine ⟨‖x‖ / 4, by positivity, ?_⟩
-    intro y hy
-    have hxy : ‖x‖ ≤ ‖y‖ := (isMinOn_iff.mp hmin) y hy
-    change 2 * (‖x‖ / 4) < ‖y‖
-    linarith
-  · exact ⟨1, zero_lt_one, (not_nonempty_iff_eq_empty.mp hn) ▸ empty_subset _⟩
 
 /-- Nonzero dilation preserves zero origin mass and local finiteness on punctured compacts. -/
 theorem lateral_locally_finite_map_dilation
@@ -405,7 +342,7 @@ theorem lateral_locally_finite_map_dilation
       ∀ K, IsCompact K → (0 : ℂ) ∉ K →
         (μ.map (fun x : ℂ => (c : ℂ) * x)) K < ⊤ := by
   have hc0 : (c : ℂ) ≠ 0 := by exact_mod_cast hc.ne'
-  have hm : Measurable (fun x : ℂ => (c : ℂ) * x) := by fun_prop
+  have hm : Measurable (fun x => (c : ℂ) * x) := by fun_prop
   constructor
   · rw [Measure.map_apply hm (measurableSet_singleton 0)]
     simpa only [preimage, mem_singleton_iff, mul_eq_zero, hc0, false_or,
@@ -419,56 +356,49 @@ theorem lateral_locally_finite_map_dilation
 conditions; the common chart and pullback support are constructed here. -/
 theorem originRadialRemovedGMC_dilation_annular_test_vector_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+    X Xc
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (c γ : ℝ) (hcpos : 0 < c) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    {m : ℕ} (f : Fin m → BoundedContinuousFunction ℂ ℝ)
+    {m} (f : Fin m → BoundedContinuousFunction ℂ ℝ)
     (hfc : ∀ j, HasCompactSupport (f j : ℂ → ℝ))
     (hfzero : ∀ j, (0 : ℂ) ∉ tsupport (f j : ℂ → ℝ)) :
     P.map (fun ω j => ∫ x, f j x
       ∂(M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))) =
     P.map (fun ω j => ∫ x, f j (c * x)
       ∂(M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))) := by
-  have hc0 : (c : ℂ) ≠ 0 := by exact_mod_cast hcpos.ne'
-  let e := Homeomorph.mulLeft₀ (c : ℂ) hc0
+  have exists_originLateralChart_of_compact K (hK : IsCompact K) (hzero : (0 : ℂ) ∉ K) : ∃ ρ : ℝ, 0 < ρ ∧ K ⊆ originLateralChart ρ := by
+    by_cases hn : K.Nonempty
+    · obtain ⟨x, hx, hmin⟩ := hK.exists_isMinOn hn continuous_norm.continuousOn
+      have := norm_pos_iff.mpr (fun h => hzero (h ▸ hx))
+      refine ⟨‖x‖ / 4, by positivity, ?_⟩
+      intro y hy
+      have := (isMinOn_iff.mp hmin) y hy
+      change 2 * (‖x‖ / 4) < ‖y‖
+      linarith
+    · exact ⟨1, zero_lt_one, (not_nonempty_iff_eq_empty.mp hn) ▸ empty_subset _⟩
+  let e := Homeomorph.mulLeft₀ (c : ℂ) (by exact_mod_cast hcpos.ne')
   let T := ⋃ j, tsupport (f j : ℂ → ℝ)
-  have hT : IsCompact T := isCompact_iUnion hfc
-  have hTzero : (0 : ℂ) ∉ T := by
-    intro h; obtain ⟨j, hj⟩ := mem_iUnion.mp h; exact hfzero j hj
   let K := e ⁻¹' T
-  have hK : IsCompact K := e.isCompact_preimage.mpr hT
-  have hKzero : (0 : ℂ) ∉ K := by simpa only [K, mem_preimage, e,
-    Homeomorph.coe_mulLeft₀, mul_zero] using hTzero
-  obtain ⟨ρ, hρ, hKU⟩ := exists_originLateralChart_of_compact K hK hKzero
-  have hgK j : tsupport (fun x : ℂ => f j (c * x)) ⊆ K :=
-    (tsupport_comp_subset_preimage (f j : ℂ → ℝ) e.continuous).trans
-      (preimage_mono (subset_iUnion (fun j => tsupport (f j : ℂ → ℝ)) j))
-  have hgc j : HasCompactSupport (fun x : ℂ => f j (c * x)) :=
-    (hfc j).comp_homeomorph e
-  have hgU j : tsupport (fun x : ℂ => f j (c * x)) ⊆ originLateralChart ρ :=
-    (hgK j).trans hKU
+  have hK := e.isCompact_preimage.mpr (isCompact_iUnion hfc)
+  obtain ⟨ρ, hρ, hKU⟩ := exists_originLateralChart_of_compact K hK (by simpa only [K, mem_preimage, e, Homeomorph.coe_mulLeft₀, mul_zero] using (by intro h; obtain ⟨j, hj⟩ := mem_iUnion.mp h; exact hfzero j hj))
   have hfV j : tsupport (f j : ℂ → ℝ) ⊆ originLateralChart (c * ρ) := by
     intro x hx
-    have hpre : e.symm x ∈ K := by
-      change e (e.symm x) ∈ T
-      rw [e.apply_symm_apply]
-      exact mem_iUnion.mpr ⟨j, hx⟩
-    have h := (originLateralChart_dilation_mem ρ c hcpos (e.symm x)).mpr (hKU hpre)
+    have h := (originLateralChart_dilation_mem ρ c hcpos (e.symm x)).mpr (hKU (by change e (e.symm x) ∈ T; rw [e.apply_symm_apply]; exact mem_iUnion.mpr ⟨j, hx⟩))
     change e (e.symm x) ∈ originLateralChart (c * ρ) at h
     simpa only [e.apply_symm_apply] using h
   exact originRadialRemovedGMC_dilation_test_vector_law P X Xc hX hc hm hcont
     ρ c γ hρ hcpos hγ hγ2 M hM K hK hKU f hfc hfV
     (fun j x hx => image_eq_zero_of_notMem_tsupport (fun h =>
-      hx (show e x ∈ T from mem_iUnion.mpr ⟨j, h⟩))) hgc hgU
+      hx (show e x ∈ T from mem_iUnion.mpr ⟨j, h⟩))) (fun j => (hfc j).comp_homeomorph e) (fun j => ((fun j => (tsupport_comp_subset_preimage (f j : ℂ → ℝ) e.continuous).trans (preimage_mono (subset_iUnion (fun j => tsupport (f j : ℂ → ℝ)) j))) j).trans hKU)
 
 /-- Positive dilation preserves the law of the entire actual radial-removed
 measure. The measure need only be locally finite on the punctured plane. -/
 theorem originRadialRemovedGMC_dilation_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+    X Xc
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
@@ -477,22 +407,27 @@ theorem originRadialRemovedGMC_dilation_law
     P.map (fun ω => ((M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))).map
       (fun x : ℂ => (c : ℂ) * x)) =
     P.map (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))) := by
+  have originRadialRemovedGMC_compact_lt_top A (M : Measure ℂ) [IsFiniteMeasure M] K (hK : IsCompact K) (hzero : (0 : ℂ) ∉ K) : M.withDensity (lateralRadialWeight γ A) K < ⊤ := by
+    have hr := (continuous_norm.continuousOn.log (fun x hx =>
+        norm_ne_zero_iff.mpr (fun h => hzero (h ▸ hx)))).neg
+    obtain ⟨a, ha⟩ := (hK.image_of_continuousOn hr).bddBelow
+    obtain ⟨b, hb⟩ := (hK.image_of_continuousOn hr).bddAbove
+    calc
+      M.withDensity (lateralRadialWeight γ A) K ≤
+          M.withDensity (lateralRadialWeight γ A) ((fun x => -Real.log ‖x‖) ⁻¹' Icc a b) := measure_mono (fun x hx => ⟨ha ⟨x, hx, rfl⟩, hb ⟨x, hx, rfl⟩⟩)
+      _ = lateralProjectedGMC γ A M (Icc a b) :=
+        (Measure.map_apply (measurable_neg.comp (Real.measurable_log.comp measurable_norm)) measurableSet_Icc).symm
+      _ < ⊤ := lateralProjectedGMC_Icc_ne_top γ A M a b
   let : IsProbabilityMeasure P := hX.1
   let F := fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))
-  have hA := originRadialPath_aemeasurable P X Xc hc hcont
-  have hMm := equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM
-  have hF := originRadialRemovedGMC_aemeasurable P γ _ hA M hMm hM.1
-  have hs : Measurable (fun x : ℂ => (c : ℂ) * x) := by fun_prop
-  have hN : AEMeasurable (fun ω => (F ω).map (fun x : ℂ => (c : ℂ) * x)) P :=
-    (Measure.measurable_map _ hs).comp_aemeasurable hF
-  have hfin ω K hK hz := @originRadialRemovedGMC_compact_lt_top γ
+  have hF := originRadialRemovedGMC_aemeasurable P γ _ (originRadialPath_aemeasurable P X Xc hc hcont) M (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM) hM.1
+  have hs : Measurable (fun x => (c : ℂ) * x) := by fun_prop
+  have hfin ω K hK hz := @originRadialRemovedGMC_compact_lt_top
     (originRadialPath Xc ω) (M ω) (hM.1 ω) K hK hz
-  have hf ω := lateral_locally_finite_map_dilation (F ω)
-    (originRadialRemovedGMC_origin γ _ _) (hfin ω) c hcpos
-  apply lateral_random_measure_law_of_compact_test_fdd P _ F hN hF hf
+  apply lateral_random_measure_law_of_compact_test_fdd P _ F ((Measure.measurable_map _ hs).comp_aemeasurable hF) hF (fun ω => lateral_locally_finite_map_dilation (F ω) (originRadialRemovedGMC_origin γ _ _) (hfin ω) c hcpos)
     (fun ω => ⟨originRadialRemovedGMC_origin γ _ _, hfin ω⟩)
   intro m f hfc hz
-  have he ω j : (∫ x, f j x ∂(F ω).map (fun x : ℂ => (c : ℂ) * x)) =
+  have he ω j : (∫ x, f j x ∂(F ω).map (fun x => (c : ℂ) * x)) =
       ∫ x, f j (c * x) ∂F ω :=
     integral_map hs.aemeasurable (f j).continuous.aestronglyMeasurable
   change P.map (fun ω j => ∫ x, f j x ∂(F ω).map (fun x : ℂ => (c : ℂ) * x)) =
@@ -509,8 +444,8 @@ theorem lateralProjectedGMC_translation_law
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (t : ℝ) :
+    γ (hγ : 0 < γ) (hγ2 : γ < 2)
+    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) t :
     P.map (fun ω => (lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)).map
       (fun s : ℝ => s + t)) =
     P.map (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) := by
@@ -533,7 +468,7 @@ theorem lateralProjectedGMC_translation_law
     AEMeasurable.map_map_of_aemeasurable hproj.aemeasurable hF] at h
   have he ω : ((F ω).map (fun x : ℂ => (c : ℂ) * x)).map
       (fun x : ℂ => -Real.log ‖x‖) =
-      (lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)).map (fun s : ℝ => s + t) := by
+      (lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)).map (fun s => s + t) := by
     rw [logRadiusProjection_dilation (F ω) (originRadialRemovedGMC_origin γ _ _) c hcpos]
     change (lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)).map _ = _
     congr 1

@@ -27,7 +27,7 @@ namespace DOZZ.Proofs
 original one-channel basis by the affine moment identity. -/
 theorem gammaHalf_one_channel_of_full_unreflected {Ω : Type*} [MeasurableSpace Ω]
     (H : ℂ → ℂ → ℂ → ℂ → ℂ)
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ a ε c : ℝ)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) γ μ a ε c
     (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hformula :
@@ -46,22 +46,11 @@ theorem gammaHalf_one_channel_of_full_unreflected {Ω : Type*} [MeasurableSpace 
       (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * ε)).re) *
         structureConstant P M γ μ (ε + γ / 2) a c * ‖gaussGPlus H A B C z‖ ^ 2 := by
   dsimp only at hformula ⊢
-  have hA : gaussParameterA γ (γ / 2) ε a c = gaussParameterA γ (γ / 2) a ε c := by
-    unfold gaussParameterA
-    ring
-  have hB : gaussParameterB γ (γ / 2) ε a c = gaussParameterB γ (γ / 2) a ε c := by
-    unfold gaussParameterB
-    ring
-  have hC := crossing_gammaHalf_channel_parameter γ a ε c hγ.ne'
-  have hCC : (gaussParameterC γ (γ / 2) ε : ℂ) =
-      1 + (gaussParameterA γ (γ / 2) a ε c : ℂ) +
-        (gaussParameterB γ (γ / 2) a ε c : ℂ) - (gaussParameterC γ (γ / 2) a : ℂ) := by
-    exact_mod_cast hC
   intro z hz
   rw [gammaHalf_fourPoint_reflection P X M γ μ a ε c hγ hγ2 hX hM z,
-    hformula (1 - z) (one_sub_gaussCutPlane_subset_gaussCutPlane hz), hA, hB]
+    hformula (1 - z) (one_sub_gaussCutPlane_subset_gaussCutPlane hz), (show gaussParameterA γ (γ / 2) ε a c = gaussParameterA γ (γ / 2) a ε c by unfold gaussParameterA; ring), (show gaussParameterB γ (γ / 2) ε a c = gaussParameterB γ (γ / 2) a ε c by unfold gaussParameterB; ring)]
   unfold gaussFMinus gaussFPlus gaussGMinus gaussGPlus
-  rw [hCC]
+  rw [(show (gaussParameterC γ (γ / 2) ε : ℂ) = 1 + (gaussParameterA γ (γ / 2) a ε c : ℂ) + (gaussParameterB γ (γ / 2) a ε c : ℂ) - (gaussParameterC γ (γ / 2) a : ℂ) by exact_mod_cast (crossing_gammaHalf_channel_parameter γ a ε c hγ.ne'))]
   have hpow (A B C : ℂ) : 1 - (1 + A + B - C) = C - A - B := by ring
   have hplusA (A B C : ℂ) : A - (1 + A + B - C) + 1 = C - B := by ring
   have hplusB (A B C : ℂ) : B - (1 + A + B - C) + 1 = C - A := by ring

@@ -45,7 +45,7 @@ theorem retained_moment_allocation
     (hB : ∀ ω, ENNReal.ofReal wB * B ω ≤ I ω) :
     (∫⁻ ω, I ω ^ (-(a + b)) ∂P) ≤ ENNReal.ofReal (wA ^ (-a) * wB ^ (-b)) *
       ∫⁻ ω, A ω ^ (-a) * B ω ^ (-b) ∂P := by
-  have hpoint (ω : Ω) : I ω ^ (-(a + b)) ≤
+  have hpoint ω : I ω ^ (-(a + b)) ≤
       ENNReal.ofReal (wA ^ (-a) * wB ^ (-b)) * (A ω ^ (-a) * B ω ^ (-b)) := by
     have hh := negative_order_allocation (I ω)
       (ENNReal.ofReal wA * A ω) (ENNReal.ofReal wB * B ω) a b ha hb (hA ω) (hB ω)
@@ -60,8 +60,8 @@ theorem retained_moment_allocation
 
 /-- A weighted integral over an annulus dominates any retained disk on which the kernel
 has a positive lower bound. No finiteness of the weighted mass is required. -/
-theorem freezing_retained_lower_bound (γ α ε R w : ℝ) (M : Measure ℂ)
-    (z u : ℂ) (ρ : ℝ)
+theorem freezing_retained_lower_bound γ α ε R w (M : Measure ℂ)
+    z u ρ
     (hsub : Metric.ball u ρ ⊆ {x | ε < ‖x - z‖ ∧ ‖x - z‖ < R})
     (hw : ∀ x ∈ Metric.ball u ρ, w ≤ ‖x - z‖ ^ (-(γ * α))) :
     ENNReal.ofReal w * M (Metric.ball u ρ) ≤ freezingAnnulusMassLocal γ α M z ε R := by

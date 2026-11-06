@@ -29,15 +29,14 @@ open DOZZ.Proofs
 cutoffs and points, indexed by an arbitrary finite type. -/
 theorem admissible_isCenteredJointlyGaussian_fintype
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
+    (P : Measure Ω) U (dens : ℂ → ℝ) ε₀
+    Y
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     {ι : Type*} [Fintype ι] (q : ι → ℝ × ℂ) (hq : ∀ i, 0 < (q i).1 ∧ (q i).1 ≤ ε₀) :
     IsCenteredJointlyGaussian P (fun ω i => Y ω (q i).1 (q i).2) := by
   let e := Fintype.equivFin ι
   have h := hY.gaussian (Fintype.card ι) (fun j => q (e.symm j)) (fun j => hq _)
-  have h2 := centeredJointlyGaussian_reindex P e _ h
-  simpa using h2
+  simpa using (centeredJointlyGaussian_reindex P e _ h)
 
 /-- Number of coarse barrier coordinates for two roots between levels `k₀` and `m`. -/
 def pairCoarseCount (k₀ m : ℕ) : ℕ := (m + 1 - k₀) * 2
@@ -50,34 +49,32 @@ def pairCoarseScale (k₀ m : ℕ) (i : Fin (pairCoarseCount k₀ m)) : ℕ :=
 def pairCoarseCenter (k₀ m : ℕ) (p : ℂ × ℂ) (i : Fin (pairCoarseCount k₀ m)) : ℂ :=
   if (finProdFinEquiv.symm i).2 = 0 then p.1 else p.2
 
-theorem pairCoarseScale_ge (k₀ m : ℕ) (i : Fin (pairCoarseCount k₀ m)) :
+theorem pairCoarseScale_ge k₀ m i :
     k₀ ≤ pairCoarseScale k₀ m i := Nat.le_add_right _ _
 
-theorem pairCoarseScale_le (k₀ m : ℕ) (i : Fin (pairCoarseCount k₀ m)) :
-    pairCoarseScale k₀ m i ≤ m := by
-  have h := ((finProdFinEquiv.symm i).1).isLt
-  unfold pairCoarseScale
-  omega
 
-theorem pairCoarseCenter_mem (k₀ m : ℕ) (p : ℂ × ℂ) (K : Set ℂ) (hp : p ∈ K ×ˢ K)
-    (i : Fin (pairCoarseCount k₀ m)) : pairCoarseCenter k₀ m p i ∈ K := by
+theorem pairCoarseCenter_mem k₀ m p K (hp : p ∈ K ×ˢ K)
+    i : pairCoarseCenter k₀ m p i ∈ K := by
   unfold pairCoarseCenter
   split_ifs
   · exact hp.1
   · exact hp.2
 
 /-- The level-`m` barrier at both roots is the finite coarse rectangle. -/
-theorem pair_barrier_iff {Ω : Type*} (Y : Ω → ℝ → ℂ → ℝ) (a : ℝ) (k₀ m : ℕ) (ω : Ω)
+theorem pair_barrier_iff {Ω : Type*} (Y : Ω → ℝ → ℂ → ℝ) a (k₀ m : ℕ) ω
     (p : ℂ × ℂ) :
     ((ω, p.1) ∈ admissibleGrowingBarrierSet Y a k₀ (m : ℝ) ∧
         (ω, p.2) ∈ admissibleGrowingBarrierSet Y a k₀ (m : ℝ)) ↔
       ∀ i, Y ω (Real.exp (-(pairCoarseScale k₀ m i : ℝ))) (pairCoarseCenter k₀ m p i) ≤
         a * (pairCoarseScale k₀ m i : ℝ) := by
+  have pairCoarseScale_le i : pairCoarseScale k₀ m i ≤ m := by
+    unfold pairCoarseScale
+    omega
   constructor
   · rintro ⟨hx, hy⟩ i
     have hge := pairCoarseScale_ge k₀ m i
     have hle : ((pairCoarseScale k₀ m i : ℕ) : ℝ) ≤ (m : ℝ) := by
-      exact_mod_cast pairCoarseScale_le k₀ m i
+      exact_mod_cast pairCoarseScale_le i
     unfold pairCoarseCenter
     split_ifs
     · exact hx _ hge hle
@@ -85,9 +82,9 @@ theorem pair_barrier_iff {Ω : Type*} (Y : Ω → ℝ → ℂ → ℝ) (a : ℝ)
   · intro h
     have hcoord (k : ℕ) (hk₀ : k₀ ≤ k) (hkm : (k : ℝ) ≤ (m : ℝ)) (c : Fin 2) :
         Y ω (Real.exp (-(k : ℝ))) (if c = 0 then p.1 else p.2) ≤ a * (k : ℝ) := by
-      have hkm' : k ≤ m := by exact_mod_cast hkm
+      have : k ≤ m := by exact_mod_cast hkm
       have hlt : k - k₀ < m + 1 - k₀ := by omega
-      let i : Fin (pairCoarseCount k₀ m) := finProdFinEquiv (⟨k - k₀, hlt⟩, c)
+      let i := finProdFinEquiv (⟨k - k₀, hlt⟩, c)
       have hi := h i
       have hsymm : finProdFinEquiv.symm i = (⟨k - k₀, hlt⟩, c) := by
         simp [i]
@@ -96,10 +93,7 @@ theorem pair_barrier_iff {Ω : Type*} (Y : Ω → ℝ → ℂ → ℝ) (a : ℝ)
         rw [hsymm]
         simp only
         omega
-      have hcenter : pairCoarseCenter k₀ m p i = if c = 0 then p.1 else p.2 := by
-        unfold pairCoarseCenter
-        rw [hsymm]
-      rw [hscale, hcenter] at hi
+      rw [hscale, (show pairCoarseCenter k₀ m p i = if c = 0 then p.1 else p.2 by unfold pairCoarseCenter; rw [hsymm])] at hi
       exact hi
     refine ⟨fun k hk₀ hkm => ?_, fun k hk₀ hkm => ?_⟩
     · simpa using hcoord k hk₀ hkm 0
@@ -111,25 +105,19 @@ theorem gaussianRectangleIndicator_measurable
     (Z : Ω → ι → ℝ) (hZ : ∀ i, Measurable (fun ω => Z ω i)) (b c : ι → ℝ) :
     Measurable (gaussianRectangleIndicator Z b c) := by
   classical
-  have hset : MeasurableSet {ω | ∀ i, Z ω i + c i ≤ b i} := by
-    have hEq : {ω | ∀ i, Z ω i + c i ≤ b i} = ⋂ i, {ω | Z ω i + c i ≤ b i} := by
-      ext ω; simp
-    rw [hEq]
-    exact MeasurableSet.iInter fun i =>
-      measurableSet_le ((hZ i).add measurable_const) measurable_const
   unfold gaussianRectangleIndicator
-  exact Measurable.ite hset measurable_const measurable_const
+  exact Measurable.ite (by rw [(show {ω | ∀ i, Z ω i + c i ≤ b i} = ⋂ i, {ω | Z ω i + c i ≤ b i} by ext ω; simp)]; exact MeasurableSet.iInter fun i => measurableSet_le ((hZ i).add measurable_const) measurable_const) measurable_const measurable_const
 
 /-- The finite-barrier kernel of two roots is the Wick covariance factor times a shifted Gaussian
 rectangle probability. -/
 theorem finiteBarrierPairKernel_eq_rectangle
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
+    U (dens : ℂ → ℝ) ε₀
+    Y
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (g a : ℝ) (k₀ m : ℕ) (hk₀cut : Real.exp (-(k₀ : ℝ)) ≤ ε₀)
-    (ε δ : ℝ) (hε : 0 < ε) (hεcut : ε ≤ ε₀) (hδ : 0 < δ) (hδcut : δ ≤ ε₀)
+    g a (k₀ m : ℕ) (hk₀cut : Real.exp (-(k₀ : ℝ)) ≤ ε₀)
+    ε δ (hε : 0 < ε) (hεcut : ε ≤ ε₀) (hδ : 0 < δ) (hδcut : δ ≤ ε₀)
     (p : ℂ × ℂ) :
     compatibleAdmissibleSelectedFiniteBarrierPairKernel P Y Y g a k₀ m ε δ p.1 p.2
         true true =
@@ -156,7 +144,7 @@ theorem finiteBarrierPairKernel_eq_rectangle
     | .inr true => (δ, p.2)
   let V : Ω → Fin n ⊕ Bool → ℝ := fun ω i => Y ω (tup i).1 (tup i).2
   have hscalecut (j : Fin n) : Real.exp (-(scale j : ℝ)) ≤ ε₀ := by
-    have hge : (k₀ : ℝ) ≤ (scale j : ℝ) := by exact_mod_cast pairCoarseScale_ge k₀ m j
+    have : (k₀ : ℝ) ≤ (scale j : ℝ) := by exact_mod_cast pairCoarseScale_ge k₀ m j
     exact le_trans (Real.exp_le_exp.mpr (by linarith)) hk₀cut
   have hV : IsCenteredJointlyGaussian P V := by
     apply admissible_isCenteredJointlyGaussian_fintype P U dens ε₀ Y hY tup
@@ -198,12 +186,9 @@ theorem finiteBarrierPairKernel_eq_rectangle
             ∀ i, z (Sum.inl i) ≤ barrier i} from hbar), mul_one]
       · rw [Set.indicator_of_notMem (show V ω ∉ {z : Fin n ⊕ Bool → ℝ |
             ∀ i, z (Sum.inl i) ≤ barrier i} from hbar)]
-        have hnot : ¬ ((ω, p.1) ∈ admissibleGrowingBarrierSet Y a k₀ (m : ℝ) ∧
-            (ω, p.2) ∈ admissibleGrowingBarrierSet Y a k₀ (m : ℝ)) :=
-          fun h => hbar ((pair_barrier_iff Y a k₀ m ω p).mp h)
         by_cases hx : (ω, p.1) ∈ admissibleGrowingBarrierSet Y a k₀ (m : ℝ)
         · have hy : (ω, p.2) ∉ admissibleGrowingBarrierSet Y a k₀ (m : ℝ) :=
-            fun hy => hnot ⟨hx, hy⟩
+            fun hy => (fun h => hbar ((pair_barrier_iff Y a k₀ m ω p).mp h)) ⟨hx, hy⟩
           rw [Set.indicator_of_notMem hy, mul_zero]
         · rw [Set.indicator_of_notMem hx, zero_mul]
     simp only [ite_self]
@@ -215,11 +200,8 @@ theorem finiteBarrierPairKernel_eq_rectangle
   let shift : Fin n → ℝ := fun j =>
     g * gaussianCovariance P (fun ω => Z ω j) (fun ω => Y ω ε p.1) +
       g * gaussianCovariance P (fun ω => Z ω j) (fun ω => Y ω δ p.2)
-  have hZmeas (j : Fin n) : Measurable (fun ω => Z ω j) :=
-    admissible_field_measurable_sample P U dens ε₀ Y hY _ _
-  have hrectMeas := gaussianRectangleIndicator_measurable Z hZmeas barrier shift
   have hrectInt : Integrable (gaussianRectangleIndicator Z barrier shift) P := by
-    refine Integrable.of_bound hrectMeas.aestronglyMeasurable 1 (ae_of_all _ fun ω => ?_)
+    refine Integrable.of_bound (gaussianRectangleIndicator_measurable Z (fun j => admissible_field_measurable_sample P U dens ε₀ Y hY _ _) barrier shift).aestronglyMeasurable 1 (ae_of_all _ fun ω => ?_)
     unfold gaussianRectangleIndicator
     split_ifs <;> simp
   have hright : (∫⁻ ω, Set.indicator {z : Fin n ⊕ Bool → ℝ | ∀ i, z (Sum.inl i) ≤ barrier i}
@@ -274,10 +256,6 @@ theorem finiteBarrierPairKernel_eq_rectangle
 def separatedPairs (K : Set ℂ) (s₀ : ℝ) : Set (ℂ × ℂ) :=
   (K ×ˢ K) ∩ {p | s₀ ≤ ‖p.1 - p.2‖}
 
-theorem isCompact_separatedPairs (K : Set ℂ) (hK : IsCompact K) (s₀ : ℝ) :
-    IsCompact (separatedPairs K s₀) :=
-  (hK.prod hK).inter_right
-    (isClosed_le continuous_const (continuous_fst.sub continuous_snd).norm)
 
 
 /-- Finite-barrier kernels are uniformly Cauchy off the diagonal as both cutoffs vanish,
@@ -285,14 +263,14 @@ uniformly for bounded charges. -/
 theorem finiteBarrierPairKernel_toReal_uniform_cauchy
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
+    U (dens : ℂ → ℝ) (ε₀ : ℝ)
+    Y
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U)
-    (a : ℝ) (k₀ m : ℕ) (hk₀m : k₀ ≤ m) (hk₀cut : Real.exp (-(k₀ : ℝ)) ≤ ε₀)
+    K (hK : IsCompact K) (hKU : K ⊆ U)
+    a (k₀ m : ℕ) (hk₀m : k₀ ≤ m) (hk₀cut : Real.exp (-(k₀ : ℝ)) ≤ ε₀)
     (hvar : ∀ k : ℕ, k₀ ≤ k → ∀ x ∈ K,
       1 ≤ gaussianVariance P (fun ω => Y ω (Real.exp (-(k : ℝ))) x))
-    (s₀ : ℝ) (hs₀ : 0 < s₀) (Γ : Set ℝ) (B : ℝ) (hB : 0 ≤ B) (hΓ : ∀ g ∈ Γ, |g| ≤ B)
+    s₀ (hs₀ : 0 < s₀) (Γ : Set ℝ) B (hB : 0 ≤ B) (hΓ : ∀ g ∈ Γ, |g| ≤ B)
     (η : ℝ) (hη : 0 < η) :
     ∃ R : ℝ, ∀ r s r' s' : ℝ, R ≤ r → R ≤ s → R ≤ r' → R ≤ s' → ∀ g ∈ Γ,
       ∀ p ∈ separatedPairs K s₀,
@@ -300,32 +278,30 @@ theorem finiteBarrierPairKernel_toReal_uniform_cauchy
           (Real.exp (-r)) (Real.exp (-s)) p.1 p.2 true true).toReal -
         (compatibleAdmissibleSelectedFiniteBarrierPairKernel P Y Y g a k₀ m
           (Real.exp (-r')) (Real.exp (-s')) p.1 p.2 true true).toReal| < η := by
-  have hYY := isCompatibleAdmissibleRegularizations_self P U dens ε₀ Y hY
   have : Nonempty (Fin (pairCoarseCount k₀ m)) :=
     ⟨⟨0, by unfold pairCoarseCount; omega⟩⟩
   have hscalecut (i : Fin (pairCoarseCount k₀ m)) :
       Real.exp (-(pairCoarseScale k₀ m i : ℝ)) ≤ ε₀ := by
-    have hge : (k₀ : ℝ) ≤ (pairCoarseScale k₀ m i : ℝ) := by
+    have : (k₀ : ℝ) ≤ (pairCoarseScale k₀ m i : ℝ) := by
       exact_mod_cast pairCoarseScale_ge k₀ m i
     exact le_trans (Real.exp_le_exp.mpr (by linarith)) hk₀cut
   obtain ⟨H, _hH, coarseKernel, hconv⟩ := compatible_finite_mixed_pair_kernel_tendsto_uniformly
-    P U dens ε₀ ε₀ Y Y hY hY hYY K hK hKU (separatedPairs K s₀)
-    (isCompact_separatedPairs K hK s₀) inter_subset_left s₀ hs₀ (fun p hp => hp.2)
+    P U dens ε₀ ε₀ Y Y hY hY (isCompatibleAdmissibleRegularizations_self P U dens ε₀ Y hY) K hK hKU (separatedPairs K s₀)
+    (((hK.prod hK).inter_right (isClosed_le continuous_const (continuous_fst.sub continuous_snd).norm))) inter_subset_left s₀ hs₀ (fun p hp => hp.2)
     (pairCoarseScale k₀ m) (fun i => by rw [min_self]; exact hscalecut i)
     (fun p i => pairCoarseCenter k₀ m p i)
     (fun p hp i => pairCoarseCenter_mem k₀ m p K hp.1 i)
     (fun p hp i => hvar _ (pairCoarseScale_ge k₀ m i) _ (pairCoarseCenter_mem k₀ m p K hp.1 i))
     (fun i => a * (pairCoarseScale k₀ m i : ℝ)) true true Γ B hB hΓ
   obtain ⟨δ, hδ, hδconv⟩ := hconv (η / 2) (half_pos hη)
-  have hcut : 0 < min δ ε₀ := lt_min hδ hY.cutoffPositive
   refine ⟨-Real.log (min δ ε₀), ?_⟩
   intro r s r' s' hr hs hr' hs' g hg p hp
-  have hexp (t : ℝ) (ht : -Real.log (min δ ε₀) ≤ t) :
+  have hexp t (ht : -Real.log (min δ ε₀) ≤ t) :
       Real.exp (-t) ≤ min δ (min ε₀ ε₀) := by
     rw [min_self]
     calc Real.exp (-t) ≤ Real.exp (Real.log (min δ ε₀)) := Real.exp_le_exp.mpr (by linarith)
-      _ = min δ ε₀ := Real.exp_log hcut
-  have hle (t : ℝ) (ht : -Real.log (min δ ε₀) ≤ t) : Real.exp (-t) ≤ ε₀ := by
+      _ = min δ ε₀ := Real.exp_log (lt_min hδ hY.cutoffPositive)
+  have hle t (ht : -Real.log (min δ ε₀) ≤ t) : Real.exp (-t) ≤ ε₀ := by
     have h := hexp t ht
     rw [min_self] at h
     exact h.trans (min_le_right _ _)
@@ -334,7 +310,7 @@ theorem finiteBarrierPairKernel_toReal_uniform_cauchy
   have h2 := hδconv (Real.exp (-r')) (Real.exp (-s')) (Real.exp_pos _) (hexp r' hr')
     (Real.exp_pos _) (hexp s' hs') g hg p hp
   simp only [ite_self] at h1 h2
-  have hnonneg (ε δ' : ℝ) : 0 ≤ Real.exp (g ^ 2 * gaussianCovariance P
+  have hnonneg ε δ' : 0 ≤ Real.exp (g ^ 2 * gaussianCovariance P
           (fun ω => Y ω ε p.1) (fun ω => Y ω δ' p.2)) *
         ∫ ω, gaussianRectangleIndicator
           (fun ω i => Y ω (Real.exp (-(pairCoarseScale k₀ m i : ℝ)))
@@ -390,23 +366,21 @@ noncomputable abbrev growingPairKernel {Ω : Type*} [MeasurableSpace Ω]
 /-- A real distance bound for two extended reals squeezed by an additive error. -/
 theorem abs_toReal_sub_le_of_le_add {x y t : ℝ≥0∞} (hyx : y ≤ x) (hx : x ≤ y + t)
     (hxtop : x ≠ ⊤) (ht : t ≠ ⊤) : |x.toReal - y.toReal| ≤ t.toReal := by
-  have hytop : y ≠ ⊤ := ne_top_of_le_ne_top hxtop hyx
   rw [← ENNReal.toReal_sub_of_le hyx hxtop, abs_of_nonneg ENNReal.toReal_nonneg]
   exact ENNReal.toReal_mono ht (tsub_le_iff_left.mpr hx)
 
 /-- The summed omitted-barrier rate is monotone in the charge. -/
-theorem tsum_barrier_rate_le_of_le (g gHi a : ℝ) (hg : g ≤ gHi) (hga : gHi < a) (N : ℕ) :
+theorem tsum_barrier_rate_le_of_le g gHi a (hg : g ≤ gHi) (hga : gHi < a) (N : ℕ) :
     ∑' j : ℕ, ENNReal.ofReal (Real.exp (-((a - g) ^ 2 * ((j + N : ℕ) : ℝ) / 16))) ≤
       ∑' j : ℕ, ENNReal.ofReal (Real.exp (-((a - gHi) ^ 2 * ((j + N : ℕ) : ℝ) / 16))) := by
   apply ENNReal.tsum_le_tsum
   intro j
   apply ENNReal.ofReal_le_ofReal
   apply Real.exp_le_exp.mpr
-  have h1 : 0 ≤ a - gHi := (sub_pos.mpr hga).le
+  have h1 := (sub_pos.mpr hga).le
   have h2 : a - gHi ≤ a - g := by linarith
-  have hsq : (a - gHi) ^ 2 ≤ (a - g) ^ 2 := pow_le_pow_left₀ h1 h2 2
   have hn : (0 : ℝ) ≤ ((j + N : ℕ) : ℝ) := Nat.cast_nonneg _
-  have := mul_le_mul_of_nonneg_right hsq hn
+  have := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ h1 h2 2) hn
   linarith
 
 /-- Off-diagonal uniform Cauchy property of the growing-barrier kernels, uniformly for charges in
@@ -414,15 +388,15 @@ theorem tsum_barrier_rate_le_of_le (g gHi a : ℝ) (hg : g ≤ gHi) (hga : gHi <
 theorem growingPairKernel_offDiagonal_uniform_cauchy
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
+    U (dens : ℂ → ℝ) (ε₀ : ℝ)
+    Y
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U)
-    (gLo gHi a : ℝ) (hgLo : 0 < gLo) (hgLoHi : gLo ≤ gHi) (hga : gHi < a)
+    K (hK : IsCompact K) (hKU : K ⊆ U)
+    gLo gHi a (hgLo : 0 < gLo) (hgLoHi : gLo ≤ gHi) (hga : gHi < a)
     (k₀ : ℕ) (hk₀cut : Real.exp (-(k₀ : ℝ)) ≤ ε₀)
     (hvar : ∀ k : ℕ, k₀ ≤ k → ∀ x ∈ K,
       1 ≤ gaussianVariance P (fun ω => Y ω (Real.exp (-(k : ℝ))) x))
-    (s₀ : ℝ) (hs₀ : 0 < s₀) (η : ℝ) (hη : 0 < η) :
+    s₀ (hs₀ : 0 < s₀) η (hη : 0 < η) :
     ∃ R : ℝ, ∀ r s r' s' : ℝ, R ≤ r → R ≤ s → R ≤ r' → R ≤ s' →
       ∀ g ∈ Icc gLo gHi, ∀ p ∈ separatedPairs K s₀,
         growingPairKernel P Y g a k₀ r s p ≠ ⊤ ∧
@@ -432,20 +406,15 @@ theorem growingPairKernel_offDiagonal_uniform_cauchy
   let L : ℝ := Real.log (1 / s₀)
   have hL (p : ℂ × ℂ) (hp : p ∈ separatedPairs K s₀) :
       0 < ‖p.1 - p.2‖ ∧ Real.log (1 / ‖p.1 - p.2‖) ≤ L := by
-    have hsep : s₀ ≤ ‖p.1 - p.2‖ := hp.2
-    have hpos : 0 < ‖p.1 - p.2‖ := lt_of_lt_of_le hs₀ hsep
+    have hsep := hp.2
+    have hpos := lt_of_lt_of_le hs₀ hsep
     refine ⟨hpos, Real.log_le_log (one_div_pos.mpr hpos) ?_⟩
     exact one_div_le_one_div_of_le hs₀ hsep
   let cHi : ℝ≥0∞ := ENNReal.ofReal (Real.exp (gHi ^ 2 * max (L + C) 0))
   let THi : ℕ → ℝ≥0∞ := fun N => ∑' j : ℕ,
     ENNReal.ofReal (Real.exp (-((a - gHi) ^ 2 * ((j + N : ℕ) : ℝ) / 16)))
-  have hTHi : Tendsto THi atTop (𝓝 0) :=
-    tendsto_compatible_mixed_double_root_barrier_tail_sum gHi a hga
-  have hcHi : cHi ≠ ⊤ := ENNReal.ofReal_ne_top
-  have herr : Tendsto (fun m : ℕ => 2 * (cHi * THi (m + 1))) atTop (𝓝 0) := by
-    have h1 : Tendsto (fun m : ℕ => THi (m + 1)) atTop (𝓝 0) :=
-      hTHi.comp (tendsto_add_atTop_nat 1)
-    have h2 := ENNReal.Tendsto.const_mul h1 (Or.inr hcHi)
+  have herr : Tendsto (fun m => 2 * (cHi * THi (m + 1))) atTop (𝓝 0) := by
+    have h2 := ENNReal.Tendsto.const_mul ((tendsto_compatible_mixed_double_root_barrier_tail_sum gHi a hga).comp (tendsto_add_atTop_nat 1)) (Or.inr (ENNReal.ofReal_ne_top : cHi ≠ ⊤))
     rw [mul_zero] at h2
     have h3 := ENNReal.Tendsto.const_mul h2 (Or.inr (by norm_num : (2 : ℝ≥0∞) ≠ ⊤))
     rwa [mul_zero] at h3
@@ -457,9 +426,7 @@ theorem growingPairKernel_offDiagonal_uniform_cauchy
     have hlin : ∀ᶠ m : ℕ in atTop, gHi * (|L| + 2 * C) ≤ (a - gHi) * (m : ℝ) / 2 := by
       obtain ⟨N, hN⟩ := exists_nat_gt (2 * (gHi * (|L| + 2 * C)) / (a - gHi))
       filter_upwards [eventually_ge_atTop N] with m hm
-      have hpos : 0 < a - gHi := sub_pos.mpr hga
-      have hmN : (N : ℝ) ≤ m := by exact_mod_cast hm
-      have h := (div_lt_iff₀ hpos).mp (lt_of_lt_of_le hN hmN)
+      have := (div_lt_iff₀ (sub_pos.mpr hga)).mp (lt_of_lt_of_le hN (show (N : ℝ) ≤ m by exact_mod_cast hm))
       nlinarith
     have hC' : ∀ᶠ m : ℕ in atTop, C < (m : ℝ) := by
       obtain ⟨N, hN⟩ := exists_nat_gt C
@@ -476,7 +443,7 @@ theorem growingPairKernel_offDiagonal_uniform_cauchy
     k₀ m hk₀m hk₀cut hvar s₀ hs₀ (Icc gLo gHi) gHi (hgLo.le.trans hgLoHi)
     (fun g hg => by rw [abs_of_pos (lt_of_lt_of_le hgLo hg.1)]; exact hg.2) (η / 2) (half_pos hη)
   -- the truncation estimate at one cutoff pair
-  have htrunc (r s : ℝ) (hmr : (m : ℝ) ≤ r) (hms : (m : ℝ) ≤ s) (g : ℝ) (hg : g ∈ Icc gLo gHi)
+  have htrunc r s (hmr : (m : ℝ) ≤ r) (hms : (m : ℝ) ≤ s) g (hg : g ∈ Icc gLo gHi)
       (p : ℂ × ℂ) (hp : p ∈ separatedPairs K s₀) :
       growingPairKernel P Y g a k₀ r s p ≠ ⊤ ∧
       compatibleAdmissibleSelectedFiniteBarrierPairKernel P Y Y g a k₀ m
@@ -485,58 +452,37 @@ theorem growingPairKernel_offDiagonal_uniform_cauchy
           (Real.exp (-r)) (Real.exp (-s)) p.1 p.2 true true).toReal -
         (growingPairKernel P Y g a k₀ r s p).toReal| < η / 4 := by
     have hgpos : 0 < g := lt_of_lt_of_le hgLo hg.1
-    have hga' : g < a := lt_of_le_of_lt hg.2 hga
     obtain ⟨hpos, hLp⟩ := hL p hp
-    have hrcut : Real.exp (-r) ≤ ε₀ := le_trans (Real.exp_le_exp.mpr (by linarith)) hmcut
-    have hscut : Real.exp (-s) ≤ ε₀ := le_trans (Real.exp_le_exp.mpr (by linarith)) hmcut
     have hfin : compatibleAdmissibleSelectedFiniteBarrierPairKernel P Y Y g a k₀ m
         (Real.exp (-r)) (Real.exp (-s)) p.1 p.2 true true ≠ ⊤ := by
       rw [finiteBarrierPairKernel_eq_rectangle P U dens ε₀ Y hY g a k₀ m hk₀cut _ _
-        (Real.exp_pos _) hrcut (Real.exp_pos _) hscut p]
+        (Real.exp_pos _) (le_trans (Real.exp_le_exp.mpr (by linarith)) hmcut) (Real.exp_pos _) (le_trans (Real.exp_le_exp.mpr (by linarith)) hmcut) p]
       exact ENNReal.ofReal_ne_top
     have hle := compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarrier
       P Y Y g a k₀ m r s p.1 p.2 true true hmr hms
     have hlinG : g * (|L| + 2 * C) ≤ (a - g) * (m : ℝ) / 2 := by
-      have hA : 0 ≤ |L| + 2 * C := by positivity
-      have h1 : g * (|L| + 2 * C) ≤ gHi * (|L| + 2 * C) := mul_le_mul_of_nonneg_right hg.2 hA
-      have h2 : (a - gHi) * (m : ℝ) / 2 ≤ (a - g) * (m : ℝ) / 2 := by
-        have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-        have := mul_le_mul_of_nonneg_right (show a - gHi ≤ a - g by linarith [hg.2]) hm0
+      have : g * (|L| + 2 * C) ≤ gHi * (|L| + 2 * C) := mul_le_mul_of_nonneg_right hg.2 (by positivity)
+      have : (a - gHi) * (m : ℝ) / 2 ≤ (a - g) * (m : ℝ) / 2 := by
+        have := mul_le_mul_of_nonneg_right (show a - gHi ≤ a - g by linarith [hg.2]) (Nat.cast_nonneg m)
         linarith
       linarith
-    have hup := htail k₀ m hCm hmcut r s hmr hms p.1 hp.1.1 p.2 hp.1.2 L hpos hLp g a hgpos
-      hga' hlinG
     have hcg : ENNReal.ofReal (Real.exp (g ^ 2 * (L + C))) ≤ cHi := by
       apply ENNReal.ofReal_le_ofReal
       apply Real.exp_le_exp.mpr
-      have hg2 : g ^ 2 ≤ gHi ^ 2 := pow_le_pow_left₀ hgpos.le hg.2 2
-      have hmax : L + C ≤ max (L + C) 0 := le_max_left _ _
-      have hmax0 : 0 ≤ max (L + C) 0 := le_max_right _ _
       calc g ^ 2 * (L + C) ≤ g ^ 2 * max (L + C) 0 :=
-            mul_le_mul_of_nonneg_left hmax (sq_nonneg g)
-        _ ≤ gHi ^ 2 * max (L + C) 0 := mul_le_mul_of_nonneg_right hg2 hmax0
+            mul_le_mul_of_nonneg_left (le_max_left _ _) (sq_nonneg g)
+        _ ≤ gHi ^ 2 * max (L + C) 0 := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hgpos.le hg.2 2) (le_max_right _ _)
     have hTg := tsum_barrier_rate_le_of_le g gHi a hg.2 hga (m + 1)
-    have herrG : 2 * (ENNReal.ofReal (Real.exp (g ^ 2 * (L + C))) *
-        ∑' j : ℕ, ENNReal.ofReal (Real.exp (-((a - g) ^ 2 * ((j + (m + 1) : ℕ) : ℝ) / 16)))) ≤
-        2 * (cHi * THi (m + 1)) := by
-      gcongr
     have herrfin : 2 * (cHi * THi (m + 1)) ≠ ⊤ := ne_top_of_lt herrm
-    have hgtop : growingPairKernel P Y g a k₀ r s p ≠ ⊤ := ne_top_of_le_ne_top hfin hle
-    refine ⟨hgtop, hfin, ?_⟩
-    have habs := abs_toReal_sub_le_of_le_add hle (hup.trans (add_le_add_right herrG _)) hfin
-      herrfin
-    refine lt_of_le_of_lt habs ?_
+    refine ⟨(ne_top_of_le_ne_top hfin hle), hfin, ?_⟩
+    refine lt_of_le_of_lt (abs_toReal_sub_le_of_le_add hle ((htail k₀ m hCm hmcut r s hmr hms p.1 hp.1.1 p.2 hp.1.2 L hpos hLp g a hgpos (lt_of_le_of_lt hg.2 hga) hlinG).trans (add_le_add_right (by gcongr) _)) hfin herrfin) ?_
     have := (ENNReal.toReal_lt_toReal herrfin ENNReal.ofReal_ne_top).mpr herrm
     rwa [ENNReal.toReal_ofReal (by linarith)] at this
   refine ⟨max R m, ?_⟩
   intro r s r' s' hr hs hr' hs' g hg p hp
-  have hmr : (m : ℝ) ≤ r := le_trans (le_max_right _ _) hr
-  have hms : (m : ℝ) ≤ s := le_trans (le_max_right _ _) hs
-  have hmr' : (m : ℝ) ≤ r' := le_trans (le_max_right _ _) hr'
-  have hms' : (m : ℝ) ≤ s' := le_trans (le_max_right _ _) hs'
-  obtain ⟨htop, -, h1⟩ := htrunc r s hmr hms g hg p hp
-  obtain ⟨-, -, h2⟩ := htrunc r' s' hmr' hms' g hg p hp
-  have h3 := hR r s r' s' (le_trans (le_max_left _ _) hr) (le_trans (le_max_left _ _) hs)
+  obtain ⟨htop, -, h1⟩ := htrunc r s (le_trans (le_max_right _ _) hr) (le_trans (le_max_right _ _) hs) g hg p hp
+  obtain ⟨-, -, h2⟩ := htrunc r' s' (le_trans (le_max_right _ _) hr') (le_trans (le_max_right _ _) hs') g hg p hp
+  have := hR r s r' s' (le_trans (le_max_left _ _) hr) (le_trans (le_max_left _ _) hs)
     (le_trans (le_max_left _ _) hr') (le_trans (le_max_left _ _) hs') g hg p hp
   refine ⟨htop, ?_⟩
   set A := (growingPairKernel P Y g a k₀ r s p).toReal

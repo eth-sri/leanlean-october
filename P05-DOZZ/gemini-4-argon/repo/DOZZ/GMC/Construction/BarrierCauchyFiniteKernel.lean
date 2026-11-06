@@ -21,7 +21,7 @@ two-root kernel converges uniformly off the spatial diagonal to the same kernel 
 of fine-cutoff family. This is the finite-barrier comparison used before removing the growing
 barrier tail. -/
 theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
-    {Ω : Type*} [MeasurableSpace Ω] {n : ℕ} [Nonempty (Fin n)]
+    {Ω : Type*} [MeasurableSpace Ω] {n} [Nonempty (Fin n)]
     (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
     (Y Z : Ω → ℝ → ℂ → ℝ)
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
@@ -93,39 +93,14 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
       (fun ω i => Y ω (Real.exp (-(scale i : ℝ))) (center q.2 i)) barrier
       (fun i => q.1 * coarseKernel (scale i) q.2.1 (center q.2 i) +
         q.1 * coarseKernel (scale i) q.2.2 (center q.2 i)) ω ∂P
-  have hSsub : S ⊆ U ×ˢ U := by
-    intro p hp
-    exact ⟨hKU (hrootX p hp), hKU (hrootY p hp)⟩
-  have hdist : Continuous fun p : ℂ × ℂ => ‖p.1 - p.2‖ := by fun_prop
   have hdistpos : ∀ p ∈ S, 0 < ‖p.1 - p.2‖ := by
     intro p hp
     exact lt_of_lt_of_le hs (hsep p hp)
   have hinv : ContinuousOn (fun p : ℂ × ℂ => (‖p.1 - p.2‖)⁻¹) S :=
-    hdist.continuousOn.inv₀ (fun p hp => ne_of_gt (hdistpos p hp))
-  have harg : ContinuousOn (fun p : ℂ × ℂ => 1 / ‖p.1 - p.2‖) S := by
-    simpa [one_div] using hinv
-  have hargNe : ∀ p ∈ S, 1 / ‖p.1 - p.2‖ ∈ ({0} : Set ℝ)ᶜ := by
-    intro p hp
-    rw [Set.mem_compl_iff, Set.mem_singleton_iff]
-    exact ne_of_gt (one_div_pos.mpr (hdistpos p hp))
-  have hlog : ContinuousOn (fun p : ℂ × ℂ => Real.log (1 / ‖p.1 - p.2‖)) S :=
-    ContinuousOn.comp' Real.continuousOn_log harg hargNe
-  have hlimCov : ContinuousOn limCov S := by
-    dsimp [limCov]
-    have hHcont : ContinuousOn (fun p : ℂ × ℂ => H p.1 p.2) S := by
-      change ContinuousOn (Function.uncurry H) S
-      exact hH.mono hSsub
-    exact hlog.add hHcont
-  have hlimAbs : ContinuousOn (fun p : ℂ × ℂ => |limCov p|) S := hlimCov.abs
-  obtain ⟨R, hR⟩ := hS.bddAbove_image hlimAbs
-  let C : ℝ := max 0 R
-  have hC : 0 ≤ C := by dsimp [C]; exact le_max_left _ _
-  have hlimCovAbs : ∀ p ∈ S, |limCov p| ≤ C := by
-    intro p hp
-    have himg : |limCov p| ∈ (fun q : ℂ × ℂ => |limCov q|) '' S := ⟨p, hp, rfl⟩
-    exact (hR himg).trans (le_max_right _ _)
-  let M : ℝ := Real.exp (B ^ 2 * C)
-  have hM : 0 ≤ M := by dsimp [M]; positivity
+    (show Continuous fun p : ℂ × ℂ => ‖p.1 - p.2‖ by fun_prop).continuousOn.inv₀ (fun p hp => ne_of_gt (hdistpos p hp))
+  obtain ⟨R, hR⟩ := hS.bddAbove_image (show ContinuousOn limCov S by dsimp [limCov]; exact (ContinuousOn.comp' Real.continuousOn_log (by simpa [one_div] using hinv) (by intro p hp; rw [Set.mem_compl_iff, Set.mem_singleton_iff]; exact ne_of_gt (one_div_pos.mpr (hdistpos p hp)))).add (by change ContinuousOn (Function.uncurry H) S; exact hH.mono (by intro p hp; exact ⟨hKU (hrootX p hp), hKU (hrootY p hp)⟩))).abs
+  let C := max 0 R
+  let M := Real.exp (B ^ 2 * C)
   have hF : ∀ η : ℝ, 0 < η → ∃ δ : ℝ, 0 < δ ∧ ∀ ε ε' : ℝ,
       0 < ε → ε ≤ δ → 0 < ε' → ε' ≤ δ → ∀ q ∈ S',
         |F ε ε' q - F₀ 0 0 q| < η := by
@@ -135,8 +110,7 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
     intro ε ε' hε hεcut hε' hε'cut q hq
     rcases q with ⟨γ, p⟩
     rcases hq with ⟨hγ, hp⟩
-    have h := hclose ε ε' hε (by simpa using hεcut) hε' (by simpa using hε'cut) γ hγ p hp
-    simpa [F, F₀, limCov] using h
+    simpa [F, F₀, limCov] using (hclose ε ε' hε (by simpa using hεcut) hε' (by simpa using hε'cut) γ hγ p hp)
   have hG : ∀ η : ℝ, 0 < η → ∃ δ : ℝ, 0 < δ ∧ ∀ ε ε' : ℝ,
       0 < ε → ε ≤ δ → 0 < ε' → ε' ≤ δ → ∀ q ∈ S',
         |G ε ε' q - G₀ 0 0 q| < η := by
@@ -146,21 +120,16 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
     intro ε ε' hε hεcut hε' hε'cut q hq
     rcases q with ⟨γ, p⟩
     rcases hq with ⟨hγ, hp⟩
-    have h := hclose ε ε' hε (by simpa using hεcut) hε' (by simpa using hε'cut) γ hγ p hp
-    simpa [G, G₀] using h
+    simpa [G, G₀] using (hclose ε ε' hε (by simpa using hεcut) hε' (by simpa using hε'cut) γ hγ p hp)
   have hF₀ : ∀ q ∈ S', |F₀ 0 0 q| ≤ M := by
     intro q hq
     rcases q with ⟨γ, p⟩
     rcases hq with ⟨hγ, hp⟩
-    have hγsq : γ ^ 2 ≤ B ^ 2 := by
-      apply sq_le_sq.2
-      simpa [abs_of_nonneg hB] using hΓ γ hγ
-    have hlimle : limCov p ≤ C := (le_abs_self _).trans (hlimCovAbs p hp)
     have hexp : γ ^ 2 * limCov p ≤ B ^ 2 * C := by
       calc
         γ ^ 2 * limCov p ≤ γ ^ 2 * C :=
-          mul_le_mul_of_nonneg_left hlimle (sq_nonneg γ)
-        _ ≤ B ^ 2 * C := mul_le_mul_of_nonneg_right hγsq hC
+          mul_le_mul_of_nonneg_left ((le_abs_self _).trans ((show ∀ p ∈ S, |limCov p| ≤ C by intro p hp; exact (hR ⟨p, hp, rfl⟩).trans (le_max_right _ _)) p hp)) (sq_nonneg γ)
+        _ ≤ B ^ 2 * C := mul_le_mul_of_nonneg_right (by apply sq_le_sq.2; simpa [abs_of_nonneg hB] using hΓ γ hγ) (by dsimp [C]; exact le_max_left _ _)
     dsimp [F₀]
     rw [abs_of_pos (Real.exp_pos _)]
     exact Real.exp_le_exp.mpr hexp
@@ -169,22 +138,15 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
     rcases q with ⟨γ, p⟩
     rcases hq with ⟨_hγ, hp⟩
     let W : Ω → Fin n → ℝ := fun ω i => Y ω (Real.exp (-(scale i : ℝ))) (center p i)
-    have hW : IsCenteredJointlyGaussian P W := by
-      apply hY.gaussian n (fun i => (Real.exp (-(scale i : ℝ)), center p i))
-      intro i
-      exact ⟨Real.exp_pos _, le_trans (hscale i) (min_le_left _ _)⟩
-    simpa [G₀, W] using integral_gaussianRectangleIndicator_abs_le_one P W hW barrier
+    simpa [G₀, W] using integral_gaussianRectangleIndicator_abs_le_one P W (by apply hY.gaussian n (fun i => (Real.exp (-(scale i : ℝ)), center p i)); intro i; exact ⟨Real.exp_pos _, le_trans (hscale i) (min_le_left _ _)⟩) barrier
       (fun i => γ * coarseKernel (scale i) p.1 (center p i) +
         γ * coarseKernel (scale i) p.2 (center p i))
   refine ⟨H, hH, coarseKernel, ?_⟩
   intro η hη
   obtain ⟨δ', hδ', hprod'⟩ := tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
-    S' M hM F F₀ G G₀ hF hG hF₀ hG₀ η hη
+    S' M (by dsimp [M]; positivity) F F₀ G G₀ hF hG hF₀ hG₀ η hη
   refine ⟨δ', hδ', ?_⟩
   intro ε ε' hε hεcut hε' hε'cut γ hγ p hp
-  have hεδ : ε ≤ δ' := le_trans hεcut (min_le_left _ _)
-  have hε'δ : ε' ≤ δ' := le_trans hε'cut (min_le_left _ _)
-  have h := hprod' ε ε' hε hεδ hε' hε'δ (γ, p) ⟨hγ, hp⟩
-  simpa [F, F₀, G, G₀, limCov] using h
+  simpa [F, F₀, G, G₀, limCov] using (hprod' ε ε' hε (le_trans hεcut (min_le_left _ _)) hε' (le_trans hε'cut (min_le_left _ _)) (γ, p) ⟨hγ, hp⟩)
 
 end DOZZ.Proofs

@@ -16,7 +16,7 @@ namespace DOZZ.Proofs
 /-- If the weighting functional is nonzero almost surely, the absolute rooted bound implies
 samplewise integrability of the spatial observable. -/
 theorem fusion_rooted_spatial_integrable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (f : ℂ → ℂ) (hf : Measurable f)
     (G : Measure ℂ → ℝ≥0∞) (hG : Measurable G)

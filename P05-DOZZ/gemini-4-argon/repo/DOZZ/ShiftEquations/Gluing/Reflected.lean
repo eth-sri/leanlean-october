@@ -42,20 +42,17 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 namespace DOZZ.Proofs
 
 /-- On the near-`Q` window, the Gauss parameter `c` of the γ/2 formulas lies in `(0, 1)`. -/
-theorem gaussParameterC_half_mem {γ α₁ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem gaussParameterC_half_mem {γ α₁} (hγ : 0 < γ) (hγ2 : γ < 2)
     (h1 : Q γ - γ / 16 < α₁) (h2 : α₁ < Q γ) :
     0 < gaussParameterC γ (γ / 2) α₁ ∧ gaussParameterC γ (γ / 2) α₁ < 1 := by
   unfold gaussParameterC
-  have hpos : 0 < γ / 2 * (Q γ - α₁) := mul_pos (by positivity) (by linarith)
-  have hlt : γ / 2 * (Q γ - α₁) < γ / 2 * (γ / 16) :=
-    mul_lt_mul_of_pos_left (by linarith) (by positivity)
   constructor <;> nlinarith
 
 /-- **The reflected coefficient at real charges near `Q`**
 (`DOZZ.degenerateFourPoint_diagonal_classification` and `DOZZ.gammaHalf_reflected_formula` at the
 same charges): `R(α₁) C(2Q - α₁ - γ/2) = ρ C(α₁ - γ/2)`. -/
 theorem reflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+    (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ α₂ α₃} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hDiagonal : ∀ {H : ℂ → ℂ → ℂ → ℂ → ℂ}, IsGaussHypergeometricFamily H → ∀ α₁ : ℝ,
       α₁ < Q γ → 2 * Q γ + γ / 2 < α₁ + α₂ + α₃ →
       let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
@@ -84,10 +81,10 @@ theorem reflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Measur
                 reflectionR P γ μ α₁ (B α₁) Z *
                   structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ *
                     ‖gaussFPlus H a b c z‖ ^ 2)
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
+    {H} (hH : IsGaussHypergeometricFamily H)
     {B : ℝ → Ω → BrownianPath × BrownianPath} {Z : Ω → Measure ℝ}
     (hRD : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z)
-    {α₁ : ℝ} (h1 : Q γ - γ / 16 < α₁) (h2 : α₁ < Q γ)
+    {α₁} (h1 : Q γ - γ / 16 < α₁) (h2 : α₁ < Q γ)
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
     reflectionR P γ μ α₁ (B α₁) Z * structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ =
       gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
@@ -95,27 +92,15 @@ theorem reflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Measur
         structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ := by
   have hc := gaussParameterC_half_mem hγ hγ2 h1 h2
   have hα₁ : γ / 2 < α₁ := by
-    have h2γ : γ / 16 < 2 / γ := by
+    have : γ / 16 < 2 / γ := by
       rw [div_lt_div_iff₀ (by norm_num) hγ]
       nlinarith
     rw [show Q γ = 2 / γ + γ / 2 from rfl] at h1
     linarith
-  have h22 := hDiagonal hH α₁ h2 hs
   obtain ⟨B', Z', -, hRD', h37⟩ := hReflected hH α₁ h2 hs (by linarith)
     (reflected_near_window hγ hγ2 h1 h2)
-  have h37' : ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(γ / 2)) α₁ α₂ α₃ z =
-      structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-          ‖gaussFMinus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-            (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2 +
-        (reflectionR P γ μ α₁ (B' α₁) Z' *
-          structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃) *
-          ‖gaussFPlus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-            (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2 := by
-    intro z hz
-    rw [← neg_div]
-    exact h37 z hz
   have hK := second_coefficient_of_classification P M hH γ μ (γ / 2) α₁ α₂ α₃ _
-    (complex_ne_int_of_mem_unit hc.1 hc.2) h22 h37'
+    (complex_ne_int_of_mem_unit hc.1 hc.2) (hDiagonal hH α₁ h2 hs) (by intro z hz; rw [← neg_div]; exact h37 z hz)
   rw [reflectionR_eq_of_isReflectionData P P γ μ α₁ (B α₁) Z (B' α₁) Z'
     (hRD α₁ hα₁ h2) hRD', hK]
 

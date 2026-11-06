@@ -19,7 +19,7 @@ namespace DOZZ.Proofs
 theorem ennreal_tail_domination
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsFiniteMeasure P]
     (A B E : Ω → ℝ≥0∞) (hcomp : ∀ᵐ ω ∂P, A ω ≤ B ω+E ω)
-    (x h : ℝ) (hh : 0 ≤ h) (hhx : h ≤ x) :
+    x h (hh : 0 ≤ h) (hhx : h ≤ x) :
     (P {ω | ENNReal.ofReal x < A ω}).toReal ≤
       (P {ω | ENNReal.ofReal (x-h) < B ω}).toReal+
         (P {ω | ENNReal.ofReal h < E ω}).toReal := by
@@ -37,8 +37,7 @@ theorem ennreal_tail_domination
           _ = ENNReal.ofReal x := by
               rw [← ENNReal.ofReal_add (sub_nonneg.mpr hhx) hh,sub_add_cancel]
       exact (hx.not_ge (hω.trans hsum)).elim
-  have hm := (measure_mono_ae hsub).trans (measure_union_le _ _)
-  have ht := ENNReal.toReal_mono (by finiteness) hm
+  have ht := ENNReal.toReal_mono (by finiteness) ((measure_mono_ae hsub).trans (measure_union_le _ _))
   rw [ENNReal.toReal_add (by finiteness) (by finiteness)] at ht
   exact ht
 

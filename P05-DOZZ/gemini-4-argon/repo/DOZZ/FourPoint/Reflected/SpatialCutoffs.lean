@@ -10,62 +10,27 @@ public import Mathlib.Topology.UrysohnsLemma
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 
-/-- The cutoffs equal one eventually at every point of the open region and vanish outside it.
-No boundary regularity or measure-dependent choice is needed. -/
-theorem reflected_open_compact_cutoffs (U : Set ℂ) (hU : IsOpen U)
-    (D : Set ℂ) (hD : IsCompact D) (hDU : D ⊆ U) :
-    ∃ f : ℕ → BoundedContinuousFunction ℂ ℝ,
-      (∀ n, EqOn (f n) 1 D) ∧
-      (∀ n, IsCompact (tsupport (f n : ℂ → ℝ))) ∧
-      (∀ n, tsupport (f n : ℂ → ℝ) ⊆ U) ∧
-      (∀ n x, f n x ∈ Icc 0 1) ∧
-      (∀ x ∈ U, ∀ᶠ n in atTop, f n x = 1) ∧
-      (∀ n x, x ∉ U → f n x = 0) := by
-  let _ : LocallyCompactSpace U := hU.locallyCompactSpace
-  let E := CompactExhaustion.choice U
-  let K : ℕ → Set ℂ := fun n => Subtype.val '' E n
-  have hK (n : ℕ) : IsCompact (K n) := (E.isCompact n).image continuous_subtype_val
-  have hKU (n : ℕ) : K n ⊆ U := by
-    rintro x ⟨y, _, rfl⟩
-    exact y.property
-  have hex (n : ℕ) := exists_continuousMap_one_of_isCompact_subset_isOpen ((hK n).union hD) hU
-    (union_subset (hKU n) hDU)
-  choose g hgK hgc hgU hgb using hex
-  let f : ℕ → BoundedContinuousFunction ℂ ℝ := fun n =>
-    BoundedContinuousFunction.mkOfBound (g n) 1 (fun x y => by
-      rw [Real.dist_eq]
-      exact abs_le.mpr ⟨by linarith [(hgb n x).1, (hgb n y).2],
-        by linarith [(hgb n x).2, (hgb n y).1]⟩)
-  refine ⟨f, fun n x hx => hgK n (Or.inr hx), hgc, hgU, hgb, ?_, ?_⟩
-  · intro x hx
-    obtain ⟨n, hn⟩ := E.exists_mem ⟨x, hx⟩
-    filter_upwards [eventually_ge_atTop n] with m hm
-    exact hgK m (Or.inl ⟨⟨x, hx⟩, E.subset hm hn, rfl⟩)
-  · intro n x hx
-    exact image_eq_zero_of_notMem_tsupport (fun hs => hx (hgU n hs))
 
 /-- A continuous weight on the open region becomes an actual bounded compact test after cutting
 it off there, even when the original weight is singular on the boundary. -/
-theorem reflected_compact_weighted_test (U : Set ℂ) (hU : IsOpen U)
+theorem reflected_compact_weighted_test U (hU : IsOpen U)
     (f : BoundedContinuousFunction ℂ ℝ) (hf : IsCompact (tsupport (f : ℂ → ℝ)))
     (hfU : tsupport (f : ℂ → ℝ) ⊆ U) (w : ℂ → ℝ) (hw : ContinuousOn w U) :
     ∃ g : BoundedContinuousFunction ℂ ℝ, (∀ x, g x = f x*w x) ∧
       tsupport (g : ℂ → ℝ) ⊆ tsupport (f : ℂ → ℝ) := by
   have hs : tsupport (fun x => f x*w x) ⊆ tsupport (f : ℂ → ℝ) :=
     tsupport_mul_subset_left
-  have hc : Continuous (fun x => f x*w x) := continuous_of_tsupport fun x hx =>
+  have hc := continuous_of_tsupport fun x hx =>
     (f.continuous.continuousAt).mul (hw.continuousAt (hU.mem_nhds (hfU (hs hx))))
   have hcomp : HasCompactSupport (fun x => f x*w x) :=
     hf.of_isClosed_subset (isClosed_tsupport _) hs
-  let g : BoundedContinuousFunction ℂ ℝ :=
-    ⟨⟨fun x => f x*w x, hc⟩, Metric.isBounded_range_iff.mp (hcomp.isCompact_range hc).isBounded⟩
-  exact ⟨g, fun _ => rfl, hs⟩
+  exact ⟨⟨⟨fun x => f x*w x, hc⟩, Metric.isBounded_range_iff.mp (hcomp.isCompact_range hc).isBounded⟩, fun _ => rfl, hs⟩
 
 /-- Spatial cutoff removal for a nonnegative weighted mass, including infinite masses, uses
 Fatou and the pointwise upper bound. The compact tests are independent of the measure and need
 no boundary-null assumption. -/
-theorem reflected_open_weighted_mass_approximation (U : Set ℂ) (hU : IsOpen U)
-    (D : Set ℂ) (hD : IsCompact D) (hDU : D ⊆ U)
+theorem reflected_open_weighted_mass_approximation U (hU : IsOpen U)
+    D (hD : IsCompact D) (hDU : D ⊆ U)
     (w : ℂ → ℝ) (hw : ContinuousOn w U) (_hwm : Measurable w) (hwn : ∀ x, 0 ≤ w x) :
     ∃ g : ℕ → BoundedContinuousFunction ℂ ℝ,
       (∀ n, EqOn (g n) w D) ∧
@@ -74,8 +39,24 @@ theorem reflected_open_weighted_mass_approximation (U : Set ℂ) (hU : IsOpen U)
       (∀ n x, 0 ≤ g n x) ∧
       ∀ μ : Measure ℂ, Tendsto (fun n => ∫⁻ x, ENNReal.ofReal (g n x) ∂μ) atTop
           (𝓝 (∫⁻ x in U, ENNReal.ofReal (w x) ∂μ)) := by
+  have reflected_open_compact_cutoffs : ∃ f : ℕ → BoundedContinuousFunction ℂ ℝ, (∀ n, EqOn (f n) 1 D) ∧ (∀ n, IsCompact (tsupport (f n : ℂ → ℝ))) ∧ (∀ n, tsupport (f n : ℂ → ℝ) ⊆ U) ∧ (∀ n x, f n x ∈ Icc 0 1) ∧ (∀ x ∈ U, ∀ᶠ n in atTop, f n x = 1) ∧ (∀ n x, x ∉ U → f n x = 0) := by
+    let _ : LocallyCompactSpace U := hU.locallyCompactSpace
+    let E := CompactExhaustion.choice U
+    choose g hgK hgc hgU hgb using (fun n => exists_continuousMap_one_of_isCompact_subset_isOpen (((fun n => (E.isCompact n).image continuous_subtype_val) n).union hD) hU (union_subset ((fun n => by rintro x ⟨y, _, rfl⟩; exact y.property) n) hDU))
+    let f : ℕ → BoundedContinuousFunction ℂ ℝ := fun n =>
+      BoundedContinuousFunction.mkOfBound (g n) 1 (fun x y => by
+        rw [Real.dist_eq]
+        exact abs_le.mpr ⟨by linarith [(hgb n x).1, (hgb n y).2],
+          by linarith [(hgb n x).2, (hgb n y).1]⟩)
+    refine ⟨f, fun n x hx => hgK n (Or.inr hx), hgc, hgU, hgb, ?_, ?_⟩
+    · intro x hx
+      obtain ⟨n, hn⟩ := E.exists_mem ⟨x, hx⟩
+      filter_upwards [eventually_ge_atTop n] with m hm
+      exact hgK m (Or.inl ⟨⟨x, hx⟩, E.subset hm hn, rfl⟩)
+    · intro n x hx
+      exact image_eq_zero_of_notMem_tsupport (fun hs => hx (hgU n hs))
   obtain ⟨f, hfD, hfc, hfU, hfb, hfone, hfzero⟩ :=
-    reflected_open_compact_cutoffs U hU D hD hDU
+    reflected_open_compact_cutoffs
   choose g hg hgs using fun n => reflected_compact_weighted_test U hU (f n)
     (hfc n) (hfU n) w hw
   refine ⟨g, (fun n x hx => by rw [hg n x, hfD n hx]; exact one_mul _), fun n => (hfc n).of_isClosed_subset (isClosed_tsupport _) (hgs n),
@@ -84,10 +65,8 @@ theorem reflected_open_weighted_mass_approximation (U : Set ℂ) (hU : IsOpen U)
     rw [hg n x]
     exact mul_nonneg (hfb n x).1 (hwn x)
   · intro μ
-    have he : (∫⁻ x, U.indicator (fun x => ENNReal.ofReal (w x)) x ∂μ) =
-        ∫⁻ x in U, ENNReal.ofReal (w x) ∂μ := lintegral_indicator hU.measurableSet _
-    rw [← he]
-    have hb (n : ℕ) (x : ℂ) : ENNReal.ofReal (g n x) ≤
+    rw [← (lintegral_indicator hU.measurableSet _)]
+    have hb n x : ENNReal.ofReal (g n x) ≤
         U.indicator (fun x => ENNReal.ofReal (w x)) x := by
       rw [hg n x]
       by_cases hx : x ∈ U
@@ -96,7 +75,7 @@ theorem reflected_open_weighted_mass_approximation (U : Set ℂ) (hU : IsOpen U)
           simpa using ENNReal.ofReal_le_ofReal (hfb n x).2) le_rfl) (one_mul _).le
       · simp only [hfzero n x hx, zero_mul, ENNReal.ofReal_zero, indicator_of_notMem hx,
           le_refl]
-    have hp (x : ℂ) : Tendsto (fun n => ENNReal.ofReal (g n x)) atTop
+    have hp x : Tendsto (fun n => ENNReal.ofReal (g n x)) atTop
         (𝓝 (U.indicator (fun x => ENNReal.ofReal (w x)) x)) := by
       by_cases hx : x ∈ U
       · refine (tendsto_const_nhds : Tendsto (fun _ : ℕ =>

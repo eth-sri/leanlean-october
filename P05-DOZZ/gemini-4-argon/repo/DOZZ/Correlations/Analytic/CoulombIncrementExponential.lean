@@ -20,11 +20,11 @@ namespace DOZZ.Proofs
 bounded charge box satisfying strict positive-moment and root slack. Both signs of `Re p`
 are allowed. -/
 theorem coulomb_power_increment_exponential
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (z : Fin N → ℂ) (hz : Function.Injective z)
-    (δ R Zs A a gap m g lo hi q b : ℝ)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    z (hz : Function.Injective z)
+    δ R Zs A a gap m g lo hi q b
     (hδ : 0 < δ) (hδ8 : δ ≤ 1 / 8) (hR : 1 ≤ R) (hZs : 0 ≤ Zs)
     (hsep : ∀ j k, j ≠ k → 2 * δ ≤ ‖z j - z k‖)
     (hzn : ∑ j, ‖z j‖ ≤ Zs) (hzR : ∀ i, 2 * ‖z i‖ ≤ R)
@@ -51,7 +51,7 @@ theorem coulomb_power_increment_exponential
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'
   have hc' : c ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
-  have hhiq : hi ≤ hi * q := by nlinarith
+  have : hi ≤ hi * q := by nlinarith
   obtain ⟨H₁, hH₁, henv₁⟩ := coulomb_envelope_uniform_moment
     P X hX γ hγ hγ2 M hM z hz δ R Zs A g hδ hδ8 hR hZs hg hsep hzn hzR
     (((R + 1 : ℝ)) : ℂ) c hc hc' lo hi 1 hlo hhi le_rfl
@@ -63,12 +63,8 @@ theorem coulomb_power_increment_exponential
       (fun k j h => hsep j k h) A a gap m hgap ha hm hm1 hms
   let D := ENNReal.ofReal (2 * b) * H₁
   let B := ((ENNReal.ofReal 2) ^ q * Hq) ^ (1 / q)
-  have hD : D ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top hH₁.ne
-  have hB : B ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg
-    (by positivity : 0 ≤ 1 / q)
-    (ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg (by linarith) ENNReal.ofReal_ne_top) hHq.ne)
   obtain ⟨K, κ, hK, hκ, hdec⟩ := threshold_finite_constants
-    D B C hD hB hC.ne (γ * gap * m) m q (by positivity) hm hq
+    D B C (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hH₁.ne) (ENNReal.rpow_ne_top_of_nonneg (by positivity : 0 ≤ 1 / q) (ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg (by linarith) ENNReal.ofReal_ne_top) hHq.ne)) hC.ne (γ * gap * m) m q (by positivity) hm hq
   refine ⟨K, κ, hK, hκ, ?_⟩
   filter_upwards [htail, retained_cutoff_geometry_eventually z δ R hδ] with n hn hgeo
   intro β hβA hβa hβlo hβhi hβnorm
@@ -88,48 +84,24 @@ theorem coulomb_power_increment_exponential
     hroot.trans (mul_le_mul_of_nonneg_left (by dsimp only [α]; linarith [hβa i.castSucc]) (by positivity))
   have hinfty : hi * q + g ≤ 2 / γ * (Q γ - αinf) :=
     hroot.trans (mul_le_mul_of_nonneg_left (by dsimp only [αinf]; linarith [hβa (Fin.last N)]) (by positivity))
-  have henv1 : (∫⁻ ω, H ω ∂P) ≤ H₁ := by
-    have he := henv₁ α αinf hα hinf haq hiq
-      (by simpa only [mul_one] using (show hi + g ≤ 4 / γ ^ 2 from (by linarith)))
-      (fun i => by simpa only [mul_one] using (show hi + g ≤ 2 / γ * (Q γ - α i) from (by linarith [hroots i])))
-      (by simpa only [mul_one] using (show hi + g ≤ 2 / γ * (Q γ - αinf) from (by linarith [hinfty])))
-    simpa only [ENNReal.rpow_one] using he
-  have henvQ : (∫⁻ ω, H ω ^ q ∂P) ≤ Hq :=
-    henvq α αinf hα hinf haq hiq hbulk hroots hinfty
-  have hO : Metric.ball (((R + 1 : ℝ)) : ℂ) (1 / 8) ⊆ O₀ :=
-    exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) (Nat.cast_nonneg _) hgeo.2.2.2
-  have hsub : O₀ ⊆ O₁ := retainedRegion_mono z
-    (by exact_mod_cast Nat.le_succ n)
   let u := Real.exp (-((γ * gap * m) / (2 * m)) * n)
-  have hest := coulomb_nested_increment_threshold
-    P X hX γ hγ hγ2 M hM α z hz αinf A hα hinf haq hiq O₀ O₁
-    (retainedRegion_isOpen z _).measurableSet
-    (retainedRegion_isOpen z _).measurableSet hsub R hR hzR hO lo hi p
-    hlo hhi hβlo hβhi u m q (Real.exp_pos _) hm hq
-  have hsmall : (∫⁻ ω, (ENNReal.ofReal
-      (∫⁻ x in O₁ \ O₀, coulombWeight γ α z αinf x ∂M ω).toReal) ^ m ∂P) ≤
-      ENNReal.ofReal (Real.exp (-(γ * gap * m) * n)) * C := by
-    apply (lintegral_mono (fun ω => ENNReal.rpow_le_rpow
-      ((ENNReal.ofReal_toReal_le).trans (lintegral_mono_set
-        (show O₁ \ O₀ ⊆ O₀ᶜ from fun _ h => h.2))) hm.le)).trans
-    exact hn α αinf hα hinf (fun i => hβa i.castSucc) (hβa (Fin.last N))
   calc
     _ ≤ ENNReal.ofReal u * ENNReal.ofReal (2 * ‖p‖) * (∫⁻ ω, H ω ∂P) +
         ((ENNReal.ofReal 2) ^ q * (∫⁻ ω, H ω ^ q ∂P)) ^ (1 / q) *
           ((∫⁻ ω, (ENNReal.ofReal
             (∫⁻ x in O₁ \ O₀, coulombWeight γ α z αinf x ∂M ω).toReal) ^ m ∂P) /
-              (ENNReal.ofReal u) ^ m) ^ (1 / (q / (q - 1))) := hest
+              (ENNReal.ofReal u) ^ m) ^ (1 / (q / (q - 1))) := (coulomb_nested_increment_threshold P X hX γ hγ hγ2 M hM α z hz αinf A hα hinf haq hiq O₀ O₁ (retainedRegion_isOpen z _).measurableSet (retainedRegion_isOpen z _).measurableSet (retainedRegion_mono z (by exact_mod_cast Nat.le_succ n)) R hR hzR (exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) (Nat.cast_nonneg _) hgeo.2.2.2) lo hi p hlo hhi hβlo hβhi u m q (Real.exp_pos _) hm hq)
     _ ≤ ENNReal.ofReal u * D + B *
         ((ENNReal.ofReal (Real.exp (-(γ * gap * m) * n)) * C) /
           (ENNReal.ofReal u) ^ m) ^ (1 / (q / (q - 1))) := by
       apply add_le_add
       · have hc₁ := ENNReal.ofReal_le_ofReal
           (mul_le_mul_of_nonneg_left hβnorm (by norm_num : (0 : ℝ) ≤ 2))
-        exact (mul_le_mul' (mul_le_mul' le_rfl hc₁) henv1).trans_eq (mul_assoc _ _ _)
+        exact (mul_le_mul' (mul_le_mul' le_rfl hc₁) (by simpa only [ENNReal.rpow_one] using (henv₁ α αinf hα hinf haq hiq (by simpa only [mul_one] using (show hi + g ≤ 4 / γ ^ 2 from (by linarith))) (fun i => by simpa only [mul_one] using (show hi + g ≤ 2 / γ * (Q γ - α i) from (by linarith [hroots i]))) (by simpa only [mul_one] using (show hi + g ≤ 2 / γ * (Q γ - αinf) from (by linarith [hinfty])))))).trans_eq (mul_assoc _ _ _)
       · apply mul_le_mul'
-        · exact ENNReal.rpow_le_rpow (mul_le_mul' le_rfl henvQ) (by positivity)
+        · exact ENNReal.rpow_le_rpow (mul_le_mul' le_rfl (henvq α αinf hα hinf haq hiq hbulk hroots hinfty)) (by positivity)
         · apply ENNReal.rpow_le_rpow _ (by positivity)
-          exact ENNReal.div_le_div_right hsmall _
+          exact ENNReal.div_le_div_right (by apply (lintegral_mono (fun ω => ENNReal.rpow_le_rpow ((ENNReal.ofReal_toReal_le).trans (lintegral_mono_set (show O₁ \ O₀ ⊆ O₀ᶜ from fun _ h => h.2))) hm.le)).trans; exact hn α αinf hα hinf (fun i => hβa i.castSucc) (hβa (Fin.last N))) _
     _ ≤ _ := hdec (n : ℝ) (Nat.cast_nonneg _)
 
 end DOZZ.Proofs

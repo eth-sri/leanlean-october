@@ -14,28 +14,22 @@ open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
-theorem fusionMovingKernel_joint_measurable (γ α₁ α₂ α₃ : ℝ) :
+theorem fusionMovingKernel_joint_measurable γ α₁ α₂ α₃ :
     Measurable (fun q : (ℂ × ℂ) × ℂ => fusionMovingKernel γ α₁ α₂ α₃ q.1.1 q.1.2 q.2) := by
-  have hp : Measurable (fun q : (ℂ × ℂ) × ℂ => (q.1.2, q.2)) :=
-    (measurable_snd.comp measurable_fst).prodMk measurable_snd
-  have hK : Measurable (fun q : (ℂ × ℂ) × ℂ => gammaHalfKernel γ α₁ α₂ α₃ q.1.2 q.2) :=
-    by simpa only [Function.comp_def] using (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp hp
   have hr : Measurable (fun q : (ℂ × ℂ) × ℂ => (q.1.1 * q.1.2, q.2)) :=
     ((measurable_fst.comp measurable_fst).mul (measurable_snd.comp measurable_fst)).prodMk
       measurable_snd
-  have hD : Measurable (fun q : (ℂ × ℂ) × ℂ => Real.exp (γ ^ 2 * gffKernel (q.1.1 * q.1.2) q.2)) :=
-    by simpa only [Function.comp_def] using ((measurable_pointRootPotential.comp hr).const_mul (γ ^ 2)).exp
   change Measurable (fun q : (ℂ × ℂ) × ℂ => ENNReal.ofReal
     (gammaHalfKernel γ α₁ α₂ α₃ q.1.2 q.2 * Real.exp (γ ^ 2 * gffKernel (q.1.1 * q.1.2) q.2)))
   have hprod : Measurable (fun q : (ℂ × ℂ) × ℂ =>
     gammaHalfKernel γ α₁ α₂ α₃ q.1.2 q.2 * Real.exp (γ ^ 2 * gffKernel (q.1.1 * q.1.2) q.2)) :=
-    hK.mul hD
+    (show Measurable (fun q : (ℂ × ℂ) × ℂ => gammaHalfKernel γ α₁ α₂ α₃ q.1.2 q.2) by simpa only [Function.comp_def] using (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp ((measurable_snd.comp measurable_fst).prodMk measurable_snd)).mul (by simpa only [Function.comp_def] using ((measurable_pointRootPotential.comp hr).const_mul (γ ^ 2)).exp)
   simpa only [Function.comp_def] using ENNReal.measurable_ofReal.comp hprod
 
 /-- Measurability holds jointly in both the rescaled root and the moving insertion point. -/
 theorem fusionMovingMass_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ s : ℝ) :
     Measurable (fun q : ℂ × ℂ => ∫⁻ ω,
       fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (M ω) ^ s ∂P) := by
@@ -47,20 +41,8 @@ theorem fusionMovingMass_expectation_measurable {Ω : Type*} [MeasurableSpace Ω
       (hN.comp measurable_snd) (fun q => hf q.2)
       (fun q : ((ℂ × ℂ) × Ω) × ℂ =>
         fusionMovingKernel γ α₁ α₂ α₃ q.1.1.1 q.1.1.2 q.2)
-    have hp : Measurable (fun q : ((ℂ × ℂ) × Ω) × ℂ => (q.1.1, q.2)) :=
-      (measurable_fst.comp measurable_fst).prodMk measurable_snd
-    have ht := (fusionMovingKernel_joint_measurable γ α₁ α₂ α₃).comp hp
-    simpa only [Function.comp_def] using ht
-  have hmeas : Measurable (fun q : ℂ × ℂ => ∫⁻ ω,
-      fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (N ω) ^ s ∂P) :=
-    (hm.pow_const s).lintegral_prod_right'
-  have heq : (fun q : ℂ × ℂ => ∫⁻ ω,
-      fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (M ω) ^ s ∂P) =
-      (fun q : ℂ × ℂ => ∫⁻ ω,
-      fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (N ω) ^ s ∂P) := by
-    funext q
-    exact lintegral_congr_ae (he.mono fun ω h => by dsimp only; rw [h])
-  rw [heq]
-  exact hmeas
+    simpa only [Function.comp_def] using ((fusionMovingKernel_joint_measurable γ α₁ α₂ α₃).comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd : Measurable (fun q : ((ℂ × ℂ) × Ω) × ℂ => (q.1.1, q.2))))
+  rw [(show (fun q : ℂ × ℂ => ∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (M ω) ^ s ∂P) = (fun q : ℂ × ℂ => ∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (N ω) ^ s ∂P) by funext q; exact lintegral_congr_ae (he.mono fun ω h => by dsimp only; rw [h]))]
+  exact ((hm.pow_const s).lintegral_prod_right')
 
 end DOZZ.Proofs

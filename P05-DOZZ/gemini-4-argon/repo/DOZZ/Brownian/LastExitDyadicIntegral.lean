@@ -28,7 +28,7 @@ open scoped NNReal
 namespace DOZZ.Proofs
 
 /-- The dyadic ceiling map is measurable as a function of the last-exit time. -/
-theorem measurable_dyadicLastExitCeilingTime (n : ℕ) :
+theorem measurable_dyadicLastExitCeilingTime n :
     Measurable (dyadicLastExitCeilingTime n) := by
   unfold dyadicLastExitCeilingTime
   fun_prop

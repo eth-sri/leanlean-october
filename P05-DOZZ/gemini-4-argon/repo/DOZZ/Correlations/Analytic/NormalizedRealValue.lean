@@ -16,11 +16,11 @@ namespace DOZZ.Proofs
 /-- The actual complex cutoff observable, on real charges, equals the literal retained Coulomb
 moment with the final charge at infinity. No additional analytic identity is assumed. -/
 theorem normalized_vertex_moment_ofReal
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (β : Fin (N + 1) → ℝ) (z : Fin N → ℂ) (r : ℝ) (hr : 0 ≤ r)
+    Xc (hXc : IsCircleAverage P X Xc)
+    (β : Fin (N + 1) → ℝ) (z : Fin N → ℂ) r (hr : 0 ≤ r)
     (O : Set ℂ) (ho : IsOpen O) (hb : Bornology.IsBounded O) (hn : O.Nonempty)
     (hO : O ⊆ retainedRegion z r) :
     normalizedVertexMoment P Xc M O γ z r (fun i => (β i : ℂ)) =
@@ -46,25 +46,17 @@ theorem normalized_vertex_moment_ofReal
     apply Finset.measurable_sum
     intro i _
     exact (circleAverage_measurable_eval X Xc hXc _ _).const_mul _
-  have hm := gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM O ho.measurableSet
-  have hF : AEMeasurable F P :=
-    ((Real.measurable_exp.comp ((hLmeas.sub_const _).sub_const _)).aemeasurable).mul
-      (hm.ennreal_toReal.pow_const p)
-  have hFpos : 0 ≤ᵐ[P] F := Filter.Eventually.of_forall (fun ω =>
-    mul_nonneg (Real.exp_nonneg _) (Real.rpow_nonneg ENNReal.toReal_nonneg _))
-  have hmass := open_mass_pos_finite_ae P X hX γ hγ hγ2 M hM O ho hb hn
   have hE : (∫⁻ ω, ENNReal.ofReal (F ω) ∂P) =
       ∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2 -
         p * γ * ∑ i, β i.castSucc * equatorCircleMean (z i) r)) * M ω O ^ p ∂P := by
     apply lintegral_congr_ae
-    filter_upwards [hmass] with ω hω
+    filter_upwards [(open_mass_pos_finite_ae P X hX γ hγ hγ2 M hM O ho hb hn)] with ω hω
     dsimp only [F]
     rw [ENNReal.ofReal_mul (Real.exp_nonneg _),
       ← ENNReal.ofReal_rpow_of_pos (ENNReal.toReal_pos hω.1 hω.2), ENNReal.ofReal_toReal hω.2]
   unfold normalizedVertexMoment
   simp_rw [he]
-  have hcast : (∫ ω, (F ω : ℂ) ∂P) = ((∫ ω, F ω ∂P : ℝ) : ℂ) := integral_complex_ofReal
-  rw [hcast, integral_eq_lintegral_of_nonneg_ae hFpos hF.aestronglyMeasurable, hE,
+  rw [integral_complex_ofReal, integral_eq_lintegral_of_nonneg_ae (Filter.Eventually.of_forall (fun ω => mul_nonneg (Real.exp_nonneg _) (Real.rpow_nonneg ENNReal.toReal_nonneg _))) (((Real.measurable_exp.comp ((hLmeas.sub_const _).sub_const _)).aemeasurable).mul ((gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM O ho.measurableSet).ennreal_toReal.pow_const p)).aestronglyMeasurable, hE,
     normalized_real_vertex_tilt P X hX γ hγ hγ2 M hM Xc hXc β z r hr O
       ho.measurableSet hO p]
 

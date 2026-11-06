@@ -19,9 +19,9 @@ namespace DOZZ.Proofs
 /-- **Coulomb moments under affine maps**:
 `E[I_{ψz}^{-s}] = |a|^{γ (Σα-α∞) s/2} E[I_z^{-s}]`, including the charge at infinity. -/
 theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {N : ℕ} (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (αinf : ℝ) (a b : ℂ) (ha : a ≠ 0) :
+    X (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {N} (α : Fin N → ℝ) (z : Fin N → ℂ)
+    (αinf : ℝ) a b (ha : a ≠ 0) :
     ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α (fun k => a * z k + b) αinf) (-residueTotalSExp γ α αinf) ∂P =
       ENNReal.ofReal (‖a‖ ^ (γ * ((∑ k, α k) - αinf) * residueTotalSExp γ α αinf / 2)) *
         ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) (-residueTotalSExp γ α αinf) ∂P := by
@@ -32,8 +32,8 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
   set L : Ω → ℝ := fun ω => Xc ω b (-Real.log ‖a‖) with hLdef
   set VL : ℝ := ∫ ω, L ω ^ 2 ∂P with hVLdef
   set κ := repinKappa a b with hκ
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  have hLmeas : Measurable L :=
+  have hapos := norm_pos_iff.mpr ha
+  have : Measurable L :=
     (hXc.1 (-Real.log ‖a‖)).comp (measurable_id.prodMk measurable_const)
   have hVL : VL = 2 * κ := by
     have h := isCircleAverage_covariance P X hX Xc hXc b b (-Real.log ‖a‖) (-Real.log ‖a‖)
@@ -46,7 +46,7 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
   have hcw : Measurable fun x => coulombWeight γ α z αinf (affineInv a b x) :=
     (measurable_coulombWeight γ α z αinf).comp (continuous_affineInv a b).measurable
   have hc := continuous_repinPotential a b ha
-  have hw := continuous_repinWeight a b ha
+  have := continuous_repinWeight a b ha
   have hJmeas : Measurable J :=
     Measure.measurable_lintegral (hcw.mul (ENNReal.measurable_ofReal.comp (by fun_prop)))
   -- Step 1: the repinned model has the law of the original one
@@ -72,9 +72,6 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
     ring
   -- Step 3: the Cameron–Martin tilt by `γ s L`
   set L2 : Ω → ℝ := fun ω => γ * s * L ω with hL2def
-  have hL2 : IsGaussianL2Limit P X L2 :=
-    IsGaussianL2Limit.const_mul (isCircleAverage_isGaussianL2Limit P X hX Xc hXc b
-      (-Real.log ‖a‖)) (γ * s)
   have hVar2 : gaussianVariance P L2 = (γ * s) ^ 2 * VL := by
     simp only [gaussianVariance, gaussianCovariance, hL2def, hVLdef]
     rw [← integral_const_mul]
@@ -116,19 +113,14 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
       _ < ε := by
           rw [mul_div_assoc', div_lt_iff₀ hpos]
           nlinarith [abs_nonneg (γ * s)]
-  have hH : Measurable fun q : (TestFn → ℝ) × Measure ℂ => ENNReal.rpow (J q.2) (-s) := by
-    simp only [ENNReal.rpow_eq_pow]
-    exact (hJmeas.comp measurable_snd).pow_const _
-  have htilt := equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L2 hL2 c2 hc2
-    (fun _ μ => ENNReal.rpow (J μ) (-s)) hH
+  have htilt := equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L2 (IsGaussianL2Limit.const_mul (isCircleAverage_isGaussianL2Limit P X hX Xc hXc b (-Real.log ‖a‖)) (γ * s)) c2 hc2
+    (fun _ μ => ENNReal.rpow (J μ) (-s)) (by simp only [ENNReal.rpow_eq_pow]; exact (hJmeas.comp measurable_snd).pow_const _)
   -- Step 4: the tilted reweighted mass is a constant multiple of the Coulomb mass at `ψ z`
   set K : ℝ := ‖a‖ ^ (γ * S / 2) * Real.exp (γ ^ 2 * (1 + s) * κ) with hKdef
   have hKpos : 0 < K := by positivity
   have h4 : ∀ᵐ ω ∂P, J ((M ω).withDensity fun x => ENNReal.ofReal (Real.exp (γ * c2 x))) =
       ENNReal.ofReal K * coulombMass γ (M ω) α (fun k => a * z k + b) αinf := by
-    have hatoms : ∀ᵐ ω ∂P, ∀ k, M ω {a * z k + b} = 0 :=
-      ae_all_iff.2 fun k => gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM _
-    filter_upwards [hatoms] with ω hω
+    filter_upwards [(ae_all_iff.2 fun k => gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM _ : ∀ᵐ ω ∂P, ∀ k, M ω {a * z k + b} = 0)] with ω hω
     have hD : Measurable fun x => ENNReal.ofReal (Real.exp (γ * c2 x)) :=
       ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
         (measurable_const.mul c2.continuous.measurable))
@@ -139,10 +131,8 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
     rw [lintegral_withDensity_eq_lintegral_mul _ hD hI,
       coulombMass_eq_lintegral_coulombWeight, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply lintegral_congr_ae
-    have hnull : M ω (⋃ k, {a * z k + b}) = 0 := measure_iUnion_null hω
-    filter_upwards [measure_eq_zero_iff_ae_notMem.1 hnull] with x hx
-    have hxk : ∀ k, x ≠ a * z k + b := fun k h => hx (Set.mem_iUnion.2 ⟨k, h⟩)
-    rw [hKdef, ← residue_coulombWeight_repin_identity γ hγ α z αinf a b ha hxk]
+    filter_upwards [measure_eq_zero_iff_ae_notMem.1 (measure_iUnion_null hω)] with x hx
+    rw [hKdef, ← residue_coulombWeight_repin_identity γ hγ α z αinf a b ha (fun k h => hx (Set.mem_iUnion.2 ⟨k, h⟩))]
     simp only [Pi.mul_apply, hc2x]
     rw [mul_left_comm, ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← mul_assoc, ← Real.exp_add]
     congr 4
@@ -178,11 +168,7 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
       _ = _ := by
           rw [htilt]
           congr 2
-          have hne : (ENNReal.ofReal K).rpow (-s) ≠ ⊤ := by
-            rw [ENNReal.rpow_eq_pow]
-            exact ENNReal.rpow_ne_top_of_ne_zero (ENNReal.ofReal_pos.mpr hKpos).ne'
-              ENNReal.ofReal_ne_top
-          rw [← lintegral_const_mul' _ _ hne]
+          rw [← lintegral_const_mul' _ _ (show (ENNReal.ofReal K).rpow (-s) ≠ ⊤ by rw [ENNReal.rpow_eq_pow]; exact ENNReal.rpow_ne_top_of_ne_zero (ENNReal.ofReal_pos.mpr hKpos).ne' ENNReal.ofReal_ne_top)]
           apply lintegral_congr_ae
           filter_upwards [h4] with ω hω
           rw [hω, ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow,
@@ -191,15 +177,12 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
       (ENNReal.ofReal (Real.exp (s * (γ ^ 2 / 2 * VL))) *
         (ENNReal.ofReal (Real.exp ((γ * s) ^ 2 * VL / 2)) *
           ENNReal.rpow (ENNReal.ofReal K) (-s))) = 1 := by
-    have hlogK : Real.log K = γ * S / 2 * Real.log ‖a‖ + γ ^ 2 * (1 + s) * κ := by
-      rw [hKdef, Real.log_mul (Real.rpow_pos_of_pos hapos _).ne' (Real.exp_pos _).ne',
-        Real.log_rpow hapos, Real.log_exp]
     rw [ENNReal.rpow_eq_pow, ENNReal.ofReal_rpow_of_pos hKpos,
       ← ENNReal.ofReal_mul (Real.exp_pos _).le,
       ← ENNReal.ofReal_mul (Real.exp_pos _).le,
       ← ENNReal.ofReal_mul (Real.rpow_pos_of_pos hapos _).le, ← ENNReal.ofReal_one]
     congr 1
-    rw [Real.rpow_def_of_pos hapos, Real.rpow_def_of_pos hKpos, hlogK, ← Real.exp_add,
+    rw [Real.rpow_def_of_pos hapos, Real.rpow_def_of_pos hKpos, (show Real.log K = γ * S / 2 * Real.log ‖a‖ + γ ^ 2 * (1 + s) * κ by rw [hKdef, Real.log_mul (Real.rpow_pos_of_pos hapos _).ne' (Real.exp_pos _).ne', Real.log_rpow hapos, Real.log_exp]), ← Real.exp_add,
       ← Real.exp_add, ← Real.exp_add, Real.exp_eq_one_iff, hVL]
     ring
   calc ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α (fun k => a * z k + b) αinf) (-s) ∂P

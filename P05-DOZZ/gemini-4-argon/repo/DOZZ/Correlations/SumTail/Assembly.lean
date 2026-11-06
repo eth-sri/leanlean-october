@@ -17,16 +17,16 @@ open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
 
 theorem twoInsertion_tail_sum_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (K2 K3 : Set ℂ) (hK2 : IsCompact K2) (hK3 : IsCompact K3)
+    K2 K3 (hK2 : IsCompact K2) (hK3 : IsCompact K3)
     (hpos2 : ∀ z ∈ K2, 2 ≤ ‖z‖) (hpos3 : ∀ z ∈ K3, 2 ≤ ‖z‖)
     (hsep : ∀ z2 ∈ K2, ∀ z3 ∈ K3, 3 ≤ ‖z2 - z3‖)
-    (A2 A3 : Set ℝ) (hA2 : IsCompact A2) (hA3 : IsCompact A3)
+    A2 A3 (hA2 : IsCompact A2) (hA3 : IsCompact A3)
     (hα2 : ∀ α ∈ A2, γ / 2 < α ∧ α < Q γ)
     (hα3 : ∀ α ∈ A3, γ / 2 < α ∧ α < Q γ)
-    (F2s F3s : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
+    (F2s F3s : ℂ → Set (ℂ → ℝ)) radius supBound derivBound lowerBound
     (hF2 : UniformPositiveC1Family K2 F2s radius supBound derivBound lowerBound)
     (hF3 : UniformPositiveC1Family K3 F3s radius supBound derivBound lowerBound) :
     ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,

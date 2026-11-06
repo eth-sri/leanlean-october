@@ -24,26 +24,19 @@ open scoped Topology
 namespace DOZZ.Proofs
 
 private theorem cdf_superlevel_nonempty {μ : Measure ℝ} [IsProbabilityMeasure μ]
-    {u : ℝ} (hu : u < 1) :
+    {u} (hu : u < 1) :
     {x : ℝ | u ≤ ProbabilityTheory.cdf μ x}.Nonempty := by
-  have hev : ∀ᶠ x : ℝ in atTop, u < ProbabilityTheory.cdf μ x :=
-    (ProbabilityTheory.tendsto_cdf_atTop μ).eventually
-      (isOpen_Ioi.mem_nhds hu)
-  obtain ⟨x, hx⟩ := Filter.eventually_atTop.1 hev
+  obtain ⟨x, hx⟩ := Filter.eventually_atTop.1 ((ProbabilityTheory.tendsto_cdf_atTop μ).eventually (isOpen_Ioi.mem_nhds hu))
   exact ⟨x, (hx x le_rfl).le⟩
 
 private theorem cdf_superlevel_bddBelow {μ : Measure ℝ} [IsProbabilityMeasure μ]
-    {u : ℝ} (hu : 0 < u) :
+    {u} (hu : 0 < u) :
     BddBelow {x : ℝ | u ≤ ProbabilityTheory.cdf μ x} := by
-  have hev : ∀ᶠ x : ℝ in atBot, ProbabilityTheory.cdf μ x < u :=
-    (ProbabilityTheory.tendsto_cdf_atBot μ).eventually
-      (isOpen_Iio.mem_nhds hu)
-  obtain ⟨a, ha⟩ := Filter.eventually_atBot.1 hev
+  obtain ⟨a, ha⟩ := Filter.eventually_atBot.1 ((ProbabilityTheory.tendsto_cdf_atBot μ).eventually (isOpen_Iio.mem_nhds hu))
   refine ⟨a, ?_⟩
   intro x hx
   by_contra hnot
-  have hxa : x ≤ a := (lt_of_not_ge hnot).le
-  exact (not_lt_of_ge hx) (ha x hxa)
+  exact (not_lt_of_ge hx) (ha x ((lt_of_not_ge hnot).le))
 
 /-- The generalized quantile is monotone as a function of the uniform level on `(0,1)`. -/
 theorem cdfGeneralizedQuantile_monoOn_Ioo

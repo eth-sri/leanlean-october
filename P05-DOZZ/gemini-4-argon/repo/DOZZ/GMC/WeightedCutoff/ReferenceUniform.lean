@@ -13,10 +13,10 @@ namespace DOZZ.Proofs
 
 theorem regularizedGMC_reference_positive_moment_compact_gamma_all_cutoffs
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (Γ : Set ℝ) (hΓ : IsCompact Γ) (hΓpos : ∀ γ ∈ Γ, 0 < γ)
-    (p : ℝ) (hp : 1 < p) (hcrit : ∀ γ ∈ Γ, p < 4 / γ ^ 2) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
+    Γ (hΓ : IsCompact Γ) (hΓpos : ∀ γ ∈ Γ, 0 < γ)
+    p (hp : 1 < p) (hcrit : ∀ γ ∈ Γ, p < 4 / γ ^ 2) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ γ ∈ Γ, ∀ r : ℝ, 0 ≤ r →
       (∫⁻ ω, (regularizedGMC P Xc γ r ω (Metric.ball 0 (1 / 8))) ^ p ∂P) ≤ C := by
   classical
@@ -33,13 +33,7 @@ theorem regularizedGMC_reference_positive_moment_compact_gamma_all_cutoffs
     exact mul_nonneg (by nlinarith) (by linarith)
   let E : ℝ≥0∞ := gmcReferenceMeasure (Metric.ball (0 : ℂ) (1 / 8)) ^ p *
     ENNReal.ofReal (Real.exp (g ^ 2 * A))
-  have htop : gmcReferenceMeasure (Metric.ball (0 : ℂ) (1 / 8)) ≠ ⊤ :=
-    ne_top_of_le_ne_top gmcReferenceMeasure_univ_ne_top (measure_mono (Set.subset_univ _))
-  have hE : E < ⊤ := by
-    exact ENNReal.mul_lt_top
-      (lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg (by linarith) htop))
-      ENNReal.ofReal_lt_top
-  refine ⟨D + E, ENNReal.add_lt_top.mpr ⟨hD, hE⟩, ?_⟩
+  refine ⟨D + E, ENNReal.add_lt_top.mpr ⟨hD, (by exact ENNReal.mul_lt_top (lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg (by linarith) (ne_top_of_le_ne_top gmcReferenceMeasure_univ_ne_top (measure_mono (Set.subset_univ _))))) ENNReal.ofReal_lt_top)⟩, ?_⟩
   intro γ hγ r hr
   by_cases hr1 : 1 ≤ r
   · exact (hfine γ hγ r hr1).trans (le_add_of_nonneg_right (by positivity))
@@ -67,12 +61,10 @@ theorem regularizedGMC_reference_positive_moment_compact_gamma_all_cutoffs
 /-- Lower nonnegative moments are bounded by the mass of the probability space plus a higher moment. -/
 theorem lintegral_rpow_le_measure_add_larger_order
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (f : Ω → ℝ≥0∞)
-    (hf : AEMeasurable f P) {p q : ℝ} (hp : 0 ≤ p) (hpq : p ≤ q) :
+    (hf : AEMeasurable f P) {p q} (hp : 0 ≤ p) (hpq : p ≤ q) :
     (∫⁻ ω, ENNReal.rpow (f ω) p ∂P) ≤
       P Set.univ + ∫⁻ ω, ENNReal.rpow (f ω) q ∂P := by
-  have hqmeas : AEMeasurable (fun ω => ENNReal.rpow (f ω) q) P := by
-    exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hf
-  have hpoint (ω : Ω) : ENNReal.rpow (f ω) p ≤ 1 + ENNReal.rpow (f ω) q := by
+  have hpoint ω : ENNReal.rpow (f ω) p ≤ 1 + ENNReal.rpow (f ω) q := by
     by_cases hω : f ω ≤ 1
     · exact (ENNReal.rpow_le_one hω hp).trans (le_add_of_nonneg_right (by positivity))
     · have hω' : 1 ≤ f ω := le_of_not_ge hω

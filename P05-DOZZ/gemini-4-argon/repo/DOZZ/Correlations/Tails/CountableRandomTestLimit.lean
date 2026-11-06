@@ -20,7 +20,7 @@ Finite truncation reduces the assertion to finite-coordinate convergence; the di
 choice tail vanishes by continuity of the finite source measure. -/
 theorem tendstoInMeasure_countable_selection
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsFiniteMeasure P]
-    (f : ℕ → Ω → ℕ → ℝ) (g : Ω → ℕ → ℝ) (choice : Ω → ℕ)
+    (f : ℕ → Ω → ℕ → ℝ) (g : Ω → ℕ → ℝ) choice
     (hc : Measurable choice)
     (hcoord : ∀ i, TendstoInMeasure P (fun n ω => f n ω i) atTop (fun ω => g ω i)) :
     TendstoInMeasure P (fun n ω => f n ω (choice ω)) atTop (fun ω => g ω (choice ω)) := by
@@ -28,22 +28,18 @@ theorem tendstoInMeasure_countable_selection
     fun k ω => ⟨min (choice ω) k, Nat.lt_succ_of_le (min_le_right _ _)⟩
   let a : ℕ → ℕ → Ω → ℝ := fun k n ω => f n ω (select k ω)
   let b : ℕ → Ω → ℝ := fun k ω => g ω (select k ω)
-  have hab (k : ℕ) : TendstoInMeasure P (a k) atTop (b k) :=
-    tendstoInMeasure_finite_selection P
+  have hab (k : ℕ) := tendstoInMeasure_finite_selection P
       (fun n ω (i : Fin (k+1)) => f n ω i) (fun ω (i : Fin (k+1)) => g ω i)
       (select k) (fun i => hcoord i)
   let S : ℕ → Set Ω := fun k => {ω | k < choice ω}
-  have hS (k : ℕ) : MeasurableSet (S k) := measurableSet_lt measurable_const hc
-  have hanti : Antitone S := by
-    intro i j hij ω hω
-    exact lt_of_le_of_lt hij hω
+  have hS k : MeasurableSet (S k) := measurableSet_lt measurable_const hc
   have hempty : (⋂ k, S k) = ∅ := by
     apply eq_empty_iff_forall_notMem.mpr
     intro ω hω
     exact (lt_irrefl (choice ω)) ((mem_iInter.mp hω) (choice ω))
   have he : Tendsto (fun k => P (S k)) atTop (𝓝 0) := by
     have h := tendsto_measure_iInter_atTop (fun k => (hS k).nullMeasurableSet)
-      hanti ⟨0, measure_ne_top P _⟩
+      (by intro i j hij ω hω; exact lt_of_le_of_lt hij hω) ⟨0, measure_ne_top P _⟩
     simpa only [Function.comp_def, hempty, measure_empty] using h
   apply tendstoInMeasure_uniform_approximation P _ _ a b hab
   intro ε hε
@@ -52,8 +48,7 @@ theorem tendstoInMeasure_countable_selection
     apply measure_mono
     intro ω hω
     by_contra hn
-    have hle : choice ω ≤ k := le_of_not_gt hn
-    have hsame : (select k ω : ℕ) = choice ω := min_eq_left hle
+    have hsame : (select k ω : ℕ) = choice ω := min_eq_left (le_of_not_gt hn)
     change ε ≤ ‖f n ω (choice ω) - f n ω (select k ω)‖ at hω
     rw [hsame, sub_self, norm_zero] at hω
     exact (not_le_of_gt hε) hω
@@ -61,8 +56,7 @@ theorem tendstoInMeasure_countable_selection
     apply measure_mono
     intro ω hω
     by_contra hn
-    have hle : choice ω ≤ k := le_of_not_gt hn
-    have hsame : (select k ω : ℕ) = choice ω := min_eq_left hle
+    have hsame : (select k ω : ℕ) = choice ω := min_eq_left (le_of_not_gt hn)
     change ε ≤ ‖g ω (select k ω) - g ω (choice ω)‖ at hω
     rw [hsame, sub_self, norm_zero] at hω
     exact (not_le_of_gt hε) hω

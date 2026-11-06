@@ -19,15 +19,10 @@ theorem reflected_inverse_increment_integrable
     (hInv : Integrable (fun ω => (A ω)^(-p)) P) :
     Integrable (fun ω => (A ω+T ω)^(-p)-(A ω)^(-p)) P := by
   have hpow : Measurable (fun x : ℝ => x^(-p)) := by fun_prop
-  have hm := ((hpow.comp_aemeasurable (hAm.add hTm)).sub
-    (hpow.comp_aemeasurable hAm)).aestronglyMeasurable
-  apply hInv.mono' hm
+  apply hInv.mono' (((hpow.comp_aemeasurable (hAm.add hTm)).sub (hpow.comp_aemeasurable hAm)).aestronglyMeasurable)
   filter_upwards [hA,hT] with ω hAω hTω
-  have hneg : (A ω+T ω)^(-p)-(A ω)^(-p) ≤ 0 :=
-    sub_nonpos.mpr (Real.rpow_le_rpow_of_nonpos hAω
-      (le_add_of_nonneg_right hTω) (neg_nonpos.mpr hp.le))
   change ‖(A ω+T ω)^(-p)-(A ω)^(-p)‖ ≤ (A ω)^(-p)
-  rw [Real.norm_eq_abs,abs_of_nonpos hneg,neg_sub]
+  rw [Real.norm_eq_abs,abs_of_nonpos (sub_nonpos.mpr (Real.rpow_le_rpow_of_nonpos hAω (le_add_of_nonneg_right hTω) (neg_nonpos.mpr hp.le))),neg_sub]
   exact sub_le_self _ (Real.rpow_nonneg (hAω.le.trans (le_add_of_nonneg_right hTω)) _)
 
 end DOZZ.Proofs

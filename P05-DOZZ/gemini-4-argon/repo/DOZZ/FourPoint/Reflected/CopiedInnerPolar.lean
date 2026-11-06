@@ -14,14 +14,14 @@ namespace DOZZ.Proofs
 
 /-- Reinsertion followed by radial projection recovers the logarithmic pushforward of the
 lateral plane carrier. The only excluded mass is its null origin. -/
-theorem reflected_reinserted_lateral_projection (γ : ℝ) (A : TwoSidedPath)
+theorem reflected_reinserted_lateral_projection γ A
     (N : Measure ℂ) (h0 : N {0} = 0) :
     lateralProjectedGMC γ A (N.withDensity
       (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))) =
         N.map (fun x => -Real.log ‖x‖) := by
   have hL : Measurable (lateralRadialWeight γ A) := by
     change Measurable ((fun p : (ℝ × TwoSidedPath) × ℂ =>
-      lateralRadialWeight p.1.1 p.1.2 p.2) ∘ fun x : ℂ => ((γ, A), x))
+      lateralRadialWeight p.1.1 p.1.2 p.2) ∘ fun x => ((γ, A), x))
     exact measurable_lateralRadialWeight.comp (measurable_const.prodMk measurable_id)
   have hW : Measurable (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ A x)) :=
     ((reflected_global_reinsertionWeight_measurable γ).comp
@@ -38,36 +38,13 @@ theorem reflected_reinserted_lateral_projection (γ : ℝ) (A : TwoSidedPath)
   change ((N.withDensity (fun x => ENNReal.ofReal
     (reflected_global_reinsertionWeight γ A x))).withDensity
       (lateralRadialWeight γ A)).map _ = _
-  rw [he, reflected_global_reinsertion_measure]
-  have hrest : N.restrict ({0} : Set ℂ)ᶜ = N :=
-    Measure.restrict_eq_self_of_ae_mem (measure_eq_zero_iff_ae_notMem.mp h0)
-  rw [hrest]
+  rw [he, reflected_global_reinsertion_measure, (Measure.restrict_eq_self_of_ae_mem (measure_eq_zero_iff_ae_notMem.mp h0) : N.restrict ({0} : Set ℂ)ᶜ = N)]
 
-/-- The actual independently reinserted inner radial mass equals its lateral polar integral. -/
-theorem reflected_copied_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
-    (N : Measure ℂ) (h0 : N {0} = 0) (T : ℝ≥0) :
-    (∫⁻ x in {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))},
-      ENNReal.ofReal (‖x‖ ^ (-(γ * α))) *
-        ENNReal.ofReal (reflected_global_reinsertionWeight γ A x) ∂N) =
-      ∫⁻ s in Ioi (T : ℝ), ENNReal.ofReal
-        (Real.exp (γ * (A s - (Q γ - α) * s))) ∂N.map (fun x => -Real.log ‖x‖) := by
-  have hW : Measurable (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ A x)) :=
-    ((reflected_global_reinsertionWeight_measurable γ).comp
-      (measurable_const.prodMk measurable_id)).ennreal_ofReal
-  have hi := reflected_inner_radial_polar γ α A
-    (N.withDensity (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))) T
-  rw [reflected_reinserted_lateral_projection γ A N h0] at hi
-  have hf : Measurable (fun x : ℂ => ENNReal.ofReal (‖x‖ ^ (-(γ * α)))) := by fun_prop
-  have hU : MeasurableSet {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))} :=
-    (measurableSet_lt measurable_const measurable_norm).inter
-      (measurableSet_lt measurable_norm measurable_const)
-  rw [setLIntegral_withDensity_eq_setLIntegral_mul N hW hf hU] at hi
-  simpa only [Pi.mul_apply, mul_comm] using hi
 
 /-- The actual removed plane carrier projects to the source lateral GMC on one common
 full-measure event; its plane origin has zero mass on that event. -/
 theorem reflected_removed_carrier_projection
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) γ
     (A : Ω → TwoSidedPath) (M N : Ω → Measure ℂ)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω)))) :
     ∀ᵐ ω ∂P, N ω {0} = 0 ∧
@@ -88,7 +65,7 @@ theorem reflected_removed_carrier_projection
 /-- Independently reinserted inner masses restart against the translated actual source lateral
 measure, uniformly over the copied radial path and deterministic restart time. -/
 theorem reflected_copied_inner_source_restart
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ α : ℝ)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) γ α
     (A : Ω → TwoSidedPath) (M N : Ω → Measure ℂ)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω)))) :
     ∀ᵐ ω ∂P, ∀ a : TwoSidedPath, ∀ T : ℝ≥0,
@@ -100,8 +77,21 @@ theorem reflected_copied_inner_source_restart
             (γ * (brownianShiftPath T (radialPositiveHalf a) (Real.toNNReal u) -
               (Q γ - α) * u))) else 0)
             ∂(lateralProjectedGMC γ (A ω) (M ω)).map (fun s => s - (T : ℝ)) := by
+  have reflected_copied_inner_radial_polar A (N : Measure ℂ) (h0 : N {0} = 0) (T : ℝ≥0) : (∫⁻ x in {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}, ENNReal.ofReal (‖x‖ ^ (-(γ * α))) * ENNReal.ofReal (reflected_global_reinsertionWeight γ A x) ∂N) = ∫⁻ s in Ioi (T : ℝ), ENNReal.ofReal (Real.exp (γ * (A s - (Q γ - α) * s))) ∂N.map (fun x => -Real.log ‖x‖) := by
+    have hW : Measurable (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ A x)) :=
+      ((reflected_global_reinsertionWeight_measurable γ).comp
+        (measurable_const.prodMk measurable_id)).ennreal_ofReal
+    have hi := reflected_inner_radial_polar γ α A
+      (N.withDensity (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))) T
+    rw [reflected_reinserted_lateral_projection γ A N h0] at hi
+    have hf : Measurable (fun x : ℂ => ENNReal.ofReal (‖x‖ ^ (-(γ * α)))) := by fun_prop
+    have hU : MeasurableSet {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))} :=
+      (measurableSet_lt measurable_const measurable_norm).inter
+        (measurableSet_lt measurable_norm measurable_const)
+    rw [setLIntegral_withDensity_eq_setLIntegral_mul N hW hf hU] at hi
+    simpa only [Pi.mul_apply, mul_comm] using hi
   filter_upwards [reflected_removed_carrier_projection P γ A M N heq] with ω hω a T
-  rw [reflected_copied_inner_radial_polar γ α a (N ω) hω.1 T, hω.2]
+  rw [reflected_copied_inner_radial_polar a (N ω) hω.1 T, hω.2]
   exact reflected_inner_polar_restart γ (Q γ - α) a _ T
 
 end DOZZ.Proofs

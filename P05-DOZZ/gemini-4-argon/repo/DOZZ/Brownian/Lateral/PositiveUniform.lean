@@ -52,7 +52,7 @@ theorem lateralGMC_compact_moment_endpoints_across_one
   have hsub : ∀ γ ∈ Kγ, ∀ q ∈ K, q < 4 / γ ^ 2 := by
     intro γ hγ q hqm
     have hγp := (hZ γ hγ).1
-    have hγhi := (hZ γ hγ).2.1
+    have := (hZ γ hγ).2.1
     have hs : 0 < γ ^ 2 := sq_pos_of_pos hγp
     rcases hqm with hqm | hqm
     · exact hq γ hγ q hqm

@@ -31,24 +31,17 @@ theorem residue_real_uniform_tail_limit
       (𝓝[>] 0) (𝓝 (γ * β * c₀)) := by
   have h := (complexMoment_uniform_tail_bridge P Y c c₀ β η γ d₀ C
     hβ hη hγ hd₀ hC hY hpos hc htail).2
-  have hre := Complex.continuous_re.continuousAt.tendsto.comp h
-  have hnear : ∀ᶠ d : ℝ in 𝓝[>] 0, 0 < d ∧ d < d₀ := by
-    filter_upwards [self_mem_nhdsWithin, (Filter.eventually_of_mem (Iio_mem_nhds hd₀) (fun _ h => h)).filter_mono nhdsWithin_le_nhds] with d hd hd'
-    exact ⟨hd, hd'⟩
-  apply hre.congr'
-  filter_upwards [hnear] with d hd
-  have heq : (fun ω => (Y d ω : ℂ) ^ ((β - d / γ : ℝ) : ℂ)) =ᵐ[P]
-      fun ω => ((Y d ω ^ (β - d / γ) : ℝ) : ℂ) :=
-    (hpos d hd.1 hd.2).mono (fun ω hω => (Complex.ofReal_cpow hω _).symm)
+  apply (Complex.continuous_re.continuousAt.tendsto.comp h).congr'
+  filter_upwards [(show ∀ᶠ d : ℝ in 𝓝[>] 0, 0 < d ∧ d < d₀ by filter_upwards [self_mem_nhdsWithin, (Filter.eventually_of_mem (Iio_mem_nhds hd₀) (fun _ h => h)).filter_mono nhdsWithin_le_nhds] with d hd hd'; exact ⟨hd, hd'⟩)] with d hd
   dsimp only [Function.comp_def]
-  rw [integral_congr_ae heq, integral_complex_ofReal, ← Complex.ofReal_mul]
+  rw [integral_congr_ae ((hpos d hd.1 hd.2).mono (fun ω hω => (Complex.ofReal_cpow hω _).symm) : (fun ω => (Y d ω : ℂ) ^ ((β - d / γ : ℝ) : ℂ)) =ᵐ[P] fun ω => ((Y d ω ^ (β - d / γ) : ℝ) : ℂ)), integral_complex_ofReal, ← Complex.ofReal_mul]
   rfl
 
 /-- A finite extended mass has exactly the same upper tail as its real value. -/
 theorem residue_realUpperTail_toReal
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (Y : Ω → ℝ≥0∞) (hY : AEMeasurable Y P) (hfinite : ∀ᵐ ω ∂P, Y ω ≠ ⊤)
-    (t : ℝ) (ht : 0 ≤ t) :
+    t (ht : 0 ≤ t) :
     realUpperTail P (fun ω => (Y ω).toReal) (ENNReal.measurable_toReal.comp_aemeasurable hY) t =
       (P {ω | ENNReal.ofReal t < Y ω}).toReal := by
   unfold realUpperTail

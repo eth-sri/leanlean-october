@@ -21,9 +21,9 @@ namespace DOZZ.Proofs
 values at the deterministic insertions disappear using the atomlessness theorem
 `gmc_singleton_mass_eq_zero_ae`. -/
 theorem fusion_gammaHalf_spatial_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ s : ℝ) (H : ℂ × ℂ → ℂ) (hH : Measurable H) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (α₁ α₂ α₃ s : ℝ) H (hH : Measurable H) :
     Measurable (fun z : ℂ => ∫ ω,
       ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s).toReal : ℂ) *
         (∫ x, H (z, x) ∂M ω) ∂P) := by
@@ -34,24 +34,12 @@ theorem fusion_gammaHalf_spatial_expectation_measurable {Ω : Type*} [Measurable
     apply measurable_lintegral_finite_family (fun q : ℂ × Ω => N q.2)
       (hN.comp measurable_snd) (fun q => hfN q.2)
       (fun q : (ℂ × Ω) × ℂ => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ q.1.1 q.2))
-    have hp : Measurable (fun q : (ℂ × Ω) × ℂ => (q.1.1, q.2)) :=
-      (measurable_fst.comp measurable_fst).prodMk measurable_snd
     simpa only [Function.comp_def] using ENNReal.measurable_ofReal.comp
-      ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp hp)
-  have hHm : Measurable (fun q : ℂ × Ω => ∫ x, H (q.1, x) ∂N q.2) := by
-    apply fusion_measurable_integral_finite_family (fun q : ℂ × Ω => N q.2)
-      (hN.comp measurable_snd) (fun q => hfN q.2)
-      (fun q : (ℂ × Ω) × ℂ => H (q.1.1, q.2))
-    have hp : Measurable (fun q : (ℂ × Ω) × ℂ => (q.1.1, q.2)) :=
-      (measurable_fst.comp measurable_fst).prodMk measurable_snd
-    simpa only [Function.comp_def] using hH.comp hp
-  have hFn : Measurable (fun z : ℂ => ∫ ω, ((I (z, ω) ^ s).toReal : ℂ) *
-      (∫ x, H (z, x) ∂N ω) ∂P) :=
-    (((Complex.measurable_ofReal.comp (hIm.pow_const s).ennreal_toReal).mul hHm).stronglyMeasurable.integral_prod_right').measurable
-  have heq : (fun z : ℂ => ∫ ω,
+      ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd))
+  have heq : (fun z => ∫ ω,
       ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s).toReal : ℂ) *
         (∫ x, H (z, x) ∂M ω) ∂P) =
-      (fun z : ℂ => ∫ ω, ((I (z, ω) ^ s).toReal : ℂ) *
+      (fun z => ∫ ω, ((I (z, ω) ^ s).toReal : ℂ) *
         (∫ x, H (z, x) ∂N ω) ∂P) := by
     funext z
     apply integral_congr_ae
@@ -61,6 +49,6 @@ theorem fusion_gammaHalf_spatial_expectation_measurable {Ω : Type*} [Measurable
     dsimp only [I]
     rw [fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1, hω]
   rw [heq]
-  exact hFn
+  exact ((((Complex.measurable_ofReal.comp (hIm.pow_const s).ennreal_toReal).mul (show Measurable (fun q : ℂ × Ω => ∫ x, H (q.1, x) ∂N q.2) by apply fusion_measurable_integral_finite_family (fun q : ℂ × Ω => N q.2) (hN.comp measurable_snd) (fun q => hfN q.2) (fun q : (ℂ × Ω) × ℂ => H (q.1.1, q.2)); simpa only [Function.comp_def] using hH.comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd))).stronglyMeasurable.integral_prod_right').measurable)
 
 end DOZZ.Proofs

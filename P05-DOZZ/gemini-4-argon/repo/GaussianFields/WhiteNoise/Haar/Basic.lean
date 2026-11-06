@@ -102,7 +102,7 @@ def HaarWaveletIndex.toHaarIndex {d : Nat} (idx : HaarWaveletIndex d) : HaarInde
   cell := idx.cell
   signature := idx.signature
 
-theorem HaarWaveletIndex.toHaarIndex_injective {d : Nat} :
+theorem HaarWaveletIndex.toHaarIndex_injective {d} :
     Function.Injective (@HaarWaveletIndex.toHaarIndex d) := by
   intro idx idx' hidx
   cases idx with
@@ -123,14 +123,14 @@ theorem HaarWaveletIndex.toHaarIndex_injective {d : Nat} :
 noncomputable def dyadicPower (j : ℤ) : ℝ :=
   (2 : ℝ) ^ j
 
-theorem dyadicPower_pos (j : ℤ) : 0 < dyadicPower j := by
+theorem dyadicPower_pos j : 0 < dyadicPower j := by
   unfold dyadicPower
   positivity
 
-theorem dyadicPower_ne_zero (j : ℤ) : dyadicPower j ≠ 0 :=
+theorem dyadicPower_ne_zero j : dyadicPower j ≠ 0 :=
   ne_of_gt (dyadicPower_pos j)
 
-theorem dyadicPower_add_one (j : ℤ) :
+theorem dyadicPower_add_one j :
     dyadicPower (j + 1) = 2 * dyadicPower j := by
   unfold dyadicPower
   rw [zpow_add₀ (by norm_num : (2 : ℝ) ≠ 0)]
@@ -141,27 +141,19 @@ theorem dyadicPower_add_one (j : ℤ) :
 noncomputable def haarScaleFactor (j : ℤ) : ℝ :=
   (2 : ℝ) ^ ((j : ℝ) / 2)
 
-theorem haarScaleFactor_pos (j : ℤ) : 0 < haarScaleFactor j := by
+theorem haarScaleFactor_pos j : 0 < haarScaleFactor j := by
   unfold haarScaleFactor
   positivity
 
-theorem haarScaleFactor_sq (j : ℤ) :
+theorem haarScaleFactor_sq j :
     haarScaleFactor j ^ (2 : Nat) = dyadicPower j := by
   unfold haarScaleFactor dyadicPower
-  rw [← Real.rpow_natCast]
-  rw [← Real.rpow_mul (by norm_num : 0 ≤ (2 : ℝ))]
-  have hmul : (↑j / 2) * ((2 : ℕ) : ℝ) = (j : ℝ) := by norm_num
-  rw [hmul, Real.rpow_intCast]
+  rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : 0 ≤ (2 : ℝ)), (show (↑j / 2) * ((2 : ℕ) : ℝ) = (j : ℝ) by norm_num), Real.rpow_intCast]
 
-theorem haarScaleFactor_add_one (j : ℤ) :
+theorem haarScaleFactor_add_one j :
     haarScaleFactor (j + 1) = Real.sqrt 2 * haarScaleFactor j := by
   unfold haarScaleFactor
-  have hexp : (((j + 1 : ℤ) : ℝ) / 2) = (j : ℝ) / 2 + (1 / 2 : ℝ) := by
-    norm_num
-    ring
-  rw [hexp]
-  rw [Real.rpow_add (by norm_num : 0 < (2 : ℝ))]
-  rw [← Real.sqrt_eq_rpow]
+  rw [(show (((j + 1 : ℤ) : ℝ) / 2) = (j : ℝ) / 2 + (1 / 2 : ℝ) by norm_num; ring), Real.rpow_add (by norm_num : 0 < (2 : ℝ)), ← Real.sqrt_eq_rpow]
   ring
 
 /-- The one-dimensional Haar father function `1_[0,1)`. -/
@@ -207,123 +199,85 @@ theorem integrable_haarMother1D :
         rw [Real.volume_Ico]
         exact ENNReal.ofReal_ne_top)).integrable_indicator measurableSet_Ico
 
-theorem haarFather1D_sq (x : ℝ) :
+theorem haarFather1D_sq x :
     haarFather1D x ^ (2 : Nat) = haarFather1D x := by
   by_cases hx : x ∈ Set.Ico (0 : ℝ) 1
   · simp [haarFather1D, hx]
   · simp [haarFather1D, hx]
 
-theorem haarMother1D_sq (x : ℝ) :
+theorem haarMother1D_sq x :
     haarMother1D x ^ (2 : Nat) = haarFather1D x := by
-  let leftHalf : Set ℝ := Set.Ico (0 : ℝ) (1 / 2)
-  let rightHalf : Set ℝ := Set.Ico (1 / 2 : ℝ) 1
-  let unitInterval : Set ℝ := Set.Ico (0 : ℝ) 1
-  have hleft_not_right : ∀ {x : ℝ}, x ∈ leftHalf → x ∉ rightHalf := by
-    intro y hyLeft hyRight
-    exact (not_le_of_gt hyLeft.2) hyRight.1
-  have hleft_unit : ∀ {x : ℝ}, x ∈ leftHalf → x ∈ unitInterval := by
-    intro y hy
-    exact ⟨hy.1, by linarith [hy.2]⟩
-  have hright_unit : ∀ {x : ℝ}, x ∈ rightHalf → x ∈ unitInterval := by
-    intro y hy
-    exact ⟨by linarith [hy.1], hy.2⟩
+  let leftHalf := Set.Ico (0 : ℝ) (1 / 2)
+  let rightHalf := Set.Ico (1 / 2 : ℝ) 1
+  let unitInterval := Set.Ico (0 : ℝ) 1
   by_cases hxLeft : x ∈ leftHalf
-  · have hxRight : x ∉ rightHalf := hleft_not_right hxLeft
-    have hxUnit : x ∈ unitInterval := hleft_unit hxLeft
-    have hxLeft' : x ∈ Set.Ico (0 : ℝ) (1 / 2) := by simpa [leftHalf] using hxLeft
-    have hxRight' : x ∉ Set.Ico (1 / 2 : ℝ) 1 := by simpa [rightHalf] using hxRight
-    have hxUnit' : x ∈ Set.Ico (0 : ℝ) 1 := by simpa [unitInterval] using hxUnit
+  · have hxRight : x ∉ rightHalf := (show ∀ {x : ℝ}, x ∈ leftHalf → x ∉ rightHalf by intro y hyLeft hyRight; exact (not_le_of_gt hyLeft.2) hyRight.1) hxLeft
     change (((Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
           (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x) ^ (2 : Nat) =
         (Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x)
-    rw [Set.indicator_of_mem hxLeft', Set.indicator_of_notMem hxRight',
-      Set.indicator_of_mem hxUnit']
+    rw [Set.indicator_of_mem (show x ∈ Set.Ico (0 : ℝ) (1 / 2) by simpa [leftHalf] using hxLeft), Set.indicator_of_notMem (show x ∉ Set.Ico (1 / 2 : ℝ) 1 by simpa [rightHalf] using hxRight),
+      Set.indicator_of_mem (by simpa [unitInterval] using ((show ∀ {x : ℝ}, x ∈ leftHalf → x ∈ unitInterval by intro y hy; exact ⟨hy.1, by linarith [hy.2]⟩) hxLeft))]
     norm_num
   · by_cases hxRight : x ∈ rightHalf
-    · have hxUnit : x ∈ unitInterval := hright_unit hxRight
-      have hxLeft' : x ∉ Set.Ico (0 : ℝ) (1 / 2) := by simpa [leftHalf] using hxLeft
-      have hxRight' : x ∈ Set.Ico (1 / 2 : ℝ) 1 := by simpa [rightHalf] using hxRight
-      have hxUnit' : x ∈ Set.Ico (0 : ℝ) 1 := by simpa [unitInterval] using hxUnit
+    · have hxUnit : x ∈ unitInterval := (show ∀ {x : ℝ}, x ∈ rightHalf → x ∈ unitInterval by intro y hy; exact ⟨by linarith [hy.1], hy.2⟩) hxRight
       change (((Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
             (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x) ^ (2 : Nat) =
           (Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x)
-      rw [Set.indicator_of_notMem hxLeft', Set.indicator_of_mem hxRight',
-        Set.indicator_of_mem hxUnit']
+      rw [Set.indicator_of_notMem (show x ∉ Set.Ico (0 : ℝ) (1 / 2) by simpa [leftHalf] using hxLeft), Set.indicator_of_mem (show x ∈ Set.Ico (1 / 2 : ℝ) 1 by simpa [rightHalf] using hxRight),
+        Set.indicator_of_mem (by simpa [unitInterval] using hxUnit)]
       norm_num
     · have hxUnit : x ∉ unitInterval := by
         intro hx
         by_cases hxMid : x < (1 / 2 : ℝ)
         · exact hxLeft ⟨hx.1, hxMid⟩
         · exact hxRight ⟨le_of_not_gt hxMid, hx.2⟩
-      have hxLeft' : x ∉ Set.Ico (0 : ℝ) (1 / 2) := by simpa [leftHalf] using hxLeft
-      have hxRight' : x ∉ Set.Ico (1 / 2 : ℝ) 1 := by simpa [rightHalf] using hxRight
-      have hxUnit' : x ∉ Set.Ico (0 : ℝ) 1 := by simpa [unitInterval] using hxUnit
       change (((Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
             (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x) ^ (2 : Nat) =
           (Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x)
-      rw [Set.indicator_of_notMem hxLeft', Set.indicator_of_notMem hxRight',
-        Set.indicator_of_notMem hxUnit']
+      rw [Set.indicator_of_notMem (show x ∉ Set.Ico (0 : ℝ) (1 / 2) by simpa [leftHalf] using hxLeft), Set.indicator_of_notMem (show x ∉ Set.Ico (1 / 2 : ℝ) 1 by simpa [rightHalf] using hxRight),
+        Set.indicator_of_notMem (by simpa [unitInterval] using hxUnit)]
       norm_num
 
-theorem haarFather1D_mul_haarMother1D (x : ℝ) :
+theorem haarFather1D_mul_haarMother1D x :
     haarFather1D x * haarMother1D x = haarMother1D x := by
-  let leftHalf : Set ℝ := Set.Ico (0 : ℝ) (1 / 2)
-  let rightHalf : Set ℝ := Set.Ico (1 / 2 : ℝ) 1
-  let unitInterval : Set ℝ := Set.Ico (0 : ℝ) 1
-  have hleft_unit : ∀ {x : ℝ}, x ∈ leftHalf → x ∈ unitInterval := by
-    intro y hy
-    exact ⟨hy.1, by linarith [hy.2]⟩
-  have hright_unit : ∀ {x : ℝ}, x ∈ rightHalf → x ∈ unitInterval := by
-    intro y hy
-    exact ⟨by linarith [hy.1], hy.2⟩
-  have hleft_not_right : ∀ {x : ℝ}, x ∈ leftHalf → x ∉ rightHalf := by
-    intro y hyLeft hyRight
-    exact (not_le_of_gt hyLeft.2) hyRight.1
+  let leftHalf := Set.Ico (0 : ℝ) (1 / 2)
+  let rightHalf := Set.Ico (1 / 2 : ℝ) 1
+  let unitInterval := Set.Ico (0 : ℝ) 1
   by_cases hxLeft : x ∈ leftHalf
-  · have hxRight : x ∉ rightHalf := hleft_not_right hxLeft
-    have hxUnit : x ∈ unitInterval := hleft_unit hxLeft
-    have hxLeft' : x ∈ Set.Ico (0 : ℝ) (1 / 2) := by simpa [leftHalf] using hxLeft
-    have hxRight' : x ∉ Set.Ico (1 / 2 : ℝ) 1 := by simpa [rightHalf] using hxRight
-    have hxUnit' : x ∈ Set.Ico (0 : ℝ) 1 := by simpa [unitInterval] using hxUnit
+  · have hxRight : x ∉ rightHalf := (show ∀ {x : ℝ}, x ∈ leftHalf → x ∉ rightHalf by intro y hyLeft hyRight; exact (not_le_of_gt hyLeft.2) hyRight.1) hxLeft
     change ((Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x *
         ((Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
           (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x) =
         (Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
           (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x)
-    rw [Set.indicator_of_mem hxUnit', Set.indicator_of_mem hxLeft',
-      Set.indicator_of_notMem hxRight']
+    rw [Set.indicator_of_mem (show x ∈ Set.Ico (0 : ℝ) 1 by simpa [unitInterval] using ((show ∀ {x : ℝ}, x ∈ leftHalf → x ∈ unitInterval by intro y hy; exact ⟨hy.1, by linarith [hy.2]⟩) hxLeft)), Set.indicator_of_mem (show x ∈ Set.Ico (0 : ℝ) (1 / 2) by simpa [leftHalf] using hxLeft),
+      Set.indicator_of_notMem (by simpa [rightHalf] using hxRight)]
     norm_num
   · by_cases hxRight : x ∈ rightHalf
-    · have hxUnit : x ∈ unitInterval := hright_unit hxRight
-      have hxLeft' : x ∉ Set.Ico (0 : ℝ) (1 / 2) := by simpa [leftHalf] using hxLeft
-      have hxRight' : x ∈ Set.Ico (1 / 2 : ℝ) 1 := by simpa [rightHalf] using hxRight
-      have hxUnit' : x ∈ Set.Ico (0 : ℝ) 1 := by simpa [unitInterval] using hxUnit
+    · have hxUnit : x ∈ unitInterval := (show ∀ {x : ℝ}, x ∈ rightHalf → x ∈ unitInterval by intro y hy; exact ⟨by linarith [hy.1], hy.2⟩) hxRight
       change ((Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x *
           ((Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
             (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x) =
           (Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
             (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x)
-      rw [Set.indicator_of_mem hxUnit', Set.indicator_of_notMem hxLeft',
-        Set.indicator_of_mem hxRight']
+      rw [Set.indicator_of_mem (show x ∈ Set.Ico (0 : ℝ) 1 by simpa [unitInterval] using hxUnit), Set.indicator_of_notMem (show x ∉ Set.Ico (0 : ℝ) (1 / 2) by simpa [leftHalf] using hxLeft),
+        Set.indicator_of_mem (by simpa [rightHalf] using hxRight)]
       norm_num
     · have hxUnit : x ∉ unitInterval := by
         intro hx
         by_cases hxMid : x < (1 / 2 : ℝ)
         · exact hxLeft ⟨hx.1, hxMid⟩
         · exact hxRight ⟨le_of_not_gt hxMid, hx.2⟩
-      have hxLeft' : x ∉ Set.Ico (0 : ℝ) (1 / 2) := by simpa [leftHalf] using hxLeft
-      have hxRight' : x ∉ Set.Ico (1 / 2 : ℝ) 1 := by simpa [rightHalf] using hxRight
-      have hxUnit' : x ∉ Set.Ico (0 : ℝ) 1 := by simpa [unitInterval] using hxUnit
       change ((Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x *
           ((Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
             (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x) =
           (Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
             (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x)
-      rw [Set.indicator_of_notMem hxUnit', Set.indicator_of_notMem hxLeft',
-        Set.indicator_of_notMem hxRight']
+      rw [Set.indicator_of_notMem (show x ∉ Set.Ico (0 : ℝ) 1 by simpa [unitInterval] using hxUnit), Set.indicator_of_notMem (show x ∉ Set.Ico (0 : ℝ) (1 / 2) by simpa [leftHalf] using hxLeft),
+        Set.indicator_of_notMem (by simpa [rightHalf] using hxRight)]
       norm_num
 
-theorem haarMother1D_mul_haarFather1D (x : ℝ) :
+theorem haarMother1D_mul_haarFather1D x :
     haarMother1D x * haarFather1D x = haarMother1D x := by
   rw [mul_comm, haarFather1D_mul_haarMother1D]
 
@@ -354,29 +308,29 @@ theorem integral_haarMother1D :
         exact ENNReal.ofReal_ne_top)).integrable_indicator measurableSet_Ico
 
 /-- Change variables in the full-line Lebesgue integral under an affine map. -/
-theorem integral_comp_mul_add_volume {a b : ℝ} (ha : a ≠ 0) (f : ℝ → ℝ)
+theorem integral_comp_mul_add_volume {a b} (ha : a ≠ 0) (f : ℝ → ℝ)
     (hf : Integrable f (volume : Measure ℝ)) :
     ∫ x : ℝ, f (a * x + b) ∂volume =
       |a⁻¹| * ∫ y : ℝ, f y ∂volume := by
   have hmap :
-      Measure.map (fun x : ℝ => a * x + b) volume =
+      Measure.map (fun x => a * x + b) volume =
         ENNReal.ofReal |a⁻¹| • (volume : Measure ℝ) := by
     calc
-      Measure.map (fun x : ℝ => a * x + b) volume =
-          Measure.map (fun y : ℝ => y + b)
-            (Measure.map (fun x : ℝ => a * x) volume) := by
+      Measure.map (fun x => a * x + b) volume =
+          Measure.map (fun y => y + b)
+            (Measure.map (fun x => a * x) volume) := by
             rw [Measure.map_map]
             · rfl
             · fun_prop
             · fun_prop
-      _ = Measure.map (fun y : ℝ => y + b)
+      _ = Measure.map (fun y => y + b)
             (ENNReal.ofReal |a⁻¹| • (volume : Measure ℝ)) := by
             rw [Real.map_volume_mul_left ha]
       _ = ENNReal.ofReal |a⁻¹| • (volume : Measure ℝ) := by
             rw [Measure.map_smul (ENNReal.ofReal |a⁻¹|)
-              (by fun_prop : AEMeasurable (fun y : ℝ => y + b) volume),
+              (by fun_prop : AEMeasurable (fun y => y + b) volume),
               map_add_right_eq_self]
-  rw [← integral_map (by fun_prop : AEMeasurable (fun x : ℝ => a * x + b) volume)
+  rw [← integral_map (by fun_prop : AEMeasurable (fun x => a * x + b) volume)
     ?_]
   · rw [hmap, integral_smul_measure]
     rw [ENNReal.toReal_ofReal (abs_nonneg _)]
@@ -425,7 +379,7 @@ theorem integral_haarMother1D_mul_haarFather1D :
     _ = 0 := integral_haarMother1D
 
 /-- The father function is the sum of its two dyadic children. -/
-theorem haarFather1D_refine (x : ℝ) :
+theorem haarFather1D_refine x :
     haarFather1D x =
       haarFather1D (2 * x) + haarFather1D (2 * x - 1) := by
   by_cases hx : x ∈ Set.Ico (0 : ℝ) (1 / 2)
@@ -459,93 +413,73 @@ theorem haarFather1D_refine (x : ℝ) :
       simp [haarFather1D, hxUnit, h2x, h2x1]
 
 /-- The mother function is the difference of the two next-scale father children. -/
-theorem haarMother1D_refine (x : ℝ) :
+theorem haarMother1D_refine x :
     haarMother1D x =
       haarFather1D (2 * x) - haarFather1D (2 * x - 1) := by
   by_cases hx : x ∈ Set.Ico (0 : ℝ) (1 / 2)
   · have hright : x ∉ Set.Ico (1 / 2 : ℝ) 1 := by
       intro h
       linarith [hx.2, h.1]
-    have h2x : 2 * x ∈ Set.Ico (0 : ℝ) 1 := by constructor <;> linarith [hx.1, hx.2]
-    have h2x1 : 2 * x - 1 ∉ Set.Ico (0 : ℝ) 1 := by
-      intro h
-      linarith [h.1, hx.2]
     change ((Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
         (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x) =
       (Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) (2 * x) -
         (Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) (2 * x - 1)
     rw [Set.indicator_of_mem hx, Set.indicator_of_notMem hright,
-      Set.indicator_of_mem h2x, Set.indicator_of_notMem h2x1]
+      Set.indicator_of_mem (by constructor <;> linarith [hx.1, hx.2]), Set.indicator_of_notMem (by intro h; linarith [h.1, hx.2])]
   · by_cases hxRight : x ∈ Set.Ico (1 / 2 : ℝ) 1
     · have h2x : 2 * x ∉ Set.Ico (0 : ℝ) 1 := by
         intro h
         linarith [hxRight.1, h.2]
-      have h2x1 : 2 * x - 1 ∈ Set.Ico (0 : ℝ) 1 := by
-        constructor <;> linarith [hxRight.1, hxRight.2]
       change ((Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
           (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x) =
         (Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) (2 * x) -
           (Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) (2 * x - 1)
       rw [Set.indicator_of_notMem hx, Set.indicator_of_mem hxRight,
-        Set.indicator_of_notMem h2x, Set.indicator_of_mem h2x1]
+        Set.indicator_of_notMem h2x, Set.indicator_of_mem (by constructor <;> linarith [hxRight.1, hxRight.2])]
     · have h2x : 2 * x ∉ Set.Ico (0 : ℝ) 1 := by
         intro h
         apply hx
-        constructor <;> linarith [h.1, h.2]
-      have h2x1 : 2 * x - 1 ∉ Set.Ico (0 : ℝ) 1 := by
-        intro h
-        apply hxRight
         constructor <;> linarith [h.1, h.2]
       change ((Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
           (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x) =
         (Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) (2 * x) -
           (Set.Ico (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) (2 * x - 1)
       rw [Set.indicator_of_notMem hx, Set.indicator_of_notMem hxRight,
-        Set.indicator_of_notMem h2x, Set.indicator_of_notMem h2x1]
+        Set.indicator_of_notMem h2x, Set.indicator_of_notMem (by intro h; apply hxRight; constructor <;> linarith [h.1, h.2])]
 
 /-- On the left dyadic child, the parent mother is identically `1`, so multiplying by it leaves
 the child mother unchanged. -/
-theorem haarMother1D_mul_left_child (y : ℝ) :
+theorem haarMother1D_mul_left_child y :
     haarMother1D y * haarMother1D (2 * y) = haarMother1D (2 * y) := by
   by_cases hsupport : 2 * y ∈ Set.Ico (0 : ℝ) 1
   · have hyLeft : y ∈ Set.Ico (0 : ℝ) (1 / 2) := by
       constructor <;> linarith [hsupport.1, hsupport.2]
-    have hyRight : y ∉ Set.Ico (1 / 2 : ℝ) 1 := by
-      intro hy
-      linarith [hy.1, hsupport.2]
     change ((Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) y -
         (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) y) *
         haarMother1D (2 * y) = haarMother1D (2 * y)
-    rw [Set.indicator_of_mem hyLeft, Set.indicator_of_notMem hyRight]
+    rw [Set.indicator_of_mem hyLeft, Set.indicator_of_notMem (show y ∉ Set.Ico (1 / 2 : ℝ) 1 by intro hy; linarith [hy.1, hsupport.2])]
     ring
   · have hchild : haarMother1D (2 * y) = 0 := by
-      have hfather : haarFather1D (2 * y) = 0 := by
-        simp [haarFather1D, hsupport]
-      have hsq : haarMother1D (2 * y) ^ (2 : Nat) = 0 := by
-        rw [haarMother1D_sq, hfather]
+      have : haarMother1D (2 * y) ^ (2 : Nat) = 0 := by
+        rw [haarMother1D_sq, (show haarFather1D (2 * y) = 0 by simp [haarFather1D, hsupport])]
       nlinarith [sq_nonneg (haarMother1D (2 * y))]
     rw [hchild, mul_zero]
 
 /-- On the right dyadic child, the parent mother is identically `-1`, so multiplying by it negates
 the child mother. -/
-theorem haarMother1D_mul_right_child (y : ℝ) :
+theorem haarMother1D_mul_right_child y :
     haarMother1D y * haarMother1D (2 * y - 1) = -haarMother1D (2 * y - 1) := by
   by_cases hsupport : 2 * y - 1 ∈ Set.Ico (0 : ℝ) 1
   · have hyRight : y ∈ Set.Ico (1 / 2 : ℝ) 1 := by
       constructor <;> linarith [hsupport.1, hsupport.2]
-    have hyLeft : y ∉ Set.Ico (0 : ℝ) (1 / 2) := by
-      intro hy
-      linarith [hy.2, hsupport.1]
     change ((Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) y -
         (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) y) *
         haarMother1D (2 * y - 1) = -haarMother1D (2 * y - 1)
-    rw [Set.indicator_of_notMem hyLeft, Set.indicator_of_mem hyRight]
+    rw [Set.indicator_of_notMem (show y ∉ Set.Ico (0 : ℝ) (1 / 2) by intro hy; linarith [hy.2, hsupport.1]), Set.indicator_of_mem hyRight]
     ring
   · have hchild : haarMother1D (2 * y - 1) = 0 := by
-      have hfather : haarFather1D (2 * y - 1) = 0 := by
-        simp [haarFather1D, hsupport]
-      have hsq : haarMother1D (2 * y - 1) ^ (2 : Nat) = 0 := by
-        rw [haarMother1D_sq, hfather]
+      have : haarMother1D (2 * y - 1) ^ (2 : Nat) = 0 := by
+        rw [haarMother1D_sq, (show haarFather1D (2 * y - 1) = 0 by simp [haarFather1D, hsupport])]
       nlinarith [sq_nonneg (haarMother1D (2 * y - 1))]
     rw [hchild, mul_zero, neg_zero]
 
@@ -560,11 +494,7 @@ theorem integrable_haarMother1D_mul_left_child :
 theorem integrable_haarMother1D_mul_right_child :
     Integrable (fun y : ℝ => haarMother1D y * haarMother1D (2 * y - 1))
       (volume : Measure ℝ) := by
-  have hshift : Integrable (fun y : ℝ => haarMother1D (y - 1)) (volume : Measure ℝ) := by
-    simpa [sub_eq_add_neg] using integrable_haarMother1D.comp_add_right (-1)
-  have hscaled : Integrable (fun y : ℝ => haarMother1D (2 * y - 1)) (volume : Measure ℝ) := by
-    simpa [sub_eq_add_neg] using hshift.comp_mul_left' (by norm_num : (2 : ℝ) ≠ 0)
-  refine hscaled.neg.congr (ae_of_all _ ?_)
+  refine (show Integrable (fun y => haarMother1D (2 * y - 1)) (volume : Measure ℝ) by simpa [sub_eq_add_neg] using (show Integrable (fun y => haarMother1D (y - 1)) (volume : Measure ℝ) by simpa [sub_eq_add_neg] using integrable_haarMother1D.comp_add_right (-1)).comp_mul_left' (by norm_num : (2 : ℝ) ≠ 0)).neg.congr (ae_of_all _ ?_)
   intro y
   exact (haarMother1D_mul_right_child y).symm
 
@@ -592,12 +522,10 @@ theorem integral_haarMother1D_mul_right_child :
     _ = - ∫ y : ℝ, haarMother1D (2 * y - 1) ∂volume := by
           rw [integral_neg]
     _ = 0 := by
-          have h := integral_comp_mul_add_volume (a := (2 : ℝ)) (b := -1)
-            (by norm_num) haarMother1D integrable_haarMother1D
           rw [show ∫ y : ℝ, haarMother1D (2 * y - 1) ∂volume =
               ∫ y : ℝ, haarMother1D (2 * y + -1) ∂volume by
                 simp [sub_eq_add_neg]]
-          rw [h, integral_haarMother1D, mul_zero, neg_zero]
+          rw [(integral_comp_mul_add_volume (a := (2 : ℝ)) (b := -1) (by norm_num) haarMother1D integrable_haarMother1D), integral_haarMother1D, mul_zero, neg_zero]
 
 /-- Select the father or mother Haar function from a Boolean signature. -/
 @[expose]
@@ -605,22 +533,22 @@ noncomputable def haarAtom1D (signature : Bool) : ℝ → ℝ :=
   if signature then haarMother1D else haarFather1D
 
 @[fun_prop]
-theorem measurable_haarAtom1D (signature : Bool) : Measurable (haarAtom1D signature) := by
+theorem measurable_haarAtom1D signature : Measurable (haarAtom1D signature) := by
   cases signature <;> simp [haarAtom1D, measurable_haarFather1D, measurable_haarMother1D]
 
-theorem haarAtom1D_sq (signature : Bool) (x : ℝ) :
+theorem haarAtom1D_sq signature x :
     haarAtom1D signature x ^ (2 : Nat) = haarFather1D x := by
   cases signature <;> simp [haarAtom1D, haarFather1D_sq, haarMother1D_sq]
 
 /-- A one-dimensional Haar atom is supported in `[0, 1)`. -/
-theorem haarAtom1D_eq_zero_of_notMem_Ico (signature : Bool) {x : ℝ}
+theorem haarAtom1D_eq_zero_of_notMem_Ico signature {x}
     (hx : x ∉ Set.Ico (0 : ℝ) 1) :
     haarAtom1D signature x = 0 := by
   cases signature
   · simp [haarAtom1D, haarFather1D, hx]
   · have hfather : haarFather1D x = 0 := by
       simp [haarFather1D, hx]
-    have hsq : haarMother1D x ^ (2 : Nat) = 0 := by
+    have : haarMother1D x ^ (2 : Nat) = 0 := by
       rw [haarMother1D_sq, hfather]
     have hzero : haarMother1D x = 0 := by
       nlinarith [sq_nonneg (haarMother1D x)]
@@ -628,7 +556,7 @@ theorem haarAtom1D_eq_zero_of_notMem_Ico (signature : Bool) {x : ℝ}
 
 /-- On the left dyadic child, the parent father is identically `1`, so multiplying by it leaves
 the child mother unchanged. -/
-theorem haarFather1D_mul_left_child_mother (y : ℝ) :
+theorem haarFather1D_mul_left_child_mother y :
     haarFather1D y * haarMother1D (2 * y) = haarMother1D (2 * y) := by
   by_cases hsupport : 2 * y ∈ Set.Ico (0 : ℝ) 1
   · have hyUnit : y ∈ Set.Ico (0 : ℝ) 1 := by
@@ -643,7 +571,7 @@ theorem haarFather1D_mul_left_child_mother (y : ℝ) :
 
 /-- On the right dyadic child, the parent father is identically `1`, so multiplying by it leaves
 the child mother unchanged. -/
-theorem haarFather1D_mul_right_child_mother (y : ℝ) :
+theorem haarFather1D_mul_right_child_mother y :
     haarFather1D y * haarMother1D (2 * y - 1) = haarMother1D (2 * y - 1) := by
   by_cases hsupport : 2 * y - 1 ∈ Set.Ico (0 : ℝ) 1
   · have hyUnit : y ∈ Set.Ico (0 : ℝ) 1 := by
@@ -667,11 +595,7 @@ theorem integrable_haarFather1D_mul_left_child_mother :
 theorem integrable_haarFather1D_mul_right_child_mother :
     Integrable (fun y : ℝ => haarFather1D y * haarMother1D (2 * y - 1))
       (volume : Measure ℝ) := by
-  have hshift : Integrable (fun y : ℝ => haarMother1D (y - 1)) (volume : Measure ℝ) := by
-    simpa [sub_eq_add_neg] using integrable_haarMother1D.comp_add_right (-1)
-  have hscaled : Integrable (fun y : ℝ => haarMother1D (2 * y - 1)) (volume : Measure ℝ) := by
-    simpa [sub_eq_add_neg] using hshift.comp_mul_left' (by norm_num : (2 : ℝ) ≠ 0)
-  refine hscaled.congr (ae_of_all _ ?_)
+  refine (show Integrable (fun y => haarMother1D (2 * y - 1)) (volume : Measure ℝ) by simpa [sub_eq_add_neg] using (show Integrable (fun y => haarMother1D (y - 1)) (volume : Measure ℝ) by simpa [sub_eq_add_neg] using integrable_haarMother1D.comp_add_right (-1)).comp_mul_left' (by norm_num : (2 : ℝ) ≠ 0)).congr (ae_of_all _ ?_)
   intro y
   exact (haarFather1D_mul_right_child_mother y).symm
 
@@ -697,15 +621,13 @@ theorem integral_haarFather1D_mul_right_child_mother :
           intro y
           exact haarFather1D_mul_right_child_mother y
     _ = 0 := by
-          have h := integral_comp_mul_add_volume (a := (2 : ℝ)) (b := -1)
-            (by norm_num) haarMother1D integrable_haarMother1D
           rw [show ∫ y : ℝ, haarMother1D (2 * y - 1) ∂volume =
               ∫ y : ℝ, haarMother1D (2 * y + -1) ∂volume by
                 simp [sub_eq_add_neg]]
-          rw [h, integral_haarMother1D, mul_zero]
+          rw [(integral_comp_mul_add_volume (a := (2 : ℝ)) (b := -1) (by norm_num) haarMother1D integrable_haarMother1D), integral_haarMother1D, mul_zero]
 
 /-- Distinct integer translates of `[0,1)` are disjoint. -/
-theorem not_both_mem_Ico_sub_int {z : ℝ} {k₁ k₂ : ℤ} (hk : k₁ ≠ k₂) :
+theorem not_both_mem_Ico_sub_int {z} {k₁ k₂ : ℤ} (hk : k₁ ≠ k₂) :
     ¬ (z - (k₁ : ℝ) ∈ Set.Ico (0 : ℝ) 1 ∧
       z - (k₂ : ℝ) ∈ Set.Ico (0 : ℝ) 1) := by
   rintro ⟨h₁, h₂⟩
@@ -718,8 +640,8 @@ theorem not_both_mem_Ico_sub_int {z : ℝ} {k₁ k₂ : ℤ} (hk : k₁ ≠ k₂
     linarith [h₂.2, h₁.1, hle]
 
 /-- Haar atoms in distinct integer cells have pointwise-zero product. -/
-theorem haarAtom1D_mul_eq_zero_of_cells_ne (signature₁ signature₂ : Bool)
-    {z : ℝ} {k₁ k₂ : ℤ} (hk : k₁ ≠ k₂) :
+theorem haarAtom1D_mul_eq_zero_of_cells_ne signature₁ signature₂
+    {z} {k₁ k₂ : ℤ} (hk : k₁ ≠ k₂) :
     haarAtom1D signature₁ (z - (k₁ : ℝ)) *
         haarAtom1D signature₂ (z - (k₂ : ℝ)) = 0 := by
   by_cases h₁ : z - (k₁ : ℝ) ∈ Set.Ico (0 : ℝ) 1
@@ -728,14 +650,14 @@ theorem haarAtom1D_mul_eq_zero_of_cells_ne (signature₁ signature₂ : Bool)
     · rw [haarAtom1D_eq_zero_of_notMem_Ico signature₂ h₂, mul_zero]
   · rw [haarAtom1D_eq_zero_of_notMem_Ico signature₁ h₁, zero_mul]
 
-theorem integral_haarAtom1D_mul_haarAtom1D (signature₁ signature₂ : Bool) :
+theorem integral_haarAtom1D_mul_haarAtom1D signature₁ signature₂ :
     ∫ x : ℝ, haarAtom1D signature₁ x * haarAtom1D signature₂ x ∂volume =
       if signature₁ = signature₂ then 1 else 0 := by
   cases signature₁ <;> cases signature₂ <;>
     simp [haarAtom1D, integral_haarFather1D_mul_self, integral_haarMother1D_mul_self,
       integral_haarFather1D_mul_haarMother1D, integral_haarMother1D_mul_haarFather1D]
 
-theorem integrable_haarAtom1D_mul_haarAtom1D (signature₁ signature₂ : Bool) :
+theorem integrable_haarAtom1D_mul_haarAtom1D signature₁ signature₂ :
     Integrable (fun x : ℝ => haarAtom1D signature₁ x * haarAtom1D signature₂ x)
       (volume : Measure ℝ) := by
   cases signature₁ <;> cases signature₂

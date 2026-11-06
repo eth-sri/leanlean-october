@@ -54,7 +54,7 @@ in a simply connected subtype of the regular plane have the same terminal value.
 theorem subtype_path_lifts_endpoint_eq_of_simplyConnected
     {U : Set ℂ} [SimplyConnectedSpace U] (hU : U ⊆ gaussRegularPlane)
     (a b c : ℂ) {x₀ x₁ : U} (p q : Path x₀ x₁)
-    (initial : ℂ × ℂ)
+    initial
     (A : PathContinuationLift (subtypePathFunction p)
       (gaussSystemOperator a b c) initial)
     (B : PathContinuationLift (subtypePathFunction q)
@@ -63,29 +63,26 @@ theorem subtype_path_lifts_endpoint_eq_of_simplyConnected
   obtain ⟨F⟩ := SimplyConnectedSpace.paths_homotopic p q
   obtain ⟨Γ, hΓ, hleft, hright, hbottom, htop, himage⟩ :=
     subtype_paths_real_homotopy F
-  let bottom : ℝ → ℂ := fun t => Γ (t, 0)
-  let top : ℝ → ℂ := fun t => Γ (t, 1)
   have hbottomPath : ∀ t ∈ Icc (0 : ℝ) 1,
-      bottom t = subtypePathFunction p t := by
+      (fun t => Γ (t, 0)) t = subtypePathFunction p t := by
     intro t ht
     change Γ (t, 0) = (p (Set.projIcc 0 1 zero_le_one t) : ℂ)
     rw [hbottom t ht]
     exact congrArg (fun s : unitInterval => (p s : ℂ))
       (Set.projIcc_of_mem zero_le_one ht).symm
   have htopPath : ∀ t ∈ Icc (0 : ℝ) 1,
-      top t = subtypePathFunction q t := by
+      (fun t => Γ (t, 1)) t = subtypePathFunction q t := by
     intro t ht
     change Γ (t, 1) = (q (Set.projIcc 0 1 zero_le_one t) : ℂ)
     rw [htop t ht]
     exact congrArg (fun s : unitInterval => (q s : ℂ))
       (Set.projIcc_of_mem zero_le_one ht).symm
-  let A' := path_continuation_lift_congr A (fun t ht => (hbottomPath t ht).symm)
   let B' := path_continuation_lift_congr B (fun t ht => (htopPath t ht).symm)
   exact homotopy_path_continuation_endpoint_eq hΓ gaussRegularPlane
     gaussRegularPlane_isOpen (gaussSystemOperator a b c)
     (gaussSystemOperator_differentiableOn a b c)
     (fun z hz => hU (himage z hz))
-    x₀ x₁ hleft hright initial A' B'
+    x₀ x₁ hleft hright initial (path_continuation_lift_congr A (fun t ht => (hbottomPath t ht).symm)) B'
 
 /-- Any two finite-chain lifts of the same initial Gauss state along paths with common endpoints
 in the principal cut plane have the same terminal value. -/

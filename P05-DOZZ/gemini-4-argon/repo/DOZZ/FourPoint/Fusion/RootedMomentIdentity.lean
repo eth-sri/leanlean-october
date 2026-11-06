@@ -16,8 +16,8 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- A fixed Coulomb mass is a measurable functional of its measure. -/
-theorem fusion_measurable_coulombMass {N : ℕ} (γ : ℝ) (α : Fin N → ℝ)
-    (z : Fin N → ℂ) (αinf : ℝ) :
+theorem fusion_measurable_coulombMass {N} γ (α : Fin N → ℝ)
+    (z : Fin N → ℂ) αinf :
     Measurable (fun μ : Measure ℂ => coulombMass γ μ α z αinf) :=
   Measure.measurable_lintegral (measurable_coulombWeight γ α z αinf)
 

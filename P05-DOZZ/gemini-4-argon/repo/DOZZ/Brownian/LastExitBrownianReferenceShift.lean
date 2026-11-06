@@ -31,13 +31,13 @@ def brownianPathStrictlyBelow (x : ℝ) : Set BrownianPath :=
 def brownianUpperConditionedPositivePath (x : ℝ) (q : BrownianPath) : BrownianPath :=
   ⟨fun t => x - q t, continuous_const.sub q.continuous⟩
 
-theorem measurable_brownianUpperConditionedPositivePath (x : ℝ) :
+theorem measurable_brownianUpperConditionedPositivePath x :
     Measurable (brownianUpperConditionedPositivePath x) := by
   apply ContinuousMap.measurable_iff_eval.mpr
   intro t
   exact measurable_const.sub (ContinuousMap.measurable_eval t)
 
-private theorem conditionedH_pos_of_pos {ν x : ℝ} (hν : 0 < ν) (hx : 0 < x) :
+private theorem conditionedH_pos_of_pos {ν x} (hν : 0 < ν) (hx : 0 < x) :
     0 < conditionedH ν x := by
   rw [conditionedH, ite_eq_right hν.ne']
   apply sub_pos.mpr
@@ -51,7 +51,7 @@ nonnegative full-path test. -/
 theorem brownianBelowConditionedLaw_avoidance_shift_integral
     (B : Measure BrownianPath)
     (hB : IsBrownianReal (fun t p => p t) B)
-    (ν c x : ℝ) (hν : 0 < ν) (hc : 0 < c) (hcx : c < x)
+    ν c x (hν : 0 < ν) (hc : 0 < c) (hcx : c < x)
     (F : BrownianPath → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ q in brownianPathStrictlyBelow (x - c),
         F (brownianUpperConditionedPositivePath (x - c) q) ∂
@@ -69,16 +69,16 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
   have hD : Measurable (driftedBrownianPath (-ν)) :=
     continuous_driftedBrownianPath.measurable.comp
       (measurable_const.prodMk measurable_id)
-  have hF' : Measurable (fun q : BrownianPath =>
+  have hF' : Measurable (fun q =>
       F (brownianUpperConditionedPositivePath (x - c) q)) :=
     hF.comp (measurable_brownianUpperConditionedPositivePath (x - c))
-  have hF'' : Measurable (fun p : BrownianPath =>
+  have hF'' : Measurable (fun p =>
       F (brownianUpperConditionedPositivePath (x - c) (driftedBrownianPath (-ν) p))) :=
     hF'.comp hD
   have htest : Measurable ((brownianPathStrictlyBelow (x - c)).indicator
       (fun q => F (brownianUpperConditionedPositivePath (x - c) q))) :=
     hF'.indicator hset
-  have hraw (a : ℝ) : MeasurableSet
+  have hraw a : MeasurableSet
       {p : BrownianPath | ∀ t : ℝ≥0, driftedBrownianPath (-ν) p t < a} :=
     (measurableSet_brownianPath_below a).preimage hD
   have hsub : {p : BrownianPath | ∀ t : ℝ≥0,

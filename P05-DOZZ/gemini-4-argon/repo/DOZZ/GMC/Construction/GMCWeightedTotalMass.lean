@@ -90,10 +90,6 @@ theorem regularizedGMC_withDensity_univ_mass_tendstoInMeasure
         fun ω => ∫ z, w z ∂regularizedGMC P Xc γ r ω := by
     filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hω
     exact weightedTotal_eq_integral (regularizedGMC P Xc γ r ω) hω w hw
-  have hright :
-      (fun ω => ((M ω).withDensity (fun z => ENNReal.ofReal (w z)) Set.univ).toReal) =ᵐ[P]
-        fun ω => ∫ z, w z ∂M ω := by
-    exact ae_of_all P (fun ω => weightedTotal_eq_integral (M ω) (hM.1 ω) w hw)
-  exact TendstoInMeasure.congr (fun r => (hleft r).symm) hright.symm hTest
+  exact TendstoInMeasure.congr (fun r => (hleft r).symm) (show (fun ω => ((M ω).withDensity (fun z => ENNReal.ofReal (w z)) Set.univ).toReal) =ᵐ[P] fun ω => ∫ z, w z ∂M ω by exact ae_of_all P (fun ω => weightedTotal_eq_integral (M ω) (hM.1 ω) w hw)).symm hTest
 
 end DOZZ.Proofs

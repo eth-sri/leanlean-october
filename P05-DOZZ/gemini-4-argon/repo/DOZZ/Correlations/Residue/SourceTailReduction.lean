@@ -24,7 +24,7 @@ namespace DOZZ.Proofs
 Both witness obligations and the full smaller-charge domain (erratum K30, see
 docs/ERRATA-AND-DEVIATIONS.md) are retained. -/
 theorem residue_unitVolume_bridge_of_insertion_tails
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) (γ α2 α3 : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hα : 0 < α2 ∧ α2 ≤ α3 ∧ γ / 2 < α3 ∧ α3 < Q γ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
@@ -76,18 +76,15 @@ theorem residue_unitVolume_bridge_of_insertion_tails
   have hα3pos : 0 < α3 := lt_trans (by positivity) hα.2.2.1
   have hcharge : ∀ α ∈ ({α3} : Set ℝ), γ / 2 < α ∧ α < Q γ := by
     intro α hαs
-    have hh : α = α3 := hαs
-    rw [hh]
+    rw [hαs]
     exact ⟨hα.2.2.1, hα.2.2.2⟩
   have hpos3 : ∀ z ∈ ({3} : Set ℂ), 2 ≤ ‖z‖ := by
     intro z hz
-    have hh : z = 3 := hz
-    rw [hh]
+    rw [hz]
     norm_num
   have hpos7 : ∀ z ∈ ({7} : Set ℂ), 2 ≤ ‖z‖ := by
     intro z hz
-    have hh : z = 7 := hz
-    rw [hh]
+    rw [hz]
     norm_num
   by_cases heq : α2 = α3
   · subst α2
@@ -99,14 +96,8 @@ theorem residue_unitVolume_bridge_of_insertion_tails
       (by positivity) hα3pos.le 7 3 (by norm_num) (by norm_num) (by norm_num)
     obtain ⟨s, d, l, hF3', hF7'⟩ := residue_uniformFamilies_common_bounds
       {3} {7} F3s F7s (1 / 2) s3 d3 l3 s7 d7 l7 hF3 hF7
-    have hsep : ∀ z2 ∈ ({3} : Set ℂ), ∀ z3 ∈ ({7} : Set ℂ), 3 ≤ ‖z2 - z3‖ := by
-      intro z2 hz2 z3 hz3
-      have hh2 : z2 = 3 := hz2
-      have hh3 : z3 = 7 := hz3
-      rw [hh2, hh3]
-      norm_num
     obtain ⟨B, Z, hZ, hB, htail⟩ := htwo {3} {7} isCompact_singleton isCompact_singleton
-      hpos3 hpos7 hsep {α3} {α3} isCompact_singleton isCompact_singleton hcharge hcharge
+      hpos3 hpos7 (by intro z2 hz2 z3 hz3; rw [hz2, hz3]; norm_num) {α3} {α3} isCompact_singleton isCompact_singleton hcharge hcharge
       F3s F7s (1 / 2) s d l hF3' hF7'
     have hlim := residue_unit_equal_of_twoInsertion_estimate P X M γ α3 (reflectionBarR P γ α3 (B α3) Z) 1
       hγ hγ2 hα.2.2.1 hα.2.2.2 hX hM zero_lt_one (by
@@ -125,15 +116,9 @@ theorem residue_unitVolume_bridge_of_insertion_tails
     obtain ⟨B, Z, hZ, hB, htail⟩ := hone {3} isCompact_singleton hpos3 {α3}
       isCompact_singleton hcharge Fs (1 / 2) s d l hF
     let η := oneInsertionErrorCeiling γ α3 / 2
-    have he : 0 < oneInsertionErrorCeiling γ α3 := residue_oneInsertionErrorCeiling_pos γ α3 hγ hα.2.2.1 hα.2.2.2
+    have he := residue_oneInsertionErrorCeiling_pos γ α3 hγ hα.2.2.1 hα.2.2.2
     have hη : 0 < η := by dsimp only [η]; positivity
-    have hηbound : ∀ α ∈ ({α3} : Set ℝ), η < oneInsertionErrorCeiling γ α := by
-      intro α hαs
-      have hh : α = α3 := hαs
-      rw [hh]
-      dsimp only [η]
-      linarith only [he]
-    obtain ⟨C, hC, hCb⟩ := htail η hη hηbound
+    obtain ⟨C, hC, hCb⟩ := htail η hη (by intro α hαs; rw [hαs]; dsimp only [η]; linarith only [he])
     have hlim := residue_unit_unequal_of_oneInsertion_estimate P X M γ α2 α3
       (reflectionBarR P γ α3 (B α3) Z) η 1 C hγ hγ2 hα.1 hlt hα.2.2.1 hα.2.2.2 hX hM hη zero_lt_one hC (by
         intro ε hε hε1 t ht

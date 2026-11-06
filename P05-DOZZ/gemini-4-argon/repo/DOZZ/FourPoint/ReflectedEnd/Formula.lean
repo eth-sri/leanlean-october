@@ -18,10 +18,10 @@ namespace DOZZ.Proofs
 
 /-- The exact reflected formula in the physical frame, with the original reflection data. -/
 theorem gammaHalf_reflected_formula {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+    {H}
     (hH : IsGaussHypergeometricFamily H)
-    (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
-    (γ μ α₁ α₂ α₃ : ℝ)
+    (P : Measure Ω) (M : Ω → Measure ℂ) X
+    γ μ α₁ α₂ α₃
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
@@ -44,14 +44,8 @@ theorem gammaHalf_reflected_formula {Ω : Type*} [MeasurableSpace Ω]
                 structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ *
                   ‖gaussFPlus H a b c z‖ ^ 2 := by
   obtain ⟨ξ, hξ, hξ₂, hslack, hfreeze⟩ := hnear
-  have hinner := DOZZ.gammaHalf_reflected_inner_limit P M X γ μ α₁ α₂ α₃ ξ
-    hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hξ hξ₂ hreflect
-    (lt_min (hslack.trans hξ₂) hslack) hfreeze hX hM
-  have hclass := DOZZ.degenerateFourPoint_diagonal_classification hH
-    P X M γ μ (γ / 2) α₁ α₂ α₃ hγ hγ₂ hμ
-    (Or.inl rfl) hα₁ hα₂ hα₃ hs hX hM
   exact gammaHalf_reflected_formula_of_inner_limit hH
     P M X γ μ α₁ α₂ α₃ ξ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hreflect
-    hξ hξ₂ hslack hfreeze hX hM hinner hclass
+    hξ hξ₂ hslack hfreeze hX hM (DOZZ.gammaHalf_reflected_inner_limit P M X γ μ α₁ α₂ α₃ ξ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hξ hξ₂ hreflect (lt_min (hslack.trans hξ₂) hslack) hfreeze hX hM) (DOZZ.degenerateFourPoint_diagonal_classification hH P X M γ μ (γ / 2) α₁ α₂ α₃ hγ hγ₂ hμ (Or.inl rfl) hα₁ hα₂ hα₃ hs hX hM)
 
 end DOZZ.Proofs

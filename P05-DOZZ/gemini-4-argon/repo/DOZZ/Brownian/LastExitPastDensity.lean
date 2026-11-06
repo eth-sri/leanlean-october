@@ -25,9 +25,9 @@ theorem negativeConditionedLaw_finitePast_lastExit_Ioc
     (hP : IsNegativeConditionedBrownianLaw ν P)
     (hB : IsBrownianReal (fun t p => p t) B)
     (hν : 0 < ν) (c : ℝ≥0) (hc : 0 < (c : ℝ))
-    (k : ℕ) (ss : Fin (k+1) → ℝ≥0) (hs : ∀ i, 0 < (ss i : ℝ))
+    k (ss : Fin (k+1) → ℝ≥0) (hs : ∀ i, 0 < (ss i : ℝ))
     (hmono : StrictMono ss) (u v : ℝ≥0) (hu : ss (Fin.last k) < u) (huv : u ≤ v)
-    (A : Set (Fin (k+1) → ℝ)) (hA : MeasurableSet A) :
+    A (hA : MeasurableSet A) :
     P.real {p : BrownianPath | (fun i => -(p (ss i))) ∈ A ∧
       negativeLastExitTime p (c : ℝ) ∈ Ioc u v} =
       ∫ x in A, ∫ t in Ioc (u : ℝ) (v : ℝ),
@@ -44,10 +44,9 @@ theorem negativeConditionedLaw_finitePast_lastExit_Ioc
     {p | evalPast p ∈ A ∧ negativeLastExitTime p (c : ℝ) ≤ w}
   have hmPast : Measurable evalPast :=
     measurable_pi_iff.mpr fun _ => (ContinuousMap.measurable_eval _).neg
-  have hmτ : Measurable (fun p : BrownianPath => negativeLastExitTime p (c : ℝ)) :=
+  have hmτ : Measurable (fun p => negativeLastExitTime p (c : ℝ)) :=
     measurable_negativeLastExitTime_joint.comp (measurable_const.prodMk measurable_id)
-  have hE (w : ℝ≥0) : MeasurableSet (E w) :=
-    (hA.preimage hmPast).inter ((measurableSet_Iic (a := w)).preimage hmτ)
+  have hE (w : ℝ≥0) := (hA.preimage hmPast).inter ((measurableSet_Iic (a := w)).preimage hmτ)
   have hpastLaw : P.map evalPast = μ :=
     negativeConditionedLaw_positiveFDD hP (k+1) (by omega) ss hs hmono
   have : IsProbabilityMeasure μ := by
@@ -81,7 +80,7 @@ theorem negativeConditionedLaw_finitePast_lastExit_Ioc
     · rintro ⟨⟨hA,hLv⟩, hnot⟩
       exact ⟨hA, lt_of_not_ge (fun hLu => hnot ⟨hA,hLu⟩), hLv⟩
   have hsub : E u ⊆ E v := fun p hp => ⟨hp.1, hp.2.trans huv⟩
-  have hv : ss (Fin.last k) < v := hu.trans_le huv
+  have hv := hu.trans_le huv
   calc
     _ = P.real (E v) - P.real (E u) := by
       rw [hdiff, measureReal_sdiff hsub (hE u) (measure_ne_top _ _)]

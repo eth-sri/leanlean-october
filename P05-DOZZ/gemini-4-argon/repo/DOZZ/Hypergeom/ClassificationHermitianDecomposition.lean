@@ -26,16 +26,7 @@ theorem realGaussCramer_reconstruct
   let A := gaussCramerNumerator₁ T g z
   let B := gaussCramerNumerator₂ T f z
   let W := gaussCramerWronskian f g z
-  have hA : A * f z + B * g z = (T z : ℂ) * W := by
-    dsimp [A, B, W, gaussCramerNumerator₁, gaussCramerNumerator₂,
-      gaussCramerWronskian]
-    ring
-  have hB : A * deriv f z + B * deriv g z =
-      wirtingerZ (fun w => (T w : ℂ)) z * W := by
-    dsimp [A, B, W, gaussCramerNumerator₁, gaussCramerNumerator₂,
-      gaussCramerWronskian]
-    ring
-  have hW' : W ≠ 0 := hW
+  have hW' := hW
   constructor
   · change (T z : ℂ) = (A * W⁻¹) * f z + (B * W⁻¹) * g z
     calc
@@ -45,7 +36,7 @@ theorem realGaussCramer_reconstruct
             rw [mul_inv_cancel₀ hW']
             simp
           _ = ((T z : ℂ) * W) * W⁻¹ := by ring
-      _ = (A * f z + B * g z) * W⁻¹ := by rw [hA]
+      _ = (A * f z + B * g z) * W⁻¹ := by rw [(show A * f z + B * g z = (T z : ℂ) * W by dsimp [A, B, W, gaussCramerNumerator₁, gaussCramerNumerator₂, gaussCramerWronskian]; ring)]
       _ = (A * W⁻¹) * f z + (B * W⁻¹) * g z := by ring
   · change wirtingerZ (fun w => (T w : ℂ)) z =
       (A * W⁻¹) * deriv f z + (B * W⁻¹) * deriv g z
@@ -58,7 +49,7 @@ theorem realGaussCramer_reconstruct
             rw [mul_inv_cancel₀ hW']
             simp
           _ = (wirtingerZ (fun w => (T w : ℂ)) z * W) * W⁻¹ := by ring
-      _ = (A * deriv f z + B * deriv g z) * W⁻¹ := by rw [hB]
+      _ = (A * deriv f z + B * deriv g z) * W⁻¹ := by rw [(show A * deriv f z + B * deriv g z = wirtingerZ (fun w => (T w : ℂ)) z * W by dsimp [A, B, W, gaussCramerNumerator₁, gaussCramerNumerator₂, gaussCramerWronskian]; ring)]
       _ = (A * W⁻¹) * deriv f z + (B * W⁻¹) * deriv g z := by ring
 
 /-- The conjugates of the Cramer coefficients are holomorphic on the slit plane. -/

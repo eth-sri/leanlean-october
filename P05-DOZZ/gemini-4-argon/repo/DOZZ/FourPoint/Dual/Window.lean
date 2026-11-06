@@ -17,7 +17,7 @@ public section
 namespace DOZZ.Proofs
 
 /-- The near-Q premises supply every scalar margin used in dual fusion. -/
-theorem dual_window_margins (γ α η ξ : ℝ)
+theorem dual_window_margins γ α η ξ
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hη : 0 < η) (hη₂ : η < γ / 2)
     (hξ₂ : ξ < 1) (hαlo : Q γ - η < α) (hαhi : α < Q γ)
     (hslack₁ : (4 / γ) * (Q γ - α) < ξ)
@@ -29,41 +29,27 @@ theorem dual_window_margins (γ α η ξ : ℝ)
       2 < γ * α ∧ γ * α < 2 + γ ^ 2 / 2 ∧
       0 < 4 - γ * α ∧ γ * (Q γ - α) < 2 ∧
       (4 / γ) * (Q γ - α) < 2 - γ ^ 2 / 2 + γ * (Q γ - α) := by
-  have hν : 0 < Q γ - α := sub_pos.mpr hαhi
-  have hνη : Q γ - α < η := by linarith only [hαlo]
-  have hνb : Q γ - α < γ / 2 := hνη.trans hη₂
-  have hκ : 0 < (4 / γ) * (Q γ - α) :=
-    mul_pos (div_pos (by norm_num) hγ) hν
+  have hν := sub_pos.mpr hαhi
+  have hνb := (show Q γ - α < η by linarith only [hαlo]).trans hη₂
   have hQ : γ * Q γ = 2 + γ ^ 2 / 2 := by
     unfold Q
     field_simp
   have hγsq : γ ^ 2 < 4 := by nlinarith only [hγ, hγ₂]
   have hνmul : γ * (Q γ - α) < γ ^ 2 / 2 := by
-    have hm := mul_lt_mul_of_pos_left hνb hγ
-    nlinarith only [hm]
-  have hαmul : 2 < γ * α := by
-    nlinarith only [hQ, hνmul]
+    nlinarith only [(mul_lt_mul_of_pos_left hνb hγ)]
   have hαmul₂ : γ * α < 2 + γ ^ 2 / 2 := by
-    have hm := mul_pos hγ hν
-    nlinarith only [hQ, hm]
-  have houter : (4 / γ) * (Q γ - α) < (1 - ξ) * (4 - γ * α) := by
-    have hbuffer : 0 < (1 - ξ) * (2 * γ * η) :=
-      mul_pos (sub_pos.mpr hξ₂) (mul_pos (mul_pos (by norm_num) hγ) hη)
-    nlinarith only [hslack₂, hbuffer]
+    nlinarith only [hQ, (mul_pos hγ hν)]
   have hfirst : (4 / γ) * (Q γ - α) <
       2 - γ ^ 2 / 2 + γ * (Q γ - α) := by
     by_contra hn
     have hm := mul_le_mul_of_nonneg_right (le_of_not_gt hn) hγ.le
-    have hp : 0 < (4 - γ ^ 2) * (γ / 2 - (Q γ - α)) :=
-      mul_pos (sub_pos.mpr hγsq) (sub_pos.mpr hνb)
-    have hd : (4 / γ) * γ = 4 := div_mul_cancel₀ 4 hγ.ne'
-    rw [mul_right_comm (4 / γ) (Q γ - α) γ, hd] at hm
-    nlinarith only [hp, hm]
-  exact ⟨hν, hνb, hκ, hslack₁.trans hξ₂, houter, hαmul, hαmul₂,
+    rw [mul_right_comm (4 / γ) (Q γ - α) γ, (div_mul_cancel₀ 4 hγ.ne')] at hm
+    nlinarith only [(mul_pos (sub_pos.mpr hγsq) (sub_pos.mpr hνb)), hm]
+  exact ⟨hν, hνb, (mul_pos (div_pos (by norm_num) hγ) hν), hslack₁.trans hξ₂, (by nlinarith only [hslack₂, (mul_pos (sub_pos.mpr hξ₂) (mul_pos (mul_pos (by norm_num) hγ) hη) : 0 < (1 - ξ) * (2 * γ * η))]), (by nlinarith only [hQ, hνmul]), hαmul₂,
     by linarith only [hαmul₂, hγsq], by linarith only [hνmul, hγsq], hfirst⟩
 
 /-- The dual reflected triple is ordinary Seiberg on the explicit near-Q window. -/
-theorem dual_window_reflected_triple (γ α₁ α₂ α₃ η : ℝ)
+theorem dual_window_reflected_triple γ α₁ α₂ α₃ η
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hη₂ : η < γ / 2)
     (hαlo : Q γ - η < α₁) (hαhi : α₁ < Q γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
@@ -71,11 +57,8 @@ theorem dual_window_reflected_triple (γ α₁ α₂ α₃ η : ℝ)
     2 * Q γ - α₁ - 2 / γ < Q γ ∧
       α₂ < Q γ ∧ α₃ < Q γ ∧
       2 * Q γ < (2 * Q γ - α₁ - 2 / γ) + α₂ + α₃ := by
-  have hd : γ / 2 < 2 / γ := by
-    apply (lt_div_iff₀ hγ).2
-    nlinarith only [hγ, hγ₂]
   refine ⟨?_, hα₂, hα₃, ?_⟩
-  · linarith only [hαlo, hη₂, hd]
+  · linarith only [hαlo, hη₂, (show γ / 2 < 2 / γ by apply (lt_div_iff₀ hγ).2; nlinarith only [hγ, hγ₂])]
   · linarith only [hs, hαhi]
 
 /-- The dual reflection exponent is twice the maximum-tail exponent. -/

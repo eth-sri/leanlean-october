@@ -43,17 +43,15 @@ noncomputable def affineSoftMaxSecondDeriv {ι : Type*} [Fintype ι]
         (affineSoftMaxSlopeSum a b β x) ^ 2) / (affineSoftMaxSum a b β x) ^ 2
 
 theorem affineSoftMaxSum_pos {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) (β x : ℝ) : 0 < affineSoftMaxSum a b β x := by
+    (a b : ι → ℝ) β x : 0 < affineSoftMaxSum a b β x := by
   classical
   exact Finset.sum_pos (fun i _ => Real.exp_pos _) Finset.univ_nonempty
 
 theorem affineSoftMaxSum_hasDerivAt {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) :
+    (a b : ι → ℝ) β x :
     HasDerivAt (affineSoftMaxSum a b β) (β * affineSoftMaxSlopeSum a b β x) x := by
   classical
-  have h := HasDerivAt.fun_sum (u := Finset.univ) (fun i _ =>
-    ((((hasDerivAt_id x).const_mul (a i)).add_const (b i)).const_mul β).exp)
-  convert h using 1
+  convert (HasDerivAt.fun_sum (u := Finset.univ) (fun i _ => ((((hasDerivAt_id x).const_mul (a i)).add_const (b i)).const_mul β).exp)) using 1
   · funext y
     rfl
   · dsimp [affineSoftMaxSlopeSum]
@@ -62,40 +60,30 @@ theorem affineSoftMaxSum_hasDerivAt {ι : Type*} [Fintype ι]
     intro i hi
     ring
 
-theorem affineSoftMaxSlopeSum_hasDerivAt {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) :
-    HasDerivAt (affineSoftMaxSlopeSum a b β)
-      (β * affineSoftMaxSlopeSquareSum a b β x) x := by
-  classical
-  have h := HasDerivAt.fun_sum (u := Finset.univ) (fun i _ =>
-    (((((hasDerivAt_id x).const_mul (a i)).add_const (b i)).const_mul β).exp).const_mul (a i))
-  convert h using 1
-  · funext y
-    rfl
-  · dsimp [affineSoftMaxSlopeSquareSum]
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro i hi
-    ring
 
 theorem affineSoftMax_hasDerivAt {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) (β x : ℝ) (hβ : β ≠ 0) :
+    (a b : ι → ℝ) β x (hβ : β ≠ 0) :
     HasDerivAt (affineSoftMax a b β) (affineSoftMaxDeriv a b β x) x := by
-  have hS := affineSoftMaxSum_hasDerivAt a b β x
-  have hpos := affineSoftMaxSum_pos a b β x
-  convert (hS.log hpos.ne').div_const β using 1
+  convert ((affineSoftMaxSum_hasDerivAt a b β x).log (affineSoftMaxSum_pos a b β x).ne').div_const β using 1
   · funext y
     rfl
   · dsimp [affineSoftMaxDeriv]
     field_simp
 
 theorem affineSoftMaxDeriv_hasDerivAt {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) (β x : ℝ) :
+    (a b : ι → ℝ) β x :
     HasDerivAt (affineSoftMaxDeriv a b β) (affineSoftMaxSecondDeriv a b β x) x := by
-  have hS := affineSoftMaxSum_hasDerivAt a b β x
-  have hSlope := affineSoftMaxSlopeSum_hasDerivAt a b β x
-  have hpos := affineSoftMaxSum_pos a b β x
-  convert hSlope.div hS hpos.ne' using 1
+  have affineSoftMaxSlopeSum_hasDerivAt : HasDerivAt (affineSoftMaxSlopeSum a b β) (β * affineSoftMaxSlopeSquareSum a b β x) x := by
+    classical
+    convert (HasDerivAt.fun_sum (u := Finset.univ) (fun i _ => (((((hasDerivAt_id x).const_mul (a i)).add_const (b i)).const_mul β).exp).const_mul (a i))) using 1
+    · funext y
+      rfl
+    · dsimp [affineSoftMaxSlopeSquareSum]
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro i hi
+      ring
+  convert (affineSoftMaxSlopeSum_hasDerivAt).div (affineSoftMaxSum_hasDerivAt a b β x) (affineSoftMaxSum_pos a b β x).ne' using 1
   · funext y
     rfl
   · dsimp [affineSoftMaxSecondDeriv]
@@ -103,22 +91,21 @@ theorem affineSoftMaxDeriv_hasDerivAt {ι : Type*} [Fintype ι] [Nonempty ι]
 
 /-- Smooth affine maxima have globally bounded derivatives and nonnegative second derivative. -/
 theorem affineSoftMax_derivative_bounds {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) (β : ℝ) (hβ : 0 ≤ β) :
+    (a b : ι → ℝ) β (hβ : 0 ≤ β) :
     ∃ B₁ B₂ : ℝ, (∀ x, ‖affineSoftMaxDeriv a b β x‖ ≤ B₁) ∧
       (∀ x, ‖affineSoftMaxSecondDeriv a b β x‖ ≤ B₂) ∧
         ∀ x, 0 ≤ affineSoftMaxSecondDeriv a b β x := by
   classical
   let B : ℝ := 1 + ∑ i, |a i|
-  have hB : 0 ≤ B := by dsimp [B]; positivity
-  have ha (i : ι) : |a i| ≤ B := by
-    have h := Finset.single_le_sum (f := fun i => |a i|)
+  have ha i : |a i| ≤ B := by
+    have := Finset.single_le_sum (f := fun i => |a i|)
       (fun j _ => abs_nonneg (a j)) (Finset.mem_univ i)
     dsimp [B]
     linarith
   have hb (x : ℝ) := weighted_variance_bounds a
     (fun i => Real.exp (β * (a i * x + b i)))
-    (fun i => Real.exp_nonneg _) (affineSoftMaxSum_pos a b β x) B hB ha
-  have hsecond (x : ℝ) : 0 ≤ affineSoftMaxSecondDeriv a b β x := by
+    (fun i => Real.exp_nonneg _) (affineSoftMaxSum_pos a b β x) B (by dsimp [B]; positivity) ha
+  have hsecond x : 0 ≤ affineSoftMaxSecondDeriv a b β x := by
     dsimp [affineSoftMaxSecondDeriv]
     rw [mul_div_assoc]
     exact mul_nonneg hβ (hb x).2.1

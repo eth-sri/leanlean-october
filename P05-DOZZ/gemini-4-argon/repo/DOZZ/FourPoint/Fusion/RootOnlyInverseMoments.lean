@@ -17,8 +17,8 @@ namespace DOZZ.Proofs
 
 /-- All inverse orders are uniformly bounded, including a larger order for Vitali. -/
 theorem fusionRootOnlyMass_inverse_moment_uniform {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ s : ℝ) (hs : s ≤ 0) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ y z : ℂ, ‖z‖ ≤ 1 →
       (∫⁻ ω, fusionRootOnlyMass γ α₁ α₂ α₃ y z (M ω) ^ s ∂P) ≤ C := by

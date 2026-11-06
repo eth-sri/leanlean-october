@@ -29,7 +29,7 @@ noncomputable def originRadialReinsertionWeight
     γ * Q γ * |clampedLogRadius ρ x|)
 
 /-- Radial reinsertion is jointly continuous in the path and the spatial point. -/
-theorem continuous_originRadialReinsertionWeight (ρ γ : ℝ) (hρ : 0 < ρ) :
+theorem continuous_originRadialReinsertionWeight ρ γ (hρ : 0 < ρ) :
     Continuous (fun p : TwoSidedPath × ℂ => originRadialReinsertionWeight ρ γ p.1 p.2) := by
   have hr : Continuous (fun p : TwoSidedPath × ℂ => clampedLogRadius ρ p.2) :=
     (continuous_clampedLogRadius ρ hρ).comp continuous_snd
@@ -38,7 +38,7 @@ theorem continuous_originRadialReinsertionWeight (ρ γ : ℝ) (hρ : 0 < ρ) :
 
 /-- Multiplication by the radial weight preserves the compact support of a test. -/
 theorem hasCompactSupport_originRadialWeightedTest
-    (ρ γ : ℝ) (A : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ)
+    ρ γ A (f : BoundedContinuousFunction ℂ ℝ)
     (hfc : HasCompactSupport (f : ℂ → ℝ)) :
     HasCompactSupport (fun x => f x * originRadialReinsertionWeight ρ γ A x) :=
   hfc.mul_right
@@ -57,14 +57,14 @@ noncomputable def originRadialWeightedTest
 
 /-- The underlying weighted test is the literal product, independently of its chosen bound. -/
 theorem originRadialWeightedTest_apply
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) (x : ℂ) :
+    ρ γ (hρ : 0 < ρ) A (f : BoundedContinuousFunction ℂ ℝ)
+    (hfc : HasCompactSupport (f : ℂ → ℝ)) x :
     originRadialWeightedTest ρ γ hρ A f hfc x =
       f x * originRadialReinsertionWeight ρ γ A x := rfl
 
 /-- Weighted tests have no new support points. -/
 theorem tsupport_originRadialWeightedTest_subset
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ)
+    ρ γ (hρ : 0 < ρ) A (f : BoundedContinuousFunction ℂ ℝ)
     (hfc : HasCompactSupport (f : ℂ → ℝ)) :
     tsupport (originRadialWeightedTest ρ γ hρ A f hfc : ℂ → ℝ) ⊆ tsupport (f : ℂ → ℝ) :=
   tsupport_mul_subset_left
@@ -75,15 +75,8 @@ theorem measurable_integral_finiteMeasure_parameter
     (F : V → β → ℝ) (hF : Measurable (Function.uncurry F))
     (hI : ∀ v (μ : FiniteMeasure β), Integrable (F v) (μ : Measure β)) :
     Measurable (fun p : V × FiniteMeasure β => ∫ x, F p.1 x ∂(p.2 : Measure β)) := by
-  have hp := measurable_lintegral_finiteMeasure_parameter (ENNReal.measurable_ofReal.comp hF)
-  have hn := measurable_lintegral_finiteMeasure_parameter (ENNReal.measurable_ofReal.comp hF.neg)
-  have heq : (fun p : V × FiniteMeasure β => ∫ x, F p.1 x ∂(p.2 : Measure β)) =
-      fun p => (∫⁻ x, ENNReal.ofReal (F p.1 x) ∂(p.2 : Measure β)).toReal -
-        (∫⁻ x, ENNReal.ofReal (-F p.1 x) ∂(p.2 : Measure β)).toReal := by
-    funext p
-    exact integral_eq_lintegral_pos_part_sub_lintegral_neg_part (hI p.1 p.2)
-  rw [heq]
-  exact hp.ennreal_toReal.sub hn.ennreal_toReal
+  rw [(show (fun p : V × FiniteMeasure β => ∫ x, F p.1 x ∂(p.2 : Measure β)) = fun p => (∫⁻ x, ENNReal.ofReal (F p.1 x) ∂(p.2 : Measure β)).toReal - (∫⁻ x, ENNReal.ofReal (-F p.1 x) ∂(p.2 : Measure β)).toReal by funext p; exact integral_eq_lintegral_pos_part_sub_lintegral_neg_part (hI p.1 p.2))]
+  exact (measurable_lintegral_finiteMeasure_parameter (ENNReal.measurable_ofReal.comp hF)).ennreal_toReal.sub (measurable_lintegral_finiteMeasure_parameter (ENNReal.measurable_ofReal.comp hF.neg)).ennreal_toReal
 
 /-- A jointly measurable bounded test with fixed compact support integrates jointly
 measurably against a random measure finite on that support. -/
@@ -103,9 +96,7 @@ theorem measurable_compact_parameter_integral
     have h := (Measure.measurable_coe (hs.inter hK.measurableSet)).comp hN
     change Measurable (fun ξ => N ξ (s ∩ K)) at h
     simpa only [Measure.restrict_apply hs] using h
-  have hi := measurable_integral_finiteMeasure_parameter
-    (fun v x => F v x) hF (fun v μ => (F v).integrable (μ := (μ : Measure ℂ)))
-  have hm := hi.comp (measurable_fst.prodMk (hT.comp measurable_snd))
+  have hm := (measurable_integral_finiteMeasure_parameter (fun v x => F v x) hF (fun v μ => (F v).integrable (μ := (μ : Measure ℂ)))).comp (measurable_fst.prodMk (hT.comp measurable_snd))
   have heq (v : V) (ξ : E) : (∫ x, F v x ∂(T ξ : Measure ℂ)) = ∫ x, F v x ∂N ξ := by
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro x hx
@@ -116,7 +107,7 @@ theorem measurable_compact_parameter_integral
 /-- The limiting chaos integral with the radial weighted test is jointly measurable. -/
 theorem originRadialWeightedTest_integral_measurable
     {E : Type*} [MeasurableSpace E]
-    (ρ γ : ℝ) (hρ : 0 < ρ) (f : BoundedContinuousFunction ℂ ℝ)
+    ρ γ (hρ : 0 < ρ) (f : BoundedContinuousFunction ℂ ℝ)
     (hfc : HasCompactSupport (f : ℂ → ℝ))
     (N : E → Measure ℂ) (hN : Measurable N)
     (hNfin : ∀ ξ, N ξ (tsupport (f : ℂ → ℝ)) < ⊤) :
@@ -131,18 +122,15 @@ theorem originRadialWeightedTest_integral_measurable
 the common chart equality concerns the field, not a preselected deterministic test. -/
 theorem regularizedLogChaosTestMass_randomTest_map_comp
     {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
-    (P : Measure Ω) (π : Ω → E) (hπ : Measurable π)
-    (U : Set ℂ) (hU : IsOpen U) (dens : ℂ → ℝ)
+    (P : Measure Ω) π (hπ : Measurable π)
+    U (hU : IsOpen U) (dens : ℂ → ℝ)
     (Y : Ω → ℝ → ℂ → ℝ) (F : E → ℝ → ℂ → ℝ)
     (hF : ∀ ε, Measurable (fun q : E × ℂ => F q.1 ε q.2))
-    (γ r : ℝ) (f : Ω → BoundedContinuousFunction ℂ ℝ)
+    γ r (f : Ω → BoundedContinuousFunction ℂ ℝ)
     (heq : ∀ᵐ ω ∂P, ∀ x ∈ U, F (π ω) (Real.exp (-r)) x = Y ω (Real.exp (-r)) x) :
     (fun ω => regularizedLogChaosTestMass (P.map π) U dens F γ r (π ω) (f ω)) =ᵐ[P]
       fun ω => regularizedLogChaosTestMass P U dens Y γ r ω (f ω) := by
-  have hRef : ∀ᵐ x ∂logRegularizationReference U dens, x ∈ U :=
-    (withDensity_absolutelyContinuous (volume.restrict U) _).ae_le
-      (ae_restrict_mem hU.measurableSet)
-  have hv (x : ℂ) (hx : x ∈ U) :
+  have hv x (hx : x ∈ U) :
       (∫ ξ, F ξ (Real.exp (-r)) x ^ 2 ∂P.map π) =
         ∫ ω, Y ω (Real.exp (-r)) x ^ 2 ∂P := by
     have hm : Measurable (fun ξ => F ξ (Real.exp (-r)) x ^ 2) :=
@@ -154,7 +142,7 @@ theorem regularizedLogChaosTestMass_randomTest_map_comp
   filter_upwards [heq] with ω hω
   unfold regularizedLogChaosTestMass
   apply integral_congr_ae
-  filter_upwards [hRef] with x hx
+  filter_upwards [((withDensity_absolutelyContinuous (volume.restrict U) _).ae_le (ae_restrict_mem hU.measurableSet))] with x hx
   rw [hv x hx, hω x hx]
 
 /-- The finite radial factor used when reinserting the circle cutoff into the lateral
@@ -183,12 +171,12 @@ theorem originRadialCutoffReinsertionWeight_density_identity
   ring
 
 /-- The reinsertion factor is strictly positive at every point. -/
-theorem originRadialReinsertionWeight_pos (ρ γ : ℝ) (A : TwoSidedPath) (x : ℂ) :
+theorem originRadialReinsertionWeight_pos ρ γ A x :
     0 < originRadialReinsertionWeight ρ γ A x := Real.exp_pos _
 
 /-- The clamped reinsertion weight equals the literal polar weight on its local chart. -/
 theorem originRadialReinsertionWeight_chart_eq
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (x : ℂ) (hx : x ∈ originLateralChart ρ) :
+    ρ γ (hρ : 0 < ρ) A x (hx : x ∈ originLateralChart ρ) :
     originRadialReinsertionWeight ρ γ A x =
       Real.exp (γ * A (-Real.log ‖x‖) - γ * Q γ * |Real.log ‖x‖|) := by
   have hxρ : ρ ≤ ‖x‖ := by
@@ -200,17 +188,12 @@ theorem originRadialReinsertionWeight_chart_eq
 cancels the reinsertion density on every local chart, including in extended-real
 measure products. -/
 theorem originRadialReinsertionWeight_removal_mul
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (x : ℂ) (hx : x ∈ originLateralChart ρ) :
+    ρ γ (hρ : 0 < ρ) A x (hx : x ∈ originLateralChart ρ) :
     ENNReal.ofReal (originRadialReinsertionWeight ρ γ A x) *
       ENNReal.ofReal (if ‖x‖ = 0 then 0 else
         Real.exp (-γ * A (-Real.log ‖x‖) + γ * Q γ * |Real.log ‖x‖|)) = 1 := by
-  have hx0 : ‖x‖ ≠ 0 := by
-    have h : 2 * ρ < ‖x‖ := hx
-    exact ne_of_gt (lt_trans (by linarith only [hρ] : 0 < 2 * ρ) h)
-  rw [ite_eq_right hx0, originRadialReinsertionWeight_chart_eq ρ γ hρ A x hx,
+  rw [ite_eq_right (show ‖x‖ ≠ 0 by exact ne_of_gt (lt_trans (by linarith only [hρ] : 0 < 2 * ρ) hx)), originRadialReinsertionWeight_chart_eq ρ γ hρ A x hx,
     ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
-  have he : γ * A (-Real.log ‖x‖) - γ * Q γ * |Real.log ‖x‖| +
-      (-γ * A (-Real.log ‖x‖) + γ * Q γ * |Real.log ‖x‖|) = 0 := by ring
-  rw [he, Real.exp_zero, ENNReal.ofReal_one]
+  rw [(show γ * A (-Real.log ‖x‖) - γ * Q γ * |Real.log ‖x‖| + (-γ * A (-Real.log ‖x‖) + γ * Q γ * |Real.log ‖x‖|) = 0 by ring), Real.exp_zero, ENNReal.ofReal_one]
 
 end DOZZ.Proofs

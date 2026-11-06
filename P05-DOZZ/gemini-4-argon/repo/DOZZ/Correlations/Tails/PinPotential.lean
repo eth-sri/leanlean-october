@@ -14,12 +14,12 @@ estimate. -/
 namespace DOZZ.Proofs
 
 /-- Logarithm has Lipschitz constant one when both arguments are at least one. -/
-theorem abs_log_sub_le {a b : ℝ} (ha : 1 ≤ a) (hb : 1 ≤ b) :
+theorem abs_log_sub_le {a b} (ha : 1 ≤ a) (hb : 1 ≤ b) :
     |Real.log a - Real.log b| ≤ |a - b| := by
-  have bound {u v : ℝ} (hu : 1 ≤ u) (hv : 1 ≤ v) :
+  have bound {u v} (hu : 1 ≤ u) (hv : 1 ≤ v) :
       Real.log u - Real.log v ≤ |u - v| := by
-    have hup : 0 < u := lt_of_lt_of_le zero_lt_one hu
-    have hvp : 0 < v := lt_of_lt_of_le zero_lt_one hv
+    have hup := lt_of_lt_of_le zero_lt_one hu
+    have hvp := lt_of_lt_of_le zero_lt_one hv
     calc
       Real.log u - Real.log v = Real.log (u / v) :=
         (Real.log_div hup.ne' hvp.ne').symm
@@ -39,12 +39,11 @@ at norm two. This is the quantitative covariance correction in source `boundY`. 
 theorem offCenter_pin_potential_bound (z u : ℂ)
     (hz : 2 ≤ ‖z‖) (hu : ‖u‖ ≤ 1) :
     |Real.log ‖z + u‖ - Real.log ‖z‖| ≤ ‖u‖ := by
-  have hz1 : 1 ≤ ‖z‖ := by linarith
   have hsum : 1 ≤ ‖z + u‖ := by
     have h := norm_sub_norm_le z (z + u)
     simp only [sub_add_cancel_left, norm_neg] at h
     linarith
-  apply (abs_log_sub_le hsum hz1).trans
+  apply (abs_log_sub_le hsum (show 1 ≤ ‖z‖ by linarith)).trans
   simpa only [add_sub_cancel_left] using abs_norm_sub_norm_le (z + u) z
 
 end DOZZ.Proofs

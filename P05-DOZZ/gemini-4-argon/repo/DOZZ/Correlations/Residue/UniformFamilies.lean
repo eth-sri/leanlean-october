@@ -15,7 +15,7 @@ namespace DOZZ.Proofs
 
 /-- Enlarge common upper bounds and decrease the positive center lower bound. -/
 theorem residue_uniformFamily_mono_bounds
-    (K : Set ℂ) (F : ℂ → Set (ℂ → ℝ)) (r s d l s' d' l' : ℝ)
+    K (F : ℂ → Set (ℂ → ℝ)) r s d l s' d' l'
     (hF : UniformPositiveC1Family K F r s d l)
     (hs : s ≤ s') (hd : d ≤ d') (hl : l' ≤ l) (hl' : 0 < l') :
     UniformPositiveC1Family K F r s' d' l' := by
@@ -29,7 +29,7 @@ theorem residue_uniformFamily_mono_bounds
 /-- Two separately constructed positive C1 classes admit the shared bounds required by the
 exact two-insertion tail statement. -/
 theorem residue_uniformFamilies_common_bounds
-    (K1 K2 : Set ℂ) (F1 F2 : ℂ → Set (ℂ → ℝ)) (r s1 d1 l1 s2 d2 l2 : ℝ)
+    K1 K2 (F1 F2 : ℂ → Set (ℂ → ℝ)) r s1 d1 l1 s2 d2 l2
     (h1 : UniformPositiveC1Family K1 F1 r s1 d1 l1)
     (h2 : UniformPositiveC1Family K2 F2 r s2 d2 l2) :
     ∃ s d l : ℝ, UniformPositiveC1Family K1 F1 r s d l ∧

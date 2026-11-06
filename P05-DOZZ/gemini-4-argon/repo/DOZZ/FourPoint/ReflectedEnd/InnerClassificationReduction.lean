@@ -21,9 +21,9 @@ namespace DOZZ.Proofs
 /-- The full reflected formula reduces directly to the inner-limit conclusion and
 the diagonal-classification conclusion in the same physical frame. -/
 theorem gammaHalf_reflected_formula_of_inner_limit {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+    {H}
     (hH : IsGaussHypergeometricFamily H)
-    (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
+    (P : Measure Ω) (M : Ω → Measure ℂ) X
     (γ μ α₁ α₂ α₃ ξ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
@@ -73,11 +73,8 @@ theorem gammaHalf_reflected_formula_of_inner_limit {Ω : Type*} [MeasurableSpace
               reflectionR P γ μ α₁ (B α₁) Z *
                 structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ *
                   ‖gaussFPlus H a b c z‖ ^ 2 := by
-  have hfusion := gammaHalf_reflected_fusion_asymptotic_of_inner_limit
-    P M X γ μ α₁ α₂ α₃ ξ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hreflect
-    hξ hξ₂ hslack hfreeze hX hM hinner
   exact gammaHalf_reflected_formula_of_fusion_and_classification hH
     P M X γ μ α₁ α₂ α₃ hγ hγ₂ hα₁ hα₂ hα₃ hs
-    ⟨ξ, hξ, hξ₂, hslack, hfreeze⟩ hfusion hclassification
+    ⟨ξ, hξ, hξ₂, hslack, hfreeze⟩ (gammaHalf_reflected_fusion_asymptotic_of_inner_limit P M X γ μ α₁ α₂ α₃ ξ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hreflect hξ hξ₂ hslack hfreeze hX hM hinner) hclassification
 
 end DOZZ.Proofs

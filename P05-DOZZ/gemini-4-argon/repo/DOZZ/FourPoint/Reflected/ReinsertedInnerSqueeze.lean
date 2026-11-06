@@ -13,7 +13,7 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 theorem reflected_reinserted_inner_kernel_mass_squeeze
-    (γ α₁ α₂ α₃ R : ℝ) (z : ℂ) (A : TwoSidedPath) (N : Measure ℂ) (T : ℝ≥0)
+    (γ α₁ α₂ α₃ R : ℝ) z (A : TwoSidedPath) (N : Measure ℂ) (T : ℝ≥0)
     (hR : 0 ≤ R) (hR₁ : R < 1) (hz : 0 < ‖z‖)
     (hT : Real.exp (-(T : ℝ)) < 1) (hsep : Real.exp (-(T : ℝ)) ≤ R*‖z‖) :
     let η := Real.exp (-(T : ℝ))
@@ -38,23 +38,21 @@ theorem reflected_reinserted_inner_kernel_mass_squeeze
       ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply lintegral_mono_ae
     filter_upwards [ae_restrict_mem hE] with x hx
-    have hh := ENNReal.ofReal_le_ofReal (hb x hx).1
     simpa only [ENNReal.ofReal_mul (by positivity : 0 ≤ (1-R)^(γ^2/2)),
       ENNReal.ofReal_mul (by positivity : 0 ≤ (1-Real.exp (-(T : ℝ)))⁻¹^(-|γ*α₂|)),
       ENNReal.ofReal_mul (by positivity : 0 ≤ (1-R)^(γ^2/2)*
         (1-Real.exp (-(T : ℝ)))⁻¹^(-|γ*α₂|)),
       ENNReal.ofReal_mul (Real.rpow_nonneg hz.le (γ^2/2)),mul_assoc] using
-        mul_le_mul_left hh (ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))
+        mul_le_mul_left (ENNReal.ofReal_le_ofReal (hb x hx).1) (ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))
   · rw [← mul_assoc,← ENNReal.ofReal_mul (by positivity),
       ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply lintegral_mono_ae
     filter_upwards [ae_restrict_mem hE] with x hx
-    have hh := ENNReal.ofReal_le_ofReal (hb x hx).2
     simpa only [ENNReal.ofReal_mul (by positivity : 0 ≤ (1+R)^(γ^2/2)),
       ENNReal.ofReal_mul (by positivity : 0 ≤ (1-Real.exp (-(T : ℝ)))⁻¹^|γ*α₂|),
       ENNReal.ofReal_mul (by positivity : 0 ≤ (1+R)^(γ^2/2)*
         (1-Real.exp (-(T : ℝ)))⁻¹^|γ*α₂|),
       ENNReal.ofReal_mul (Real.rpow_nonneg hz.le (γ^2/2)),mul_assoc] using
-        mul_le_mul_left hh (ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))
+        mul_le_mul_left (ENNReal.ofReal_le_ofReal (hb x hx).2) (ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))
 
 end DOZZ.Proofs

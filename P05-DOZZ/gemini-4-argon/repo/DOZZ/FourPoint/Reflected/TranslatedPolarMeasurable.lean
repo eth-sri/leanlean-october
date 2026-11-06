@@ -15,7 +15,7 @@ theorem reflected_translated_polar_aemeasurable
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (D : Ω → BrownianPath) (hD : AEMeasurable D P) (Z : Ω → Measure ℝ)
     (hZ : AEMeasurable Z P) (hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Icc a b) < ⊤)
-    (γ ν T : ℝ) : AEMeasurable (fun ω : Ω × Ω => ∫⁻ t,
+    γ ν T : AEMeasurable (fun ω : Ω × Ω => ∫⁻ t,
       (if 0 < t then ENNReal.ofReal (Real.exp (γ*(D ω.1 (Real.toNNReal t)-ν*t))) else 0)
         ∂(Z ω.2).map (fun s => s-T)) (P.prod P) := by
   let W := fun ω => locallyFiniteTranslation (-T,Z ω)
@@ -27,8 +27,8 @@ theorem reflected_translated_polar_aemeasurable
       (fun n => hω (-(n : ℝ)) (n : ℝ))
   have hWf : ∀ᵐ ω ∂P, ∀ a b : ℝ, W ω (Icc a b) < ⊤ := by
     filter_upwards [he,hfin] with ω hω hf a b
-    rw [hω,Measure.map_apply (show Measurable (fun s : ℝ => s-T) from measurable_id.sub_const T) measurableSet_Icc]
-    have hh : (fun s : ℝ => s-T) ⁻¹' Icc a b = Icc (a+T) (b+T) := by
+    rw [hω,Measure.map_apply (show Measurable (fun s => s-T) from measurable_id.sub_const T) measurableSet_Icc]
+    have hh : (fun s => s-T) ⁻¹' Icc a b = Icc (a+T) (b+T) := by
       ext s
       simp only [mem_preimage,mem_Icc,le_sub_iff_add_le,sub_le_iff_le_add]
     rw [hh]

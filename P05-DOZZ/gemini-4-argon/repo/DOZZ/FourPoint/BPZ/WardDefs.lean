@@ -42,11 +42,11 @@ noncomputable def bpzWardRHS (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α
       bpzSoftWeight γ χ α₁ α₂ α₃ 0 z y) * bpzKern v (x - y) / 2 ∂M ω ∂M ω)) ∂P
 
 /-- The real Ward identity for `ℓ ∘ g`. -/
-theorem bpzWardLHS_eq_wardRHS (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+theorem bpzWardLHS_eq_wardRHS (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMm : Measurable M)
     (hχ : 0 < χ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 0 ≤ fourPointSExp γ (-χ) α₁ α₂ α₃) {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1)
-    (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+    (hs : 0 ≤ fourPointSExp γ (-χ) α₁ α₂ α₃) {z} (hz0 : z ≠ 0) (hz1 : z ≠ 1)
+    (ℓ : ℂ →L[ℝ] ℝ) v :
     bpzWardLHS P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z ℓ v =
       bpzWardRHS P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z ℓ v :=
   bpz_fourPoint_ward_g P X hX hγ hγ2 M hM hMm hχ hα₁ hα₂ hα₃ hs hz0 hz1 ℓ v

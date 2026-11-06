@@ -34,60 +34,53 @@ noncomputable def fusionRootOnlyGoodMass (γ α₁ α₂ α₃ : ℝ) (y z : ℂ
     (μ : Measure ℂ) : ℝ≥0∞ :=
   ∫⁻ x in {x : ℂ | δ ≤ ‖x‖}, fusionRootOnlyKernel γ α₁ α₂ α₃ y z x ∂μ
 
-theorem fusionRootOnlyKernel_measurable (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) :
+theorem fusionRootOnlyKernel_measurable γ α₁ α₂ α₃ y z :
     Measurable (fusionRootOnlyKernel γ α₁ α₂ α₃ y z) := by
   apply ENNReal.measurable_ofReal.comp
   apply Measurable.mul
-  · exact (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (f := fun x : ℂ => ((0 : ℂ), x))
+  · exact (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (f := fun x => ((0 : ℂ), x))
       (measurable_const.prodMk measurable_id)
   · exact (measurable_const.mul (measurable_pointRootPotential.comp
       (measurable_const.prodMk measurable_id))).exp
 
-theorem fusionRootOnlyMass_split (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) (μ : Measure ℂ) :
+theorem fusionRootOnlyMass_split γ α₁ α₂ α₃ y z δ (μ : Measure ℂ) :
     fusionRootOnlyMass γ α₁ α₂ α₃ y z μ =
       fusionRootOnlyBadMass γ α₁ α₂ α₃ y z δ μ + fusionRootOnlyGoodMass γ α₁ α₂ α₃ y z δ μ := by
-  have hc : (Metric.ball (0 : ℂ) δ)ᶜ = {x : ℂ | δ ≤ ‖x‖} := by
-    ext x
-    simp only [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, Set.mem_ofPred_eq, not_lt]
   exact (lintegral_add_compl _ Metric.isOpen_ball.measurableSet).symm.trans
-    (by rw [hc]; rfl)
+    (by rw [(show (Metric.ball (0 : ℂ) δ)ᶜ = {x : ℂ | δ ≤ ‖x‖} by ext x; simp only [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, Set.mem_ofPred_eq, not_lt])]; rfl)
 
-/-- The real kernel mass is the Coulomb mass under the rooted measure. -/
-theorem fusionRootOnlyMass_eq_rooted (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (μ : Measure ℂ)
-    (hz : μ {0} = 0) (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
-    fusionRootOnlyMass γ α₁ α₂ α₃ y z μ =
-      coulombMass γ (gmcRootedMeasure γ (y * z) μ) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ := by
-  have hrz : gmcRootedMeasure γ (y * z) μ {0} = 0 := withDensity_absolutelyContinuous _ _ hz
-  have hr0 : gmcRootedMeasure γ (y * z) μ {0} = 0 := withDensity_absolutelyContinuous _ _ h0
-  have hr1 : gmcRootedMeasure γ (y * z) μ {1} = 0 := withDensity_absolutelyContinuous _ _ h1
-  rw [fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ 0 _ hrz hr0 hr1, gmcRootedMeasure]
-  have hd : Measurable (fun x : ℂ => ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel (y * z) x))) :=
-    ENNReal.measurable_ofReal.comp ((measurable_const.mul (measurable_pointRootPotential.comp
-      (measurable_const.prodMk measurable_id))).exp)
-  have hk : Measurable (fun x : ℂ => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x)) :=
-    ENNReal.measurable_ofReal.comp ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
-      (f := fun x : ℂ => ((0 : ℂ), x)) (measurable_const.prodMk measurable_id))
-  rw [lintegral_withDensity_eq_lintegral_mul _ hd hk]
-  apply lintegral_congr
-  intro x
-  dsimp [fusionRootOnlyKernel]
-  rw [mul_comm, ENNReal.ofReal_mul (Real.exp_nonneg _)]
 
 theorem fusionRootOnlyMass_eq_rooted_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    α₁ α₂ α₃ y z :
     ∀ᵐ ω ∂P, fusionRootOnlyMass γ α₁ α₂ α₃ y z (M ω) =
       coulombMass γ (gmcRootedMeasure γ (y * z) (M ω)) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ := by
+  have fusionRootOnlyMass_eq_rooted (μ : Measure ℂ) (hz : μ {0} = 0) (h0 : μ {0} = 0) (h1 : μ {1} = 0) : fusionRootOnlyMass γ α₁ α₂ α₃ y z μ = coulombMass γ (gmcRootedMeasure γ (y * z) μ) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ := by
+    have hrz : gmcRootedMeasure γ (y * z) μ {0} = 0 := withDensity_absolutelyContinuous _ _ hz
+    have hr0 : gmcRootedMeasure γ (y * z) μ {0} = 0 := withDensity_absolutelyContinuous _ _ h0
+    have hr1 : gmcRootedMeasure γ (y * z) μ {1} = 0 := withDensity_absolutelyContinuous _ _ h1
+    rw [fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ 0 _ hrz hr0 hr1, gmcRootedMeasure]
+    have hd : Measurable (fun x => ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel (y * z) x))) :=
+      ENNReal.measurable_ofReal.comp ((measurable_const.mul (measurable_pointRootPotential.comp
+        (measurable_const.prodMk measurable_id))).exp)
+    have hk : Measurable (fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x)) :=
+      ENNReal.measurable_ofReal.comp ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
+        (f := fun x => ((0 : ℂ), x)) (measurable_const.prodMk measurable_id))
+    rw [lintegral_withDensity_eq_lintegral_mul _ hd hk]
+    apply lintegral_congr
+    intro x
+    dsimp [fusionRootOnlyKernel]
+    rw [mul_comm, ENNReal.ofReal_mul (Real.exp_nonneg _)]
   filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hz h0 h1
-  exact fusionRootOnlyMass_eq_rooted γ α₁ α₂ α₃ y z (M ω) hz h0 h1
+  exact fusionRootOnlyMass_eq_rooted (M ω) hz h0 h1
 
 theorem fusionRootOnlyMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    α₁ α₂ α₃ y z :
     AEMeasurable (fun ω => fusionRootOnlyMass γ α₁ α₂ α₃ y z (M ω)) P :=
   gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ (fusionRootOnlyKernel_measurable _ _ _ _ _ _)
 

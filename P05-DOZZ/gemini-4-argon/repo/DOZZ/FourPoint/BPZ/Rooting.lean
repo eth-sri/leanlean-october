@@ -24,7 +24,7 @@ namespace DOZZ.Proofs
 variable {γ χ α₁ α₂ α₃ : ℝ}
 
 /-- The equator Green kernel is bounded below by `-log 2`. -/
-theorem gffKernel_ge_neg_log_two (u x : ℂ) : -Real.log 2 ≤ gffKernel u x := by
+theorem gffKernel_ge_neg_log_two u x : -Real.log 2 ≤ gffKernel u x := by
   unfold gffKernel
   have hu := bpz_one_le_normPlus u
   have hx := bpz_one_le_normPlus x
@@ -47,7 +47,7 @@ theorem gffKernel_ge_neg_log_two (u x : ℂ) : -Real.log 2 ≤ gffKernel u x := 
     linarith
 
 /-- The density of the rooted measure is measurable. -/
-theorem measurable_gmcRootedDensity (u : ℂ) :
+theorem measurable_gmcRootedDensity u :
     Measurable fun x : ℂ => ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel u x)) := by
   refine ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp ?_)
   refine Measurable.const_mul ?_ _
@@ -57,7 +57,7 @@ theorem measurable_gmcRootedDensity (u : ℂ) :
     (Real.measurable_log.comp bpz_measurable_normPlus)
 
 /-- The rooted measure dominates `2^{-γ²}` times the measure. -/
-theorem lintegral_le_lintegral_gmcRootedMeasure (u : ℂ) (m : Measure ℂ) (g : ℂ → ℝ≥0∞)
+theorem lintegral_le_lintegral_gmcRootedMeasure u (m : Measure ℂ) (g : ℂ → ℝ≥0∞)
     (hg : Measurable g) :
     ENNReal.ofReal ((2 : ℝ) ^ (-γ ^ 2)) * ∫⁻ x, g x ∂m ≤
       ∫⁻ x, g x ∂gmcRootedMeasure γ u m := by
@@ -70,12 +70,11 @@ theorem lintegral_le_lintegral_gmcRootedMeasure (u : ℂ) (m : Measure ℂ) (g :
   rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2)]
   apply Real.exp_le_exp.mpr
   have := gffKernel_ge_neg_log_two u x
-  have hγ2 : 0 ≤ γ ^ 2 := sq_nonneg γ
   nlinarith [Real.log_pos (by norm_num : (1 : ℝ) < 2)]
 
 /-- A lower bound by a positive multiple transfers to nonpositive powers, including the case of
 an infinite lower bound. -/
-theorem bpz_rpow_neg_le_of_le' {a b : ℝ≥0∞} {c : ℝ} (hc : 0 < c)
+theorem bpz_rpow_neg_le_of_le' {a b : ℝ≥0∞} {c} (hc : 0 < c)
     (hab : ENNReal.ofReal c * b ≤ a) (q : ℝ) (hq : 0 ≤ q) :
     a ^ (-q) ≤ ENNReal.ofReal (c ^ (-q)) * b ^ (-q) := by
   rcases eq_or_ne b ⊤ with hb | hb
@@ -90,7 +89,7 @@ theorem bpz_rpow_neg_le_of_le' {a b : ℝ≥0∞} {c : ℝ} (hc : 0 < c)
   · exact bpz_rpow_neg_le_of_le hc hb hab q hq
 
 /-- The rooted mass dominates `2^{-γ²}` times the mass. -/
-theorem bpzMass_le_rooted (ε : ℝ) (u : ℂ) (m : Measure ℂ) (z : ℂ) :
+theorem bpzMass_le_rooted ε u (m : Measure ℂ) z :
     ENNReal.ofReal ((2 : ℝ) ^ (-γ ^ 2)) * bpzMass γ χ α₁ α₂ α₃ ε m z ≤
       bpzMass γ χ α₁ α₂ α₃ ε (gmcRootedMeasure γ u m) z :=
   lintegral_le_lintegral_gmcRootedMeasure u m _
@@ -99,20 +98,14 @@ theorem bpzMass_le_rooted (ε : ℝ) (u : ℂ) (m : Measure ℂ) (z : ℂ) :
 /-- The rooted bound: a negative power of the mass against a chaos integral is controlled by the
 same reference-measure integral, with the constant `2^{γ²q} E[I^{-q}]`. -/
 theorem bpz_rooted_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (ε q : ℝ) (hq : 0 ≤ q) (z : ℂ) (f : ℂ → ℝ≥0∞) (hf : Measurable f) :
+    (ε q : ℝ) (hq : 0 ≤ q) z (f : ℂ → ℝ≥0∞) (hf : Measurable f) :
     ∫⁻ ω, bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ^ (-q) * ∫⁻ x, f x ∂M ω ∂P ≤
       ENNReal.ofReal ((2 : ℝ) ^ (γ ^ 2 * q)) *
         (∫⁻ ω, bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ^ (-q) ∂P) *
           ∫⁻ x, f x ∂gmcReferenceMeasure := by
   set F : Measure ℂ → ℝ≥0∞ := fun m => bpzMass γ χ α₁ α₂ α₃ ε m z ^ (-q) with hF
-  have hFm : Measurable F :=
-    (ENNReal.continuous_rpow_const.measurable).comp (measurable_bpzMass_measure ε z)
-  have hH : Measurable (fun p : ℂ × ((TestFn → ℝ) × Measure ℂ) => f p.1 * F p.2.2) :=
-    (hf.comp measurable_fst).mul (hFm.comp (measurable_snd.comp measurable_snd))
-  have hid := equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM
-    (fun u _ m => f u * F m) hH
   have hmeasI : AEMeasurable (fun ω => F (M ω)) P := by
     have := gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM
       (fun x => ENNReal.ofReal (bpzSoftWeight γ χ α₁ α₂ α₃ ε z x))
@@ -123,19 +116,15 @@ theorem bpz_rooted_bound
     apply lintegral_congr
     intro ω
     rw [lintegral_mul_const _ hf, mul_comm]
-  have hc : (0 : ℝ) < (2 : ℝ) ^ (-γ ^ 2) := by positivity
   have hpt : ∀ u ω, F (gmcRootedMeasure γ u (M ω)) ≤
       ENNReal.ofReal ((2 : ℝ) ^ (γ ^ 2 * q)) * F (M ω) := by
     intro u ω
-    have h := bpz_rpow_neg_le_of_le' hc (bpzMass_le_rooted (γ := γ) (χ := χ) (α₁ := α₁)
+    have h := bpz_rpow_neg_le_of_le' (by positivity) (bpzMass_le_rooted (γ := γ) (χ := χ) (α₁ := α₁)
       (α₂ := α₂) (α₃ := α₃) ε u (M ω) z) q hq
-    have hpow : ((2 : ℝ) ^ (-γ ^ 2)) ^ (-q) = (2 : ℝ) ^ (γ ^ 2 * q) := by
-      rw [← Real.rpow_mul (by norm_num)]
-      ring_nf
-    rw [hpow] at h
+    rw [(show ((2 : ℝ) ^ (-γ ^ 2)) ^ (-q) = (2 : ℝ) ^ (γ ^ 2 * q) by rw [← Real.rpow_mul (by norm_num)]; ring_nf)] at h
     exact h
   change ∫⁻ ω, F (M ω) * ∫⁻ x, f x ∂M ω ∂P ≤ _
-  rw [hlhs, hid]
+  rw [hlhs, (equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM (fun u _ m => f u * F m) ((hf.comp measurable_fst).mul (((ENNReal.continuous_rpow_const.measurable).comp (measurable_bpzMass_measure ε z)).comp (measurable_snd.comp measurable_snd))))]
   calc ∫⁻ u, ∫⁻ ω, f u * F (gmcRootedMeasure γ u (M ω)) ∂P ∂gmcReferenceMeasure
       ≤ ∫⁻ u, ∫⁻ ω, f u * (ENNReal.ofReal ((2 : ℝ) ^ (γ ^ 2 * q)) * F (M ω)) ∂P
           ∂gmcReferenceMeasure := by

@@ -20,9 +20,9 @@ namespace DOZZ.Proofs
 of the single-circle insertion converge on one full-measure set. -/
 theorem ae_circleRootedCoordinatePath_tendsto
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (u : ℂ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2)
+    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) u
     (hRoot : ∀ᵐ ω ∂P, IsFiniteMeasure (gmcRootedMeasure γ u (M ω))) :
     ∀ᵐ ω ∂P, Tendsto (fun n : ℕ => gmcTiltCoordinatePath
       (fun f => X ω f + γ * circleCross u (n : ℝ) f)

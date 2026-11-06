@@ -28,9 +28,9 @@ theorem brownianUpperConditionedReferenceFutureKernel_real_projection_tendsto_en
     (hB : IsBrownianReal (fun t p => p t) B)
     (Q : Measure BrownianPath) (ν : ℝ) (hν : 0 < ν)
     (hQ : IsNegativeConditionedBrownianLaw ν Q)
-    (n : ℕ) (offsets : Fin n → ℚ)
+    n (offsets : Fin n → ℚ)
     (hoff : ∀ i, 0 < (offsets i : ℝ)) (hmono : StrictMono offsets)
-    (A : Set (Fin n → ℝ)) (hA : MeasurableSet A) :
+    A (hA : MeasurableSet A) :
     Tendsto
       (fun z => (brownianUpperConditionedReferenceFutureKernel B ν hν z).real
         {y | (fun i => y (offsets i)) ∈ A})

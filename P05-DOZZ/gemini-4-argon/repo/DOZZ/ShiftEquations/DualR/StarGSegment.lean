@@ -26,7 +26,7 @@ open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
 /-- **Segment continuation of the shifted second dual seed.** -/
-theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hSeed : ∀ α ε α' : ℝ, α < Q γ → ε < Q γ → α' < Q γ → 2 * Q γ + 2 / γ < α + ε + α' →
@@ -53,7 +53,7 @@ theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω
                 R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
                   -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
                     C (z - γ / 2)))
-    {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
+    {hR} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
     (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)
     (hRv : ∀ α : ℝ, γ / 2 < α → α < Q γ → R (α : ℂ) = (reflectionR P γ μ α (BR α) ZR : ℂ))
@@ -109,9 +109,6 @@ theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω
     R (segC as af t) *
       structureConstantH f₃ γ μ
         (segT es ef (2 * Q γ - as - 2 / γ) (2 * Q γ - af - 2 / γ) a's a'f t) with hG
-  have hseg : ∀ t : ℝ, 0 ≤ t → t ≤ 1 → (t : ℂ) ∈ U := fun t h0 h1 =>
-    ⟨⟨segC_mem_horizontalStrip hhR es ef t, segC_mem_horizontalStrip hhR as af t⟩,
-      segT_mem hγ hV₃mem hS3 hP1 h0 h1, segT_mem hγ hV₃mem hS2 hP2 h0 h1⟩
   have hFm : MeromorphicOn F U := fun t ht =>
     (segR_meromorphicOn hRm es ef t ht.1.1).fun_mul
       ((MeromorphicAt.const _ t |>.fun_mul (meromorphicAt_shiftCoeffA_comp
@@ -126,10 +123,8 @@ theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω
   have hstart : ∀ᶠ t : ℝ in 𝓝[>] 0, F t = G t := by
     filter_upwards [nhdsWithin_le_nhds hnear, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)]
       with t ht hI
-    have hE₁ := extendedSeiberg3_segment hγ hS3 hP1 hI.1.le hI.2.le
-    have hE₂ := extendedSeiberg3_segment hγ hS2 hP2 hI.1.le hI.2.le
     simp only [hF, hG]
-    rw [segH_ofReal P M hμ hf₃eq hE₁, segH_ofReal P M hμ hf₃eq hE₂, segC_ofReal, segC_ofReal,
+    rw [segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hS3 hP1 hI.1.le hI.2.le), segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hS2 hP2 hI.1.le hI.2.le), segC_ofReal, segC_ofReal,
       segC_ofReal, segC_ofReal,
       show 2 * Q γ - es - 2 / γ + t * (2 * Q γ - ef - 2 / γ - (2 * Q γ - es - 2 / γ)) =
         2 * Q γ - (es + t * (ef - es)) - 2 / γ by ring,
@@ -154,7 +149,7 @@ theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω
     · rw [segC_one]; exact hgP2
     · rw [segC_one, segC_one, segC_one]; exact hgP3
     · rw [segC_one, segC_one, segC_one]; exact hgP4
-  have key := eq_at_one_of_segment hseg hFm hGm hstart hF1 hG1
+  have key := eq_at_one_of_segment (fun t h0 h1 => ⟨⟨segC_mem_horizontalStrip hhR es ef t, segC_mem_horizontalStrip hhR as af t⟩, segT_mem hγ hV₃mem hS3 hP1 h0 h1, segT_mem hγ hV₃mem hS2 hP2 h0 h1⟩ : ∀ t : ℝ, 0 ≤ t → t ≤ 1 → (t : ℂ) ∈ U) hFm hGm hstart hF1 hG1
   simp only [hF, hG] at key
   rw [segH_one P M hμ hf₃eq hP1, segH_one P M hμ hf₃eq hP2, segC_one, segC_one, segC_one,
     segC_one] at key

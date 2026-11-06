@@ -19,7 +19,7 @@ theorem dual_source_copied_inner_kernel_squeeze
     (hγ : γ ≠ 0) (A : Ω → TwoSidedPath) (M N : Ω → Measure ℂ) (Z : Ω → Measure ℝ)
     (heN : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω))))
     (heZ : Z =ᵐ[P] (fun ω => lateralProjectedGMC γ (A ω) (M ω)))
-    (z : ℂ) (hz : z ≠ 0) (T : ℝ≥0) (hT : (T : ℝ) = -Real.log ‖z‖+h)
+    z (hz : z ≠ 0) (T : ℝ≥0) (hT : (T : ℝ) = -Real.log ‖z‖+h)
     (hR : 0 ≤ R) (hR₁ : R < 1) (hη : Real.exp (-(T : ℝ)) < 1)
     (hsep : Real.exp (-(T : ℝ)) ≤ R*‖z‖) :
     ∀ᵐ ω ∂P, ∀ a : TwoSidedPath,

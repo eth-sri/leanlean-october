@@ -19,9 +19,9 @@ namespace DOZZ.Proofs
 /-- Pin removal identifies the whole random measure on one common probability-one event.
 Consequently the identity applies simultaneously to singular and random measurable integrands. -/
 theorem unpinned_source_measure_identity
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) (hz : 2 ≤ ‖z‖) (γ : ℝ)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    z (hz : 2 ≤ ‖z‖) (γ : ℝ)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ)
     (hN : IsAdmissibleGMCVersion P (Metric.ball 0 1) (fun x => normPlus x ^ (-4 : ℝ))
@@ -30,16 +30,7 @@ theorem unpinned_source_measure_identity
   let U : Set ℂ := Metric.ball 0 1
   obtain ⟨K, hKcompact, hKU, _, _, hKcofinal, f, hf, hdense⟩ :=
     exists_countable_dense_admissible_tests U Metric.isOpen_ball
-  have hEach : ∀ nm : ℕ × ℕ,
-      (fun ω => ∫ x, f nm x ∂N ω) =ᵐ[P]
-        fun ω => ∫ x, f nm x ∂transferredMeasure (M ω) z γ (Xc ω z 0) := by
-    intro nm
-    obtain ⟨g, _, hg, he⟩ := unpinned_source_compact_test P X Xc hX hc z hz γ
-      M hM N hN (f nm) (hf nm.1 nm.2).1 (hf nm.1 nm.2).2.2
-    filter_upwards [he] with ω hω
-    exact hω.trans (transferred_measure_test_integral (M ω) z γ (Xc ω z 0)
-      (f nm) g (hf nm.1 nm.2).2.2 hg).symm
-  filter_upwards [ae_all_iff.mpr hEach] with ω hω
+  filter_upwards [ae_all_iff.mpr (by intro nm; obtain ⟨g, _, hg, he⟩ := unpinned_source_compact_test P X Xc hX hc z hz γ M hM N hN (f nm) (hf nm.1 nm.2).1 (hf nm.1 nm.2).2.2; filter_upwards [he] with ω hω; exact hω.trans (transferred_measure_test_integral (M ω) z γ (Xc ω z 0) (f nm) g (hf nm.1 nm.2).2.2 hg).symm)] with ω hω
   let : IsFiniteMeasure (M ω) := hM.1 ω
   let : IsFiniteMeasure (transferredMeasure (M ω) z γ (Xc ω z 0)) :=
     transferred_measure_finite (M ω) z γ (Xc ω z 0)

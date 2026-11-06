@@ -24,7 +24,7 @@ namespace DOZZ.Proofs
 /-- Raw measurable representatives of the canonical circle L² family. -/
 theorem exists_equatorGFF_circle_L2_family
     {Ω : Type*} [mΩ : MeasurableSpace Ω] {P : Measure Ω}
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) :
+    (X : Ω → Distr) hX :
     ∃ f : (ℂ × ℝ) → ℕ → TestFn, ∃ W : (ℂ × ℝ) → Lp ℝ 2 P,
       ∃ Y : (ℂ × ℝ) → Ω → ℝ,
         (∀ p, Tendsto (fun n => circleEnergyGap p.1 p.2 (f p n)) atTop (𝓝 0)) ∧
@@ -38,12 +38,8 @@ theorem exists_equatorGFF_circle_L2_family
             atTop (𝓝 0)) ∧
         IsGaussianProcess (fun p ω => Y p ω) P := by
   let : IsProbabilityMeasure P := hX.1
-  have hlim (p : ℂ × ℝ) :=
-    exists_equatorGFF_circle_test_L2_limit_with_cross X hX p.1 p.2
-  choose f W hgap hcross hW using hlim
-  have hrep (p : ℂ × ℝ) :=
-    exists_measurable_equatorGFF_circle_L2_limit X hX (f p) (W p) (hW p)
-  choose Y hYraw hYm hYmem hYae hYlim using hrep
+  choose f W hgap hcross hW using (fun (p : ℂ × ℝ) => exists_equatorGFF_circle_test_L2_limit_with_cross X hX p.1 p.2)
+  choose Y hYraw hYm hYmem hYae hYlim using (fun p => exists_measurable_equatorGFF_circle_L2_limit X hX (f p) (W p) (hW p))
   refine ⟨f, W, Y, hgap, hcross, hW, ?_, ?_⟩
   · intro p
     exact ⟨hYraw p, hYm p, hYmem p, hYae p, hYlim p⟩

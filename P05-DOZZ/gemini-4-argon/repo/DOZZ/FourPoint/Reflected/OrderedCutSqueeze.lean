@@ -12,8 +12,8 @@ namespace DOZZ.Proofs
 
 /-- A common lower limit and fixed-cut upper limits tending to it determine the spatial
 limit, even when each fixed-cut error has a cutoff-dependent constant. -/
-theorem reflected_ordered_cut_squeeze {ι : Type*} (l : Filter ι)
-    (f g : ι → ℝ) (k error : ℝ → ι → ℝ) (L : ℝ) (Lcut : ℝ → ℝ)
+theorem reflected_ordered_cut_squeeze {ι : Type*} l
+    (f g : ι → ℝ) (k error : ℝ → ι → ℝ) L (Lcut : ℝ → ℝ)
     (hg : Tendsto g l (𝓝 L)) (hk : ∀ H, 0 < H → Tendsto (k H) l (𝓝 (Lcut H)))
     (he : ∀ H, 0 < H → Tendsto (error H) l (𝓝 0))
     (hL : Tendsto Lcut atTop (𝓝 L))
@@ -27,9 +27,7 @@ theorem reflected_ordered_cut_squeeze {ι : Type*} (l : Filter ι)
     exact hi.trans_le hl
   · intro b hb
     obtain ⟨H,hHb,hH⟩ := ((hL.eventually (gt_mem_nhds hb)).and (eventually_gt_atTop (0 : ℝ))).exists
-    have ht : Tendsto (fun i => k H i+error H i) l (𝓝 (Lcut H)) := by
-      simpa only [add_zero] using (hk H hH).add (he H hH)
-    filter_upwards [ht.eventually (gt_mem_nhds hHb),hupp H hH] with i hi hu
+    filter_upwards [(show Tendsto (fun i => k H i+error H i) l (𝓝 (Lcut H)) by simpa only [add_zero] using (hk H hH).add (he H hH)).eventually (gt_mem_nhds hHb),hupp H hH] with i hi hu
     exact hu.trans_lt hi
 
 end DOZZ.Proofs

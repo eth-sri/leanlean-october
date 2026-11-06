@@ -15,7 +15,7 @@ namespace DOZZ.Proofs
 
 /-- Addition preserves the Gaussian closure of the same distribution field. -/
 theorem gaussianL2Limit_add {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (L K : Ω → ℝ)
+    (P : Measure Ω) (X : Ω → Distr) L K
     (hL : IsGaussianL2Limit P X L) (hK : IsGaussianL2Limit P X K) :
     IsGaussianL2Limit P X (fun ω => L ω + K ω) := by
   obtain ⟨hmL, f, hf⟩ := hL
@@ -40,7 +40,7 @@ theorem gaussianL2Limit_add {Ω : Type*} [MeasurableSpace Ω]
 
 /-- Any finite sum of Gaussian closure variables remains in that closure. -/
 theorem isGaussianL2Limit_finset_sum {Ω I : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (L : I → Ω → ℝ) (S : Finset I)
+    (P : Measure Ω) (X : Ω → Distr) (L : I → Ω → ℝ) S
     (hL : ∀ i ∈ S, IsGaussianL2Limit P X (L i)) :
     IsGaussianL2Limit P X (fun ω => ∑ i ∈ S, L i ω) := by
   classical
@@ -54,16 +54,14 @@ theorem isGaussianL2Limit_finset_sum {Ω I : Type*} [MeasurableSpace Ω]
     simp only [he, eLpNorm_zero]
     exact tendsto_const_nhds
   | @insert i S hi ih =>
-    have hiL := hL i (Finset.mem_insert_self _ _)
-    have hSL := ih (fun j hj => hL j (Finset.mem_insert_of_mem hj))
     simpa only [Finset.sum_insert hi] using
-      gaussianL2Limit_add P X (L i) (fun ω => ∑ j ∈ S, L j ω) hiL hSL
+      gaussianL2Limit_add P X (L i) (fun ω => ∑ j ∈ S, L j ω) (hL i (Finset.mem_insert_self _ _)) (ih (fun j hj => hL j (Finset.mem_insert_of_mem hj)))
 
 /-- Mixed inward/outward circle vertices supply the literal Gaussian closure premise of GMC tilt. -/
 theorem circle_vertices_gaussianL2Limit
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
     (α : Fin N → ℝ) (z : Fin N → ℂ) (r : Fin N → ℝ) :
     IsGaussianL2Limit P X (fun ω => ∑ i, α i * Xc ω (z i) (r i)) := by
   apply isGaussianL2Limit_finset_sum P X (fun i ω => α i * Xc ω (z i) (r i)) Finset.univ

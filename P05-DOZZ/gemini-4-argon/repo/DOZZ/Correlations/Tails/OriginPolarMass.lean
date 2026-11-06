@@ -16,14 +16,14 @@ open scoped ENNReal
 
 namespace DOZZ.Proofs
 
-theorem origin_polar_measure_eq (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) :
+theorem origin_polar_measure_eq γ A (M : Measure ℂ) :
     translatedPolarMeasure γ 0 A M (fun _ => 1) 0 = lateralProjectedGMC γ A M := by
   unfold translatedPolarMeasure lateralProjectedGMC
-  have hd : (fun x : ℂ => ENNReal.ofReal (1 : ℝ) *
+  have hd : (fun x => ENNReal.ofReal (1 : ℝ) *
       (if x = 0 then 0 else ENNReal.ofReal
         (Real.exp (-γ * (0 + A (translatedLogRadius 0 x)) +
           γ * Q γ * |translatedLogRadius 0 x|)))) =
-      (fun x : ℂ => ENNReal.ofReal (if ‖x‖ = 0 then 0 else
+      (fun x => ENNReal.ofReal (if ‖x‖ = 0 then 0 else
         Real.exp (-γ * A (-Real.log ‖x‖) + γ * Q γ * |Real.log ‖x‖|))) := by
     funext x
     by_cases hx : x = 0
@@ -40,7 +40,7 @@ theorem origin_polar_measure_eq (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) 
 /-- Removing the radial Wick factor identifies the canonical singular mass with its inward
 drifted Brownian exponential integral, without changing the insertion at the origin. -/
 theorem origin_singular_mass_polar
-    (γ α : ℝ) (A : TwoSidedPath) (M : Measure ℂ) (hM0 : M {0} = 0) :
+    γ α A (M : Measure ℂ) (hM0 : M {0} = 0) :
     localSingularMass (fun _ : Unit => M) (fun _ => 1) 0 γ α () =
       ∫⁻ t, (if 0 < t then ENNReal.ofReal
         (Real.exp (γ * (A t - (Q γ - α) * t))) else 0)
@@ -52,9 +52,9 @@ theorem origin_singular_mass_polar
 /-- The positive-time polar identity applies almost surely to the actual translated source
 GMC, since its deterministic insertion center has zero mass. -/
 theorem translated_canonical_singular_mass_polar
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) (γ α : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    z γ α (hγ : 0 < γ) (hγ2 : γ < 2)
     (N : Ω → Measure ℂ) (hN : IsGMCOf P (translatedField X Xc z) γ N)
     (A : Ω → TwoSidedPath) :
     ∀ᵐ ω ∂P, localSingularMass N (fun _ => 1) 0 γ α ω =

@@ -26,7 +26,7 @@ namespace DOZZ.Proofs
 
 /-- **The reflected shift and gluing from the first reflection shift.** -/
 theorem structureConstant_reflected_shift_and_gluing_of_firstShiftReflection
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) (γ μ η : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hη : 0 < η ∧ Q γ - 2 * η > γ)
@@ -74,8 +74,8 @@ theorem structureConstant_reflected_shift_and_gluing_of_firstShiftReflection
 /-- **The reflected shift and gluing from the γ/2 crossing.** `hCross` is the unit-volume conjunct
 of `gammaHalf_crossing`. -/
 theorem structureConstant_reflected_shift_and_gluing_of_crossing
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ η : ℝ)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (M : Ω → Measure ℂ) γ μ η
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hη : 0 < η ∧ Q γ - 2 * η > γ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)

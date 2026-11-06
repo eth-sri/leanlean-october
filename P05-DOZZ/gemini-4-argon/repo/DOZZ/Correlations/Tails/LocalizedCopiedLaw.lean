@@ -16,15 +16,15 @@ namespace DOZZ.Proofs
 
 theorem localized_copied_singular_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+    X Xc
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (K : Set ℂ) (Family : ℂ → Set (ℂ → ℝ))
-    (radius supBound derivBound lowerBound : ℝ)
+    K (Family : ℂ → Set (ℂ → ℝ))
+    radius supBound derivBound lowerBound
     (hFamily : UniformPositiveC1Family K Family radius supBound derivBound lowerBound)
-    (z : ℂ) (hzk : z ∈ K) (hz : 2 ≤ ‖z‖) (F : ℂ → ℝ) (hF : F ∈ Family z)
+    z (hzk : z ∈ K) (hz : 2 ≤ ‖z‖) F (hF : F ∈ Family z)
     (N : Ω → Measure ℂ) (hN : IsGMCOf P (translatedField X Xc z) γ N)
     (χ : BoundedContinuousFunction ℂ ℝ) (hχc : HasCompactSupport (χ : ℂ → ℝ))
     (hχ0 : ∀ x, 0 ≤ χ x) (hχs : tsupport (χ : ℂ → ℝ) ⊆ Metric.ball 0 (min radius 1))
@@ -45,19 +45,19 @@ theorem localized_copied_singular_law
   let B := fun q : Ω × Ω => ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)) *
     ∫⁻ x, ENNReal.ofReal (χ x*copiedMultiplier z γ (Xc q.1 z 0) (Xc q.2 z 0) F x) *
       (ENNReal.ofReal ‖x‖)^(-β) ∂N q.1
-  have hFn := (hFamily.2.2.2.2 z hzk F hF).2.1
-  have hFm := (hFamily.2.2.2.2 z hzk F hF).1
-  have hsrc (y : ℂ) : g (y-z)*Real.exp ((γ^2+4)*Real.log (normPlus y)) = χ (y-z)*F y := by
+  have := (hFamily.2.2.2.2 z hzk F hF).2.1
+  have := (hFamily.2.2.2.2 z hzk F hF).1
+  have hsrc y : g (y-z)*Real.exp ((γ^2+4)*Real.log (normPlus y)) = χ (y-z)*F y := by
     rw [hgeq, add_sub_cancel, mul_assoc, ← Real.exp_add]
     simp only [neg_mul, neg_add_cancel, Real.exp_zero, mul_one]
-  have htgt (x : ℂ) (n nb : ℝ) :
+  have htgt x n nb :
       g x*Real.exp (γ*localPinCoefficient z x*(nb-n)) =
       Real.exp (-γ^2*Real.log ‖z‖)*(χ x*copiedMultiplier z γ n nb F x) := by
     by_cases hx : χ x = 0
     · simp only [hgeq, hx, zero_mul, mul_zero]
     · have hn : normPlus (z+x) = ‖z+x‖ := by
         have hx' := hχs (subset_tsupport (χ : ℂ → ℝ) (by simpa only [Function.mem_support] using hx))
-        have hxnorm : ‖x‖ ≤ 1 := (show ‖x‖ < min radius 1 from by
+        have : ‖x‖ ≤ 1 := (show ‖x‖ < min radius 1 from by
           simpa only [Metric.mem_ball,dist_zero_right] using hx').le.trans (min_le_right _ _)
         have hh := norm_sub_norm_le z (z+x)
         simp only [sub_add_cancel_left,norm_neg] at hh
@@ -66,36 +66,26 @@ theorem localized_copied_singular_law
       rw [hgeq, hn]
       unfold copiedMultiplier
       simp only [mul_assoc]
-      rw [← Real.exp_add]
-      rw [mul_comm (Real.exp (-γ^2*Real.log ‖z‖)), mul_assoc]
+      rw [← Real.exp_add, mul_comm (Real.exp (-γ^2*Real.log ‖z‖)), mul_assoc]
       simp only [mul_assoc, ← Real.exp_add]
       congr 2
       ring_nf
   have hAm : AEMeasurable A P := by
-    have hk : Measurable (fun y => ENNReal.ofReal (χ (y-z)*F y) *
-        (ENNReal.ofReal ‖y-z‖)^(-β)) := by fun_prop
-    exact (Measure.measurable_lintegral hk).comp_aemeasurable
+    exact (Measure.measurable_lintegral (by fun_prop)).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM)
   have hpin : Measurable (fun ω => Xc ω z 0) :=
     (hc.1 0).comp (measurable_id.prodMk measurable_const)
   let θ : Ω × Ω → ℝ × ℝ := fun q => (Xc q.1 z 0,Xc q.2 z 0)
-  have hθ : Measurable θ := (hpin.comp measurable_fst).prodMk (hpin.comp measurable_snd)
   have hY := translated_field_isEquatorGFF P X Xc hX hc z
   have hfst := measurePreserving_fst (μ := P) (ν := P)
-  have hY' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY
   have hN' := isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst _ hY γ _ hN
-  have hk : Measurable (fun p : (ℝ × ℝ) × ℂ =>
-      ENNReal.ofReal (χ p.2*copiedMultiplier z γ p.1.1 p.1.2 F p.2)*
-        (ENNReal.ofReal ‖p.2‖)^(-β)) := by
-    unfold copiedMultiplier localPinCoefficient
-    fun_prop
   have hBm : AEMeasurable B (P.prod P) :=
     ((((hpin.comp measurable_snd).const_mul γ).sub_const _).exp.ennreal_ofReal).aemeasurable.mul
-      (gmc_parameter_lintegral_aemeasurable (P.prod P) _ hY' γ hγ hγ2
-        (N ∘ Prod.fst) hN' θ hθ.aemeasurable _ hk)
+      (gmc_parameter_lintegral_aemeasurable (P.prod P) _ (isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY) γ hγ hγ2
+        (N ∘ Prod.fst) hN' θ ((hpin.comp measurable_fst).prodMk (hpin.comp measurable_snd)).aemeasurable _ (show Measurable (fun p : (ℝ × ℝ) × ℂ => ENNReal.ofReal (χ p.2*copiedMultiplier z γ p.1.1 p.1.2 F p.2)* (ENNReal.ofReal ‖p.2‖)^(-β)) by unfold copiedMultiplier localPinCoefficient; fun_prop))
   have hl := copied_compact_singular_law P X Xc hX hc hm z hz γ hγ hγ2
     M hM N hN g hgc hg0 hgs β hβ
-  have hleft (ω : Ω) :
+  have hleft ω :
       C * (∫⁻ y, ENNReal.ofReal (g (y-z)) * (ENNReal.ofReal ‖y-z‖)^(-β) *
         ENNReal.ofReal (Real.exp ((γ^2+4)*Real.log (normPlus y))) ∂M ω) = C*A ω := by
     congr 1

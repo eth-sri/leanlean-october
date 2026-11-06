@@ -21,11 +21,10 @@ namespace DOZZ.Proofs
 /-- The exponential moment of a centered Gaussian, in the normalization used by GMC scaling. -/
 theorem gaussian_exponential_moment_of_hasLaw
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {W : Ω → ℝ}
-    {v : ℝ≥0} (hW : HasLaw W (gaussianReal 0 v) P) (t : ℝ) :
+    {v : ℝ≥0} (hW : HasLaw W (gaussianReal 0 v) P) t :
     (∫ ω, Real.exp (t * W ω) ∂P) =
       Real.exp ((v : ℝ) * t ^ 2 / 2) := by
-  have h := mgf_gaussianReal hW t
-  simpa only [mgf, NNReal.coe_zero, zero_mul, zero_add] using h
+  simpa only [mgf, NNReal.coe_zero, zero_mul, zero_add] using (mgf_gaussianReal hW t)
 
 
 end DOZZ.Proofs

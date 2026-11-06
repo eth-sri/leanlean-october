@@ -22,20 +22,13 @@ noncomputable def reflected_decoupled_field {Ω S : Type*} (Φ : Ω → S → �
 /-- The independent-copy field is a jointly measurable centered Gaussian field. -/
 theorem reflected_decoupled_field_gaussian {Ω S : Type*} [MeasurableSpace Ω]
     [MeasurableSpace S] (P : Measure Ω) (Φ : Ω → S → ℝ)
-    (hΦ : IsCenteredGaussianField P Φ) (A : Set S) (hA : MeasurableSet A) :
+    (hΦ : IsCenteredGaussianField P Φ) A (hA : MeasurableSet A) :
     IsCenteredGaussianField (P.prod P) (reflected_decoupled_field Φ A) := by
   constructor
   · have h1 : Measurable (fun p : (Ω × Ω) × S => Φ p.1.1 p.2) :=
       hΦ.1.comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd)
-    have h2 : Measurable (fun p : (Ω × Ω) × S => Φ p.1.2 p.2) :=
-      hΦ.1.comp ((measurable_snd.comp measurable_fst).prodMk measurable_snd)
-    exact (h1.indicator (measurable_snd hA)).add (h2.indicator (measurable_snd hA.compl))
+    exact (h1.indicator (measurable_snd hA)).add ((hΦ.1.comp ((measurable_snd.comp measurable_fst).prodMk measurable_snd)).indicator (measurable_snd hA.compl))
   · intro n x
-    have h1 := isCenteredJointlyGaussian_coord_mul P _ (hΦ.2 n x)
-      (fun i => A.indicator (fun _ => (1 : ℝ)) (x i))
-    have h2 := isCenteredJointlyGaussian_coord_mul P _ (hΦ.2 n x)
-      (fun i => Aᶜ.indicator (fun _ => (1 : ℝ)) (x i))
-    have h := isCenteredJointlyGaussian_prod_add P P _ _ h1 h2
     have he : (fun ω i => reflected_decoupled_field Φ A ω (x i)) =
         fun ω i => A.indicator (fun _ => (1 : ℝ)) (x i) * Φ ω.1 (x i) +
           Aᶜ.indicator (fun _ => (1 : ℝ)) (x i) * Φ ω.2 (x i) := by
@@ -43,28 +36,22 @@ theorem reflected_decoupled_field_gaussian {Ω S : Type*} [MeasurableSpace Ω]
       unfold reflected_decoupled_field
       rw [gluedField_indicator_eq_mul A, gluedField_indicator_eq_mul Aᶜ]
     rw [he]
-    exact h
+    exact (isCenteredJointlyGaussian_prod_add P P _ _ (isCenteredJointlyGaussian_coord_mul P _ (hΦ.2 n x) (fun i => A.indicator (fun _ => (1 : ℝ)) (x i))) (isCenteredJointlyGaussian_coord_mul P _ (hΦ.2 n x) (fun i => Aᶜ.indicator (fun _ => (1 : ℝ)) (x i))))
 
 /-- Within either region the covariance is unchanged; across the regions it is zero. -/
 theorem reflected_decoupled_field_covariance {Ω S : Type*} [MeasurableSpace Ω]
     [MeasurableSpace S] (P : Measure Ω) (Φ : Ω → S → ℝ)
-    (hΦ : IsCenteredGaussianField P Φ) (A : Set S) (x y : S) :
+    (hΦ : IsCenteredGaussianField P Φ) A x y :
     gaussianCovariance (P.prod P) (fun ω => reflected_decoupled_field Φ A ω x)
       (fun ω => reflected_decoupled_field Φ A ω y) =
       if (x ∈ A ↔ y ∈ A) then gaussianCovariance P (fun ω => Φ ω x) (fun ω => Φ ω y)
         else 0 := by
   classical
   let _ : IsProbabilityMeasure P := (hΦ.2 0 (fun i => Fin.elim0 i)).1
-  have h := gaussianCovariance_prod_add P P
-    (fun ω => A.indicator (Φ ω) x) (fun ω => A.indicator (Φ ω) y)
-    (fun ω => Aᶜ.indicator (Φ ω) x) (fun ω => Aᶜ.indicator (Φ ω) y)
-    (gluedField_memLp_indicator hΦ A x) (gluedField_memLp_indicator hΦ A y)
-    (gluedField_memLp_indicator hΦ Aᶜ x) (gluedField_memLp_indicator hΦ Aᶜ y)
-    (gluedField_integral_indicator hΦ A x) (gluedField_integral_indicator hΦ A y)
   change gaussianCovariance (P.prod P)
     (fun ω => A.indicator (Φ ω.1) x + Aᶜ.indicator (Φ ω.2) x)
     (fun ω => A.indicator (Φ ω.1) y + Aᶜ.indicator (Φ ω.2) y) = _
-  rw [h]
+  rw [(gaussianCovariance_prod_add P P (fun ω => A.indicator (Φ ω) x) (fun ω => A.indicator (Φ ω) y) (fun ω => Aᶜ.indicator (Φ ω) x) (fun ω => Aᶜ.indicator (Φ ω) y) (gluedField_memLp_indicator hΦ A x) (gluedField_memLp_indicator hΦ A y) (gluedField_memLp_indicator hΦ Aᶜ x) (gluedField_memLp_indicator hΦ Aᶜ y) (gluedField_integral_indicator hΦ A x) (gluedField_integral_indicator hΦ A y))]
   unfold gaussianCovariance
   by_cases hx : x ∈ A <;> by_cases hy : y ∈ A <;>
     simp only [hx, hy, mem_compl_iff, Set.indicator_of_mem, Set.indicator_of_notMem,
@@ -74,15 +61,14 @@ theorem reflected_decoupled_field_covariance {Ω S : Type*} [MeasurableSpace Ω]
 /-- The independent-copy Wick mass is the sum of the two independent regional masses. -/
 theorem reflected_decoupled_field_mass {Ω S : Type*} [MeasurableSpace Ω]
     [MeasurableSpace S] (P : Measure Ω) (Φ : Ω → S → ℝ)
-    (hΦ : IsCenteredGaussianField P Φ) (A : Set S) (hA : MeasurableSet A)
-    (ν : Measure S) (h : S → ℝ≥0) (γ : ℝ) (ω : Ω × Ω) :
+    (hΦ : IsCenteredGaussianField P Φ) A (hA : MeasurableSet A)
+    (ν : Measure S) (h : S → ℝ≥0) γ (ω : Ω × Ω) :
     fieldChaosMass (P.prod P) (reflected_decoupled_field Φ A) ν h γ ω =
       fieldChaosMass P Φ (ν.restrict A) h γ ω.1 +
         fieldChaosMass P Φ (ν.restrict Aᶜ) h γ ω.2 := by
-  have hvar (x : S) : (∫ q, (reflected_decoupled_field Φ A q x) ^ 2 ∂P.prod P) =
+  have hvar x : (∫ q, (reflected_decoupled_field Φ A q x) ^ 2 ∂P.prod P) =
       ∫ q, (Φ q x) ^ 2 ∂P := by
-    have hc := reflected_decoupled_field_covariance P Φ hΦ A x x
-    simpa only [iff_self, ite_true, gaussianCovariance, pow_two] using hc
+    simpa only [iff_self, ite_true, gaussianCovariance, pow_two] using (reflected_decoupled_field_covariance P Φ hΦ A x x)
   unfold fieldChaosMass
   refine (lintegral_add_compl _ hA).symm.trans ?_
   congr 1

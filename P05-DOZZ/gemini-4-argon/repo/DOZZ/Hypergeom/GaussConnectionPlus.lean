@@ -15,8 +15,8 @@ public import DOZZ.Hypergeom.ODE.ConnectionEulerPlusCoefficientBox
 namespace DOZZ.Proofs
 
 /-- The powered Gauss connection formula follows from the two Euler coefficient boxes. -/
-theorem gauss_connection_plus {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
+theorem gauss_connection_plus {H}
+    (hH : IsGaussHypergeometricFamily H) a b c
     (hc : ∀ n : ℤ, c ≠ (n : ℂ)) (hδ : ∀ n : ℤ, c - a - b ≠ (n : ℂ)) :
     ∀ z ∈ gaussCutPlane,
       gaussFPlus H a b c z =
@@ -67,11 +67,8 @@ theorem gauss_connection_plus {H : ℂ → ℂ → ℂ → ℂ → ℂ}
           (3 / 4) (1 / 8) (by norm_num) (by norm_num) (by norm_num))
     hT := secondCoefficient_negativeQuarter_ball_avoids_integers
   }
-  have hp : (a, b, c) ∈ gaussConnectionParameterDomain := by
-    change (∀ n : ℤ, c ≠ (n : ℂ)) ∧ ∀ n : ℤ, c - a - b ≠ (n : ℂ)
-    exact ⟨hc, hδ⟩
   exact gauss_connection_plus_of_box_coefficients hH firstBox secondBox
     (connectionPlusFirstCramer_eq_gamma_on_open_box hH)
-    (connectionPlusSecondCramer_eq_gamma_on_open_box hH) hp
+    (connectionPlusSecondCramer_eq_gamma_on_open_box hH) (show (a, b, c) ∈ gaussConnectionParameterDomain by change (∀ n : ℤ, c ≠ (n : ℂ)) ∧ ∀ n : ℤ, c - a - b ≠ (n : ℂ); exact ⟨hc, hδ⟩)
 
 end DOZZ.Proofs

@@ -18,7 +18,7 @@ public section
 namespace DOZZ.Proofs
 
 /-- The actual dual density is squeezed by its two radial Williams weights. -/
-theorem dual_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (hγ : γ ≠ 0) (z x : ℂ)
+theorem dual_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (hγ : γ ≠ 0) z x
     (hR : 0 ≤ R) (hR₁ : R < 1) (hη : 0 ≤ η) (hη₁ : η < 1)
     (hz : 0 < ‖z‖) (hx : 0 < ‖x‖)
     (hsep : ‖x‖ ≤ R * ‖z‖) (hsmall : ‖x‖ ≤ η) :

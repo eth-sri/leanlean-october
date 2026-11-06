@@ -23,7 +23,7 @@ open scoped ENNReal
 namespace DOZZ.Proofs
 
 /-- The Brownian maximum reference density is Mathlib's exponential density at rate `2ν`. -/
-theorem brownianMaximumReferenceLaw_eq_expMeasure (ν : ℝ) :
+theorem brownianMaximumReferenceLaw_eq_expMeasure ν :
     brownianMaximumReferenceLaw ν = ProbabilityTheory.expMeasure (2 * ν) := by
   unfold brownianMaximumReferenceLaw ProbabilityTheory.expMeasure ProbabilityTheory.gammaMeasure
   apply withDensity_congr_ae
@@ -34,7 +34,7 @@ theorem brownianMaximumReferenceLaw_eq_expMeasure (ν : ℝ) :
     simp [ProbabilityTheory.gammaPDF_eq, not_lt.mpr hxneg.le, not_le_of_gt hxneg]
 
 /-- The Williams reference law is a probability measure whenever the drift is positive. -/
-theorem isProbabilityMeasure_brownianMaximumReferenceLaw {ν : ℝ} (hν : 0 < ν) :
+theorem isProbabilityMeasure_brownianMaximumReferenceLaw {ν} (hν : 0 < ν) :
     IsProbabilityMeasure (brownianMaximumReferenceLaw ν) := by
   rw [brownianMaximumReferenceLaw_eq_expMeasure]
   exact ProbabilityTheory.isProbabilityMeasure_expMeasure (by nlinarith)

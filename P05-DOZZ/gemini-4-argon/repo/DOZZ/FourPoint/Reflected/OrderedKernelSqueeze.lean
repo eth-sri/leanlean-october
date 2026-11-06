@@ -9,8 +9,8 @@ public import DOZZ.FourPoint.Reflected.OrderedCutSqueeze
 open Filter Topology
 namespace DOZZ.Proofs
 
-theorem reflected_ordered_two_sided_squeeze {ι : Type*} (l : Filter ι)
-    (f : ι → ℝ) (g k : ℝ → ι → ℝ) (L : ℝ) (Llo Lhi : ℝ → ℝ)
+theorem reflected_ordered_two_sided_squeeze {ι : Type*} l
+    (f : ι → ℝ) (g k : ℝ → ι → ℝ) L (Llo Lhi : ℝ → ℝ)
     (hg : ∀ H, 0 < H → Tendsto (g H) l (𝓝 (Llo H)))
     (hk : ∀ H, 0 < H → Tendsto (k H) l (𝓝 (Lhi H)))
     (hLlo : Tendsto Llo atTop (𝓝 L)) (hLhi : Tendsto Lhi atTop (𝓝 L))

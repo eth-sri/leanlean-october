@@ -18,7 +18,7 @@ namespace DOZZ.Proofs
 /-- The source witness required by the uniform one-insertion theorem can be chosen before
 the compact charge set and the admissible error exponent. -/
 theorem exists_source_reflection_witness
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,

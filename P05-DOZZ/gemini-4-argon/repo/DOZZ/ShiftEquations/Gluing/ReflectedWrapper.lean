@@ -28,7 +28,7 @@ namespace DOZZ.Proofs
 of `reflectionR_first_shift_meromorphic` and `structureConstant_first_shift_strip` at the given
 field, chaos, coupling and charges. -/
 theorem structureConstant_reflected_shift_and_gluing_of_shifts
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) (γ μ η : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hη : 0 < η ∧ Q γ - 2 * η > γ)

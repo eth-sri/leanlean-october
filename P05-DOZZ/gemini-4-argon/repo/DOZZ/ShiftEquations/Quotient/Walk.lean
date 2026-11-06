@@ -23,151 +23,135 @@ public section
 
 namespace DOZZ.Proofs
 
-/-- The greedy induction of `exists_bounded_walk`: from a current sum `s` in the window
-`(g - a', g + a]`, with `i` steps `+a` and `j` steps `-a'` still to be made, the walk that takes
-`+a` while it sits at or below `g` and `-a'` otherwise stays inside that window. -/
-theorem boundedWalk_greedy {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') :
-    ∀ (N i j : ℕ), i + j = N → ∀ s : ℝ, s + i * a - j * a' = g → g - a' < s → s ≤ g + a →
-      ∃ l : List ℝ, (∀ e ∈ l, e = a ∨ e = -a ∨ e = a' ∨ e = -a') ∧ l.length = i + j ∧
-        s + l.sum = g ∧
-        ∀ k ≤ l.length, g - a' < s + (l.take k).sum ∧ s + (l.take k).sum ≤ g + a := by
-  intro N
-  induction N with
-  | zero =>
-    intro i j hij s hs hlo hhi
-    obtain ⟨rfl, rfl⟩ : i = 0 ∧ j = 0 := by omega
-    refine ⟨[], by simp, by simp, by simpa using hs, ?_⟩
-    intro k hk
-    obtain rfl : k = 0 := by simpa using hk
-    simpa using ⟨hlo, hhi⟩
-  | succ N ih =>
-    intro i j hij s hs hlo hhi
-    by_cases hsg : s ≤ g
-    · obtain ⟨i', rfl⟩ : ∃ i', i = i' + 1 := by
-        refine ⟨i - 1, ?_⟩
-        rcases Nat.eq_zero_or_pos i with rfl | hi
-        · exfalso
-          have hj : (0 : ℝ) < j := by exact_mod_cast (by omega : 0 < j)
-          push_cast at hs
-          nlinarith
-        · omega
-      push_cast at hs
-      obtain ⟨l, hl, hlen, hsum, hk⟩ :=
-        ih i' j (by omega) (s + a) (by linarith) (by linarith) (by linarith)
-      refine ⟨a :: l, ?_, ?_, ?_, ?_⟩
-      · intro e he
-        rcases List.mem_cons.1 he with rfl | he
-        · exact Or.inl rfl
-        · exact hl e he
-      · simp only [List.length_cons, hlen]
-        omega
-      · simp only [List.sum_cons]
-        linarith
-      · intro k hk'
-        rcases k with _ | k
-        · simpa using ⟨hlo, hhi⟩
-        · have := hk k (by simpa using hk')
-          simp only [List.take_succ_cons, List.sum_cons]
-          constructor <;> linarith [this.1, this.2]
-    · obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := by
-        refine ⟨j - 1, ?_⟩
-        rcases Nat.eq_zero_or_pos j with rfl | hj
-        · exfalso
-          have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
-          push_cast at hs
-          nlinarith
-        · omega
-      push_cast at hs
-      obtain ⟨l, hl, hlen, hsum, hk⟩ :=
-        ih i j' (by omega) (s - a') (by linarith) (by linarith) (by linarith)
-      refine ⟨(-a') :: l, ?_, ?_, ?_, ?_⟩
-      · intro e he
-        rcases List.mem_cons.1 he with rfl | he
-        · exact Or.inr (Or.inr (Or.inr rfl))
-        · exact hl e he
-      · simp only [List.length_cons, hlen]
-        omega
-      · simp only [List.sum_cons]
-        linarith
-      · intro k hk'
-        rcases k with _ | k
-        · simpa using ⟨hlo, hhi⟩
-        · have := hk k (by simpa using hk')
-          simp only [List.take_succ_cons, List.sum_cons]
-          constructor <;> linarith [this.1, this.2]
 
-/-- The bounded walk for `g = i a - j a'` with `i, j` natural numbers. -/
-theorem boundedWalk_exists_of_nat {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a')
-    (hga : |g| < min a a') (i j : ℕ) (hij : g = i * a - j * a') :
-    ∃ l : List ℝ, (∀ e ∈ l, e = a ∨ e = -a ∨ e = a' ∨ e = -a') ∧ l.sum = g ∧
-      ∀ k ≤ l.length, |(l.take k).sum| < a + a' := by
-  obtain ⟨h1, h2⟩ := abs_lt.1 hga
-  have hma : min a a' ≤ a := min_le_left _ _
-  have hma' : min a a' ≤ a' := min_le_right _ _
-  obtain ⟨l, hl, -, hsum, hk⟩ :=
-    boundedWalk_greedy ha ha' (i + j) i j rfl 0 (by linarith) (by linarith) (by linarith)
-  refine ⟨l, hl, by linarith, fun k hk' => ?_⟩
-  obtain ⟨h3, h4⟩ := hk k hk'
-  rw [abs_lt]
-  constructor <;> linarith
 
 /-- The bounded walk for `g = m a + n a'` with `m ≥ 0 ≥ n` integers. -/
-theorem boundedWalk_exists_of_int {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a')
+theorem boundedWalk_exists_of_int {a a' g} (ha : 0 < a) (ha' : 0 < a')
     (hga : |g| < min a a') {m n : ℤ} (hm : 0 ≤ m) (hn : n ≤ 0)
     (hmn : (m : ℝ) * a + n * a' = g) :
     ∃ l : List ℝ, (∀ e ∈ l, e = a ∨ e = -a ∨ e = a' ∨ e = -a') ∧ l.sum = g ∧
       ∀ k ≤ l.length, |(l.take k).sum| < a + a' := by
+  have boundedWalk_exists_of_nat (i : ℕ) (j : ℕ) (hij : g = i * a - j * a') : ∃ l : List ℝ, (∀ e ∈ l, e = a ∨ e = -a ∨ e = a' ∨ e = -a') ∧ l.sum = g ∧ ∀ k ≤ l.length, |(l.take k).sum| < a + a' := by
+    have boundedWalk_greedy {g} : ∀ (N i j : ℕ), i + j = N → ∀ s : ℝ, s + i * a - j * a' = g → g - a' < s → s ≤ g + a → ∃ l : List ℝ, (∀ e ∈ l, e = a ∨ e = -a ∨ e = a' ∨ e = -a') ∧ l.length = i + j ∧ s + l.sum = g ∧ ∀ k ≤ l.length, g - a' < s + (l.take k).sum ∧ s + (l.take k).sum ≤ g + a := by
+      intro N
+      induction N with
+      | zero =>
+        intro i j hij s hs hlo hhi
+        obtain ⟨rfl, rfl⟩ : i = 0 ∧ j = 0 := by omega
+        refine ⟨[], by simp, by simp, by simpa using hs, ?_⟩
+        intro k hk
+        obtain rfl : k = 0 := by simpa using hk
+        simpa using ⟨hlo, hhi⟩
+      | succ N ih =>
+        intro i j hij s hs hlo hhi
+        by_cases hsg : s ≤ g
+        · obtain ⟨i', rfl⟩ : ∃ i', i = i' + 1 := by
+            refine ⟨i - 1, ?_⟩
+            rcases Nat.eq_zero_or_pos i with rfl | hi
+            · exfalso
+              have : (0 : ℝ) < j := by exact_mod_cast (by omega : 0 < j)
+              push_cast at hs
+              nlinarith
+            · omega
+          push_cast at hs
+          obtain ⟨l, hl, hlen, hsum, hk⟩ :=
+            ih i' j (by omega) (s + a) (by linarith) (by linarith) (by linarith)
+          refine ⟨a :: l, ?_, ?_, ?_, ?_⟩
+          · intro e he
+            rcases List.mem_cons.1 he with rfl | he
+            · exact Or.inl rfl
+            · exact hl e he
+          · simp only [List.length_cons, hlen]
+            omega
+          · simp only [List.sum_cons]
+            linarith
+          · intro k hk'
+            rcases k with _ | k
+            · simpa using ⟨hlo, hhi⟩
+            · have := hk k (by simpa using hk')
+              simp only [List.take_succ_cons, List.sum_cons]
+              constructor <;> linarith [this.1, this.2]
+        · obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := by
+            refine ⟨j - 1, ?_⟩
+            rcases Nat.eq_zero_or_pos j with rfl | hj
+            · exfalso
+              push_cast at hs
+              nlinarith
+            · omega
+          push_cast at hs
+          obtain ⟨l, hl, hlen, hsum, hk⟩ :=
+            ih i j' (by omega) (s - a') (by linarith) (by linarith) (by linarith)
+          refine ⟨(-a') :: l, ?_, ?_, ?_, ?_⟩
+          · intro e he
+            rcases List.mem_cons.1 he with rfl | he
+            · exact Or.inr (Or.inr (Or.inr rfl))
+            · exact hl e he
+          · simp only [List.length_cons, hlen]
+            omega
+          · simp only [List.sum_cons]
+            linarith
+          · intro k hk'
+            rcases k with _ | k
+            · simpa using ⟨hlo, hhi⟩
+            · have := hk k (by simpa using hk')
+              simp only [List.take_succ_cons, List.sum_cons]
+              constructor <;> linarith [this.1, this.2]
+    obtain ⟨h1, h2⟩ := abs_lt.1 hga
+    have : min a a' ≤ a := min_le_left _ _
+    have : min a a' ≤ a' := min_le_right _ _
+    obtain ⟨l, hl, -, hsum, hk⟩ :=
+      boundedWalk_greedy (i + j) i j rfl 0 (by linarith) (by linarith) (by linarith)
+    refine ⟨l, hl, by linarith, fun k hk' => ?_⟩
+    obtain ⟨h3, h4⟩ := hk k hk'
+    rw [abs_lt]
+    constructor <;> linarith
   obtain ⟨i, rfl⟩ := Int.eq_ofNat_of_zero_le hm
   obtain ⟨j, hj⟩ := Int.eq_ofNat_of_zero_le (neg_nonneg.2 hn)
   obtain rfl : n = -(j : ℤ) := by omega
-  refine boundedWalk_exists_of_nat ha ha' hga i j ?_
+  refine boundedWalk_exists_of_nat i j ?_
   push_cast at hmn
   linarith
 
-/-- Sign analysis: a nonzero combination `m a + n a'` shorter than both `a` and `a'` has `m` and
-`n` of opposite strict signs. -/
-theorem boundedWalk_opposite_signs {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') (hg0 : g ≠ 0)
-    (hga : |g| < min a a') {m n : ℤ} (hmn : (m : ℝ) * a + n * a' = g) :
-    (1 ≤ m ∧ n ≤ -1) ∨ (m ≤ -1 ∧ 1 ≤ n) := by
-  obtain ⟨h1, h2⟩ := abs_lt.1 hga
-  have hma : min a a' ≤ a := min_le_left _ _
-  have hma' : min a a' ≤ a' := min_le_right _ _
-  have key : ∀ (c : ℝ) (k : ℤ), 0 < c →
-      (k ≤ -1 ∧ (k : ℝ) * c ≤ -c) ∨ (k = 0 ∧ (k : ℝ) * c = 0) ∨ (1 ≤ k ∧ c ≤ (k : ℝ) * c) := by
-    intro c k hc
-    rcases lt_trichotomy k 0 with hk | rfl | hk
-    · have : (k : ℝ) ≤ -1 := by exact_mod_cast (by omega : k ≤ -1)
-      exact Or.inl ⟨by omega, by nlinarith⟩
-    · exact Or.inr (Or.inl ⟨rfl, by simp⟩)
-    · have : (1 : ℝ) ≤ k := by exact_mod_cast (by omega : 1 ≤ k)
-      exact Or.inr (Or.inr ⟨by omega, by nlinarith⟩)
-  rcases key a m ha with ⟨hm, hxm⟩ | ⟨hm, hxm⟩ | ⟨hm, hxm⟩ <;>
-    rcases key a' n ha' with ⟨hn, hyn⟩ | ⟨hn, hyn⟩ | ⟨hn, hyn⟩
-  · exfalso
-    linarith
-  · exfalso
-    linarith
-  · exact Or.inr ⟨hm, hn⟩
-  · exfalso
-    linarith
-  · exact absurd (by linarith) hg0
-  · exfalso
-    linarith
-  · exact Or.inl ⟨hm, hn⟩
-  · exfalso
-    linarith
-  · exfalso
-    linarith
 
 /-- **Bounded walks.** A nonzero element `g` of the group generated by two positive reals, shorter
 than both, is a sum of steps `±a, ±a'` whose partial sums all stay shorter than `a + a'`. -/
-theorem exists_bounded_walk {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a')
+theorem exists_bounded_walk {a a' g} (ha : 0 < a) (ha' : 0 < a')
     (hg : g ∈ AddSubgroup.closure ({a, a'} : Set ℝ)) (hg0 : g ≠ 0) (hga : |g| < min a a') :
     ∃ l : List ℝ, (∀ e ∈ l, e = a ∨ e = -a ∨ e = a' ∨ e = -a') ∧ l.sum = g ∧
       ∀ k ≤ l.length, |(l.take k).sum| < a + a' := by
+  have boundedWalk_opposite_signs {m : ℤ} {n : ℤ} (hmn : (m : ℝ) * a + n * a' = g) : (1 ≤ m ∧ n ≤ -1) ∨ (m ≤ -1 ∧ 1 ≤ n) := by
+    obtain ⟨h1, h2⟩ := abs_lt.1 hga
+    have : min a a' ≤ a := min_le_left _ _
+    have : min a a' ≤ a' := min_le_right _ _
+    have key : ∀ (c : ℝ) (k : ℤ), 0 < c →
+        (k ≤ -1 ∧ (k : ℝ) * c ≤ -c) ∨ (k = 0 ∧ (k : ℝ) * c = 0) ∨ (1 ≤ k ∧ c ≤ (k : ℝ) * c) := by
+      intro c k hc
+      rcases lt_trichotomy k 0 with hk | rfl | hk
+      · have : (k : ℝ) ≤ -1 := by exact_mod_cast (by omega : k ≤ -1)
+        exact Or.inl ⟨by omega, by nlinarith⟩
+      · exact Or.inr (Or.inl ⟨rfl, by simp⟩)
+      · have : (1 : ℝ) ≤ k := by exact_mod_cast (by omega : 1 ≤ k)
+        exact Or.inr (Or.inr ⟨by omega, by nlinarith⟩)
+    rcases key a m ha with ⟨hm, hxm⟩ | ⟨hm, hxm⟩ | ⟨hm, hxm⟩ <;>
+      rcases key a' n ha' with ⟨hn, hyn⟩ | ⟨hn, hyn⟩ | ⟨hn, hyn⟩
+    · exfalso
+      linarith
+    · exfalso
+      linarith
+    · exact Or.inr ⟨hm, hn⟩
+    · exfalso
+      linarith
+    · exact absurd (by linarith) hg0
+    · exfalso
+      linarith
+    · exact Or.inl ⟨hm, hn⟩
+    · exfalso
+      linarith
+    · exfalso
+      linarith
   obtain ⟨m, n, hmn⟩ := AddSubgroup.mem_closure_pair.1 hg
   rw [zsmul_eq_mul, zsmul_eq_mul] at hmn
-  rcases boundedWalk_opposite_signs ha ha' hg0 hga hmn with ⟨hm, hn⟩ | ⟨hm, hn⟩
+  rcases boundedWalk_opposite_signs hmn with ⟨hm, hn⟩ | ⟨hm, hn⟩
   · exact boundedWalk_exists_of_int ha ha' hga (by omega) (by omega) hmn
   · obtain ⟨l, hl, hsum, hk⟩ := boundedWalk_exists_of_int (m := n) (n := m) ha' ha
       (by rwa [min_comm]) (by omega) (by omega) (by linarith)
@@ -185,8 +169,7 @@ infinite. -/
 theorem infinite_closure_pair_pos_lt {a a' ε : ℝ} (hirr : Irrational (a / a')) (hε : 0 < ε) :
     {g : ℝ | g ∈ AddSubgroup.closure ({a, a'} : Set ℝ) ∧ 0 < g ∧ g < ε}.Infinite := by
   intro hfin
-  have hd : Dense (AddSubgroup.closure ({a, a'} : Set ℝ) : Set ℝ) :=
-    dense_addSubgroupClosure_pair_iff.2 hirr
+  have hd := dense_addSubgroupClosure_pair_iff.2 hirr
   obtain ⟨x, hx, hx0, hxε⟩ := hd.exists_between hε
   obtain ⟨m, hmT, hmin⟩ := Set.exists_min_image _ id hfin ⟨x, hx, hx0, hxε⟩
   obtain ⟨y, hy, hy0, hym⟩ := hd.exists_between hmT.2.1

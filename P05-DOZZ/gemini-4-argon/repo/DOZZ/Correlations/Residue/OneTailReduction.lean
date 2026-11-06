@@ -20,7 +20,7 @@ namespace DOZZ.Proofs
 docs/ERRATA-AND-DEVIATIONS.md), with its literal one-insertion input as the only remaining tail
 premise. -/
 theorem residue_unitVolume_bridge_of_oneInsertion_tail
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) (γ α2 α3 : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2)
     (hα : 0 < α2 ∧ α2 ≤ α3 ∧ γ / 2 < α3 ∧ α3 < Q γ)

@@ -14,8 +14,8 @@ namespace DOZZ.Proofs
 /-- The classification identifies any physical fusion coefficient throughout
 the slit plane. The stochastic limit remains explicit; no classification hypothesis remains. -/
 theorem dual_physical_fusion_coefficient {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    (P : MeasureTheory.Measure Ω) (X : Ω → Distr) (M : Ω → MeasureTheory.Measure ℂ)
+    {H} (hH : IsGaussHypergeometricFamily H)
+    (P : MeasureTheory.Measure Ω) X (M : Ω → MeasureTheory.Measure ℂ)
     (γ μ α₁ α₂ α₃ D : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hs : 2 * Q γ + 2 / γ < α₁ + α₂ + α₃)

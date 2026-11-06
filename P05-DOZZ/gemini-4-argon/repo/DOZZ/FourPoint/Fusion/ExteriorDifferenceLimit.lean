@@ -12,15 +12,15 @@ open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- The uniform first-order exterior bound is negligible at every exponent below one. -/
 theorem fusion_exteriorDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    α₁ α₂ α₃ (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (p : ℝ) (hp : 0 ≤ p) (κ : ℝ) (hκ : κ < 1) :
     Tendsto (fun z : ℂ => (∫ t in Icc (0 : ℝ) 1, ∫ ω,
       (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p - 1)).toReal *
         (∫ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ, fusionDifferenceKernel γ α₁ α₂ α₃ z x ∂M ω) ∂P) /
       ‖z‖ ^ κ) (nhdsWithin 0 {0}ᶜ) (nhds 0) := by
-  let E := fun z : ℂ => ∫ t in Icc (0 : ℝ) 1, ∫ ω,
+  let E := fun z => ∫ t in Icc (0 : ℝ) 1, ∫ ω,
     (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p - 1)).toReal *
       (∫ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ, fusionDifferenceKernel γ α₁ α₂ α₃ z x ∂M ω) ∂P
   obtain ⟨C, _, hb⟩ := fusion_difference_exterior_expectation_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
@@ -37,6 +37,5 @@ theorem fusion_exteriorDifference_normalized_tendsto {Ω : Type*} [MeasurableSpa
     intro z hz hz4
     simpa only [Complex.norm_real, Real.norm_eq_abs, Real.rpow_one,
       show κ + (1 - κ) = (1 : ℝ) by ring] using hE z hz hz4
-  have h := Complex.continuous_re.continuousAt.tendsto.comp (fusion_normalized_tendsto_of_littleO κ _ ho)
-  simpa only [Function.comp_def, ← Complex.ofReal_div, Complex.ofReal_re, Complex.zero_re] using h
+  simpa only [Function.comp_def, ← Complex.ofReal_div, Complex.ofReal_re, Complex.zero_re] using (Complex.continuous_re.continuousAt.tendsto.comp (fusion_normalized_tendsto_of_littleO κ _ ho))
 end DOZZ.Proofs

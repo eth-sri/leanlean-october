@@ -49,15 +49,8 @@ theorem dual_ennreal_kernel_inverse_expectation_error
     exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow le_self_add hp.le)
   have hmK := (hO.add hI).pow_const (-p)
   have hmO := hO.pow_const (-p)
-  have hiK := (integrable_toReal_of_lintegral_ne_top hmK hK).congr hreal
   have hiO : Integrable (fun ω => (O ω).toReal^(-p)) P := by
     simpa only [ENNReal.toReal_rpow] using integrable_toReal_of_lintegral_ne_top hmO hInv
-  have heK : (∫ ω, ((O ω).toReal+(I ω).toReal)^(-p) ∂P) =
-      (∫⁻ ω, (O ω+I ω)^(-p) ∂P).toReal := by
-    rw [← integral_congr_ae hreal]
-    exact integral_toReal hmK (ae_lt_top' hmK hK)
-  have heO : (∫ ω, (O ω).toReal^(-p) ∂P) = (∫⁻ ω, O ω^(-p) ∂P).toReal := by
-    simpa only [ENNReal.toReal_rpow] using integral_toReal hmO (ae_lt_top' hmO hInv)
   have hbounds : ∀ᵐ ω ∂P, θlo*(β ω*(V ω).toReal) ≤ (I ω).toReal ∧
       (I ω).toReal ≤ θhi*(β ω*(V ω).toReal) := by
     filter_upwards [hs, hIfin, hVfin, hβpos] with ω hsω hIω hVω hβω
@@ -70,7 +63,7 @@ theorem dual_ennreal_kernel_inverse_expectation_error
     (fun ω => (O ω).toReal) (fun ω => β ω*(V ω).toReal) (fun ω => (I ω).toReal)
     hpos (by filter_upwards [hβpos] with ω hω; exact mul_nonneg hω ENNReal.toReal_nonneg)
     hbounds hO.ennreal_toReal (hβ.mul hV.ennreal_toReal) hI.ennreal_toReal hiO
-  rw [integral_sub hiK hiO, heK, heO] at hb
+  rw [integral_sub ((integrable_toReal_of_lintegral_ne_top hmK hK).congr hreal) hiO, (show (∫ ω, ((O ω).toReal+(I ω).toReal)^(-p) ∂P) = (∫⁻ ω, (O ω+I ω)^(-p) ∂P).toReal by rw [← integral_congr_ae hreal]; exact integral_toReal hmK (ae_lt_top' hmK hK)), (show (∫ ω, (O ω).toReal^(-p) ∂P) = (∫⁻ ω, O ω^(-p) ∂P).toReal by simpa only [ENNReal.toReal_rpow] using integral_toReal hmO (ae_lt_top' hmO hInv))] at hb
   exact hb
 
 end DOZZ.Proofs

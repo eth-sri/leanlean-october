@@ -24,71 +24,44 @@ namespace DOZZ.Proofs
 
 open DOZZ.Assembly
 
-/-- The cutoff expectation controls a uniform change of compact continuous tests, at
-every allowed cutoff, with exactly the reference mass of their common support. -/
-theorem regularizedLogChaosTestMass_L1_test_difference_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U) (γ r : ℝ)
-    (hr : Real.exp (-r) ≤ ε₀)
-    (f g : BoundedContinuousFunction ℂ ℝ)
-    (hfK : tsupport (f : ℂ → ℝ) ⊆ K) (hgK : tsupport (g : ℂ → ℝ) ⊆ K)
-    (δ : ℝ) (hδ : ∀ x, |f x - g x| ≤ δ) :
-    ∫⁻ ω, ENNReal.ofReal |regularizedLogChaosTestMass P U dens Y γ r ω f -
-      regularizedLogChaosTestMass P U dens Y γ r ω g| ∂P ≤
-        ENNReal.ofReal δ * logRegularizationReference U dens K := by
-  have hf0 : ∀ x ∉ K, f x = 0 := fun x hx =>
-    image_eq_zero_of_notMem_tsupport (fun h => hx (hfK h))
-  have hg0 : ∀ x ∉ K, g x = 0 := fun x hx =>
-    image_eq_zero_of_notMem_tsupport (fun h => hx (hgK h))
-  have hfI := admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU γ r hr
-    ‖f‖ f f.continuous.measurable (fun x => by simpa only [Real.norm_eq_abs] using f.norm_coe_le_norm x) hf0
-  have hgI := admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU γ r hr
-    ‖g‖ g g.continuous.measurable (fun x => by simpa only [Real.norm_eq_abs] using g.norm_coe_le_norm x) hg0
-  have hb : ∀ᵐ ω ∂P, ENNReal.ofReal |regularizedLogChaosTestMass P U dens Y γ r ω f -
-      regularizedLogChaosTestMass P U dens Y γ r ω g| ≤
-        chartMass P U dens K Y γ r (fun x => |f x - g x|) ω := by
-    filter_upwards [hfI, hgI] with ω hfω hgω
-    unfold regularizedLogChaosTestMass
-    rw [← integral_sub hfω hgω]
-    have heq : (fun x => f x * Real.exp (γ * Y ω (Real.exp (-r)) x - γ ^ 2 / 2 *
-        ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P) -
-        g x * Real.exp (γ * Y ω (Real.exp (-r)) x - γ ^ 2 / 2 *
-        ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) =
-        fun x => (f x - g x) * Real.exp (γ * Y ω (Real.exp (-r)) x - γ ^ 2 / 2 *
-          ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P) := by
-      funext x
-      ring
-    rw [heq]
-    have he := enorm_integral_le_lintegral_enorm (μ := logRegularizationReference U dens)
-      (fun x => (f x - g x) * Real.exp (γ * Y ω (Real.exp (-r)) x - γ ^ 2 / 2 *
-        ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P))
-    simp only [Real.enorm_eq_ofReal_abs, abs_mul, abs_of_pos (Real.exp_pos _)] at he
-    rw [lintegral_cutoff_integrand_eq_chartMass P U dens Y K γ r _ (fun x => abs_nonneg _)
-      (fun x hx => by rw [hf0 x hx, hg0 x hx, sub_self, abs_zero]) ω] at he
-    exact he
-  exact (lintegral_mono_ae hb).trans
-    (lintegral_chartMass_le P U dens ε₀ Y hY K γ r hr δ
-      (fun x => |f x - g x|)
-      (continuous_abs.measurable.comp (f.continuous.measurable.sub g.continuous.measurable)) hδ)
 
 /-- Uniformly converging tests on a common compact chart have vanishing cutoff error
 in expected absolute value, even though the cutoff varies with the test. -/
 theorem tendsto_regularizedLogChaosTestMass_L1_test_difference
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ)
+    U (dens : ℂ → ℝ) ε₀ Y
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U) (γ : ℝ)
+    K (hK : IsCompact K) (hKU : K ⊆ U) γ
     (f : ℝ → BoundedContinuousFunction ℂ ℝ) (g : BoundedContinuousFunction ℂ ℝ)
     (hfK : ∀ r, tsupport (f r : ℂ → ℝ) ⊆ K) (hgK : tsupport (g : ℂ → ℝ) ⊆ K)
     (hfg : ∀ δ : ℝ, 0 < δ → ∀ᶠ r : ℝ in atTop, ∀ x, |f r x - g x| ≤ δ) :
     Tendsto (fun r => ∫⁻ ω, ENNReal.ofReal
       |regularizedLogChaosTestMass P U dens Y γ r ω (f r) -
         regularizedLogChaosTestMass P U dens Y γ r ω g| ∂P) atTop (𝓝 0) := by
-  have hσ := admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU
+  have regularizedLogChaosTestMass_L1_test_difference_le r (hr : Real.exp (-r) ≤ ε₀) (f : BoundedContinuousFunction ℂ ℝ) (g : BoundedContinuousFunction ℂ ℝ) (hfK : tsupport (f : ℂ → ℝ) ⊆ K) (hgK : tsupport (g : ℂ → ℝ) ⊆ K) δ (hδ : ∀ x, |f x - g x| ≤ δ) : ∫⁻ ω, ENNReal.ofReal |regularizedLogChaosTestMass P U dens Y γ r ω f - regularizedLogChaosTestMass P U dens Y γ r ω g| ∂P ≤ ENNReal.ofReal δ * logRegularizationReference U dens K := by
+    have hf0 : ∀ x ∉ K, f x = 0 := fun x hx =>
+      image_eq_zero_of_notMem_tsupport (fun h => hx (hfK h))
+    have hg0 : ∀ x ∉ K, g x = 0 := fun x hx =>
+      image_eq_zero_of_notMem_tsupport (fun h => hx (hgK h))
+    have hb : ∀ᵐ ω ∂P, ENNReal.ofReal |regularizedLogChaosTestMass P U dens Y γ r ω f -
+        regularizedLogChaosTestMass P U dens Y γ r ω g| ≤
+          chartMass P U dens K Y γ r (fun x => |f x - g x|) ω := by
+      filter_upwards [(admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU γ r hr ‖f‖ f f.continuous.measurable (fun x => by simpa only [Real.norm_eq_abs] using f.norm_coe_le_norm x) hf0), (admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU γ r hr ‖g‖ g g.continuous.measurable (fun x => by simpa only [Real.norm_eq_abs] using g.norm_coe_le_norm x) hg0)] with ω hfω hgω
+      unfold regularizedLogChaosTestMass
+      rw [← integral_sub hfω hgω, (show (fun x => f x * Real.exp (γ * Y ω (Real.exp (-r)) x - γ ^ 2 / 2 * ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P) - g x * Real.exp (γ * Y ω (Real.exp (-r)) x - γ ^ 2 / 2 * ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) = fun x => (f x - g x) * Real.exp (γ * Y ω (Real.exp (-r)) x - γ ^ 2 / 2 * ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P) by funext x; ring)]
+      have he := enorm_integral_le_lintegral_enorm (μ := logRegularizationReference U dens)
+        (fun x => (f x - g x) * Real.exp (γ * Y ω (Real.exp (-r)) x - γ ^ 2 / 2 *
+          ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P))
+      simp only [Real.enorm_eq_ofReal_abs, abs_mul, abs_of_pos (Real.exp_pos _)] at he
+      rw [lintegral_cutoff_integrand_eq_chartMass P U dens Y K γ r _ (fun x => abs_nonneg _)
+        (fun x hx => by rw [hf0 x hx, hg0 x hx, sub_self, abs_zero]) ω] at he
+      exact he
+    exact (lintegral_mono_ae hb).trans
+      (lintegral_chartMass_le P U dens ε₀ Y hY K γ r hr δ
+        (fun x => |f x - g x|)
+        (continuous_abs.measurable.comp (f.continuous.measurable.sub g.continuous.measurable)) hδ)
   let σ := logRegularizationReference U dens K
-  have hσ' : σ ≠ ⊤ := hσ
+  have hσ' : σ ≠ ⊤ := (admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU)
   have hc : ∀ᶠ r : ℝ in atTop, Real.exp (-r) ≤ ε₀ := by
     filter_upwards [eventually_ge_atTop (-Real.log ε₀)] with r hr
     calc Real.exp (-r) ≤ Real.exp (Real.log ε₀) := Real.exp_le_exp.mpr (by linarith only [hr])
@@ -97,14 +70,11 @@ theorem tendsto_regularizedLogChaosTestMass_L1_test_difference
   intro η hη
   by_cases hηtop : η = ⊤
   · exact ⟨0, fun _ _ => hηtop ▸ le_top⟩
-  have hηr := ENNReal.toReal_pos hη.ne' hηtop
   let δ := η.toReal / (σ.toReal + 1)
-  have hδ : 0 < δ := div_pos hηr (by positivity)
+  have hδ : 0 < δ := div_pos (ENNReal.toReal_pos hη.ne' hηtop) (by positivity)
   obtain ⟨R, hR⟩ := eventually_atTop.mp ((hfg δ hδ).and hc)
   refine ⟨R, fun r hr => ?_⟩
-  have hb := regularizedLogChaosTestMass_L1_test_difference_le P U dens ε₀ Y hY K hK hKU
-    γ r (hR r hr).2 (f r) g (hfK r) hgK δ ((hR r hr).1)
-  apply hb.trans
+  apply (regularizedLogChaosTestMass_L1_test_difference_le r (hR r hr).2 (f r) g (hfK r) hgK δ ((hR r hr).1)).trans
   change ENNReal.ofReal δ * σ ≤ η
   rw [← ENNReal.ofReal_toReal hσ', ← ENNReal.ofReal_mul hδ.le,
     ← ENNReal.ofReal_toReal hηtop]
@@ -117,10 +87,10 @@ theorem tendsto_regularizedLogChaosTestMass_L1_test_difference
 limit. The result uses only the mean-one finite Wick identity. -/
 theorem regularizedLogChaosTestMass_varying_test_tendstoInMeasure
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (γ : ℝ)
+    U (dens : ℂ → ℝ) ε₀ Y
+    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) γ
     (N : Ω → Measure ℂ) (hN : IsAdmissibleGMCVersion P U dens Y γ N)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U)
+    K (hK : IsCompact K) (hKU : K ⊆ U)
     (f : ℝ → BoundedContinuousFunction ℂ ℝ) (g : BoundedContinuousFunction ℂ ℝ)
     (hfK : ∀ r, tsupport (f r : ℂ → ℝ) ⊆ K) (hgK : tsupport (g : ℂ → ℝ) ⊆ K)
     (hfg : ∀ δ : ℝ, 0 < δ → ∀ᶠ r : ℝ in atTop, ∀ x, |f r x - g x| ≤ δ) :
@@ -128,58 +98,34 @@ theorem regularizedLogChaosTestMass_varying_test_tendstoInMeasure
       (fun ω => ∫ x, g x ∂N ω) := by
   let F : ℝ → Ω → ℝ := fun r ω => regularizedLogChaosTestMass P U dens Y γ r ω (f r)
   let G : ℝ → Ω → ℝ := fun r ω => regularizedLogChaosTestMass P U dens Y γ r ω g
-  let H : Ω → ℝ := fun ω => ∫ x, g x ∂N ω
-  have hmF (r : ℝ) : Measurable (F r) :=
-    admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ r (f r) (f r).continuous.measurable
-  have hmG (r : ℝ) : Measurable (G r) :=
-    admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ r g g.continuous.measurable
-  have hl1 := tendsto_regularizedLogChaosTestMass_L1_test_difference P U dens ε₀ Y hY
-    K hK hKU γ f g hfK hgK hfg
-  have hz : TendstoInMeasure P (fun r ω => G r ω - F r ω) atTop (fun _ => 0) := by
-    apply tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _
-      (fun r => ((hmG r).sub (hmF r)).aestronglyMeasurable) aestronglyMeasurable_const
-    change Tendsto (fun r => ∫⁻ ω, ENNReal.ofReal |G r ω - F r ω - 0| ∂P) atTop (𝓝 0)
-    simpa only [sub_zero, abs_sub_comm] using hl1
-  have hg : TendstoInMeasure P G atTop H :=
-    hN.2.2.2 g (hK.of_isClosed_subset (isClosed_tsupport _) hgK) (hgK.trans hKU)
-  have ht := tendstoInMeasure_sub P G (fun r ω => G r ω - F r ω) H (fun _ => 0) hg hz
-  have heq : (fun r ω => G r ω - (G r ω - F r ω)) = F := by
-    funext r ω
-    ring
-  simpa only [heq, sub_zero] using ht
+  simpa only [(show (fun r ω => G r ω - (G r ω - F r ω)) = F by funext r ω; ring), sub_zero] using (tendstoInMeasure_sub P G (fun r ω => G r ω - F r ω) (fun ω => ∫ x, g x ∂N ω) (fun _ => 0) (hN.2.2.2 g (hK.of_isClosed_subset (isClosed_tsupport _) hgK) (hgK.trans hKU)) (by apply tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _ (fun r => (((fun r => admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ r g g.continuous.measurable) r).sub ((fun r => admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ r (f r) (f r).continuous.measurable) r)).aestronglyMeasurable) aestronglyMeasurable_const; change Tendsto (fun r => ∫⁻ ω, ENNReal.ofReal |G r ω - F r ω - 0| ∂P) atTop (𝓝 0); simpa only [sub_zero, abs_sub_comm] using (tendsto_regularizedLogChaosTestMass_L1_test_difference P U dens ε₀ Y hY K hK hKU γ f g hfK hgK hfg)))
 
 /-- Exponentiation preserves uniform convergence on a compact set when the limiting
 exponent is continuous. Compactness keeps both exponents in one bounded interval. -/
 theorem uniform_exp_approx_on_compact
-    (K : Set ℂ) (hK : IsCompact K) (F : ℝ → ℂ → ℝ) (G : ℂ → ℝ) (hG : Continuous G)
+    K (hK : IsCompact K) (F : ℝ → ℂ → ℝ) G (hG : Continuous G)
     (hFG : ∀ δ : ℝ, 0 < δ → ∀ᶠ r : ℝ in atTop, ∀ x ∈ K, |F r x - G x| < δ) :
     ∀ η : ℝ, 0 < η → ∀ᶠ r : ℝ in atTop, ∀ x ∈ K,
       |Real.exp (F r x) - Real.exp (G x)| < η := by
   obtain ⟨C, hC⟩ := hK.bddAbove_image hG.norm.continuousOn
   let B := |C| + 1
-  have hGB (x : ℂ) (hx : x ∈ K) : |G x| ≤ |C| :=
+  have hGB x (hx : x ∈ K) : |G x| ≤ |C| :=
     (hC (mem_image_of_mem _ hx)).trans (le_abs_self C)
-  have huc : UniformContinuousOn Real.exp (Icc (-B) B) :=
-    isCompact_Icc.uniformContinuousOn_of_continuous Real.continuous_exp.continuousOn
   intro η hη
-  obtain ⟨δ, hδ, hclose⟩ := (Metric.uniformContinuousOn_iff.mp huc) η hη
+  obtain ⟨δ, hδ, hclose⟩ := (Metric.uniformContinuousOn_iff.mp (isCompact_Icc.uniformContinuousOn_of_continuous Real.continuous_exp.continuousOn)) η hη
   filter_upwards [hFG (min δ 1) (lt_min hδ zero_lt_one)] with r hr x hx
-  have hdiff : |F r x - G x| < δ := (hr x hx).trans_le (min_le_left _ _)
   have hFbound : |F r x| ≤ B := by
     calc |F r x| = |(F r x - G x) + G x| := by congr 1; ring
       _ ≤ |F r x - G x| + |G x| := abs_add_le _ _
       _ ≤ 1 + |C| := add_le_add ((hr x hx).le.trans (min_le_right _ _)) (hGB x hx)
       _ = B := by dsimp [B]; ring
-  have hFmem : F r x ∈ Icc (-B) B := abs_le.mp hFbound
-  have hGmem : G x ∈ Icc (-B) B := abs_le.mp ((hGB x hx).trans (by dsimp [B]; linarith))
-  have h := hclose (F r x) hFmem (G x) hGmem (by simpa only [Real.dist_eq] using hdiff)
-  simpa only [Real.dist_eq] using h
+  simpa only [Real.dist_eq] using (hclose (F r x) (abs_le.mp hFbound) (G x) (abs_le.mp ((hGB x hx).trans (by dsimp [B]; linarith))) (by simpa only [Real.dist_eq] using ((hr x hx).trans_le (min_le_left _ _))))
 
 /-- For every fixed continuous radial path the finite radial factor converges uniformly
 on any compact local chart, with its literal Gaussian variance and reference correction. -/
 theorem originRadialCutoffReinsertionWeight_uniform_approx
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+    X (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (ρ γ : ℝ) (hρ : 0 < ρ) (hγ : γ ≠ 0) (A : TwoSidedPath)
     (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ originLateralChart ρ) :
@@ -191,28 +137,18 @@ theorem originRadialCutoffReinsertionWeight_uniform_approx
       γ ^ 2 / 2 * gaussianVariance P (originCircleRadialL2 hc ρ x r) -
         2 * |clampedLogRadius ρ x|
   let G : ℂ → ℝ := fun x => γ * A (clampedLogRadius ρ x) - γ * Q γ * |clampedLogRadius ρ x|
-  have hG : Continuous G :=
-    (continuous_const.mul (A.continuous.comp (continuous_clampedLogRadius ρ hρ))).sub
-      (continuous_const.mul (continuous_clampedLogRadius ρ hρ).abs)
   have hFG : ∀ η : ℝ, 0 < η → ∀ᶠ r : ℝ in atTop, ∀ x ∈ K, |F r x - G x| < η := by
     intro η hη
     let δ := η / (|γ| + |γ ^ 2 / 2| + 1)
     have hden : 0 < |γ| + |γ ^ 2 / 2| + 1 := by positivity
-    have hδ : 0 < δ := div_pos hη hden
+    have hδ := div_pos hη hden
     obtain ⟨ε₁, hε₁, hrad⟩ := integral_circleMeasure_uniform_approx
       (fun z => A (clampedLogRadius ρ z))
       (A.continuous.comp (continuous_clampedLogRadius ρ hρ)) K hK δ hδ
     obtain ⟨ε₂, hε₂, hvar⟩ := originCircleRadialL2_uniform_variance_approx
       P X Xc hX hc ρ hρ K hK hKU δ hδ
-    have ht := (tendsto_order.mp Real.tendsto_exp_neg_atTop_nhds_zero).2
-      (min ε₁ (min ε₂ ρ)) (lt_min hε₁ (lt_min hε₂ hρ))
-    filter_upwards [ht] with r hr x hx
-    have hr₁ : Real.exp (-r) ≤ ε₁ := hr.le.trans (min_le_left _ _)
-    have hr₂ : Real.exp (-r) ≤ min ε₂ ρ := hr.le.trans (min_le_right _ _)
-    have hb₁ : |(∫ z, A (clampedLogRadius ρ z) ∂circleMeasure x r) -
-        A (clampedLogRadius ρ x)| < δ := by
-      simpa only [Real.norm_eq_abs] using hrad r hr₁ x hx
-    have hb₂ := hvar (Real.exp (-r)) (Real.exp_pos _) hr₂ x hx
+    filter_upwards [((tendsto_order.mp Real.tendsto_exp_neg_atTop_nhds_zero).2 (min ε₁ (min ε₂ ρ)) (lt_min hε₁ (lt_min hε₂ hρ)))] with r hr x hx
+    have hb₂ := hvar (Real.exp (-r)) (Real.exp_pos _) (hr.le.trans (min_le_right _ _)) x hx
     simp only [one_div, Real.log_inv, Real.log_exp, neg_neg] at hb₂
     have hxρ : ρ ≤ ‖x‖ := by
       have hxU : 2 * ρ < ‖x‖ := hKU hx
@@ -231,13 +167,13 @@ theorem originRadialCutoffReinsertionWeight_uniform_approx
     calc _ ≤ |γ| * |(∫ z, A (clampedLogRadius ρ z) ∂circleMeasure x r) - A (clampedLogRadius ρ x)| +
           |γ ^ 2 / 2| * |gaussianVariance P (originCircleRadialL2 hc ρ x r) - (|Real.log ‖x‖|)| := htri
       _ ≤ |γ| * δ + |γ ^ 2 / 2| * δ := add_le_add
-        (mul_le_mul_of_nonneg_left hb₁.le (abs_nonneg _))
+        (mul_le_mul_of_nonneg_left (show |(∫ z, A (clampedLogRadius ρ z) ∂circleMeasure x r) - A (clampedLogRadius ρ x)| < δ by simpa only [Real.norm_eq_abs] using hrad r (hr.le.trans (min_le_left _ _)) x hx).le (abs_nonneg _))
         (mul_le_mul_of_nonneg_left hb₂.le (abs_nonneg _))
       _ < (|γ| + |γ ^ 2 / 2| + 1) * δ := by
         calc _ = (|γ| + |γ ^ 2 / 2|) * δ := by ring
           _ < _ := mul_lt_mul_of_pos_right (lt_add_one _) hδ
       _ = η := mul_div_cancel₀ _ hden.ne'
-  exact uniform_exp_approx_on_compact K hK F G hG hFG
+  exact uniform_exp_approx_on_compact K hK F G ((continuous_const.mul (A.continuous.comp (continuous_clampedLogRadius ρ hρ))).sub (continuous_const.mul (continuous_clampedLogRadius ρ hρ).abs)) hFG
 
 /-- Circle integration is jointly continuous in center and radius for continuous
 Banach-valued integrands, by integration over the fixed angular interval. -/
@@ -245,21 +181,8 @@ theorem continuous_circleIntegral_banach
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (F : ℂ → E) (hF : Continuous F) :
     Continuous (fun p : ℂ × ℝ => ∫ z, F z ∂circleMeasure p.1 p.2) := by
-  have hi : Continuous (fun p : ℂ × ℝ =>
-      ∫ θ in (0 : ℝ)..(2 * Real.pi), F (circleMap p.1 (Real.exp (-p.2)) θ)) := by
-    apply intervalIntegral.continuous_parametric_intervalIntegral_of_continuous'
-    apply hF.comp
-    fun_prop [circleMap]
-  have heq : (fun p : ℂ × ℝ => ∫ z, F z ∂circleMeasure p.1 p.2) =
-      fun p => (2 * Real.pi)⁻¹ •
-        ∫ θ in (0 : ℝ)..(2 * Real.pi), F (circleMap p.1 (Real.exp (-p.2)) θ) := by
-    funext p
-    rw [circleMeasure, integral_smul_measure,
-      integral_map (measurable_circleMap p.1 (Real.exp (-p.2))).aemeasurable hF.aestronglyMeasurable,
-      ← intervalIntegral.integral_of_le Real.two_pi_pos.le,
-      ENNReal.toReal_ofReal (by positivity : 0 ≤ (2 * Real.pi)⁻¹)]
-  rw [heq]
-  exact continuous_const.smul hi
+  rw [(show (fun p : ℂ × ℝ => ∫ z, F z ∂circleMeasure p.1 p.2) = fun p => (2 * Real.pi)⁻¹ • ∫ θ in (0 : ℝ)..(2 * Real.pi), F (circleMap p.1 (Real.exp (-p.2)) θ) by funext p; rw [circleMeasure, integral_smul_measure, integral_map (measurable_circleMap p.1 (Real.exp (-p.2))).aemeasurable hF.aestronglyMeasurable, ← intervalIntegral.integral_of_le Real.two_pi_pos.le, ENNReal.toReal_ofReal (by positivity : 0 ≤ (2 * Real.pi)⁻¹)])]
+  exact continuous_const.smul (by apply intervalIntegral.continuous_parametric_intervalIntegral_of_continuous'; apply hF.comp; fun_prop [circleMap])
 
 /-- The actual radial Hilbert projection varies continuously with every cutoff circle. -/
 theorem continuous_originCircleRadialL2
@@ -287,10 +210,7 @@ theorem continuous_originRadialCutoffReinsertionWeight
       rw [integral_mul_eq_inner]
     rw [heq]
     exact hR.inner hR
-  have ha := (continuous_circleIntegral_of_continuous (fun z => A (clampedLogRadius ρ z))
-    (A.continuous.comp (continuous_clampedLogRadius ρ hρ))).comp
-      (continuous_id.prodMk (continuous_const : Continuous (fun _ : ℂ => r)))
-  exact (((ha.const_mul γ).sub (hv.const_mul (γ ^ 2 / 2))).sub
+  exact (((((continuous_circleIntegral_of_continuous (fun z => A (clampedLogRadius ρ z)) (A.continuous.comp (continuous_clampedLogRadius ρ hρ))).comp (continuous_id.prodMk (continuous_const : Continuous (fun _ : ℂ => r)))).const_mul γ).sub (hv.const_mul (γ ^ 2 / 2))).sub
     ((continuous_clampedLogRadius ρ hρ).abs.const_mul 2)).rexp
 
 /-- The literal finite radial-weighted compact test, with no change of its variance. -/
@@ -341,7 +261,7 @@ theorem originRadialCutoffWeightedTest_uniform_approx
 center and logarithmic cutoff. Evaluation is continuous on the compact-open path space. -/
 theorem continuous_originRadialCutoffReinsertionWeight_joint
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+    X (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (ρ γ : ℝ) (hρ : 0 < ρ) :
     Continuous (fun p : TwoSidedPath × (ℂ × ℝ) =>
@@ -365,34 +285,24 @@ theorem continuous_originRadialCutoffReinsertionWeight_joint
     apply intervalIntegral.continuous_parametric_intervalIntegral_of_continuous'
     change Continuous (fun p : (TwoSidedPath × (ℂ × ℝ)) × ℝ =>
       p.1.1 (clampedLogRadius ρ (circleMap p.1.2.1 (Real.exp (-p.1.2.2)) p.2)))
-    have ht : Continuous (fun p : (TwoSidedPath × (ℂ × ℝ)) × ℝ =>
-        clampedLogRadius ρ (circleMap p.1.2.1 (Real.exp (-p.1.2.2)) p.2)) := by
-      apply (continuous_clampedLogRadius ρ hρ).comp
-      fun_prop [circleMap]
-    exact continuous_eval.comp (continuous_fst.fst.prodMk ht)
+    exact continuous_eval.comp (continuous_fst.fst.prodMk (by apply (continuous_clampedLogRadius ρ hρ).comp; fun_prop [circleMap]))
   have heq : (fun p : TwoSidedPath × (ℂ × ℝ) =>
       ∫ z, p.1 (clampedLogRadius ρ z) ∂circleMeasure p.2.1 p.2.2) =
       fun p => (2 * Real.pi)⁻¹ * ∫ θ in (0 : ℝ)..(2 * Real.pi),
         p.1 (clampedLogRadius ρ (circleMap p.2.1 (Real.exp (-p.2.2)) θ)) := by
     funext p
-    have hm : Measurable (fun z => p.1 (clampedLogRadius ρ z)) :=
-      (p.1.continuous.comp (continuous_clampedLogRadius ρ hρ)).measurable
-    rw [integral_circleMeasure_eq_circleAverage p.2.1 p.2.2 (fun z => p.1 (clampedLogRadius ρ z)) hm,
+    rw [integral_circleMeasure_eq_circleAverage p.2.1 p.2.2 (fun z => p.1 (clampedLogRadius ρ z)) ((p.1.continuous.comp (continuous_clampedLogRadius ρ hρ)).measurable),
       Real.circleAverage_def]
     rfl
-  have ha : Continuous (fun p : TwoSidedPath × (ℂ × ℝ) =>
-      ∫ z, p.1 (clampedLogRadius ρ z) ∂circleMeasure p.2.1 p.2.2) := by
-    rw [heq]
-    exact hi.const_mul _
-  exact (((ha.const_mul γ).sub (hv.const_mul (γ ^ 2 / 2))).sub
+  exact ((((show Continuous (fun p : TwoSidedPath × (ℂ × ℝ) => ∫ z, p.1 (clampedLogRadius ρ z) ∂circleMeasure p.2.1 p.2.2) by rw [heq]; exact hi.const_mul _).const_mul γ).sub (hv.const_mul (γ ^ 2 / 2))).sub
     (((continuous_clampedLogRadius ρ hρ).comp continuous_snd.fst).abs.const_mul 2)).rexp
 
 /-- The finite radial-weighted test stays in the support of the original compact test. -/
 theorem originRadialCutoffWeightedTest_tsupport_subset
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (ρ γ r : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath)
+    hX hc
+    ρ γ r (hρ : 0 < ρ) A
     (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ)) :
     tsupport (originRadialCutoffWeightedTest P X Xc hX hc ρ γ r hρ A f hfc : ℂ → ℝ) ⊆
       tsupport (f : ℂ → ℝ) := tsupport_mul_subset_left
@@ -402,32 +312,25 @@ measurability of its finite Wick integral. -/
 theorem regularizedLogChaosTestMass_parameterTest_measurable
     {V E : Type*} [MeasurableSpace V] [MeasurableSpace E]
     (P : Measure E) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : E → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (γ r : ℝ)
+    U (dens : ℂ → ℝ) ε₀ Y
+    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) γ r
     (f : V → BoundedContinuousFunction ℂ ℝ) (hf : Measurable (fun p : V × ℂ => f p.1 p.2)) :
     Measurable (fun p : V × E => regularizedLogChaosTestMass P U dens Y γ r p.2 (f p.1)) := by
-  have hv : Measurable (fun x : ℂ => ∫ ξ, Y ξ (Real.exp (-r)) x ^ 2 ∂P) :=
-    ((hY.measurableAtScale _).comp measurable_swap).pow_const 2
-      |>.stronglyMeasurable.integral_prod_right.measurable
-  have htest : Measurable (fun p : (V × E) × ℂ => f p.1.1 p.2) :=
-    hf.comp (measurable_fst.fst.prodMk measurable_snd)
-  have hfield : Measurable (fun p : (V × E) × ℂ => Y p.1.2 (Real.exp (-r)) p.2) :=
-    (hY.measurableAtScale _).comp (measurable_fst.snd.prodMk measurable_snd)
-  exact (htest.mul ((hfield.const_mul γ).sub
-    ((hv.comp measurable_snd).const_mul (γ ^ 2 / 2))).exp).stronglyMeasurable.integral_prod_right.measurable
+  exact ((hf.comp (measurable_fst.fst.prodMk measurable_snd) : Measurable (fun p : (V × E) × ℂ => f p.1.1 p.2)).mul ((((hY.measurableAtScale _).comp (measurable_fst.snd.prodMk measurable_snd)).const_mul γ).sub
+    (((((hY.measurableAtScale _).comp measurable_swap).pow_const 2 |>.stronglyMeasurable.integral_prod_right.measurable : Measurable (fun x => ∫ ξ, Y ξ (Real.exp (-r)) x ^ 2 ∂P)).comp measurable_snd).const_mul (γ ^ 2 / 2))).exp).stronglyMeasurable.integral_prod_right.measurable
 
 /-- With a fixed radial path, the actual finite radial weight may be inserted into the
 cutoff limit of any local lateral chaos. -/
 theorem originRadialCutoffWeightedTest_tendstoInMeasure
     {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (ν : Measure E) [IsProbabilityMeasure ν] (ε₀ : ℝ) (Y : E → ℝ → ℂ → ℝ)
-    (ρ γ : ℝ) (hρ : 0 < ρ) (hγ : γ ≠ 0) (A : TwoSidedPath)
+    hX hc
+    (ν : Measure E) [IsProbabilityMeasure ν] ε₀ Y
+    ρ γ (hρ : 0 < ρ) (hγ : γ ≠ 0) A
     (hY : IsAdmissibleLogRegularization ν (originLateralChart ρ) originLateralPlaneDensity ε₀ Y)
     (N : E → Measure ℂ)
     (hN : IsAdmissibleGMCVersion ν (originLateralChart ρ) originLateralPlaneDensity Y γ N)
-    (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
+    (f : BoundedContinuousFunction ℂ ℝ) hfc
     (hfU : tsupport (f : ℂ → ℝ) ⊆ originLateralChart ρ) :
     TendstoInMeasure ν
       (fun r ξ => regularizedLogChaosTestMass ν (originLateralChart ρ) originLateralPlaneDensity
@@ -448,8 +351,8 @@ theorem originRadialCutoffWeightedTest_independent_tendstoInMeasure
     (P : Measure Ω) [IsProbabilityMeasure P]
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (A : Ω → TwoSidedPath) (π : Ω → E) (hA : Measurable A) (hπ : Measurable π)
-    (hi : IndepFun A π P) (ε₀ : ℝ) (Y : E → ℝ → ℂ → ℝ)
+    A π (hA : Measurable A) (hπ : Measurable π)
+    (hi : IndepFun A π P) ε₀ Y
     (ρ γ : ℝ) (hρ : 0 < ρ) (hγ : γ ≠ 0)
     (hY : IsAdmissibleLogRegularization (P.map π) (originLateralChart ρ)
       originLateralPlaneDensity ε₀ Y)
@@ -464,7 +367,6 @@ theorem originRadialCutoffWeightedTest_independent_tendstoInMeasure
   let F : ℝ → TwoSidedPath → E → ℝ := fun r v ξ =>
     regularizedLogChaosTestMass (P.map π) (originLateralChart ρ) originLateralPlaneDensity Y γ r ξ
       (originRadialCutoffWeightedTest P X Xc hX hc ρ γ r hρ v f hfc)
-  let G : TwoSidedPath → E → ℝ := fun v ξ => ∫ x, originRadialWeightedTest ρ γ hρ v f hfc x ∂N ξ
   have hmF (r : ℝ) : Measurable (Function.uncurry (F r)) := by
     apply regularizedLogChaosTestMass_parameterTest_measurable (P.map π) (originLateralChart ρ)
       originLateralPlaneDensity ε₀ Y hY γ r
@@ -472,10 +374,7 @@ theorem originRadialCutoffWeightedTest_independent_tendstoInMeasure
     have hw := (continuous_originRadialCutoffReinsertionWeight_joint P X Xc hX hc ρ γ hρ).measurable.comp
       (measurable_fst.prodMk (measurable_snd.prodMk (measurable_const : Measurable (fun _ => r))))
     exact (f.continuous.measurable.comp measurable_snd).mul hw
-  have hmG : Measurable (Function.uncurry G) :=
-    originRadialWeightedTest_integral_measurable ρ γ hρ f hfc N hN.1
-      (fun ξ => hN.2.2.1 ξ _ hfc hfU)
-  exact tendstoInMeasure_independent_parameters P A π hA hπ hi F G hmF hmG
+  exact tendstoInMeasure_independent_parameters P A π hA hπ hi F (fun v ξ => ∫ x, originRadialWeightedTest ρ γ hρ v f hfc x ∂N ξ : TwoSidedPath → E → ℝ) hmF (originRadialWeightedTest_integral_measurable ρ γ hρ f hfc N hN.1 (fun ξ => hN.2.2.1 ξ _ hfc hfU))
     (fun v => originRadialCutoffWeightedTest_tendstoInMeasure P X Xc hX hc (P.map π)
       ε₀ Y ρ γ hρ hγ v hY N hN f hfc hfU)
 
@@ -484,10 +383,10 @@ original field space, while remaining independent of the whole radial path. -/
 theorem exists_originLateralChartGMC_cutoff_weighted_limit
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    hX hc
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (ρ : ℝ) (hρ : 0 < ρ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) :
+    ρ (hρ : 0 < ρ) γ (hγ : 0 < γ) (hγ2 : γ < 2) :
     ∃ N : Ω → Measure ℂ,
       IsAdmissibleGMCVersion P (originLateralChart ρ) originLateralPlaneDensity
         (originLateralCircleRegularization Xc ρ) γ N ∧
@@ -503,14 +402,13 @@ theorem exists_originLateralChartGMC_cutoff_weighted_limit
   let _ := hX.1
   have hpath := originLateralCutoffPath_aemeasurable P Xc hm hcont ρ hρ
   let π := hpath.mk (originLateralCutoffPath Xc ρ)
-  have hπm : Measurable π := hpath.measurable_mk
-  have hπ : π =ᵐ[P] originLateralCutoffPath Xc ρ := hpath.ae_eq_mk.symm
+  have hπm := hpath.measurable_mk
+  have hπ := hpath.ae_eq_mk.symm
   have hAm := originRadialPath_aemeasurable P X Xc hc hcont
   let A := hAm.mk (originRadialPath Xc)
-  have hAm' : Measurable A := hAm.measurable_mk
+  have hAm' := hAm.measurable_mk
   have hA : A =ᵐ[P] originRadialPath Xc := hAm.ae_eq_mk.symm
-  have hi : IndepFun A π P :=
-    (originRadialPath_lateralCutoffPath_indepFun P X Xc hX hc hm hcont ρ hρ).congr
+  have hi := (originRadialPath_lateralCutoffPath_indepFun P X Xc hX hc hm hcont ρ hρ).congr
       hAm.ae_eq_mk hpath.ae_eq_mk
   have hY := originLateralUniversalRegularization_admissible P X Xc hX hc hm hcont ρ hρ π hπm hπ
   obtain ⟨N, hN⟩ := admissibleLogRegularization_GMC_exists (P.map π)
@@ -524,8 +422,6 @@ theorem exists_originLateralChartGMC_cutoff_weighted_limit
       (originLateralUniversalRegularization_measurableAtScale ρ hρ) hcomp γ N hN
   · exact (hi.congr hA EventuallyEq.rfl).comp measurable_id hN.1
   · intro f hfc hfU
-    have ht := originRadialCutoffWeightedTest_independent_tendstoInMeasure P X Xc hX hc
-      A π hAm' hπm hi _ (originLateralUniversalRegularization ρ hρ) ρ γ hρ hγ.ne' hY N hN f hfc hfU
     have hleft : ∀ᶠ r : ℝ in atTop,
         (fun ω => regularizedLogChaosTestMass (P.map π) (originLateralChart ρ)
           originLateralPlaneDensity (originLateralUniversalRegularization ρ hρ) γ r (π ω)
@@ -534,20 +430,13 @@ theorem exists_originLateralChartGMC_cutoff_weighted_limit
           originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) γ r ω
             (originRadialCutoffWeightedTest P X Xc hX hc ρ γ r hρ (originRadialPath Xc ω) f hfc) := by
       filter_upwards [eventually_ge_atTop (originLateralCutoffBaseTime ρ)] with r hr
-      have hcut : Real.exp (-r) ≤ Real.exp (-originLateralCutoffBaseTime ρ) :=
-        Real.exp_le_exp.mpr (neg_le_neg hr)
-      have heq := regularizedLogChaosTestMass_randomTest_map_comp P π hπm
-        (originLateralChart ρ) (isOpen_originLateralChart ρ) originLateralPlaneDensity
-        (originLateralCircleRegularization Xc ρ) (originLateralUniversalRegularization ρ hρ)
-        (originLateralUniversalRegularization_measurableAtScale ρ hρ) γ r
-        (fun ω => originRadialCutoffWeightedTest P X Xc hX hc ρ γ r hρ (A ω) f hfc)
-        (hcomp.mono (fun ω hω => hω _ (Real.exp_pos _) hcut))
-      filter_upwards [heq, hA] with ω hω hAω
+      have hcut := Real.exp_le_exp.mpr (neg_le_neg hr)
+      filter_upwards [(regularizedLogChaosTestMass_randomTest_map_comp P π hπm (originLateralChart ρ) (isOpen_originLateralChart ρ) originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) (originLateralUniversalRegularization ρ hρ) (originLateralUniversalRegularization_measurableAtScale ρ hρ) γ r (fun ω => originRadialCutoffWeightedTest P X Xc hX hc ρ γ r hρ (A ω) f hfc) (hcomp.mono (fun ω hω => hω _ (Real.exp_pos _) hcut))), hA] with ω hω hAω
       rw [hω, hAω]
     have hright : (fun ω => ∫ x, originRadialWeightedTest ρ γ hρ (A ω) f hfc x ∂N (π ω)) =ᵐ[P]
         fun ω => ∫ x, originRadialWeightedTest ρ γ hρ (originRadialPath Xc ω) f hfc x ∂N (π ω) := by
       filter_upwards [hA] with ω hω
       rw [hω]
-    exact TendstoInMeasure.congr' hleft hright ht
+    exact TendstoInMeasure.congr' hleft hright (originRadialCutoffWeightedTest_independent_tendstoInMeasure P X Xc hX hc A π hAm' hπm hi _ (originLateralUniversalRegularization ρ hρ) ρ γ hρ hγ.ne' hY N hN f hfc hfU)
 
 end DOZZ.Proofs

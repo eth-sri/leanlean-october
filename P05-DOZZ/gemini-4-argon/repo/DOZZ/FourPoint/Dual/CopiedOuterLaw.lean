@@ -28,20 +28,13 @@ theorem dual_copied_radial_weighted_mass_joint_law
     P.map (fun ω => (A ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω)) =
       (P.prod P).map (fun ω : Ω × Ω => (A ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
         f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω.1) x) ∂N ω.2)) := by
-  let F := fun p : TwoSidedPath × Ω => ∫⁻ x in ({0} : Set ℂ)ᶜ,
-    f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 x) ∂N p.2
-  have hFm : Measurable F := reflected_chart_parameter_mass_measurable
-    ({0} : Set ℂ)ᶜ isClosed_singleton.isOpen_compl N hN hfin _
-      ((hf.comp measurable_snd).mul (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal)
   have hAc : AEMeasurable (fun ω : Ω × Ω => A ω.1) (P.prod P) := hA.comp_fst
-  have hpack : AEMeasurable (fun ω : Ω × Ω => (A ω.1, F (A ω.1,ω.2))) (P.prod P) :=
-    hAc.prodMk (hFm.comp_aemeasurable (hAc.prodMk measurable_snd.aemeasurable))
   apply Measure.ext
   intro S hS
   let G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞ := S.indicator (fun _ => 1)
   have hG : Measurable G := measurable_const.indicator hS
   have he := hwhole G hG
-  rw [← lintegral_map' hG.aemeasurable (hA.prodMk hmass), ← lintegral_map' hG.aemeasurable hpack] at he
+  rw [← lintegral_map' hG.aemeasurable (hA.prodMk hmass), ← lintegral_map' hG.aemeasurable (hAc.prodMk ((reflected_chart_parameter_mass_measurable ({0} : Set ℂ)ᶜ isClosed_singleton.isOpen_compl N hN hfin _ ((hf.comp measurable_snd).mul (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal)).comp_aemeasurable (hAc.prodMk measurable_snd.aemeasurable)) : AEMeasurable (fun ω : Ω × Ω => (A ω.1, (fun p : TwoSidedPath × Ω => ∫⁻ x in ({0} : Set ℂ)ᶜ, f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 x) ∂N p.2) (A ω.1,ω.2))) (P.prod P))] at he
   simpa only [G, lintegral_indicator hS, setLIntegral_one] using he
 
 end DOZZ.Proofs

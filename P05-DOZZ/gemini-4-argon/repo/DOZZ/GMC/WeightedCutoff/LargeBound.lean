@@ -14,7 +14,7 @@ namespace DOZZ.Proofs
 
 theorem cutoffWeightedGmcBallMoment_compact_gamma_large_uniform
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (Γ : Set ℝ) (hΓ : IsCompact Γ) (hΓ2 : Γ ⊆ Set.Ioo (0 : ℝ) 2)
     (T : Set (ℝ × ℝ)) (hT : IsCompact T)
@@ -51,18 +51,10 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_large_uniform
   have hcq : c ^ q < ⊤ := lt_top_iff_ne_top.mpr
     (ENNReal.rpow_ne_top_of_nonneg (by linarith) ENNReal.ofReal_ne_top)
   let Ef : ℝ≥0∞ := 1 + c ^ q * Dfine
-  let Ec : ℝ≥0∞ := 1 + c ^ q * Dcoarse
-  have hEf : Ef < ⊤ := ENNReal.add_lt_top.mpr
-    ⟨ENNReal.one_lt_top, ENNReal.mul_lt_top hcq hDfine⟩
-  have hEc : Ec < ⊤ := ENNReal.add_lt_top.mpr
-    ⟨ENNReal.one_lt_top, ENNReal.mul_lt_top hcq hDcoarse⟩
-  let Ei : ℝ≥0∞ := ENNReal.ofReal (Cs * U)
-  let Efg : ℝ≥0∞ := (2 : ℝ≥0∞) ^ q * (Ei + Ef)
+  let Efg : ℝ≥0∞ := (2 : ℝ≥0∞) ^ q * ((ENNReal.ofReal (Cs * U)) + Ef)
   have htwo : (2 : ℝ≥0∞) ^ q < ⊤ := lt_top_iff_ne_top.mpr
     (ENNReal.rpow_ne_top_of_nonneg (by linarith) (by norm_num))
-  have hEfg : Efg < ⊤ := ENNReal.mul_lt_top htwo
-    (ENNReal.add_lt_top.mpr ⟨ENNReal.ofReal_lt_top, hEf⟩)
-  refine ⟨Efg + Ec, ENNReal.add_lt_top.mpr ⟨hEfg, hEc⟩, ?_⟩
+  refine ⟨Efg + (1 + c ^ q * Dcoarse), ENNReal.add_lt_top.mpr ⟨(ENNReal.mul_lt_top htwo (ENNReal.add_lt_top.mpr ⟨ENNReal.ofReal_lt_top, (ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, ENNReal.mul_lt_top hcq hDfine⟩)⟩)), (ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, ENNReal.mul_lt_top hcq hDcoarse⟩)⟩, ?_⟩
   intro γ hγ t ht z hz R δ hRa hR₀ hδ hδR
   have hp0 := (hTadm γ hγ t ht).1
   have hpq := hqorders t ht
@@ -79,35 +71,21 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_large_uniform
     have ha : AEMeasurable (fun ω => a ω ^ t.2) P :=
       ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
         (cutoffWeightedGmcBallMass_aemeasurable P X hX Xc hXc γ t.1 z (1 / 8) δ)
-    have hinner : (∫⁻ ω, a ω ^ t.2 ∂P) ≤ Ei := by
-      have h := hsmall γ hγ t ht z hz (1 / 8) δ (by norm_num) (by norm_num) hδ hδfine
-      apply h.trans
-      exact ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left (hupper γ hγ t ht) hCs.le)
     have houter : (∫⁻ ω, b ω ^ t.2 ∂P) ≤ Ef :=
       lintegral_lower_rpow_const_mul_le P f hf c Dfine t.2 q hp0.le hpq
         (hfine γ hγ δ hδ hδfine)
-    have hmass : ∀ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ≤ a ω + b ω :=
-      cutoffWeightedGmcBallMass_le_inner_add_outer P Xc γ t.1 (1 / 8) r₀ W B R δ z
-        hRa hR₀ hδ hδR hzB (hweight γ hγ t ht)
     have hmain : (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ^ t.2 ∂P) ≤ Efg := by
       calc
         _ ≤ ∫⁻ ω, (2 : ℝ≥0∞) ^ q * (a ω ^ t.2 + b ω ^ t.2) ∂P := by
           apply lintegral_mono
           intro ω
-          exact (ENNReal.rpow_le_rpow (hmass ω) hp0.le).trans
+          exact (ENNReal.rpow_le_rpow ((cutoffWeightedGmcBallMass_le_inner_add_outer P Xc γ t.1 (1 / 8) r₀ W B R δ z hRa hR₀ hδ hδR hzB (hweight γ hγ t ht)) ω) hp0.le).trans
             (ennreal_rpow_add_le_uniform_order_cap _ _ t.2 q hp0.le hpq)
         _ = (2 : ℝ≥0∞) ^ q * ((∫⁻ ω, a ω ^ t.2 ∂P) + ∫⁻ ω, b ω ^ t.2 ∂P) := by
           rw [lintegral_const_mul' _ _ htwo.ne, lintegral_add_left' ha]
-        _ ≤ Efg := mul_le_mul_right (add_le_add hinner houter) _
+        _ ≤ Efg := mul_le_mul_right (add_le_add (by apply (hsmall γ hγ t ht z hz (1 / 8) δ (by norm_num) (by norm_num) hδ hδfine).trans; exact ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left (hupper γ hγ t ht) hCs.le)) houter) _
     exact hmain.trans (le_add_of_nonneg_right (by positivity))
   · have hδa : 1 / 8 ≤ δ := le_of_not_ge hδfine
-    have houter : (∫⁻ ω, (c * f ω) ^ t.2 ∂P) ≤ Ec :=
-      lintegral_lower_rpow_const_mul_le P f hf c Dcoarse t.2 q hp0.le hpq
-        (hcoarse γ (hΓ2 hγ).1 (hΓ2 hγ).2 δ hδa (hδR.trans hR₀))
-    have hmass : ∀ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ≤ c * f ω :=
-      cutoffWeightedGmcBallMass_le_coarse_weight P Xc γ t.1 (1 / 8) r₀ W B R δ z
-        hR₀ hδa hδR hzB (hweight γ hγ t ht)
-    have hmain := (lintegral_mono (fun ω => ENNReal.rpow_le_rpow (hmass ω) hp0.le)).trans houter
-    exact hmain.trans (le_add_of_nonneg_left (by positivity))
+    exact ((lintegral_mono (fun ω => ENNReal.rpow_le_rpow ((cutoffWeightedGmcBallMass_le_coarse_weight P Xc γ t.1 (1 / 8) r₀ W B R δ z hR₀ hδa hδR hzB (hweight γ hγ t ht)) ω) hp0.le)).trans (lintegral_lower_rpow_const_mul_le P f hf c Dcoarse t.2 q hp0.le hpq (hcoarse γ (hΓ2 hγ).1 (hΓ2 hγ).2 δ hδa (hδR.trans hR₀)))).trans (le_add_of_nonneg_left (by positivity))
 
 end DOZZ.Proofs

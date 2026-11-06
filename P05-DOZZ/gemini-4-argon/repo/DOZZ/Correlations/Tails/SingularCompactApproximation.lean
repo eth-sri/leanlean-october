@@ -27,18 +27,18 @@ noncomputable def singularCompactTest (f : BoundedContinuousFunction ℂ ℝ)
   exact BoundedContinuousFunction.ofNormedAddCommGroup F hcont hb.choose hb.choose_spec
 
 theorem singular_compact_test_support (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) (β : ℝ) (n : ℕ) :
+    (hfc : HasCompactSupport (f : ℂ → ℝ)) β (n : ℕ) :
     tsupport (singularCompactTest f hfc β n : ℂ → ℝ) ⊆ tsupport (f : ℂ → ℝ) :=
   tsupport_mul_subset_left
 
 theorem singular_compact_test_nonneg (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) (hf : ∀ x, 0 ≤ f x) (β : ℝ) (n : ℕ) (x : ℂ) :
+    (hfc : HasCompactSupport (f : ℂ → ℝ)) (hf : ∀ x, 0 ≤ f x) β n x :
     0 ≤ singularCompactTest f hfc β n x :=
   mul_nonneg (hf x) (Real.rpow_nonneg (by positivity) _)
 
 /-- The compact radial approximants increase, including at the insertion center. -/
 theorem singular_compact_test_mono (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) (hf : ∀ x, 0 ≤ f x) (β : ℝ) (hβ : 0 ≤ β) (x : ℂ) :
+    (hfc : HasCompactSupport (f : ℂ → ℝ)) (hf : ∀ x, 0 ≤ f x) β (hβ : 0 ≤ β) x :
     Monotone (fun n => singularCompactTest f hfc β n x) := by
   intro n m hnm
   change f x * (max ‖x‖ (1 / ((n : ℝ)+1))) ^ (-β) ≤
@@ -52,24 +52,14 @@ theorem singular_compact_test_mono (f : BoundedContinuousFunction ℂ ℝ)
 /-- The pointwise limit is the literal ENNReal inverse power, with no convention at zero
 silently replacing its infinite value. -/
 theorem singular_compact_test_tendsto (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) (hf : ∀ x, 0 ≤ f x) (β : ℝ) (x : ℂ) :
+    (hfc : HasCompactSupport (f : ℂ → ℝ)) (hf : ∀ x, 0 ≤ f x) (β : ℝ) x :
     Tendsto (fun n => ENNReal.ofReal (singularCompactTest f hfc β n x)) atTop
       (𝓝 (ENNReal.ofReal (f x) * (ENNReal.ofReal ‖x‖) ^ (-β))) := by
-  have ht : Tendsto (fun n : ℕ => (n : ℝ)+1) atTop atTop :=
-    tendsto_natCast_atTop_atTop.atTop_add tendsto_const_nhds
-  have hδ : Tendsto (fun n : ℕ => 1 / ((n : ℝ)+1)) atTop (𝓝 0) := by
-    simpa only [one_div, Function.comp_def] using tendsto_inv_atTop_zero.comp ht
-  have hbase : Tendsto (fun n : ℕ => ENNReal.ofReal (max ‖x‖ (1 / ((n : ℝ)+1)))) atTop
-      (𝓝 (ENNReal.ofReal ‖x‖)) := by
-    simpa only [max_eq_left (norm_nonneg x), Function.comp_def] using
-      ENNReal.continuous_ofReal.tendsto _ |>.comp ((tendsto_const_nhds (x := ‖x‖)).max hδ)
   have hpow : Tendsto (fun n : ℕ =>
       (ENNReal.ofReal (max ‖x‖ (1 / ((n : ℝ)+1)))) ^ (-β)) atTop
       (𝓝 ((ENNReal.ofReal ‖x‖) ^ (-β))) :=
-    ENNReal.continuous_rpow_const.tendsto (ENNReal.ofReal ‖x‖) |>.comp hbase
-  have hprod := ENNReal.Tendsto.const_mul (a := ENNReal.ofReal (f x)) hpow
-    (Or.inr ENNReal.ofReal_ne_top)
-  convert hprod using 1
+    ENNReal.continuous_rpow_const.tendsto (ENNReal.ofReal ‖x‖) |>.comp (by simpa only [max_eq_left (norm_nonneg x), Function.comp_def] using ENNReal.continuous_ofReal.tendsto _ |>.comp ((tendsto_const_nhds (x := ‖x‖)).max (show Tendsto (fun n : ℕ => 1 / ((n : ℝ)+1)) atTop (𝓝 0) by simpa only [one_div, Function.comp_def] using tendsto_inv_atTop_zero.comp (tendsto_natCast_atTop_atTop.atTop_add tendsto_const_nhds))))
+  convert (ENNReal.Tendsto.const_mul (a := ENNReal.ofReal (f x)) hpow (Or.inr ENNReal.ofReal_ne_top)) using 1
   funext n
   change ENNReal.ofReal (f x * (max ‖x‖ (1 / ((n : ℝ)+1))) ^ (-β)) = _
   rw [ENNReal.ofReal_mul (hf x), ENNReal.ofReal_rpow_of_pos

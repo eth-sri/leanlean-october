@@ -17,22 +17,16 @@ namespace DOZZ.Proofs
 
 /-- The ordinary Gauss series has positive convergence radius whenever its denominator parameter
 is not a nonpositive integer. -/
-theorem ordinaryHypergeometricSeries_radius_pos (a b c : ℂ)
+theorem ordinaryHypergeometricSeries_radius_pos a b c
     (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
     0 < (ordinaryHypergeometricSeries ℂ a b c).radius := by
   by_cases ha : ∃ n : ℕ, a = -(n : ℂ)
   · obtain ⟨n, hn⟩ := ha
-    have htop : (ordinaryHypergeometricSeries ℂ a b c).radius = ⊤ := by
-      rw [hn]
-      exact ordinaryHypergeometric_radius_top_of_neg_nat₁ ℂ b c
-    rw [htop]
+    rw [(show (ordinaryHypergeometricSeries ℂ a b c).radius = ⊤ by rw [hn]; exact ordinaryHypergeometric_radius_top_of_neg_nat₁ ℂ b c)]
     exact ENNReal.zero_lt_top
   · by_cases hb : ∃ n : ℕ, b = -(n : ℂ)
     · obtain ⟨n, hn⟩ := hb
-      have htop : (ordinaryHypergeometricSeries ℂ a b c).radius = ⊤ := by
-        rw [ordinaryHypergeometricSeries_symm, hn]
-        exact ordinaryHypergeometric_radius_top_of_neg_nat₁ ℂ a c
-      rw [htop]
+      rw [(show (ordinaryHypergeometricSeries ℂ a b c).radius = ⊤ by rw [ordinaryHypergeometricSeries_symm, hn]; exact ordinaryHypergeometric_radius_top_of_neg_nat₁ ℂ a c)]
       exact ENNReal.zero_lt_top
     · have ha' : ∀ n : ℕ, (n : ℂ) ≠ -a := by
         intro n hn
@@ -60,22 +54,16 @@ theorem ordinaryHypergeometricSeries_radius_pos (a b c : ℂ)
 /-- The ordinary Gauss power series converges throughout the open unit disk whenever its
 denominator parameter is not a nonpositive integer. Terminating numerator parameters have
 infinite radius; otherwise the radius is exactly one. -/
-theorem ordinaryHypergeometricSeries_one_le_radius (a b c : ℂ)
+theorem ordinaryHypergeometricSeries_one_le_radius a b c
     (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
     1 ≤ (ordinaryHypergeometricSeries ℂ a b c).radius := by
   by_cases ha : ∃ n : ℕ, a = -(n : ℂ)
   · obtain ⟨n, hn⟩ := ha
-    have htop : (ordinaryHypergeometricSeries ℂ a b c).radius = ⊤ := by
-      rw [hn]
-      exact ordinaryHypergeometric_radius_top_of_neg_nat₁ ℂ b c
-    rw [htop]
+    rw [(show (ordinaryHypergeometricSeries ℂ a b c).radius = ⊤ by rw [hn]; exact ordinaryHypergeometric_radius_top_of_neg_nat₁ ℂ b c)]
     exact le_top
   · by_cases hb : ∃ n : ℕ, b = -(n : ℂ)
     · obtain ⟨n, hn⟩ := hb
-      have htop : (ordinaryHypergeometricSeries ℂ a b c).radius = ⊤ := by
-        rw [ordinaryHypergeometricSeries_symm, hn]
-        exact ordinaryHypergeometric_radius_top_of_neg_nat₁ ℂ a c
-      rw [htop]
+      rw [(show (ordinaryHypergeometricSeries ℂ a b c).radius = ⊤ by rw [ordinaryHypergeometricSeries_symm, hn]; exact ordinaryHypergeometric_radius_top_of_neg_nat₁ ℂ a c)]
       exact le_top
     · have ha' : ∀ n : ℕ, (n : ℂ) ≠ -a := by
         intro n hn

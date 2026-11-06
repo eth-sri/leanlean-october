@@ -17,10 +17,10 @@ namespace DOZZ.Proofs
 
 theorem copied_compact_ennreal_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+    X Xc
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (z : ℂ) (hz : 2 ≤ ‖z‖) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    z (hz : 2 ≤ ‖z‖) γ (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : IsGMCOf P (translatedField X Xc z) γ N)
     (g : BoundedContinuousFunction ℂ ℝ) (hgc : HasCompactSupport (g : ℂ → ℝ))
@@ -36,10 +36,10 @@ theorem copied_compact_ennreal_law
   obtain ⟨G, hGc, hG, hlaw⟩ := copied_compact_chaos_law
     P X Xc hX hc hm z hz γ hγ hγ2 M hM N hN g hgc hg0 hgs
   refine ⟨G, hGc, hG, ?_⟩
-  have hG0 (y : ℂ) : 0 ≤ G y := by
+  have hG0 y : 0 ≤ G y := by
     rw [hG]
     exact mul_nonneg (hg0 _) (Real.exp_nonneg _)
-  have hGi (ω : Ω) : Integrable (fun y => G y) (M ω) := by
+  have hGi ω : Integrable (fun y => G y) (M ω) := by
     let : IsFiniteMeasure (M ω) := hM.1 ω
     exact G.integrable (μ := M ω)
   have hAm := gmc_parameter_integral_aemeasurable P X hX γ hγ hγ2 M hM
@@ -56,8 +56,8 @@ theorem copied_compact_ennreal_law
     fun_prop
   have hF : Measurable F := (g.continuous.measurable.comp measurable_snd).mul
     ((((hcoef.comp measurable_snd).const_mul γ).mul measurable_fst).exp)
-  have hF0 (t : ℝ) (x : ℂ) : 0 ≤ F (t,x) := mul_nonneg (hg0 x) (Real.exp_nonneg _)
-  have hFeq (t : ℝ) (x : ℂ) : F (t,x) =
+  have hF0 t x : 0 ≤ F (t,x) := mul_nonneg (hg0 x) (Real.exp_nonneg _)
+  have hFeq t x : F (t,x) =
       exponentialParameterTest g (γ • boundedPinCoefficient z) t x := by
     by_cases hx : g x = 0
     · change g x * _ = g x * _

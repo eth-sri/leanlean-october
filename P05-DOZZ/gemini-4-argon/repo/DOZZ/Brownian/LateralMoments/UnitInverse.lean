@@ -20,7 +20,7 @@ predicate itself. -/
 theorem lateralGMC_unit_inverse_moment_lt_top
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
-    (v : ℝ) (hv : 0 < v) :
+    v (hv : 0 < v) :
     (∫⁻ ω, ENNReal.rpow (Z ω (Icc 0 1)) (-v) ∂P) < ⊤ :=
   lateralUnitBlock_lateral_unit_inverse_moment_lt_top P γ v hZ.1 hZ.2.1 hv Z hZ
 

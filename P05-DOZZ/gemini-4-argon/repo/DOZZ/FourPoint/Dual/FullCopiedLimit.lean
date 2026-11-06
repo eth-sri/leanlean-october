@@ -15,8 +15,8 @@ namespace DOZZ.Proofs
 error is little-o at every exponent below `ξ`. Their radial removal and independence are
 proved on the same eventual family of source carriers. -/
 theorem dual_full_copied_inverse_littleO
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun v : Ω × (ℂ × ℝ) => Xc v.1 v.2.1 v.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun v : ℂ × ℝ => Xc ω v.1 v.2))
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
@@ -36,10 +36,8 @@ theorem dual_full_copied_inverse_littleO
         (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
   obtain ⟨N, hN, hcopy⟩ := dual_source_decoupling_littleO P X Xc hX hc hm hcont
     γ hγ hγ₂ M hM α₁ α₂ α₃ q h ξ κ hq hξ hξ1 hκ
-  have hfull := dual_full_separated_inverse_littleO P X hX γ hγ hγ₂ M hM
-    α₁ α₂ α₃ q ξ κ h hq hα₁ hα₂ hα₃ hβ hξ hξ1 hslack
   refine ⟨N, hN, ?_⟩
-  have ht := hfull.add hcopy
+  have ht := (dual_full_separated_inverse_littleO P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ q ξ κ h hq hα₁ hα₂ hα₃ hβ hξ hξ1 hslack).add hcopy
   simp only [zero_add] at ht
   apply ht.congr'
   exact Eventually.of_forall fun z => by dsimp only; ring

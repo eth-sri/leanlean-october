@@ -32,19 +32,11 @@ theorem separatedTail_mixed_moment_le_of_independent_domination
       (∫⁻ ω, E ω ^ p ∂P) ^ (1 / p) *
         ((∫⁻ ω, D2 ω ^ (a2 * q) ∂P) *
           (∫⁻ ω, D3 ω ^ (a3 * q) ∂P)) ^ (1 / q) := by
-  have hpow : IndepFun (fun ω => D2 ω ^ (a2*q))
-      (fun ω => D3 ω ^ (a3*q)) P :=
-    hD.comp (ENNReal.continuous_rpow_const.measurable)
-      (ENNReal.continuous_rpow_const.measurable)
-  have hfactor := lintegral_mul_eq_lintegral_mul_lintegral_of_indepFun''
-    (hD2.pow_const (a2*q)) (hD3.pow_const (a3*q)) hpow
-  have hh := ENNReal.lintegral_mul_le_Lp_mul_Lq P hpq hE
-    ((hD2.pow_const a2).mul (hD3.pow_const a3))
   calc
     _ ≤ ∫⁻ ω, E ω * (D2 ω ^ a2 * D3 ω ^ a3) ∂P := lintegral_mono_ae hdom
     _ ≤ _ := by
       simpa only [Pi.mul_apply, ENNReal.mul_rpow_of_nonneg _ _ hpq.symm.pos.le,
-        ← ENNReal.rpow_mul, hfactor] using hh
+        ← ENNReal.rpow_mul, (lintegral_mul_eq_lintegral_mul_lintegral_of_indepFun'' (hD2.pow_const (a2*q)) (hD3.pow_const (a3*q)) (hD.comp (ENNReal.continuous_rpow_const.measurable) (ENNReal.continuous_rpow_const.measurable)))] using (ENNReal.lintegral_mul_le_Lp_mul_Lq P hpq hE ((hD2.pow_const a2).mul (hD3.pow_const a3)))
 
 /-- Uniform finite bounds on the three moments give one finite mixed-moment constant. -/
 theorem separatedTail_mixed_moment_le_uniform

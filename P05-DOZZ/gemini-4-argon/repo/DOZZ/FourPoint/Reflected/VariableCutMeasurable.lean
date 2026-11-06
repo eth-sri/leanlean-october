@@ -12,16 +12,12 @@ namespace DOZZ.Proofs
 
 theorem reflected_williams_variable_cut_aemeasurable
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (μ : Measure ℝ) [IsProbabilityMeasure μ] (γ : ℝ)
+    (μ : Measure ℝ) [IsProbabilityMeasure μ] γ
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hB : AEMeasurable B P) (hZ : AEMeasurable Z P)
     (hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Icc a b) < ⊤) :
     AEMeasurable (fun v : ℝ × Ω => twoSidedReflectionCutMass γ v.1 B Z v.2) (μ.prod P) := by
-  have hpair := (hB.prodMk hZ).comp_quasiMeasurePreserving
-    (measurePreserving_snd (μ := μ) (ν := P)).quasiMeasurePreserving
-  have hcode := (measurable_williamsCutMassCode γ).comp_aemeasurable
-    (measurable_fst.aemeasurable.prodMk hpair)
-  apply hcode.congr
+  apply ((measurable_williamsCutMassCode γ).comp_aemeasurable (measurable_fst.aemeasurable.prodMk ((hB.prodMk hZ).comp_quasiMeasurePreserving (measurePreserving_snd (μ := μ) (ν := P)).quasiMeasurePreserving))).congr
   filter_upwards [measurePreserving_snd.quasiMeasurePreserving.ae hfin] with v hv
   exact williamsCutMassCode_eq γ v.1 (B v.2) (Z v.2) hv
 

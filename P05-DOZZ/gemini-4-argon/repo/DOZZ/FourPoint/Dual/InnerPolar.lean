@@ -22,7 +22,7 @@ namespace DOZZ.Proofs
 /-- The actual inner kernel integral is squeezed by its radial polar mass, with both explicit
 scalar factors. The bound is valid before taking any stochastic expectation. -/
 theorem dual_inner_kernel_mass_squeeze
-    (γ α₁ α₂ α₃ R : ℝ) (hγ : γ ≠ 0) (z : ℂ) (A : TwoSidedPath) (M : Measure ℂ) (T : ℝ≥0)
+    (γ α₁ α₂ α₃ R : ℝ) (hγ : γ ≠ 0) z (A : TwoSidedPath) (M : Measure ℂ) (T : ℝ≥0)
     (hR : 0 ≤ R) (hR₁ : R < 1) (hz : 0 < ‖z‖)
     (hT : Real.exp (-(T : ℝ)) < 1) (hsep : Real.exp (-(T : ℝ)) ≤ R * ‖z‖) :
     let η := Real.exp (-(T : ℝ))
@@ -36,7 +36,7 @@ theorem dual_inner_kernel_mass_squeeze
       ENNReal.ofReal ((1+R) ^ (2 : ℝ) * (1-η)⁻¹ ^ |γ*α₂| * ‖z‖ ^ (2 : ℝ)) * V := by
   dsimp only
   rw [← reflected_inner_radial_polar γ α₁ A M T]
-  let E : Set ℂ := {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}
+  let E := {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}
   have hE : MeasurableSet E :=
     (measurableSet_lt measurable_const measurable_norm).inter
       (measurableSet_lt measurable_norm measurable_const)

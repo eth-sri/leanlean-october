@@ -21,20 +21,17 @@ namespace DOZZ.Proofs
 noncomputable def separatedTail_softWeight (γ α s : ℝ) (c x : ℂ) : ℝ≥0 :=
   ((‖x-c‖+s)^(-γ*α)).toNNReal
 
-theorem separatedTail_softWeight_measurable (γ α s : ℝ) (c : ℂ) :
+theorem separatedTail_softWeight_measurable γ α s c :
     Measurable (separatedTail_softWeight γ α s c) :=
   (limitWeightedFatou_weight_measurable (-γ*α) s).comp (measurable_id.sub_const c)
 
-theorem separatedTail_softWeight_bounded (γ α s : ℝ) (c : ℂ) (he : -γ*α ≤ 0) (hs : 0 < s) :
-    ∃ b : ℝ≥0, ∀ x, separatedTail_softWeight γ α s c x ≤ b :=
-  ⟨(s^(-γ*α)).toNNReal, fun x => limitWeightedFatou_weight_le he hs (x-c)⟩
 
 /-- A Dirichlet circle cutoff moment is bounded by the literal equator cutoff moment.
 The same reference density and softened weight are used on both sides. -/
 theorem separatedTail_dirichlet_cutoff_moment_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (Dc : Ω → ℂ → ℝ → ℝ) (c : ℂ) (R δ γ α t : ℝ)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (hX : IsEquatorGFF P X) Xc (hc : IsCircleAverage P X Xc)
+    (Dc : Ω → ℂ → ℝ → ℝ) c (R δ γ α t : ℝ)
     (hR : 1 < R) (hpin : ‖c‖+5/4 ≤ R) (hδ : 0 < δ) (hδ4 : δ < 1/4)
     (he : -γ*α ≤ 0) (ht : 0 < t)
     (hfield : IsCenteredGaussianField P (fun ω x => Dc ω (separatedTail_diskPoint c x) (Real.log (1/δ))))
@@ -46,10 +43,11 @@ theorem separatedTail_dirichlet_cutoff_moment_le
       (gmcReferenceMeasure.restrict (ball c 1)) (separatedTail_softWeight γ α δ c) γ ω ^ t ∂P) ≤
       ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2*|t^2-t|)) *
         (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ α c 1 δ ω ^ t ∂P) := by
+  have separatedTail_softWeight_bounded s c (he : -γ*α ≤ 0) (hs : 0 < s) : ∃ b : ℝ≥0, ∀ x, separatedTail_softWeight γ α s c x ≤ b := ⟨(s^(-γ*α)).toNNReal, fun x => limitWeightedFatou_weight_le he hs (x-c)⟩
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   have hscale : Real.exp (-Real.log (1/δ)) = δ := by
     rw [one_div, Real.log_inv, neg_neg, Real.exp_log hδ]
-  have hcomp (x y : ℂ) (hx : x ∈ ball c 1) (hy : y ∈ ball c 1) :
+  have hcomp x y (hx : x ∈ ball c 1) (hy : y ∈ ball c 1) :
       |(∫ ω, Dc ω (separatedTail_diskPoint c x) (Real.log (1/δ))*
         Dc ω (separatedTail_diskPoint c y) (Real.log (1/δ)) ∂P)-
         (∫ ω, Xc ω x (Real.log (1/δ))*Xc ω y (Real.log (1/δ)) ∂P)| ≤ 4+2*R := by
@@ -58,29 +56,12 @@ theorem separatedTail_dirichlet_cutoff_moment_le
     exact separatedTail_circle_covariance_discrepancy P X hX Xc hc Dc c R (Real.log (1/δ)) hR hpin
       (by simpa only [hscale] using hDc) x y (mem_ball_iff_norm.mp hx).le
       (mem_ball_iff_norm.mp hy).le (by simpa only [hscale] using hδ4)
-  have hcov : ∀ᵐ xy ∂(gmcReferenceMeasure.restrict (ball c 1)).prod
-      (gmcReferenceMeasure.restrict (ball c 1)),
-      |(∫ ω, Dc ω (separatedTail_diskPoint c xy.1) (Real.log (1/δ))*
-        Dc ω (separatedTail_diskPoint c xy.2) (Real.log (1/δ)) ∂P)-
-        (∫ ω, Xc ω xy.1 (Real.log (1/δ))*Xc ω xy.2 (Real.log (1/δ)) ∂P)| ≤ 4+2*R := by
-    have hmem : ∀ᵐ xy : ℂ × ℂ ∂(gmcReferenceMeasure.restrict (ball c 1)).prod
-        (gmcReferenceMeasure.restrict (ball c 1)), xy.1 ∈ ball c 1 ∧ xy.2 ∈ ball c 1 :=
-      (Measure.ae_prod_iff_ae_ae ((isOpen_ball.measurableSet.preimage measurable_fst).inter
-        (isOpen_ball.measurableSet.preimage measurable_snd))).mpr
-        ((ae_restrict_mem isOpen_ball.measurableSet).mono fun x hx =>
-          (ae_restrict_mem isOpen_ball.measurableSet).mono fun y hy => ⟨hx,hy⟩)
-    exact hmem.mono fun xy hxy => hcomp xy.1 xy.2 hxy.1 hxy.2
-  have hdiag : ∀ᵐ x ∂gmcReferenceMeasure.restrict (ball c 1),
-      |(∫ ω, Dc ω (separatedTail_diskPoint c x) (Real.log (1/δ))^2 ∂P)-
-        (∫ ω, Xc ω x (Real.log (1/δ))^2 ∂P)| ≤ 4+2*R := by
-    filter_upwards [ae_restrict_mem isOpen_ball.measurableSet] with x hx
-    simpa only [pow_two] using hcomp x x hx hx
   have hb := separatedTail_fieldChaosMoment_le_of_covariance_discrepancy P P _ _ hfield
     (circleAverage_isCenteredGaussianField P X hX Xc hc _)
     (gmcReferenceMeasure.restrict (ball c 1)) (separatedTail_softWeight γ α δ c)
-    (separatedTail_softWeight_measurable γ α δ c) (separatedTail_softWeight_bounded γ α δ c he hδ)
-    γ (4+2*R) t (by linarith) ht hcov hdiag
-  have heq (ω : Ω) : fieldChaosMass P (fun ω x => Xc ω x (Real.log (1/δ)))
+    (separatedTail_softWeight_measurable γ α δ c) (separatedTail_softWeight_bounded δ c he hδ)
+    γ (4+2*R) t (by linarith) ht (by exact ((Measure.ae_prod_iff_ae_ae ((isOpen_ball.measurableSet.preimage measurable_fst).inter (isOpen_ball.measurableSet.preimage measurable_snd))).mpr ((ae_restrict_mem isOpen_ball.measurableSet).mono fun x hx => (ae_restrict_mem isOpen_ball.measurableSet).mono fun y hy => ⟨hx,hy⟩)).mono fun xy hxy => hcomp xy.1 xy.2 hxy.1 hxy.2) (by filter_upwards [ae_restrict_mem isOpen_ball.measurableSet] with x hx; simpa only [pow_two] using hcomp x x hx hx)
+  have heq ω : fieldChaosMass P (fun ω x => Xc ω x (Real.log (1/δ)))
       (gmcReferenceMeasure.restrict (ball c 1)) (separatedTail_softWeight γ α δ c) γ ω =
       cutoffWeightedGmcBallMass P Xc γ α c 1 δ ω := by
     rw [← regularizedGMC_weighted_eq_fieldChaosMass P X hX Xc hc γ _ _

@@ -66,10 +66,7 @@ theorem inner_gaussianCoordinateLp [DecidableEq ι] (i j : ι) :
 /-- Each Gaussian coordinate has `L²` norm one. -/
 theorem norm_gaussianCoordinateLp [DecidableEq ι] (i : ι) :
     ‖gaussianCoordinateLp i‖ = 1 := by
-  have hsq : ‖gaussianCoordinateLp i‖ ^ (2 : Nat) = 1 := by
-    rw [norm_sq_eq_re_inner (𝕜 := ℝ), inner_gaussianCoordinateLp]
-    simp
-  exact (sq_eq_sq₀ (norm_nonneg _) zero_le_one).mp (by simpa using hsq)
+  exact (sq_eq_sq₀ (norm_nonneg _) zero_le_one).mp (by simpa using (show ‖gaussianCoordinateLp i‖ ^ (2 : Nat) = 1 by rw [norm_sq_eq_re_inner (𝕜 := ℝ), inner_gaussianCoordinateLp]; simp))
 
 /-- The concrete Gaussian coordinate vectors form an orthonormal family in `L²(Ω)`. -/
 theorem orthonormal_gaussianCoordinateLp [DecidableEq ι] :
@@ -99,7 +96,7 @@ noncomputable def gaussianL2Isometry [DecidableEq ι] :
   (orthonormal_gaussianCoordinateLp (ι := ι)).orthogonalFamily.linearIsometry
 
 @[simp]
-theorem gaussianL2Isometry_single [DecidableEq ι] (i : ι) (c : ℝ) :
+theorem gaussianL2Isometry_single [DecidableEq ι] i c :
     gaussianL2Isometry (ι := ι) (lp.single 2 i c) =
       c • gaussianCoordinateLp i := by
   simp [gaussianL2Isometry, LinearIsometry.toSpanSingleton_apply]
@@ -133,25 +130,25 @@ theorem norm_gaussianL2CoefficientPartialSum_sq [DecidableEq ι] (s : Finset ι)
   norm_num at h
   simpa [gaussianL2CoefficientPartialSum, Real.norm_eq_abs, sq_abs] using h
 
-theorem hasSum_gaussianL2CoefficientPartialSum [DecidableEq ι] (c : ℓ²(ι, ℝ)) :
+theorem hasSum_gaussianL2CoefficientPartialSum [DecidableEq ι] c :
     HasSum (fun i : ι => lp.single (E := fun _ : ι => ℝ) 2 i (c i)) c := by
   simpa using
     (lp.hasSum_single (E := fun _ : ι => ℝ) (p := (2 : ℝ≥0∞))
       ENNReal.ofNat_ne_top c)
 
-theorem tendsto_gaussianL2CoefficientPartialSum [DecidableEq ι] (c : ℓ²(ι, ℝ)) :
+theorem tendsto_gaussianL2CoefficientPartialSum [DecidableEq ι] c :
     Tendsto (fun s : Finset ι => gaussianL2CoefficientPartialSum s c) atTop (𝓝 c) := by
   simpa [HasSum, gaussianL2CoefficientPartialSum] using
     (hasSum_gaussianL2CoefficientPartialSum c)
 
 theorem tendsto_gaussianL2CoefficientPartialSum_truncation [Encodable ι] [DecidableEq ι]
-    (c : ℓ²(ι, ℝ)) :
+    c :
     Tendsto (fun n : ℕ => gaussianL2CoefficientPartialSum (gaussianIndexTruncation ι n) c)
       atTop (𝓝 c) :=
   (tendsto_gaussianL2CoefficientPartialSum c).comp (tendsto_gaussianIndexTruncation ι)
 
 theorem tendsto_gaussianL2CoefficientPartialSum_truncation_norm_sq [Encodable ι]
-    [DecidableEq ι] (c : ℓ²(ι, ℝ)) :
+    [DecidableEq ι] c :
     Tendsto
       (fun n : ℕ => ‖gaussianL2CoefficientPartialSum (gaussianIndexTruncation ι n) c‖ ^
         (2 : Nat))
@@ -176,15 +173,10 @@ noncomputable def gaussianPartialSumLp [DecidableEq ι] (s : Finset ι)
   ∑ i ∈ s, c i • gaussianCoordinateLp i
 
 @[simp]
-theorem gaussianPartialSumLp_empty [DecidableEq ι] (c : ℓ²(ι, ℝ)) :
+theorem gaussianPartialSumLp_empty [DecidableEq ι] c :
     gaussianPartialSumLp (∅ : Finset ι) c = 0 := by
   simp [gaussianPartialSumLp]
 
-theorem gaussianPartialSumLp_insert [DecidableEq ι] {s : Finset ι} {i : ι}
-    (hi : i ∉ s) (c : ℓ²(ι, ℝ)) :
-    gaussianPartialSumLp (insert i s) c =
-      c i • gaussianCoordinateLp i + gaussianPartialSumLp s c := by
-  simp [gaussianPartialSumLp, Finset.sum_insert, hi]
 
 /-- The finite `Lp` partial sum is represented by the corresponding concrete finite Gaussian sum. -/
 theorem gaussianPartialSumLp_coeFn [DecidableEq ι] (s : Finset ι)
@@ -192,16 +184,14 @@ theorem gaussianPartialSumLp_coeFn [DecidableEq ι] (s : Finset ι)
     ⇑(gaussianPartialSumLp s c) =ᵐ[gaussianSequenceMeasure ι]
       gaussianLinearCombination s (fun i => c i) := by
   classical
+  have gaussianPartialSumLp_insert {s : Finset ι} {i : ι} (hi : i ∉ s) (c : ℓ²(ι, ℝ)) : gaussianPartialSumLp (insert i s) c = c i • gaussianCoordinateLp i + gaussianPartialSumLp s c := by
+    simp [gaussianPartialSumLp, Finset.sum_insert, hi]
   induction s using Finset.induction with
   | empty =>
       filter_upwards [Lp.coeFn_zero ℝ 2 (gaussianSequenceMeasure ι)] with ω hω
       simp [gaussianPartialSumLp, gaussianLinearCombination] at hω ⊢
   | insert i s hi ih =>
-      have hsum :
-          gaussianPartialSumLp (insert i s) c =
-            c i • gaussianCoordinateLp i + gaussianPartialSumLp s c :=
-        gaussianPartialSumLp_insert hi c
-      rw [hsum]
+      rw [(gaussianPartialSumLp_insert hi c)]
       filter_upwards [Lp.coeFn_add (c i • gaussianCoordinateLp i)
           (gaussianPartialSumLp s c),
         Lp.coeFn_smul (c i) (gaussianCoordinateLp i),
@@ -218,8 +208,8 @@ theorem gaussianPartialSumLp_coeFn [DecidableEq ι] (s : Finset ι)
       simp [gaussianLinearCombination, Finset.sum_insert, hi]
 
 /-- Finite `Lp` partial sums have the expected centered Gaussian law. -/
-theorem map_gaussianPartialSumLp_eq_gaussianReal [DecidableEq ι] (s : Finset ι)
-    (c : ℓ²(ι, ℝ)) :
+theorem map_gaussianPartialSumLp_eq_gaussianReal [DecidableEq ι] s
+    c :
     Measure.map (gaussianPartialSumLp s c) (gaussianSequenceMeasure ι) =
       ProbabilityTheory.gaussianReal 0
         (gaussianLinearCombinationVariance s fun i => c i) := by
@@ -232,23 +222,16 @@ theorem map_gaussianPartialSumLp_eq_gaussianReal [DecidableEq ι] (s : Finset ι
         (gaussianLinearCombinationVariance s fun i => c i) :=
           map_gaussianLinearCombination_eq_gaussianReal s fun i => c i
 
-/-- Finite coefficient partial sums converge in `L²(Ω)` to the infinite Gaussian sum. -/
-theorem hasSum_gaussianPartialSumLp [DecidableEq ι] (c : ℓ²(ι, ℝ)) :
-    HasSum (fun i : ι => c i • gaussianCoordinateLp i)
-      (gaussianL2Isometry (ι := ι) c) := by
-  rw [gaussianL2Isometry]
-  simpa [gaussianCoordinateLine_apply] using
-    (orthonormal_gaussianCoordinateLp (ι := ι)).orthogonalFamily.hasSum_linearIsometry c
 
 /-- The finite partial-sum net converges to the infinite white-noise evaluation in `L²(Ω)`. -/
-theorem tendsto_gaussianPartialSumLp [DecidableEq ι] (c : ℓ²(ι, ℝ)) :
+theorem tendsto_gaussianPartialSumLp [DecidableEq ι] c :
     Tendsto (fun s : Finset ι => gaussianPartialSumLp s c) atTop
       (𝓝 (gaussianL2Isometry (ι := ι) c)) := by
   simpa [HasSum, gaussianPartialSumLp] using
-    (hasSum_gaussianPartialSumLp c)
+    ((show HasSum (fun i : ι => c i • gaussianCoordinateLp i) (gaussianL2Isometry (ι := ι) c) by rw [gaussianL2Isometry]; simpa [gaussianCoordinateLine_apply] using (orthonormal_gaussianCoordinateLp (ι := ι)).orthogonalFamily.hasSum_linearIsometry c))
 
 @[simp]
-theorem norm_gaussianL2Isometry [DecidableEq ι] (c : ℓ²(ι, ℝ)) :
+theorem norm_gaussianL2Isometry [DecidableEq ι] c :
     ‖gaussianL2Isometry (ι := ι) c‖ = ‖c‖ :=
   (gaussianL2Isometry (ι := ι)).norm_map c
 
@@ -257,77 +240,14 @@ theorem charFun_map_gaussianL2Isometry [Encodable ι] [DecidableEq ι]
     (c : ℓ²(ι, ℝ)) (t : ℝ) :
     charFun (Measure.map (gaussianL2Isometry (ι := ι) c) (gaussianSequenceMeasure ι)) t =
       charFun (ProbabilityTheory.gaussianReal 0 (Real.toNNReal (‖c‖ ^ (2 : Nat)))) t := by
-  let μ : Measure (GaussianSequenceSpace ι) := gaussianSequenceMeasure ι
-  let X : Lp ℝ 2 μ := gaussianL2Isometry (ι := ι) c
+  let μ := gaussianSequenceMeasure ι
   let Xn : ℕ → Lp ℝ 2 μ := fun n =>
     gaussianPartialSumLp (gaussianIndexTruncation ι n) c
-  have hLp : Tendsto Xn atTop (𝓝 X) := by
-    exact (tendsto_gaussianPartialSumLp c).comp (tendsto_gaussianIndexTruncation ι)
-  have hInMeasure : TendstoInMeasure μ (fun n => ⇑(Xn n)) atTop X :=
-    tendstoInMeasure_of_tendsto_Lp (p := (2 : ℝ≥0∞)) hLp
-  have hDist :
-      TendstoInDistribution (fun n => ⇑(Xn n)) atTop (⇑X) (fun _ : ℕ => μ) μ :=
-    TendstoInMeasure.tendstoInDistribution hInMeasure fun n =>
-      (Lp.aestronglyMeasurable (Xn n)).aemeasurable
-  have hWeak :=
-    (ProbabilityMeasure.tendsto_iff_forall_integral_rclike_tendsto (Ω := ℝ) ℂ).mp hDist.tendsto
-  have hCharLimit :
-      Tendsto
-        (fun n : ℕ => charFun (Measure.map (Xn n) μ) t)
-        atTop
-        (𝓝 (charFun (Measure.map X μ) t)) := by
-    simpa [charFun_eq_integral_innerProbChar] using
-      hWeak (BoundedContinuousFunction.innerProbChar (t : ℝ))
-  have hVarianceLimit :
-      Tendsto
-        (fun n : ℕ =>
-          (gaussianLinearCombinationVariance (gaussianIndexTruncation ι n) fun i => c i : ℝ))
-        atTop (𝓝 (‖c‖ ^ (2 : Nat))) :=
-    tendsto_gaussianLinearCombinationVariance_indexTruncation c
-  have hVarianceLimitComplex :
-      Tendsto
-        (fun n : ℕ =>
-          (((gaussianLinearCombinationVariance (gaussianIndexTruncation ι n)
-            fun i => c i : ℝ)) : ℂ))
-        atTop (𝓝 (((‖c‖ ^ (2 : Nat) : ℝ)) : ℂ)) :=
-    (Complex.continuous_ofReal.tendsto _).comp hVarianceLimit
-  have hArgumentLimit :
-      Tendsto
-        (fun n : ℕ =>
-          (t : ℂ) * (0 : ℂ) * Complex.I -
-            (((gaussianLinearCombinationVariance (gaussianIndexTruncation ι n)
-              fun i => c i : ℝ)) : ℂ) * (t : ℂ) ^ (2 : Nat) / 2)
-        atTop
-        (𝓝 ((t : ℂ) * (0 : ℂ) * Complex.I -
-          (((‖c‖ ^ (2 : Nat) : ℝ)) : ℂ) * (t : ℂ) ^ (2 : Nat) / 2)) := by
-    exact (tendsto_const_nhds.sub
-      ((hVarianceLimitComplex.mul tendsto_const_nhds).div tendsto_const_nhds
-        (by norm_num : (2 : ℂ) ≠ 0)))
-  have hGaussianLimit :
-      Tendsto
-        (fun n : ℕ =>
-          charFun
-            (ProbabilityTheory.gaussianReal 0
-              (gaussianLinearCombinationVariance (gaussianIndexTruncation ι n) fun i => c i))
-            t)
-        atTop
-        (𝓝 (charFun
-          (ProbabilityTheory.gaussianReal 0 (Real.toNNReal (‖c‖ ^ (2 : Nat)))) t)) := by
-    have hExp := (Complex.continuous_exp.tendsto _).comp hArgumentLimit
-    simpa [Function.comp_def, ProbabilityTheory.charFun_gaussianReal,
-      Real.coe_toNNReal _ (sq_nonneg ‖c‖)] using hExp
-  have hFiniteChar :
-      Tendsto
-        (fun n : ℕ => charFun (Measure.map (Xn n) μ) t)
-        atTop
-        (𝓝 (charFun
-          (ProbabilityTheory.gaussianReal 0 (Real.toNNReal (‖c‖ ^ (2 : Nat)))) t)) := by
-    simpa [Xn, μ, map_gaussianPartialSumLp_eq_gaussianReal] using hGaussianLimit
-  exact tendsto_nhds_unique hCharLimit hFiniteChar
+  exact tendsto_nhds_unique (show Tendsto (fun n : ℕ => charFun (Measure.map (Xn n) μ) t) atTop (𝓝 (charFun (Measure.map (gaussianL2Isometry (ι := ι) c) μ) t)) by simpa [charFun_eq_integral_innerProbChar] using ((ProbabilityMeasure.tendsto_iff_forall_integral_rclike_tendsto (Ω := ℝ) ℂ).mp (TendstoInMeasure.tendstoInDistribution (tendstoInMeasure_of_tendsto_Lp (p := (2 : ℝ≥0∞)) ((tendsto_gaussianPartialSumLp c).comp (tendsto_gaussianIndexTruncation ι))) fun n => (Lp.aestronglyMeasurable (Xn n)).aemeasurable).tendsto) (BoundedContinuousFunction.innerProbChar (t : ℝ))) (by simpa [Xn, μ, map_gaussianPartialSumLp_eq_gaussianReal] using (by simpa [Function.comp_def, ProbabilityTheory.charFun_gaussianReal, Real.coe_toNNReal _ (sq_nonneg ‖c‖)] using ((Complex.continuous_exp.tendsto _).comp ((tendsto_const_nhds.sub ((((Complex.continuous_ofReal.tendsto _).comp (tendsto_gaussianLinearCombinationVariance_indexTruncation c)).mul tendsto_const_nhds).div tendsto_const_nhds (by norm_num : (2 : ℂ) ≠ 0))) : Tendsto (fun n : ℕ => (t : ℂ) * (0 : ℂ) * Complex.I - (((gaussianLinearCombinationVariance (gaussianIndexTruncation ι n) fun i => c i : ℝ)) : ℂ) * (t : ℂ) ^ (2 : Nat) / 2) atTop (𝓝 ((t : ℂ) * (0 : ℂ) * Complex.I - (((‖c‖ ^ (2 : Nat) : ℝ)) : ℂ) * (t : ℂ) ^ (2 : Nat) / 2))))))
 
 /-- The infinite `ℓ²` Gaussian-coordinate evaluation is centered Gaussian with variance `‖c‖²`. -/
 theorem map_gaussianL2Isometry_eq_gaussianReal [Encodable ι] [DecidableEq ι]
-    (c : ℓ²(ι, ℝ)) :
+    c :
     Measure.map (gaussianL2Isometry (ι := ι) c) (gaussianSequenceMeasure ι) =
       ProbabilityTheory.gaussianReal 0 (Real.toNNReal (‖c‖ ^ (2 : Nat))) := by
   refine Measure.ext_of_charFun ?_
@@ -352,10 +272,6 @@ noncomputable def scalarWhiteNoiseHilbertBasis (d : Nat) :
     HilbertBasis (HaarBasisIndex d) ℝ (ScalarWhiteNoiseHilbert d) :=
   haarHilbertBasis d
 
-theorem scalarWhiteNoiseHilbertBasis_coe (d : Nat) :
-    ⇑(scalarWhiteNoiseHilbertBasis d) =
-      (haarBasisLp : HaarBasisIndex d → ScalarWhiteNoiseHilbert d) :=
-  coe_haarHilbertBasis d
 
 /-- The concrete sample space for scalar white noise over `R^d`. -/
 abbrev ScalarWhiteNoiseSpace (d : Nat) :=
@@ -379,20 +295,20 @@ noncomputable def scalarWhiteNoiseL2 (d : Nat) :
     (scalarWhiteNoiseHilbertBasis d).repr.toLinearIsometry
 
 /-- Scalar white noise preserves the `L²(R^d)` inner product. -/
-theorem inner_scalarWhiteNoiseL2 {d : Nat}
-    (f g : ScalarWhiteNoiseHilbert d) :
+theorem inner_scalarWhiteNoiseL2 {d}
+    f g :
     ⟪scalarWhiteNoiseL2 d f, scalarWhiteNoiseL2 d g⟫_ℝ = ⟪f, g⟫_ℝ :=
   (scalarWhiteNoiseL2 d).inner_map_map f g
 
 @[simp]
-theorem norm_scalarWhiteNoiseL2 {d : Nat} (f : ScalarWhiteNoiseHilbert d) :
+theorem norm_scalarWhiteNoiseL2 {d} f :
     ‖scalarWhiteNoiseL2 d f‖ = ‖f‖ :=
   (scalarWhiteNoiseL2 d).norm_map f
 
 /-- The scalar white-noise evaluation of any `L²(R^d)` vector is centered Gaussian with variance
 its squared `L²` norm. -/
-theorem map_scalarWhiteNoiseL2_eq_gaussianReal {d : Nat}
-    (f : ScalarWhiteNoiseHilbert d) :
+theorem map_scalarWhiteNoiseL2_eq_gaussianReal {d}
+    f :
     Measure.map (scalarWhiteNoiseL2 d f) (scalarWhiteNoiseMeasure d) =
       ProbabilityTheory.gaussianReal 0 (Real.toNNReal (‖f‖ ^ (2 : Nat))) := by
   change Measure.map
@@ -400,29 +316,13 @@ theorem map_scalarWhiteNoiseL2_eq_gaussianReal {d : Nat}
         ((scalarWhiteNoiseHilbertBasis d).repr.toLinearIsometry f))
       (gaussianSequenceMeasure (HaarBasisIndex d)) =
     ProbabilityTheory.gaussianReal 0 (Real.toNNReal (‖f‖ ^ (2 : Nat)))
-  rw [map_gaussianL2Isometry_eq_gaussianReal]
-  rw [((scalarWhiteNoiseHilbertBasis d).repr.toLinearIsometry).norm_map f]
+  rw [map_gaussianL2Isometry_eq_gaussianReal, ((scalarWhiteNoiseHilbertBasis d).repr.toLinearIsometry).norm_map f]
 
-/-- Scalar white-noise evaluations have mean zero. -/
-theorem integral_scalarWhiteNoiseL2 {d : Nat} (f : ScalarWhiteNoiseHilbert d) :
-    ∫ ω, scalarWhiteNoiseL2 d f ω ∂scalarWhiteNoiseMeasure d = 0 := by
-  let v : ℝ≥0 := Real.toNNReal (‖f‖ ^ (2 : Nat))
-  have hLaw : HasLaw (scalarWhiteNoiseL2 d f) (ProbabilityTheory.gaussianReal 0 v)
-      (scalarWhiteNoiseMeasure d) := by
-    refine ⟨?_, ?_⟩
-    · exact (Lp.aestronglyMeasurable (scalarWhiteNoiseL2 d f)).aemeasurable
-    · dsimp [v]
-      exact map_scalarWhiteNoiseL2_eq_gaussianReal f
-  calc
-    ∫ ω, scalarWhiteNoiseL2 d f ω ∂scalarWhiteNoiseMeasure d =
-        ∫ z : ℝ, z ∂ProbabilityTheory.gaussianReal 0 v := hLaw.integral_eq
-    _ = 0 := by
-        exact ProbabilityTheory.integral_id_gaussianReal (μ := 0) (v := v)
 
 /-- The product integral of two scalar white-noise evaluations is the deterministic `L²` inner
 product. -/
-theorem integral_mul_scalarWhiteNoiseL2 {d : Nat}
-    (f g : ScalarWhiteNoiseHilbert d) :
+theorem integral_mul_scalarWhiteNoiseL2 {d}
+    f g :
     ∫ ω, scalarWhiteNoiseL2 d f ω * scalarWhiteNoiseL2 d g ω
         ∂scalarWhiteNoiseMeasure d =
       ⟪f, g⟫_ℝ := by
@@ -432,10 +332,23 @@ theorem integral_mul_scalarWhiteNoiseL2 {d : Nat}
   simp [mul_comm]
 
 /-- Scalar white noise has covariance equal to the deterministic `L²` inner product. -/
-theorem covariance_scalarWhiteNoiseL2 {d : Nat}
-    (f g : ScalarWhiteNoiseHilbert d) :
+theorem covariance_scalarWhiteNoiseL2 {d}
+    f g :
     cov[scalarWhiteNoiseL2 d f, scalarWhiteNoiseL2 d g; scalarWhiteNoiseMeasure d] =
       ⟪f, g⟫_ℝ := by
+  have integral_scalarWhiteNoiseL2 {d} f : ∫ ω, scalarWhiteNoiseL2 d f ω ∂scalarWhiteNoiseMeasure d = 0 := by
+    let v := Real.toNNReal (‖f‖ ^ (2 : Nat))
+    have hLaw : HasLaw (scalarWhiteNoiseL2 d f) (ProbabilityTheory.gaussianReal 0 v)
+        (scalarWhiteNoiseMeasure d) := by
+      refine ⟨?_, ?_⟩
+      · exact (Lp.aestronglyMeasurable (scalarWhiteNoiseL2 d f)).aemeasurable
+      · dsimp [v]
+        exact map_scalarWhiteNoiseL2_eq_gaussianReal f
+    calc
+      ∫ ω, scalarWhiteNoiseL2 d f ω ∂scalarWhiteNoiseMeasure d =
+          ∫ z : ℝ, z ∂ProbabilityTheory.gaussianReal 0 v := hLaw.integral_eq
+      _ = 0 := by
+          exact ProbabilityTheory.integral_id_gaussianReal (μ := 0) (v := v)
   rw [ProbabilityTheory.covariance_eq_sub (Lp.memLp (scalarWhiteNoiseL2 d f))
     (Lp.memLp (scalarWhiteNoiseL2 d g))]
   change (∫ x, scalarWhiteNoiseL2 d f x * scalarWhiteNoiseL2 d g x
@@ -448,14 +361,13 @@ theorem covariance_scalarWhiteNoiseL2 {d : Nat}
   ring
 
 @[simp]
-theorem scalarWhiteNoiseL2_haarBasisLp {d : Nat} (idx : HaarBasisIndex d) :
+theorem scalarWhiteNoiseL2_haarBasisLp {d} idx :
     scalarWhiteNoiseL2 d (haarBasisLp idx) = gaussianCoordinateLp idx := by
+  have scalarWhiteNoiseHilbertBasis_coe : ⇑(scalarWhiteNoiseHilbertBasis d) = (haarBasisLp : HaarBasisIndex d → ScalarWhiteNoiseHilbert d) := coe_haarHilbertBasis d
   change gaussianL2Isometry (ι := HaarBasisIndex d)
       ((scalarWhiteNoiseHilbertBasis d).repr (haarBasisLp idx)) =
     gaussianCoordinateLp idx
-  have hbasis : (scalarWhiteNoiseHilbertBasis d) idx = haarBasisLp idx := by
-    simpa using congrFun (scalarWhiteNoiseHilbertBasis_coe d) idx
-  rw [← hbasis, HilbertBasis.repr_self]
+  rw [← (show (scalarWhiteNoiseHilbertBasis d) idx = haarBasisLp idx by simpa using congrFun (scalarWhiteNoiseHilbertBasis_coe) idx), HilbertBasis.repr_self]
   simp
 
 end ScalarWhiteNoise

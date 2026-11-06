@@ -25,20 +25,20 @@ namespace DOZZ.Proofs
 transforms at the source cutoff. -/
 theorem cutoffLaplace_affine_ball_scaling
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    {a : ℂ} {c R r : ℝ} (hc : 0 < c) (hc1 : c ≤ 1)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X) γ
+    Xc (hXc : IsCircleAverage P X Xc)
+    {a} {c R r} (hc : 0 < c) (hc1 : c ≤ 1)
     (hR : 0 < R) (hRsmall : R < 1) (hTsmall : ‖a‖ + c * R < 1)
     (hsourceCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R},
       ‖x.1‖ + Real.exp (-r) ≤ 1)
     (htargetCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R},
-      ‖a + c • x.1‖ + Real.exp (-(r - Real.log c)) ≤ 1) (y : ℝ) :
+      ‖a + c • x.1‖ + Real.exp (-(r - Real.log c)) ≤ 1) y :
     cutoffLaplace P Xc γ (r - Real.log c) (Metric.ball a (c * R)) y =
       ∫ w, cutoffLaplace P Xc γ r (Metric.ball 0 R)
         (y + 2 * Real.log c + γ ^ 2 / 2 * Real.log c + γ * w)
         ∂gaussianReal 0 ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩ := by
   classical
-  let G : Measure ℝ := gaussianReal 0 ⟨-Real.log c,
+  let G := gaussianReal 0 ⟨-Real.log c,
     neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
   let _ : IsProbabilityMeasure P := hX.1
   have hG : IsProbabilityMeasure G := by
@@ -58,12 +58,11 @@ theorem cutoffLaplace_affine_ball_scaling
   have hLaw := regularizedGMC_affine_openBall_mass_law_CutoffScale P X hX γ Xc hXc
     (a := a) (c := c) (R := R) hc hc1 hR hRsmall hTsmall hsourceCut htargetCut
   change Measure.map t P = Measure.map s (P.prod G) at hLaw
-  have hball : MeasurableSet (Metric.ball a (c * R)) := Metric.isOpen_ball.measurableSet
   have hball0 : MeasurableSet (Metric.ball (0 : ℂ) R) := Metric.isOpen_ball.measurableSet
   have htm : Measurable t := by
     rw [measurable_pi_iff]
     intro _
-    exact measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ _ _ hball
+    exact measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ _ _ Metric.isOpen_ball.measurableSet
   have hsm : Measurable s := by
     rw [measurable_pi_iff]
     intro _
@@ -74,16 +73,6 @@ theorem cutoffLaplace_affine_ball_scaling
     dsimp [ψ]
     fun_prop
   -- Integrals of `ψ` against the two equal laws agree.
-  have hleft : cutoffLaplace P Xc γ (r - Real.log c) (Metric.ball a (c * R)) y =
-      ∫ v, ψ v ∂Measure.map t P := by
-    rw [integral_map htm.aemeasurable hψ.aestronglyMeasurable]
-    rfl
-  have hmid : (∫ v, ψ v ∂Measure.map t P) = ∫ v, ψ v ∂Measure.map s (P.prod G) := by
-    rw [hLaw]
-  have hright : (∫ v, ψ v ∂Measure.map s (P.prod G)) =
-      ∫ q, Real.exp (-(Real.exp y) * (scaleFactor q.2 *
-        (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)) ∂P.prod G := by
-    rw [integral_map hsm.aemeasurable hψ.aestronglyMeasurable]
   have hint : Integrable (fun q : Ω × ℝ => Real.exp (-(Real.exp y) * (scaleFactor q.2 *
       (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal))) (P.prod G) := by
     refine Integrable.of_bound (C := 1) ?_ (Eventually.of_forall fun q => ?_)
@@ -93,8 +82,7 @@ theorem cutoffLaplace_affine_ball_scaling
     · rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       apply cutoffLaplace_integrand_le_one _ _ (Real.exp_pos y).le
       exact mul_nonneg (by positivity) ENNReal.toReal_nonneg
-  have hswap := integral_prod_symm (μ := P) (ν := G) _ hint
-  rw [hleft, hmid, hright, hswap]
+  rw [(show cutoffLaplace P Xc γ (r - Real.log c) (Metric.ball a (c * R)) y = ∫ v, ψ v ∂Measure.map t P by rw [integral_map htm.aemeasurable hψ.aestronglyMeasurable]; rfl), (show (∫ v, ψ v ∂Measure.map t P) = ∫ v, ψ v ∂Measure.map s (P.prod G) by rw [hLaw]), (show (∫ v, ψ v ∂Measure.map s (P.prod G)) = ∫ q, Real.exp (-(Real.exp y) * (scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)) ∂P.prod G by rw [integral_map hsm.aemeasurable hψ.aestronglyMeasurable]), (integral_prod_symm (μ := P) (ν := G) _ hint)]
   apply integral_congr_ae
   filter_upwards [] with w
   unfold cutoffLaplace

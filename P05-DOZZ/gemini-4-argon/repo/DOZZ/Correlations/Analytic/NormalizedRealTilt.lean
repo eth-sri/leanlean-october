@@ -18,12 +18,12 @@ namespace DOZZ.Proofs
 /-- The equator normalization cancels the tilted mass constant exactly. The formula is valid
 for every real power; finiteness is supplied separately by the proved moment bounds. -/
 theorem normalized_real_vertex_tilt
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (β : Fin (N + 1) → ℝ) (z : Fin N → ℂ) (r : ℝ) (hr : 0 ≤ r)
-    (O : Set ℂ) (ho : MeasurableSet O) (hO : O ⊆ retainedRegion z r) (p : ℝ) :
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    Xc (hXc : IsCircleAverage P X Xc)
+    (β : Fin (N + 1) → ℝ) (z : Fin N → ℂ) r (hr : 0 ≤ r)
+    O (ho : MeasurableSet O) (hO : O ⊆ retainedRegion z r) p :
     (∫⁻ ω, ENNReal.ofReal (Real.exp
       ((∑ i, β i * Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i)) -
         gaussianVariance P (fun ω' => ∑ i, β i *
@@ -42,7 +42,7 @@ theorem normalized_real_vertex_tilt
       ← ENNReal.ofReal_mul (Real.exp_nonneg _), ← Real.exp_add]
     rw [show -p * A + A * p = 0 by ring, Real.exp_zero, ENNReal.ofReal_one]
   let L (ω : Ω) := ∑ i, β i * Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i)
-  have he (ω : Ω) : ENNReal.ofReal (Real.exp
+  have he ω : ENNReal.ofReal (Real.exp
       (L ω - gaussianVariance P L / 2 - p * γ *
         ∑ i, β i.castSucc * equatorCircleMean (z i) r)) =
       K * ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) := by

@@ -22,10 +22,10 @@ namespace DOZZ.Proofs
 /-- The diagonal conclusion and the reflected fusion coefficient give the full
 formula on the cut plane, with precisely the same reflection witness. -/
 theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+    {H}
     (hH : IsGaussHypergeometricFamily H)
     (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
-    (γ μ α₁ α₂ α₃ : ℝ)
+    γ μ α₁ α₂ α₃
     (hγ : 0 < γ) (hγ₂ : γ < 2)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
@@ -78,7 +78,6 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
   change (∀ z, fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z = C₀ + D * ‖z‖ ^ κ + r z) at hr
   change Tendsto (fun z => r z / ‖z‖ ^ κ)
     (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) at hlim
-  have hκ : κ < 1 := hslack.trans hξ₂
   have hcast : Tendsto (fun t : ℝ => (t : ℂ))
       (nhdsWithin 0 (Ioi 0)) (nhdsWithin 0 {z : ℂ | z ≠ 0}) := by
     apply tendsto_nhdsWithin_iff.mpr
@@ -100,31 +99,22 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
     filter_upwards [self_mem_nhdsWithin] with t ht
     rw [hr (t : ℂ)]
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
-    have hn : t ^ κ ≠ 0 := (Real.rpow_pos_of_pos ht _).ne'
+    have : t ^ κ ≠ 0 := (Real.rpow_pos_of_pos ht _).ne'
     field_simp
     ring
   dsimp only at hclassification ⊢
   obtain ⟨hA, hAB, hBC, hC, _, _, _, _⟩ := DOZZ.gauss_physical_parameter_range
     γ (γ / 2) α₁ α₂ α₃ hγ hγ₂ (Or.inl rfl) hs hα₁ hα₂ hα₃
-  have hc : 0 < gaussParameterC γ (γ / 2) α₁ := hA.trans (hAB.trans hBC)
   have he : 2 * (1 - gaussParameterC γ (γ / 2) α₁) = κ := by
     unfold gaussParameterC
     dsimp only [κ]
     ring
-  have hid := dual_diagonal_coefficient_identification hH
-    (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-    (gaussParameterB γ (γ / 2) α₁ α₂ α₃)
-    (gaussParameterC γ (γ / 2) α₁) C₀
-    (gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-      (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁)) D
-    hc hC (he ▸ hκ) (fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃)
-    (by simpa only [neg_div] using hclassification) (by simpa only [he] using hray)
   refine ⟨B, Z, hZ, hB, ?_⟩
   intro z hz
   rw [show fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z = _ from
     by simpa only [neg_div] using hclassification z hz]
   change C₀ * (_ + _ * _) = C₀ * _ + D * _
-  rw [hid]
+  rw [(dual_diagonal_coefficient_identification hH (gaussParameterA γ (γ / 2) α₁ α₂ α₃) (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) C₀ (gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃) (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁)) D (hA.trans (hAB.trans hBC)) hC (he ▸ (hslack.trans hξ₂)) (fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃) (by simpa only [neg_div] using hclassification) (by simpa only [he] using hray))]
   ring
 
 end DOZZ.Proofs

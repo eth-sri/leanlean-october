@@ -17,11 +17,9 @@ theorem sumtail_joint_half_sqrt_power (T p q ε β θ x : ℝ)
     (hβ : β ≤ p+q/2) (hx : 4 ≤ x) :
     (x/2)^(-p+ε)*(Real.sqrt x)^(-q+ε) ≤ 2^T*x^(-β+θ) := by
   have hx0 : 0 < x := by linarith only [hx]
-  have hx1 : 1 ≤ x := by linarith only [hx]
   have hp := sumtail_rpow_half_bound T (x/2) x (p-ε) hT
     (by linarith only [hpT,hε]) hx0 le_rfl (by linarith only [hx0])
-  have he : -(p-ε) = -p+ε := by ring
-  rw [he] at hp
+  rw [(show -(p-ε) = -p+ε by ring)] at hp
   calc
     _ ≤ (2^T*x^(-p+ε))*(Real.sqrt x)^(-q+ε) :=
       mul_le_mul_of_nonneg_right hp (Real.rpow_nonneg (Real.sqrt_nonneg _) _)
@@ -30,7 +28,7 @@ theorem sumtail_joint_half_sqrt_power (T p q ε β θ x : ℝ)
       congr 2
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow_of_exponent_le hx1 (by linarith only [hβ,hεθ])) (by positivity)
+      (Real.rpow_le_rpow_of_exponent_le (by linarith only [hx]) (by linarith only [hβ,hεθ])) (by positivity)
 
 theorem sumtail_joint_equal_power (p q ε β θ x : ℝ) (hq : 0 ≤ q)
     (hεθ : 2*ε ≤ θ) (hβ : β ≤ p+q/2) (hx : 1 ≤ x) :

@@ -27,8 +27,7 @@ theorem taylor_regional_powers (γ α δ ε η W q r : ℝ)
     unfold Q
     field_simp [hγ.ne']
     ring
-  have hmono (a b : ℝ) (hab : a ≤ b) : r ^ b ≤ r ^ a :=
-    Real.rpow_le_rpow_of_exponent_ge hr hr1 hab
+  have hmono (a b : ℝ) (hab : a ≤ b) := Real.rpow_le_rpow_of_exponent_ge hr hr1 hab
   refine ⟨?_, ?_, ?_⟩
   · rw [← Real.rpow_mul hr.le]
     apply hmono

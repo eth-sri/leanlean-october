@@ -29,32 +29,30 @@ noncomputable def bpzCutChaos (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
     Measure ℂ :=
   if regularizedGMC P Xc γ r ω Set.univ < ⊤ then regularizedGMC P Xc γ r ω else 0
 
-theorem bpzCutChaos_isFiniteMeasure (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) (γ r : ℝ) (ω : Ω) :
+theorem bpzCutChaos_isFiniteMeasure (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) γ r ω :
     IsFiniteMeasure (bpzCutChaos P Xc γ r ω) := by
   unfold bpzCutChaos
   split_ifs with h
   · exact ⟨h⟩
   · infer_instance
 
-theorem measurable_bpzCutChaos (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ) :
+theorem measurable_bpzCutChaos (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) γ r :
     Measurable (bpzCutChaos P Xc γ r) := by
   have hm := regularizedGMC_measurable P X hX Xc hXc γ r
-  have hs : MeasurableSet {ω | regularizedGMC P Xc γ r ω Set.univ < ⊤} :=
-    measurableSet_lt ((Measure.measurable_coe MeasurableSet.univ).comp hm) measurable_const
-  exact Measurable.ite hs hm measurable_const
+  exact Measurable.ite (measurableSet_lt ((Measure.measurable_coe MeasurableSet.univ).comp hm) measurable_const) hm measurable_const
 
-theorem bpzCutChaos_ae_eq (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ) :
+theorem bpzCutChaos_ae_eq (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) γ r :
     ∀ᵐ ω ∂P, bpzCutChaos P Xc γ r ω = regularizedGMC P Xc γ r ω := by
   filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hω
   unfold bpzCutChaos
   exact ite_eq_left hω.measure_univ_lt_top
 
 /-- The integer-cutoff chaos converges weakly in probability to the limit chaos. -/
-theorem bpzWeakConv_gmc (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) {γ : ℝ}
+theorem bpzWeakConv_gmc (P : Measure Ω) X (hX : IsEquatorGFF P X) {γ}
     (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMm : Measurable M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) :
+    Xc (hXc : IsCircleAverage P X Xc) :
     BPZWeakConv P (fun n => bpzCutChaos P Xc γ n) M where
   meas n := measurable_bpzCutChaos P X hX Xc hXc γ n
   meas₀ := hMm

@@ -15,14 +15,10 @@ open Set
 
 namespace DOZZ.Proofs
 
-theorem shifted_negative_power_bound (p P y : ℝ)
+theorem shifted_negative_power_bound p P y
     (hp : 0 ≤ p) (hpP : p ≤ P) (hy : y ∈ Icc (1/2 : ℝ) (3/2 : ℝ)) :
     |y^(-p)-1| ≤ P*2^(P+1)*|y-1| := by
-  have hder (t : ℝ) (ht : t ∈ Icc (1/2 : ℝ) (3/2 : ℝ)) :
-      HasDerivWithinAt (fun t : ℝ => t^(-p)) ((-p)*t^(-p-1))
-        (Icc (1/2 : ℝ) (3/2 : ℝ)) t :=
-    (Real.hasDerivAt_rpow_const (Or.inl (ne_of_gt (by linarith only [ht.1])))).hasDerivWithinAt
-  have hbound (t : ℝ) (ht : t ∈ Icc (1/2 : ℝ) (3/2 : ℝ)) :
+  have hbound t (ht : t ∈ Icc (1/2 : ℝ) (3/2 : ℝ)) :
       ‖(-p)*t^(-p-1)‖ ≤ P*2^(P+1) := by
     have ht0 : 0 < t := by linarith only [ht.1]
     have hr : t^(-p-1) ≤ 2^(P+1) := by
@@ -36,9 +32,7 @@ theorem shifted_negative_power_bound (p P y : ℝ)
     rw [norm_mul,Real.norm_eq_abs,abs_neg,abs_of_nonneg hp,Real.norm_eq_abs,
       abs_of_nonneg (Real.rpow_nonneg ht0.le _)]
     exact mul_le_mul hpP hr (Real.rpow_nonneg ht0.le _) (hp.trans hpP)
-  have h := (convex_Icc (1/2 : ℝ) (3/2 : ℝ)).norm_image_sub_le_of_norm_hasDerivWithin_le
-    hder hbound (by constructor <;> norm_num : (1 : ℝ) ∈ Icc (1/2 : ℝ) (3/2 : ℝ)) hy
-  simpa only [Real.one_rpow,Real.norm_eq_abs] using h
+  simpa only [Real.one_rpow,Real.norm_eq_abs] using ((convex_Icc (1/2 : ℝ) (3/2 : ℝ)).norm_image_sub_le_of_norm_hasDerivWithin_le (fun t ht => (Real.hasDerivAt_rpow_const (Or.inl (ne_of_gt (by linarith only [ht.1])))).hasDerivWithinAt) hbound (by constructor <;> norm_num : (1 : ℝ) ∈ Icc (1/2 : ℝ) (3/2 : ℝ)) hy)
 
 
 end DOZZ.Proofs

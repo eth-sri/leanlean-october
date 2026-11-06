@@ -17,24 +17,24 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 theorem fusionMovingBadMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    α₁ α₂ α₃ y z δ :
     AEMeasurable (fun ω => fusionMovingBadMass γ α₁ α₂ α₃ y z δ (M ω)) P :=
   gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
     (fusionMovingKernel_measurable _ _ _ _ _ _) _ Metric.isOpen_ball.measurableSet
 
 theorem fusionMovingGoodMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    α₁ α₂ α₃ y z δ :
     AEMeasurable (fun ω => fusionMovingGoodMass γ α₁ α₂ α₃ y z δ (M ω)) P :=
   gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
     (fusionMovingKernel_measurable _ _ _ _ _ _) _
     (measurableSet_le measurable_const measurable_norm)
 
 /-- Exterior domination holds before taking expectations. -/
-theorem fusionMovingGoodMass_le (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) (hδ : 0 < δ)
+theorem fusionMovingGoodMass_le γ α₁ α₂ α₃ y z δ (hδ : 0 < δ)
     (hz : ‖z‖ ≤ δ) (hu : ‖y * z‖ ≤ δ / 2) (hu1 : ‖y * z‖ ≤ 1) (μ : Measure ℂ) :
     fusionMovingGoodMass γ α₁ α₂ α₃ y z δ μ ≤
       ENNReal.ofReal ((2 : ℝ) ^ (3 * (γ ^ 2 / 2))) *
@@ -43,9 +43,8 @@ theorem fusionMovingGoodMass_le (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : �
   rw [← lintegral_const_mul _ (fusionMovingKernel_measurable γ α₁ α₂ α₃ y 0)]
   apply lintegral_mono_ae
   filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-  have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
   have h := ENNReal.ofReal_le_ofReal
-    (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ z (y * z) x hx0 (hz.trans hx)
+    (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ z (y * z) x (norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))) (hz.trans hx)
       (by linarith) hu1)
   rw [ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at h
   simpa only [fusionMovingKernel, mul_zero] using h

@@ -28,37 +28,34 @@ theorem continuousOn_bpzBaseWeight :
   intro x hx
   apply ContinuousAt.continuousWithinAt
   unfold bpzBaseWeight
-  have h0 : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx.1
-  have h1 : ‖x - 1‖ ≠ 0 := norm_ne_zero_iff.mpr (sub_ne_zero.mpr hx.2)
-  exact ((continuous_norm.continuousAt.rpow_const (Or.inl h0)).mul
+  exact ((continuous_norm.continuousAt.rpow_const (Or.inl (norm_ne_zero_iff.mpr hx.1))).mul
     ((continuous_norm.comp (continuous_id.sub continuous_const)).continuousAt.rpow_const
-      (Or.inl h1))).mul
+      (Or.inl (norm_ne_zero_iff.mpr (sub_ne_zero.mpr hx.2))))).mul
     (bpz_continuous_normPlus.continuousAt.rpow_const (Or.inl (bpz_normPlus_pos x).ne'))
 
 /-- The base factor is bounded near a regular root. -/
-theorem bpz_base_bdd_near {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
+theorem bpz_base_bdd_near {z} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     ∃ r : ℝ, 0 < r ∧ ∃ C : ℝ, 0 ≤ C ∧
       ∀ x ∈ Metric.closedBall z r, bpzBaseWeight γ χ α₁ α₂ α₃ x ≤ C := by
   set r : ℝ := min ‖z‖ ‖z - 1‖ / 2 with hr
-  have hz0' : 0 < ‖z‖ := norm_pos_iff.mpr hz0
-  have hz1' : 0 < ‖z - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hz1)
-  have hr0 : 0 < r := by positivity
+  have hz0' := norm_pos_iff.mpr hz0
+  have hz1' := norm_pos_iff.mpr (sub_ne_zero.mpr hz1)
   have hsub : Metric.closedBall z r ⊆ {x | x ≠ 0 ∧ x ≠ 1} := by
     intro x hx
     rw [Metric.mem_closedBall, dist_eq_norm] at hx
-    have hm1 := min_le_left ‖z‖ ‖z - 1‖
-    have hm2 := min_le_right ‖z‖ ‖z - 1‖
+    have := min_le_left ‖z‖ ‖z - 1‖
+    have := min_le_right ‖z‖ ‖z - 1‖
     refine ⟨fun h => ?_, fun h => ?_⟩
     · rw [h, zero_sub, norm_neg] at hx; linarith
     · rw [h, ← norm_neg, neg_sub] at hx; linarith
   obtain ⟨C, hC⟩ := (isCompact_closedBall z r).exists_bound_of_continuousOn
     (continuousOn_bpzBaseWeight.mono hsub)
-  refine ⟨r, hr0, max C 0, le_max_right _ _, fun x hx => ?_⟩
+  refine ⟨r, (by positivity), max C 0, le_max_right _ _, fun x hx => ?_⟩
   have := hC x hx
   rw [Real.norm_eq_abs] at this
   exact (le_abs_self _).trans (this.trans (le_max_left _ _))
 
-theorem bpzSoftWeight_zero_norm (z x : ℂ) :
+theorem bpzSoftWeight_zero_norm z x :
     bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x = ‖x - z‖ ^ (γ * χ) * bpzBaseWeight γ χ α₁ α₂ α₃ x := by
   unfold bpzSoftWeight
   rw [show ((0 : ℝ) ^ 2) = 0 by norm_num, add_zero, Complex.normSq_eq_norm_sq,
@@ -80,8 +77,8 @@ theorem bpz_rpow_neg_mul_le_rpow_sub (x : ℝ≥0∞) {q : ℝ} (hq : 1 ≤ q) :
 
 /-- **A singular negative moment of the four-point mass.** -/
 theorem bpz_singular_moment_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hχ : 0 < χ) {q : ℝ} (hq1 : 1 ≤ q) {z : ℂ} (hz0 : z ≠ 0)
+    X (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
+    (hM : IsGMCOf P X γ M) (hχ : 0 < χ) {q : ℝ} (hq1 : 1 ≤ q) {z} (hz0 : z ≠ 0)
     (hz1 : z ≠ 1) :
     ∫⁻ ω, bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z ^ (-q) *
       ∫⁻ x, ENNReal.ofReal ((1 + ‖x - z‖ ^ (-2 : ℝ)) * bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x) ∂M ω
@@ -109,7 +106,7 @@ theorem bpz_singular_moment_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     have hxz' : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
     by_cases hxB : x ∈ B
     · have hfx : f x = ENNReal.ofReal (CB * ‖x - z‖ ^ (γ * χ - 2)) := Set.indicator_of_mem hxB _
-      have hsing : ‖x - z‖ ^ (-2 : ℝ) * k x ≤ CB * ‖x - z‖ ^ (γ * χ - 2) := by
+      have : ‖x - z‖ ^ (-2 : ℝ) * k x ≤ CB * ‖x - z‖ ^ (γ * χ - 2) := by
         rw [hk, bpzSoftWeight_zero_norm, ← mul_assoc, ← Real.rpow_add hxz']
         rw [show (-2 : ℝ) + γ * χ = γ * χ - 2 by ring, mul_comm]
         exact mul_le_mul_of_nonneg_right (hCB x hxB) (Real.rpow_nonneg hxz'.le _)
@@ -123,10 +120,8 @@ theorem bpz_singular_moment_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     · have hfx : f x = 0 := Set.indicator_of_notMem hxB _
       rw [hfx, add_zero, ← ENNReal.ofReal_mul (by positivity)]
       apply ENNReal.ofReal_le_ofReal
-      have hrx : r ≤ ‖x - z‖ := by
-        rw [hB, Metric.mem_closedBall, dist_eq_norm, not_le] at hxB; exact hxB.le
       have : ‖x - z‖ ^ (-2 : ℝ) ≤ r ^ (-2 : ℝ) :=
-        Real.rpow_le_rpow_of_nonpos hr0 hrx (by norm_num)
+        Real.rpow_le_rpow_of_nonpos hr0 (by rw [hB, Metric.mem_closedBall, dist_eq_norm, not_le] at hxB; exact hxB.le) (by norm_num)
       exact mul_le_mul_of_nonneg_right (by linarith) (hk0 x)
   -- integrate over the chaos
   have hint : ∀ ω, ∫⁻ x, ENNReal.ofReal ((1 + ‖x - z‖ ^ (-2 : ℝ)) * k x) ∂M ω ≤

@@ -17,17 +17,14 @@ namespace DOZZ.Proofs
 /-- Restricting exceptions to a set whose closure stays in the original open domain makes
 them globally codiscrete. The closure condition also covers the new boundary. -/
 theorem codiscreteWithin_restrict_closure
-    {S T : Set ℂ} (hS : IsOpen S) (hTS : closure T ⊆ S)
+    {S T} (hS : IsOpen S) (hTS : closure T ⊆ S)
     {p : ℂ → Prop} (hp : ∀ᶠ z in codiscreteWithin S, p z) :
     ∀ᶠ z in codiscrete ℂ, z ∈ T → p z := by
   apply mem_codiscrete_iff_forall_mem_nhdsNE.mpr
   intro z
   by_cases hz : z ∈ closure T
   · have hzS := hTS hz
-    have hlocal := eventually_codiscreteWithin_iff_forall_eventually_nhdsNE.mp hp z hzS
-    have hSne : ∀ᶠ w in 𝓝[≠] z, w ∈ S :=
-      (show ∀ᶠ w in 𝓝 z, w ∈ S from hS.mem_nhds hzS).filter_mono nhdsWithin_le_nhds
-    filter_upwards [hlocal, hSne] with w hw hSw _
+    filter_upwards [(eventually_codiscreteWithin_iff_forall_eventually_nhdsNE.mp hp z hzS), ((show ∀ᶠ w in 𝓝 z, w ∈ S from hS.mem_nhds hzS).filter_mono nhdsWithin_le_nhds)] with w hw hSw _
     exact hw hSw
   · have hext : ∀ᶠ w in 𝓝[≠] z, w ∉ closure T :=
       (show ∀ᶠ w in 𝓝 z, w ∉ closure T from

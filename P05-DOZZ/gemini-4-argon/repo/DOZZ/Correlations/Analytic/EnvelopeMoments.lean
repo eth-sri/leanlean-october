@@ -25,27 +25,17 @@ theorem mass_envelope_moment_le
     (hbU : (∫⁻ ω, U ω ^ (hi * q) ∂P) ≤ KU) :
     (∫⁻ ω, ENNReal.ofReal ((L ω).toReal ^ lo + (U ω).toReal ^ hi) ^ q ∂P) ≤
       (2 : ℝ≥0∞) ^ (q - 1) * (KL + KU) := by
-  have he : ∀ᵐ ω ∂P,
-      ENNReal.ofReal ((L ω).toReal ^ lo + (U ω).toReal ^ hi) = L ω ^ lo + U ω ^ hi := by
-    filter_upwards [hLp, hUp] with ω hl hu
-    rw [ENNReal.ofReal_add (Real.rpow_nonneg ENNReal.toReal_nonneg _)
-      (Real.rpow_nonneg ENNReal.toReal_nonneg _),
-      ← ENNReal.ofReal_rpow_of_pos (ENNReal.toReal_pos hl.1 hl.2),
-      ← ENNReal.ofReal_rpow_of_pos (ENNReal.toReal_pos hu.1 hu.2),
-      ENNReal.ofReal_toReal hl.2, ENNReal.ofReal_toReal hu.2]
   calc
     _ ≤ ∫⁻ ω, (2 : ℝ≥0∞) ^ (q - 1) *
         (L ω ^ (lo * q) + U ω ^ (hi * q)) ∂P := by
       apply lintegral_mono_ae
-      filter_upwards [he] with ω hω
+      filter_upwards [(show ∀ᵐ ω ∂P, ENNReal.ofReal ((L ω).toReal ^ lo + (U ω).toReal ^ hi) = L ω ^ lo + U ω ^ hi by filter_upwards [hLp, hUp] with ω hl hu; rw [ENNReal.ofReal_add (Real.rpow_nonneg ENNReal.toReal_nonneg _) (Real.rpow_nonneg ENNReal.toReal_nonneg _), ← ENNReal.ofReal_rpow_of_pos (ENNReal.toReal_pos hl.1 hl.2), ← ENNReal.ofReal_rpow_of_pos (ENNReal.toReal_pos hu.1 hu.2), ENNReal.ofReal_toReal hl.2, ENNReal.ofReal_toReal hu.2])] with ω hω
       rw [hω]
       simpa only [← ENNReal.rpow_mul] using
         ENNReal.rpow_add_le_mul_rpow_add_rpow (L ω ^ lo) (U ω ^ hi) hq
     _ = (2 : ℝ≥0∞) ^ (q - 1) *
         ((∫⁻ ω, L ω ^ (lo * q) ∂P) + ∫⁻ ω, U ω ^ (hi * q) ∂P) := by
-      have hsum : AEMeasurable (fun ω => L ω ^ (lo * q) + U ω ^ (hi * q)) P := by
-        simpa only [Pi.add_def] using (hL.pow_const (lo * q)).add (hU.pow_const (hi * q))
-      rw [lintegral_const_mul'' _ hsum, lintegral_add_left' (hL.pow_const _)]
+      rw [lintegral_const_mul'' _ (show AEMeasurable (fun ω => L ω ^ (lo * q) + U ω ^ (hi * q)) P by simpa only [Pi.add_def] using (hL.pow_const (lo * q)).add (hU.pow_const (hi * q))), lintegral_add_left' (hL.pow_const _)]
     _ ≤ _ := mul_le_mul' le_rfl (add_le_add hbL hbU)
 
 end DOZZ.Proofs

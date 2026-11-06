@@ -29,7 +29,7 @@ theorem circle_pin_exterior (w : ℂ) (r : ℝ)
   circleLogPotential_of_radii_le_distance _ _ hw
 
 /-- Translated admissible circles stay outside the equator at an allowed insertion center. -/
-theorem localCircle_exterior (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
+theorem localCircle_exterior z (hz : 2 ≤ ‖z‖) (p : localCircle) :
     Real.exp (-p.val.2) + 1 ≤ ‖z + p.val.1‖ := by
   have h := norm_sub_norm_le z (z + p.val.1)
   simp only [sub_add_cancel_left, norm_neg] at h
@@ -46,19 +46,7 @@ theorem offCenter_unpinned_circle_covariance
           ⟨Real.exp (-p.val.2), Real.exp_pos _⟩
           ⟨Real.exp (-q.val.2), Real.exp_pos _⟩ := by
   let : IsProbabilityMeasure P := hX.1
-  have hp := circle_pin_exterior (z + p.val.1) p.val.2
-    (localCircle_exterior z hz p)
-  have hq := circle_pin_exterior (z + q.val.1) q.val.2
-    (localCircle_exterior z hz q)
   have hzpin := circle_pin_exterior z 0 (by simpa only [neg_zero, Real.exp_zero, one_add_one_eq_two] using hz)
-  have hp0 : circleLogPotential ‖p.val.1‖₊
-      ⟨Real.exp (-p.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ = 0 := by
-    simpa only [Real.log_one] using circleLogPotential_of_add_le (d := ‖p.val.1‖₊)
-      ⟨Real.exp (-p.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ p.property
-  have hq0 : circleLogPotential ‖q.val.1‖₊
-      ⟨Real.exp (-q.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ = 0 := by
-    simpa only [Real.log_one] using circleLogPotential_of_add_le (d := ‖q.val.1‖₊)
-      ⟨Real.exp (-q.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ q.property
   rw [covariance_fun_sub_fun_sub (hc.2.1 _ _) (hc.2.1 _ _) (hc.2.1 _ _) (hc.2.1 _ _)]
   rw [covariance_comm (fun ω => Xc ω z 0)
     (fun ω => Xc ω (z + q.val.1) q.val.2)]
@@ -68,7 +56,7 @@ theorem offCenter_unpinned_circle_covariance
     circleAverage_covariance P X Xc hX hc (z + q.val.1) z,
     offCenter_origin_variance X Xc hX hc z hz]
   simp only [add_sub_add_left_eq_sub, add_sub_cancel_left,
-    neg_zero, Real.exp_zero, hp, hq, hzpin, hp0, hq0]
+    neg_zero, Real.exp_zero, (circle_pin_exterior (z + p.val.1) p.val.2 (localCircle_exterior z hz p)), (circle_pin_exterior (z + q.val.1) q.val.2 (localCircle_exterior z hz q)), hzpin, (by simpa only [Real.log_one] using circleLogPotential_of_add_le (d := ‖p.val.1‖₊) ⟨Real.exp (-p.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ p.property), (by simpa only [Real.log_one] using circleLogPotential_of_add_le (d := ‖q.val.1‖₊) ⟨Real.exp (-q.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ q.property)]
   ring
 
 /-- The common covariance gives the logarithmic cutoff time as the local variance. -/

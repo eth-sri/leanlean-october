@@ -43,9 +43,9 @@ noncomputable def dualLC (γ : ℝ) (ε α α' : ℂ) : ℂ :=
     (lFun (dualArg₃ γ ε α α') * lFun (dualArg₄ γ ε α α'))
 
 /-- **The complex coefficient at real charges is `dualCrossingL`.** -/
-theorem dualLC_ofReal {γ : ℝ} (hγ : γ ≠ 0) (ε α α' : ℝ) :
+theorem dualLC_ofReal {γ} (hγ : γ ≠ 0) (ε α α' : ℝ) :
     dualLC γ ε α α' = (dualCrossingL γ ε α α' : ℂ) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
+  have := Complex.ofReal_ne_zero.mpr hγ
   have h₁ : dualArg₁ γ ε = ((gaussParameterC γ (2 / γ) ε - 1 : ℝ) : ℂ) := by
     unfold dualArg₁ gaussParameterC
     push_cast
@@ -75,30 +75,30 @@ theorem dualLC_ofReal {γ : ℝ} (hγ : γ ≠ 0) (ε α α' : ℝ) :
   push_cast
   ring
 
-theorem analyticAt_dualArg₁_comp {γ : ℝ} {f : ℂ → ℂ} {t : ℂ} (h : AnalyticAt ℂ f t) :
+theorem analyticAt_dualArg₁_comp {γ} {f : ℂ → ℂ} {t} (h : AnalyticAt ℂ f t) :
     AnalyticAt ℂ (fun s => dualArg₁ γ (f s)) t := by
   unfold dualArg₁
   exact (analyticAt_const.mul (h.sub analyticAt_const)).div_const
 
-theorem analyticAt_dualArg₂_comp {γ : ℝ} {f : ℂ → ℂ} {t : ℂ} (h : AnalyticAt ℂ f t) :
+theorem analyticAt_dualArg₂_comp {γ} {f : ℂ → ℂ} {t} (h : AnalyticAt ℂ f t) :
     AnalyticAt ℂ (fun s => dualArg₂ γ (f s)) t := by
   unfold dualArg₂
   exact analyticAt_const.sub (analyticAt_const.mul h).div_const
 
-theorem analyticAt_dualArg₃_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ} (h₁ : AnalyticAt ℂ f₁ t)
+theorem analyticAt_dualArg₃_comp {γ} {f₁ f₂ f₃ : ℂ → ℂ} {t} (h₁ : AnalyticAt ℂ f₁ t)
     (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t) :
     AnalyticAt ℂ (fun s => dualArg₃ γ (f₁ s) (f₂ s) (f₃ s)) t := by
   unfold dualArg₃
   exact analyticAt_const.add ((h₁.sub h₂).sub h₃).div_const
 
-theorem analyticAt_dualArg₄_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ} (h₁ : AnalyticAt ℂ f₁ t)
+theorem analyticAt_dualArg₄_comp {γ} {f₁ f₂ f₃ : ℂ → ℂ} {t} (h₁ : AnalyticAt ℂ f₁ t)
     (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t) :
     AnalyticAt ℂ (fun s => dualArg₄ γ (f₁ s) (f₂ s) (f₃ s)) t := by
   unfold dualArg₄
   exact analyticAt_const.add ((h₁.sub h₂).add h₃).div_const
 
 /-- **The complex coefficient is meromorphic along analytic curves.** -/
-theorem meromorphicAt_dualLC_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ}
+theorem meromorphicAt_dualLC_comp {γ} {f₁ f₂ f₃ : ℂ → ℂ} {t}
     (h₁ : AnalyticAt ℂ f₁ t) (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t) :
     MeromorphicAt (fun s => dualLC γ (f₁ s) (f₂ s) (f₃ s)) t := by
   unfold dualLC
@@ -109,7 +109,7 @@ theorem meromorphicAt_dualLC_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t :
 
 /-- **The complex coefficient is analytic along analytic curves** where `Γ` is analytic at the two
 numerator arguments and at one minus the two denominator arguments. -/
-theorem analyticAt_dualLC_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ}
+theorem analyticAt_dualLC_comp {γ} {f₁ f₂ f₃ : ℂ → ℂ} {t}
     (h₁ : AnalyticAt ℂ f₁ t) (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t)
     (g₁ : AnalyticAt ℂ Complex.Gamma (dualArg₁ γ (f₁ t)))
     (g₂ : AnalyticAt ℂ Complex.Gamma (dualArg₂ γ (f₂ t)))

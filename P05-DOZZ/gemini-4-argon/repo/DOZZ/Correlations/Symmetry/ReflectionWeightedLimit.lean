@@ -50,9 +50,7 @@ theorem regularizedGMC_varying_bcf_integral
     (hconv : TendstoUniformly (fun r x => u r x) v atTop) :
     TendstoInMeasure P (fun r ω => ∫ x, u r x ∂regularizedGMC P Xc γ r ω) atTop
       (fun ω => ∫ x, v x ∂M ω) := by
-  have h := regularizedGMC_varyingWithDensity_univ_mass_tendstoInMeasure
-    P X hX Xc hXc γ M hM u hu v hv hconv
-  apply TendstoInMeasure.congr _ _ h
+  apply TendstoInMeasure.congr _ _ (regularizedGMC_varyingWithDensity_univ_mass_tendstoInMeasure P X hX Xc hXc γ M hM u hu v hv hconv)
   · intro r
     filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hω
     let := hω

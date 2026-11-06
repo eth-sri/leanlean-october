@@ -17,7 +17,7 @@ open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
 
 theorem unitVolumeStructureConstant_threeToTwo_residue_bridge
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) (γ α2 α3 : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2)
     (hα : 0 < α2 ∧ α2 ≤ α3 ∧ γ / 2 < α3 ∧ α3 < Q γ)

@@ -18,11 +18,11 @@ namespace DOZZ.Proofs
 /-- The translated projection has stationarity, reflection, intensity and a genuine source
 witness, with the literal off-center radial circle process. -/
 theorem translated_lateral_isLateralGMCOf
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (z : ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    z (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (N : Ω → Measure ℂ) (hN : IsGMCOf P (translatedField X Xc z) γ N) :
     IsLateralGMCOf P γ (fun ω => lateralProjectedGMC γ
       (originRadialPath (fun ω x r => Xc ω (z+x) r - Xc ω z 0) ω) (N ω)) := by
@@ -32,13 +32,8 @@ theorem translated_lateral_isLateralGMCOf
   have hcU := translated_field_circleAverage P X Xc hX hc z
   have hmU := translated_circle_jointMeasurable Xc hm z
   have hcontU := translated_circle_continuous P Xc hcont z
-  have hA := originRadialPath_aemeasurable P _ Uc hcU hcontU
-  have hZm := lateralProjectedGMC_aemeasurable P γ A hA N
-    (equatorGFF_GMC_aemeasurable P _ hU γ hγ hγ2 N hN) hN.1
-  have hsource := (translated_radial_sourceProjection P X Xc hX hc hm hcont
-    z γ hγ hγ2 N hN).1
-  refine ⟨hγ, hγ2, hX.1, hZm, ae_lateralProjectedGMC_interval_ne_top P γ A N hN.1,
-    ?_, ?_, ?_, ⟨translatedField X Xc z, N, hsource⟩⟩
+  refine ⟨hγ, hγ2, hX.1, (lateralProjectedGMC_aemeasurable P γ A (originRadialPath_aemeasurable P _ Uc hcU hcontU) N (equatorGFF_GMC_aemeasurable P _ hU γ hγ hγ2 N hN) hN.1), ae_lateralProjectedGMC_interval_ne_top P γ A N hN.1,
+    ?_, ?_, ?_, ⟨translatedField X Xc z, N, ((translated_radial_sourceProjection P X Xc hX hc hm hcont z γ hγ hγ2 N hN).1)⟩⟩
   · exact fun t => lateralProjectedGMC_translation_law P _ Uc hU hcU hmU hcontU
       γ hγ hγ2 N hN t
   · exact lateralProjectedGMC_reflection_law P _ Uc hU hcU hcontU γ hγ hγ2 N hN

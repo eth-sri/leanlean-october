@@ -10,7 +10,7 @@ import Mathlib.MeasureTheory.Integral.Prod
 open MeasureTheory Set Filter
 namespace DOZZ.Proofs
 /-- Both the interpolation derivative and its absolute value have finite time integrals. -/
-theorem fusion_inverse_interpolation_integrable (a b p : ℝ) (ha : 0 < a) (hb : 0 < b) :
+theorem fusion_inverse_interpolation_integrable a b p (ha : 0 < a) (hb : 0 < b) :
     IntegrableOn (fun t : ℝ => -p * (b - a) * (t * b + (1 - t) * a) ^ (-p - 1)) (Icc 0 1) volume ∧
     (∫ t in Icc (0 : ℝ) 1, ‖-p * (b - a) * (t * b + (1 - t) * a) ^ (-p - 1)‖) =
       |b ^ (-p) - a ^ (-p)| := by
@@ -19,30 +19,22 @@ theorem fusion_inverse_interpolation_integrable (a b p : ℝ) (ha : 0 < a) (hb :
     by_cases ht0 : t = 0
     · subst t; simpa using ha
     · have h1 := mul_pos (lt_of_le_of_ne ht.1 (Ne.symm ht0)) hb
-      have h2 := mul_nonneg (sub_nonneg.mpr ht.2) ha.le
+      have := mul_nonneg (sub_nonneg.mpr ht.2) ha.le
       linarith
-  have hc : ContinuousOn (fun t : ℝ => (t * b + (1 - t) * a) ^ (-p - 1)) (Icc 0 1) := by
+  have hc : ContinuousOn (fun t => (t * b + (1 - t) * a) ^ (-p - 1)) (Icc 0 1) := by
     apply ContinuousOn.rpow_const
     · fun_prop
     · intro t ht; exact Or.inl (hpos t ht).ne'
-  have hi : IntegrableOn (fun t : ℝ => -p * (b - a) * (t * b + (1 - t) * a) ^ (-p - 1))
-      (Icc 0 1) volume := (hc.integrableOn_Icc).const_mul (-p * (b - a))
-  refine ⟨hi, ?_⟩
-  have he := fusion_inverse_interpolation a b p ha hb
-  have hn : (fun t : ℝ => ‖-p * (b - a) * (t * b + (1 - t) * a) ^ (-p - 1)‖) =ᵐ[volume.restrict (Icc 0 1)]
-      (fun t => |-p * (b - a)| * (t * b + (1 - t) * a) ^ (-p - 1)) := by
-    filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
-    rw [norm_mul, Real.norm_eq_abs, Real.norm_of_nonneg (Real.rpow_nonneg (hpos t ht).le _)]
+  refine ⟨((hc.integrableOn_Icc).const_mul (-p * (b - a))), ?_⟩
   have hnonneg : 0 ≤ ∫ t in Icc (0 : ℝ) 1, (t * b + (1 - t) * a) ^ (-p - 1) := by
     apply integral_nonneg_of_ae
     filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
     exact Real.rpow_nonneg (hpos t ht).le _
-  rw [integral_congr_ae hn, integral_const_mul, he, abs_mul, abs_mul, abs_of_nonneg hnonneg]
-  rw [abs_mul]
+  rw [integral_congr_ae (show (fun t => ‖-p * (b - a) * (t * b + (1 - t) * a) ^ (-p - 1)‖) =ᵐ[volume.restrict (Icc 0 1)] (fun t => |-p * (b - a)| * (t * b + (1 - t) * a) ^ (-p - 1)) by filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht; rw [norm_mul, Real.norm_eq_abs, Real.norm_of_nonneg (Real.rpow_nonneg (hpos t ht).le _)]), integral_const_mul, (fusion_inverse_interpolation a b p ha hb), abs_mul, abs_mul, abs_of_nonneg hnonneg, abs_mul]
 /-- Absolute time integration and the two endpoint inverse moments supply the integrability
 needed for Fubini. -/
 theorem fusion_inverse_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsFiniteMeasure P] (a b : Ω → ℝ) (p : ℝ)
+    (P : Measure Ω) [IsFiniteMeasure P] (a b : Ω → ℝ) p
     (ha : AEStronglyMeasurable a P) (hb : AEStronglyMeasurable b P)
     (hpos : ∀ᵐ ω ∂P, 0 < a ω ∧ 0 < b ω)
     (hai : Integrable (fun ω => a ω ^ (-p)) P)
@@ -59,11 +51,8 @@ theorem fusion_inverse_expectation_interpolation {Ω : Type*} [MeasurableSpace �
     hb.comp_quasiMeasurePreserving Measure.quasiMeasurePreserving_fst
   have htm : AEStronglyMeasurable (fun q : Ω × ℝ => q.2) (P.prod T) :=
     measurable_snd.aestronglyMeasurable
-  have hDm : AEStronglyMeasurable D (P.prod T) :=
-    ((hbm.sub ham).const_mul (-p)).mul
-      (((htm.mul hbm).add ((aestronglyMeasurable_const.sub htm).mul ham)).aemeasurable.pow_const _).aestronglyMeasurable
   have hDi : Integrable D (P.prod T) := by
-    apply (integrable_prod_iff hDm).mpr
+    apply (integrable_prod_iff (((hbm.sub ham).const_mul (-p)).mul (((htm.mul hbm).add ((aestronglyMeasurable_const.sub htm).mul ham)).aemeasurable.pow_const _).aestronglyMeasurable)).mpr
     constructor
     · filter_upwards [hpos] with ω hω
       exact (fusion_inverse_interpolation_integrable (a ω) (b ω) p hω.1 hω.2).1

@@ -14,29 +14,6 @@ open MeasureTheory Filter Topology
 
 namespace DOZZ.Proofs
 
-/-- A maximum of finitely many affine functions has a global Lipschitz bound. -/
-theorem affineMax_abs_sub_le
-    {κ : Type*} [Fintype κ] [Nonempty κ] (a b : κ → ℝ) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ x y,
-      |affineMax a b x - affineMax a b y| ≤ C * |x - y| := by
-  classical
-  let C := ∑ i : κ, |a i|
-  have hC : 0 ≤ C := Finset.sum_nonneg fun _ _ => abs_nonneg _
-  have ha (i : κ) : |a i| ≤ C :=
-    Finset.single_le_sum (f := fun j => |a j|) (fun _ _ => abs_nonneg _) (Finset.mem_univ i)
-  have hbound (x y : ℝ) : affineMax a b x ≤ affineMax a b y + C * |x - y| := by
-    apply Finset.sup'_le
-    intro i hi
-    have hline := affineMax_le a b y i
-    have hdiff : a i * (x - y) ≤ C * |x - y| :=
-      (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_right (ha i) (abs_nonneg _))
-    linarith only [hline, hdiff]
-  refine ⟨C, hC, fun x y => ?_⟩
-  rw [abs_le]
-  have hxy := hbound x y
-  have hyx := hbound y x
-  rw [abs_sub_comm y x] at hyx
-  constructor <;> linarith only [hxy, hyx]
 
 /-- Convergence in mean of real masses implies convergence of affine-max expectations. -/
 theorem affineMax_integral_tendsto_of_L1
@@ -47,7 +24,21 @@ theorem affineMax_integral_tendsto_of_L1
     (a b : κ → ℝ) :
     Tendsto (fun n => ∫ ω, affineMax a b (f n ω) ∂P) atTop
       (𝓝 (∫ ω, affineMax a b (g ω) ∂P)) := by
-  obtain ⟨C, hC, hbound⟩ := affineMax_abs_sub_le a b
+  have affineMax_abs_sub_le : ∃ C : ℝ, 0 ≤ C ∧ ∀ x y, |affineMax a b x - affineMax a b y| ≤ C * |x - y| := by
+    classical
+    let C := ∑ i : κ, |a i|
+    have ha i : |a i| ≤ C :=
+      Finset.single_le_sum (f := fun j => |a j|) (fun _ _ => abs_nonneg _) (Finset.mem_univ i)
+    have hbound x y : affineMax a b x ≤ affineMax a b y + C * |x - y| := by
+      apply Finset.sup'_le
+      intro i hi
+      linarith only [(affineMax_le a b y i), ((le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_right (ha i) (abs_nonneg _)) : a i * (x - y) ≤ C * |x - y|)]
+    refine ⟨C, (Finset.sum_nonneg fun _ _ => abs_nonneg _), fun x y => ?_⟩
+    rw [abs_le]
+    have hyx := hbound y x
+    rw [abs_sub_comm y x] at hyx
+    constructor <;> linarith only [(hbound x y), hyx]
+  obtain ⟨C, hC, hbound⟩ := affineMax_abs_sub_le
   have hI (n : ℕ) := affineMax_comp_integrable P (f n) (hf n) a b
   have hJ := affineMax_comp_integrable P g hg a b
   apply tendsto_iff_norm_sub_tendsto_zero.mpr

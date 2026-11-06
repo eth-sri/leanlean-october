@@ -26,11 +26,11 @@ noncomputable def diskTestRestrictionL2 (c : ℂ) (ρ : ℝ) (f : TestFn) :
   (f.continuous.memLp_of_hasCompactSupport f.hasCompactSupport).toLp f
 
 /-- The disk restriction representative retains the original test. -/
-theorem diskTestRestrictionL2_ae_eq (c : ℂ) (ρ : ℝ) (f : TestFn) :
+theorem diskTestRestrictionL2_ae_eq c ρ (f : TestFn) :
     diskTestRestrictionL2 c ρ f =ᵐ[volume.restrict (ball c ρ)] (f : ℂ → ℝ) := MemLp.coeFn_toLp _
 
 /-- The norm squared of a disk restriction is the literal area integral. -/
-theorem diskTestRestrictionL2_norm_sq (c : ℂ) (ρ : ℝ) (f : TestFn) :
+theorem diskTestRestrictionL2_norm_sq c ρ f :
     ‖diskTestRestrictionL2 c ρ f‖^2 = ∫ z in ball c ρ, (f z)^2 := by
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
   apply integral_congr_ae
@@ -39,15 +39,14 @@ theorem diskTestRestrictionL2_norm_sq (c : ℂ) (ρ : ℝ) (f : TestFn) :
   simp only [real_inner_self_eq_norm_sq,Real.norm_eq_abs,sq_abs]
 
 /-- Smooth compactly supported tests entirely inside a disk approximate each test restriction. -/
-theorem exists_interior_test_restriction_approx (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f : TestFn) :
+theorem exists_interior_test_restriction_approx c ρ (hρ : 0 < ρ) f :
     ∃ g : ℕ → TestFn, (∀ n, tsupport (g n) ⊆ ball c ρ) ∧
       Tendsto (fun n => diskTestRestrictionL2 c ρ (g n)) atTop (𝓝 (diskTestRestrictionL2 c ρ f)) := by
   let d (j : ℕ) := ρ-ρ/((j : ℝ)+2)
   let b (j : ℕ) := (d j+ρ)/2
   have hd j : 0 < d j ∧ d j < b j ∧ b j < ρ := by
-    have hj : 1 < (j : ℝ)+2 := by linarith [(Nat.cast_nonneg j : (0 : ℝ) ≤ (j : ℝ))]
-    have hp : 0 < ρ/((j : ℝ)+2) := div_pos hρ (by positivity)
-    have hq : ρ/((j : ℝ)+2) < ρ := div_lt_self hρ hj
+    have : 0 < ρ/((j : ℝ)+2) := div_pos hρ (by positivity)
+    have : ρ/((j : ℝ)+2) < ρ := div_lt_self hρ (by linarith [(Nat.cast_nonneg j : (0 : ℝ) ≤ (j : ℝ))])
     dsimp only [d,b]
     constructor
     · linarith
@@ -55,19 +54,16 @@ theorem exists_interior_test_restriction_approx (c : ℂ) (ρ : ℝ) (hρ : 0 < 
   let B (j : ℕ) : ContDiffBump c := ⟨d j,b j,(hd j).1,(hd j).2.1⟩
   let g (j : ℕ) : TestFn := ⟨fun z => B j z*f z,(B j).contDiff.mul f.contDiff,
     (B j).hasCompactSupport.mul_right,subset_univ _⟩
-  have hs j : tsupport (g j) ⊆ ball c ρ := by
-    exact (tsupport_mul_subset_left (f := B j)).trans (by
+  have hs j : tsupport (g j) ⊆ ball c ρ := (tsupport_mul_subset_left (f := B j)).trans (by
       rw [(B j).tsupport_eq]
       exact closedBall_subset_ball (hd j).2.2)
   refine ⟨g,hs,?_⟩
   have hlim : Tendsto d atTop (𝓝 ρ) := by
-    have hr : Tendsto (fun j : ℕ => ρ/((j : ℝ)+2)) atTop (𝓝 0) := tendsto_const_nhds.div_atTop
-      (tendsto_atTop_add_const_right _ 2 tendsto_natCast_atTop_atTop)
-    simpa only [d,sub_zero] using (tendsto_const_nhds.sub hr :
+    simpa only [d,sub_zero] using (tendsto_const_nhds.sub (tendsto_const_nhds.div_atTop (tendsto_atTop_add_const_right _ 2 tendsto_natCast_atTop_atTop)) :
       Tendsto (fun j : ℕ => ρ-ρ/((j : ℝ)+2)) atTop (𝓝 (ρ-0)))
   let μ := volume.restrict (ball c ρ)
   have hfi : MemLp (f : ℂ → ℝ) 2 μ := f.continuous.memLp_of_hasCompactSupport f.hasCompactSupport
-  have hib : Integrable (fun z => (f z)^2) μ := hfi.integrable_sq
+  have hib := hfi.integrable_sq
   have hv : Tendsto (fun j => ∫ z, (g j z-f z)^2 ∂μ) atTop (𝓝 0) := by
     have heq : (∫ z, (0 : ℝ) ∂μ) = 0 := by simp only [integral_zero]
     rw [← heq]
@@ -84,12 +80,10 @@ theorem exists_interior_test_restriction_approx (c : ℂ) (ρ : ℝ) (hρ : 0 < 
       change (B j z*f z-f z)^2 ≤ (f z)^2
       nlinarith [hh]
     · filter_upwards [ae_restrict_mem measurableSet_ball] with z hz
-      have he : ∀ᶠ j in atTop, ‖z-c‖ < d j := hlim.eventually (Ioi_mem_nhds (mem_ball_iff_norm.mp hz))
       apply tendsto_const_nhds.congr'
-      filter_upwards [he] with j hj
-      have hB : B j z = 1 := (B j).one_of_mem_closedBall (mem_closedBall_iff_norm.mpr hj.le)
+      filter_upwards [(hlim.eventually (Ioi_mem_nhds (mem_ball_iff_norm.mp hz)))] with j hj
       change (0 : ℝ) = (B j z*f z-f z)^2
-      rw [hB,one_mul,sub_self,zero_pow (by norm_num : (2 : ℕ) ≠ 0)]
+      rw [((B j).one_of_mem_closedBall (mem_closedBall_iff_norm.mpr hj.le)),one_mul,sub_self,zero_pow (by norm_num : (2 : ℕ) ≠ 0)]
   have hn : Tendsto (fun j => ‖diskTestRestrictionL2 c ρ (g j)-diskTestRestrictionL2 c ρ f‖^2) atTop (𝓝 0) := by
     convert hv using 1
     funext j
@@ -100,29 +94,8 @@ theorem exists_interior_test_restriction_approx (c : ℂ) (ρ : ℝ) (hρ : 0 < 
     rw [hsub,Pi.sub_apply,hg,hf]
     simp only [real_inner_self_eq_norm_sq,Real.norm_eq_abs,sq_abs]
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
-  have hh := Real.continuous_sqrt.continuousAt.tendsto.comp hn
-  simpa only [Function.comp_def,Real.sqrt_sq_eq_abs,abs_norm,Real.sqrt_zero] using hh
+  simpa only [Function.comp_def,Real.sqrt_sq_eq_abs,abs_norm,Real.sqrt_zero] using (Real.continuous_sqrt.continuousAt.tendsto.comp hn)
 
-/-- Compact interior test restrictions are dense in the full disk area L² space. -/
-theorem dense_interior_diskTestRestrictions (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) :
-    Dense {u : Lp ℝ 2 (volume.restrict (ball c ρ)) |
-      ∃ f : TestFn, tsupport f ⊆ ball c ρ ∧ u = diskTestRestrictionL2 c ρ f} := by
-  let μ := volume.restrict (ball c ρ)
-  have hglobal : Dense {u : Lp ℝ 2 μ | ∃ f : TestFn, u = diskTestRestrictionL2 c ρ f} := by
-    apply (Lp.dense_hasCompactSupport_contDiff (F := ℝ) (μ := μ) (by norm_num : (2 : ℝ≥0∞) ≠ ⊤)).mono
-    rintro u ⟨f,he,hf,hc⟩
-    let g : TestFn := ⟨f,hc.of_le (by simp),hf,subset_univ _⟩
-    refine ⟨g,?_⟩
-    apply Lp.ext
-    exact he.trans (diskTestRestrictionL2_ae_eq c ρ g).symm
-  have hsub : {u : Lp ℝ 2 μ | ∃ f : TestFn, u = diskTestRestrictionL2 c ρ f} ⊆
-      closure {u : Lp ℝ 2 μ | ∃ f : TestFn, tsupport f ⊆ ball c ρ ∧ u = diskTestRestrictionL2 c ρ f} := by
-    rintro u ⟨f,rfl⟩
-    obtain ⟨g,hs,ht⟩ := exists_interior_test_restriction_approx c ρ hρ f
-    apply isClosed_closure.mem_of_tendsto ht
-    exact Eventually.of_forall (fun n => subset_closure ⟨g n,hs n,rfl⟩)
-  have hh := hglobal.mono hsub
-  simpa only [dense_iff_closure_eq,closure_closure] using hh
 
 /-- Compact tests whose entire support stays inside one disk form a real linear subspace. -/
 def diskInteriorTestSpace (c : ℂ) (ρ : ℝ) : Submodule ℝ TestFn where
@@ -159,8 +132,24 @@ noncomputable def diskTestRestrictionLinearMap (c : ℂ) (ρ : ℝ) :
     rfl
 
 /-- The interior test embedding into disk area L² has dense range. -/
-theorem denseRange_diskInteriorTestRestriction (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) :
+theorem denseRange_diskInteriorTestRestriction c ρ (hρ : 0 < ρ) :
     DenseRange ((diskTestRestrictionLinearMap c ρ).comp (diskInteriorTestSpace c ρ).subtype) := by
+  have dense_interior_diskTestRestrictions : Dense {u : Lp ℝ 2 (volume.restrict (ball c ρ)) | ∃ f : TestFn, tsupport f ⊆ ball c ρ ∧ u = diskTestRestrictionL2 c ρ f} := by
+    let μ := volume.restrict (ball c ρ)
+    have hglobal : Dense {u : Lp ℝ 2 μ | ∃ f : TestFn, u = diskTestRestrictionL2 c ρ f} := by
+      apply (Lp.dense_hasCompactSupport_contDiff (F := ℝ) (μ := μ) (by norm_num : (2 : ℝ≥0∞) ≠ ⊤)).mono
+      rintro u ⟨f,he,hf,hc⟩
+      let g : TestFn := ⟨f,hc.of_le (by simp),hf,subset_univ _⟩
+      refine ⟨g,?_⟩
+      apply Lp.ext
+      exact he.trans (diskTestRestrictionL2_ae_eq c ρ g).symm
+    have hsub : {u : Lp ℝ 2 μ | ∃ f : TestFn, u = diskTestRestrictionL2 c ρ f} ⊆
+        closure {u : Lp ℝ 2 μ | ∃ f : TestFn, tsupport f ⊆ ball c ρ ∧ u = diskTestRestrictionL2 c ρ f} := by
+      rintro u ⟨f,rfl⟩
+      obtain ⟨g,hs,ht⟩ := exists_interior_test_restriction_approx c ρ hρ f
+      apply isClosed_closure.mem_of_tendsto ht
+      exact Eventually.of_forall (fun n => subset_closure ⟨g n,hs n,rfl⟩)
+    simpa only [dense_iff_closure_eq,closure_closure] using (hglobal.mono hsub)
   have he : range ((diskTestRestrictionLinearMap c ρ).comp (diskInteriorTestSpace c ρ).subtype) =
       {u : Lp ℝ 2 (volume.restrict (ball c ρ)) | ∃ f : TestFn, tsupport f ⊆ ball c ρ ∧ u = diskTestRestrictionL2 c ρ f} := by
     ext u
@@ -171,7 +160,7 @@ theorem denseRange_diskInteriorTestRestriction (c : ℂ) (ρ : ℝ) (hρ : 0 < �
       exact ⟨⟨f,hf⟩,rfl⟩
   change Dense _
   rw [he]
-  exact dense_interior_diskTestRestrictions c ρ hρ
+  exact dense_interior_diskTestRestrictions
 
 /-- The original exterior-pinned test evaluations are linear in their actual L² carrier. -/
 noncomputable def exteriorPinnedTestL2LinearMap {Ω : Type*} [MeasurableSpace Ω]
@@ -242,36 +231,6 @@ noncomputable def diskGreenCompletionConstant (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ
   Real.sqrt ((∫ p : ℂ × ℂ, ‖diskGreenKernel c ρ hρ p.1 p.2‖^2
     ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))))^(1/2 : ℝ))
 
-/-- The actual interior residual map is bounded by the area L² norm of its test restriction. -/
-theorem dirichletInteriorResidualLinearMap_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
-    (f : diskInteriorTestSpace c ρ) :
-    ‖dirichletInteriorResidualLinearMap P X Xc hX hc c R ρ (by linarith) V hV hU f‖ ≤
-      diskGreenCompletionConstant c ρ hρ*‖diskTestRestrictionL2 c ρ f.1‖ := by
-  let K := (∫ p : ℂ × ℂ, ‖diskGreenKernel c ρ hρ p.1 p.2‖^2
-    ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))))^(1/2 : ℝ)
-  have hK : 0 ≤ K := Real.rpow_nonneg (integral_nonneg (fun _ => sq_nonneg _)) _
-  have h := dirichletResidualL2_norm_sq_le P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f.1 f.2
-  have hfNorm : (∫ z in ball c ρ, ‖f.1 z‖^2) = ‖diskTestRestrictionL2 c ρ f.1‖^2 := by
-    rw [diskTestRestrictionL2_norm_sq]
-    simp only [Real.norm_eq_abs,sq_abs]
-  rw [hfNorm] at h
-  change ‖dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f.1‖ ≤
-    Real.sqrt K*‖diskTestRestrictionL2 c ρ f.1‖
-  apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg K) (norm_nonneg _))).mp
-  rw [mul_pow,Real.sq_sqrt hK]
-  exact h
 
 /-- The bounded completion equals the actual residual on every compact interior test. -/
 theorem dirichletCompletedL2Map_apply_interior {Ω : Type*} [MeasurableSpace Ω]
@@ -290,6 +249,16 @@ theorem dirichletCompletedL2Map_apply_interior {Ω : Type*} [MeasurableSpace Ω]
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU (diskTestRestrictionL2 c ρ f) =
       dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f := by
+  have dirichletInteriorResidualLinearMap_bound (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) hX hc c (R : ℝ) (ρ : ℝ) (ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0) hU (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ → covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ- Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖) (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0)) (f : diskInteriorTestSpace c ρ) : ‖dirichletInteriorResidualLinearMap P X Xc hX hc c R ρ (by linarith) V hV hU f‖ ≤ diskGreenCompletionConstant c ρ hρ*‖diskTestRestrictionL2 c ρ f.1‖ := by
+    let K := (∫ p : ℂ × ℂ, ‖diskGreenKernel c ρ hρ p.1 p.2‖^2
+      ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))))^(1/2 : ℝ)
+    have h := dirichletResidualL2_norm_sq_le P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f.1 f.2
+    rw [(show (∫ z in ball c ρ, ‖f.1 z‖^2) = ‖diskTestRestrictionL2 c ρ f.1‖^2 by rw [diskTestRestrictionL2_norm_sq]; simp only [Real.norm_eq_abs,sq_abs])] at h
+    change ‖dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f.1‖ ≤
+      Real.sqrt K*‖diskTestRestrictionL2 c ρ f.1‖
+    apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg K) (norm_nonneg _))).mp
+    rw [mul_pow,Real.sq_sqrt (Real.rpow_nonneg (integral_nonneg (fun _ => sq_nonneg _)) _)]
+    exact h
   exact LinearMap.extendOfNorm_eq (f := dirichletInteriorResidualLinearMap P X Xc hX hc c R ρ (by linarith) V hV hU)
     (e := (diskTestRestrictionLinearMap c ρ).comp (diskInteriorTestSpace c ρ).subtype)
     (denseRange_diskInteriorTestRestriction c ρ hρ)
@@ -338,11 +307,11 @@ theorem dirichletCompletedL2Map_mem_gaussianHilbertSpan {Ω : Type*} [Measurable
 /-- Every jointly indexed collection of completed disk restrictions remains Gaussian. -/
 theorem dirichletCompletedL2Map_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
+    hX hc
+    c (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
+    hU
     (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
       covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
         Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
@@ -358,7 +327,7 @@ theorem dirichletCompletedL2Map_isGaussianProcess {Ω : Type*} [MeasurableSpace 
 
 /-- A complete disk map is centered whenever its values on the dense interior tests are centered. -/
 theorem integral_completed_disk_map_eq_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
+    (P : Measure Ω) [IsProbabilityMeasure P] c ρ (hρ : 0 < ρ)
     (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P)
     (hT : ∀ f : TestFn, tsupport f ⊆ ball c ρ → (∫ ω, T (diskTestRestrictionL2 c ρ f) ω ∂P) = 0)
     (u : Lp ℝ 2 (volume.restrict (ball c ρ))) : (∫ ω, T u ω ∂P) = 0 := by

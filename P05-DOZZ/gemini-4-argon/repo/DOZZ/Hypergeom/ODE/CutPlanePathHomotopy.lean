@@ -32,9 +32,7 @@ theorem subtype_paths_real_homotopy
     have hproj : Continuous proj := by
       dsimp [proj]
       exact continuous_projIcc
-    have hpair : Continuous (fun z : ℝ × ℝ => (proj z.2, proj z.1)) := by
-      exact (hproj.comp continuous_snd).prodMk (hproj.comp continuous_fst)
-    exact F.continuous.comp hpair
+    exact F.continuous.comp (by exact (hproj.comp continuous_snd).prodMk (hproj.comp continuous_fst))
   refine ⟨Γ, hΓcont.continuousOn, ?_, ?_, ?_, ?_, ?_⟩
   · intro s hs
     have hs' : proj s = ⟨s, hs⟩ := Set.projIcc_of_mem zero_le_one hs
@@ -57,8 +55,7 @@ theorem subtype_paths_real_homotopy
     change ((F (proj 0, proj s) : U) : ℂ) =
       ((p ⟨s, hs⟩ : U) : ℂ)
     rw [h0, hs']
-    have heval := congrArg (fun r : Path x y => r ⟨s, hs⟩) F.eval_zero
-    exact congrArg Subtype.val heval
+    exact congrArg Subtype.val (congrArg (fun r : Path x y => r ⟨s, hs⟩) F.eval_zero)
   · intro s hs
     have hs' : proj s = ⟨s, hs⟩ := Set.projIcc_of_mem zero_le_one hs
     have h1 : proj 1 = (1 : unitInterval) := by
@@ -66,8 +63,7 @@ theorem subtype_paths_real_homotopy
     change ((F (proj 1, proj s) : U) : ℂ) =
       ((q ⟨s, hs⟩ : U) : ℂ)
     rw [h1, hs']
-    have heval := congrArg (fun r : Path x y => r ⟨s, hs⟩) F.eval_one
-    exact congrArg Subtype.val heval
+    exact congrArg Subtype.val (congrArg (fun r : Path x y => r ⟨s, hs⟩) F.eval_one)
   · intro z hz
     exact (F (proj z.2, proj z.1)).property
 

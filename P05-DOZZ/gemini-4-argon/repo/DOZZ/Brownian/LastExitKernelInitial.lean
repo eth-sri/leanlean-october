@@ -42,16 +42,12 @@ theorem brownianUpperConditionedReferenceFutureKernel_real_initialIci
   · have hset : {y : ℚ → ℝ | δ ≤ y 0} =ᵐ[K] Set.univ := by
       filter_upwards [hzero] with y hy
       simp [hy, hδz]
-    have hm : K {y : ℚ → ℝ | δ ≤ y 0} = K Set.univ := measure_congr hset
-    rw [measureReal_def, hm]
+    rw [measureReal_def, (measure_congr hset)]
     simp [hδz]
   · have hset : {y : ℚ → ℝ | δ ≤ y 0} =ᵐ[K] (∅ : Set (ℚ → ℝ)) := by
       filter_upwards [hzero] with y hy
       simp [hy, hδz]
-    have hm : K {y : ℚ → ℝ | δ ≤ y 0} = 0 := by
-      rw [measure_congr hset]
-      simp
-    rw [measureReal_def, hm]
+    rw [measureReal_def, (show K {y : ℚ → ℝ | δ ≤ y 0} = 0 by rw [measure_congr hset]; simp)]
     simp [hδz]
 
 end DOZZ.Proofs

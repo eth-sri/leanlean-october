@@ -39,30 +39,21 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
     isCompact_iff_compactSpace.mp
       (isCompact_Icc (a := (a : ℝ)) (b := (b : ℝ)))
   let : MeasurableSpace BrownianPath := conditionedPositiveNaturalFiltration b
-  have hτ : Continuous τ :=
-    Continuous.subtype_mk continuous_subtype_val (fun u => le_trans a.property u.2.1)
   let segment : BrownianPath → C(K, ℝ) := fun p =>
     ⟨fun u => conditionedPositiveStateAt (τ u) p,
-      (p.continuous.neg).comp hτ⟩
+      (p.continuous.neg).comp (Continuous.subtype_mk continuous_subtype_val (fun u => le_trans a.property u.2.1))⟩
   let H : Set C(K, ℝ) := {f | ∃ u : K, f u = (c : ℝ)}
   let V : Set C(K, ℝ) := {f | MapsTo f Set.univ ({(c : ℝ)}ᶜ)}
   have hV : IsOpen V := by
     exact ContinuousMap.isOpen_setOfPred_mapsTo isCompact_univ
       (isOpen_compl_iff.mpr isClosed_singleton)
-  have hHV : H = Vᶜ := by
-    ext f
-    simp [H, V, MapsTo, Set.mem_compl_iff]
-  have hHclosed : IsClosed H := hHV ▸ hV.isClosed_compl
   have hsegment : Measurable segment := by
     apply ContinuousMap.measurable_iff_eval.mpr
     intro u
     change Measurable[conditionedPositiveNaturalFiltration b]
       (conditionedPositiveStateAt (τ u))
     apply Measurable.of_comap_le
-    have hub : τ u ≤ b := by
-      apply NNReal.coe_le_coe.mp
-      exact u.2.2
-    exact le_iSup_of_le (τ u) (le_iSup_of_le hub le_rfl)
+    exact le_iSup_of_le (τ u) (le_iSup_of_le (by apply NNReal.coe_le_coe.mp; exact u.2.2) le_rfl)
   have hpre : conditionedPositiveHistoryHitsOnInterval a b c = segment ⁻¹' H := by
     ext p
     constructor
@@ -71,12 +62,9 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
         constructor
         · exact_mod_cast hau
         · exact_mod_cast hub⟩
-      have hτu : τ u' = u := by
-        apply Subtype.ext
-        rfl
       refine ⟨u', ?_⟩
       change conditionedPositiveStateAt (τ u') p = c
-      rw [hτu]
+      rw [(show τ u' = u by apply Subtype.ext; rfl)]
       exact hval
     · rintro ⟨u, hval⟩
       refine ⟨τ u, ?_, ?_, ?_⟩
@@ -87,7 +75,7 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
       · change conditionedPositiveStateAt (τ u) p = c at hval
         exact hval
   rw [hpre]
-  exact hHclosed.measurableSet.preimage hsegment
+  exact ((show H = Vᶜ by ext f; simp [H, V, MapsTo, Set.mem_compl_iff]) ▸ hV.isClosed_compl).measurableSet.preimage hsegment
 
 /-- The deterministic-time past/future factorization applies to a compact-interval barrier hit.
 The future avoidance and rational-future test are both taken strictly after the deterministic
@@ -99,7 +87,7 @@ theorem conditionedPositiveHistory_intervalHit_avoidance_shift_setIntegral
     (hB : IsBrownianReal (fun t p => p t) B)
     (a b : ℝ≥0) (hb : 0 < (b : ℝ)) (hν : 0 < ν)
     (c : ℝ≥0) (hc : 0 < (c : ℝ))
-    (C : Set (ℚ → ℝ)) (hC : MeasurableSet C) :
+    C (hC : MeasurableSet C) :
     (∫ p in conditionedPositiveHistoryHitsOnInterval a b c,
       (conditionedPositiveFutureRationalAvoidance b c).indicator
         (fun p => lastExitShiftedFutureTest (c : ℝ) C

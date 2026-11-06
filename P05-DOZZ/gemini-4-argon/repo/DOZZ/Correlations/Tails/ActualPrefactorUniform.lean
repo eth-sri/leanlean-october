@@ -16,9 +16,9 @@ open scoped ENNReal
 namespace DOZZ.Proofs
 
 theorem actual_prefactor_moment_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (K : Set ℂ) (hK : IsCompact K) (hz : ∀ z ∈ K, 2 ≤ ‖z‖)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    K (hK : IsCompact K) (hz : ∀ z ∈ K, 2 ≤ ‖z‖)
     (γ b R : ℝ) (hb : 0 ≤ b) (hR : 0 < R) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ z ∈ K, ∀ f : ℝ, 0 ≤ f → f ≤ b →
       ∀ r : ℝ, 0 < r → r ≤ R →
@@ -46,9 +46,8 @@ theorem actual_prefactor_moment_uniform
     simp only [sub_self,abs_zero,mul_zero,zero_add]
   simp only [zero_mul,add_zero,hD]
   have he : 1 ≤ Real.exp (γ^2+4) := Real.one_le_exp_iff.mpr (by positivity)
-  have hfb' : f*‖z‖^(-4 : ℝ) ≤ b :=
-    (mul_le_of_le_one_right hf hn).trans hfb
-  have hbb : b ≤ b*Real.exp (γ^2+4) := le_mul_of_one_le_right hb he
+  have hfb' := (mul_le_of_le_one_right hf hn).trans hfb
+  have hbb := le_mul_of_one_le_right hb he
   calc
     _ ≤ b*Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖) :=
       mul_le_mul_of_nonneg_right hfb' (Real.exp_nonneg _)

@@ -20,10 +20,10 @@ namespace DOZZ.Proofs
 The measurable modification is supplied by the weak-limit measurable-version theorem. -/
 theorem gmc_set_mass_aemeasurable_of_isGMCOf
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (A : Set ℂ) (hA : MeasurableSet A) :
+    A (hA : MeasurableSet A) :
     AEMeasurable (fun ω => M ω A) P := by
   obtain ⟨N, hNmeas, _hNfinite, hMN⟩ :=
     equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM

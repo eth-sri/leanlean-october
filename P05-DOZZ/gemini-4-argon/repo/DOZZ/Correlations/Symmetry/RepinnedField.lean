@@ -17,7 +17,7 @@ noncomputable def symmetryTestIntegralCLM : TestFn →L[ℝ] ℝ :=
     volume (fun _ : ℂ => (1 : ℝ))
 
 /-- The continuous mass functional has its intended integral value. -/
-theorem symmetryTestIntegralCLM_apply (f : TestFn) :
+theorem symmetryTestIntegralCLM_apply f :
     symmetryTestIntegralCLM f = ∫ x, f x := by
   rw [symmetryTestIntegralCLM,
     TestFunction.integralAgainstBilinCLM_eq_integral
@@ -42,7 +42,7 @@ noncomputable def symmetryRepinnedField
 
 /-- Every re-pinned evaluation retains the correlated scalar subtraction. -/
 theorem symmetryRepinnedField_apply
-    {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ) (ω : Ω) (f : TestFn) :
+    {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ) (ω : Ω) f :
     symmetryRepinnedField X L ω f = X ω (symmetryReflectionTest f) - L ω * ∫ x, f x := by
   change X ω (symmetryReflectionTestCLM f) - L ω * symmetryTestIntegralCLM f = _
   rw [symmetryTestIntegralCLM_apply]
@@ -50,8 +50,8 @@ theorem symmetryRepinnedField_apply
 
 /-- Re-pinned test evaluations are measurable whenever the source field and scalar are. -/
 theorem symmetryRepinnedField_eval_measurable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (L : Ω → ℝ) (hL : Measurable L) (f : TestFn) :
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (hX : IsEquatorGFF P X) L (hL : Measurable L) f :
     Measurable (fun ω => symmetryRepinnedField X L ω f) := by
   simp only [symmetryRepinnedField_apply]
   exact ((hX.2 (symmetryReflectionTest f)).1).sub (hL.mul_const _)

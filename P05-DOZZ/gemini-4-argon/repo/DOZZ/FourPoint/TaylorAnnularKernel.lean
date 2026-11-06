@@ -17,19 +17,15 @@ namespace DOZZ.Proofs
 /-- On the origin annulus with the moving root separated by half its inner radius,
 the precise squared-denominator kernel is bounded by the power κ-4. -/
 theorem gammaHalf_annular_kernel_bound
-    (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (z x : ℂ) (hx : ‖x‖ ≤ 1 / 2)
+    (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) z x (hx : ‖x‖ ≤ 1 / 2)
     (hxpos : 0 < ‖x‖) (hz : ‖z‖ ≤ ‖x‖ / 2) :
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2) ≤
       ENNReal.ofReal ((2 : ℝ) ^ (|γ * α₂| + |γ ^ 2 / 2 - 2|)) *
         ENNReal.ofReal (‖x‖ ^ (γ * (Q γ - α₁) - 4)) := by
   have hn : normPlus x = 1 := max_eq_left (by linarith only [hx])
   have hlow : ‖x‖ / 2 ≤ ‖x - z‖ := by
-    have hh := norm_sub_norm_le x z
-    linarith only [hh, hz]
-  have hhigh : ‖x - z‖ ≤ 2 * ‖x‖ := by
-    have hh := norm_sub_le x z
-    linarith only [hh, hz, hxpos]
-  have hxz : 0 < ‖x - z‖ := (by positivity : 0 < ‖x‖ / 2).trans_le hlow
+    linarith only [(norm_sub_norm_le x z), hz]
+  have hxz := (by positivity : 0 < ‖x‖ / 2).trans_le hlow
   have hlow1 : 1 / 2 ≤ ‖x - 1‖ := by
     have hh := norm_sub_norm_le (1 : ℂ) x
     rw [norm_one, norm_sub_rev] at hh
@@ -46,7 +42,7 @@ theorem gammaHalf_annular_kernel_bound
       neg_mul γ α₁, neg_mul γ α₂, Real.rpow_neg hxpos.le, Real.rpow_neg hx1.le]
     field_simp
   have hdist := rpow_distance_comparison ‖x - z‖ ‖x‖ 2
-    (γ ^ 2 / 2 - 2) |γ ^ 2 / 2 - 2| hxpos (by norm_num) hlow hhigh
+    (γ ^ 2 / 2 - 2) |γ ^ 2 / 2 - 2| hxpos (by norm_num) hlow (by linarith only [(norm_sub_le x z), hz, hxpos])
     (neg_abs_le _) (le_abs_self _)
   have htail : ‖x - 1‖ ^ (-γ * α₂) ≤ (2 : ℝ) ^ |γ * α₂| := by
     simpa only [neg_mul, abs_neg] using coulombWeight_rpow_le (L := 2) (y := ‖x - 1‖)

@@ -16,21 +16,18 @@ namespace DOZZ.Proofs
 theorem dual_restart_radius_ratio (z : ℂ) (hz : z ≠ 0) (h ξ : ℝ) :
     (Real.exp (-h)*‖z‖)/‖z‖^(1-ξ) = Real.exp (-h)*‖z‖^ξ := by
   have hn := norm_pos_iff.mpr hz
-  have hr := Real.rpow_pos_of_pos hn (1-ξ)
-  have he : ‖z‖ = ‖z‖^(1-ξ)*‖z‖^ξ := by
-    rw [← Real.rpow_add hn, sub_add_cancel, Real.rpow_one]
   have hratio : ‖z‖/‖z‖^(1-ξ) = ‖z‖^ξ := by
     calc
-      _ = (‖z‖^(1-ξ)*‖z‖^ξ)/‖z‖^(1-ξ) := congrArg (fun y => y/‖z‖^(1-ξ)) he
-      _ = _ := mul_div_cancel_left₀ _ hr.ne'
+      _ = (‖z‖^(1-ξ)*‖z‖^ξ)/‖z‖^(1-ξ) := congrArg (fun y => y/‖z‖^(1-ξ)) (by rw [← Real.rpow_add hn, sub_add_cancel, Real.rpow_one])
+      _ = _ := mul_div_cancel_left₀ _ (Real.rpow_pos_of_pos hn (1-ξ)).ne'
   rw [mul_div_assoc, hratio]
 
 /-- The supplied chaos admits independent lateral copies whose actual signed separated-mass
 error is little-o at every exponent below `ξ`. Their radial removal and independence are
 proved on the same eventual family of source carriers. -/
 theorem dual_source_decoupling_littleO
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun v : Ω × (ℂ × ℝ) => Xc v.1 v.2.1 v.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun v : ℂ × ℝ => Xc ω v.1 v.2))
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
@@ -55,13 +52,7 @@ theorem dual_source_decoupling_littleO
   let d := 3*γ^2/2*(q^2+q)
   let valid := fun z : ℂ => ‖z‖ ≤ 1 ∧ 0 < s z ∧ 0 < r z ∧ r z ≤ 1 ∧
     s z/r z ≤ 1/2 ∧ d*(s z/r z) ≤ 1
-  let PropN := fun z (N : Ω → Measure ℂ) => Measurable N ∧
-    IndepFun (originRadialPath Xc) N P ∧
-    (∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤) ∧
-    N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))) ∧
-    |(dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z (s z) (r z)).toReal-
-      (dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ q z (s z) (r z)).toReal| ≤ C*(s z/r z)
-  have hex : ∀ z : ℂ, ∃ N : Ω → Measure ℂ, valid z → PropN z N := by
+  have hex : ∀ z : ℂ, ∃ N : Ω → Measure ℂ, valid z → (fun z (N : Ω → Measure ℂ) => Measurable N ∧ IndepFun (originRadialPath Xc) N P ∧ (∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤) ∧ N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))) ∧ |(dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z (s z) (r z)).toReal- (dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ q z (s z) (r z)).toReal| ≤ C*(s z/r z)) z N := by
     intro z
     by_cases hv : valid z
     · obtain ⟨N, hN⟩ := hbound z hv.1 (s z) (r z)

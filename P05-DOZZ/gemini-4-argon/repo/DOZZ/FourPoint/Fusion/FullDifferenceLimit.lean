@@ -13,19 +13,17 @@ open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- Local scaling and the negligible exterior error give the full inverse-expectation coefficient. -/
 theorem fusion_massDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hlo : γ / 2 + 1 / γ < α₁) (hα₁ : α₁ < 2 / γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p) :
+    α₁ α₂ α₃ (hlo : γ / 2 + 1 / γ < α₁) (hα₁ : α₁ < 2 / γ)
+    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) p (hp : 0 ≤ p) :
     Tendsto (fun z : ℂ =>
       ((∫⁻ ω, coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ (-p) ∂P).toReal -
         (∫⁻ ω, coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ ^ (-p) ∂P).toReal) /
           ‖z‖ ^ (γ * (Q γ - α₁))) (nhdsWithin 0 {0}ᶜ)
       (nhds (-p * gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p)) := by
   obtain ⟨_, _, _, _, hκ⟩ := fusion_difference_parameters γ α₁ hγ hlo hα₁
-  have hl := fusion_localDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hα₁ hα₂ hα₃ p hp
-  have hr := fusion_exteriorDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp _ hκ
-  have h := (tendsto_const_nhds (x := -p)).mul (hl.add hr)
+  have h := (tendsto_const_nhds (x := -p)).mul ((fusion_localDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hα₁ hα₂ hα₃ p hp).add (fusion_exteriorDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp _ hκ))
   simp only [add_zero] at h
   apply h.congr'
   have hz4 : ∀ᶠ z : ℂ in nhdsWithin 0 {0}ᶜ, ‖z‖ ≤ 1 / 4 :=

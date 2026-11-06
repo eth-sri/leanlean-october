@@ -25,33 +25,33 @@ variable {γ χ α₁ α₂ α₃ : ℝ}
 noncomputable def bpzSoftI (γ χ α₁ α₂ α₃ ε : ℝ) (m : Measure ℂ) (z : ℂ) : ℝ :=
   bpzSoftMassReal (γ * χ / 2) ε (bpzBaseWeight γ χ α₁ α₂ α₃) m z
 
-theorem bpzSoftI_eq_integral (ε : ℝ) (m : Measure ℂ) (z : ℂ) :
+theorem bpzSoftI_eq_integral ε (m : Measure ℂ) z :
     bpzSoftI γ χ α₁ α₂ α₃ ε m z = ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ ε z x ∂m := rfl
 
-theorem bpzSoftI_eq_toReal (ε : ℝ) (m : Measure ℂ) (z : ℂ) :
+theorem bpzSoftI_eq_toReal ε (m : Measure ℂ) z :
     bpzSoftI γ χ α₁ α₂ α₃ ε m z = (bpzMass γ χ α₁ α₂ α₃ ε m z).toReal := by
   rw [bpzSoftI_eq_integral, integral_eq_lintegral_of_nonneg_ae
     (Eventually.of_forall fun x => bpzSoftWeight_nonneg ε z x)
     (measurable_bpzSoftWeight ε z).aestronglyMeasurable]
   rfl
 
-theorem bpzSoftI_nonneg (ε : ℝ) (m : Measure ℂ) (z : ℂ) : 0 ≤ bpzSoftI γ χ α₁ α₂ α₃ ε m z := by
+theorem bpzSoftI_nonneg ε (m : Measure ℂ) z : 0 ≤ bpzSoftI γ χ α₁ α₂ α₃ ε m z := by
   rw [bpzSoftI_eq_toReal]; exact ENNReal.toReal_nonneg
 
 /-- A lintegral bound on `E[bpzMass^{-p} ∫⁻ f dM]` gives the real bound. -/
 theorem bpz_real_bound_of_lintegral {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
+    X (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) {z : ℂ}
-    (hz0 : z ≠ 0) (hz1 : z ≠ 1) {p : ℝ} {f : ℂ → ℝ} (hf : Measurable f) (hf0 : ∀ x, 0 ≤ f x)
-    {B : ℝ} (hB0 : 0 ≤ B) (hB : ∫⁻ ω, bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) *
+    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {ε} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) {z}
+    (hz0 : z ≠ 0) (hz1 : z ≠ 1) {p : ℝ} {f} (hf : Measurable f) (hf0 : ∀ x, 0 ≤ f x)
+    {B} (hB0 : 0 ≤ B) (hB : ∫⁻ ω, bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) *
       ∫⁻ x, ENNReal.ofReal (f x) ∂M ω ∂P ≤ ENNReal.ofReal B) :
     Integrable (fun ω => bpzSoftI γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) * ∫ x, f x ∂M ω) P ∧
       ∫ ω, bpzSoftI γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) * ∫ x, f x ∂M ω ∂P ≤ B ∧
       ∀ᵐ ω ∂P, Integrable f (M ω) := by
   have hIm : Measurable fun ω => bpzSoftI γ χ α₁ α₂ α₃ ε (M ω) z :=
     (measurable_integral_measure (measurable_bpzSoftWeight ε z)).comp hMm
-  have hJm : Measurable fun ω => ∫ x, f x ∂M ω := (measurable_integral_measure hf).comp hMm
+  have hJm := (measurable_integral_measure hf).comp hMm
   have hmeasL : AEMeasurable (fun ω => bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) *
       ∫⁻ x, ENNReal.ofReal (f x) ∂M ω) P :=
     ((gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _

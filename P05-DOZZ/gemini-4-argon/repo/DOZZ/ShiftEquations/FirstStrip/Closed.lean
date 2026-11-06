@@ -25,8 +25,8 @@ namespace DOZZ.Proofs
 /-- **The first structure shift on a strip with no remaining input** (the exact statement of
 `DOZZ.structureConstant_first_shift_strip`). -/
 theorem structureConstant_first_shift_strip_unconditional
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ η : ℝ)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (M : Ω → Measure ℂ) γ μ η
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hη : 0 < η ∧ Q γ - 2 * η > γ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)

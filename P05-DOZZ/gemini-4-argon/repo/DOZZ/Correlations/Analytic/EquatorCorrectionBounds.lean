@@ -14,7 +14,7 @@ open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
 /-- The regular circle pin differs from its center value by at most the circle radius. -/
-theorem equator_circle_mean_abs_le (z : ℂ) (r : ℝ) :
+theorem equator_circle_mean_abs_le z r :
     |equatorCircleMean z r - Real.log (normPlus z)| ≤ Real.exp (-r) := by
   unfold equatorCircleMean
   rw [CirclePotential.integral_circleMeasure_eq_circleAverage

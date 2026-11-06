@@ -19,28 +19,14 @@ namespace DOZZ.Proofs
 
 /-- The actual cutoff GMC integral, expressed against planar volume. -/
 theorem regularized_integral_volume
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (γ r : ℝ) (ω : Ω) (f : ℂ → ℝ) :
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    γ r ω (f : ℂ → ℝ) :
     (∫ x, f x ∂regularizedGMC P Xc γ r ω) =
       ∫ x, f x * Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) *
         normPlus x ^ (-4 : ℝ) ∂volume := by
   let : IsProbabilityMeasure P := hX.1
-  have hV : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
-    have h : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
-      ((hc.1 r).comp measurable_swap).pow_const 2
-    exact h.stronglyMeasurable.integral_prod_right.measurable
-  have hD : Measurable (fun x : ℂ => ENNReal.ofReal
-      (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) *
-        normPlus x ^ (-4 : ℝ))) := by
-    have hC : Measurable (fun x : ℂ => Xc ω x r) :=
-      (hc.1 r).comp (measurable_const.prodMk measurable_id)
-    have hN : Measurable (fun x : ℂ => normPlus x ^ (-4 : ℝ)) := by
-      unfold normPlus
-      fun_prop
-    exact ENNReal.measurable_ofReal.comp
-      (((hC.const_mul γ).sub (hV.const_mul _)).exp.mul hN)
-  rw [regularizedGMC, integral_withDensity_eq_integral_toReal_smul hD
+  rw [regularizedGMC, integral_withDensity_eq_integral_toReal_smul (show Measurable (fun x => ENNReal.ofReal (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) * normPlus x ^ (-4 : ℝ))) by exact ENNReal.measurable_ofReal.comp (((((hc.1 r).comp (measurable_const.prodMk measurable_id)).const_mul γ).sub ((show Measurable (fun x => ∫ ω', Xc ω' x r ^ 2 ∂P) by exact (((hc.1 r).comp measurable_swap).pow_const 2).stronglyMeasurable.integral_prod_right.measurable).const_mul _)).exp.mul (by unfold normPlus; fun_prop)))
     (ae_of_all _ fun x => ENNReal.ofReal_lt_top)]
   apply integral_congr_ae
   filter_upwards [] with x
@@ -51,7 +37,7 @@ theorem regularized_integral_volume
 
 /-- On every compact subchart the cutoff pin removal is an exact scalar times an actual GMC test. -/
 theorem unpinned_cutoff_test_identity
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (z : ℂ) (hz : 2 ≤ ‖z‖) (γ r ρ : ℝ) (hr : ρ + Real.exp (-r) ≤ 1)
     (f g : BoundedContinuousFunction ℂ ℝ)
@@ -68,9 +54,7 @@ theorem unpinned_cutoff_test_identity
     simp only [logRegularizationReference, Measure.restrict_univ]
     exact gmcReferenceMeasure_restrict_unit_chart _ Metric.isOpen_ball.measurableSet
       (fun x hx => (by simpa only [Metric.mem_ball, dist_zero_right] using hx : ‖x‖ < 1).le)
-  have hlog : Real.log (1 / Real.exp (-r)) = r := by
-    rw [one_div, Real.log_inv, Real.log_exp, neg_neg]
-  rw [regularizedLogChaosTestMass, hRef, hlog,
+  rw [regularizedLogChaosTestMass, hRef, (show Real.log (1 / Real.exp (-r)) = r by rw [one_div, Real.log_inv, Real.log_exp, neg_neg]),
     regularized_integral_volume P X Xc hX hc γ r ω g]
   rw [← integral_add_left_eq_self (μ := volume)
     (fun w : ℂ => g w * Real.exp (γ * Xc ω w r - γ ^ 2 / 2 * ∫ ω', Xc ω' w r ^ 2 ∂P) *
@@ -81,9 +65,8 @@ theorem unpinned_cutoff_test_identity
       intro x hx
       have hf0 : f x = 0 := by
         by_contra h
-        have hnorm := hf x h
-        have hlt : ‖x‖ < 1 := by linarith [Real.exp_pos (-r)]
-        exact hx (by simpa only [Metric.mem_ball, dist_zero_right] using hlt)
+        have := hf x h
+        exact hx (by simpa only [Metric.mem_ball, dist_zero_right] using (by linarith [Real.exp_pos (-r)]))
       simp only [hf0, zero_mul])]
   apply integral_congr_ae
   filter_upwards [] with x

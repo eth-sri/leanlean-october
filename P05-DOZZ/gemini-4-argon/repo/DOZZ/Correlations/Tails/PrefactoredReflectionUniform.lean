@@ -16,9 +16,9 @@ open scoped ENNReal
 namespace DOZZ.Proofs
 
 theorem prefactored_reflection_moment_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (K : Set ℂ) (hK : IsCompact K) (hz : ∀ z ∈ K, 2 ≤ ‖z‖)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    K (hK : IsCompact K) (hz : ∀ z ∈ K, 2 ≤ ‖z‖)
     (γ b R ν₁ ν₂ : ℝ) (hγ : 0 < γ) (hb : 0 ≤ b)
     (hR : 0 < R) (hRbulk : R < 4/γ^2) (hν₁ : 0 < ν₁)
     (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z) :
@@ -37,12 +37,6 @@ theorem prefactored_reflection_moment_uniform
   intro z hzk f hf hfb ν hνlo hνhi r hr hrR B hB hInd
   let S := fun ω => ENNReal.ofReal (f*‖z‖^(-4 : ℝ)*
     Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖))
-  have hSm : Measurable S := by
-    have hp : Measurable (fun ω => Xc ω z 0) :=
-      (hc.1 0).comp (measurable_id.prodMk measurable_const)
-    exact (((hp.const_mul γ).sub_const _).exp.const_mul _).ennreal_ofReal
-  have hJm := twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
-    (aemeasurable_of_twoSidedConditioned hB) hZ
   have hJbound := hRef ν hνlo hνhi r hr.le hrR B hB hInd
   change (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^ r ∂P) ≤ D at hJbound
   calc
@@ -51,7 +45,7 @@ theorem prefactored_reflection_moment_uniform
       intro q
       rw [ENNReal.mul_rpow_of_nonneg _ _ hr.le,mul_comm]
     _ = (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^ r ∂P) * ∫⁻ ω, S ω ^ r ∂P :=
-      lintegral_prod_mul (hJm.pow_const r) (hSm.aemeasurable.pow_const r)
+      lintegral_prod_mul ((twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z (aemeasurable_of_twoSidedConditioned hB) hZ).pow_const r) (((((((hc.1 0).comp (measurable_id.prodMk measurable_const)).const_mul γ).sub_const _).exp.const_mul _).ennreal_ofReal).aemeasurable.pow_const r)
     _ ≤ D*L := mul_le_mul' hJbound (hPin z hzk f hf hfb r hr hrR)
 
 

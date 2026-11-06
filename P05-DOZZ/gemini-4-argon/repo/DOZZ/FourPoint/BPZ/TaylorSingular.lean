@@ -28,49 +28,29 @@ namespace DOZZ.Proofs
 
 /-! ### The Taylor formula -/
 
-/-- The weighted second derivative `u ↦ (t - u) * g'' u` is interval integrable on `[0, t]` when
-`g''` is integrable on `(0, t]`: the weight `t - u` is continuous, hence bounded on `[0, t]`. -/
-theorem bpzTS_intervalIntegrable_mul {g'' : ℝ → ℝ} {t : ℝ} (ht : 0 < t)
-    (hint : IntegrableOn g'' (Ioc 0 t)) :
-    IntervalIntegrable (fun u => (t - u) * g'' u) volume 0 t := by
-  rw [intervalIntegrable_iff_integrableOn_Ioc_of_le ht.le]
-  exact hint.continuousOn_mul_of_subset (g := fun u : ℝ => t - u) (K := Icc 0 t)
-    (by fun_prop) isCompact_Icc measurableSet_Ioc Ioc_subset_Icc_self
 
-/-- The Taylor primitive `u ↦ g u + (t - u) * g' u` has derivative `(t - u) * g'' u`. -/
-theorem bpzTS_hasDerivAt_primitive {g g' g'' : ℝ → ℝ} {t u : ℝ}
-    (hg : HasDerivAt g (g' u) u) (hg' : HasDerivAt g' (g'' u) u) :
-    HasDerivAt (fun v => g v + (t - v) * g' v) ((t - u) * g'' u) u := by
-  have h1 : HasDerivAt (fun v : ℝ => t - v) (-1) u := by
-    simpa using (hasDerivAt_id u).const_sub t
-  convert hg.add (h1.mul hg') using 1
-  ring
 
 /-- Second-order Taylor formula on `[0, t]` for a function that is `C²` only on `(0, t]`, with
 one-sided limits of the function and its derivative at `0` and an integrable second derivative. -/
-theorem bpz_taylor_singular {g g' g'' : ℝ → ℝ} {t g₀ d₀ : ℝ} (ht : 0 < t)
+theorem bpz_taylor_singular {g g' g'' : ℝ → ℝ} {t g₀ d₀} (ht : 0 < t)
     (hg : ∀ u ∈ Ioc (0 : ℝ) t, HasDerivAt g (g' u) u)
     (hg' : ∀ u ∈ Ioc (0 : ℝ) t, HasDerivAt g' (g'' u) u)
     (hg0 : Tendsto g (𝓝[>] 0) (𝓝 g₀)) (hg'0 : Tendsto g' (𝓝[>] 0) (𝓝 d₀))
     (hint : IntegrableOn g'' (Ioc 0 t)) :
     g t = g₀ + d₀ * t + ∫ u in (0 : ℝ)..t, (t - u) * g'' u := by
+  have bpzTS_hasDerivAt_primitive {g : ℝ → ℝ} {g' : ℝ → ℝ} {g'' : ℝ → ℝ} {t} {u} (hg : HasDerivAt g (g' u) u) (hg' : HasDerivAt g' (g'' u) u) : HasDerivAt (fun v => g v + (t - v) * g' v) ((t - u) * g'' u) u := by
+    convert hg.add ((show HasDerivAt (fun v => t - v) (-1) u by simpa using (hasDerivAt_id u).const_sub t).mul hg') using 1
+    ring
   have htmem : t ∈ Ioc (0 : ℝ) t := ⟨ht, le_rfl⟩
   -- the primitive `u ↦ g u + (t - u) * g' u` tends to `g₀ + t * d₀` at `0⁺`
   have hlim0 : Tendsto (fun u => g u + (t - u) * g' u) (𝓝[>] 0) (𝓝 (g₀ + (t - 0) * d₀)) := by
-    have hw : Tendsto (fun u : ℝ => t - u) (𝓝[>] 0) (𝓝 (t - 0)) :=
-      ((continuous_const.sub continuous_id).tendsto 0).mono_left nhdsWithin_le_nhds
-    exact hg0.add (hw.mul hg'0)
+    exact hg0.add ((((continuous_const.sub continuous_id).tendsto 0).mono_left nhdsWithin_le_nhds).mul hg'0)
   -- and to `g t` at `t⁻`, by continuity of `g` and `g'` at `t`
   have hlimt : Tendsto (fun u => g u + (t - u) * g' u) (𝓝[<] t) (𝓝 (g t)) := by
-    have hgc := (hg t htmem).continuousAt
+    have := (hg t htmem).continuousAt
     have hg'c := (hg' t htmem).continuousAt
-    have hcont : ContinuousAt (fun u => g u + (t - u) * g' u) t := by fun_prop
-    simpa using hcont.tendsto.mono_left nhdsWithin_le_nhds
-  have hftc := intervalIntegral.integral_eq_sub_of_hasDerivAt_of_tendsto ht
-    (fun u hu => bpzTS_hasDerivAt_primitive (hg u (Ioo_subset_Ioc_self hu))
-      (hg' u (Ioo_subset_Ioc_self hu)))
-    (bpzTS_intervalIntegrable_mul ht hint) hlim0 hlimt
-  rw [hftc]
+    simpa using (show ContinuousAt (fun u => g u + (t - u) * g' u) t by fun_prop).tendsto.mono_left nhdsWithin_le_nhds
+  rw [(intervalIntegral.integral_eq_sub_of_hasDerivAt_of_tendsto ht (fun u hu => bpzTS_hasDerivAt_primitive (hg u (Ioo_subset_Ioc_self hu)) (hg' u (Ioo_subset_Ioc_self hu))) ((show IntervalIntegrable (fun u => (t - u) * g'' u) volume 0 t by rw [intervalIntegrable_iff_integrableOn_Ioc_of_le ht.le]; exact hint.continuousOn_mul_of_subset (g := fun u => t - u) (K := Icc 0 t) (by fun_prop) isCompact_Icc measurableSet_Ioc Ioc_subset_Icc_self)) hlim0 hlimt)]
   ring
 
 /-! ### Substitution in the Taylor remainder -/
@@ -78,10 +58,10 @@ theorem bpz_taylor_singular {g g' g'' : ℝ → ℝ} {t g₀ d₀ : ℝ} (ht : 0
 /-- The substitution `u = s t` in the Taylor remainder, for a function with values in a real
 normed space. -/
 theorem bpzTS_subst_smul {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {f : ℝ → E}
-    {t : ℝ} (ht : 0 < t) :
+    {t} (ht : 0 < t) :
     ∫ u in (0 : ℝ)..t, (t - u) • f u = t ^ 2 • ∫ s in Icc (0 : ℝ) 1, (1 - s) • f (s * t) := by
   have h1 := intervalIntegral.integral_comp_mul_right (a := 0) (b := 1)
-    (fun u : ℝ => (t - u) • f u) ht.ne'
+    (fun u => (t - u) • f u) ht.ne'
   have h2 : ∫ s in (0 : ℝ)..1, (t - s * t) • f (s * t) =
       t • ∫ s in (0 : ℝ)..1, (1 - s) • f (s * t) := by
     rw [← intervalIntegral.integral_smul]
@@ -95,7 +75,7 @@ theorem bpzTS_subst_smul {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] 
     mul_smul, h1, smul_inv_smul₀ ht.ne']
 
 /-- Complex-valued version of the substitution, for later use with complex integrands. -/
-theorem bpz_taylor_remainder_subst_complex {f : ℝ → ℂ} {t : ℝ} (ht : 0 < t) :
+theorem bpz_taylor_remainder_subst_complex {f : ℝ → ℂ} {t} (ht : 0 < t) :
     ∫ u in (0 : ℝ)..t, ((t - u : ℝ) : ℂ) * f u =
       ((t ^ 2 : ℝ) : ℂ) * ∫ s in Icc (0 : ℝ) 1, ((1 - s : ℝ) : ℂ) * f (s * t) := by
   simpa only [Complex.real_smul] using bpzTS_subst_smul (f := f) ht

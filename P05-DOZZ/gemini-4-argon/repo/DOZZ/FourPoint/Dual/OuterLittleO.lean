@@ -16,7 +16,7 @@ namespace DOZZ.Proofs
 /-- The actual retained inverse expectation differs from the full zero inverse expectation
 by o(|z|^κ) under the two strict dual outer margins. -/
 theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p ξ κ : ℝ)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p ξ κ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hp : 0 < p)
     (hα₁ : α₁ - 2 / γ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hβ : γ * α₁ < 4) (hξ : 0 < ξ) (hξ₁ : ξ < 1) (hκξ : κ < ξ)
@@ -31,9 +31,9 @@ theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨C₂, _, hdel⟩ := dual_retainedZero_deleted_moment_bound
     P X M γ α₁ α₂ α₃ p hγ hγ₂ hp hα₁ hα₂ hα₃ hβ hX hM
   let l := nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}
-  have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
+  have hn : Tendsto (fun z => ‖z‖) l (nhds 0) := by
     simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hpow (s : ℝ) (hs : 0 < s) : Tendsto (fun z : ℂ => ‖z‖ ^ s) l (nhds 0) := by
+  have hpow (s : ℝ) (hs : 0 < s) : Tendsto (fun z => ‖z‖ ^ s) l (nhds 0) := by
     simpa only [Function.comp_def, Real.zero_rpow hs.ne'] using
       ((Real.continuous_rpow_const hs.le).tendsto (0 : ℝ)).comp hn
   have hbound : ∀ᶠ z : ℂ in l,
@@ -44,7 +44,7 @@ theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
       (hpow (1 - ξ) (sub_pos.mpr hξ₁)).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
       (hpow ξ hξ).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
       self_mem_nhdsWithin] with z hz hcut hsmall hz0
-    have hpz : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+    have hpz := norm_pos_iff.mpr hz0
     have hr : 0 < ‖z‖ ^ (1 - ξ) := Real.rpow_pos_of_pos hpz _
     have he : ‖z‖ = ‖z‖ ^ (1 - ξ) * ‖z‖ ^ ξ := by
       rw [← Real.rpow_add hpz, sub_add_cancel, Real.rpow_one]
@@ -64,12 +64,10 @@ theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
     rw [← Real.rpow_mul hpz.le] at h₂
     exact (abs_sub_le _ _ _).trans (add_le_add h₁ h₂)
   rw [tendsto_zero_iff_norm_tendsto_zero]
-  have hu := ((reflected_radius_power_ratio_tendsto κ ξ hκξ).const_mul C₁).add
-    ((reflected_radius_power_ratio_tendsto κ ((1 - ξ) * (4 - γ * α₁)) hslack).const_mul C₂)
   apply squeeze_zero' (Eventually.of_forall fun z => norm_nonneg _) ?_
-    (show Tendsto (fun z : ℂ => C₁ * (‖z‖ ^ ξ / ‖z‖ ^ κ) +
+    (show Tendsto (fun z => C₁ * (‖z‖ ^ ξ / ‖z‖ ^ κ) +
       C₂ * (‖z‖ ^ ((1 - ξ) * (4 - γ * α₁)) / ‖z‖ ^ κ)) l (nhds 0) by
-      simpa only [mul_zero, add_zero] using hu)
+      simpa only [mul_zero, add_zero] using (((reflected_radius_power_ratio_tendsto κ ξ hκξ).const_mul C₁).add ((reflected_radius_power_ratio_tendsto κ ((1 - ξ) * (4 - γ * α₁)) hslack).const_mul C₂)))
   filter_upwards [hbound] with z hz
   rw [Real.norm_eq_abs, abs_div, abs_of_nonneg (Real.rpow_nonneg (norm_nonneg z) _)]
   exact (div_le_div_of_nonneg_right hz (Real.rpow_nonneg (norm_nonneg z) _)).trans_eq (by ring)

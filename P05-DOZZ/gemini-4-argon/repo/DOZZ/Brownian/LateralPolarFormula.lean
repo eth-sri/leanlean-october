@@ -26,7 +26,7 @@ namespace DOZZ.Proofs
 integrating its logarithmic-radius pullback against the plane GMC with the radial Wick weight.
 This is the full weighted pushforward identity behind the interval formula above. -/
 theorem lateralProjectedGMC_lintegral_eq
-    (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) (f : ℝ → ℝ≥0∞)
+    (γ : ℝ) A (M : Measure ℂ) (f : ℝ → ℝ≥0∞)
     (hf : Measurable f) :
     ∫⁻ s, f s ∂lateralProjectedGMC γ A M =
       ∫⁻ x, (ENNReal.ofReal (if ‖x‖ = 0 then 0 else
@@ -42,7 +42,7 @@ theorem lateralProjectedGMC_lintegral_eq
     refine Measurable.ite ?_ measurable_const ?_
     · simp
     · fun_prop
-  have hpull : Measurable (fun x : ℂ => f (ρ x)) := hf.comp hρ
+  have hpull : Measurable (fun x => f (ρ x)) := hf.comp hρ
   change ∫⁻ s, f s ∂((M.withDensity w).map ρ) =
     ∫⁻ x, (w x * f (ρ x)) ∂M
   rw [lintegral_map hf hρ]

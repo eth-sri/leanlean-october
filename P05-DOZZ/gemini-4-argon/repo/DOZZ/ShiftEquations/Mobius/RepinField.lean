@@ -43,8 +43,8 @@ noncomputable def repinFieldCLM {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ)
 noncomputable def repinField {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ) (a b : ℂ) : Ω → Distr :=
   repinFieldCLM X L a b
 
-theorem repinField_apply {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ) (a b : ℂ) (ω : Ω)
-    (f : TestFn) :
+theorem repinField_apply {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ) a b ω
+    f :
     repinField X L a b ω f = X ω (affinePushTestFn a b f) - L ω * ∫ z, f z := by
   change (distributionToTestCLM (X ω)) (affinePushTestFn a b f) - L ω * testAreaIntegralCLM f = _
   rw [testAreaIntegralCLM_apply, distributionToTestCLM_apply]
@@ -56,7 +56,7 @@ variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
 
 /-- Centered covariance of two circle averages is their double circle energy. -/
 theorem covariance_circleAverage_eq (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X Xc)
-    (x y : ℂ) (r s : ℝ) :
+    x y r s :
     cov[fun ω => Xc ω x r, fun ω => Xc ω y s; P] =
       ∫ u, ∫ v, gffKernel u v ∂circleMeasure y s ∂circleMeasure x r := by
   obtain ⟨_, hMean⟩ := circleAverage_isGaussianProcess P X Xc hX hXc
@@ -64,13 +64,13 @@ theorem covariance_circleAverage_eq (hX : IsEquatorGFF P X) (hXc : IsCircleAvera
   simp only [covariance, gaussianCovariance, hMean, sub_zero]
 
 /-- A circle average and the unit-circle average are uncorrelated (the equator pin). -/
-theorem integral_integral_gffKernel_unit_right (y : ℂ) (r : ℝ) :
+theorem integral_integral_gffKernel_unit_right y r :
     ∫ u, ∫ v, gffKernel u v ∂circleMeasure 0 0 ∂circleMeasure y r = 0 := by
   simp_rw [integral_gffKernel_circleMeasure_unit, integral_zero]
 
 /-- The unit-circle average is uncorrelated with every circle average. -/
 theorem integral_integral_gffKernel_unit_left (hX : IsEquatorGFF P X)
-    (hXc : IsCircleAverage P X Xc) (y : ℂ) (r : ℝ) :
+    (hXc : IsCircleAverage P X Xc) y r :
     ∫ u, ∫ v, gffKernel u v ∂circleMeasure y r ∂circleMeasure 0 0 = 0 := by
   rw [← covariance_circleAverage_eq P X Xc hX hXc 0 y 0 r, covariance_comm,
     covariance_circleAverage_eq P X Xc hX hXc y 0 r 0,
@@ -88,7 +88,7 @@ local notation "Lr" => fun ω => Xc ω b (-Real.log ‖a‖)
 
 /-- The covariance of the repinning average with a pushed circle average. -/
 theorem covariance_repin_circle (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X Xc)
-    (ha : a ≠ 0) (y : ℂ) (r : ℝ) :
+    (ha : a ≠ 0) y r :
     cov[Lr, fun ω => Xc ω (a * y + b) (r - Real.log ‖a‖); P] =
       repinKappa a b + ∫ u, affineDefect a b u ∂circleMeasure y r := by
   rw [covariance_circleAverage_eq P X Xc hX hXc]
@@ -99,7 +99,7 @@ theorem covariance_repin_circle (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P
 
 /-- **The variance of the repinned field.** -/
 theorem variance_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X Xc)
-    (ha : a ≠ 0) (f : TestFn) :
+    (ha : a ≠ 0) f :
     Var[fun ω => repinField X (Lr) a b ω f; P] = gffCov f f := by
   have _ := hX.1
   have hXm := equatorGFF_test_memLp X hX (affinePushTestFn a b f)
@@ -133,9 +133,7 @@ theorem isEquatorGFF_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P
   · simp_rw [repinField_apply]
     exact (hX.2 _).1.sub (hLmeas.mul measurable_const)
   · have hL := isCircleAverage_isGaussianL2Limit P X hX Xc hXc b (-Real.log ‖a‖)
-    have hJ := equatorGFF_finite_evaluations_with_L_jointly_gaussian P X hX _ hL
-      (fun _ : Unit => affinePushTestFn a b f)
-    obtain ⟨-, v, hv⟩ := hJ.2.2 (fun i => match i with
+    obtain ⟨-, v, hv⟩ := (equatorGFF_finite_evaluations_with_L_jointly_gaussian P X hX _ hL (fun _ : Unit => affinePushTestFn a b f)).2.2 (fun i => match i with
       | none => -(∫ z, f z)
       | some _ => 1)
     have hv' : P.map (fun ω => repinField X (Lr) a b ω f) = gaussianReal 0 v := by
@@ -146,21 +144,16 @@ theorem isEquatorGFF_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P
       simp only
       ring
     refine ⟨v, ?_, hv'⟩
-    have hmeas : AEMeasurable (fun ω => repinField X (Lr) a b ω f) P := by
-      simp_rw [repinField_apply]
-      exact ((hX.2 _).1.sub (hLmeas.mul measurable_const)).aemeasurable
-    rw [← variance_repinField P X Xc a b hX hXc ha f, ← variance_id_map hmeas, hv',
+    rw [← variance_repinField P X Xc a b hX hXc ha f, ← variance_id_map (show AEMeasurable (fun ω => repinField X (Lr) a b ω f) P by simp_rw [repinField_apply]; exact ((hX.2 _).1.sub (hLmeas.mul measurable_const)).aemeasurable), hv',
       variance_id_gaussianReal]
 
 /-- Covariance of the repinned field with a repinned circle average. -/
 theorem covariance_repinField_repinCircle (hX : IsEquatorGFF P X)
-    (hXc : IsCircleAverage P X Xc) (ha : a ≠ 0) (g : TestFn) (y : ℂ) (r : ℝ) :
+    (hXc : IsCircleAverage P X Xc) (ha : a ≠ 0) g y r :
     cov[fun ω => repinField X (Lr) a b ω g, fun ω => repinCircle Xc (Lr) a b ω y r; P] =
       circleCross y r g := by
   have _ := hX.1
-  have hXm := equatorGFF_test_memLp X hX (affinePushTestFn a b g)
   have hLm : MemLp (Lr) 2 P := hXc.2.1 b _
-  have hCm := hXc.2.1 (a * y + b) (r - Real.log ‖a‖)
   have hY : (fun ω => repinField X (Lr) a b ω g) =
       fun ω => X ω (affinePushTestFn a b g) - (∫ z, g z) * Xc ω b (-Real.log ‖a‖) := by
     funext ω
@@ -168,7 +161,7 @@ theorem covariance_repinField_repinCircle (hX : IsEquatorGFF P X)
     ring
   rw [hY]
   simp only [repinCircle]
-  rw [covariance_fun_sub_fun_sub hXm (hLm.const_mul _) hCm hLm,
+  rw [covariance_fun_sub_fun_sub (equatorGFF_test_memLp X hX (affinePushTestFn a b g)) (hLm.const_mul _) (hXc.2.1 (a * y + b) (r - Real.log ‖a‖)) hLm,
     covariance_const_mul_left, covariance_const_mul_left,
     covariance_comm (X := fun ω => X ω (affinePushTestFn a b g)),
     circleAverage_test_covariance P X Xc hX hXc _ _ (affinePushTestFn a b g),
@@ -181,7 +174,7 @@ theorem covariance_repinField_repinCircle (hX : IsEquatorGFF P X)
 
 /-- Variance of a repinned circle average. -/
 theorem variance_repinCircle (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X Xc)
-    (ha : a ≠ 0) (y : ℂ) (r : ℝ) :
+    (ha : a ≠ 0) y r :
     Var[fun ω => repinCircle Xc (Lr) a b ω y r; P] = circleSelfEnergy y r := by
   have _ := hX.1
   have hLm : MemLp (Lr) 2 P := hXc.2.1 b _
@@ -205,11 +198,9 @@ theorem isCircleAverage_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverag
     (ha : a ≠ 0) :
     IsCircleAverage P (repinField X (Lr) a b) (repinCircle Xc (Lr) a b) := by
   have _ := hX.1
-  have hLmeas : Measurable (Lr) :=
-    (hXc.1 (-Real.log ‖a‖)).comp (measurable_id.prodMk measurable_const)
   have hLm : MemLp (Lr) 2 P := hXc.2.1 b _
   obtain ⟨_, hMean⟩ := circleAverage_isGaussianProcess P X Xc hX hXc
-  refine ⟨fun r => measurable_repinCircle Xc _ hXc.1 hLmeas a b r,
+  refine ⟨fun r => measurable_repinCircle Xc _ hXc.1 ((hXc.1 (-Real.log ‖a‖)).comp (measurable_id.prodMk measurable_const)) a b r,
     fun y r => (hXc.2.1 _ _).sub hLm, fun y r f hf => ?_⟩
   -- the L² distance is the energy gap
   have hFm : ∀ g : TestFn, MemLp (fun ω => repinField X (Lr) a b ω g) 2 P := fun g => by

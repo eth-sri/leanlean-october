@@ -28,17 +28,15 @@ namespace DOZZ.Proofs
 /-- The norm of `1 - w * x⁻¹` in terms of `‖x - w‖`. -/
 theorem coulombCutoffLimit_norm_one_sub_mul_inv {x w : ℂ} (hx : x ≠ 0) :
     ‖1 - w * x⁻¹‖ = ‖x - w‖ / ‖x‖ := by
-  have h : 1 - w * x⁻¹ = (x - w) / x := by
-    field_simp [hx]
-  rw [h, norm_div]
+  rw [(show 1 - w * x⁻¹ = (x - w) / x by field_simp [hx]), norm_div]
 
 /-- With the cutoff removed, the inverted-chart weight at `x⁻¹` is the Coulomb weight at `x`. -/
-theorem coulombInfinityWeight_inv_eq_coulombWeight {N : ℕ} (γ : ℝ) (α : Fin N → ℝ)
-    (z : Fin N → ℂ) (αinf : ℝ) {x : ℂ} (hx : x ≠ 0) :
+theorem coulombInfinityWeight_inv_eq_coulombWeight {N} γ (α : Fin N → ℝ)
+    (z : Fin N → ℂ) αinf {x} (hx : x ≠ 0) :
     (∏ k, ENNReal.rpow (ENNReal.ofReal (normPlus x⁻¹ / ‖1 - z k * x⁻¹‖)) (γ * α k)) *
         ENNReal.rpow (ENNReal.ofReal (normPlus x⁻¹ / ‖x⁻¹‖)) (γ * αinf) =
       coulombWeight γ α z αinf x := by
-  have hxn : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx
+  have hxn := norm_ne_zero_iff.mpr hx
   have h1 : ∀ k, normPlus x⁻¹ / ‖1 - z k * x⁻¹‖ = normPlus x / ‖x - z k‖ := by
     intro k
     rw [coulombCutoffLimit_norm_one_sub_mul_inv hx, normPlus_inv_identity hx]
@@ -52,11 +50,11 @@ theorem coulombInfinityWeight_inv_eq_coulombWeight {N : ℕ} (γ : ℝ) (α : Fi
 /-! ### Softening multiplies a factor by an exponential -/
 
 /-- `|exp w - 1| ≤ |w| exp |w|`. -/
-theorem coulombCutoffLimit_abs_exp_sub_one_le (w : ℝ) :
+theorem coulombCutoffLimit_abs_exp_sub_one_le w :
     |Real.exp w - 1| ≤ |w| * Real.exp |w| := by
   rcases le_total 0 w with hw | hw
   · rw [abs_of_nonneg hw]
-    have h1 : 1 ≤ Real.exp w := Real.one_le_exp hw
+    have := Real.one_le_exp hw
     have h2 : (-w + 1) * Real.exp w ≤ 1 := by
       calc (-w + 1) * Real.exp w ≤ Real.exp (-w) * Real.exp w :=
             mul_le_mul_of_nonneg_right (Real.add_one_le_exp (-w)) (Real.exp_pos w).le
@@ -64,45 +62,39 @@ theorem coulombCutoffLimit_abs_exp_sub_one_le (w : ℝ) :
     rw [abs_of_nonneg (by linarith)]
     linarith only [h2]
   · rw [abs_of_nonpos hw]
-    have h1 : Real.exp w ≤ 1 := Real.exp_le_one_iff.mpr hw
-    have h2 : w + 1 ≤ Real.exp w := Real.add_one_le_exp w
-    have h3 : 1 ≤ Real.exp (-w) := Real.one_le_exp (by linarith)
+    have := Real.exp_le_one_iff.mpr hw
     rw [abs_of_nonpos (by linarith)]
-    linarith only [h2, mul_nonneg (neg_nonneg.2 hw) (sub_nonneg.2 h3)]
+    linarith only [(Real.add_one_le_exp w), mul_nonneg (neg_nonneg.2 hw) (sub_nonneg.2 (Real.one_le_exp (by linarith) : 1 ≤ Real.exp (-w)))]
 
 /-- Softening one factor `n / d` to `n / (d + δ)` multiplies it by an exponential `exp w` with
 `|w| ≤ |e| δ / ρ2` as soon as `d ≥ ρ2 > 0`. -/
-theorem coulombCutoffLimit_factor {n d δ ρ2 : ℝ} (e : ℝ) (hn : 0 < n) (hρ2 : 0 < ρ2)
+theorem coulombCutoffLimit_factor {n d δ ρ2} e (hn : 0 < n) (hρ2 : 0 < ρ2)
     (hd : ρ2 ≤ d) (hδ : 0 < δ) :
     ∃ w : ℝ, |w| ≤ |e| * (δ / ρ2) ∧
       ENNReal.rpow (ENNReal.ofReal (n / (d + δ))) e =
         ENNReal.rpow (ENNReal.ofReal (n / d)) e * ENNReal.ofReal (Real.exp w) := by
-  have hd0 : 0 < d := lt_of_lt_of_le hρ2 hd
+  have := lt_of_lt_of_le hρ2 hd
   refine ⟨-(e * Real.log (1 + δ / d)), ?_, ?_⟩
   · rw [abs_neg, abs_mul]
-    have ht : 0 ≤ δ / d := by positivity
-    have hlog0 : 0 ≤ Real.log (1 + δ / d) := Real.log_nonneg (by linarith)
+    have : 0 ≤ δ / d := by positivity
     have hlog1 : Real.log (1 + δ / d) ≤ δ / d := by
       have := Real.log_le_sub_one_of_pos (by linarith : 0 < 1 + δ / d)
       linarith
-    have hdd : δ / d ≤ δ / ρ2 := div_le_div_of_nonneg_left hδ.le hρ2 hd
-    rw [abs_of_nonneg hlog0]
-    exact mul_le_mul_of_nonneg_left (hlog1.trans hdd) (abs_nonneg e)
+    rw [abs_of_nonneg (Real.log_nonneg (by linarith))]
+    exact mul_le_mul_of_nonneg_left (hlog1.trans (div_le_div_of_nonneg_left hδ.le hρ2 hd)) (abs_nonneg e)
   · have h1 : 0 < n / (d + δ) := by positivity
     have h2 : 0 < n / d := by positivity
     rw [coulombWeight_rpow_ofReal h1, coulombWeight_rpow_ofReal h2,
       ← ENNReal.ofReal_mul (Real.rpow_nonneg h2.le e)]
     congr 1
-    have h3 : n / (d + δ) = n / d * (d / (d + δ)) := by field_simp
-    have h4 : d / (d + δ) = (1 + δ / d)⁻¹ := by field_simp
     have h5 : (d / (d + δ)) ^ e = Real.exp (-(e * Real.log (1 + δ / d))) := by
-      rw [h4, Real.rpow_def_of_pos (by positivity), Real.log_inv]
+      rw [(show d / (d + δ) = (1 + δ / d)⁻¹ by field_simp), Real.rpow_def_of_pos (by positivity), Real.log_inv]
       congr 1
       ring
-    rw [h3, Real.mul_rpow h2.le (by positivity), h5]
+    rw [(show n / (d + δ) = n / d * (d / (d + δ)) by field_simp), Real.mul_rpow h2.le (by positivity), h5]
 
 /-- Softening a finite product of factors multiplies it by one exponential. -/
-theorem coulombCutoffLimit_prod {N : ℕ} {n δ ρ2 E : ℝ} (d e : Fin N → ℝ) (hn : 0 < n)
+theorem coulombCutoffLimit_prod {N} {n δ ρ2 E} (d e : Fin N → ℝ) (hn : 0 < n)
     (hρ2 : 0 < ρ2) (hd : ∀ k, ρ2 ≤ d k) (hδ : 0 < δ) (he : ∀ k, |e k| ≤ E) :
     ∃ w : ℝ, |w| ≤ N * E * (δ / ρ2) ∧
       ∏ k, ENNReal.rpow (ENNReal.ofReal (n / (d k + δ))) (e k) =
@@ -121,29 +113,28 @@ theorem coulombCutoffLimit_prod {N : ℕ} {n δ ρ2 E : ℝ} (d e : Fin N → �
       ENNReal.ofReal_prod_of_nonneg fun k _ => (Real.exp_pos _).le]
 
 /-- The finite-chart softened weight is the Coulomb weight times an exponential. -/
-theorem coulombCutoffLimit_finite_eq {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (αinf r : ℝ) {E ρ2 : ℝ} (hρ2 : 0 < ρ2) (hα : ∀ j, |γ * α j| ≤ E) {x : ℂ}
+theorem coulombCutoffLimit_finite_eq {N} γ (α : Fin N → ℝ) (z : Fin N → ℂ)
+    αinf r {E ρ2} (hρ2 : 0 < ρ2) (hα : ∀ j, |γ * α j| ≤ E) {x}
     (hxz : ∀ k, ρ2 ≤ ‖x - z k‖) :
     ∃ w : ℝ, |w| ≤ N * E * (Real.exp (-r) / ρ2) ∧
       coulombCutoffFiniteWeight γ α z αinf r x =
         coulombWeight γ α z αinf x * ENNReal.ofReal (Real.exp w) := by
-  have hn : 0 < normPlus x := lt_of_lt_of_le one_pos (le_max_left _ _)
   obtain ⟨w, hw, hprod⟩ := coulombCutoffLimit_prod (n := normPlus x) (fun k => ‖x - z k‖)
-    (fun k => γ * α k) hn hρ2 hxz (Real.exp_pos (-r)) hα
+    (fun k => γ * α k) (lt_of_lt_of_le one_pos (le_max_left _ _)) hρ2 hxz (Real.exp_pos (-r)) hα
   refine ⟨w, hw, ?_⟩
   unfold coulombCutoffFiniteWeight coulombWeight
   rw [hprod, mul_right_comm]
 
 /-- The inverted-chart softened weight at `x⁻¹` is the Coulomb weight at `x` times an
 exponential. -/
-theorem coulombCutoffLimit_infinity_eq {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (αinf r : ℝ) {E ρ : ℝ} (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (hα : ∀ j, |γ * α j| ≤ E)
-    (hαinf : |γ * αinf| ≤ E) {x : ℂ} (hx : x ≠ 0) (hxρ : ‖x‖ ≤ 1 / ρ)
+theorem coulombCutoffLimit_infinity_eq {N} γ (α : Fin N → ℝ) (z : Fin N → ℂ)
+    αinf r {E ρ} (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (hα : ∀ j, |γ * α j| ≤ E)
+    (hαinf : |γ * αinf| ≤ E) {x} (hx : x ≠ 0) (hxρ : ‖x‖ ≤ 1 / ρ)
     (hxz : ∀ k, ρ ≤ ‖x - z k‖) :
     ∃ w : ℝ, |w| ≤ (N + 1) * E * (Real.exp (-r) / ρ ^ 2) ∧
       coulombCutoffInfinityWeight γ α z αinf r x⁻¹ =
         coulombWeight γ α z αinf x * ENNReal.ofReal (Real.exp w) := by
-  have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  have hxpos := norm_pos_iff.mpr hx
   have hρ2 : 0 < ρ ^ 2 := by positivity
   have hρρ : ρ * ‖x‖ ≤ 1 := by
     calc ρ * ‖x‖ ≤ ρ * (1 / ρ) := mul_le_mul_of_nonneg_left hxρ hρ.le
@@ -178,64 +169,44 @@ theorem coulombCutoffLimit_infinity_eq {N : ℕ} (γ : ℝ) (α : Fin N → ℝ)
 
 /-- A convex combination of two softened copies of `W` is bounded by the bound for `W` times
 `exp c`. -/
-theorem coulombCutoffLimit_combine_le {W : ℝ≥0∞} {Wb c δ wF wG : ℝ} {fw iw : ℝ≥0}
+theorem coulombCutoffLimit_combine_le {W : ℝ≥0∞} {Wb c δ wF wG} {fw iw : ℝ≥0}
     (hW : W ≤ ENNReal.ofReal Wb) (hWb : 0 ≤ Wb) (hc : 0 ≤ c) (hδ1 : δ ≤ 1)
     (hfi : fw + iw = 1) (hF : |wF| ≤ c * δ) (hG : |wG| ≤ c * δ) :
     (fw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp wF)) +
         (iw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp wG)) ≤ ENNReal.ofReal (Wb * Real.exp c) := by
-  have hcδ : c * δ ≤ c := mul_le_of_le_one_right hc hδ1
-  have hwF : wF ≤ c := (le_abs_self wF).trans (hF.trans hcδ)
-  have hwG : wG ≤ c := (le_abs_self wG).trans (hG.trans hcδ)
-  have hone : (fw : ℝ≥0∞) + (iw : ℝ≥0∞) = 1 := by
-    rw [← ENNReal.coe_add, hfi, ENNReal.coe_one]
+  have hcδ := mul_le_of_le_one_right hc hδ1
+  have := (le_abs_self wF).trans (hF.trans hcδ)
+  have := (le_abs_self wG).trans (hG.trans hcδ)
   calc (fw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp wF)) +
         (iw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp wG))
       ≤ (fw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp c)) +
         (iw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp c)) := by
         gcongr
-    _ = W * ENNReal.ofReal (Real.exp c) := by rw [← add_mul, hone, one_mul]
+    _ = W * ENNReal.ofReal (Real.exp c) := by rw [← add_mul, (show (fw : ℝ≥0∞) + (iw : ℝ≥0∞) = 1 by rw [← ENNReal.coe_add, hfi, ENNReal.coe_one]), one_mul]
     _ ≤ ENNReal.ofReal Wb * ENNReal.ofReal (Real.exp c) := by gcongr
     _ = ENNReal.ofReal (Wb * Real.exp c) := (ENNReal.ofReal_mul hWb).symm
 
 /-- A convex combination of two softened copies of `W` is within `Wb * (c * exp c) * δ` of `W`. -/
-theorem coulombCutoffLimit_combine_sub {W : ℝ≥0∞} {Wb c δ wF wG : ℝ} {fw iw : ℝ≥0}
+theorem coulombCutoffLimit_combine_sub {W : ℝ≥0∞} {Wb c δ wF wG} {fw iw : ℝ≥0}
     (hW : W ≤ ENNReal.ofReal Wb) (hWb : 0 ≤ Wb) (hc : 0 ≤ c) (hδ : 0 < δ) (hδ1 : δ ≤ 1)
     (hfi : fw + iw = 1) (hF : |wF| ≤ c * δ) (hG : |wG| ≤ c * δ) :
     |((fw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp wF)) +
         (iw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp wG))).toReal - W.toReal| ≤
       Wb * (c * Real.exp c) * δ := by
   have hWtop : W ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top hW
-  have h1 : (fw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp wF)) ≠ ⊤ :=
-    ENNReal.mul_ne_top ENNReal.coe_ne_top (ENNReal.mul_ne_top hWtop ENNReal.ofReal_ne_top)
-  have h2 : (iw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp wG)) ≠ ⊤ :=
-    ENNReal.mul_ne_top ENNReal.coe_ne_top (ENNReal.mul_ne_top hWtop ENNReal.ofReal_ne_top)
-  have e1 : (ENNReal.ofReal (Real.exp wF)).toReal = Real.exp wF :=
-    ENNReal.toReal_ofReal (Real.exp_pos _).le
-  have e2 : (ENNReal.ofReal (Real.exp wG)).toReal = Real.exp wG :=
-    ENNReal.toReal_ofReal (Real.exp_pos _).le
-  rw [ENNReal.toReal_add h1 h2, ENNReal.toReal_mul, ENNReal.toReal_mul, ENNReal.toReal_mul,
-    ENNReal.toReal_mul, ENNReal.coe_toReal, ENNReal.coe_toReal, e1, e2]
+  rw [ENNReal.toReal_add (ENNReal.mul_ne_top ENNReal.coe_ne_top (ENNReal.mul_ne_top hWtop ENNReal.ofReal_ne_top)) (ENNReal.mul_ne_top ENNReal.coe_ne_top (ENNReal.mul_ne_top hWtop ENNReal.ofReal_ne_top)), ENNReal.toReal_mul, ENNReal.toReal_mul, ENNReal.toReal_mul,
+    ENNReal.toReal_mul, ENNReal.coe_toReal, ENNReal.coe_toReal, (ENNReal.toReal_ofReal (Real.exp_pos _).le), (ENNReal.toReal_ofReal (Real.exp_pos _).le)]
   have hfi' : (fw : ℝ) + iw = 1 := by exact_mod_cast hfi
-  have hfw : 0 ≤ (fw : ℝ) := fw.coe_nonneg
-  have hiw : 0 ≤ (iw : ℝ) := iw.coe_nonneg
-  have hWr0 : 0 ≤ W.toReal := ENNReal.toReal_nonneg
-  have hWrb : W.toReal ≤ Wb := ENNReal.toReal_le_of_le_ofReal hWb hW
-  have hcδ : c * δ ≤ c := mul_le_of_le_one_right hc hδ1
   have hkey : ∀ w : ℝ, |w| ≤ c * δ → |Real.exp w - 1| ≤ c * δ * Real.exp c := fun w hw =>
     (coulombCutoffLimit_abs_exp_sub_one_le w).trans
-      (mul_le_mul hw (Real.exp_le_exp.mpr (hw.trans hcδ)) (Real.exp_pos _).le
+      (mul_le_mul hw (Real.exp_le_exp.mpr (hw.trans (mul_le_of_le_one_right hc hδ1))) (Real.exp_pos _).le
         ((abs_nonneg _).trans hw))
-  have hnn : 0 ≤ c * δ * Real.exp c := by positivity
-  have hdiff : (fw : ℝ) * (W.toReal * Real.exp wF) + (iw : ℝ) * (W.toReal * Real.exp wG) -
-      W.toReal = (fw : ℝ) * W.toReal * (Real.exp wF - 1) +
-        (iw : ℝ) * W.toReal * (Real.exp wG - 1) := by
-    linear_combination W.toReal * hfi'
-  rw [hdiff]
+  rw [(show (fw : ℝ) * (W.toReal * Real.exp wF) + (iw : ℝ) * (W.toReal * Real.exp wG) - W.toReal = (fw : ℝ) * W.toReal * (Real.exp wF - 1) + (iw : ℝ) * W.toReal * (Real.exp wG - 1) by linear_combination W.toReal * hfi')]
   calc |(fw : ℝ) * W.toReal * (Real.exp wF - 1) + (iw : ℝ) * W.toReal * (Real.exp wG - 1)|
       ≤ |(fw : ℝ) * W.toReal * (Real.exp wF - 1)| +
         |(iw : ℝ) * W.toReal * (Real.exp wG - 1)| := abs_add_le _ _
     _ = (fw : ℝ) * W.toReal * |Real.exp wF - 1| + (iw : ℝ) * W.toReal * |Real.exp wG - 1| := by
-        simp only [abs_mul, abs_of_nonneg hfw, abs_of_nonneg hiw, abs_of_nonneg hWr0]
+        simp only [abs_mul, abs_of_nonneg fw.coe_nonneg, abs_of_nonneg iw.coe_nonneg, abs_of_nonneg ENNReal.toReal_nonneg]
     _ ≤ (fw : ℝ) * W.toReal * (c * δ * Real.exp c) +
         (iw : ℝ) * W.toReal * (c * δ * Real.exp c) := by
         gcongr
@@ -243,15 +214,15 @@ theorem coulombCutoffLimit_combine_sub {W : ℝ≥0∞} {Wb c δ wF wG : ℝ} {f
         · exact hkey _ hG
     _ = W.toReal * (c * δ * Real.exp c) := by
         linear_combination (W.toReal * (c * δ * Real.exp c)) * hfi'
-    _ ≤ Wb * (c * δ * Real.exp c) := mul_le_mul_of_nonneg_right hWrb hnn
+    _ ≤ Wb * (c * δ * Real.exp c) := mul_le_mul_of_nonneg_right (ENNReal.toReal_le_of_le_ofReal hWb hW) (by positivity)
     _ = Wb * (c * Real.exp c) * δ := by ring
 
 /-! ### Uniform convergence -/
 
 /-- Uniform convergence of the single-chart weight to the Coulomb weight on sets away from the
 roots and from infinity. -/
-theorem coulombCutoffWeight_sub_coulombWeight_le (partition : GMCChartPartition) (N : ℕ)
-    {Zs E ρ : ℝ} (hZs : 0 ≤ Zs) (hE : 0 ≤ E) (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) :
+theorem coulombCutoffWeight_sub_coulombWeight_le partition N
+    {Zs E ρ} (hZs : 0 ≤ Zs) (hE : 0 ≤ E) (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) :
     ∃ L : ℝ, 0 ≤ L ∧ ∀ (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf r : ℝ) (x : ℂ),
       0 ≤ r → ∑ j, ‖z j‖ ≤ Zs → (∀ j, |γ * α j| ≤ E) → |γ * αinf| ≤ E →
       ‖x‖ ≤ 1 / ρ → (∀ k, ρ ≤ ‖x - z k‖) → x ≠ 0 →
@@ -262,14 +233,13 @@ theorem coulombCutoffWeight_sub_coulombWeight_le (partition : GMCChartPartition)
   set S : ℝ := (N + 1) * E with hS
   set c : ℝ := S / ρ ^ 2 with hc
   set L₀ : ℝ := (1 + 1 / ρ + Zs) / ρ with hL₀
-  have hρ2 : 0 < ρ ^ 2 := by positivity
   have hS0 : 0 ≤ S := by positivity
   have hc0 : 0 ≤ c := by positivity
   have hL₀1 : 1 ≤ L₀ := by
     rw [hL₀, le_div_iff₀ hρ]
     have : 0 ≤ 1 / ρ := by positivity
     linarith
-  have hexp1 : 1 ≤ Real.exp c := Real.one_le_exp hc0
+  have hexp1 := Real.one_le_exp hc0
   have hK : 0 ≤ c * Real.exp c := by positivity
   have hL₀0 : 0 ≤ L₀ ^ S := by positivity
   refine ⟨L₀ ^ S * (Real.exp c + c * Real.exp c), by positivity, ?_⟩
@@ -291,9 +261,8 @@ theorem coulombCutoffWeight_sub_coulombWeight_le (partition : GMCChartPartition)
           rw [hL₀]
           gcongr
       _ ≤ L₀ ^ S := Real.rpow_le_rpow_of_exponent_le hL₀1 hexpo
-  have hρρ : ρ ^ 2 ≤ ρ := pow_le_of_le_one hρ.le hρ1 two_ne_zero
-  obtain ⟨wF, hwF, hF⟩ := coulombCutoffLimit_finite_eq γ α z αinf r hρ2 hα
-    (fun k => hρρ.trans (hxz k))
+  obtain ⟨wF, hwF, hF⟩ := coulombCutoffLimit_finite_eq γ α z αinf r (by positivity) hα
+    (fun k => (pow_le_of_le_one hρ.le hρ1 two_ne_zero).trans (hxz k))
   obtain ⟨wG, hwG, hG⟩ := coulombCutoffLimit_infinity_eq γ α z αinf r hρ hρ1 hα hαinf hx0 hxρ
     hxz
   have hwF' : |wF| ≤ c * Real.exp (-r) := by
@@ -307,20 +276,10 @@ theorem coulombCutoffWeight_sub_coulombWeight_le (partition : GMCChartPartition)
     refine hwG.trans (le_of_eq ?_)
     rw [hc, hS]
     ring
-  have hfi : partition.finiteWeight x + partition.infinityWeight x⁻¹ = 1 :=
-    partition.sum_one x hx0
-  have hWc : coulombCutoffWeight partition γ α z αinf r x =
-      (partition.finiteWeight x : ℝ≥0∞) *
-          (coulombWeight γ α z αinf x * ENNReal.ofReal (Real.exp wF)) +
-        (partition.infinityWeight x⁻¹ : ℝ≥0∞) *
-          (coulombWeight γ α z αinf x * ENNReal.ofReal (Real.exp wG)) := by
-    unfold coulombCutoffWeight
-    rw [hF, hG]
-  have h1 := coulombCutoffLimit_combine_le hW hL₀0 hc0 hδ1 hfi hwF' hwG'
-  have h2 := coulombCutoffLimit_combine_sub hW hL₀0 hc0 hδ hδ1 hfi hwF' hwG'
-  rw [hWc]
-  refine ⟨h1.trans (ENNReal.ofReal_le_ofReal ?_), hW.trans (ENNReal.ofReal_le_ofReal ?_),
-    h2.trans ?_⟩
+  have hfi := partition.sum_one x hx0
+  rw [(show coulombCutoffWeight partition γ α z αinf r x = (partition.finiteWeight x : ℝ≥0∞) * (coulombWeight γ α z αinf x * ENNReal.ofReal (Real.exp wF)) + (partition.infinityWeight x⁻¹ : ℝ≥0∞) * (coulombWeight γ α z αinf x * ENNReal.ofReal (Real.exp wG)) by unfold coulombCutoffWeight; rw [hF, hG])]
+  refine ⟨(coulombCutoffLimit_combine_le hW hL₀0 hc0 hδ1 hfi hwF' hwG').trans (ENNReal.ofReal_le_ofReal ?_), hW.trans (ENNReal.ofReal_le_ofReal ?_),
+    (coulombCutoffLimit_combine_sub hW hL₀0 hc0 hδ hδ1 hfi hwF' hwG').trans ?_⟩
   · have : L₀ ^ S * Real.exp c ≤ L₀ ^ S * (Real.exp c + c * Real.exp c) := by
       gcongr
       linarith

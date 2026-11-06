@@ -23,7 +23,7 @@ compact positive-drift and strict subcritical parameter ranges. See [KRV, Lemma 
 proof in [KRV, §12.3]. -/
 theorem twoSidedReflectionMass_moment_range
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (Kγ Kν Kq : Set ℝ) (hKγ : IsCompact Kγ) (hKν : IsCompact Kν)
+    Kγ Kν Kq (hKγ : IsCompact Kγ) (hKν : IsCompact Kν)
     (hKq : IsCompact Kq)
     (B : ℝ → Ω → BrownianPath × BrownianPath)
     (Z : ℝ → Ω → Measure ℝ)
@@ -42,7 +42,6 @@ theorem twoSidedReflectionMass_moment_range
       have hZ : ∀ γ ∈ Kγ, IsLateralGMCOf P γ (Z γ) :=
         fun γ hγ => (hData γ hγ νstar hνstar).2.1
       obtain ⟨γ₀, hγ₀mem, hmin⟩ := hKγ.exists_isMinOn hγne continuous_id.continuousOn
-      have hγ₀ : 0 < γ₀ := (hZ γ₀ hγ₀mem).1
       let g : ℝ := sSup Kγ
       have hgm : g ∈ Kγ := hKγ.sSup_mem hγne
       have hg : 0 < g := (hZ g hgm).1
@@ -55,13 +54,11 @@ theorem twoSidedReflectionMass_moment_range
         lateralGMC_compact_moment_endpoints_across_one P Kγ Kq hKγ hKq hγne Z hZ hq
       obtain ⟨Y, Mg, hS⟩ := (hZ g hgm).2.2.2.2.2.2.2.2
       obtain ⟨Yc, hYc, -⟩ := hS.2.1.2
-      have hlcrit : l < 4 / g ^ 2 :=
-        hl.trans (div_pos (by norm_num) (sq_pos_of_pos hg))
       have hucrit : u < 4 / g ^ 2 := by
-        have hm := hmargin g hgm
+        have := hmargin g hgm
         linarith
       obtain ⟨Cl, hCl, hRefl⟩ := twosided_reference_convex_moments_uniform
-        P Y hS.1 Yc hYc g hg hg2 l (Or.inl hl) hlcrit
+        P Y hS.1 Yc hYc g hg hg2 l (Or.inl hl) (hl.trans (div_pos (by norm_num) (sq_pos_of_pos hg)))
       obtain ⟨Cu, hCu, hRefu⟩ := twosided_reference_convex_moments_uniform
         P Y hS.1 Yc hYc g hg hg2 u (Or.inr hu.le) hucrit
       obtain ⟨Ll, hLl, hUnitl⟩ := twosided_lateral_unit_inverse_uniform
@@ -73,7 +70,7 @@ theorem twoSidedReflectionMass_moment_range
       obtain ⟨Rl, hRl, hLower⟩ := twosided_inverse_moment_uniform_from_lateral
         P Kγ Kν B Z hData l N hl (fun ν hν => (hνbound ν hν).2) Ll hLl hUnitl
       obtain ⟨Ru, hRu, hUpper⟩ := twosided_positive_moment_uniform_from_lateral
-        P Kγ Kν B Z hData u γ₀ g ν₀ N (lt_trans zero_lt_one hu) hγ₀ hν₀
+        P Kγ Kν B Z hData u γ₀ g ν₀ N (lt_trans zero_lt_one hu) ((hZ γ₀ hγ₀mem).1) hν₀
         hγbound hνbound Lu hLu hUnitu
       exact twoSidedReflectionMass_uniform_moments_of_endpoints P Kγ Kν Kq B Z hData
         l u (fun q hq => (hend q hq).1.le) (fun q hq => (hend q hq).2.le)

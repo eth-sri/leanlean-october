@@ -37,10 +37,7 @@ theorem dual_negative_increment_sandwich (p A b γ c m J Jc j : ℝ)
       have hnonpos := dual_negative_increment_antitone p A (b*Real.exp (γ*m)) 0 j
         hp.le hA (by positivity) le_rfl hj
       simp only [mul_zero, add_zero, sub_self] at hnonpos
-      have hbound := reflected_bounded_maximum_increment_bound p A b γ c m J Jc
-        hp hA hb hγ hm.le hJc hJcJ
-      have hlow := neg_abs_le ((A+b*Real.exp (γ*m)*Jc)^(-p)-A^(-p))
-      linarith only [hnonpos, hbound, hlow]
+      linarith only [hnonpos, (reflected_bounded_maximum_increment_bound p A b γ c m J Jc hp hA hb hγ hm.le hJc hJcJ), (neg_abs_le ((A+b*Real.exp (γ*m)*Jc)^(-p)-A^(-p)))]
     · rw [ite_eq_right hm, add_zero]
       exact dual_negative_increment_antitone p A (b*Real.exp (γ*m)) Jc j
         hp.le hA (by positivity) hJc (hcut (le_of_not_gt hm))

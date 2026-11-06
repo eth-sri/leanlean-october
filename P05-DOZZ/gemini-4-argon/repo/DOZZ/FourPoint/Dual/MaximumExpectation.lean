@@ -35,13 +35,7 @@ theorem dual_williams_increment_expectation_sandwich
     (A v.1+b v.1*(Real.exp (γ*m v.2)*S v.2))^(-p)-(A v.1)^(-p)
   have hInt (S : Λ → ℝ) (hSm : AEMeasurable S R) (hS : ∀ᵐ v ∂R, 0 ≤ S v) :
       Integrable (E S) (P.prod R) := by
-    let H : Λ → ℝ := fun v => Real.exp (γ*m v)*S v
-    have hHm : AEMeasurable H R := by
-      convert (hmm.const_mul γ).exp.mul hSm using 1
-    have hH : ∀ᵐ v ∂R, 0 ≤ H v :=
-      hS.mono fun v hv => mul_nonneg (Real.exp_pos _).le hv
-    exact dual_negative_increment_integrable P R p hp.le A b H hA hb hH hAm hbm hHm hInv
-  have hJi := hInt J hJm (hcut.mono fun _ hv => hv.1.trans hv.2.1)
+    exact dual_negative_increment_integrable P R p hp.le A b (fun v => Real.exp (γ*m v)*S v) hA hb (hS.mono fun v hv => mul_nonneg (Real.exp_pos _).le hv) hAm hbm (by convert (hmm.const_mul γ).exp.mul hSm using 1) hInv
   have hji := hInt j hjm (hcut.mono fun _ hv => hv.1)
   have hJci := hInt Jc hJcm (hcut.mono fun _ hv => hv.2.2.1)
   let G := fun v : Ω × Λ =>
@@ -68,10 +62,9 @@ theorem dual_williams_increment_expectation_sandwich
   have he : (∫ v, G v ∂P.prod R) =
       p*Real.exp (γ*c)*(∫ ω, b ω*(A ω)^(-p-1) ∂P)*(∫ v, J v ∂R) := by
     dsimp only [G]
-    rw [integral_const_mul]
-    rw [integral_prod_mul (fun ω => b ω*(A ω)^(-p-1)) J]
+    rw [integral_const_mul, integral_prod_mul (fun ω => b ω*(A ω)^(-p-1)) J]
     ring
-  refine ⟨integral_mono_ae hJi hji (hbound.mono fun _ hv => hv.1), ?_⟩
+  refine ⟨integral_mono_ae (hInt J hJm (hcut.mono fun _ hv => hv.1.trans hv.2.1)) hji (hbound.mono fun _ hv => hv.1), ?_⟩
   have hu := integral_mono_ae hji (hJci.add hGi) (hbound.mono fun _ hv => hv.2)
   change (∫ v, E j v ∂P.prod R) ≤ (∫ v, E Jc v + G v ∂P.prod R) at hu
   rw [integral_add hJci hGi, he] at hu

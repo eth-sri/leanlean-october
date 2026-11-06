@@ -22,7 +22,7 @@ noncomputable def williamsMassFunctional (γ : ℝ)
   ENNReal.ofReal (Real.exp (γ * z.1.1.1)) *
     stoppedReflectionMassCode γ ((z.1.1.2.1, (z.1.2,z.1.1.2.2)),z.2)
 
-theorem measurable_williamsMassFunctional (γ : ℝ) :
+theorem measurable_williamsMassFunctional γ :
     Measurable (williamsMassFunctional γ) := by
   apply ((measurable_fst.fst.fst.const_mul γ).exp.ennreal_ofReal).mul
   exact (measurable_stoppedReflectionMassCode γ).comp
@@ -32,7 +32,7 @@ theorem measurable_williamsMassFunctional (γ : ℝ) :
 /-- On the conditioned-copy model the measurable functional is exactly `exp(γ m) J_m`,
 with `J_m` the last-exit truncated reflection mass `DOZZ.twoSidedReflectionCutMass`. -/
 theorem williamsMassFunctional_lastExit
-    (γ m : ℝ) (qplus qminus : BrownianPath) (Z : Measure ℝ)
+    γ m qplus qminus (Z : Measure ℝ)
     (hfin : ∀ a b : ℝ, Z (Icc a b) < ⊤) :
     williamsMassFunctional γ
       (((m,negativeConditionedLastExitSegment m qminus),qplus),Z) =
@@ -49,8 +49,8 @@ conditioned reflection mass. All integrals retain their extended-real values. -/
 theorem williams_polar_mass_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (D : Ω → BrownianPath)
     (hD : AEMeasurable D P) (hB : IsBrownianReal (fun t p => p t) (P.map D))
-    (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
-    (hInd : IndepFun D Z P) (ν : ℝ) (hν : 0 < ν)
+    γ (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
+    (hInd : IndepFun D Z P) ν (hν : 0 < ν)
     (Qν : Measure BrownianPath) (hQν : IsNegativeConditionedBrownianLaw ν Qν) :
     P.map (fun ω => ∫⁻ t, (if 0 < t then ENNReal.ofReal
       (Real.exp (γ * (D ω (Real.toNNReal t) - ν * t))) else 0) ∂Z ω) =
@@ -59,18 +59,15 @@ theorem williams_polar_mass_law
           (P.map Z)).map (williamsMassFunctional γ) := by
   let Y := fun ω => (Z ω).map
     (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))
-  have hY := (maximum_shift_lateral_law P D hD hB γ Z hZ hInd ν hν).1
-  have hW := (williamsReversedMark_aemeasurable (P.map D) hB ν hν).comp_aemeasurable hD
   have hpair : AEMeasurable (fun ω => (williamsReversedMark ν (D ω),Y ω)) P :=
-    hW.prodMk hY
+    ((williamsReversedMark_aemeasurable (P.map D) hB ν hν).comp_aemeasurable hD).prodMk ((maximum_shift_lateral_law P D hD hB γ Z hZ hInd ν hν).1)
   have heq : (fun ω => ∫⁻ t, (if 0 < t then ENNReal.ofReal
       (Real.exp (γ * (D ω (Real.toNNReal t) - ν * t))) else 0) ∂Z ω) =ᵐ[P]
       (fun ω => williamsMassFunctional γ (williamsReversedMark ν (D ω),Y ω)) := by
     filter_upwards [hZ.2.2.2.2.1, lateralGMC_singleton_ae P γ Z hZ 0] with ω hfin hzero
-    have hYfin (a b : ℝ) : Y ω (Icc a b) < ⊤ := by
-      have hm : Measurable (fun s : ℝ => s - (driftedBrownianMaximumTime ν (D ω) : ℝ)) := by fun_prop
+    have hYfin a b : Y ω (Icc a b) < ⊤ := by
       rw [show Y ω = (Z ω).map (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ)) from rfl,
-        Measure.map_apply hm measurableSet_Icc]
+        Measure.map_apply (by fun_prop) measurableSet_Icc]
       apply lt_of_le_of_lt (measure_mono ?_) (hfin
         (a + (driftedBrownianMaximumTime ν (D ω) : ℝ))
         (b + (driftedBrownianMaximumTime ν (D ω) : ℝ)))

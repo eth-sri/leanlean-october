@@ -107,8 +107,7 @@ theorem bpz_integrable_far_smul_softDeriv {a ε : ℝ} (ha : 0 < a) {w : ℂ →
   refine bpz_norm_ite_smul_le (E := ℂ →L[ℝ] ℝ) hw0 (by positivity)
     (Real.rpow_nonneg (bpzSoft_normSq_add_nonneg _ _) a) fun hx => ?_
   have h := norm_bpzSoftDeriv_le_far (ε := ε) ha (half_pos hr) (bpzSoft_half_le_norm_sub hx hz)
-  have e : 2 * a / (r / 2) = 4 * a / r := by field_simp; ring
-  rwa [e] at h
+  rwa [(show 2 * a / (r / 2) = 4 * a / r by field_simp; ring)] at h
 
 /-- Integrability of the far part of the second derivative integrand. -/
 theorem bpz_integrable_far_smul_softDeriv2 {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
@@ -116,20 +115,15 @@ theorem bpz_integrable_far_smul_softDeriv2 {a ε : ℝ} (ha : 0 < a) (ha1 : a �
     (hz : ‖z - z₀‖ ≤ r / 2)
     (hintz : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) m) :
     Integrable (fun x => (if r ≤ ‖x - z₀‖ then w x else 0) • bpzSoftDeriv2 a ε x z) m := by
-  have hc : 0 ≤ 4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 := by
-    have : 0 ≤ 1 - a := sub_nonneg.mpr ha1
-    positivity
   refine Integrable.mono' (hintz.const_mul (4 * (4 * a * (1 - a) + 2 * a) / r ^ 2))
     (bpz_stronglyMeasurable_softDeriv2 a ε z
       (bpz_measurable_farPart hw z₀ r)).aestronglyMeasurable
     (Eventually.of_forall fun x => ?_)
-  refine bpz_norm_ite_smul_le (E := ℂ →L[ℝ] ℂ →L[ℝ] ℝ) hw0 hc
+  refine bpz_norm_ite_smul_le (E := ℂ →L[ℝ] ℂ →L[ℝ] ℝ) hw0 (by positivity)
     (Real.rpow_nonneg (bpzSoft_normSq_add_nonneg _ _) a) fun hx => ?_
   have h := norm_bpzSoftDeriv2_le_far (ε := ε) ha ha1 (half_pos hr)
     (bpzSoft_half_le_norm_sub hx hz)
-  have e : (4 * a * (1 - a) + 2 * a) / (r / 2) ^ 2 =
-      4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 := by field_simp; ring
-  rwa [e] at h
+  rwa [(show (4 * a * (1 - a) + 2 * a) / (r / 2) ^ 2 = 4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 by field_simp; ring)] at h
 
 /-! ### The decomposition -/
 
@@ -142,11 +136,8 @@ theorem bpzSoftMassDeriv_eq_near_add_far {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 
     bpzSoftMassDeriv a ε w m z =
       bpzSoftMassDeriv a ε (fun x => if ‖x - z₀‖ < r then w x else 0) m z +
         bpzSoftMassDeriv a ε (fun x => if r ≤ ‖x - z₀‖ then w x else 0) m z := by
-  have h1 := bpz_integrable_smul_softDeriv (ε := ε) ha ha1 (bpz_measurable_nearPart hw z₀ r)
-    (bpz_nearPart_nonneg hw0 z₀ r) hzm hn
-  have h2 := bpz_integrable_far_smul_softDeriv (ε := ε) ha hw hw0 hr hz hintz
   unfold bpzSoftMassDeriv
-  rw [← integral_add h1 h2]
+  rw [← integral_add (bpz_integrable_smul_softDeriv (ε := ε) ha ha1 (bpz_measurable_nearPart hw z₀ r) (bpz_nearPart_nonneg hw0 z₀ r) hzm hn) (bpz_integrable_far_smul_softDeriv (ε := ε) ha hw hw0 hr hz hintz)]
   congr 1
   funext x
   rw [← add_smul]
@@ -164,11 +155,8 @@ theorem bpzSoftMassDeriv2_eq_near_add_far {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤
     bpzSoftMassDeriv2 a ε w m z =
       bpzSoftMassDeriv2 a ε (fun x => if ‖x - z₀‖ < r then w x else 0) m z +
         bpzSoftMassDeriv2 a ε (fun x => if r ≤ ‖x - z₀‖ then w x else 0) m z := by
-  have h1 := bpz_integrable_smul_softDeriv2 (ε := ε) ha ha1 (bpz_measurable_nearPart hw z₀ r)
-    (bpz_nearPart_nonneg hw0 z₀ r) hzm hn
-  have h2 := bpz_integrable_far_smul_softDeriv2 (ε := ε) ha ha1 hw hw0 hr hz hintz
   unfold bpzSoftMassDeriv2
-  rw [← integral_add h1 h2]
+  rw [← integral_add (bpz_integrable_smul_softDeriv2 (ε := ε) ha ha1 (bpz_measurable_nearPart hw z₀ r) (bpz_nearPart_nonneg hw0 z₀ r) hzm hn) (bpz_integrable_far_smul_softDeriv2 (ε := ε) ha ha1 hw hw0 hr hz hintz)]
   congr 1
   funext x
   rw [← add_smul]
@@ -187,24 +175,19 @@ theorem bpz_integral_near_le_softMass {a ε : ℝ} (ha : 0 ≤ a) {w : ℂ → �
   have hpt : ∀ x, (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a) ≤
       (Complex.normSq (x - z) + ε ^ 2) ^ a * w x := by
     intro x
-    have h1 : ‖x - z‖ ^ (2 * a) ≤ (Complex.normSq (x - z) + ε ^ 2) ^ a := by
-      rw [Real.rpow_mul (norm_nonneg _), Real.rpow_two]
-      exact Real.rpow_le_rpow (sq_nonneg _) (bpzSoft_norm_sq_le_base ε x z) ha
     have h2 : (if ‖x - z₀‖ < r then w x else 0) ≤ w x := by
       split_ifs
       · exact le_rfl
       · exact hw0 x
     calc (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a)
         ≤ w x * (Complex.normSq (x - z) + ε ^ 2) ^ a :=
-          mul_le_mul h2 h1 (Real.rpow_nonneg (norm_nonneg _) _) (hw0 x)
+          mul_le_mul h2 (by rw [Real.rpow_mul (norm_nonneg _), Real.rpow_two]; exact Real.rpow_le_rpow (sq_nonneg _) (bpzSoft_norm_sq_le_base ε x z) ha) (Real.rpow_nonneg (norm_nonneg _) _) (hw0 x)
       _ = (Complex.normSq (x - z) + ε ^ 2) ^ a * w x := mul_comm _ _
-  have hnn : ∀ x, 0 ≤ (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a) := fun x =>
-    mul_nonneg (bpz_nearPart_nonneg hw0 z₀ r x) (Real.rpow_nonneg (norm_nonneg _) _)
   have hint : Integrable (fun x => (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a)) m :=
     Integrable.mono' hintz
       ((bpz_measurable_nearPart hw z₀ r).mul
         ((measurable_id.sub measurable_const).norm.pow_const _)).aestronglyMeasurable
-      (Eventually.of_forall fun x => by rw [Real.norm_of_nonneg (hnn x)]; exact hpt x)
+      (Eventually.of_forall fun x => by rw [Real.norm_of_nonneg ((fun x => mul_nonneg (bpz_nearPart_nonneg hw0 z₀ r x) (Real.rpow_nonneg (norm_nonneg _) _)) x)]; exact hpt x)
   exact ⟨hint, integral_mono hint hintz hpt⟩
 
 /-! ### Differences between the moment fields and their far parts -/
@@ -245,35 +228,21 @@ theorem bpz_mom2_sub_le {s J u t v A : ℝ} (hs : 0 ≤ s) (hJ : 0 < J)
       ((s * (s + 1) * J ^ (-s - 2)) • Lf.smulRight Lf + (-s * J ^ (-s - 1)) • Bf)‖ ≤
       s * (s + 1) * (J ^ (-s - 1) * t) + 2 * s * (s + 1) * A * (J ^ (-s - 1) * u) +
         s * (J ^ (-s - 1) * v) := by
-  have hu0 : 0 ≤ u := (norm_nonneg _).trans hu
-  have hJ2 : 0 ≤ J ^ (-s - 2) := Real.rpow_nonneg hJ.le _
+  have : 0 ≤ J ^ (-s - 2) := Real.rpow_nonneg hJ.le _
   have hJ1 : 0 ≤ J ^ (-s - 1) := Real.rpow_nonneg hJ.le _
   have hc2 : 0 ≤ s * (s + 1) * J ^ (-s - 2) := by
-    have : 0 ≤ s + 1 := by linarith
     positivity
-  have hJJ : J ^ (-s - 2) * J = J ^ (-s - 1) := by
-    rw [show -s - 2 = (-s - 1) - 1 by ring]
-    exact bpzRpow_pred_mul hJ _
-  have e : ((s * (s + 1) * J ^ (-s - 2)) • L.smulRight L + (-s * J ^ (-s - 1)) • B) -
-      ((s * (s + 1) * J ^ (-s - 2)) • Lf.smulRight Lf + (-s * J ^ (-s - 1)) • Bf) =
-      (s * (s + 1) * J ^ (-s - 2)) • (L.smulRight L - Lf.smulRight Lf) +
-        (-s * J ^ (-s - 1)) • Bn := by
-    rw [hB, smul_sub, smul_add]
-    abel
   have hLL : ‖L.smulRight L - Lf.smulRight Lf‖ ≤ u * (u + 2 * (A * J)) := by
     refine (bpz_norm_smulRight_sub_le L Lf).trans ?_
-    have hsub : L - Lf = Ln := by rw [hL, add_sub_cancel_right]
-    have hLn : ‖L‖ ≤ u + A * J := by
-      rw [hL]; exact (norm_add_le _ _).trans (add_le_add hu hLf)
-    rw [hsub]
+    rw [(show L - Lf = Ln by rw [hL, add_sub_cancel_right])]
     calc ‖Ln‖ * (‖L‖ + ‖Lf‖) ≤ u * ((u + A * J) + A * J) :=
-          mul_le_mul hu (add_le_add hLn hLf) (by positivity) hu0
+          mul_le_mul hu (add_le_add (by rw [hL]; exact (norm_add_le _ _).trans (add_le_add hu hLf)) hLf) (by positivity) ((norm_nonneg _).trans hu)
       _ = u * (u + 2 * (A * J)) := by ring
-  rw [e]
+  rw [(show ((s * (s + 1) * J ^ (-s - 2)) • L.smulRight L + (-s * J ^ (-s - 1)) • B) - ((s * (s + 1) * J ^ (-s - 2)) • Lf.smulRight Lf + (-s * J ^ (-s - 1)) • Bf) = (s * (s + 1) * J ^ (-s - 2)) • (L.smulRight L - Lf.smulRight Lf) + (-s * J ^ (-s - 1)) • Bn by rw [hB, smul_sub, smul_add]; abel)]
   refine (norm_add_le _ _).trans ?_
   rw [norm_smul, norm_smul, Real.norm_of_nonneg hc2, Real.norm_eq_abs (-s * _), abs_mul,
     abs_neg, abs_of_nonneg hs, abs_of_nonneg hJ1]
-  have h1 : s * (s + 1) * J ^ (-s - 2) * ‖L.smulRight L - Lf.smulRight Lf‖ ≤
+  have : s * (s + 1) * J ^ (-s - 2) * ‖L.smulRight L - Lf.smulRight Lf‖ ≤
       s * (s + 1) * (J ^ (-s - 1) * t) + 2 * s * (s + 1) * A * (J ^ (-s - 1) * u) := by
     calc s * (s + 1) * J ^ (-s - 2) * ‖L.smulRight L - Lf.smulRight Lf‖
         ≤ s * (s + 1) * J ^ (-s - 2) * (u * (u + 2 * (A * J))) :=
@@ -286,8 +255,8 @@ theorem bpz_mom2_sub_le {s J u t v A : ℝ} (hs : 0 ≤ s) (hJ : 0 < J)
       _ = s * (s + 1) * (J ^ (-s - 2) * J * t) +
           2 * s * (s + 1) * A * (J ^ (-s - 2) * J * u) := by ring
       _ = s * (s + 1) * (J ^ (-s - 1) * t) + 2 * s * (s + 1) * A * (J ^ (-s - 1) * u) := by
-          rw [hJJ]
-  have h2 : s * J ^ (-s - 1) * ‖Bn‖ ≤ s * (J ^ (-s - 1) * v) := by
+          rw [(show J ^ (-s - 2) * J = J ^ (-s - 1) by rw [show -s - 2 = (-s - 1) - 1 by ring]; exact bpzRpow_pred_mul hJ _)]
+  have : s * J ^ (-s - 1) * ‖Bn‖ ≤ s * (J ^ (-s - 1) * v) := by
     calc s * J ^ (-s - 1) * ‖Bn‖ ≤ s * J ^ (-s - 1) * v :=
           mul_le_mul_of_nonneg_left hv (mul_nonneg hs hJ1)
       _ = s * (J ^ (-s - 1) * v) := by ring

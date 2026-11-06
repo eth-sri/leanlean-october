@@ -25,7 +25,7 @@ namespace DOZZ.Proofs
 /-- The polar projection of a finite source measure has finite mass on every compact interval.
 The bound depends on the compact interval and the continuous radial path. -/
 theorem lateralProjectedGMC_Icc_ne_top
-    (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) [IsFiniteMeasure M]
+    γ A (M : Measure ℂ) [IsFiniteMeasure M]
     (a b : ℝ) :
     lateralProjectedGMC γ A M (Set.Icc a b) < ⊤ := by
   by_cases hab : a ≤ b
@@ -46,23 +46,14 @@ theorem lateralProjectedGMC_Icc_ne_top
       by_cases hx0 : ‖x‖ = 0
       · simp [hx0]
       · have hs : -Real.log ‖x‖ ∈ Set.Icc a b := hx
-        have hAs : |A (-Real.log ‖x‖)| ≤ K := by
-          have h := (isMaxOn_iff.mp hmax) (-Real.log ‖x‖) hs
-          simpa [K, Function.comp_apply] using h
         have hlog : |Real.log ‖x‖| ≤ R := by
-          have hleft : a ≤ -Real.log ‖x‖ := hs.1
-          have hright : -Real.log ‖x‖ ≤ b := hs.2
           have hlowR : -R ≤ -Real.log ‖x‖ := by
             dsimp [R]
             calc
               -max |a| |b| ≤ -|a| := neg_le_neg (le_max_left _ _)
               _ ≤ a := neg_abs_le a
-              _ ≤ -Real.log ‖x‖ := hleft
-          have hupR : -Real.log ‖x‖ ≤ R := by
-            dsimp [R]
-            exact hright.trans ((le_abs_self b).trans (le_max_right _ _))
-          have habs : abs (-Real.log ‖x‖) ≤ R := abs_le.mpr ⟨hlowR, hupR⟩
-          simpa [abs_neg] using habs
+              _ ≤ -Real.log ‖x‖ := hs.1
+          simpa [abs_neg] using (abs_le.mpr ⟨hlowR, (by dsimp [R]; exact hs.2.trans ((le_abs_self b).trans (le_max_right _ _)))⟩)
         have hexp : -γ * A (-Real.log ‖x‖) +
             γ * Q γ * |Real.log ‖x‖| ≤ C := by
           dsimp [C]
@@ -76,12 +67,9 @@ theorem lateralProjectedGMC_Icc_ne_top
                   rw [abs_mul, abs_neg, abs_mul, abs_mul, abs_abs]
             _ ≤ abs γ * K + abs (γ * Q γ) * R := by
                   exact add_le_add
-                    (mul_le_mul_of_nonneg_left hAs (abs_nonneg _))
+                    (mul_le_mul_of_nonneg_left (by simpa [K, Function.comp_apply] using ((isMaxOn_iff.mp hmax) (-Real.log ‖x‖) hs)) (abs_nonneg _))
                     (mul_le_mul_of_nonneg_left hlog (abs_nonneg _))
-        have hexp' : Real.exp (-γ * A (-Real.log ‖x‖) +
-              γ * Q γ * |Real.log ‖x‖|) ≤ Real.exp C :=
-          Real.exp_le_exp.mpr hexp
-        simpa [hx0] using ENNReal.ofReal_le_ofReal hexp'
+        simpa [hx0] using ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr hexp)
     let ρ : ℂ → ℝ := fun x => -Real.log ‖x‖
     let w : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (if ‖x‖ = 0 then 0 else
       Real.exp (-γ * A (ρ x) + γ * Q γ * |Real.log ‖x‖|))
@@ -92,13 +80,7 @@ theorem lateralProjectedGMC_Icc_ne_top
     change (M.withDensity w).map ρ (Set.Icc a b) < ⊤
     rw [Measure.map_apply hρ measurableSet_Icc,
       withDensity_apply w hpre]
-    have hmono :
-        (∫⁻ x in ρ ⁻¹' Set.Icc a b, w x ∂M) ≤
-          ∫⁻ x in ρ ⁻¹' Set.Icc a b, ENNReal.ofReal (Real.exp C) ∂M := by
-      apply setLIntegral_mono' hpre
-      intro x hx
-      exact hweight x hx
-    exact lt_of_le_of_lt hmono (by
+    exact lt_of_le_of_lt (by apply setLIntegral_mono' hpre; intro x hx; exact hweight x hx) (by
       rw [setLIntegral_const]
       exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top (measure_lt_top M _))
   · have hempty : Set.Icc a b = ∅ := Set.Icc_eq_empty hab
@@ -111,7 +93,7 @@ theorem lateralProjectedGMC_Icc_ne_top
 compact-interval finiteness clause of the lateral carrier. -/
 theorem ae_lateralProjectedGMC_interval_ne_top
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (γ : ℝ) (A : Ω → TwoSidedPath) (M : Ω → Measure ℂ)
+    γ (A : Ω → TwoSidedPath) (M : Ω → Measure ℂ)
     (hM : ∀ ω, IsFiniteMeasure (M ω)) :
     ∀ᵐ ω ∂P, ∀ a b : ℝ,
       lateralProjectedGMC γ (A ω) (M ω) (Set.Icc a b) < ⊤ := by

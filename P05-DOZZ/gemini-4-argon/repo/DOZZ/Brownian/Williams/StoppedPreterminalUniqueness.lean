@@ -25,15 +25,13 @@ theorem SameStoppedPreterminalLaws.cylinder_eq
     (h : SameStoppedPreterminalLaws μ η)
     (hμpos : ∀ᵐ z ∂μ, 0 < z.1) (hηpos : ∀ᵐ z ∂η, 0 < z.1)
     (hμzero : ∀ᵐ z ∂μ, -(z.2 0) = 0) (hηzero : ∀ᵐ z ∂η, -(z.2 0) = 0)
-    (c : ℝ) (hμend : ∀ᵐ z ∂μ, ∀ t, z.1 ≤ t → -(z.2 t) = c)
+    c (hμend : ∀ᵐ z ∂μ, ∀ t, z.1 ≤ t → -(z.2 t) = c)
     (hηend : ∀ᵐ z ∂η, ∀ t, z.1 ≤ t → -(z.2 t) = c)
-    (U : Set ℝ) (hU : MeasurableSet U) (I : Finset ℝ≥0)
+    U (hU : MeasurableSet U) (I : Finset ℝ≥0)
     (S : ℝ≥0 → Set ℝ) (hS : ∀ t, MeasurableSet (S t)) :
     μ (stoppedPathCylinder U I S) = η (stoppedPathCylinder U I S) := by
   classical
   let J := I.erase 0
-  have hJpos : ∀ t ∈ J, 0 < t := fun t ht =>
-    pos_iff_ne_zero.mpr (Finset.mem_erase.mp ht).1
   by_cases h0 : (0 : ℝ≥0) ∈ I
   · by_cases hval : (0 : ℝ) ∈ S 0
     · have hevent (M : Measure StoppedBrownianPath) (hz : ∀ᵐ z ∂M, -(z.2 0) = 0) :
@@ -52,7 +50,7 @@ theorem SameStoppedPreterminalLaws.cylinder_eq
             rwa [hzero]
           · exact hJ t (Finset.mem_erase.mpr ⟨ht0, ht⟩)
       rw [measure_congr (hevent μ hμzero), measure_congr (hevent η hηzero)]
-      exact h.positive_cylinder_eq hμpos hηpos c hμend hηend U hU J hJpos S hS
+      exact h.positive_cylinder_eq hμpos hηpos c hμend hηend U hU J (fun t ht => pos_iff_ne_zero.mpr (Finset.mem_erase.mp ht).1) S hS
     · have hzero (M : Measure StoppedBrownianPath) (hz : ∀ᵐ z ∂M, -(z.2 0) = 0) :
           M (stoppedPathCylinder U I S) = 0 := by
         apply measure_eq_zero_iff_ae_notMem.mpr
@@ -72,7 +70,7 @@ theorem SameStoppedPreterminalLaws.measure_eq
     (h : SameStoppedPreterminalLaws μ η)
     (hμpos : ∀ᵐ z ∂μ, 0 < z.1) (hηpos : ∀ᵐ z ∂η, 0 < z.1)
     (hμzero : ∀ᵐ z ∂μ, -(z.2 0) = 0) (hηzero : ∀ᵐ z ∂η, -(z.2 0) = 0)
-    (c : ℝ) (hμend : ∀ᵐ z ∂μ, ∀ t, z.1 ≤ t → -(z.2 t) = c)
+    c (hμend : ∀ᵐ z ∂μ, ∀ t, z.1 ≤ t → -(z.2 t) = c)
     (hηend : ∀ᵐ z ∂η, ∀ t, z.1 ≤ t → -(z.2 t) = c) : μ = η := by
   classical
   let f : StoppedBrownianPath → ℝ × (ℝ≥0 → ℝ) := fun z =>
@@ -89,10 +87,7 @@ theorem SameStoppedPreterminalLaws.measure_eq
           M (f ⁻¹' (U ×ˢ W)) := by
       rw [Measure.map_apply measurable_snd hW,
         Measure.restrict_apply (hW.preimage measurable_snd)]
-      have he : Prod.snd ⁻¹' W ∩ (U ×ˢ univ) = U ×ˢ W := by
-        ext z
-        simp only [mem_inter_iff, mem_preimage, mem_prod, mem_univ, true_and, and_comm]
-      rw [he, Measure.map_apply hf (hU.prod hW)]
+      rw [(show Prod.snd ⁻¹' W ∩ (U ×ˢ univ) = U ×ˢ W by ext z; simp only [mem_inter_iff, mem_preimage, mem_prod, mem_univ, true_and, and_comm]), Measure.map_apply hf (hU.prod hW)]
     have heq : μU = ηU := by
       apply ext_of_generate_finite
         (squareCylinders fun _ : ℝ≥0 => {A : Set ℝ | MeasurableSet A})
@@ -103,16 +98,10 @@ theorem SameStoppedPreterminalLaws.measure_eq
         have hmW : MeasurableSet ((I : Set ℝ≥0).pi S) :=
           MeasurableSet.pi (Finset.countable_toSet _) (fun t _ => hmS t)
         rw [hslice _ _ hmW, hslice _ _ hmW]
-        have hpre : f ⁻¹' (U ×ˢ (I : Set ℝ≥0).pi S) = stoppedPathCylinder U I S := by
-          ext z
-          simp [f, stoppedPathCylinder, mem_pi]
-        rw [hpre]
+        rw [(show f ⁻¹' (U ×ˢ (I : Set ℝ≥0).pi S) = stoppedPathCylinder U I S by ext z; simp [f, stoppedPathCylinder, mem_pi])]
         exact h.cylinder_eq hμpos hηpos hμzero hηzero c hμend hηend U hU I S hmS
       · rw [hslice _ univ MeasurableSet.univ, hslice _ univ MeasurableSet.univ]
-        have hpre : f ⁻¹' (U ×ˢ univ) = {z : StoppedBrownianPath | (z.1 : ℝ) ∈ U} := by
-          ext z
-          simp [f]
-        rw [hpre]
+        rw [(show f ⁻¹' (U ×ˢ univ) = {z : StoppedBrownianPath | (z.1 : ℝ) ∈ U} by ext z; simp [f])]
         exact h.lifetime_event_eq hμpos hηpos U hU
     have hh := congrArg (fun M : Measure (ℝ≥0 → ℝ) => M V) heq
     rw [Measure.map_apply hf (hU.prod hV), Measure.map_apply hf (hU.prod hV)]

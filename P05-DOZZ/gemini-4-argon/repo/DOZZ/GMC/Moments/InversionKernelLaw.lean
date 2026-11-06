@@ -35,10 +35,10 @@ theorem complexInvMeasurableEquiv_measurePreserving :
   ⟨complexInvMeasurableEquiv.measurable, gmcReferenceMeasure_map_complexInv⟩
 
 /-- Every point is null for the compactifying reference measure. -/
-theorem gmcReferenceMeasure_ae_ne (a : ℂ) :
+theorem gmcReferenceMeasure_ae_ne a :
     ∀ᵐ x ∂gmcReferenceMeasure, x ≠ a := by
   change ∀ᵐ x ∂volume.withDensity
-    (fun x : ℂ => ENNReal.ofReal (normPlus x ^ (-4 : ℝ))), x ≠ a
+    (fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ))), x ≠ a
   rw [ae_iff]
   simp
 

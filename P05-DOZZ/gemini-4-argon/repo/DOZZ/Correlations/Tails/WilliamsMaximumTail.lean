@@ -13,7 +13,7 @@ open MeasureTheory ProbabilityTheory Set
 
 namespace DOZZ.Proofs
 
-theorem williams_maximum_tail (ν : ℝ) (hν : 0 < ν) (u : ℝ) :
+theorem williams_maximum_tail (ν : ℝ) (hν : 0 < ν) u :
     ((brownianMaximumReferenceLaw ν) (Ioi u)).toReal =
       if 0 ≤ u then Real.exp (-(2*ν*u)) else 1 := by
   let : IsProbabilityMeasure (expMeasure (2*ν)) :=

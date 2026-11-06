@@ -17,7 +17,7 @@ namespace DOZZ.Proofs
 
 /-- The strict four-point Seiberg range gives the ordered, nonresonant physical Gauss parameters.
 -/
-theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
+theorem gauss_physical_parameter_range γ χ α₁ α₂ α₃
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hχ : χ = γ / 2 ∨ χ = 2 / γ)
     (hsum : 2 * Q γ + χ < α₁ + α₂ + α₃)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
@@ -52,26 +52,18 @@ theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
     · rw [hχ]
       unfold Q
       field_simp
-  have hχQsub : χ * (Q γ - χ) = 1 := by linear_combination hχQ
   have hα₁χ : χ < α₁ := by linarith
   have hα₂χ : χ < α₂ := by linarith
   have hα₃χ : χ < α₃ := by linarith
-  have hAform : A = χ / 2 * (α₁ + α₂ + α₃ - Q γ - 2 * χ) - 1 / 2 := by
-    dsimp [A, gaussParameterA]
-    ring
-  have hAbase : χ / 2 * (Q γ - χ) - 1 / 2 = 0 := by linear_combination hχQ / 2
   have hA : 0 < A := by
-    rw [hAform]
+    rw [(show A = χ / 2 * (α₁ + α₂ + α₃ - Q γ - 2 * χ) - 1 / 2 by dsimp [A, gaussParameterA]; ring)]
     calc
-      0 = χ / 2 * (Q γ - χ) - 1 / 2 := hAbase.symm
+      0 = χ / 2 * (Q γ - χ) - 1 / 2 := (show χ / 2 * (Q γ - χ) - 1 / 2 = 0 by linear_combination hχQ / 2).symm
       _ < χ / 2 * (α₁ + α₂ + α₃ - Q γ - 2 * χ) - 1 / 2 := by
         apply sub_lt_sub_right
         exact mul_lt_mul_of_pos_left (by linarith) (by positivity)
-  have hBA : B - A = χ * (Q γ - α₃) := by
-    dsimp [A, B, gaussParameterA, gaussParameterB]
-    linear_combination (-1 : ℝ) * hχQ
   have hAB : A < B := by
-    rw [← sub_pos, hBA]
+    rw [← sub_pos, (show B - A = χ * (Q γ - α₃) by dsimp [A, B, gaussParameterA, gaussParameterB]; linear_combination (-1 : ℝ) * hχQ)]
     exact mul_pos hχpos (sub_pos.mpr hα₃)
   have hδeq : C - A - B = χ * (Q γ - α₂) := by
     dsimp [A, B, C, gaussParameterA, gaussParameterB, gaussParameterC]
@@ -85,11 +77,10 @@ theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
       χ * (Q γ - α₂) < χ * (Q γ - χ) := by
         apply mul_lt_mul_of_pos_left _ hχpos
         linarith
-      _ = 1 := hχQsub
+      _ = 1 := (by linear_combination hχQ)
   have hC1 : C < 1 := by
     dsimp [C, gaussParameterC]
-    have hQ₁ : 0 < Q γ - α₁ := sub_pos.mpr hα₁
-    linarith only [mul_pos hχpos hQ₁]
+    linarith only [mul_pos hχpos (sub_pos.mpr hα₁)]
   have hBC : B < C := by linarith
   have hCpos : 0 < C := by linarith
   have hCApos : 0 < C - A := by linarith
@@ -100,10 +91,6 @@ theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
     C - A - B < 1 ∧ 0 < gaussK₁ A B C ∧ 0 < gaussK₂ A B C
   refine ⟨hA, hAB, hBC, hC1, hδpos, hδlt, ?_, ?_⟩
   · unfold gaussK₁
-    have hgC := Real.Gamma_pos_of_pos hCpos
-    have hgCA := Real.Gamma_pos_of_pos hCApos
-    have hgCB := Real.Gamma_pos_of_pos hCBpos
-    have hgA := Real.Gamma_pos_of_pos hA
     have hgB := Real.Gamma_pos_of_pos (lt_trans hA hAB)
     positivity
   · unfold gaussK₂

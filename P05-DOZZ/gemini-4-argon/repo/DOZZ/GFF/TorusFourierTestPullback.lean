@@ -30,23 +30,20 @@ local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
 local instance : IsProbabilityMeasure (volume : Measure GFFUnitTorus2) := by
   infer_instance
 
-private theorem mFourier_realBox_eq_exp (k : Fin 2 → ℤ) (x : Fin 2 → ℝ) :
-    UnitAddTorus.mFourier k (fun i => (x i : UnitAddCircle)) =
-      Complex.exp (2 * Real.pi * Complex.I *
-        ((k 0 : ℝ) * x 0 + (k 1 : ℝ) * x 1)) := by
-  rw [UnitAddTorus.mFourier]
-  simp only [ContinuousMap.coe_mk, Fin.prod_univ_two, fourier_coe_apply]
-  rw [← Complex.exp_add]
-  congr 1
-  push_cast
-  ring
 
 /-- A torus character evaluated at the scaled representative point has the phase used by the
 local trigonometric tests. -/
-theorem mFourier_torusBoxPoint_eq_exp (L : ℝ) (hL : 0 < L)
-    (k : Fin 2 → ℤ) (t : GFFUnitTorus2) :
+theorem mFourier_torusBoxPoint_eq_exp L (hL : 0 < L)
+    (k : Fin 2 → ℤ) t :
     UnitAddTorus.mFourier k t =
       Complex.exp (Complex.I * torusModePhase L k (torusBoxPoint L t)) := by
+  have mFourier_realBox_eq_exp (k : Fin 2 → ℤ) (x : Fin 2 → ℝ) : UnitAddTorus.mFourier k (fun i => (x i : UnitAddCircle)) = Complex.exp (2 * Real.pi * Complex.I * ((k 0 : ℝ) * x 0 + (k 1 : ℝ) * x 1)) := by
+    rw [UnitAddTorus.mFourier]
+    simp only [ContinuousMap.coe_mk, Fin.prod_univ_two, fourier_coe_apply]
+    rw [← Complex.exp_add]
+    congr 1
+    push_cast
+    ring
   let e := UnitAddTorus.measurableEquivPiIoc
     (fun _ : Fin 2 => (-1 / 2 : ℝ))
   let x := (e t).1
@@ -54,48 +51,40 @@ theorem mFourier_torusBoxPoint_eq_exp (L : ℝ) (hL : 0 < L)
     calc
       t = e.symm (e t) := (e.symm_apply_apply t).symm
       _ = fun i => (x i : UnitAddCircle) := by rfl
-  have hbox : torusBoxPoint L t = ⟨L * x 0, L * x 1⟩ := by
-    simp [torusBoxPoint, e, x]
   rw [ht, mFourier_realBox_eq_exp]
   have hphase : 2 * Real.pi * Complex.I *
       ((k 0 : ℝ) * x 0 + (k 1 : ℝ) * x 1) =
       Complex.I * torusModePhase L k (torusBoxPoint L t) := by
-    rw [hbox, torusModePhase]
+    rw [(show torusBoxPoint L t = ⟨L * x 0, L * x 1⟩ by simp [torusBoxPoint, e, x]), torusModePhase]
     push_cast
     field_simp [ne_of_gt hL]
   rw [← ht, hphase]
 
-theorem torusBox_cos_eq_mFourier_re (L : ℝ) (hL : 0 < L)
-    (k : Fin 2 → ℤ) (t : GFFUnitTorus2) :
-    Real.cos (torusModePhase L k (torusBoxPoint L t)) =
-      (UnitAddTorus.mFourier k t).re := by
-  rw [mFourier_torusBoxPoint_eq_exp L hL k t]
-  rw [show Complex.I * torusModePhase L k (torusBoxPoint L t) =
-      torusModePhase L k (torusBoxPoint L t) * Complex.I by ring]
-  exact (Complex.exp_ofReal_mul_I_re _).symm
 
-theorem torusBox_sin_eq_mFourier_im (L : ℝ) (hL : 0 < L)
-    (k : Fin 2 → ℤ) (t : GFFUnitTorus2) :
-    Real.sin (torusModePhase L k (torusBoxPoint L t)) =
-      (UnitAddTorus.mFourier k t).im := by
-  rw [mFourier_torusBoxPoint_eq_exp L hL k t]
-  rw [show Complex.I * torusModePhase L k (torusBoxPoint L t) =
-      torusModePhase L k (torusBoxPoint L t) * Complex.I by ring]
-  exact (Complex.exp_ofReal_mul_I_im _).symm
 
-theorem localTorusCosTest_torusBoxPoint (R L : ℝ) (hR : 0 < R)
-    (hL : 0 < L) (k : Fin 2 → ℤ) (t : GFFUnitTorus2) :
+theorem localTorusCosTest_torusBoxPoint R L (hR : 0 < R)
+    (hL : 0 < L) (k : Fin 2 → ℤ) t :
     localTorusCosTest R L hR k (torusBoxPoint L t) =
       localTorusCutoff R hR (torusBoxPoint L t) *
         (UnitAddTorus.mFourier k t).re := by
-  rw [localTorusCosTest_apply, torusBox_cos_eq_mFourier_re L hL k t]
+  have torusBox_cos_eq_mFourier_re : Real.cos (torusModePhase L k (torusBoxPoint L t)) = (UnitAddTorus.mFourier k t).re := by
+    rw [mFourier_torusBoxPoint_eq_exp L hL k t]
+    rw [show Complex.I * torusModePhase L k (torusBoxPoint L t) =
+        torusModePhase L k (torusBoxPoint L t) * Complex.I by ring]
+    exact (Complex.exp_ofReal_mul_I_re _).symm
+  rw [localTorusCosTest_apply, torusBox_cos_eq_mFourier_re]
 
-theorem localTorusSinTest_torusBoxPoint (R L : ℝ) (hR : 0 < R)
-    (hL : 0 < L) (k : Fin 2 → ℤ) (t : GFFUnitTorus2) :
+theorem localTorusSinTest_torusBoxPoint R L (hR : 0 < R)
+    (hL : 0 < L) (k : Fin 2 → ℤ) t :
     localTorusSinTest R L hR k (torusBoxPoint L t) =
       localTorusCutoff R hR (torusBoxPoint L t) *
         (UnitAddTorus.mFourier k t).im := by
-  rw [localTorusSinTest_apply, torusBox_sin_eq_mFourier_im L hL k t]
+  have torusBox_sin_eq_mFourier_im : Real.sin (torusModePhase L k (torusBoxPoint L t)) = (UnitAddTorus.mFourier k t).im := by
+    rw [mFourier_torusBoxPoint_eq_exp L hL k t]
+    rw [show Complex.I * torusModePhase L k (torusBoxPoint L t) =
+        torusModePhase L k (torusBoxPoint L t) * Complex.I by ring]
+    exact (Complex.exp_ofReal_mul_I_im _).symm
+  rw [localTorusSinTest_apply, torusBox_sin_eq_mFourier_im]
 
 end DOZZ
 

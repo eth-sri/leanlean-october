@@ -41,7 +41,7 @@ theorem fusion_time_integrable_of_power_bound (F : ℂ → ℂ) (hFm : Measurabl
     _ = (C * ‖z‖ ^ e) * t ^ e := by ring
 
 /-- Integrable local and exterior expectations can be split inside the time integral. -/
-theorem fusion_time_split (F L E : ℂ → ℂ) (z : ℂ)
+theorem fusion_time_split (F L E : ℂ → ℂ) z
     (hL : IntegrableOn (fun t : ℝ => (1 - t : ℝ) * L ((t : ℂ) * z)) (Icc 0 1) volume)
     (hE : IntegrableOn (fun t : ℝ => (1 - t : ℝ) * E ((t : ℂ) * z)) (Icc 0 1) volume)
     (h : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1), F ((t : ℂ) * z) = L ((t : ℂ) * z) + E ((t : ℂ) * z)) :

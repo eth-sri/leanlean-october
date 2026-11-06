@@ -27,22 +27,20 @@ theorem cpow_scaled_difference_norm (c x y : ℝ) (hc : 0 < c) (hx : 0 ≤ x) (h
 /-- The norm integral of the actual complex increment is exactly a deterministic imaginary
 Wick factor times the norm integral of the retained Coulomb mass-power increment. -/
 theorem normalized_vertex_increment_tilt_norm
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (β : Fin (N + 1) → ℂ) (z : Fin N → ℂ) (r : ℝ) (hr : 0 ≤ r)
-    (O₁ O₀ : Set ℂ) (h₁ : MeasurableSet O₁) (h₀ : MeasurableSet O₀)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    Xc (hXc : IsCircleAverage P X Xc)
+    (β : Fin (N + 1) → ℂ) (z : Fin N → ℂ) r (hr : 0 ≤ r)
+    O₁ O₀ (h₁ : MeasurableSet O₁) (h₀ : MeasurableSet O₀)
     (hO₁ : O₁ ⊆ retainedRegion z r) (hO₀ : O₀ ⊆ retainedRegion z r) :
     let a := fun i => (β i).re
-    let L := fun ω => ∑ i, a i * Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i)
     let p := complexMomentPower γ β
-    let A := γ * ∑ i, a i.castSucc * equatorCircleMean (z i) r
     (∫⁻ ω, ENNReal.ofReal ‖Complex.exp (normalizedVertexPolynomial P Xc γ z r β +
       ∑ i, β i * (Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i) : ℂ)) *
         (((M ω O₁).toReal : ℂ) ^ p - ((M ω O₀).toReal : ℂ) ^ p)‖ ∂P) =
       ENNReal.ofReal (Real.exp ((normalizedVertexPolynomial P Xc γ z r β).re +
-        gaussianVariance P L / 2 + A * p.re)) *
+        gaussianVariance P (fun ω => ∑ i, a i * Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i)) / 2 + (γ * ∑ i, a i.castSucc * equatorCircleMean (z i) r) * p.re)) *
         ∫⁻ ω, ENNReal.ofReal
           ‖((∫⁻ x in O₁, coulombWeight γ (fun i => a i.castSucc) z (a (Fin.last N)) x ∂M ω).toReal : ℂ) ^ p -
             ((∫⁻ x in O₀, coulombWeight γ (fun i => a i.castSucc) z (a (Fin.last N)) x ∂M ω).toReal : ℂ) ^ p‖ ∂P := by
@@ -53,8 +51,7 @@ theorem normalized_vertex_increment_tilt_norm
   let A := γ * ∑ i, a i.castSucc * equatorCircleMean (z i) r
   let D := (normalizedVertexPolynomial P Xc γ z r β).re + gaussianVariance P L / 2
   let H (μ : Measure ℂ) := ENNReal.ofReal ‖((μ O₁).toReal : ℂ) ^ p - ((μ O₀).toReal : ℂ) ^ p‖
-  have hH : Measurable H := measurable_complex_mass_difference O₁ O₀ h₁ h₀ p
-  have he (ω : Ω) :
+  have he ω :
       ENNReal.ofReal ‖Complex.exp (normalizedVertexPolynomial P Xc γ z r β +
         ∑ i, β i * (Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i) : ℂ)) *
           (((M ω O₁).toReal : ℂ) ^ p - ((M ω O₀).toReal : ℂ) ^ p)‖ =
@@ -78,7 +75,7 @@ theorem normalized_vertex_increment_tilt_norm
     rw [he]
   rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top,
     mixed_vertex_tilt_functional P X hX γ hγ hγ2 M hM Xc hXc a
-      (mixedVertexCenters z) (mixedVertexTimes N r) H hH]
+      (mixedVertexCenters z) (mixedVertexTimes N r) H (measurable_complex_mass_difference O₁ O₀ h₁ h₀ p)]
   have hs (μ : Measure ℂ) :
       H (μ.withDensity (fun x => ENNReal.ofReal (Real.exp (γ * ∑ i, a i *
         ∫ v, gffKernel x v ∂circleMeasure (mixedVertexCenters z i)

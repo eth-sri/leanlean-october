@@ -21,9 +21,9 @@ nonnegative measurable observable is the two-root Cameron--Martin shift, with th
 factor separated from the normalized joint tilt. No nonsingularity assumption is used. -/
 theorem finite_gaussian_wick_pair_tilt
     {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ)
+    (P : Measure Ω) Z
     (hZ : DOZZ.IsCenteredJointlyGaussian P Z)
-    (p q : ι) (γ : ℝ)
+    p q γ
     (F : (ι → ℝ) → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ ω,
       ENNReal.ofReal (Real.exp (γ * Z ω p - γ ^ 2 / 2 *
@@ -38,7 +38,7 @@ theorem finite_gaussian_wick_pair_tilt
         DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω q)) ∂P) := by
   classical
   let a : ι → ℝ := fun i => (if i = p then γ else 0) + (if i = q then γ else 0)
-  have hselect (g : ι → ℝ) (r : ι) :
+  have hselect (g : ι → ℝ) r :
       (∑ i, (if i = r then γ else 0) * g i) = γ * g r := by
     classical
     simp
@@ -48,9 +48,8 @@ theorem finite_gaussian_wick_pair_tilt
           ∑ i, (if i = q then γ else 0) * g i := by
             simp only [a, add_mul, Finset.sum_add_distrib]
       _ = _ := by rw [hselect g p, hselect g q]
-  have hlinear (ω : Ω) :
-      (∑ i, a i * Z ω i) = γ * Z ω p + γ * Z ω q := hsum (fun i => Z ω i)
-  have hrow (i : ι) :
+  have hlinear (ω : Ω) := hsum (fun i => Z ω i)
+  have hrow i :
       (∑ j, DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j) =
         γ * DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω p) +
           γ * DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω q) := by
@@ -114,7 +113,7 @@ theorem finite_gaussian_wick_pair_tilt
       _ = _ := by
             simp only [DOZZ.gaussianVariance]
             ring
-  have hweight (ω : Ω) :
+  have hweight ω :
       Real.exp (γ * Z ω p - γ ^ 2 / 2 *
           DOZZ.gaussianVariance P (fun ω => Z ω p)) *
         Real.exp (γ * Z ω q - γ ^ 2 / 2 *
@@ -128,8 +127,7 @@ theorem finite_gaussian_wick_pair_tilt
     rw [← Real.exp_add, ← Real.exp_add, hlinear ω, hdouble]
     congr 1
     ring
-  have htilt := DOZZ.Proofs.finite_gaussian_tilt P Z hZ a F hF
-  let c : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 / 2 *
+  let c := ENNReal.ofReal (Real.exp (γ ^ 2 / 2 *
     (DOZZ.gaussianCovariance P (fun ω => Z ω p) (fun ω => Z ω q) +
       DOZZ.gaussianCovariance P (fun ω => Z ω q) (fun ω => Z ω p))))
   calc
@@ -153,7 +151,7 @@ theorem finite_gaussian_wick_pair_tilt
           F (Z ω) ∂P) := by
         rw [lintegral_const_mul' c _ (by simp [c])]
     _ = _ := by
-      rw [htilt]
+      rw [(DOZZ.Proofs.finite_gaussian_tilt P Z hZ a F hF)]
       congr 1
       apply lintegral_congr_ae
       filter_upwards [] with ω

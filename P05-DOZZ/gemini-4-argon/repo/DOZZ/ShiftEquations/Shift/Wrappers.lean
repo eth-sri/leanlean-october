@@ -65,7 +65,7 @@ theorem reflectionBarR_holomorphic_representation_of_crossing_bridge
 /-- **The first shift of `R` from the γ/2 crossing, the residue bridge and the two-insertion tail
 estimate.** -/
 theorem reflectionR_first_shift_meromorphic_of_crossing_bridge_tail
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) (γ μ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
@@ -160,7 +160,7 @@ theorem reflectionBarR_holomorphic_representation_of_crossing
 are the theorems `unitVolumeStructureConstant_threeToTwo_residue_bridge` and
 `twoInsertion_tail_sum_uniform`). -/
 theorem reflectionR_first_shift_meromorphic_of_crossing
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) (γ μ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)

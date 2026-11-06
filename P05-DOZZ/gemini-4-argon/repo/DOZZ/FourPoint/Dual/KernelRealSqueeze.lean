@@ -21,15 +21,9 @@ theorem dual_ennreal_kernel_increment_error (I V : ℝ≥0∞) (p A β θlo θhi
     I ≠ ⊤ ∧
     |((A+I.toReal)^(-p)-A^(-p))-((A+β*V.toReal)^(-p)-A^(-p))| ≤
       max |θlo-1| |θhi-1| * (A^(-p)-(A+β*V.toReal)^(-p)) := by
-  have hI : I ≠ ⊤ := ne_top_of_le_ne_top
+  have hI := ne_top_of_le_ne_top
     (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hV) hs.2
-  have hl : θlo*(β*V.toReal) ≤ I.toReal := by
-    simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal (mul_nonneg hlo hβ), mul_assoc] using
-      ENNReal.toReal_mono hI hs.1
-  have hh : I.toReal ≤ θhi*(β*V.toReal) := by
-    simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal (mul_nonneg hhi hβ), mul_assoc] using
-      ENNReal.toReal_mono (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hV) hs.2
   exact ⟨hI, dual_negative_increment_kernel_squeeze p A (β*V.toReal) I.toReal θlo θhi
-    hp hA (mul_nonneg hβ ENNReal.toReal_nonneg) hlo hhi hl hh⟩
+    hp hA (mul_nonneg hβ ENNReal.toReal_nonneg) hlo hhi (by simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal (mul_nonneg hlo hβ), mul_assoc] using ENNReal.toReal_mono hI hs.1) (by simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal (mul_nonneg hhi hβ), mul_assoc] using ENNReal.toReal_mono (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hV) hs.2)⟩
 
 end DOZZ.Proofs

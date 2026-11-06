@@ -22,18 +22,14 @@ open scoped Topology ENNReal NNReal InnerProductSpace lp
 namespace DOZZ.Proofs
 
 /-- A disk restriction bounded pointwise by one has norm controlled by the disk area. -/
-theorem diskTestRestrictionL2_norm_le_area (c : ℂ) (ρ : ℝ) (f : TestFn)
+theorem diskTestRestrictionL2_norm_le_area c ρ f
     (hf : ∀ z, |f z| ≤ 1) :
     ‖diskTestRestrictionL2 c ρ f‖ ≤ Real.sqrt (volume (ball c ρ)).toReal := by
   let μ := volume.restrict (ball c ρ)
   let _ : IsFiniteMeasure μ := isFiniteMeasure_restrict.mpr measure_ball_lt_top.ne
-  have hi : Integrable (fun z => (f z)^2) μ :=
-    (f.continuous.memLp_of_hasCompactSupport f.hasCompactSupport).integrable_sq
-  have h := integral_mono_ae hi (integrable_const (1 : ℝ))
+  have h := integral_mono_ae ((f.continuous.memLp_of_hasCompactSupport f.hasCompactSupport).integrable_sq) (integrable_const (1 : ℝ))
     (ae_of_all μ (fun z => (sq_le_one_iff_abs_le_one _).mpr (hf z)))
-  have he : (∫ z, (1 : ℝ) ∂μ) = (volume (ball c ρ)).toReal := by
-    simp [μ,Measure.real_def,Measure.restrict_apply MeasurableSet.univ]
-  rw [he] at h
+  rw [(show (∫ z, (1 : ℝ) ∂μ) = (volume (ball c ρ)).toReal by simp [μ,Measure.real_def,Measure.restrict_apply MeasurableSet.univ])] at h
   rw [← diskTestRestrictionL2_norm_sq] at h
   exact (Real.le_sqrt (norm_nonneg _) ENNReal.toReal_nonneg).mpr h
 
@@ -42,16 +38,13 @@ theorem ae_summable_sq_of_summable_L2_norms {Ω ι : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (W : ι → Lp ℝ 2 P) (hW : Summable fun i => ‖W i‖^2) :
     ∀ᵐ ω ∂P, Summable fun i => (W i ω)^2 := by
   let eNN : ι → ℝ≥0 := fun i => ‖W i‖₊^2
-  have hNN : Summable eNN := NNReal.summable_coe.1 (by simpa [eNN] using hW)
-  have hfiniteNN : (∑' i, (eNN i : ℝ≥0∞)) ≠ ∞ :=
-    ENNReal.tsum_coe_ne_top_iff_summable_coe.mpr (NNReal.summable_coe.2 hNN)
   have hnorm i : eLpNorm (W i) 2 P = ENNReal.ofReal ‖W i‖ := by
     rw [Lp.norm_def,ENNReal.ofReal_toReal (Lp.eLpNorm_ne_top (W i))]
   have hmoment i : eLpNorm (fun ω => (W i ω)^2) 1 P = (eNN i : ℝ≥0∞) := by
     rw [DOZZ.eLpNorm_sq_eq_eLpNorm_two_sq (fun ω => W i ω) (Lp.aestronglyMeasurable (W i)),hnorm]
     simp [eNN,enorm_eq_nnnorm]
   exact ae_summable_sq_of_tsum_eLpNorm_sq_ne_top (fun i ω => W i ω)
-    (by simpa only [hmoment] using hfiniteNN)
+    (by simpa only [hmoment] using (ENNReal.tsum_coe_ne_top_iff_summable_coe.mpr (NNReal.summable_coe.2 (NNReal.summable_coe.1 (by simpa [eNN] using hW) : Summable eNN))))
 
 /-- The actual normalized cosine coordinates of a completed disk map. -/
 noncomputable def diskFourierCosL2 {Ω : Type*} [MeasurableSpace Ω]
@@ -65,58 +58,48 @@ noncomputable def diskFourierSinL2 {Ω : Type*} [MeasurableSpace Ω]
     (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P) (k : Fin 2 → ℤ) : Lp ℝ 2 P :=
   (DOZZ.torusSobolevWeight k)⁻¹ • T (diskTestRestrictionL2 c ρ (DOZZ.localTorusSinTest R L hR k))
 
-/-- Cosine coordinate norm bounds are uniform in the frequency. -/
-theorem diskFourierCosL2_norm_le {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (c : ℂ) (ρ R L : ℝ) (hR : 0 < R)
-    (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P) (k : Fin 2 → ℤ) :
-    ‖diskFourierCosL2 P c ρ R L hR T k‖ ≤ (DOZZ.torusSobolevWeight k)⁻¹*
-      (‖T‖*Real.sqrt (volume (ball c ρ)).toReal) := by
-  have hw : 0 ≤ DOZZ.torusSobolevWeight k := by unfold DOZZ.torusSobolevWeight; positivity
-  rw [diskFourierCosL2,norm_smul,Real.norm_eq_abs,abs_of_nonneg (inv_nonneg.mpr hw)]
-  apply mul_le_mul_of_nonneg_left _ (inv_nonneg.mpr hw)
-  exact (T.le_opNorm _).trans (mul_le_mul_of_nonneg_left
-    (diskTestRestrictionL2_norm_le_area c ρ _ (DOZZ.localTorusCosTest_abs_le_one R L hR k)) (norm_nonneg _))
 
-/-- Sine coordinate norm bounds are uniform in the frequency. -/
-theorem diskFourierSinL2_norm_le {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (c : ℂ) (ρ R L : ℝ) (hR : 0 < R)
-    (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P) (k : Fin 2 → ℤ) :
-    ‖diskFourierSinL2 P c ρ R L hR T k‖ ≤ (DOZZ.torusSobolevWeight k)⁻¹*
-      (‖T‖*Real.sqrt (volume (ball c ρ)).toReal) := by
-  have hw : 0 ≤ DOZZ.torusSobolevWeight k := by unfold DOZZ.torusSobolevWeight; positivity
-  rw [diskFourierSinL2,norm_smul,Real.norm_eq_abs,abs_of_nonneg (inv_nonneg.mpr hw)]
-  apply mul_le_mul_of_nonneg_left _ (inv_nonneg.mpr hw)
-  exact (T.le_opNorm _).trans (mul_le_mul_of_nonneg_left
-    (diskTestRestrictionL2_norm_le_area c ρ _ (DOZZ.localTorusSinTest_abs_le_one R L hR k)) (norm_nonneg _))
 
 /-- Normalized cosine coordinates have summable squared L² norms. -/
 theorem summable_diskFourierCosL2_norm_sq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (c : ℂ) (ρ R L : ℝ) (hR : 0 < R)
+    (P : Measure Ω) c ρ R L (hR : 0 < R)
     (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P) :
     Summable fun k => ‖diskFourierCosL2 P c ρ R L hR T k‖^2 := by
+  have diskFourierCosL2_norm_le k : ‖diskFourierCosL2 P c ρ R L hR T k‖ ≤ (DOZZ.torusSobolevWeight k)⁻¹* (‖T‖*Real.sqrt (volume (ball c ρ)).toReal) := by
+    have hw : 0 ≤ DOZZ.torusSobolevWeight k := by unfold DOZZ.torusSobolevWeight; positivity
+    rw [diskFourierCosL2,norm_smul,Real.norm_eq_abs,abs_of_nonneg (inv_nonneg.mpr hw)]
+    apply mul_le_mul_of_nonneg_left _ (inv_nonneg.mpr hw)
+    exact (T.le_opNorm _).trans (mul_le_mul_of_nonneg_left
+      (diskTestRestrictionL2_norm_le_area c ρ _ (DOZZ.localTorusCosTest_abs_le_one R L hR k)) (norm_nonneg _))
   let C := ‖T‖*Real.sqrt (volume (ball c ρ)).toReal
   apply Summable.of_nonneg_of_le (fun k => sq_nonneg _)
     (f := fun k => (DOZZ.torusSobolevWeight k)⁻¹^2*C^2)
   · intro k
     rw [← mul_pow]
     apply (sq_le_sq₀ (norm_nonneg _) _).mpr
-    exact diskFourierCosL2_norm_le P c ρ R L hR T k
+    exact diskFourierCosL2_norm_le k
     dsimp only [C,DOZZ.torusSobolevWeight]
     positivity
   · exact DOZZ.summable_torusSobolevWeight_inv_sq.mul_right _
 
 /-- Normalized sine coordinates have summable squared L² norms. -/
 theorem summable_diskFourierSinL2_norm_sq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (c : ℂ) (ρ R L : ℝ) (hR : 0 < R)
+    (P : Measure Ω) c ρ R L (hR : 0 < R)
     (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P) :
     Summable fun k => ‖diskFourierSinL2 P c ρ R L hR T k‖^2 := by
+  have diskFourierSinL2_norm_le k : ‖diskFourierSinL2 P c ρ R L hR T k‖ ≤ (DOZZ.torusSobolevWeight k)⁻¹* (‖T‖*Real.sqrt (volume (ball c ρ)).toReal) := by
+    have hw : 0 ≤ DOZZ.torusSobolevWeight k := by unfold DOZZ.torusSobolevWeight; positivity
+    rw [diskFourierSinL2,norm_smul,Real.norm_eq_abs,abs_of_nonneg (inv_nonneg.mpr hw)]
+    apply mul_le_mul_of_nonneg_left _ (inv_nonneg.mpr hw)
+    exact (T.le_opNorm _).trans (mul_le_mul_of_nonneg_left
+      (diskTestRestrictionL2_norm_le_area c ρ _ (DOZZ.localTorusSinTest_abs_le_one R L hR k)) (norm_nonneg _))
   let C := ‖T‖*Real.sqrt (volume (ball c ρ)).toReal
   apply Summable.of_nonneg_of_le (fun k => sq_nonneg _)
     (f := fun k => (DOZZ.torusSobolevWeight k)⁻¹^2*C^2)
   · intro k
     rw [← mul_pow]
     apply (sq_le_sq₀ (norm_nonneg _) _).mpr
-    exact diskFourierSinL2_norm_le P c ρ R L hR T k
+    exact diskFourierSinL2_norm_le k
     dsimp only [C,DOZZ.torusSobolevWeight]
     positivity
   · exact DOZZ.summable_torusSobolevWeight_inv_sq.mul_right _
@@ -135,22 +118,22 @@ noncomputable def diskFourierSinEval (k : Fin 2 → ℤ) : Ω → ℝ :=
   (Lp.aestronglyMeasurable (diskFourierSinL2 P c ρ R L hR T k)).mk _
 
 /-- The chosen cosine representatives are measurable. -/
-theorem measurable_diskFourierCosEval (k : Fin 2 → ℤ) :
+theorem measurable_diskFourierCosEval k :
     Measurable (diskFourierCosEval P c ρ R L hR T k) :=
   AEStronglyMeasurable.measurable_mk _
 
 /-- The chosen sine representatives are measurable. -/
-theorem measurable_diskFourierSinEval (k : Fin 2 → ℤ) :
+theorem measurable_diskFourierSinEval k :
     Measurable (diskFourierSinEval P c ρ R L hR T k) :=
   AEStronglyMeasurable.measurable_mk _
 
 /-- Measurable cosine representatives retain the actual L² coordinates. -/
-theorem diskFourierCosEval_ae_eq (k : Fin 2 → ℤ) :
+theorem diskFourierCosEval_ae_eq k :
     diskFourierCosEval P c ρ R L hR T k =ᵐ[P] ⇑(diskFourierCosL2 P c ρ R L hR T k) :=
   (AEStronglyMeasurable.ae_eq_mk _).symm
 
 /-- Measurable sine representatives retain the actual L² coordinates. -/
-theorem diskFourierSinEval_ae_eq (k : Fin 2 → ℤ) :
+theorem diskFourierSinEval_ae_eq k :
     diskFourierSinEval P c ρ R L hR T k =ᵐ[P] ⇑(diskFourierSinL2 P c ρ R L hR T k) :=
   (AEStronglyMeasurable.ae_eq_mk _).symm
 
@@ -204,16 +187,14 @@ theorem ae_diskFourierGood : ∀ᵐ ω ∂P, diskFourierGood P c ρ R L hR T ω 
   exact ⟨hc.tsum_ofReal_ne_top,hs.tsum_ofReal_ne_top⟩
 
 /-- On the good event, the cosine coordinates belong to ℓ². -/
-theorem diskFourierCosEval_summable_of_good (ω : Ω) (hω : diskFourierGood P c ρ R L hR T ω) :
+theorem diskFourierCosEval_summable_of_good ω (hω : diskFourierGood P c ρ R L hR T ω) :
     Summable fun k => (diskFourierCosEval P c ρ R L hR T k ω)^2 := by
-  have h := ENNReal.summable_toReal hω.1
-  simpa only [diskFourierCosEnergy,ENNReal.toReal_ofReal (sq_nonneg _)] using h
+  simpa only [diskFourierCosEnergy,ENNReal.toReal_ofReal (sq_nonneg _)] using (ENNReal.summable_toReal hω.1)
 
 /-- On the good event, the sine coordinates belong to ℓ². -/
-theorem diskFourierSinEval_summable_of_good (ω : Ω) (hω : diskFourierGood P c ρ R L hR T ω) :
+theorem diskFourierSinEval_summable_of_good ω (hω : diskFourierGood P c ρ R L hR T ω) :
     Summable fun k => (diskFourierSinEval P c ρ R L hR T k ω)^2 := by
-  have h := ENNReal.summable_toReal hω.2
-  simpa only [diskFourierSinEnergy,ENNReal.toReal_ofReal (sq_nonneg _)] using h
+  simpa only [diskFourierSinEnergy,ENNReal.toReal_ofReal (sq_nonneg _)] using (ENNReal.summable_toReal hω.2)
 
 /-- The actual sample's square-summable complex Fourier coordinate vector. -/
 noncomputable def diskFourierComplexLp (ω : Ω) (hω : diskFourierGood P c ρ R L hR T ω) :
@@ -250,7 +231,7 @@ noncomputable def diskFourierEval (f : TestFn) (ω : Ω) : ℝ :=
   limUnder atTop (fun s => diskFourierPartialEval P c ρ R L hR T f s ω)
 
 /-- Every finite Fourier pairing is measurable. -/
-theorem measurable_diskFourierPartialEval (f : TestFn) (s : Finset (Fin 2 → ℤ)) :
+theorem measurable_diskFourierPartialEval f s :
     Measurable (diskFourierPartialEval P c ρ R L hR T f s) := by
   classical
   exact Finset.measurable_sum s (fun k _ =>
@@ -258,12 +239,12 @@ theorem measurable_diskFourierPartialEval (f : TestFn) (s : Finset (Fin 2 → �
       (measurable_const.mul (measurable_diskFourierSinEval P c ρ R L hR T k)))
 
 /-- Fourier limits have measurable scalar evaluations. -/
-theorem measurable_diskFourierEval (f : TestFn) : Measurable (diskFourierEval P c ρ R L hR T f) := by
+theorem measurable_diskFourierEval f : Measurable (diskFourierEval P c ρ R L hR T f) := by
   exact (StronglyMeasurable.limUnder (l := atTop)
     (fun s => (measurable_diskFourierPartialEval P c ρ R L hR T f s).stronglyMeasurable)).measurable
 
 /-- The finite Fourier pairing sums to the continuous sample functional. -/
-theorem hasSum_diskFourierPartialEval (f : TestFn) (ω : Ω) (hω : diskFourierGood P c ρ R L hR T ω) :
+theorem hasSum_diskFourierPartialEval f ω hω :
     HasSum (fun k => (DOZZ.torusH2WeightedFourierCoeffCLM L f k).re*diskFourierCosEval P c ρ R L hR T k ω-
       (DOZZ.torusH2WeightedFourierCoeffCLM L f k).im*diskFourierSinEval P c ρ R L hR T k ω)
       (diskFourierDistributionCLM P c ρ R L hR T ω hω f) := by
@@ -282,8 +263,8 @@ theorem hasSum_diskFourierPartialEval (f : TestFn) (ω : Ω) (hω : diskFourierG
   simpa only [he] using hh
 
 /-- On the good event, measurable evaluation equals the continuous Fourier functional. -/
-theorem diskFourierEval_eq_distributionCLM_apply (f : TestFn) (ω : Ω)
-    (hω : diskFourierGood P c ρ R L hR T ω) : diskFourierEval P c ρ R L hR T f ω =
+theorem diskFourierEval_eq_distributionCLM_apply f ω
+    hω : diskFourierEval P c ρ R L hR T f ω =
       diskFourierDistributionCLM P c ρ R L hR T ω hω f := by
   exact (hasSum_diskFourierPartialEval P c ρ R L hR T f ω hω).limUnder_eq
 
@@ -293,7 +274,7 @@ noncomputable def diskFourierDistribution (ω : Ω) : TestFn →L[ℝ] ℝ := by
   exact if hω : diskFourierGood P c ρ R L hR T ω then diskFourierDistributionCLM P c ρ R L hR T ω hω else 0
 
 /-- The selected distribution has measurable evaluations for every global test. -/
-theorem measurable_diskFourierDistribution_apply (f : TestFn) :
+theorem measurable_diskFourierDistribution_apply f :
     Measurable (fun ω => diskFourierDistribution P c ρ R L hR T ω f) := by
   have he : (fun ω => diskFourierDistribution P c ρ R L hR T ω f) =
       {ω | diskFourierGood P c ρ R L hR T ω}.indicator (diskFourierEval P c ρ R L hR T f) := by
@@ -312,11 +293,11 @@ noncomputable def diskFourierPartialL2 (f : TestFn) (s : Finset (Fin 2 → ℤ))
     (DOZZ.torusH2WeightedFourierCoeffCLM L f k).im • diskFourierSinL2 P c ρ R L hR T k
 
 /-- Finite measurable Fourier evaluations retain their actual L² finite sums. -/
-theorem diskFourierPartialEval_ae_eq_partialL2 (f : TestFn) (s : Finset (Fin 2 → ℤ)) :
+theorem diskFourierPartialEval_ae_eq_partialL2 f s :
     diskFourierPartialEval P c ρ R L hR T f s =ᵐ[P] ⇑(diskFourierPartialL2 P c ρ R L hR T f s) := by
   classical
   let a := DOZZ.torusH2WeightedFourierCoeffCLM L f
-  let term k : Lp ℝ 2 P := (a k).re • diskFourierCosL2 P c ρ R L hR T k-
+  let term k := (a k).re • diskFourierCosL2 P c ρ R L hR T k-
     (a k).im • diskFourierSinL2 P c ρ R L hR T k
   have he k : (fun ω => (a k).re*diskFourierCosEval P c ρ R L hR T k ω-
       (a k).im*diskFourierSinEval P c ρ R L hR T k ω) =ᵐ[P] ⇑(term k) := by
@@ -349,14 +330,8 @@ theorem diskFourierPartialL2_eq_completedPartialTest (hL : 0 < L) (hbox : L/2 = 
   rw [DOZZ.torusH2WeightedFourierCoeffCLM_apply L (R-1) hL (by linarith) f hf k]
   simp only [diskFourierCosL2,diskFourierSinL2,Complex.smul_re,Complex.smul_im,
     smul_eq_mul,smul_smul,map_sub,map_smul]
-  have hw : DOZZ.torusSobolevWeight k ≠ 0 := by unfold DOZZ.torusSobolevWeight; positivity
-  have hr : DOZZ.torusSobolevWeight k*(UnitAddTorus.mFourierCoeff (DOZZ.torusPeriodizationLp L f) k).re*
-      (DOZZ.torusSobolevWeight k)⁻¹ = (UnitAddTorus.mFourierCoeff (DOZZ.torusPeriodizationLp L f) k).re := by
-    field_simp
-  have hi : DOZZ.torusSobolevWeight k*(UnitAddTorus.mFourierCoeff (DOZZ.torusPeriodizationLp L f) k).im*
-      (DOZZ.torusSobolevWeight k)⁻¹ = (UnitAddTorus.mFourierCoeff (DOZZ.torusPeriodizationLp L f) k).im := by
-    field_simp
-  rw [hr,hi]
+  have : DOZZ.torusSobolevWeight k ≠ 0 := by unfold DOZZ.torusSobolevWeight; positivity
+  rw [(show DOZZ.torusSobolevWeight k*(UnitAddTorus.mFourierCoeff (DOZZ.torusPeriodizationLp L f) k).re* (DOZZ.torusSobolevWeight k)⁻¹ = (UnitAddTorus.mFourierCoeff (DOZZ.torusPeriodizationLp L f) k).re by field_simp),(show DOZZ.torusSobolevWeight k*(UnitAddTorus.mFourierCoeff (DOZZ.torusPeriodizationLp L f) k).im* (DOZZ.torusSobolevWeight k)⁻¹ = (UnitAddTorus.mFourierCoeff (DOZZ.torusPeriodizationLp L f) k).im by field_simp)]
   rfl
 
 end FourierVersion
@@ -370,26 +345,14 @@ theorem tendsto_diskRestriction_fourierPartialTest (c : ℂ) (ρ R L : ℝ)
       atTop (𝓝 (diskTestRestrictionL2 c ρ f)) := by
   let err s := DOZZ.torusRealFourierPartialSum L f s-
     DOZZ.torusFourierRealPartCLM (DOZZ.torusPeriodizationLp L f)
-  have he : Tendsto err atTop (𝓝 0) := by
-    simpa only [sub_self] using (DOZZ.torusRealFourierPartialSum_tendsto L f).sub_const
-      (DOZZ.torusFourierRealPartCLM (DOZZ.torusPeriodizationLp L f))
-  have hn : Tendsto (fun s => L^2*‖err s‖^2) atTop (𝓝 0) := by
-    simpa only [norm_zero,zero_pow (by norm_num : (2 : ℕ) ≠ 0),mul_zero] using
-      tendsto_const_nhds.mul (he.norm.pow 2)
   have hb s : ‖diskTestRestrictionL2 c ρ (DOZZ.equatorLocalFourierPartialTest R L hR f s)-
       diskTestRestrictionL2 c ρ f‖^2 ≤ L^2*‖err s‖^2 := by
     rw [← diskTestRestrictionL2_sub,diskTestRestrictionL2_norm_sq]
     let g := DOZZ.equatorLocalFourierPartialTest R L hR f s-f
-    have hg : Integrable (fun z : ℂ => (g z)^2) volume :=
-      (g.continuous.memLp_of_hasCompactSupport g.hasCompactSupport).integrable_sq
-    exact (integral_mono_measure Measure.restrict_le_self (ae_of_all _ (fun z => sq_nonneg (g z))) hg).trans
+    exact (integral_mono_measure Measure.restrict_le_self (ae_of_all _ (fun z => sq_nonneg (g z))) ((g.continuous.memLp_of_hasCompactSupport g.hasCompactSupport).integrable_sq)).trans
       (DOZZ.integral_sq_equatorLocalFourierPartialTest_sub_le R L hR hL hbox f s hf)
-  have hsq : Tendsto (fun s => ‖diskTestRestrictionL2 c ρ (DOZZ.equatorLocalFourierPartialTest R L hR f s)-
-      diskTestRestrictionL2 c ρ f‖^2) atTop (𝓝 0) :=
-    squeeze_zero (fun s => sq_nonneg _) hb hn
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
-  have hh := Real.continuous_sqrt.continuousAt.tendsto.comp hsq
-  simpa only [Function.comp_def,Real.sqrt_sq_eq_abs,abs_norm,Real.sqrt_zero] using hh
+  simpa only [Function.comp_def,Real.sqrt_sq_eq_abs,abs_norm,Real.sqrt_zero] using (Real.continuous_sqrt.continuousAt.tendsto.comp (squeeze_zero (fun s => sq_nonneg _) hb (by simpa only [norm_zero,zero_pow (by norm_num : (2 : ℕ) ≠ 0),mul_zero] using tendsto_const_nhds.mul ((show Tendsto err atTop (𝓝 0) by simpa only [sub_self] using (DOZZ.torusRealFourierPartialSum_tendsto L f).sub_const (DOZZ.torusFourierRealPartCLM (DOZZ.torusPeriodizationLp L f))).norm.pow 2))))
 
 /-- Any bounded completed disk map preserves cutoff Fourier approximation. -/
 theorem tendsto_completed_disk_fourierPartialTest {Ω : Type*} [MeasurableSpace Ω]
@@ -408,21 +371,10 @@ theorem diskFourierDistribution_apply_ae_eq {Ω : Type*} [MeasurableSpace Ω]
     (f : TestFn) (hf : Function.support f ⊆ ball (0 : ℂ) (R-1)) :
     (fun ω => diskFourierDistribution P c ρ R L hR T ω f) =ᵐ[P]
       ⇑(T (diskTestRestrictionL2 c ρ f)) := by
-  have hLp : Tendsto (diskFourierPartialL2 P c ρ R L hR T f) atTop
-      (𝓝 (T (diskTestRestrictionL2 c ρ f))) := by
-    change Tendsto (fun s => diskFourierPartialL2 P c ρ R L hR T f s) atTop _
-    simp_rw [diskFourierPartialL2_eq_completedPartialTest P c ρ R L hR T hL hbox f hf]
-    exact tendsto_completed_disk_fourierPartialTest P c ρ R L hR hL hbox T f hf
-  obtain ⟨s,hs,hAE⟩ := (tendstoInMeasure_of_tendsto_Lp hLp).exists_seq_tendsto_ae'
+  obtain ⟨s,hs,hAE⟩ := (tendstoInMeasure_of_tendsto_Lp (by change Tendsto (fun s => diskFourierPartialL2 P c ρ R L hR T f s) atTop _; simp_rw [diskFourierPartialL2_eq_completedPartialTest P c ρ R L hR T hL hbox f hf]; exact tendsto_completed_disk_fourierPartialTest P c ρ R L hR hL hbox T f hf)).exists_seq_tendsto_ae'
   filter_upwards [hAE,ae_diskFourierGood P c ρ R L hR T,
     ae_all_iff.mpr (fun n => diskFourierPartialEval_ae_eq_partialL2 P c ρ R L hR T f (s n))] with ω hLpω hω he
-  have hsum := hasSum_diskFourierPartialEval P c ρ R L hR T f ω hω
-  have hsel : diskFourierDistribution P c ρ R L hR T ω f =
-      diskFourierDistributionCLM P c ρ R L hR T ω hω f := by
-    rw [diskFourierDistribution,dite_eq_left hω]
-  rw [hsel]
-  have hpoint : Tendsto (fun n => diskFourierPartialEval P c ρ R L hR T f (s n) ω) atTop
-      (𝓝 (diskFourierDistributionCLM P c ρ R L hR T ω hω f)) := hsum.comp hs
-  exact tendsto_nhds_unique hpoint (hLpω.congr (fun n => (he n).symm))
+  rw [(show diskFourierDistribution P c ρ R L hR T ω f = diskFourierDistributionCLM P c ρ R L hR T ω hω f by rw [diskFourierDistribution,dite_eq_left hω])]
+  exact tendsto_nhds_unique ((hasSum_diskFourierPartialEval P c ρ R L hR T f ω hω).comp hs) (hLpω.congr (fun n => (he n).symm))
 
 end DOZZ.Proofs

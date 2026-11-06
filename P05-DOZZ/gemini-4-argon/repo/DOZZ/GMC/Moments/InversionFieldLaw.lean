@@ -20,7 +20,7 @@ namespace DOZZ.Proofs
 `DOZZ.gffCov`. -/
 theorem equatorGFF_test_gaussianCovariance
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (f g : TestFn) :
+    X (hX : IsEquatorGFF P X) f g :
     gaussianCovariance P (fun ω => X ω f) (fun ω => X ω g) = gffCov f g := by
   unfold gaussianCovariance
   calc
@@ -34,8 +34,8 @@ theorem equatorGFF_test_gaussianCovariance
 The two field models and their probability spaces may be different. -/
 theorem equatorGFF_inversion_local_test_fdd_law
     {Ω Ω' ι : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω'] [Fintype ι]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    (P' : Measure Ω') X' (hX' : IsEquatorGFF P' X')
     (f : ι → TestFn) (hf : ∀ i, tsupport (f i : ℂ → ℝ) ⊆ inversionChart) :
     P.map (fun ω i => X ω (inversionTest (f i) (hf i))) =
       P'.map (fun ω i => X' ω (f i)) := by

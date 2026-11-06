@@ -35,25 +35,10 @@ theorem reflected_williams_expectation_squeeze
     (A v.1+b v.1*Real.exp (γ*m v.2)*S v.2)^(-p)-(A v.1)^(-p)
   have hAp := (measurePreserving_fst (μ := P) (ν := R)).quasiMeasurePreserving.ae hA
   have hbp := (measurePreserving_fst (μ := P) (ν := R)).quasiMeasurePreserving.ae hb
-  have hcp := (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving.ae hcut
-  have hApm := hAm.comp_quasiMeasurePreserving
-    (measurePreserving_fst (μ := P) (ν := R)).quasiMeasurePreserving
-  have hbpm := hbm.comp_quasiMeasurePreserving
-    (measurePreserving_fst (μ := P) (ν := R)).quasiMeasurePreserving
-  have hemp := ((hm.const_mul γ).exp).comp_quasiMeasurePreserving
-    (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving
-  have hInvp : Integrable (fun v : Ω × Λ => (A v.1)^(-p)) (P.prod R) := by
-    simpa only [mul_one] using hInv.mul_prod (integrable_const (1 : ℝ))
   have hi (S : Λ → ℝ) (hS : ∀ᵐ v ∂R, 0 ≤ S v) (hSm : AEMeasurable S R) :
-      Integrable (D S) (P.prod R) := by
-    have hSp := (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving.ae hS
-    have hT : ∀ᵐ v : Ω × Λ ∂P.prod R, 0 ≤ b v.1*Real.exp (γ*m v.2)*S v.2 := by
-      filter_upwards [hbp,hSp] with v hv hSv
-      exact mul_nonneg (mul_nonneg hv (Real.exp_pos _).le) hSv
-    exact reflected_inverse_increment_integrable (P.prod R) p hp _ _ hAp hT hApm
-      ((hbpm.mul hemp).mul (hSm.comp_quasiMeasurePreserving
-        (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving)) hInvp
-  have hiJ := hi J (hcut.mono fun _ h => h.1.trans h.2.1) hJm
+      Integrable (D S) (P.prod R) := reflected_inverse_increment_integrable (P.prod R) p hp _ _ hAp (by filter_upwards [hbp,((measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving.ae hS)] with v hv hSv; exact mul_nonneg (mul_nonneg hv (Real.exp_pos _).le) hSv) (hAm.comp_quasiMeasurePreserving (measurePreserving_fst (μ := P) (ν := R)).quasiMeasurePreserving)
+      (((hbm.comp_quasiMeasurePreserving (measurePreserving_fst (μ := P) (ν := R)).quasiMeasurePreserving).mul (((hm.const_mul γ).exp).comp_quasiMeasurePreserving (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving)).mul (hSm.comp_quasiMeasurePreserving
+        (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving)) (by simpa only [mul_one] using hInv.mul_prod (integrable_const (1 : ℝ)))
   have hiK := hi K (hcut.mono fun _ h => h.2.2.1) hKm
   have hij := hi j (hcut.mono fun _ h => h.1) hjm
   let F := fun ω => b ω*(A ω)^(-p-1)
@@ -61,7 +46,7 @@ theorem reflected_williams_expectation_squeeze
   have hiE : Integrable E (P.prod R) := (hF.mul_prod hJ).const_mul _
   have hbnd : ∀ᵐ v : Ω × Λ ∂P.prod R,
       D J v ≤ D j v ∧ D j v ≤ D K v+E v := by
-    filter_upwards [hAp,hbp,hcp] with v hAv hbv hcv
+    filter_upwards [hAp,hbp,((measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving.ae hcut)] with v hAv hbv hcv
     have hs := reflected_williams_increment_squeeze p (A v.1) (b v.1) γ H (m v.2)
       (J v.2) (K v.2) (j v.2) hp hAv hbv hγ hcv.1 hcv.2.1 hcv.2.2.1
         hcv.2.2.2.1 hcv.2.2.2.2
@@ -69,16 +54,11 @@ theorem reflected_williams_expectation_squeeze
     convert hs.2 using 1
     dsimp only [D,E,F]
     ring
-  refine ⟨hij,integral_mono_ae hiJ hij (hbnd.mono fun _ h => h.1), ?_⟩
+  refine ⟨hij,integral_mono_ae (hi J (hcut.mono fun _ h => h.1.trans h.2.1) hJm) hij (hbnd.mono fun _ h => h.1), ?_⟩
   have hh := integral_mono_ae hij (hiK.add hiE) (hbnd.mono fun _ h => h.2)
   simp only [Pi.add_apply] at hh
   rw [integral_add hiK hiE] at hh
-  have he : (∫ v, E v ∂P.prod R) =
-      p*Real.exp (γ*H)*(∫ ω, F ω ∂P)*(∫ v, J v ∂R) := by
-    rw [show E = (fun v : Ω × Λ => (p*Real.exp (γ*H))*(F v.1*J v.2)) from rfl,
-      integral_const_mul,integral_prod_mul]
-    ring
-  rw [he] at hh
+  rw [(show (∫ v, E v ∂P.prod R) = p*Real.exp (γ*H)*(∫ ω, F ω ∂P)*(∫ v, J v ∂R) by rw [show E = (fun v : Ω × Λ => (p*Real.exp (γ*H))*(F v.1*J v.2)) from rfl, integral_const_mul,integral_prod_mul]; ring)] at hh
   exact hh
 
 end DOZZ.Proofs

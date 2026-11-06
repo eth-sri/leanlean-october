@@ -25,9 +25,9 @@ namespace DOZZ.Proofs
 reference mass. The proof is pointwise Gaussian Wick normalization followed by Tonelli. -/
 theorem regularizedGMC_lintegral_eq_reference
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ r : ℝ) (A : Set ℂ) (hA : MeasurableSet A) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
+    γ r A (hA : MeasurableSet A) :
     ∫⁻ ω, regularizedGMC P Xc γ r ω A ∂P = gmcReferenceMeasure A := by
   classical
   let : IsProbabilityMeasure P := hX.1
@@ -39,47 +39,34 @@ theorem regularizedGMC_lintegral_eq_reference
   have hVmeas : Measurable V := by
     let q : ℂ → Ω → ℝ := fun x ω => Xc ω x r ^ 2
     have hq : Measurable (Function.uncurry q) := by
-      have hbase : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r) :=
-        (hXc.1 r).comp measurable_swap
+      have hbase := (hXc.1 r).comp measurable_swap
       change Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2)
-      have hEq : (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) =
-          fun p => Xc p.2 p.1 r * Xc p.2 p.1 r := by
-        funext p
-        ring
-      rw [hEq]
+      rw [(show (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) = fun p => Xc p.2 p.1 r * Xc p.2 p.1 r by funext p; ring)]
       exact hbase.mul hbase
     change Measurable (fun x => ∫ ω, q x ω ∂P)
     exact hq.stronglyMeasurable.integral_prod_right.measurable
-  have hfield : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hXc.1 r
-  have hnormPlus : Measurable (fun x : ℂ => normPlus x) := by
-    unfold normPlus
-    exact measurable_const.max measurable_norm
-  have hnormProduct : Measurable (fun p : Ω × ℂ => normPlus p.2) :=
-    hnormPlus.comp measurable_snd
-  have hVproduct : Measurable (fun p : Ω × ℂ => V p.2) := hVmeas.comp measurable_snd
-  have hdensity : Measurable density := by
-    dsimp [density]
-    fun_prop
+  have := hXc.1 r
+  have : Measurable (fun p : Ω × ℂ => normPlus p.2) :=
+    (show Measurable (fun x => normPlus x) by unfold normPlus; exact measurable_const.max measurable_norm).comp measurable_snd
+  have : Measurable (fun p : Ω × ℂ => V p.2) := hVmeas.comp measurable_snd
   have hG : Measurable G := by
-    exact Measurable.ite (hA.preimage measurable_snd) hdensity measurable_const
-  have hV (x : ℂ) : gaussianVariance P (fun ω => Xc ω x r) = V x := by
+    exact Measurable.ite (hA.preimage measurable_snd) (by dsimp [density]; fun_prop) measurable_const
+  have hV x : gaussianVariance P (fun ω => Xc ω x r) = V x := by
     simp [V, gaussianVariance, gaussianCovariance, pow_two]
-  have hwick (x : ℂ) :
+  have hwick x :
       ∫⁻ ω, ENNReal.ofReal (Real.exp
         (γ * Xc ω x r - γ ^ 2 / 2 * V x)) ∂P = 1 := by
     let p : Fin 1 → ℂ × ℝ := fun _ => (x, r)
     let Z : Ω → Fin 1 → ℝ := fun ω i => Xc ω (p i).1 (p i).2
-    have hZ : IsCenteredJointlyGaussian P Z := by
-      simpa [Z, p] using circleAverage_finite_family_jointly_gaussian P X hX Xc hXc p
-    have hbase := wick_exponential_lintegral_expectation P Z hZ 0 γ
+    have hbase := wick_exponential_lintegral_expectation P Z (by simpa [Z, p] using circleAverage_finite_family_jointly_gaussian P X hX Xc hXc p) 0 γ
     simpa [Z, p, hV x] using hbase
-  have hsection (ω : Ω) :
+  have hsection ω :
       ∫⁻ x in A, density (ω, x) ∂volume = ∫⁻ x, G (ω, x) ∂volume := by
     rw [← lintegral_indicator hA]
     apply lintegral_congr
     intro x
     by_cases hx : x ∈ A <;> simp [G, hx]
-  have hdensityIntegral (x : ℂ) :
+  have hdensityIntegral x :
       ∫⁻ ω, density (ω, x) ∂P = ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) := by
     change ∫⁻ ω, ENNReal.ofReal
       (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) * normPlus x ^ (-4 : ℝ)) ∂P = _

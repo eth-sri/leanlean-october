@@ -17,8 +17,8 @@ namespace DOZZ.Proofs
 
 /-- The point-rooted field and chaos coordinate path is jointly measurable. -/
 theorem measurable_pointRootedCoordinatePath
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (M : Ω → Measure ℂ)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (hX : IsEquatorGFF P X) γ (M : Ω → Measure ℂ)
     (hMmeas : Measurable M) (hfinite : ∀ ω, IsFiniteMeasure (M ω)) :
     Measurable (fun q : ℂ × Ω => gmcTiltCoordinatePath
       (fun f => X q.2 f + γ * gffRootCovariance q.1 f)
@@ -35,15 +35,15 @@ theorem measurable_pointRootedCoordinatePath
 /-- The finite-dimensional rooted marked law on a bounded root set. -/
 theorem rooted_finite_coordinate_law
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMmeas : Measurable M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ)
+    Xc (hXc : IsCircleAverage P X Xc)
+    A (hA : MeasurableSet A) R
     (hAR : A ⊆ Metric.closedBall (0 : ℂ) R)
     (hRoot : ∀ᵐ u ∂gmcReferenceMeasure.restrict A,
       ∀ᵐ ω ∂P, IsFiniteMeasure (gmcRootedMeasure γ u (M ω)))
-    (s : Finset gmcTiltCoordinateIndex) :
+    s :
     Measure.map (fun ω => gmcTiltFiniteCoordinatePath s (fun f => X ω f) (M ω))
       (P.withDensity (fun ω => M ω A)) =
     Measure.map (fun q : ℂ × Ω => gmcTiltFiniteCoordinatePath s
@@ -52,10 +52,7 @@ theorem rooted_finite_coordinate_law
   let _ := hX.1
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   have hmass : Measurable (fun ω => M ω A) := (Measure.measurable_coe hA).comp hMmeas
-  have hmean : (∫⁻ ω, M ω A ∂P) ≠ ⊤ := by
-    rw [equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM A hA]
-    exact measure_ne_top _ _
-  let _ := isFiniteMeasure_withDensity hmean
+  let _ := isFiniteMeasure_withDensity (by rw [equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM A hA]; exact measure_ne_top _ _)
   have hl : Measurable (fun ω => gmcTiltFiniteCoordinatePath s (fun f => X ω f) (M ω)) :=
     (measurable_gmcTiltFiniteCoordinatePath s).comp
       ((measurable_pi_iff.mpr fun f => (hX.2 f).1).prodMk hMmeas)
@@ -69,17 +66,10 @@ theorem rooted_finite_coordinate_law
   intro φ
   rw [lintegral_map (by fun_prop) hl, lintegral_map (by fun_prop) hr]
   rw [lintegral_withDensity_eq_lintegral_mul _ hmass (by fun_prop)]
-  have hj : AEMeasurable (fun q : ℂ × Ω => (φ (gmcTiltFiniteCoordinatePath s
-      (fun f => X q.2 f + γ * gffRootCovariance q.1 f)
-      (gmcRootedMeasure γ q.1 (M q.2))) : ℝ≥0∞))
-      ((gmcReferenceMeasure.restrict A).prod P) := by
-    exact (measurable_coe_nnreal_ennreal.comp (φ.continuous.measurable.comp hr)).aemeasurable
-  rw [lintegral_prod _ hj]
+  rw [lintegral_prod _ (show AEMeasurable (fun q : ℂ × Ω => (φ (gmcTiltFiniteCoordinatePath s (fun f => X q.2 f + γ * gffRootCovariance q.1 f) (gmcRootedMeasure γ q.1 (M q.2))) : ℝ≥0∞)) ((gmcReferenceMeasure.restrict A).prod P) by exact (measurable_coe_nnreal_ennreal.comp (φ.continuous.measurable.comp hr)).aemeasurable)]
   let ψ := φ.comp ((↑) : ℝ≥0 → ℝ) NNReal.isometry_coe.lipschitzWith
-  have heq := rooted_finite_coordinate_identity P X hX γ hγ hγ2 M hM hMmeas
-    Xc hXc A hA R hAR hRoot s ψ (fun q => (φ q).coe_nonneg)
   simpa only [ψ, BoundedContinuousFunction.comp_apply, ENNReal.ofReal_coe_nnreal,
-    Pi.mul_apply, mul_comm] using heq
+    Pi.mul_apply, mul_comm] using (rooted_finite_coordinate_identity P X hX γ hγ hγ2 M hM hMmeas Xc hXc A hA R hAR hRoot s ψ (fun q => (φ q).coe_nonneg))
 
 /-- Finite measures on a product sigma algebra are determined by all finite-coordinate maps. -/
 theorem measure_eq_of_finite_coordinate_map_eq
@@ -104,11 +94,11 @@ theorem measure_eq_of_finite_coordinate_map_eq
 observable to finitely many coordinates. -/
 theorem rooted_full_coordinate_law
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMmeas : Measurable M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ)
+    Xc (hXc : IsCircleAverage P X Xc)
+    A (hA : MeasurableSet A) R
     (hAR : A ⊆ Metric.closedBall (0 : ℂ) R)
     (hRoot : ∀ᵐ u ∂gmcReferenceMeasure.restrict A,
       ∀ᵐ ω ∂P, IsFiniteMeasure (gmcRootedMeasure γ u (M ω))) :
@@ -118,10 +108,7 @@ theorem rooted_full_coordinate_law
       (fun f => X q.2 f + γ * gffRootCovariance q.1 f)
       (gmcRootedMeasure γ q.1 (M q.2))) ((gmcReferenceMeasure.restrict A).prod P) := by
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
-  have hmean : (∫⁻ ω, M ω A ∂P) ≠ ⊤ := by
-    rw [equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM A hA]
-    exact measure_ne_top _ _
-  let _ := isFiniteMeasure_withDensity hmean
+  let _ := isFiniteMeasure_withDensity (by rw [equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM A hA]; exact measure_ne_top _ _)
   have hl : Measurable (fun ω => gmcTiltCoordinatePath (fun f => X ω f) (M ω)) :=
     measurable_gmcTiltCoordinatePath.comp
       ((measurable_pi_iff.mpr fun f => (hX.2 f).1).prodMk hMmeas)

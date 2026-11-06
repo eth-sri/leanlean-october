@@ -6,30 +6,11 @@ module
 
 public import DOZZ.Brownian.Reflection.RtheorIdentification
 public import DOZZ.Statements.FourPoint.DualCrossingL
-import DOZZ.Brownian.ReflectionPoleIsolation
+import DOZZ.Brownian.Reflection.WitnessIndependence
+import DOZZ.Brownian.Reflection.MomentAssembly
 import DOZZ.FourPoint.Crossing.GammaHalfCrossing
 import DOZZ.ShiftEquations.Shift.Wrappers
 import DOZZ.ShiftEquations.DualR.Wrapper
-import DOZZ.ShiftEquations.Reflection.EndpointContinuity
-
-/-!
-# `R = R^DOZZ` from the second dual crossing seed
-
-The two Brownian `R_theor` statements are proved in `RtheorIdentification` from the statements
-`DOZZ.reflectionR_first_shift_meromorphic`, `DOZZ.reflectionR_dual_shift_unknown_constant` and
-`DOZZ.reflection_endpoint_and_gamma_continuity` at universe `0` ([KRV, §10.6]). Using the γ/2
-crossing `gammaHalf_crossing`, the reductions below discharge all three from the statement of
-`dual_crossing_seed_two` alone:
-
-* the first shift is `reflectionR_first_shift_meromorphic_of_crossing`;
-* the dual shift with unknown constant is
-  `reflectionR_dual_shift_unknown_constant_of_crossing_seed`;
-* the endpoint limits and continuity in `γ` are
-  `reflection_endpoint_and_gamma_continuity_of_representation`, fed the `R̄` representation
-  `reflectionBarR_holomorphic_representation_of_crossing`.
-
-So both `R_theor` statements depend only on the second dual seed.
--/
 
 @[expose] public section
 
@@ -38,11 +19,9 @@ open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
 
-/-- **`R = R^DOZZ` off the poles, from the second dual seed.** `hseedTwo` is the complete statement
-of `dual_crossing_seed_two` at universe `0`. -/
 theorem reflection_Rtheor_off_poles_of_seedTwo
-    (hseedTwo : ∀ {Ω : Type} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X (M : Ω → Measure ℂ)
+    (hseedTwo : ∀
     (γ μ α ε α' : ℝ)
     (_hγ : 0 < γ) (_hγ₂ : γ < 2) (_hμ : 0 < μ)
     (_hα : α < Q γ) (_hε : ε < Q γ) (_hα' : α' < Q γ)
@@ -58,30 +37,40 @@ theorem reflection_Rtheor_off_poles_of_seedTwo
           dualCrossingL γ ε α α' *
             reflectionR P γ μ α Bα Z *
               structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α')
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ μ α : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
+    (γ μ α : ℝ)
+    (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ)
+    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hα : γ / 2 < α ∧ α < Q γ) (hPole : ReflectionPoleFree γ α)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hData : IsReflectionData P γ α B Z) :
-    (reflectionR P γ μ α B Z : ℂ) = reflectionDOZZ γ μ (α : ℂ) :=
-  reflection_Rtheor_off_poles_of_shift_equations
-    (fun P X M γ μ hγ hγ2 hμ hX hM =>
-      reflectionR_first_shift_meromorphic_of_crossing P X M γ μ hγ hγ2 hμ hX hM
-        fun μ' α' ε α hμ' h1 h2 h3 h4 h5 =>
-          (gammaHalf_crossing P X M γ μ' α' ε α hγ hγ2 hμ' h1 h2 h3 h4 h5 hX hM).2)
-    (fun P X M γ μ hγ hγ2 hγirr hμ hX hM =>
-      reflectionR_dual_shift_unknown_constant_of_crossing_seed P X M γ μ hγ hγ2 hγirr hμ hX hM
-        (fun μ' α' ε α hμ' h1 h2 h3 h4 h5 =>
-          (gammaHalf_crossing P X M γ μ' α' ε α hγ hγ2 hμ' h1 h2 h3 h4 h5 hX hM).2)
-        fun α ε α' h1 h2 h3 h4 => hseedTwo P M X γ μ α ε α' hγ hγ2 hμ h1 h2 h3 h4 hX hM)
-    (fun P X M hX μ hμ hM =>
-      reflection_endpoint_and_gamma_continuity_of_representation P X M hX μ hμ hM
-        fun γ Mγ hγ hγ2 hMγ I _ hI =>
-          reflectionBarR_holomorphic_representation_of_crossing P X Mγ γ hγ hγ2 hX hMγ
-            (fun μ' α' ε α hμ' h1 h2 h3 h4 h5 =>
-              (gammaHalf_crossing P X Mγ γ μ' α' ε α hγ hγ2 hμ' h1 h2 h3 h4 h5 hX hMγ).2)
-            I hI)
-    P γ μ α hγ hγ2 hμ hα hPole B Z hData
+    (reflectionR P γ μ α B Z : ℂ) = reflectionDOZZ γ μ (α : ℂ) := by
+  have hCross := fun μ' α' ε α hμ' h1 h2 h3 h4 h5 =>
+    (gammaHalf_crossing P X M γ μ' α' ε α hγ hγ2 hμ' h1 h2 h3 h4 h5 hX hM).2
+  obtain ⟨B₀, Z₀, -, hD₀, V, -, hVI, f, -, -, hgf, hgcoef⟩ :=
+    reflectionBarR_holomorphic_representation_of_crossing P X M γ hγ hγ2 hX hM hCross
+      (Ioo (γ / 2) (Q γ)) (fun _ h => h)
+  have hD₀' : ∀ b : ℝ, γ / 2 < b → b < Q γ → IsReflectionData P γ b (B₀ b) Z₀ :=
+    fun b h1 h2 => hD₀ b ⟨h1, h2⟩
+  rw [reflectionR_eq_of_isReflectionData P P γ μ α B Z (B₀ α) Z₀ hData (hD₀' α hα.1 hα.2)]
+  obtain ⟨B₁, Z₁, -, hD₁, h₁, hh₁, R₁, hR₁, hR₁α, hshift₁⟩ :=
+    reflectionR_first_shift_meromorphic_of_crossing P X M γ μ hγ hγ2 hμ hX hM hCross
+  obtain ⟨B₂, Z₂, -, hD₂, h₂, hh₂, R₂, hR₂, hR₂α, c, -, -, hshift₂⟩ :=
+    reflectionR_dual_shift_unknown_constant_of_crossing_seed P X M γ μ hγ hγ2 hγirr hμ hX hM hCross
+      fun a e a' h1 h2 h3 h4 => hseedTwo γ μ a e a' hγ hγ2 hμ h1 h2 h3 h4 hX hM
+  have hR₁' : ∀ b : ℝ, γ / 2 < b → b < Q γ → R₁ (b : ℂ) = (reflectionR P γ μ b (B₀ b) Z₀ : ℂ) :=
+    fun b h1 h2 => by
+      rw [hR₁α b h1 h2, reflectionR_eq_of_isReflectionData P P γ μ b (B₁ b) Z₁ (B₀ b) Z₀
+        (hD₁ b h1 h2) (hD₀' b h1 h2)]
+  have hR₂' : ∀ b : ℝ, γ / 2 < b → b < Q γ → R₂ (b : ℂ) = (reflectionR P γ μ b (B₀ b) Z₀ : ℂ) :=
+    fun b h1 h2 => by
+      rw [hR₂α b h1 h2, reflectionR_eq_of_isReflectionData P P γ μ b (B₂ b) Z₂ (B₀ b) Z₀
+        (hD₂ b h1 h2) (hD₀' b h1 h2)]
+  have hBar := (Complex.continuous_re.comp_continuousOn (hgf.continuousOn.comp
+      Complex.continuous_ofReal.continuousOn hVI)).congr fun b hb => by
+        simpa using congrArg Complex.re (hgcoef b hb).symm
+  exact reflectionR_eq_reflectionDOZZ_of_shifts P γ μ hγ hγ2 hγirr hμ B₀ Z₀ hD₀' hh₁ hh₂
+    hR₁ hR₂ hR₁' hR₂' hshift₁ hshift₂ hBar (reflectionR_tendsto_Q P γ μ hγ hγ2 hμ B₀ Z₀ hD₀')
+    hα hPole
 
 end DOZZ.Proofs
 

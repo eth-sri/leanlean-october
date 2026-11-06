@@ -19,12 +19,12 @@ integrability is assumed. -/
 theorem reflected_kahane_decoupling_limit
     {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
     (P : Measure Ω) [IsProbabilityMeasure P] (Φ : ℝ → Ω → S → ℝ)
-    (hΦ : ∀ r, IsCenteredGaussianField P (Φ r)) (A : Set S) (hA : MeasurableSet A)
+    (hΦ : ∀ r, IsCenteredGaussianField P (Φ r)) A (hA : MeasurableSet A)
     (ν : Measure S) [IsFiniteMeasure ν] (h : S → ℝ≥0) (hh : Measurable h)
-    (hhb : ∃ b : ℝ≥0, ∀ x, h x ≤ b) (γ q c : ℝ) (hq : 0 < q)
+    (hhb : ∃ b : ℝ≥0, ∀ x, h x ≤ b) γ q c (hq : 0 < q)
     (hcross : ∀ r, ∀ᵐ xy ∂ν.prod ν, ¬(xy.1 ∈ A ↔ xy.2 ∈ A) →
       |gaussianCovariance P (fun ω => Φ r ω xy.1) (fun ω => Φ r ω xy.2)| ≤ c ^ 2)
-    (ZX : Ω → ℝ) (ZY : Ω × Ω → ℝ)
+    ZX ZY
     (hXconv : TendstoInMeasure P
       (fun r ω => (fieldChaosMass P (Φ r) ν h γ ω).toReal) atTop ZX)
     (hYconv : TendstoInMeasure (P.prod P)
@@ -37,7 +37,7 @@ theorem reflected_kahane_decoupling_limit
       m * (∫⁻ ω, ENNReal.ofReal (ZX ω) ^ (-q) ∂P) := by
   let Ψ := fun r => reflected_decoupled_field (Φ r) A
   have hΨ (r : ℝ) := reflected_decoupled_field_gaussian P (Φ r) (hΦ r) A hA
-  have hsand (r : ℝ) (x y : S)
+  have hsand r x y
       (hb : ¬(x ∈ A ↔ y ∈ A) →
         |gaussianCovariance P (fun ω => Φ r ω x) (fun ω => Φ r ω y)| ≤ c ^ 2) :
       gaussianCovariance P (fun ω => Φ r ω x) (fun ω => Φ r ω y) ≤
@@ -51,7 +51,7 @@ theorem reflected_kahane_decoupling_limit
     · rw [ite_eq_right he]
       obtain ⟨hl, hu⟩ := abs_le.mp (hb he)
       constructor <;> linarith only [hl, hu]
-  have hu (r : ℝ) (x y : S)
+  have hu r x y
       (hb : ¬(x ∈ A ↔ y ∈ A) →
         |gaussianCovariance P (fun ω => Φ r ω x) (fun ω => Φ r ω y)| ≤ c ^ 2) :
       gaussianCovariance P (fun ω => Φ r ω x) (fun ω => Φ r ω y) ≤
@@ -59,7 +59,7 @@ theorem reflected_kahane_decoupling_limit
           (fun u => Ψ r u.1 x + c*u.2) (fun u => Ψ r u.1 y + c*u.2) := by
     rw [gaussianCovariance_field_independent_common_scalar_add (P.prod P) (Ψ r) (hΨ r) c]
     exact (hsand r x y hb).1
-  have hl (r : ℝ) (x y : S)
+  have hl r x y
       (hb : ¬(x ∈ A ↔ y ∈ A) →
         |gaussianCovariance P (fun ω => Φ r ω x) (fun ω => Φ r ω y)| ≤ c ^ 2) :
       gaussianCovariance (P.prod P) (fun ω => Ψ r ω x) (fun ω => Ψ r ω y) ≤
@@ -67,10 +67,6 @@ theorem reflected_kahane_decoupling_limit
           (fun u => Φ r u.1 x + c*u.2) (fun u => Φ r u.1 y + c*u.2) := by
     rw [gaussianCovariance_field_independent_common_scalar_add P (Φ r) (hΦ r) c]
     exact (hsand r x y hb).2
-  have hXm : AEMeasurable ZX P := hXconv.aemeasurable fun r =>
-    (centeredGaussianField_fieldChaosMass_measurable P (Φ r) (hΦ r) ν h hh γ).ennreal_toReal.aemeasurable
-  have hYm : AEMeasurable ZY (P.prod P) := hYconv.aemeasurable fun r =>
-    (centeredGaussianField_fieldChaosMass_measurable (P.prod P) (Ψ r) (hΨ r) ν h hh γ).ennreal_toReal.aemeasurable
   have hup := DOZZ.kahane_limit_field_negative_power P ((P.prod P).prod (gaussianReal 0 1))
     Φ (fun r u x => Ψ r u.1 x + c*u.2) hΦ
     (fun r => independent_common_scalar_add_isCenteredGaussianField (P.prod P) (Ψ r) (hΨ r) c)
@@ -88,8 +84,8 @@ theorem reflected_kahane_decoupling_limit
     ZY (fun u => Real.exp (γ*c*u.2-γ^2/2*c^2)*ZX u.1) hYconv
     (reflected_common_scalar_field_limit P Φ hΦ ν h γ c ZX hXconv)
   simp only [ENNReal.rpow_eq_pow] at hup hlo
-  rw [reflected_common_scalar_moment (P.prod P) ZY hYm γ c (-q)] at hup
-  rw [reflected_common_scalar_moment P ZX hXm γ c (-q)] at hlo
+  rw [reflected_common_scalar_moment (P.prod P) ZY (hYconv.aemeasurable fun r => (centeredGaussianField_fieldChaosMass_measurable (P.prod P) (Ψ r) (hΨ r) ν h hh γ).ennreal_toReal.aemeasurable) γ c (-q)] at hup
+  rw [reflected_common_scalar_moment P ZX (hXconv.aemeasurable fun r => (centeredGaussianField_fieldChaosMass_measurable P (Φ r) (hΦ r) ν h hh γ).ennreal_toReal.aemeasurable) γ c (-q)] at hlo
   simpa only [neg_sq, sub_neg_eq_add] using And.intro hup hlo
 
 end DOZZ.Proofs

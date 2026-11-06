@@ -24,7 +24,7 @@ namespace DOZZ.Proofs
 /-- The `i`th coordinate path under the three-fold product law has the original Brownian path
 law. -/
 theorem brownianTriple_coordinatePath_hasLaw
-    (W : Measure BrownianPath) [IsProbabilityMeasure W] (i : Fin 3) :
+    (W : Measure BrownianPath) [IsProbabilityMeasure W] i :
     HasLaw (fun V : BrownianTriple => V i) W (brownianTripleMeasure W) := by
   refine ⟨(measurable_pi_apply i).aemeasurable, ?_⟩
   rw [brownianTripleMeasure, Measure.pi_map_eval]
@@ -43,7 +43,7 @@ paths. Its finite-dimensional laws follow by transporting Mathlib's Brownian law
 coordinate projection, while path continuity is part of the `BrownianPath` carrier. -/
 theorem brownianTriple_coordinate_isBrownian
     (W : Measure BrownianPath) [IsProbabilityMeasure W]
-    (hW : IsBrownianReal (fun (t : ℝ≥0) (p : BrownianPath) => p t) W) (i : Fin 3) :
+    (hW : IsBrownianReal (fun (t : ℝ≥0) (p : BrownianPath) => p t) W) i :
     IsBrownianReal (fun (t : ℝ≥0) (V : BrownianTriple) => (V i) t) (brownianTripleMeasure W) := by
   refine { toIsPreBrownianReal := ?_, cont := ?_ }
   · refine ⟨?_⟩

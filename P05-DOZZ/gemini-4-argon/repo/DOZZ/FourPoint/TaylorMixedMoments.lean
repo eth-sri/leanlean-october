@@ -19,8 +19,8 @@ namespace DOZZ.Proofs
 The measures are the same supplied GMC; the only decoupling is Holder's inequality. -/
 theorem weighted_ball_coulomb_mixed_bound
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ p s q : ℝ) (hα₁ : α₁ < Q γ) (hp : 0 ≤ p) (hs : 0 < s) (hq : 1 < q)
     (hrange : q * s < min (4 / γ ^ 2) (2 / γ * (Q γ - α₁))) :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, ‖z‖ ≤ 1 / 4 → ∀ ρ : ℝ, 0 < ρ → ρ ≤ 1 / 2 →
@@ -28,7 +28,7 @@ theorem weighted_ball_coulomb_mixed_bound
         (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃) ^ (-p - s) ∂P) ≤
           ENNReal.ofReal (C * ρ ^ ((γ * (Q γ - α₁) * (q * s) -
             γ ^ 2 * (q * s) ^ 2 / 2) / q)) := by
-  have hqpos : 0 < q := zero_lt_one.trans hq
+  have hqpos := zero_lt_one.trans hq
   let q' : ℝ := q.conjExponent
   have hHolder : Real.HolderConjugate q q' := Real.HolderConjugate.conjExponent hq
   have hq' : 0 < q' := hHolder.symm.pos

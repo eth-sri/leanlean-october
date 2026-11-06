@@ -33,7 +33,7 @@ theorem separatedTail_exists_uniform_holder_slack {γ ε : ℝ} (hγ : 0 < γ) (
       q*(reflectionExponent γ α-ε)+ε/2 ≤ reflectionExponent γ α ∧
       q*(reflectionExponent γ α-ε)+ε/2 < 4/γ^2 := by
   let B : ℝ := 4/γ^2
-  have hB : 0 < B := by dsimp [B]; positivity
+  have : 0 < B := by dsimp [B]; positivity
   let q := 1+ε/(2*(B+1))
   have hq : 1 < q := by
     have : 0 < ε/(2*(B+1)) := by positivity
@@ -42,10 +42,10 @@ theorem separatedTail_exists_uniform_holder_slack {γ ε : ℝ} (hγ : 0 < γ) (
   refine ⟨q, hq, fun α hα hεα => ?_⟩
   have hpB := separatedTail_reflectionExponent_lt_bulk hγ hα
   have hp0 : 0 < reflectionExponent γ α-ε := sub_pos.mpr hεα
-  have hfrac : ε/(2*(B+1))*(B+1) = ε/2 := by field_simp
+  have : ε/(2*(B+1))*(B+1) = ε/2 := by field_simp
   have hmargin : q*(reflectionExponent γ α-ε)+ε/2 ≤ reflectionExponent γ α := by
     dsimp [q]
-    have hmul := mul_le_mul_of_nonneg_left
+    have := mul_le_mul_of_nonneg_left
       (show reflectionExponent γ α-ε ≤ B+1 by dsimp [B]; linarith) (by positivity :
         0 ≤ ε/(2*(B+1)))
     nlinarith

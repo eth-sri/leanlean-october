@@ -20,7 +20,7 @@ namespace DOZZ.Proofs
 absolute quadratic correction. No limiting Dirichlet chaos is used. -/
 theorem separatedTail_fieldChaosMoment_le_of_covariance_discrepancy
     {ΩX ΩY S : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [MeasurableSpace S]
-    (PX : Measure ΩX) (PY : Measure ΩY) (Φ : ΩX → S → ℝ) (Ψ : ΩY → S → ℝ)
+    (PX : Measure ΩX) (PY : Measure ΩY) Φ Ψ
     (hΦ : DOZZ.IsCenteredGaussianField PX Φ) (hΨ : DOZZ.IsCenteredGaussianField PY Ψ)
     (ν : Measure S) [IsFiniteMeasure ν] (w : S → ℝ≥0) (hw : Measurable w)
     (hwb : ∃ b : ℝ≥0, ∀ x, w x ≤ b) (γ C t : ℝ) (hC : 0 ≤ C) (ht : 0 < t)

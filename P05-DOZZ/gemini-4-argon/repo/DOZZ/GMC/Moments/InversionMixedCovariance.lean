@@ -30,13 +30,11 @@ theorem integral_inversionTest_mul (f : TestFn)
       rw [← mul_assoc, mul_comm ((normPlus x ^ (-4 : ℝ))⁻¹),
         inversionTestFunction_reference_weight f hx]
     _ = ∫ x, (normPlus x ^ (-4 : ℝ))⁻¹ * (f x * p x⁻¹) ∂gmcReferenceMeasure := by
-      have h := complexInvMeasurableEquiv_measurePreserving.integral_comp'
-        (fun x => (normPlus x ^ (-4 : ℝ))⁻¹ * (f x * p x⁻¹))
       simpa only [complexInvMeasurableEquiv, MeasurableEquiv.coe_mk,
-        Equiv.coe_fn_mk, inv_inv, mul_assoc, mul_comm, mul_left_comm] using h
+        Equiv.coe_fn_mk, inv_inv, mul_assoc, mul_comm, mul_left_comm] using (complexInvMeasurableEquiv_measurePreserving.integral_comp' (fun x => (normPlus x ^ (-4 : ℝ))⁻¹ * (f x * p x⁻¹)))
 
 /-- The deterministic mixed circle/test energy is the inverse point/source-circle potential. -/
-theorem circleCross_inversionTest (y : ℂ) (s : ℝ) (f : TestFn)
+theorem circleCross_inversionTest y s (f : TestFn)
     (hf : tsupport (f : ℂ → ℝ) ⊆ inversionChart) :
     circleCross y s (inversionTest f hf) =
       ∫ x, f x * CirclePotential.innerPot y s x⁻¹ := by
@@ -48,9 +46,9 @@ theorem circleCross_inversionTest (y : ℂ) (s : ℝ) (f : TestFn)
 on the original field probability space. -/
 theorem circleAverage_inversionTest_covariance
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (y : ℂ) (s : ℝ) (f : TestFn)
+    X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
+    y s (f : TestFn)
     (hf : tsupport (f : ℂ → ℝ) ⊆ inversionChart) :
     covariance (fun ω => Xc ω y s) (fun ω => X ω (inversionTest f hf)) P =
       ∫ x, f x * CirclePotential.innerPot y s x⁻¹ := by

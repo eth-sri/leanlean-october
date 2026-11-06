@@ -52,7 +52,7 @@ theorem equatorGFF_inversion_testL2_dist
 on the original field's probability space. -/
 theorem exists_equatorGFF_inversion_circle_test_L2_limit_all
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (x : ℂ) (r : ℝ)
+    (X : Ω → Distr) (hX : IsEquatorGFF P X) (x : ℂ) r
     :
     ∃ f : ℕ → TestFn, ∃ hf : ∀ n, tsupport (f n : ℂ → ℝ) ⊆ inversionChart,
       ∃ W : Lp ℝ 2 P,
@@ -62,11 +62,8 @@ theorem exists_equatorGFF_inversion_circle_test_L2_limit_all
             (fun ω => X ω (inversionTest (f n) (hf n)))) atTop (𝓝 W) := by
   let : IsProbabilityMeasure P := hX.1
   obtain ⟨f, hf, hgap⟩ := exists_testFn_circleEnergyGap_punctured x r
-  let U : ℕ → Lp ℝ 2 P := fun n =>
-    (equatorGFF_test_memLp X hX (inversionTest (f n) (hf n))).toLp
-      (fun ω => X ω (inversionTest (f n) (hf n)))
   have hC := equatorGFF_testL2_cauchy_of_circleEnergyGap X hX x r f hgap
-  have hCU : CauchySeq U := by
+  have hCU : CauchySeq (fun n => (equatorGFF_test_memLp X hX (inversionTest (f n) (hf n))).toLp (fun ω => X ω (inversionTest (f n) (hf n)))) := by
     rw [Metric.cauchySeq_iff] at hC ⊢
     intro ε hε
     obtain ⟨N, hN⟩ := hC ε hε
@@ -83,7 +80,7 @@ theorem exists_equatorGFF_inversion_circle_test_L2_limit_all
 /-- The coupled inverted circle limit is independent of its chart-supported approximants. -/
 theorem equatorGFF_inversion_testL2_tendsto_to_circle_limit
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (x : ℂ) (r : ℝ)
+    (X : Ω → Distr) (hX : IsEquatorGFF P X) (x : ℂ) r
     (f₀ : ℕ → TestFn) (hgap₀ : Tendsto (fun n => circleEnergyGap x r (f₀ n)) atTop (𝓝 0))
     (hf₀ : ∀ n, tsupport (f₀ n : ℂ → ℝ) ⊆ inversionChart)
     (W : Lp ℝ 2 P)
@@ -98,32 +95,25 @@ theorem equatorGFF_inversion_testL2_tendsto_to_circle_limit
   rw [Metric.tendsto_nhds]
   intro ε hε
   let η := ε / 4
-  have hη : 0 < η := by dsimp [η]; positivity
+  have : 0 < η := by dsimp [η]; positivity
   have hδ : 0 < η ^ 2 / 8 := by positivity
-  have hq0 : ∀ᶠ m in atTop, circleEnergyGap x r (f₀ m) < η ^ 2 / 8 :=
-    hgap₀.eventually (gt_mem_nhds hδ)
-  have hnear : ∀ᶠ m in atTop, dist (V m) W < ε / 2 := by
-    exact hW.eventually (Metric.ball_mem_nhds W (by positivity))
-  obtain ⟨m, hm⟩ := (hq0.and hnear).exists
-  have hq : ∀ᶠ n in atTop, circleEnergyGap x r (f n) < η ^ 2 / 8 :=
-    hgap.eventually (gt_mem_nhds hδ)
-  filter_upwards [hq] with n hqn
+  have hnear : ∀ᶠ m in atTop, dist (V m) W < ε / 2 := hW.eventually (Metric.ball_mem_nhds W (by positivity))
+  obtain ⟨m, hm⟩ := ((hgap₀.eventually (gt_mem_nhds hδ)).and hnear).exists
+  filter_upwards [(hgap.eventually (gt_mem_nhds hδ))] with n hqn
   have hnorm : dist (U n) (V m) < η := by
     dsimp [U, V]
     rw [equatorGFF_inversion_testL2_dist X hX, dist_eq_norm]
-    have heq := equatorGFF_testL2_sub_norm_sq X hX (f n) (f₀ m)
-    have hbound := gffCov_sub_le_circleEnergyGaps x r (f n) (f₀ m)
-    have hqm := hm.1
-    have hnon := circleEnergyGap_nonneg x r (f n)
-    have hnon0 := circleEnergyGap_nonneg x r (f₀ m)
-    have hn0 := norm_nonneg
+    have := equatorGFF_testL2_sub_norm_sq X hX (f n) (f₀ m)
+    have := gffCov_sub_le_circleEnergyGaps x r (f n) (f₀ m)
+    have := hm.1
+    have := circleEnergyGap_nonneg x r (f n)
+    have := circleEnergyGap_nonneg x r (f₀ m)
+    have := norm_nonneg
       ((equatorGFF_test_memLp X hX (f n)).toLp (fun ω => X ω (f n)) -
         (equatorGFF_test_memLp X hX (f₀ m)).toLp (fun ω => X ω (f₀ m)))
     nlinarith
-  have htriangle : dist (U n) W ≤ dist (U n) (V m) + dist (V m) W :=
-    dist_triangle _ _ _
   calc
-    dist (U n) W ≤ dist (U n) (V m) + dist (V m) W := htriangle
+    dist (U n) W ≤ dist (U n) (V m) + dist (V m) W := (dist_triangle _ _ _)
     _ < ε := by dsimp [η] at hnorm; linarith [hnorm, hm.2]
 
 

@@ -51,16 +51,12 @@ theorem reflected_two_region_inverse_limit
         ∂Q.prod (P.prod P)) ∧
     (∫⁻ p : A × (Ω × Ω), (L₀ (p.1, p.2.1)+L₁ (p.1, p.2.2))^(-q)
         ∂Q.prod (P.prod P)) ≤ m*(∫⁻ p, (L₀ p+L₁ p)^(-q) ∂Q.prod P) := by
-  have hfin₀ : (∫⁻ p, G p^(-q) ∂Q.prod P) ≠ ⊤ := by
-    rwa [lintegral_prod _ (hG.pow_const (-q)).aemeasurable]
-  have hproj₀ : Measurable (fun p : A × (Ω × Ω) => (p.1, p.2.1)) :=
-    measurable_fst.prodMk (measurable_fst.comp measurable_snd)
   have hproj₁ : Measurable (fun p : A × (Ω × Ω) => (p.1, p.2.2)) :=
     measurable_fst.prodMk (measurable_snd.comp measurable_snd)
   have hfin₁ : (∫⁻ p : A × (Ω × Ω), G (p.1, p.2.2)^(-q) ∂Q.prod (P.prod P)) ≠ ⊤ := by
     rw [lintegral_prod (fun p : A × (Ω × Ω) => G (p.1, p.2.2)^(-q))
       ((hG.comp hproj₁).pow_const (-q)).aemeasurable]
-    have he (a : A) : (∫⁻ p : Ω × Ω, G (a, p.2)^(-q) ∂P.prod P) =
+    have he a : (∫⁻ p : Ω × Ω, G (a, p.2)^(-q) ∂P.prod P) =
         ∫⁻ ω, G (a, ω)^(-q) ∂P := by
       rw [lintegral_prod (fun p : Ω × Ω => G (a, p.2)^(-q))
         ((hG.comp (measurable_const.prodMk measurable_snd)).pow_const (-q)).aemeasurable]
@@ -71,12 +67,12 @@ theorem reflected_two_region_inverse_limit
     (fun n p => I₀ n p+I₁ n p) (fun p => L₀ p+L₁ p) G q hq
     (fun n => (hI₀ n).add (hI₁ n))
     (fun p => (hl₀ p).add (hl₁ p))
-    (fun n p => (hguard n p).trans (le_add_left le_rfl)) hfin₀
+    (fun n p => (hguard n p).trans (le_add_left le_rfl)) (by rwa [lintegral_prod _ (hG.pow_const (-q)).aemeasurable])
   have ht₁ := reflected_guarded_inverse_expectation_limit (Q.prod (P.prod P))
     (fun n p => I₀ n (p.1, p.2.1)+I₁ n (p.1, p.2.2))
     (fun p => L₀ (p.1, p.2.1)+L₁ (p.1, p.2.2))
     (fun p => G (p.1, p.2.2)) q hq
-    (fun n => ((hI₀ n).comp hproj₀).add ((hI₁ n).comp hproj₁))
+    (fun n => ((hI₀ n).comp (measurable_fst.prodMk (measurable_fst.comp measurable_snd))).add ((hI₁ n).comp hproj₁))
     (fun p => (hl₀ (p.1, p.2.1)).add (hl₁ (p.1, p.2.2)))
     (fun n p => (hguard n (p.1, p.2.2)).trans (le_add_left le_rfl)) hfin₁
   exact ⟨le_of_tendsto_of_tendsto ht₀ ((ENNReal.continuous_const_mul hm).tendsto _ |>.comp ht₁)

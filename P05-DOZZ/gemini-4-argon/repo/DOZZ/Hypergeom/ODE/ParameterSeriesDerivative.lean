@@ -39,31 +39,26 @@ noncomputable def gaussParameterSeriesRatioDeriv
     C⁻¹ • (A • eB + B • eA))
 
 theorem gaussParameterSeriesRatio_hasFDerivAt
-    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ)
+    (p : ℂ × ℂ × ℂ) z (n : ℕ)
     (hc : (n : ℂ) + p.2.2 ≠ 0) :
     HasFDerivAt (fun q : ℂ × ℂ × ℂ => gaussParameterSeriesRatio q z n)
       (gaussParameterSeriesRatioDeriv p z n) p := by
   let A : ℂ × ℂ × ℂ → ℂ := fun q => (n : ℂ) + q.1
   let B : ℂ × ℂ × ℂ → ℂ := fun q => (n : ℂ) + q.2.1
   let C : ℂ × ℂ × ℂ → ℂ := fun q => (n : ℂ) + q.2.2
-  let eA : (ℂ × ℂ × ℂ) →L[ℂ] ℂ := ContinuousLinearMap.fst ℂ ℂ (ℂ × ℂ)
-  let eB : (ℂ × ℂ × ℂ) →L[ℂ] ℂ :=
-    (ContinuousLinearMap.fst ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
-  let eC : (ℂ × ℂ × ℂ) →L[ℂ] ℂ :=
-    (ContinuousLinearMap.snd ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
-  let d : ℂ := z / (n + 1 : ℂ)
-  have hA : HasFDerivAt A eA p := by
-    simpa [A, eA] using (hasFDerivAt_fst (𝕜 := ℂ) (p := p)).const_add (n : ℂ)
+  let eA := ContinuousLinearMap.fst ℂ ℂ (ℂ × ℂ)
+  let eB := (ContinuousLinearMap.fst ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
+  let eC := (ContinuousLinearMap.snd ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
+  let d := z / (n + 1 : ℂ)
   have hB : HasFDerivAt B eB p := by
     simpa [B, eB] using
       (hasFDerivAt_fst (𝕜 := ℂ) (p := p.2)).comp p hasFDerivAt_snd |>.const_add (n : ℂ)
   have hC : HasFDerivAt C eC p := by
     simpa [C, eC] using
       (hasFDerivAt_snd (𝕜 := ℂ) (p := p.2)).comp p hasFDerivAt_snd |>.const_add (n : ℂ)
-  have hCne : C p ≠ 0 := by simpa [C] using hc
   have hCi : HasFDerivAt (fun q => (C q)⁻¹)
       (-(C p)⁻¹ ^ 2 • eC) p := by
-    convert (hasFDerivAt_inv' hCne).comp p hC using 1
+    convert (hasFDerivAt_inv' (by simpa [C] using hc)).comp p hC using 1
     · ext q
       rfl
     · apply ContinuousLinearMap.ext
@@ -71,16 +66,13 @@ theorem gaussParameterSeriesRatio_hasFDerivAt
       simp only [ContinuousLinearMap.comp_apply, neg_apply,
         ContinuousLinearMap.mulLeftRight_apply, smul_apply]
       ring
-  have hAB := hA.mul hB
-  have hABi := hAB.mul hCi
-  have hscale := (hasFDerivAt_const d p).mul hABi
   have hfun : (fun q => gaussParameterSeriesRatio q z n) =
       fun q => d * (A q * B q * (C q)⁻¹) := by
     funext q
     dsimp [gaussParameterSeriesRatio, A, B, C, d]
     field_simp
   rw [hfun]
-  convert hscale using 1
+  convert ((hasFDerivAt_const d p).mul (((show HasFDerivAt A eA p by simpa [A, eA] using (hasFDerivAt_fst (𝕜 := ℂ) (p := p)).const_add (n : ℂ)).mul hB).mul hCi)) using 1
   apply ContinuousLinearMap.ext
   intro v
   simp [gaussParameterSeriesRatioDeriv, A, B, C, d, eA, eB, eC,
@@ -89,7 +81,7 @@ theorem gaussParameterSeriesRatio_hasFDerivAt
 /-- On a sufficiently far tail, the derivative of the Gauss term multiplier is uniformly bounded
 on bounded pole-free parameter sets. -/
 theorem gaussParameterSeriesRatioDeriv_norm_le
-    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ) (R : ℝ)
+    (p : ℂ × ℂ × ℂ) z (n : ℕ) R
     (hR : 0 ≤ R) (hRn : R < (n : ℝ)) (h3R : 3 * R ≤ (n : ℝ))
     (hA : ‖p.1‖ ≤ R) (hB : ‖p.2.1‖ ≤ R) (hC : ‖p.2.2‖ ≤ R) :
     ‖gaussParameterSeriesRatioDeriv p z n‖ ≤ 8 * ‖z‖ := by
@@ -103,7 +95,7 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
     (ContinuousLinearMap.snd ℂ ℂ ℂ).comp (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ))
   let x : ℝ := (n : ℝ)
   have hxR : R < x := by simpa [x] using hRn
-  have hx0 : 0 < x := lt_of_le_of_lt hR hxR
+  have := lt_of_le_of_lt hR hxR
   have hxmR : 0 < x - R := by linarith
   have hxpR : 0 ≤ x + R := by linarith
   have hA_norm : ‖A‖ ≤ x + R := by
@@ -125,8 +117,7 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
   have hC_inv : ‖C⁻¹‖ ≤ 1 / (x - R) := by
     rw [norm_inv]
     simpa [one_div] using one_div_le_one_div_of_le hxmR hC_lower
-  have heA : ‖eA‖ ≤ 1 := by
-    exact ContinuousLinearMap.norm_fst_le ℂ ℂ (ℂ × ℂ)
+  have heA := ContinuousLinearMap.norm_fst_le ℂ ℂ (ℂ × ℂ)
   have heB : ‖eB‖ ≤ 1 := by
     dsimp [eB]
     calc
@@ -149,10 +140,10 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
           norm_nonneg (ContinuousLinearMap.snd ℂ ℂ (ℂ × ℂ)),
           ContinuousLinearMap.norm_snd_le ℂ ℂ ℂ,
           ContinuousLinearMap.norm_snd_le ℂ ℂ (ℂ × ℂ)]
-  have hratio : (x + R) / (x - R) ≤ 2 := by
+  have : (x + R) / (x - R) ≤ 2 := by
     rw [div_le_iff₀ hxmR]
     nlinarith [h3R]
-  have hratio_nonneg : 0 ≤ (x + R) / (x - R) := div_nonneg hxpR hxmR.le
+  have := div_nonneg hxpR hxmR.le
   have hratio_sq : ((x + R) / (x - R)) ^ 2 ≤ 4 := by
     have hleft : 0 ≤ 2 - (x + R) / (x - R) := by linarith
     have hright : 0 ≤ 2 + (x + R) / (x - R) := by positivity
@@ -189,13 +180,13 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
             field_simp
       _ ≤ 4 := hratio_sq
   have hsecond : ‖C⁻¹ • (A • eB + B • eA)‖ ≤ 4 := by
-    have hAeB : ‖A • eB‖ ≤ x + R := by
+    have : ‖A • eB‖ ≤ x + R := by
       calc
         ‖A • eB‖ ≤ ‖A‖ * ‖eB‖ := norm_smul_le A eB
         _ ≤ (x + R) * 1 := mul_le_mul hA_norm heB
           (norm_nonneg eB) hxpR
         _ = x + R := mul_one _
-    have hBeA : ‖B • eA‖ ≤ x + R := by
+    have : ‖B • eA‖ ≤ x + R := by
       calc
         ‖B • eA‖ ≤ ‖B‖ * ‖eA‖ := norm_smul_le B eA
         _ ≤ (x + R) * 1 := mul_le_mul hB_norm heA
@@ -212,19 +203,18 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
         mul_le_mul hC_inv hsum (by positivity) (by positivity)
       _ = 2 * ((x + R) / (x - R)) := by ring
       _ ≤ 4 := by linarith
-  have hinner :
+  have :
       ‖(A * B) • (-(C⁻¹ ^ 2) • eC) + C⁻¹ • (A • eB + B • eA)‖ ≤ 8 := by
     calc
       _ ≤ ‖(A * B) • (-(C⁻¹ ^ 2) • eC)‖ +
           ‖C⁻¹ • (A • eB + B • eA)‖ := norm_add_le _ _
       _ ≤ 8 := by linarith [hfirst, hsecond]
-  have hd : ‖z / (n + 1 : ℂ)‖ ≤ ‖z‖ := by
+  have : ‖z / (n + 1 : ℂ)‖ ≤ ‖z‖ := by
     have hdenNat : 1 ≤ n + 1 := by omega
-    have hden : 1 ≤ (n : ℝ) + 1 := by exact_mod_cast hdenNat
     calc
       ‖z / (n + 1 : ℂ)‖ = ‖z‖ / ‖(n + 1 : ℂ)‖ := norm_div _ _
       _ = ‖z‖ / ((n : ℝ) + 1) := by rw [show ‖(n + 1 : ℂ)‖ = (n : ℝ) + 1 by norm_cast]
-      _ ≤ ‖z‖ := _root_.div_le_self (norm_nonneg z) hden
+      _ ≤ ‖z‖ := _root_.div_le_self (norm_nonneg z) (by exact_mod_cast hdenNat)
   dsimp [gaussParameterSeriesRatioDeriv]
   calc
     ‖(z / (n + 1 : ℂ)) •
@@ -241,32 +231,12 @@ theorem gaussParameterSeriesRatioDeriv_norm_le
 /-- Every fixed ordinary-series term is parameter-differentiable at each point away from the
 denominator poles. -/
 theorem gaussParameterSeriesTerm_differentiableAt
-    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ)
+    (p : ℂ × ℂ × ℂ) z n
     (hc : ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) :
     DifferentiableAt ℂ (fun q => gaussParameterSeriesTerm q z n) p := by
-  have hA : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval q.1) p := by
-    fun_prop
-  have hB : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval q.2.1) p := by
-    fun_prop
-  have hC : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval q.2.2) p := by
-    fun_prop
-  have hCne : (ascPochhammer ℂ n).eval p.2.2 ≠ 0 :=
-    ordinaryHypergeometric_pochhammer_denominator_ne_zero n hc
-  have hCinv : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => ((ascPochhammer ℂ n).eval q.2.2)⁻¹) p := hC.inv hCne
-  have hcoeff : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => ordinaryHypergeometricCoefficient q.1 q.2.1 q.2.2 n) p := by
-    change DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => (n !⁻¹ : ℂ) *
-        (ascPochhammer ℂ n).eval q.1 * (ascPochhammer ℂ n).eval q.2.1 *
-          ((ascPochhammer ℂ n).eval q.2.2)⁻¹) p
-    exact (((differentiableAt_const _).mul hA).mul hB).mul hCinv
   change DifferentiableAt ℂ
     (fun q : ℂ × ℂ × ℂ =>
       ordinaryHypergeometricCoefficient q.1 q.2.1 q.2.2 n * z ^ n) p
-  exact hcoeff.mul_const _
+  exact (show DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => ordinaryHypergeometricCoefficient q.1 q.2.1 q.2.2 n) p by change DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => (n !⁻¹ : ℂ) * (ascPochhammer ℂ n).eval q.1 * (ascPochhammer ℂ n).eval q.2.1 * ((ascPochhammer ℂ n).eval q.2.2)⁻¹) p; exact (((differentiableAt_const _).mul (by fun_prop)).mul (by fun_prop)).mul ((show DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval q.2.2) p by fun_prop).inv (ordinaryHypergeometric_pochhammer_denominator_ne_zero n hc))).mul_const _
 
 end DOZZ.Proofs

@@ -12,7 +12,7 @@ public import DOZZ.Correlations.Analytic.VertexVarianceBound
 namespace DOZZ.Proofs
 
 /-- The imaginary zero-mode power has the exact total-charge scaling. -/
-theorem complexMomentPower_im_scaled {N : ℕ} (γ : ℝ) (hγ : γ ≠ 0)
+theorem complexMomentPower_im_scaled {N} (γ : ℝ) (hγ : γ ≠ 0)
     (β : Fin N → ℂ) :
     γ * (complexMomentPower γ β).im = -∑ i, (β i).im := by
   unfold complexMomentPower
@@ -23,18 +23,12 @@ theorem complexMomentPower_im_scaled {N : ℕ} (γ : ℝ) (hγ : γ ≠ 0)
 
 /-- A bounded pin vector gives a quadratic bound in all imaginary charges, including the
 outward vertex. -/
-theorem imaginary_pin_le {N : ℕ} (b : Fin (N + 1) → ℝ) (A : Fin N → ℝ)
-    (B : ℝ) (hB : 0 ≤ B) (hA : ∀ i, |A i| ≤ B) :
+theorem imaginary_pin_le {N} (b : Fin (N + 1) → ℝ) (A : Fin N → ℝ)
+    B (hB : 0 ≤ B) (hA : ∀ i, |A i| ≤ B) :
     -(∑ i, b i) * (∑ i, b i.castSucc * A i) ≤
       B * (N + 1 : ℕ) * ∑ i, b i ^ 2 := by
   classical
   let S := ∑ i, |b i|
-  have hS : 0 ≤ S := Finset.sum_nonneg (fun i _ => abs_nonneg _)
-  have hsum : |∑ i, b i| ≤ S := Finset.abs_sum_le_sum_abs _ _
-  have hsub : ∑ i : Fin N, |b i.castSucc| ≤ S := by
-    dsimp only [S]
-    rw [Fin.sum_univ_castSucc]
-    exact le_add_of_nonneg_right (abs_nonneg _)
   have hpin : |∑ i, b i.castSucc * A i| ≤ S * B := by
     calc
       _ ≤ ∑ i, |b i.castSucc * A i| := Finset.abs_sum_le_sum_abs _ _
@@ -42,14 +36,14 @@ theorem imaginary_pin_le {N : ℕ} (b : Fin (N + 1) → ℝ) (A : Fin N → ℝ)
         rw [abs_mul]
         exact mul_le_mul_of_nonneg_left (hA i) (abs_nonneg _))
       _ = (∑ i : Fin N, |b i.castSucc|) * B := (Finset.sum_mul ..).symm
-      _ ≤ S * B := mul_le_mul_of_nonneg_right hsub hB
+      _ ≤ S * B := mul_le_mul_of_nonneg_right (by dsimp only [S]; rw [Fin.sum_univ_castSucc]; exact le_add_of_nonneg_right (abs_nonneg _)) hB
   have hsq : S ^ 2 ≤ (N + 1 : ℕ) * ∑ i, b i ^ 2 := by
     simpa only [S, Finset.card_univ, Fintype.card_fin, sq_abs] using
       (sq_sum_le_card_mul_sum_sq (s := Finset.univ) (f := fun i => |b i|))
   calc
     _ ≤ |-(∑ i, b i) * (∑ i, b i.castSucc * A i)| := le_abs_self _
     _ = |∑ i, b i| * |∑ i, b i.castSucc * A i| := by rw [abs_mul, abs_neg]
-    _ ≤ S * (S * B) := mul_le_mul hsum hpin (abs_nonneg _) hS
+    _ ≤ S * (S * B) := mul_le_mul (Finset.abs_sum_le_sum_abs _ _) hpin (abs_nonneg _) (Finset.sum_nonneg (fun i _ => abs_nonneg _))
     _ = B * S ^ 2 := by ring
     _ ≤ B * ((N + 1 : ℕ) * ∑ i, b i ^ 2) := mul_le_mul_of_nonneg_left hsq hB
     _ = _ := by ring

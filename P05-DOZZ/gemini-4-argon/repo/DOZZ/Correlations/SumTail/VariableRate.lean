@@ -33,23 +33,19 @@ theorem sumtail_uniform_variable_rate
   have hδ (i : K) : 0 < δ i := lt_min (by positivity) (by have := hepos i i.2; positivity)
   let η (i : K) := e i-2*δ i
   have hη (i : K) : 0 < η i := by
-    have h := min_le_right (d/4) (e i/4)
     have hp := hepos i i.2
     dsimp [η,δ]
-    linarith only [h,hp]
+    linarith only [(min_le_right (d/4) (e i/4)),hp]
   let V (i : K) : Set K := {a | |e a-e i| ≤ δ i}
   let L (i : K) : Set A := Subtype.val '' V i
-  have hLc (i : K) : IsCompact (L i) := by
-    have hv : IsClosed (V i) := isClosed_le (hec.sub continuous_const).abs continuous_const
-    exact hv.isCompact.image continuous_subtype_val
+  have hLc (i : K) : IsCompact (L i) := (isClosed_le (hec.sub continuous_const).abs continuous_const).isCompact.image continuous_subtype_val
   have hLs (i : K) : L i ⊆ K := by rintro _ ⟨a,_,rfl⟩; exact a.2
   have hηe (i : K) (a : A) (ha : a ∈ L i) : η i < e a := by
     obtain ⟨b,hb,rfl⟩ := ha
     change |e b-e i| ≤ δ i at hb
-    have hh := (abs_le.mp hb).1
     have hp := hδ i
     dsimp [η]
-    linarith only [hh,hp]
+    linarith only [((abs_le.mp hb).1),hp]
   have hlocal (i : K) := hfixed (L i) (hLc i) (hLs i) (η i) (hη i) (hηe i)
   choose C hC hCb using hlocal
   let U (i : K) : Set K := {a | |e a-e i| < δ i}
@@ -63,16 +59,13 @@ theorem sumtail_uniform_variable_rate
   obtain ⟨i,hi⟩ := mem_iUnion.mp (hI (mem_univ aa))
   obtain ⟨hiI,hui⟩ := mem_iUnion.mp hi
   change |e aa-e i| < δ i at hui
-  have hva : aa ∈ V i := hui.le
-  have hla : a ∈ L i := ⟨aa,hva,rfl⟩
+  have hla : a ∈ L i := ⟨aa,hui.le,rfl⟩
   have hrate : -p a-η i ≤ -p a-e a+d := by
-    have hh := (abs_le.mp hui.le).2
     have hhδ := min_le_left (d/4) (e i/4)
     dsimp [η,δ] at *
-    linarith only [hh,hhδ,hd]
-  have hCi : C i ≤ ∑ j ∈ I, C j := Finset.single_le_sum (fun j _ => hC j) hiI
+    linarith only [((abs_le.mp hui.le).2),hhδ,hd]
   exact (hCb i a hla s x hx).trans (mul_le_mul
-    hCi (Real.rpow_le_rpow_of_exponent_le hx hrate)
+    (Finset.single_le_sum (fun j _ => hC j) hiI) (Real.rpow_le_rpow_of_exponent_le hx hrate)
     (Real.rpow_nonneg (by linarith only [hx]) _) (Finset.sum_nonneg (fun j _ => hC j)))
 
 end DOZZ.Proofs

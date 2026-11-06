@@ -25,14 +25,9 @@ noncomputable def inversionTestFunction (f : ℂ → ℝ) (x : ℂ) : ℝ :=
 theorem inversionTestFunction_hasCompactSupport (f : TestFn)
     (hf : tsupport (f : ℂ → ℝ) ⊆ inversionChart) :
     HasCompactSupport (inversionTestFunction f) := by
-  have hc : IsCompact ((fun x : ℂ => x⁻¹) '' tsupport (f : ℂ → ℝ)) :=
-    f.hasCompactSupport.image_of_continuousOn (continuousOn_inv₀.mono hf)
-  apply HasCompactSupport.of_support_subset_isCompact hc
+  apply HasCompactSupport.of_support_subset_isCompact (f.hasCompactSupport.image_of_continuousOn (continuousOn_inv₀.mono hf))
   intro x hx
-  have hfx : f x⁻¹ ≠ 0 := by
-    intro h
-    exact hx (by simp [inversionTestFunction, h])
-  exact ⟨x⁻¹, subset_tsupport _ hfx, inv_inv x⟩
+  exact ⟨x⁻¹, subset_tsupport _ (by intro h; exact hx (by simp [inversionTestFunction, h])), inv_inv x⟩
 
 /-- A Jacobian pullback of a smooth compact test is smooth at the omitted point as well:
 it vanishes in a neighborhood of zero because the original test has bounded support. -/
@@ -45,7 +40,7 @@ theorem inversionTestFunction_contDiff (f : TestFn)
   · subst x
     obtain ⟨R, hR⟩ := (Metric.isBounded_iff_subset_closedBall (0 : ℂ)).mp
       f.hasCompactSupport.isBounded
-    let B : ℝ := max R 0 + 1
+    let B := max R 0 + 1
     have hB : 0 < B := by dsimp [B]; positivity
     have hR' : ∀ y ∈ tsupport (f : ℂ → ℝ), ‖y‖ < B := by
       intro y hy
@@ -62,20 +57,11 @@ theorem inversionTestFunction_contDiff (f : TestFn)
       by_cases hy0 : y = 0
       · simp [inversionTestFunction, hy0, hf0]
       · have hyn : 0 < ‖y‖ := norm_pos_iff.mpr hy0
-        have hsmall : ‖y‖ < B⁻¹ := by simpa [mem_ball, dist_zero_right] using hy
-        have hlarge : B < ‖y⁻¹‖ := by
-          rw [norm_inv]
-          exact (lt_inv_comm₀ hB hyn).mpr hsmall
-        have hout : y⁻¹ ∉ tsupport (f : ℂ → ℝ) := by
-          intro h
-          exact (not_lt_of_gt hlarge) (hR' _ h)
-        simp [inversionTestFunction, image_eq_zero_of_notMem_tsupport hout]
+        simp [inversionTestFunction, image_eq_zero_of_notMem_tsupport (by intro h; exact (not_lt_of_gt (by rw [norm_inv]; exact (lt_inv_comm₀ hB hyn).mpr (by simpa [mem_ball, dist_zero_right] using hy))) (hR' _ h))]
     exact contDiffAt_const.congr_of_eventuallyEq heq
   · have hcomp : ContDiffAt ℝ (⊤ : ℕ∞) (fun y : ℂ => f y⁻¹) x :=
       f.contDiff.contDiffAt.comp x (contDiffAt_inv ℝ hx)
-    have hnorm : ContDiffAt ℝ (⊤ : ℕ∞) (fun y : ℂ => ‖y‖ ^ 2) x :=
-      (contDiff_norm_sq ℝ).contDiffAt
-    exact hcomp.mul ((hnorm.inv (pow_ne_zero 2 (norm_ne_zero_iff.mpr hx))).pow 2)
+    exact hcomp.mul ((((contDiff_norm_sq ℝ).contDiffAt).inv (pow_ne_zero 2 (norm_ne_zero_iff.mpr hx))).pow 2)
 
 /-- The actual compact test representing the inverted local field evaluation. -/
 noncomputable def inversionTest (f : TestFn)

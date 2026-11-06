@@ -39,10 +39,10 @@ theorem gaussCutPlane_subset_regularPlane : gaussCutPlane ⊆ gaussRegularPlane 
       simp
   · constructor
     · intro h
-      have hre : z.re = 0 := by rw [h]; simp
+      have : z.re = 0 := by rw [h]; simp
       linarith
     · intro h
-      have hre : z.re = 1 := by rw [h]; simp
+      have : z.re = 1 := by rw [h]; simp
       linarith
 
 /-- The principal Gauss cut plane is star-convex about its midpoint. -/
@@ -56,23 +56,16 @@ theorem gaussCutPlane_starConvex :
   rcases hz with him | ⟨hz0, hz1⟩
   · by_cases ht0 : t = 0
     · right
-      have hs1 : s = 1 := by linarith
-      rw [ht0, hs1]
+      rw [ht0, (show s = 1 by linarith)]
       norm_num
     · left
-      have himag : (s • (1 / 2 : ℂ) + t • z).im = t * z.im := by
-        simp [Complex.add_im]
-      rw [himag]
+      rw [(show (s • (1 / 2 : ℂ) + t • z).im = t * z.im by simp [Complex.add_im])]
       have htpos : 0 < t := by
         by_contra hnot
-        have htneg : t ≤ 0 := le_of_not_gt hnot
-        exact ht0 (le_antisymm htneg ht)
+        exact ht0 (le_antisymm (le_of_not_gt hnot) ht)
       exact mul_ne_zero htpos.ne' him
   · right
-    have hreal : (s • (1 / 2 : ℂ) + t • z).re = s / 2 + t * z.re := by
-      simp [Complex.add_re]
-      ring
-    rw [hreal]
+    rw [(show (s • (1 / 2 : ℂ) + t • z).re = s / 2 + t * z.re by simp [Complex.add_re]; ring)]
     constructor
     · by_cases hs0 : s = 0
       · have ht1 : t = 1 := by linarith
@@ -80,10 +73,8 @@ theorem gaussCutPlane_starConvex :
         simpa using hz0
       · have hspos : 0 < s := by
           by_contra hnot
-          have hsneg : s ≤ 0 := le_of_not_gt hnot
-          exact hs0 (le_antisymm hsneg hs)
-        have hfirst : 0 < s / 2 := by positivity
-        have hsecond : 0 ≤ t * z.re := mul_nonneg ht hz0.le
+          exact hs0 (le_antisymm (le_of_not_gt hnot) hs)
+        have := mul_nonneg ht hz0.le
         linarith
     · by_cases ht0 : t = 0
       · have hs1 : s = 1 := by linarith
@@ -91,12 +82,10 @@ theorem gaussCutPlane_starConvex :
         norm_num
       · have htpos : 0 < t := by
           by_contra hnot
-          have htneg : t ≤ 0 := le_of_not_gt hnot
-          exact ht0 (le_antisymm htneg ht)
-        have hfirst : s / 2 ≤ s := by linarith [hs]
-        have hsecond : t * z.re < t := by
-          have hmul := mul_lt_mul_of_pos_left hz1 htpos
-          simpa using hmul
+          exact ht0 (le_antisymm (le_of_not_gt hnot) ht)
+        have : s / 2 ≤ s := by linarith [hs]
+        have : t * z.re < t := by
+          simpa using (mul_lt_mul_of_pos_left hz1 htpos)
         calc
           s / 2 + t * z.re < s + t := by linarith
           _ = 1 := hst

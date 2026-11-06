@@ -21,14 +21,14 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 theorem source_williams_tail_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (Kz : Set ℂ) (hKz : IsCompact Kz) (hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
-    (Kα : Set ℝ) (hKα : IsCompact Kα) (hα : ∀ α ∈ Kα, γ/2 < α ∧ α < Q γ)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2)
+    Kz (hKz : IsCompact Kz) (hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
+    Kα (hKα : IsCompact Kα) (hα : ∀ α ∈ Kα, γ/2 < α ∧ α < Q γ)
     (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hZ : IsLateralGMCOf P γ Z) (hData : ∀ α ∈ Kα, IsReflectionData P γ α (B α) Z)
-    (b R η a : ℝ) (hb : 0 ≤ b) (hR : 0 < R) (hRbulk : R < 4/γ^2)
+    b R η a (hb : 0 ≤ b) (hR : 0 < R) (hRbulk : R < 4/γ^2)
     (hη : 0 < η) (ha : η < a) (r : ℝ → ℝ)
     (hr : ∀ α ∈ Kα, 0 < r α ∧ r α ≤ R)
     (hpr : ∀ α ∈ Kα, reflectionExponent γ α+η < (1-a)*r α) :
@@ -50,8 +50,8 @@ theorem source_williams_tail_uniform
   obtain ⟨αhi,hαhi,hhi⟩ := hKα.exists_isMaxOn hn continuous_id.continuousOn
   let ν₁ := Q γ-αhi
   let ν₂ := Q γ-αlo
-  have hν₁ : 0 < ν₁ := sub_pos.mpr (hα αhi hαhi).2
-  have hνrange (α : ℝ) (hαk : α ∈ Kα) : ν₁ ≤ Q γ-α ∧ Q γ-α ≤ ν₂ := by
+  have hν₁ := sub_pos.mpr (hα αhi hαhi).2
+  have hνrange α (hαk : α ∈ Kα) : ν₁ ≤ Q γ-α ∧ Q γ-α ≤ ν₂ := by
     have h1 := hlo hαk
     have h2 := hhi hαk
     change αlo ≤ α at h1
@@ -62,15 +62,15 @@ theorem source_williams_tail_uniform
   have hKν : IsCompact Kν := hKα.image (continuous_const.sub continuous_id)
   have hKp : IsCompact Kp := hKα.image (by unfold reflectionExponent; fun_prop)
   let Bs := fun ν => B (Q γ-ν)
-  have hBs (ν : ℝ) (hνk : ν ∈ Kν) :
+  have hBs ν (hνk : ν ∈ Kν) :
       0 < ν ∧ IsTwoSidedConditionedBrownianProcess P (Bs ν) ν := by
     rcases hνk with ⟨α,hαk,rfl⟩
     refine ⟨sub_pos.mpr (hα α hαk).2,?_⟩
     simpa only [Bs,sub_sub_cancel] using (hData α hαk).1
-  have hInd (ν : ℝ) (hνk : ν ∈ Kν) : IndepFun (Bs ν) Z P := by
+  have hInd ν (hνk : ν ∈ Kν) : IndepFun (Bs ν) Z P := by
     rcases hνk with ⟨α,hαk,rfl⟩
     simpa only [Bs,sub_sub_cancel] using (hData α hαk).2.2
-  have hpK (p : ℝ) (hpk : p ∈ Kp) : 0 < p ∧ p < 4/γ^2 := by
+  have hpK p (hpk : p ∈ Kp) : 0 < p ∧ p < 4/γ^2 := by
     rcases hpk with ⟨α,hαk,rfl⟩
     exact residue_critical_order_bounds γ α hγ (hα α hαk).1 (hα α hαk).2
   obtain ⟨D,hD,hgap⟩ := reflectionMass_lastCut_bound P γ hγ hγ2 Kν Kp hKν hKp Bs hBs Z hZ hInd hpK
@@ -82,7 +82,7 @@ theorem source_williams_tail_uniform
   intro z hzk α hαk f hf hfb x hx
   let p := reflectionExponent γ α
   let ν := Q γ-α
-  have hν : 0 < ν := sub_pos.mpr (hα α hαk).2
+  have hν := sub_pos.mpr (hα α hαk).2
   have hp : 0 < p := (hpK p ⟨α,hαk,rfl⟩).1
   have hrα := (hr α hαk).1
   have hpR : p ≤ R := by
@@ -101,21 +101,19 @@ theorem source_williams_tail_uniform
   let Jc := fun c (q : Ω × Ω) => S q.2*Jc₀ c q.1
   let A := fun q : ℝ × (Ω × Ω) => Jc q.1 q.2
   have hB := aemeasurable_of_twoSidedConditioned (hData α hαk).1
-  have hJ₀ : AEMeasurable J₀ P := twoSidedReflectionMass_aemeasurable_of_lateral P γ (B α) Z hB hZ
-  have hJc₀ (c : ℝ) : AEMeasurable (Jc₀ c) P :=
-    twoSidedReflectionCutMass_aemeasurable P γ c (B α) Z hB hZ.2.2.2.1 hZ.2.2.2.2.1
+  have hJ₀ := twoSidedReflectionMass_aemeasurable_of_lateral P γ (B α) Z hB hZ
+  have hJc₀ (c : ℝ) := twoSidedReflectionCutMass_aemeasurable P γ c (B α) Z hB hZ.2.2.2.1 hZ.2.2.2.2.1
   have hJ : AEMeasurable J (P.prod P) :=
     (hS.aemeasurable.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving).mul
       (hJ₀.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving)
-  have hJc (c : ℝ) : AEMeasurable (Jc c) (P.prod P) :=
+  have hJc c : AEMeasurable (Jc c) (P.prod P) :=
     (hS.aemeasurable.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving).mul
       ((hJc₀ c).comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving)
-  have hJcle (c : ℝ) (q : Ω × Ω) : Jc c q ≤ J q :=
+  have hJcle c q : Jc c q ≤ J q :=
     mul_le_mul' le_rfl (twoSidedReflectionCutMass_le_mass γ c (B α) Z q.1)
-  have hMom (s : ℝ) (hs : 0 < s) (hsR : s ≤ R) : (∫⁻ q, J q^s ∂P.prod P) ≤ T :=
-    hMass z hzk f hf.le hfb ν (hνrange α hαk).1 (hνrange α hαk).2 s hs hsR
+  have hMom (s : ℝ) (hs : 0 < s) (hsR : s ≤ R) := hMass z hzk f hf.le hfb ν (hνrange α hαk).1 (hνrange α hαk).2 s hs hsR
       (B α) (hData α hαk).1 (hData α hαk).2.2
-  have hJp : (∫⁻ q, J q^p ∂P.prod P) < ⊤ := (hMom p hp hpR).trans_lt hT
+  have hJp := (hMom p hp hpR).trans_lt hT
   have hJr : (∫⁻ q, J q^(r α) ∂P.prod P) < ⊤ := (hMom _ hrα (hr α hαk).2).trans_lt hT
   have hupper : ∀ᵐ q ∂(brownianMaximumReferenceLaw ν).prod (P.prod P), A q ≤ J q.2 :=
     ae_of_all _ fun q => hJcle q.1 q.2
@@ -128,13 +126,13 @@ theorem source_williams_tail_uniform
         ((P.prod P).map ((fun ω => (B α ω).2) ∘ Prod.fst))
       rw [hDL'.map_eq]
       exact hD₀.2⟩
-  have hlower (c : ℝ) (_hc : 0 ≤ c) :
+  have hlower c (_hc : 0 ≤ c) :
       ∀ᵐ q ∂(brownianMaximumReferenceLaw ν).prod (P.prod P), c ≤ q.1 → Jc c q.2 ≤ A q := by
     filter_upwards [source_last_exit_mono_prod_ae (P.prod P) ν c hν _ hD'] with q hq
     intro hcq
     exact mul_le_mul' le_rfl (reflection_cut_mass_le_of_last_exit_le γ c q.1
       (B α) Z q.2.1 (hq hcq))
-  have hGap (c : ℝ) (hc0 : 0 ≤ c) :
+  have hGap c (hc0 : 0 ≤ c) :
       (∫⁻ q, J q^p ∂P.prod P).toReal-(∫⁻ q, Jc c q^p ∂P.prod P).toReal ≤
         (L.toReal*D)*Real.exp (-γ*c) := by
     have hSbound := ENNReal.toReal_mono hL.ne (hPin z hzk f hf.le hfb p hp hpR)

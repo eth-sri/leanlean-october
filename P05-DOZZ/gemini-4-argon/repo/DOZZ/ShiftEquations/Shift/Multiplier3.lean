@@ -58,67 +58,31 @@ noncomputable def crossingMultiplier3Real (γ α' ε α : ℝ) : ℝ :=
     lR (γ / 4 * (α' + ε - α - Q γ) + 1 / 2) * (lR (1 - γ / 2 * (Q γ - α')))⁻¹ *
     (lR (-(γ ^ 2) / 4) * lR (γ * ε / 2))⁻¹
 
-/-- The Gauss parameters of the γ/2 crossing. -/
-theorem gaussParameters_three {γ α' ε α : ℝ} (hγ : 0 < γ) :
-    gaussParameterA γ (γ / 2) α' ε α = γ ^ 2 / 4 * ((α + α' + ε - γ / 2 - 2 * Q γ) / γ) ∧
-      gaussParameterB γ (γ / 2) α' ε α = γ / 4 * (α' + ε - α - Q γ) + 1 / 2 ∧
-      gaussParameterC γ (γ / 2) α' = 1 - γ / 2 * (Q γ - α') ∧
-      gaussParameterA γ (γ / 2) α' ε α + gaussParameterB γ (γ / 2) α' ε α -
-          gaussParameterC γ (γ / 2) α' = γ * ε / 2 - γ ^ 2 / 4 - 1 := by
-  unfold gaussParameterA gaussParameterB gaussParameterC Q
-  refine ⟨by field_simp; ring, by ring, by ring, by field_simp; ring⟩
 
-/-- **The unit crossing multiplier on the crossing region, in closed form.** -/
-theorem gammaHalfUnitCrossingMultiplier_real {γ μ α' ε α : ℝ} (hγ : 0 < γ) (hμ : 0 < μ)
-    (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ) (hx : 0 < (α + α' + ε - γ / 2 - 2 * Q γ) / γ) :
-    gammaHalfUnitCrossingMultiplier γ μ α' ε α = crossingMultiplier3Real γ α' ε α := by
-  obtain ⟨hA, hB, hC, hy⟩ := gaussParameters_three (α' := α') (ε := ε) (α := α) hγ
-  obtain ⟨hyb, -, -, -⟩ := cross_bounds hγ hε₁ hε₂
-  set x := (α + α' + ε - γ / 2 - 2 * Q γ) / γ with hxdef
-  have hnum : (α + α' + ε + γ / 2 - 2 * Q γ) / γ = x + 1 := by
-    rw [hxdef]
-    field_simp
-    ring
-  have hratio : Real.Gamma (x + 1) / Real.Gamma x = x := by
-    rw [Real.Gamma_add_one hx.ne', mul_div_assoc, div_self (Real.Gamma_pos_of_pos hx).ne',
-      mul_one]
-  have hApos : 0 < γ ^ 2 / 4 * x := by positivity
-  have hlA : x * lR (γ ^ 2 / 4 * x) =
-      4 / γ ^ 2 * (Real.Gamma (γ ^ 2 / 4 * x + 1) / Real.Gamma (1 - γ ^ 2 / 4 * x)) := by
-    unfold lR
-    rw [Real.Gamma_add_one hApos.ne']
-    field_simp
-  have hlast : 2 + γ ^ 2 / 4 - γ * ε / 2 = 1 - (γ * ε / 2 - γ ^ 2 / 4 - 1) := by ring
-  unfold gammaHalfUnitCrossingMultiplier gammaHalfCrossingMultiplier crossingMultiplier3Real
-  rw [hnum, ← hxdef, hratio, hy, hA, hB, hC, hlast]
-  simp only [lFun_ofReal_re_eq_lR]
-  exact multiplier_algebra hμ.ne' (lR_mul_lR_one_sub hyb.1 hyb.2) hlA
 
-theorem crossA3_ofReal {γ : ℝ} (hγ : 0 < γ) (α' ε α : ℝ) :
-    crossA3 γ α' ε α = ((γ ^ 2 / 4 * ((α + α' + ε - γ / 2 - 2 * Q γ) / γ) : ℝ) : ℂ) := by
-  unfold crossA3
-  have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
-  rw [Q]
-  push_cast
-  field_simp
-  ring
 
-theorem crossB3_ofReal (γ α' ε α : ℝ) :
-    crossB3 γ α' ε α = ((γ / 4 * (α' + ε - α - Q γ) + 1 / 2 : ℝ) : ℂ) := by
-  unfold crossB3
-  push_cast
-  ring
 
-theorem crossC3_ofReal (γ α' : ℝ) : crossC3 γ α' = ((1 - γ / 2 * (Q γ - α') : ℝ) : ℂ) := by
-  unfold crossC3
-  push_cast
-  ring
 
 /-- **The analytic multiplier at real charges is the real closed form.** -/
 theorem crossingMultiplier3_ofReal {γ : ℝ} (hγ : 0 < γ) (α' ε α : ℝ) :
     crossingMultiplier3 γ α' ε α = (crossingMultiplier3Real γ α' ε α : ℂ) := by
+  have crossC3_ofReal (γ : ℝ) (α' : ℝ) : crossC3 γ α' = ((1 - γ / 2 * (Q γ - α') : ℝ) : ℂ) := by
+    unfold crossC3
+    push_cast
+    ring
+  have crossB3_ofReal (γ : ℝ) (α' : ℝ) (ε : ℝ) (α : ℝ) : crossB3 γ α' ε α = ((γ / 4 * (α' + ε - α - Q γ) + 1 / 2 : ℝ) : ℂ) := by
+    unfold crossB3
+    push_cast
+    ring
+  have crossA3_ofReal (α' : ℝ) (ε : ℝ) (α : ℝ) : crossA3 γ α' ε α = ((γ ^ 2 / 4 * ((α + α' + ε - γ / 2 - 2 * Q γ) / γ) : ℝ) : ℂ) := by
+    unfold crossA3
+    have := Complex.ofReal_ne_zero.mpr hγ.ne'
+    rw [Q]
+    push_cast
+    field_simp
+    ring
   unfold crossingMultiplier3 crossingMultiplier3Real
-  rw [crossA3_ofReal hγ, crossB3_ofReal, crossC3_ofReal,
+  rw [crossA3_ofReal, crossB3_ofReal, crossC3_ofReal,
     show (-(γ : ℂ) ^ 2 / 4) = ((-(γ ^ 2) / 4 : ℝ) : ℂ) by push_cast; ring,
     show ((γ : ℂ) * ε / 2) = ((γ * ε / 2 : ℝ) : ℂ) by push_cast; ring,
     lFun_ofReal_eq_lR, lFun_ofReal_eq_lR, lFun_ofReal_eq_lR, lFun_ofReal_eq_lR,
@@ -134,15 +98,26 @@ theorem crossingMultiplier3_ofReal {γ : ℝ} (hγ : 0 < γ) (α' ε α : ℝ) :
 theorem gammaHalfUnitCrossingMultiplier_eq_three {γ μ α' ε α : ℝ} (hγ : 0 < γ) (hμ : 0 < μ)
     (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ) (hx : 0 < (α + α' + ε - γ / 2 - 2 * Q γ) / γ) :
     (gammaHalfUnitCrossingMultiplier γ μ α' ε α : ℂ) = crossingMultiplier3 γ α' ε α := by
-  rw [crossingMultiplier3_ofReal hγ, gammaHalfUnitCrossingMultiplier_real hγ hμ hε₁ hε₂ hx]
+  have gammaHalfUnitCrossingMultiplier_real : gammaHalfUnitCrossingMultiplier γ μ α' ε α = crossingMultiplier3Real γ α' ε α := by
+    have gaussParameters_three {γ} {α'} {ε} {α} (hγ : 0 < γ) : gaussParameterA γ (γ / 2) α' ε α = γ ^ 2 / 4 * ((α + α' + ε - γ / 2 - 2 * Q γ) / γ) ∧ gaussParameterB γ (γ / 2) α' ε α = γ / 4 * (α' + ε - α - Q γ) + 1 / 2 ∧ gaussParameterC γ (γ / 2) α' = 1 - γ / 2 * (Q γ - α') ∧ gaussParameterA γ (γ / 2) α' ε α + gaussParameterB γ (γ / 2) α' ε α - gaussParameterC γ (γ / 2) α' = γ * ε / 2 - γ ^ 2 / 4 - 1 := by
+      unfold gaussParameterA gaussParameterB gaussParameterC Q
+      refine ⟨by field_simp; ring, by ring, by ring, by field_simp; ring⟩
+    obtain ⟨hA, hB, hC, hy⟩ := gaussParameters_three (α' := α') (ε := ε) (α := α) hγ
+    obtain ⟨hyb, -, -, -⟩ := cross_bounds hγ hε₁ hε₂
+    set x := (α + α' + ε - γ / 2 - 2 * Q γ) / γ with hxdef
+    have hnum : (α + α' + ε + γ / 2 - 2 * Q γ) / γ = x + 1 := by
+      rw [hxdef]
+      field_simp
+      ring
+    unfold gammaHalfUnitCrossingMultiplier gammaHalfCrossingMultiplier crossingMultiplier3Real
+    rw [hnum, ← hxdef, (show Real.Gamma (x + 1) / Real.Gamma x = x by rw [Real.Gamma_add_one hx.ne', mul_div_assoc, div_self (Real.Gamma_pos_of_pos hx).ne', mul_one]), hy, hA, hB, hC, (show 2 + γ ^ 2 / 4 - γ * ε / 2 = 1 - (γ * ε / 2 - γ ^ 2 / 4 - 1) by ring)]
+    simp only [lFun_ofReal_re_eq_lR]
+    exact multiplier_algebra hμ.ne' (lR_mul_lR_one_sub hyb.1 hyb.2) (by unfold lR; rw [Real.Gamma_add_one (show 0 < γ ^ 2 / 4 * x by positivity).ne']; field_simp)
+  rw [crossingMultiplier3_ofReal hγ, gammaHalfUnitCrossingMultiplier_real]
 
-/-- `l(w) = Γ(w) Γ(1-w)⁻¹`. -/
-theorem lFun_eq_mul_inv (w : ℂ) : lFun w = Complex.Gamma w * (Complex.Gamma (1 - w))⁻¹ := by
-  unfold lFun
-  rw [div_eq_mul_inv]
 
 /-- The analytic multiplier as a product of Gamma factors. -/
-theorem crossingMultiplier3_eq (γ : ℝ) (a' e a : ℂ) :
+theorem crossingMultiplier3_eq (γ : ℝ) a' e a :
     crossingMultiplier3 γ a' e a =
       -(4 * Real.pi / γ ^ 2 : ℂ) * Complex.Gamma (crossA3 γ a' e a + 1) *
         (Complex.Gamma (1 - crossA3 γ a' e a))⁻¹ *
@@ -150,11 +125,14 @@ theorem crossingMultiplier3_eq (γ : ℝ) (a' e a : ℂ) :
         (Complex.Gamma (1 - crossC3 γ a') * (Complex.Gamma (crossC3 γ a'))⁻¹) *
         ((lFun (-(γ : ℂ) ^ 2 / 4))⁻¹ *
           (Complex.Gamma (1 - (γ : ℂ) * e / 2) * (Complex.Gamma ((γ : ℂ) * e / 2))⁻¹)) := by
+  have lFun_eq_mul_inv w : lFun w = Complex.Gamma w * (Complex.Gamma (1 - w))⁻¹ := by
+    unfold lFun
+    rw [div_eq_mul_inv]
   unfold crossingMultiplier3
   rw [lFun_eq_mul_inv (crossB3 γ a' e a), lFun_inv, mul_inv, lFun_inv ((γ : ℂ) * e / 2)]
 
 /-- The regularized multiplier as a product of Gamma factors. -/
-theorem crossingMultiplier3Reg_eq (γ : ℝ) (a' e a : ℂ) :
+theorem crossingMultiplier3Reg_eq (γ : ℝ) a' e a :
     crossingMultiplier3Reg γ a' e a =
       -(4 * Real.pi / γ ^ 2 : ℂ) * Complex.Gamma (crossA3 γ a' e a + 1) *
         (Complex.Gamma (1 - crossA3 γ a' e a))⁻¹ *
@@ -167,24 +145,24 @@ theorem crossingMultiplier3Reg_eq (γ : ℝ) (a' e a : ℂ) :
   rw [lFun_inv, mul_inv, lFun_inv ((γ : ℂ) * e / 2)]
 
 /-- Off `B = 0` the regularized multiplier is `(4/γ) B T`. -/
-theorem crossingMultiplier3Reg_eq_mul {γ : ℝ} {a' e a : ℂ} (hB : crossB3 γ a' e a ≠ 0) :
+theorem crossingMultiplier3Reg_eq_mul {γ} {a' e a} (hB : crossB3 γ a' e a ≠ 0) :
     crossingMultiplier3Reg γ a' e a = 4 / γ * crossB3 γ a' e a * crossingMultiplier3 γ a' e a := by
   rw [crossingMultiplier3Reg_eq, crossingMultiplier3_eq, Complex.Gamma_add_one _ hB]
   ring
 
 /-- Holomorphy of `Γ ∘ φ` at a point where `Re φ > 0`. -/
-theorem differentiableAt_Gamma_comp {φ : ℂ → ℂ} {z : ℂ} (hφ : DifferentiableAt ℂ φ z)
+theorem differentiableAt_Gamma_comp {φ : ℂ → ℂ} {z} (hφ : DifferentiableAt ℂ φ z)
     (hre : 0 < (φ z).re) : DifferentiableAt ℂ (fun w => Complex.Gamma (φ w)) z :=
   (Complex.differentiableAt_Gamma _ (ne_neg_nat_of_re_pos hre)).comp z hφ
 
 /-- Holomorphy of `1/Γ ∘ φ`. -/
-theorem differentiableAt_inv_Gamma_comp {φ : ℂ → ℂ} {z : ℂ} (hφ : DifferentiableAt ℂ φ z) :
+theorem differentiableAt_inv_Gamma_comp {φ : ℂ → ℂ} {z} (hφ : DifferentiableAt ℂ φ z) :
     DifferentiableAt ℂ (fun w => (Complex.Gamma (φ w))⁻¹) z :=
   (Complex.differentiable_one_div_Gamma _).comp z hφ
 
 /-- **The analytic multiplier is holomorphic along holomorphic charge curves** where
 `Re(A+1)`, `Re B`, `Re(1-C)` and `Re(1-γε/2)` are positive. -/
-theorem differentiableAt_crossingMultiplier3 {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ → ℂ} {z : ℂ}
+theorem differentiableAt_crossingMultiplier3 {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ → ℂ} {z}
     (h₁ : DifferentiableAt ℂ φ₁ z) (h₂ : DifferentiableAt ℂ φ₂ z) (h₃ : DifferentiableAt ℂ φ₃ z)
     (hA : 0 < (crossA3 γ (φ₁ z) (φ₂ z) (φ₃ z) + 1).re)
     (hB : 0 < (crossB3 γ (φ₁ z) (φ₂ z) (φ₃ z)).re)
@@ -215,7 +193,7 @@ theorem differentiableAt_crossingMultiplier3 {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ
 
 /-- **The regularized multiplier is holomorphic along holomorphic charge curves** where
 `Re(A+1)`, `Re(B+1)`, `Re(1-C)` and `Re(1-γε/2)` are positive. -/
-theorem differentiableAt_crossingMultiplier3Reg {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ → ℂ} {z : ℂ}
+theorem differentiableAt_crossingMultiplier3Reg {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ → ℂ} {z}
     (h₁ : DifferentiableAt ℂ φ₁ z) (h₂ : DifferentiableAt ℂ φ₂ z) (h₃ : DifferentiableAt ℂ φ₃ z)
     (hA : 0 < (crossA3 γ (φ₁ z) (φ₂ z) (φ₃ z) + 1).re)
     (hB : 0 < (crossB3 γ (φ₁ z) (φ₂ z) (φ₃ z) + 1).re)

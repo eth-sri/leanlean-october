@@ -19,7 +19,7 @@ open MeasureTheory
 
 namespace DOZZ.Proofs
 
-theorem laplaceProduct_integrand_bound (s m : ℝ) (hs : 0 ≤ s) (hm : 0 ≤ m) :
+theorem laplaceProduct_integrand_bound s m (hs : 0 ≤ s) (hm : 0 ≤ m) :
     ‖Real.exp (-s * m)‖ ≤ 1 := by
   rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
   exact Real.exp_le_one_iff.mpr (by nlinarith)
@@ -27,16 +27,14 @@ theorem laplaceProduct_integrand_bound (s m : ℝ) (hs : 0 ≤ s) (hm : 0 ≤ m)
 /-- Independence on a triple product factors the Laplace transform of a sum. -/
 theorem integral_prod_prod_exp_mul_exp {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P] (N : Measure ℝ) [IsProbabilityMeasure N]
-    (m₁ m₂ : Ω → ℝ) (hm₁ : Measurable m₁) (hm₂ : Measurable m₂)
+    m₁ m₂ (hm₁ : Measurable m₁) (hm₂ : Measurable m₂)
     (hm₁0 : ∀ ω, 0 ≤ m₁ ω) (hm₂0 : ∀ ω, 0 ≤ m₂ ω)
-    (s : ℝ → ℝ) (hs : Measurable s) (hs0 : ∀ ξ, 0 ≤ s ξ) :
+    s (hs : Measurable s) (hs0 : ∀ ξ, 0 ≤ s ξ) :
     ∫ q, Real.exp (-s q.2.2 * m₁ q.1) * Real.exp (-s q.2.2 * m₂ q.2.1) ∂P.prod (P.prod N) =
       ∫ ξ, (∫ ω, Real.exp (-s ξ * m₁ ω) ∂P) * (∫ ω, Real.exp (-s ξ * m₂ ω) ∂P) ∂N := by
   -- integrability of the bounded measurable integrands on the products
-  have hf₁ : Measurable (fun p : Ω × ℝ => Real.exp (-s p.2 * m₁ p.1)) := by
-    exact Real.measurable_exp.comp (((hs.comp measurable_snd).neg).mul (hm₁.comp measurable_fst))
-  have hf₂ : Measurable (fun p : Ω × ℝ => Real.exp (-s p.2 * m₂ p.1)) := by
-    exact Real.measurable_exp.comp (((hs.comp measurable_snd).neg).mul (hm₂.comp measurable_fst))
+  have hf₁ : Measurable (fun p : Ω × ℝ => Real.exp (-s p.2 * m₁ p.1)) := Real.measurable_exp.comp (((hs.comp measurable_snd).neg).mul (hm₁.comp measurable_fst))
+  have hf₂ : Measurable (fun p : Ω × ℝ => Real.exp (-s p.2 * m₂ p.1)) := Real.measurable_exp.comp (((hs.comp measurable_snd).neg).mul (hm₂.comp measurable_fst))
   have hb₁ : ∀ p : Ω × ℝ, ‖Real.exp (-s p.2 * m₁ p.1)‖ ≤ 1 :=
     fun p => laplaceProduct_integrand_bound _ _ (hs0 _) (hm₁0 _)
   have hb₂ : ∀ p : Ω × ℝ, ‖Real.exp (-s p.2 * m₂ p.1)‖ ≤ 1 :=

@@ -20,8 +20,8 @@ namespace DOZZ.Proofs
 
 /-- The coefficient in the one-rooted formula is the shifted rho moment. -/
 theorem fusion_rootedCoefficient_moment {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ p : ℝ) :
     gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p =
       (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re *
@@ -36,7 +36,7 @@ theorem fusion_rootedCoefficient_moment {Ω : Type*} [MeasurableSpace Ω]
   rfl
 
 /-- The shifted Seiberg exponent increases by one. -/
-theorem fusion_shifted_seiberg_exponent (γ α₁ α₂ α₃ : ℝ) (hγ : γ ≠ 0) :
+theorem fusion_shifted_seiberg_exponent γ α₁ α₂ α₃ (hγ : γ ≠ 0) :
     sExp γ (α₁ + γ / 2) α₂ α₃ =
       (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1 := by
   unfold sExp
@@ -61,9 +61,9 @@ theorem fusion_shifted_normalization (γ μ p A E : ℝ) (hμ : 0 < μ) (hp : p 
 
 /-- The normalization in the four-point moment gives exactly the shifted structure constant. -/
 theorem fusion_normalized_rootedCoefficient {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (μ α₁ α₂ α₃ : ℝ) (hμ : 0 < μ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
+    (hM : IsGMCOf P X γ M) μ α₁ α₂ α₃ (hμ : 0 < μ)
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
     let p := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
     (2 * μ ^ (-p) / γ * Real.Gamma p) *
@@ -74,15 +74,11 @@ theorem fusion_normalized_rootedCoefficient {Ω : Type*} [MeasurableSpace Ω]
   rw [fusion_rootedCoefficient_moment P X hX γ hγ hγ2 M hM]
   unfold structureConstant
   rw [fusion_shifted_seiberg_exponent γ α₁ α₂ α₃ hγ.ne']
-  have hp : (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ ≠ 0 :=
-    (div_pos (by linarith) hγ).ne'
-  have he : -((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1) =
-      -(α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ - 1 := by ring
-  simpa only [he, neg_div] using
+  simpa only [(show -((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1) = -(α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ - 1 by ring), neg_div] using
     fusion_shifted_normalization γ μ
       ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ)
       (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re
       (∫⁻ ω, rho γ (M ω) (α₁ + γ / 2) α₂ α₃ ^
-        (-((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) - 1) ∂P).toReal hμ hp
+        (-((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) - 1) ∂P).toReal hμ ((div_pos (by linarith) hγ).ne')
 
 end DOZZ.Proofs

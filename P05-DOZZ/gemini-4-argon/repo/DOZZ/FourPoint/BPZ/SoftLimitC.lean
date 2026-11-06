@@ -24,31 +24,29 @@ attribute [local instance low] bpzNormedAddCommGroupBilin bpzNormedSpaceBilin
 
 
 /-- The near part of the first derivative mass, bounded pathwise. -/
-theorem norm_bpzSoftMassDeriv_le_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem norm_bpzSoftMassDeriv_le_near {a ε} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
+    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z} (hz : m {z} = 0)
     (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) m) :
     ‖bpzSoftMassDeriv a ε w m z‖ ≤ 2 * a * ∫ x, w x * ‖x - z‖ ^ (2 * a - 1) ∂m := by
   unfold bpzSoftMassDeriv
   rw [← integral_const_mul]
   refine norm_integral_le_of_norm_le (hint.const_mul _) ?_
-  have hae : ∀ᵐ x ∂m, x ≠ z := by rw [ae_iff]; simpa using hz
-  filter_upwards [hae] with x hx
+  filter_upwards [(show ∀ᵐ x ∂m, x ≠ z by rw [ae_iff]; simpa using hz)] with x hx
   rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg (hw0 x)]
   calc w x * ‖bpzSoftDeriv a ε x z‖ ≤ w x * (2 * a * ‖x - z‖ ^ (2 * a - 1)) :=
         mul_le_mul_of_nonneg_left (norm_bpzSoftDeriv_le_uniform ha ha1 hx) (hw0 x)
     _ = 2 * a * (w x * ‖x - z‖ ^ (2 * a - 1)) := by ring
 
 /-- The near part of the second derivative mass, bounded pathwise. -/
-theorem norm_bpzSoftMassDeriv2_le_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem norm_bpzSoftMassDeriv2_le_near {a ε} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
+    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z} (hz : m {z} = 0)
     (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 2)) m) :
     ‖bpzSoftMassDeriv2 a ε w m z‖ ≤
       (4 * a * (1 - a) + 2 * a) * ∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m := by
   unfold bpzSoftMassDeriv2
   rw [← integral_const_mul]
   refine norm_integral_le_of_norm_le (hint.const_mul _) ?_
-  have hae : ∀ᵐ x ∂m, x ≠ z := by rw [ae_iff]; simpa using hz
-  filter_upwards [hae] with x hx
+  filter_upwards [(show ∀ᵐ x ∂m, x ≠ z by rw [ae_iff]; simpa using hz)] with x hx
   rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg (hw0 x)]
   calc w x * ‖bpzSoftDeriv2 a ε x z‖ ≤ w x * ((4 * a * (1 - a) + 2 * a) * ‖x - z‖ ^ (2 * a - 2)) :=
         mul_le_mul_of_nonneg_left (norm_bpzSoftDeriv2_le_uniform ha ha1 hx) (hw0 x)
@@ -63,10 +61,9 @@ theorem bpz_near_cauchySchwarz {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w) (
       (∫ x, w x * ‖x - z‖ ^ (2 * a) ∂m) * ∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m := by
   set f : ℂ → ℝ := fun x => Real.sqrt (w x * ‖x - z‖ ^ (2 * a)) with hf
   set g : ℂ → ℝ := fun x => Real.sqrt (w x * ‖x - z‖ ^ (2 * a - 2)) with hg
-  have hae : ∀ᵐ x ∂m, x ≠ z := by rw [ae_iff]; simpa using hz
   have hfg : (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) =ᵐ[m] fun x => f x * g x := by
-    filter_upwards [hae] with x hx
-    have hxz : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
+    filter_upwards [(show ∀ᵐ x ∂m, x ≠ z by rw [ae_iff]; simpa using hz)] with x hx
+    have hxz := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
     simp only [hf, hg]
     rw [← Real.sqrt_mul (mul_nonneg (hw0 x) (Real.rpow_nonneg hxz.le _))]
     rw [show w x * ‖x - z‖ ^ (2 * a) * (w x * ‖x - z‖ ^ (2 * a - 2)) =
@@ -101,18 +98,12 @@ theorem bpz_near_cauchySchwarz {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w) (
     (Eventually.of_forall fun x => Real.sqrt_nonneg _) hfL hgL
   simp only [hf2, hg2] at hH
   rw [integral_congr_ae hfg]
-  have hA : 0 ≤ ∫ x, w x * ‖x - z‖ ^ (2 * a) ∂m :=
-    integral_nonneg fun x => mul_nonneg (hw0 x) (Real.rpow_nonneg (norm_nonneg _) _)
-  have hB : 0 ≤ ∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m :=
-    integral_nonneg fun x => mul_nonneg (hw0 x) (Real.rpow_nonneg (norm_nonneg _) _)
-  have hfg0 : 0 ≤ ∫ x, f x * g x ∂m :=
-    integral_nonneg fun x => mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
   calc (∫ x, f x * g x ∂m) ^ 2
       ≤ ((∫ x, w x * ‖x - z‖ ^ (2 * a) ∂m) ^ (1 / 2 : ℝ) *
           (∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m) ^ (1 / 2 : ℝ)) ^ 2 := by gcongr
     _ = (∫ x, w x * ‖x - z‖ ^ (2 * a) ∂m) * ∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m := by
         rw [mul_pow, ← Real.rpow_natCast, ← Real.rpow_natCast (_ ^ (1 / 2 : ℝ)),
-          ← Real.rpow_mul hA, ← Real.rpow_mul hB]
+          ← Real.rpow_mul (integral_nonneg fun x => mul_nonneg (hw0 x) (Real.rpow_nonneg (norm_nonneg _) _)), ← Real.rpow_mul (integral_nonneg fun x => mul_nonneg (hw0 x) (Real.rpow_nonneg (norm_nonneg _) _))]
         norm_num
 
 end DOZZ.Proofs

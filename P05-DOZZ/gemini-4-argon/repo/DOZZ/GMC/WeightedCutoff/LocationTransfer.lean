@@ -16,9 +16,9 @@ namespace DOZZ.Proofs
 bounded-weight location comparison applies even when the insertion charge is negative. -/
 theorem cutoffWeightedGmcBallMoment_translate_le
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ α p : ℝ) (z z₀ : ℂ) (ρ R δ : ℝ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
+    (γ α p : ℝ) z z₀ ρ R δ
     (hρ : 0 < ρ) (hR : 0 ≤ R) (hz : ‖z‖ + ρ ≤ R)
     (hz₀ : ‖z₀‖ + ρ ≤ R) (hδ : 0 < δ) (hδ₁ : δ ≤ 1) :
     (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ α z ρ δ ω ^ p ∂P) ≤
@@ -35,23 +35,14 @@ theorem cutoffWeightedGmcBallMoment_translate_le
   obtain ⟨s, hs, hmax⟩ := isCompact_Icc.exists_isMaxOn
     (Set.nonempty_Icc.mpr hρ.le) hf
   let w : ℂ → ℝ≥0 := fun y => f (min ‖y‖ ρ)
-  have hw : Measurable w := by
-    dsimp [w, f]
-    fun_prop
-  have hwb : ∀ y, w y ≤ f s := by
-    intro y
-    exact hmax ⟨le_min (norm_nonneg _) hρ.le, min_le_right _ _⟩
-  have heq (a : ℂ) (ω : Ω) :
+  have heq a ω :
       (∫⁻ x in Metric.ball a ρ, (w (x - a) : ℝ≥0∞)
         ∂regularizedGMC P Xc γ (Real.log (1 / δ)) ω) =
       cutoffWeightedGmcBallMass P Xc γ α a ρ δ ω := by
     apply setLIntegral_congr_fun Metric.isOpen_ball.measurableSet
     intro x hx
-    have hx' : ‖x - a‖ < ρ := by simpa [Metric.mem_ball, dist_eq_norm] using hx
-    simp [w, f, min_eq_left hx'.le, ENNReal.ofReal]
-  have hr : 0 ≤ Real.log (1 / δ) :=
-    Real.log_nonneg (by rw [one_div]; exact one_le_inv₀ hδ |>.mpr hδ₁)
+    simp [w, f, min_eq_left (show ‖x - a‖ < ρ by simpa [Metric.mem_ball, dist_eq_norm] using hx).le, ENNReal.ofReal]
   simpa only [heq] using cutoff_translate_moment_le P X hX Xc hXc γ
-    (Real.log (1 / δ)) hr z z₀ ρ R hR hz hz₀ w hw (f s) hwb p
+    (Real.log (1 / δ)) (Real.log_nonneg (by rw [one_div]; exact one_le_inv₀ hδ |>.mpr hδ₁) : 0 ≤ Real.log (1 / δ)) z z₀ ρ R hR hz hz₀ w (by dsimp [w, f]; fun_prop) (f s) (show ∀ y, w y ≤ f s by intro y; exact hmax ⟨le_min (norm_nonneg _) hρ.le, min_le_right _ _⟩) p
 
 end DOZZ.Proofs

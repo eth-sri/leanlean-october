@@ -23,7 +23,7 @@ theorem disk_chain_lifts_unique
     (H : ℂ → E →L[ℂ] E) {F G : ℝ → E}
     (hFcont : ContinuousOn F (Icc (0 : ℝ) 1))
     (hGcont : ContinuousOn G (Icc (0 : ℝ) 1))
-    (N₁ : ℕ) (hN₁ : 0 < N₁) (r₁ M₁ : ℝ) (hr₁ : 0 < r₁) (hM₁ : 0 ≤ M₁)
+    (N₁ : ℕ) (hN₁ : 0 < N₁) r₁ M₁ (hr₁ : 0 < r₁) (hM₁ : 0 ≤ M₁)
     (D₁ : ℕ → HolomorphicDiskSolution H r₁)
     (hcenters₁ : ∀ i ≤ N₁, (D₁ i).center = γ ((i : ℝ) / (N₁ : ℝ)))
     (hbound₁ : ∀ i ≤ N₁, ∀ z ∈ Metric.ball (D₁ i).center r₁, ‖H z‖ ≤ M₁)
@@ -34,7 +34,7 @@ theorem disk_chain_lifts_unique
       (D₁ i).solution z = (D₁ (i + 1)).solution z)
     (hFformula : ∀ i < N₁, ∀ s ∈ Icc ((i : ℝ) / (N₁ : ℝ))
       (((i + 1 : ℕ) : ℝ) / (N₁ : ℝ)), F s = (D₁ i).solution (γ s))
-    (N₂ : ℕ) (hN₂ : 0 < N₂) (r₂ M₂ : ℝ) (hr₂ : 0 < r₂) (hM₂ : 0 ≤ M₂)
+    (N₂ : ℕ) (hN₂ : 0 < N₂) r₂ M₂ (hr₂ : 0 < r₂) (hM₂ : 0 ≤ M₂)
     (D₂ : ℕ → HolomorphicDiskSolution H r₂)
     (hcenters₂ : ∀ i ≤ N₂, (D₂ i).center = γ ((i : ℝ) / (N₂ : ℝ)))
     (hbound₂ : ∀ i ≤ N₂, ∀ z ∈ Metric.ball (D₂ i).center r₂, ‖H z‖ ≤ M₂)

@@ -13,14 +13,14 @@ open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
 /-- The outward origin circle mean of the equator pin is its nonnegative logarithmic radius. -/
-theorem outward_equator_mean (r : ℝ) (hr : 0 ≤ r) :
+theorem outward_equator_mean r (hr : 0 ≤ r) :
     equatorCircleMean 0 (-r) = r := by
   unfold equatorCircleMean
   rw [integral_log_normPlus_circleMeasure_origin_eq_max]
   simp only [neg_neg, max_eq_right hr]
 
 /-- Within the outward circle, its averaged Green kernel is exactly the infinity-root weight. -/
-theorem outward_vertex_potential (x : ℂ) (r : ℝ) (hr : 0 ≤ r)
+theorem outward_vertex_potential x r (hr : 0 ≤ r)
     (hx : ‖x‖ ≤ Real.exp r) :
     (∫ v, gffKernel x v ∂circleMeasure 0 (-r)) = Real.log (normPlus x) := by
   rw [CirclePotential.integral_gffKernel_circleMeasure]

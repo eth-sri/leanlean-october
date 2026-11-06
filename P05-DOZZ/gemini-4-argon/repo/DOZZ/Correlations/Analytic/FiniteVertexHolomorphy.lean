@@ -20,7 +20,7 @@ noncomputable def chargeSumCLM (N : ℕ) : (Fin N → ℂ) →L[ℂ] ℂ :=
   ∑ i : Fin N, ContinuousLinearMap.proj i
 
 /-- The continuous linear charge sum has the expected coordinate formula. -/
-theorem chargeSumCLM_apply {N : ℕ} (α : Fin N → ℂ) :
+theorem chargeSumCLM_apply {N} α :
     chargeSumCLM N α = ∑ i, α i := by
   simp [chargeSumCLM]
 

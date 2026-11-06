@@ -24,7 +24,7 @@ theorem nonneg_integral_abs_sub_tendsto_zero
     (hlim : ∀ᵐ ω ∂P, Tendsto (fun n => f n ω) atTop (𝓝 (g ω)))
     (hmean : Tendsto (fun n => ∫ ω, f n ω ∂P) atTop (𝓝 (∫ ω, g ω ∂P))) :
     Tendsto (fun n => ∫ ω, |f n ω - g ω| ∂P) atTop (𝓝 0) := by
-  have hminInt (n : ℕ) : Integrable (fun ω => min (f n ω) (g ω)) P :=
+  have hminInt n : Integrable (fun ω => min (f n ω) (g ω)) P :=
     hg.mono ((hf n).aemeasurable.min hg.aemeasurable).aestronglyMeasurable (by
       filter_upwards [hfn n, hgn] with ω hfω hgω
       simp only [Real.norm_eq_abs, abs_of_nonneg (le_min hfω hgω),
@@ -42,7 +42,7 @@ theorem nonneg_integral_abs_sub_tendsto_zero
       exact min_le_right _ _
     · filter_upwards [hlim] with ω hω
       simpa using hω.min (tendsto_const_nhds (x := g ω))
-  have heq (n : ℕ) : (∫ ω, |f n ω - g ω| ∂P) =
+  have heq n : (∫ ω, |f n ω - g ω| ∂P) =
       (∫ ω, f n ω ∂P) + (∫ ω, g ω ∂P) - 2 * (∫ ω, min (f n ω) (g ω) ∂P) := by
     have hid : (fun ω => |f n ω - g ω|) =
         (fun ω => f n ω + g ω - 2 * min (f n ω) (g ω)) := by

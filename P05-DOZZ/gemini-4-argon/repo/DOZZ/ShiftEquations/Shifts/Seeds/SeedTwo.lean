@@ -67,8 +67,8 @@ theorem dual_crossing_seed_two_of_fusion
                     structureConstant P M γ μ (2 * Q γ - α₁ - 2 / γ) α₂ α₃ *
                       ‖gaussFPlus H a b c z‖ ^ 2))
     {Ω : Type u} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
-    (γ μ α ε α' : ℝ)
+    (P : Measure Ω) (M : Ω → Measure ℂ) X
+    γ μ α ε α'
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hα : α < Q γ) (hε : ε < Q γ) (hα' : α' < Q γ)
     (hs : 2 * Q γ + 2 / γ < α + ε + α')

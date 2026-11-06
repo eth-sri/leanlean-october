@@ -20,10 +20,10 @@ namespace DOZZ.Proofs
 theorem kahane_finite_smooth_convex
     {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
     (PX : Measure ΩX) (PY : Measure ΩY)
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
+    X Y
     (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
-    (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i) (γ : ℝ)
-    (F F' F'' : ℝ → ℝ) (B₁ B₂ : ℝ)
+    (a : ι → ℝ) (ha : ∀ i, 0 ≤ a i) γ
+    (F F' F'' : ℝ → ℝ) B₁ B₂
     (hF : ∀ x, HasDerivAt F (F' x) x) (hF' : ∀ x, HasDerivAt F' (F'' x) x)
     (hF''meas : Measurable F'') (hB₁ : ∀ x, ‖F' x‖ ≤ B₁)
     (hB₂ : ∀ x, ‖F'' x‖ ≤ B₂) (hF''nonneg : ∀ x, 0 ≤ x → 0 ≤ F'' x)
@@ -45,30 +45,27 @@ theorem kahane_finite_smooth_convex
   have hFcont : Continuous F := continuous_iff_continuousAt.mpr fun x => (hF x).continuousAt
   have hF'cont : Continuous F' := continuous_iff_continuousAt.mpr fun x => (hF' x).continuousAt
   have hB₁nonneg : 0 ≤ B₁ := (norm_nonneg (F' 0)).trans (hB₁ 0)
-  have hvX (i : ι) : 0 ≤ vX i := by
+  have hvX i : 0 ≤ vX i := by
     exact integral_nonneg fun ω => mul_self_nonneg (X ω i)
-  have hvY (i : ι) : 0 ≤ vY i := by
+  have hvY i : 0 ≤ vY i := by
     exact integral_nonneg fun ω => mul_self_nonneg (Y ω i)
   have hV : AEMeasurable (fun ω : ΩX × ΩY => (X ω.1, Y ω.2)) μ :=
     (aemeasurable_pi_iff.mpr hX.2.1).comp_fst.prodMk
       (aemeasurable_pi_iff.mpr hY.2.1).comp_snd
-  have hM (s : ℝ) : AEMeasurable (M s) μ := by
-    have h : Measurable (fun z : (ι → ℝ) × (ι → ℝ) =>
-        ∑ i, a i * Real.exp (γ * (Real.sqrt s * z.1 i + Real.sqrt (1 - s) * z.2 i) -
-          γ ^ 2 / 2 * (s * vX i + (1 - s) * vY i))) := by fun_prop
+  have hM s : AEMeasurable (M s) μ := by
     change AEMeasurable (fun ω => M s ω) μ
-    simpa only [Function.comp_def, M, kahaneInterpolatedMass] using h.comp_aemeasurable hV
-  have hT (s : ℝ) : AEStronglyMeasurable (T s) μ :=
+    simpa only [Function.comp_def, M, kahaneInterpolatedMass] using (show Measurable (fun z : (ι → ℝ) × (ι → ℝ) => ∑ i, a i * Real.exp (γ * (Real.sqrt s * z.1 i + Real.sqrt (1 - s) * z.2 i) - γ ^ 2 / 2 * (s * vX i + (1 - s) * vY i))) by fun_prop).comp_aemeasurable hV
+  have hT s : AEStronglyMeasurable (T s) μ :=
     (hFcont.measurable.comp_aemeasurable (hM s)).aestronglyMeasurable
-  have hD (s : ℝ) : AEStronglyMeasurable (D s) μ := by
-    have h : Measurable (fun z : (ι → ℝ) × (ι → ℝ) =>
+  have hD s : AEStronglyMeasurable (D s) μ := by
+    have h : Measurable (fun z =>
         kahaneInterpolatedTestDerivative (fun x => x) (fun x => x) vX vY a γ F' s z) := by
       unfold kahaneInterpolatedTestDerivative kahaneInterpolatedMass
       fun_prop
     change AEStronglyMeasurable (fun ω => D s ω) μ
     simpa only [Function.comp_def, D, kahaneInterpolatedTestDerivative, kahaneInterpolatedMass] using
       (h.comp_aemeasurable hV).aestronglyMeasurable
-  have hFgrowth (x : ℝ) : ‖F x‖ ≤ ‖F 0‖ + B₁ * ‖x‖ := by
+  have hFgrowth x : ‖F x‖ ≤ ‖F 0‖ + B₁ * ‖x‖ := by
     have h := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
       (s := Set.univ) (fun y _ => (hF y).hasDerivWithinAt)
       (fun y _ => hB₁ y) convex_univ (mem_univ (0 : ℝ)) (mem_univ x)
@@ -81,7 +78,7 @@ theorem kahane_finite_smooth_convex
     Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|))
   have hb : Integrable b μ := (integrable_const _).add
     ((kahaneEndpointAbsExp_integrable PX PY X Y hX hY γ).const_mul (B₁ * ∑ i, a i))
-  have hbound (s : ℝ) (hs : s ∈ Icc (0 : ℝ) 1) (ω : ΩX × ΩY) : ‖T s ω‖ ≤ b ω := by
+  have hbound s (hs : s ∈ Icc (0 : ℝ) 1) ω : ‖T s ω‖ ≤ b ω := by
     calc
       _ ≤ ‖F 0‖ + B₁ * ‖M s ω‖ := hFgrowth _
       _ ≤ _ := by
@@ -90,16 +87,7 @@ theorem kahane_finite_smooth_convex
         apply add_le_add le_rfl
         simpa only [mul_assoc] using mul_le_mul_of_nonneg_left
           (kahaneInterpolatedMass_norm_le_absExp X Y vX vY a hvX hvY ha γ s hs ω) hB₁nonneg
-  have hInt (s : ℝ) (hs : s ∈ Icc (0 : ℝ) 1) : Integrable (T s) μ :=
-    hb.mono' (hT s) (ae_of_all _ (hbound s hs))
-  have hcont : ContinuousOn φ (Icc (0 : ℝ) 1) := by
-    apply continuousOn_of_dominated (fun s _ => hT s) (fun s hs => ae_of_all _ (hbound s hs)) hb
-    filter_upwards [] with ω
-    have hMass : Continuous (fun s => M s ω) := by
-      dsimp [M, kahaneInterpolatedMass]
-      fun_prop
-    exact (hFcont.comp hMass).continuousOn
-  have hderiv (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
+  have hderiv t (ht : t ∈ Ioo (0 : ℝ) 1) :
       HasDerivAt φ (∫ ω, D t ω ∂μ) t ∧ (∫ ω, D t ω ∂μ) ≤ 0 := by
     let ε : ℝ := min t (1 - t) / 4
     have htpos : 0 < t := ht.1
@@ -111,22 +99,18 @@ theorem kahane_finite_smooth_convex
       Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|)) *
         (|γ| / (2 * Real.sqrt ε) * (∑ i, (|X ω.1 i| + |Y ω.2 i|)) +
           γ ^ 2 / 2 * ∑ i, |vX i - vY i|)
-    have hdb := kahaneInterpolatedDerivativeEnvelope_integrable
-      PX PY X Y hX hY vX vY a γ ε B₁
     have hDbound : ∀ᵐ ω ∂μ, ∀ s ∈ Metric.ball t ε, ‖D s ω‖ ≤ db ω := by
       filter_upwards [] with ω s hs
       have hsabs : |s - t| < ε := by simpa only [Metric.mem_ball, Real.dist_eq] using hs
-      have hsleft : ε ≤ s := by linarith [(abs_lt.mp hsabs).1]
-      have hsright : ε ≤ 1 - s := by linarith [(abs_lt.mp hsabs).2]
       exact kahaneInterpolatedTestDerivative_norm_le_absExp X Y vX vY a hvX hvY ha
-        γ ε s B₁ F' hB₁nonneg hB₁ hε hsleft hsright ω
+        γ ε s B₁ F' hB₁nonneg hB₁ hε (by linarith [(abs_lt.mp hsabs).1]) (by linarith [(abs_lt.mp hsabs).2]) ω
     exact kahaneSmoothInterpolationExpectation_hasDerivAt_nonpos
       PX PY X Y hX hY a vX vY ha γ t ε F F' F'' B₁ B₂ hF hF'
       hF'cont.measurable hF''meas hB₁ hB₂ hF''nonneg hε (by linarith) (by linarith)
-      (Filter.Eventually.of_forall hT) (hInt t ⟨ht.1.le, ht.2.le⟩) (hD t)
-      db hdb hDbound (fun _ => rfl) (fun _ => rfl) hcov
+      (Filter.Eventually.of_forall hT) ((fun s hs => hb.mono' (hT s) (ae_of_all _ (hbound s hs))) t ⟨ht.1.le, ht.2.le⟩) (hD t)
+      db (kahaneInterpolatedDerivativeEnvelope_integrable PX PY X Y hX hY vX vY a γ ε B₁) hDbound (fun _ => rfl) (fun _ => rfl) hcov
   have hend := kahaneInterpolation_endpoint_le_of_derivative φ
-    (fun t => ∫ ω, D t ω ∂μ) hcont (fun t ht => (hderiv t ht).1)
+    (fun t => ∫ ω, D t ω ∂μ) (by apply continuousOn_of_dominated (fun s _ => hT s) (fun s hs => ae_of_all _ (hbound s hs)) hb; filter_upwards [] with ω; exact (hFcont.comp (by dsimp [M, kahaneInterpolatedMass]; fun_prop)).continuousOn) (fun t ht => (hderiv t ht).1)
     (fun t ht => (hderiv t ht).2)
   have hzero : φ 0 = ∫ ω, F (DOZZ.finiteChaosMass PY Y a γ ω) ∂PY := by
     dsimp [φ, T, M, μ, kahaneInterpolatedMass]

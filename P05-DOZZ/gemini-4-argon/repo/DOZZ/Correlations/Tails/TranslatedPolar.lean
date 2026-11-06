@@ -30,56 +30,39 @@ noncomputable def translatedPolarMeasure (γ N : ℝ) (A : TwoSidedPath)
         γ * Q γ * |translatedLogRadius z x|))))).map
       (translatedLogRadius z)
 
-/-- The translated radial map is measurable on the whole plane. -/
-theorem measurable_translatedLogRadius (z : ℂ) :
-    Measurable (translatedLogRadius z) := by
-  unfold translatedLogRadius
-  fun_prop
 
-/-- The removal density is measurable for any measurable multiplier. -/
-theorem measurable_translatedPolarDensity (γ N : ℝ) (A : TwoSidedPath)
-    (F : ℂ → ℝ) (hF : Measurable F) (z : ℂ) :
-    Measurable (fun x => ENNReal.ofReal (F x) *
-      (if x = z then 0 else ENNReal.ofReal
-        (Real.exp (-γ * (N + A (translatedLogRadius z x)) +
-          γ * Q γ * |translatedLogRadius z x|)))) := by
-  apply (ENNReal.measurable_ofReal.comp hF).mul
-  apply Measurable.ite (measurableSet_singleton z) measurable_const
-  exact ENNReal.measurable_ofReal.comp
-    (Real.measurable_exp.comp
-      ((measurable_const.mul (measurable_const.add
-        (A.continuous.measurable.comp (measurable_translatedLogRadius z)))).add
-        ((continuous_abs.measurable.comp
-          (measurable_translatedLogRadius z)).const_mul (γ * Q γ))))
 
-/-- Any measurable radial test integrates by the literal weighted pushforward formula. -/
-theorem translatedPolar_lintegral (γ N : ℝ) (A : TwoSidedPath)
-    (M : Measure ℂ) (F : ℂ → ℝ) (hF : Measurable F) (z : ℂ)
-    (f : ℝ → ℝ≥0∞) (hf : Measurable f) :
-    ∫⁻ t, f t ∂translatedPolarMeasure γ N A M F z =
-      ∫⁻ x, (ENNReal.ofReal (F x) *
-        (if x = z then 0 else ENNReal.ofReal
-          (Real.exp (-γ * (N + A (translatedLogRadius z x)) +
-            γ * Q γ * |translatedLogRadius z x|)))) *
-          f (translatedLogRadius z x) ∂M := by
-  unfold translatedPolarMeasure
-  rw [lintegral_map hf (measurable_translatedLogRadius z)]
-  exact lintegral_withDensity_eq_lintegral_mul M
-      (measurable_translatedPolarDensity γ N A F hF z)
-      (hf.comp (measurable_translatedLogRadius z))
 
 /-- The actual singular mass is a drifted radial exponential integral against the
 translated projected measure. The root is removed using atomlessness, rather than
 altering the infinite insertion weight of `DOZZ.localSingularMass`. -/
 theorem localSingularMass_translatedPolar
-    (γ α N : ℝ) (A : TwoSidedPath) (M : Measure ℂ)
-    (F : ℂ → ℝ) (hF : Measurable F) (z : ℂ) (hMz : M {z} = 0) :
+    γ α N A (M : Measure ℂ)
+    F (hF : Measurable F) z (hMz : M {z} = 0) :
     localSingularMass (fun _ : Unit => M) F z γ α () =
       ENNReal.ofReal (Real.exp (γ * N)) *
         ∫⁻ t, (if 0 < t then
           ENNReal.ofReal (Real.exp (γ * (A t - (Q γ - α) * t))) else 0)
           ∂translatedPolarMeasure γ N A M F z := by
   classical
+  have measurable_translatedLogRadius : Measurable (translatedLogRadius z) := by
+    unfold translatedLogRadius
+    fun_prop
+  have translatedPolar_lintegral (f : ℝ → ℝ≥0∞) (hf : Measurable f) : ∫⁻ t, f t ∂translatedPolarMeasure γ N A M F z = ∫⁻ x, (ENNReal.ofReal (F x) * (if x = z then 0 else ENNReal.ofReal (Real.exp (-γ * (N + A (translatedLogRadius z x)) + γ * Q γ * |translatedLogRadius z x|)))) * f (translatedLogRadius z x) ∂M := by
+    have measurable_translatedPolarDensity : Measurable (fun x => ENNReal.ofReal (F x) * (if x = z then 0 else ENNReal.ofReal (Real.exp (-γ * (N + A (translatedLogRadius z x)) + γ * Q γ * |translatedLogRadius z x|)))) := by
+      apply (ENNReal.measurable_ofReal.comp hF).mul
+      apply Measurable.ite (measurableSet_singleton z) measurable_const
+      exact ENNReal.measurable_ofReal.comp
+        (Real.measurable_exp.comp
+          ((measurable_const.mul (measurable_const.add
+            (A.continuous.measurable.comp (measurable_translatedLogRadius)))).add
+            ((continuous_abs.measurable.comp
+              (measurable_translatedLogRadius)).const_mul (γ * Q γ))))
+    unfold translatedPolarMeasure
+    rw [lintegral_map hf (measurable_translatedLogRadius)]
+    exact lintegral_withDensity_eq_lintegral_mul M
+        (measurable_translatedPolarDensity)
+        (hf.comp (measurable_translatedLogRadius))
   let f : ℝ → ℝ≥0∞ := fun t => if 0 < t then
     ENNReal.ofReal (Real.exp (γ * (A t - (Q γ - α) * t))) else 0
   have hf : Measurable f := by
@@ -92,19 +75,16 @@ theorem localSingularMass_translatedPolar
     ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * α) else 0) ∂M) =
       ENNReal.ofReal (Real.exp (γ * N)) *
         ∫⁻ t, f t ∂translatedPolarMeasure γ N A M F z
-  rw [translatedPolar_lintegral γ N A M F hF z f hf]
+  rw [translatedPolar_lintegral f hf]
   rw [← lintegral_const_mul' (ENNReal.ofReal (Real.exp (γ * N)))
-    (fun x : ℂ => (ENNReal.ofReal (F x) *
+    (fun x => (ENNReal.ofReal (F x) *
       (if x = z then 0 else ENNReal.ofReal
         (Real.exp (-γ * (N + A (translatedLogRadius z x)) +
           γ * Q γ * |translatedLogRadius z x|)))) *
             f (translatedLogRadius z x)) ENNReal.ofReal_ne_top]
   apply lintegral_congr_ae
-  have hne : ∀ᵐ x ∂M, x ≠ z := by
-    rw [ae_iff]
-    simpa only [not_not, Set.ofPred_eq_eq_singleton] using hMz
-  filter_upwards [hne] with x hx
-  have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
+  filter_upwards [(show ∀ᵐ x ∂M, x ≠ z by rw [ae_iff]; simpa only [not_not, Set.ofPred_eq_eq_singleton] using hMz)] with x hx
+  have hd := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
   have ht : 0 < translatedLogRadius z x ↔ x ∈ Metric.ball z 1 := by
     rw [translatedLogRadius, neg_pos, Real.log_neg_iff hd]
     simp only [Metric.mem_ball, dist_eq_norm]

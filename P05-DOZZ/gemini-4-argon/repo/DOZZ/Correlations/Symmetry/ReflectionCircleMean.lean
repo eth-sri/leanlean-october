@@ -58,20 +58,17 @@ noncomputable def symmetryCirclePotentialMean (r : ℝ) : BoundedContinuousFunct
     rw [Real.dist_eq]
     exact (abs_sub _ _).trans (by linarith only [hbound x, hbound y]))
 
-theorem symmetryCirclePotentialMean_apply (r : ℝ) (x : ℂ) :
+theorem symmetryCirclePotentialMean_apply r x :
     symmetryCirclePotentialMean r x = ∫ z, symmetryReflectionPotential z ∂circleMeasure x r := rfl
 
-theorem symmetryCirclePotentialMean_bound (r : ℝ) (x : ℂ) :
+theorem symmetryCirclePotentialMean_bound r x :
     |symmetryCirclePotentialMean r x| ≤ Real.log 2 := by
   let := circleMeasure_isProbability x r
   rw [symmetryCirclePotentialMean_apply]
-  have hi : Integrable (fun z => symmetryReflectionPotential z) (circleMeasure x r) :=
-    integrable_circleMeasure_of_circleIntegrable x r symmetryReflectionPotential_continuous.measurable
-      symmetryReflectionPotential_continuous.continuousOn.circleIntegrable'
   calc
     _ ≤ ∫ z, |symmetryReflectionPotential z| ∂circleMeasure x r := abs_integral_le_integral_abs
     _ ≤ ∫ _ : ℂ, Real.log 2 ∂circleMeasure x r :=
-      integral_mono hi.norm (integrable_const _) symmetryReflectionPotential_bound
+      integral_mono (integrable_circleMeasure_of_circleIntegrable x r symmetryReflectionPotential_continuous.measurable symmetryReflectionPotential_continuous.continuousOn.circleIntegrable').norm (integrable_const _) symmetryReflectionPotential_bound
     _ = _ := by rw [integral_const, probReal_univ, one_smul]
 
 end DOZZ.Proofs

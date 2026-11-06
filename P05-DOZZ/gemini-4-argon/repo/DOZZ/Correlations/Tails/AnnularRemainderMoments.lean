@@ -28,10 +28,10 @@ theorem annular_kernel_le (γ α A ρ : ℝ) (hγ : 0 < γ)
       (by simpa only [neg_mul] using neg_le_neg (mul_le_mul_of_nonneg_left hαA hγ.le))
 
 theorem annular_remainder_moment_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (K : Set ℂ) (hK : IsCompact K) (ρ A b R : ℝ)
+    K (hK : IsCompact K) (ρ A b R : ℝ)
     (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (hb : 0 ≤ b)
     (hR : 0 < R) (hRbulk : R < 4/γ^2) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ z ∈ K, ∀ α r : ℝ,
@@ -50,7 +50,7 @@ theorem annular_remainder_moment_uniform
   refine ⟨k^R*(1+ENNReal.ofReal D),ENNReal.mul_lt_top
     (ENNReal.rpow_lt_top_of_nonneg hR.le hkfin) (by simp),?_⟩
   intro z hzk α r hα hαA hr hrR F hF
-  have hpoint (ω : Ω) : (∫⁻ x in Metric.ball z 1 \ Metric.ball z ρ,
+  have hpoint ω : (∫⁻ x in Metric.ball z 1 \ Metric.ball z ρ,
       ENNReal.ofReal (F x)*(ENNReal.ofReal ‖x-z‖)^(-γ*α) ∂M ω) ≤
       k*M ω (Metric.ball z 1) := by
     calc _ ≤ ∫⁻ x in Metric.ball z 1 \ Metric.ball z ρ, k ∂M ω := by
@@ -70,11 +70,10 @@ theorem annular_remainder_moment_uniform
           exact mul_le_mul' le_rfl (measure_mono sdiff_subset)
   have hm := gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM
     (Metric.ball z 1) Metric.isOpen_ball.measurableSet
-  have hsmall := lintegral_rpow_le_measure_add_larger_order P _ hm hr.le hrR
   have hmass : (∫⁻ ω, (M ω (Metric.ball z 1))^r ∂P) ≤ 1+ENNReal.ofReal D := by
     have hbig := (hbound z hzk 1 zero_lt_one le_rfl).2
     simp only [Real.rpow_eq_pow,Real.one_rpow,mul_one,gmcMassMoment,ENNReal.rpow_eq_pow] at hbig
-    exact hsmall.trans (by simpa only [measure_univ,ENNReal.rpow_eq_pow] using add_le_add le_rfl hbig)
+    exact (lintegral_rpow_le_measure_add_larger_order P _ hm hr.le hrR).trans (by simpa only [measure_univ,ENNReal.rpow_eq_pow] using add_le_add le_rfl hbig)
   calc _ ≤ ∫⁻ ω, (k*M ω (Metric.ball z 1))^r ∂P :=
         lintegral_mono fun ω => ENNReal.rpow_le_rpow (hpoint ω) hr.le
     _ = k^r*(∫⁻ ω, (M ω (Metric.ball z 1))^r ∂P) := by
@@ -84,10 +83,10 @@ theorem annular_remainder_moment_uniform
       (ENNReal.rpow_le_rpow_of_exponent_le hk1 hrR) hmass
 
 theorem annular_remainder_moment_uniform_models
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (K : Set ℂ) (hK : IsCompact K) (ρ A b R : ℝ)
+    K (hK : IsCompact K) ρ A b R
     (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (hb : 0 ≤ b)
     (hR : 0 < R) (hRbulk : R < 4/γ^2) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ (P' : Measure Ω) (X' : Ω → Distr) (N : Ω → Measure ℂ),
@@ -100,20 +99,9 @@ theorem annular_remainder_moment_uniform_models
     P X hX γ hγ hγ2 M hM K hK ρ A b R hρ hρ1 hb hR hRbulk
   refine ⟨C,hC,?_⟩
   intro P' X' N hX' hN z hzk α r hα hαA hr hrR F hFm hF
-  have hw : Measurable (fun x : ℂ => ENNReal.ofReal (F x)*
-      (ENNReal.ofReal ‖x-z‖)^(-γ*α)) := by fun_prop
   have hd : MeasurableSet (Metric.ball z 1 \ Metric.ball z ρ) :=
     Metric.isOpen_ball.measurableSet.diff Metric.isOpen_ball.measurableSet
-  have hm : Measurable (fun μ : Measure ℂ =>
-      (∫⁻ x in Metric.ball z 1 \ Metric.ball z ρ,
-        ENNReal.ofReal (F x)*(ENNReal.ofReal ‖x-z‖)^(-γ*α) ∂μ)^r) := by
-    have h := (Measure.measurable_lintegral (hw.indicator hd)).pow_const r
-    simpa only [lintegral_indicator hd] using h
-  have hl := equatorGFF_GMC_law_transport P X hX P' X' hX' γ hγ hγ2 M hM N hN
-    (fun _ μ => (∫⁻ x in Metric.ball z 1 \ Metric.ball z ρ,
-      ENNReal.ofReal (F x)*(ENNReal.ofReal ‖x-z‖)^(-γ*α) ∂μ)^r)
-    (hm.comp measurable_snd)
-  rw [← hl]
+  rw [← (equatorGFF_GMC_law_transport P X hX P' X' hX' γ hγ hγ2 M hM N hN (fun _ μ => (∫⁻ x in Metric.ball z 1 \ Metric.ball z ρ, ENNReal.ofReal (F x)*(ENNReal.ofReal ‖x-z‖)^(-γ*α) ∂μ)^r) ((show Measurable (fun μ : Measure ℂ => (∫⁻ x in Metric.ball z 1 \ Metric.ball z ρ, ENNReal.ofReal (F x)*(ENNReal.ofReal ‖x-z‖)^(-γ*α) ∂μ)^r) by simpa only [lintegral_indicator hd] using ((Measure.measurable_lintegral ((show Measurable (fun x => ENNReal.ofReal (F x)* (ENNReal.ofReal ‖x-z‖)^(-γ*α)) by fun_prop).indicator hd)).pow_const r)).comp measurable_snd))]
   exact hbound z hzk α r hα hαA hr hrR F hF
 
 

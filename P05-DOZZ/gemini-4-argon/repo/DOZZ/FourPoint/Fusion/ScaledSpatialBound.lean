@@ -10,9 +10,9 @@ open MeasureTheory
 namespace DOZZ.Proofs
 /-- The uniform rooted factor bounds every absolutely integrable signed planar kernel. -/
 theorem fusionScaledIntegral_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ s : ℝ) (hs : s ≤ 0) (K : ℂ → ℂ) (hK : Integrable K volume) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    α₁ α₂ α₃ s (hs : s ≤ 0) (K : ℂ → ℂ) (hK : Integrable K volume) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ z : ℂ, ‖z‖ ≤ 1 →
       ‖∫ y : ℂ, K y * (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)‖ ≤ C := by
   obtain ⟨B, hB, hb⟩ := fusionScaledFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs

@@ -18,7 +18,7 @@ namespace DOZZ.Proofs
 /-- Weighted first and second moments control the weighted variance. -/
 theorem weighted_variance_bounds
     {ι : Type*} [Fintype ι] (a w : ι → ℝ) (hw : ∀ i, 0 ≤ w i)
-    (hW : 0 < ∑ i, w i) (B : ℝ) (_hB : 0 ≤ B) (ha : ∀ i, |a i| ≤ B) :
+    (hW : 0 < ∑ i, w i) B (_hB : 0 ≤ B) (ha : ∀ i, |a i| ≤ B) :
     |(∑ i, a i * w i) / (∑ i, w i)| ≤ B ∧
       0 ≤ ((∑ i, a i ^ 2 * w i) * (∑ i, w i) - (∑ i, a i * w i) ^ 2) /
         (∑ i, w i) ^ 2 ∧
@@ -44,17 +44,10 @@ theorem weighted_variance_bounds
         have h := abs_le.mp (ha i)
         nlinarith only [h.1, h.2, _hB]
       _ = _ := by rw [Finset.mul_sum]
-  have hCS : (∑ i, a i * w i) ^ 2 ≤
-      (∑ i, a i ^ 2 * w i) * ∑ i, w i := by
-    apply Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul Finset.univ
-      (fun i _ => mul_nonneg (sq_nonneg _) (hw i)) (fun i _ => hw i)
-    intro i hi
-    nlinarith only [sq_nonneg (a i * w i)]
-  refine ⟨?_, div_nonneg (sub_nonneg.mpr hCS) (sq_nonneg _), ?_⟩
+  refine ⟨?_, div_nonneg (sub_nonneg.mpr (by apply Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul Finset.univ (fun i _ => mul_nonneg (sq_nonneg _) (hw i)) (fun i _ => hw i); intro i hi; nlinarith only [sq_nonneg (a i * w i)])) (sq_nonneg _), ?_⟩
   · rw [abs_div, abs_of_pos hW]
     exact (div_le_iff₀ hW).mpr hfirst
   · apply (div_le_iff₀ (sq_pos_of_pos hW)).mpr
-    have h := mul_le_mul_of_nonneg_right hsecond hW.le
-    nlinarith only [h, sq_nonneg (∑ i, a i * w i)]
+    nlinarith only [(mul_le_mul_of_nonneg_right hsecond hW.le), sq_nonneg (∑ i, a i * w i)]
 
 end DOZZ.Proofs

@@ -15,7 +15,7 @@ namespace DOZZ.Proofs
 
 /-- The actual radial singular mass on the inner punctured disk is the literal lateral
 exponential integral. This identity does not assume any independence or chaos law. -/
-theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
+theorem reflected_inner_radial_polar γ α A
     (M : Measure ℂ) (T : ℝ≥0) :
     (∫⁻ x in {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))},
       ENNReal.ofReal (‖x‖ ^ (-(γ * α))) ∂M) =
@@ -23,10 +23,6 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
         (Real.exp (γ * (A s - (Q γ - α) * s))) ∂lateralProjectedGMC γ A M := by
   let f : ℝ → ℝ≥0∞ := fun s => if (T : ℝ) < s then
     ENNReal.ofReal (Real.exp (γ * α * s)) else 0
-  have hf : Measurable f := Measurable.ite
-    (measurableSet_lt measurable_const measurable_id)
-    (((measurable_id.const_mul (γ * α)).exp).ennreal_ofReal) measurable_const
-  have hi := lateralProjectedGMC_reinsert_lintegral γ A M f hf
   have hleft : (∫⁻ s, lateralForwardWeight γ A s * f s ∂lateralProjectedGMC γ A M) =
       ∫⁻ s in Ioi (T : ℝ), ENNReal.ofReal
         (Real.exp (γ * (A s - (Q γ - α) * s))) ∂lateralProjectedGMC γ A M := by
@@ -35,8 +31,7 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
     intro s
     by_cases hs : (T : ℝ) < s
     · rw [indicator_of_mem (show s ∈ Ioi (T : ℝ) from hs)]
-      have hsp : 0 ≤ s := T.coe_nonneg.trans hs.le
-      simp only [f, ite_eq_left hs, lateralForwardWeight, abs_of_nonneg hsp]
+      simp only [f, ite_eq_left hs, lateralForwardWeight, abs_of_nonneg (T.coe_nonneg.trans hs.le)]
       rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
       congr 2
       ring
@@ -66,11 +61,11 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
       · rw [indicator_of_notMem (show x ∉ {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}
           from fun hh => hs (he.mpr hh.2))]
         simp only [hx, ite_false, f, ite_eq_right hs]
-  exact hright.symm.trans (hi.symm.trans hleft)
+  exact hright.symm.trans ((lateralProjectedGMC_reinsert_lintegral γ A M f (Measurable.ite (measurableSet_lt measurable_const measurable_id) (((measurable_id.const_mul (γ * α)).exp).ennreal_ofReal) measurable_const)).symm.trans hleft)
 
 /-- Deterministic radial restart extracts the exact scalar prefactor and translates the actual
 lateral measure. The equality is samplewise and retains extended-real integrals. -/
-theorem reflected_inner_polar_restart (γ ν : ℝ) (A : TwoSidedPath)
+theorem reflected_inner_polar_restart γ ν A
     (Z : Measure ℝ) (T : ℝ≥0) :
     (∫⁻ s in Ioi (T : ℝ), ENNReal.ofReal (Real.exp (γ * (A s - ν * s))) ∂Z) =
       ENNReal.ofReal (Real.exp (γ * (A T - ν * T))) *
@@ -80,13 +75,9 @@ theorem reflected_inner_polar_restart (γ ν : ℝ) (A : TwoSidedPath)
   let D := brownianShiftPath T (radialPositiveHalf A)
   let f : ℝ → ℝ≥0∞ := fun u => if 0 < u then ENNReal.ofReal
     (Real.exp (γ * (D (Real.toNNReal u) - ν * u))) else 0
-  have hf : Measurable f := Measurable.ite
-    (measurableSet_lt measurable_const measurable_id)
-    (((D.continuous.measurable.comp measurable_real_toNNReal).sub
-      (measurable_id.const_mul ν)).const_mul γ).exp.ennreal_ofReal measurable_const
   change _ = ENNReal.ofReal (Real.exp (γ * (A T - ν * T))) *
     ∫⁻ u, f u ∂Z.map (fun s => s - (T : ℝ))
-  rw [lintegral_map hf (show Measurable (fun s : ℝ => s - (T : ℝ)) from
+  rw [lintegral_map (Measurable.ite (measurableSet_lt measurable_const measurable_id) (((D.continuous.measurable.comp measurable_real_toNNReal).sub (measurable_id.const_mul ν)).const_mul γ).exp.ennreal_ofReal measurable_const : Measurable f) (show Measurable (fun s => s - (T : ℝ)) from
       measurable_id.sub_const _),
     ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top,
     ← lintegral_indicator measurableSet_Ioi]
@@ -94,19 +85,15 @@ theorem reflected_inner_polar_restart (γ ν : ℝ) (A : TwoSidedPath)
   intro s
   by_cases hs : (T : ℝ) < s
   · rw [indicator_of_mem (show s ∈ Ioi (T : ℝ) from hs)]
-    have hu : 0 < s - (T : ℝ) := sub_pos.mpr hs
-    have htime : (T : ℝ) + (Real.toNNReal (s - (T : ℝ)) : ℝ) = s := by
-      rw [Real.coe_toNNReal _ hu.le]
-      ring
+    have hu := sub_pos.mpr hs
     have hval : D (Real.toNNReal (s - (T : ℝ))) = A s - A T := by
       change A ((T : ℝ) + (Real.toNNReal (s - (T : ℝ)) : ℝ)) - A T = _
-      rw [htime]
+      rw [(show (T : ℝ) + (Real.toNNReal (s - (T : ℝ)) : ℝ) = s by rw [Real.coe_toNNReal _ hu.le]; ring)]
     simp only [f, ite_eq_left hu, hval]
     rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
     congr 2
     ring
   · rw [indicator_of_notMem (show s ∉ Ioi (T : ℝ) from hs)]
-    have hu : ¬0 < s - (T : ℝ) := fun h => hs (sub_pos.mp h)
-    simp only [f, ite_eq_right hu, mul_zero]
+    simp only [f, ite_eq_right (fun h => hs (sub_pos.mp h)), mul_zero]
 
 end DOZZ.Proofs

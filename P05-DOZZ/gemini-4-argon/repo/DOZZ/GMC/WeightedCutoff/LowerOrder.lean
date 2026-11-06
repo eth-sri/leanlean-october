@@ -13,7 +13,7 @@ theorem lintegral_lower_rpow_const_mul_le
     (hf : AEMeasurable f P) (c D : ℝ≥0∞) (p q : ℝ)
     (hp : 0 ≤ p) (hpq : p ≤ q) (hD : (∫⁻ ω, f ω ^ q ∂P) ≤ D) :
     (∫⁻ ω, (c * f ω) ^ p ∂P) ≤ 1 + c ^ q * D := by
-  have hq : 0 ≤ q := hp.trans hpq
+  have hq := hp.trans hpq
   have hmeas : AEMeasurable (fun ω => f ω ^ q) P :=
     ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hf
   calc

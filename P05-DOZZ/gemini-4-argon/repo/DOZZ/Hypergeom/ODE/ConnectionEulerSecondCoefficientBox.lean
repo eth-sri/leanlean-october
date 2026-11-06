@@ -23,14 +23,9 @@ private theorem secondCoefficient_realInterval_accumulates (lo x hi : ℝ)
   intro ε hε
   let d : ℝ := min (ε / 2) ((hi - x) / 2)
   have hd : 0 < d := by dsimp [d]; positivity
-  have hdε : d < ε := by
+  have : d < hi - x := by
     dsimp [d]
-    have hleft : ε / 2 < ε := by linarith
-    exact (min_le_left _ _).trans_lt hleft
-  have hdhi : d < hi - x := by
-    dsimp [d]
-    have hright : (hi - x) / 2 < hi - x := by linarith
-    exact (min_le_right _ _).trans_lt hright
+    exact (min_le_right _ _).trans_lt (by linarith)
   have hy : x + d ∈ Ioo lo hi \ {x} := by
     constructor
     · constructor <;> linarith
@@ -40,22 +35,16 @@ private theorem secondCoefficient_realInterval_accumulates (lo x hi : ℝ)
   · have hdiff : (x : ℂ) - ((x + d : ℝ) : ℂ) = -(d : ℂ) := by push_cast; ring
     rw [dist_eq_norm, hdiff, norm_neg, Complex.norm_real, Real.norm_eq_abs,
       abs_of_pos hd]
-    exact hdε
+    exact (by dsimp [d]; exact (min_le_left _ _).trans_lt (by linarith))
 
 private theorem secondCoefficient_ofReal_interval_subset_ball {lo q hi r : ℝ}
     (hleft : q - r ≤ lo) (hright : hi ≤ q + r)
     {x : ℝ} (hx : x ∈ Ioo lo hi) :
     (x : ℂ) ∈ Metric.ball (q : ℂ) r := by
   rcases hx with ⟨hxlo, hxhi⟩
-  have hbound : |x - q| < r := by
-    apply abs_lt.mpr
-    constructor <;> linarith
   rw [Metric.mem_ball, dist_eq_norm]
-  have hnorm : ‖(x : ℂ) - (q : ℂ)‖ = |x - q| := by
-    rw [show (x : ℂ) - (q : ℂ) = ((x - q : ℝ) : ℂ) by push_cast; ring,
-      Complex.norm_real, Real.norm_eq_abs]
-  rw [hnorm]
-  exact hbound
+  rw [(show ‖(x : ℂ) - (q : ℂ)‖ = |x - q| by rw [show (x : ℂ) - (q : ℂ) = ((x - q : ℝ) : ℂ) by push_cast; ring, Complex.norm_real, Real.norm_eq_abs])]
+  exact (by apply abs_lt.mpr; constructor <;> linarith)
 
 /-- A sufficiently small real-centered parameter ball avoids every integer. -/
 theorem secondCoefficient_ofReal_ball_subset_integerRange_compl
@@ -65,10 +54,9 @@ theorem secondCoefficient_ofReal_ball_subset_integerRange_compl
   intro z hz hzInt
   rcases hzInt with ⟨n, hn⟩
   subst z
-  have hdist : ‖(n : ℂ) - (q : ℂ)‖ < r := by
-    have hball := Metric.mem_ball.mp hz
-    simpa [dist_eq_norm] using hball
-  have hdistLower : min q (1 - q) ≤ ‖(n : ℂ) - (q : ℂ)‖ := by
+  have : ‖(n : ℂ) - (q : ℂ)‖ < r := by
+    simpa [dist_eq_norm] using (Metric.mem_ball.mp hz)
+  have : min q (1 - q) ≤ ‖(n : ℂ) - (q : ℂ)‖ := by
     have hnormEq : ‖(n : ℂ) - (q : ℂ)‖ = |(n : ℝ) - q| := by
       calc
         ‖(n : ℂ) - (q : ℂ)‖ = ‖(((n : ℝ) - q : ℝ) : ℂ)‖ := by
@@ -101,11 +89,9 @@ theorem secondCoefficient_negativeQuarter_ball_avoids_integers :
   have hdist : |(n : ℝ) + 1 / 4| < 1 / 16 := by
     rw [dist_eq_norm, hnorm] at hball
     exact hball
-  have hncase : n ≤ -1 ∨ 0 ≤ n := by omega
-  rcases hncase with hnneg | hnnonneg
+  rcases (show n ≤ -1 ∨ 0 ≤ n by omega) with hnneg | hnnonneg
   · have hnR : (n : ℝ) ≤ -1 := by exact_mod_cast hnneg
-    have hpos : (n : ℝ) + 1 / 4 ≤ 0 := by linarith
-    rw [abs_of_nonpos hpos] at hdist
+    rw [abs_of_nonpos (show (n : ℝ) + 1 / 4 ≤ 0 by linarith)] at hdist
     norm_num at hdist
     linarith
   · have hnR : (0 : ℝ) ≤ n := by exact_mod_cast hnnonneg
@@ -117,21 +103,21 @@ theorem secondCoefficient_negativeQuarter_ball_avoids_integers :
 open box. The box is centered in the negative-excess Euler region, then three one-variable
 identity theorems continue the real identity in `c`, `δ`, and `a`. -/
 theorem connectionMinusSecondCramer_eq_gamma_on_open_box
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H) :
+    {H} (hH : IsGaussHypergeometricFamily H) :
     ∀ c ∈ Metric.ball (3 / 4 : ℂ) (1 / 8 : ℝ),
       ∀ δ ∈ Metric.ball (-(1 / 4 : ℂ)) (1 / 16 : ℝ),
         ∀ a ∈ Metric.ball (1 / 2 : ℂ) (1 / 16 : ℝ),
           connectionMinusSecondCramerCoefficient H
               (gaussConnectionCoordinates c δ a) =
             gaussConnectionMinusGammaCoefficient₂ (gaussConnectionCoordinates c δ a) := by
-  let SC : Set ℂ := Metric.ball (3 / 4 : ℂ) (1 / 8 : ℝ)
-  let TC : Set ℂ := Metric.ball (-(1 / 4 : ℂ)) (1 / 16 : ℝ)
-  let VC : Set ℂ := Metric.ball (1 / 2 : ℂ) (1 / 16 : ℝ)
-  let SR : Set ℝ := Ioo (11 / 16 : ℝ) (13 / 16 : ℝ)
-  let TR : Set ℝ := Ioo (-(5 / 16 : ℝ)) (-(3 / 16 : ℝ))
-  let VR : Set ℝ := Ioo (7 / 16 : ℝ) (9 / 16 : ℝ)
-  let f : ℂ × ℂ × ℂ → ℂ := connectionMinusSecondCramerCoefficient H
-  let g : ℂ × ℂ × ℂ → ℂ := gaussConnectionMinusGammaCoefficient₂
+  let SC := Metric.ball (3 / 4 : ℂ) (1 / 8 : ℝ)
+  let TC := Metric.ball (-(1 / 4 : ℂ)) (1 / 16 : ℝ)
+  let VC := Metric.ball (1 / 2 : ℂ) (1 / 16 : ℝ)
+  let SR := Ioo (11 / 16 : ℝ) (13 / 16 : ℝ)
+  let TR := Ioo (-(5 / 16 : ℝ)) (-(3 / 16 : ℝ))
+  let VR := Ioo (7 / 16 : ℝ) (9 / 16 : ℝ)
+  let f := connectionMinusSecondCramerCoefficient H
+  let g := gaussConnectionMinusGammaCoefficient₂
   have hSCInt : SC ⊆ gaussConnectionIntegerRangeᶜ := by
     simpa [SC, Complex.ofReal_div] using
       (secondCoefficient_ofReal_ball_subset_integerRange_compl (3 / 4) (1 / 8)
@@ -154,10 +140,6 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
       f (gaussConnectionCoordinates (c : ℂ) (δ : ℂ) (a : ℂ)) =
         g (gaussConnectionCoordinates (c : ℂ) (δ : ℂ) (a : ℂ)) := by
     intro c hc δ hδ a ha
-    have hcpos : 0 < c := by rcases hc with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
-    have hcLt : c < 1 := by rcases hc with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
-    have hδneg : δ < 0 := by rcases hδ with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
-    have hap : 0 < a := by rcases ha with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
     have hca : 0 < c - a := by
       rcases hc with ⟨hcLo, hcHi⟩
       rcases ha with ⟨haLo, haHi⟩
@@ -177,89 +159,53 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
       rcases ha with ⟨haLo, haHi⟩
       norm_num at hcLo hcHi hδLo hδHi haLo haHi
       linarith
-    have hcInt := hSCInt (hSCReal hc)
-    have hδInt : ((c - a - (c - δ - a) : ℝ) : ℂ) ∈
-        gaussConnectionIntegerRangeᶜ := by
-      rw [show c - a - (c - δ - a) = δ by ring]
-      exact hTCInt (hTCReal hδ)
-    have hdelta : c - a - (c - δ - a) < 0 := by
-      rw [show c - a - (c - δ - a) = δ by ring]
-      exact hδneg
-    have hreal := connectionMinusSecondCramer_eq_gamma_of_real hH a (c - δ - a) c
-      hap hb hca hcb hdelta hcInt hδInt
-    simpa [f, g, gaussConnectionCoordinates] using hreal
+    simpa [f, g, gaussConnectionCoordinates] using (connectionMinusSecondCramer_eq_gamma_of_real hH a (c - δ - a) c (by rcases ha with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith) hb hca hcb (by rw [show c - a - (c - δ - a) = δ by ring]; exact (by rcases hδ with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith)) (hSCInt (hSCReal hc)) (by rw [show c - a - (c - δ - a) = δ by ring]; exact hTCInt (hTCReal hδ)))
   have hf : ∀ p ∈ gaussConnectionParameterDomain, DifferentiableAt ℂ f p := by
     intro p hp
     exact connectionMinusSecondCramerCoefficient_differentiableAt hH hp
   have hg : ∀ p ∈ gaussConnectionParameterDomain, DifferentiableAt ℂ g p := by
     intro p hp
     exact gaussConnectionMinusGammaCoefficient₂_differentiableAt hp
-  have hcoord (c δ a : ℂ) (hc : c ∈ SC) (hδ : δ ∈ TC) :
+  have hcoord c δ a (hc : c ∈ SC) (hδ : δ ∈ TC) :
       gaussConnectionCoordinates c δ a ∈ gaussConnectionParameterDomain := by
-    have hparams : c ∈ gaussConnectionIntegerRangeᶜ ∧
-        δ ∈ gaussConnectionIntegerRangeᶜ := ⟨hSCInt hc, hTCInt hδ⟩
     simpa [gaussConnectionCoordinates, gaussConnectionParameterDomain,
-      gaussConnectionIntegerRange, eq_comm] using hparams
-  have hfC (δ a : ℂ) (hδ : δ ∈ TC) (ha : a ∈ VC) :
+      gaussConnectionIntegerRange, eq_comm] using (⟨hSCInt hc, hTCInt hδ⟩ : c ∈ gaussConnectionIntegerRangeᶜ ∧ δ ∈ gaussConnectionIntegerRangeᶜ)
+  have hfC δ a (hδ : δ ∈ TC) (ha : a ∈ VC) :
       AnalyticOnNhd ℂ (fun c => f (gaussConnectionCoordinates c δ a)) SC := by
     apply DifferentiableOn.analyticOnNhd
     · intro c hc
-      have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates x δ a) c := by
-        dsimp [gaussConnectionCoordinates]
-        fun_prop
-      exact ((hf _ (hcoord c δ a hc hδ)).comp c hmap).differentiableWithinAt
+      exact ((hf _ (hcoord c δ a hc hδ)).comp c (show DifferentiableAt ℂ (fun x => gaussConnectionCoordinates x δ a) c by dsimp [gaussConnectionCoordinates]; fun_prop)).differentiableWithinAt
     · exact Metric.isOpen_ball
-  have hgC (δ a : ℂ) (hδ : δ ∈ TC) (ha : a ∈ VC) :
+  have hgC δ a (hδ : δ ∈ TC) (ha : a ∈ VC) :
       AnalyticOnNhd ℂ (fun c => g (gaussConnectionCoordinates c δ a)) SC := by
     apply DifferentiableOn.analyticOnNhd
     · intro c hc
-      have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates x δ a) c := by
-        dsimp [gaussConnectionCoordinates]
-        fun_prop
-      exact ((hg _ (hcoord c δ a hc hδ)).comp c hmap).differentiableWithinAt
+      exact ((hg _ (hcoord c δ a hc hδ)).comp c (show DifferentiableAt ℂ (fun x => gaussConnectionCoordinates x δ a) c by dsimp [gaussConnectionCoordinates]; fun_prop)).differentiableWithinAt
     · exact Metric.isOpen_ball
-  have hfD (c a : ℂ) (hc : c ∈ SC) (ha : a ∈ VC) :
+  have hfD c a (hc : c ∈ SC) (ha : a ∈ VC) :
       AnalyticOnNhd ℂ (fun δ => f (gaussConnectionCoordinates c δ a)) TC := by
     apply DifferentiableOn.analyticOnNhd
     · intro δ hδ
-      have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c x a) δ := by
-        dsimp [gaussConnectionCoordinates]
-        fun_prop
-      exact ((hf _ (hcoord c δ a hc hδ)).comp δ hmap).differentiableWithinAt
+      exact ((hf _ (hcoord c δ a hc hδ)).comp δ (show DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c x a) δ by dsimp [gaussConnectionCoordinates]; fun_prop)).differentiableWithinAt
     · exact Metric.isOpen_ball
-  have hgD (c a : ℂ) (hc : c ∈ SC) (ha : a ∈ VC) :
+  have hgD c a (hc : c ∈ SC) (ha : a ∈ VC) :
       AnalyticOnNhd ℂ (fun δ => g (gaussConnectionCoordinates c δ a)) TC := by
     apply DifferentiableOn.analyticOnNhd
     · intro δ hδ
-      have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c x a) δ := by
-        dsimp [gaussConnectionCoordinates]
-        fun_prop
-      exact ((hg _ (hcoord c δ a hc hδ)).comp δ hmap).differentiableWithinAt
+      exact ((hg _ (hcoord c δ a hc hδ)).comp δ (show DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c x a) δ by dsimp [gaussConnectionCoordinates]; fun_prop)).differentiableWithinAt
     · exact Metric.isOpen_ball
-  have hfA (c δ : ℂ) (hc : c ∈ SC) (hδ : δ ∈ TC) :
+  have hfA c δ (hc : c ∈ SC) (hδ : δ ∈ TC) :
       AnalyticOnNhd ℂ (fun a => f (gaussConnectionCoordinates c δ a)) VC := by
     apply DifferentiableOn.analyticOnNhd
     · intro a ha
-      have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c δ x) a := by
-        dsimp [gaussConnectionCoordinates]
-        fun_prop
-      exact ((hf _ (hcoord c δ a hc hδ)).comp a hmap).differentiableWithinAt
+      exact ((hf _ (hcoord c δ a hc hδ)).comp a (show DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c δ x) a by dsimp [gaussConnectionCoordinates]; fun_prop)).differentiableWithinAt
     · exact Metric.isOpen_ball
-  have hgA (c δ : ℂ) (hc : c ∈ SC) (hδ : δ ∈ TC) :
+  have hgA c δ (hc : c ∈ SC) (hδ : δ ∈ TC) :
       AnalyticOnNhd ℂ (fun a => g (gaussConnectionCoordinates c δ a)) VC := by
     apply DifferentiableOn.analyticOnNhd
     · intro a ha
-      have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c δ x) a := by
-        dsimp [gaussConnectionCoordinates]
-        fun_prop
-      exact ((hg _ (hcoord c δ a hc hδ)).comp a hmap).differentiableWithinAt
+      exact ((hg _ (hcoord c δ a hc hδ)).comp a (show DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c δ x) a by dsimp [gaussConnectionCoordinates]; fun_prop)).differentiableWithinAt
     · exact Metric.isOpen_ball
-  have hcCenter : (3 / 4 : ℂ) ∈ SC := by
-    norm_num [SC, Metric.mem_ball, dist_eq_norm]
-  have hδCenter : -(1 / 4 : ℂ) ∈ TC := by
-    norm_num [TC, Metric.mem_ball, dist_eq_norm]
-  have haCenter : (1 / 2 : ℂ) ∈ VC := by
-    norm_num [VC, Metric.mem_ball, dist_eq_norm]
   have hC (δ : ℝ) (hδ : δ ∈ TR) (a : ℝ) (ha : a ∈ VR) :
       ∀ c ∈ SC, f (gaussConnectionCoordinates c (δ : ℂ) (a : ℂ)) =
         g (gaussConnectionCoordinates c (δ : ℂ) (a : ℂ)) := by
@@ -268,8 +214,6 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
     have hclosure : (3 / 4 : ℂ) ∈ closure
         ({c | f (gaussConnectionCoordinates c (δ : ℂ) (a : ℂ)) =
             g (gaussConnectionCoordinates c (δ : ℂ) (a : ℂ))} \ {(3 / 4 : ℂ)}) := by
-      have hacc := secondCoefficient_realInterval_accumulates
-        (11 / 16) (3 / 4) (13 / 16) (by norm_num) (by norm_num)
       have hsub : ((fun x : ℝ => (x : ℂ)) '' (SR \ {(3 / 4 : ℝ)})) ⊆
           {c | f (gaussConnectionCoordinates c (δ : ℂ) (a : ℂ)) =
             g (gaussConnectionCoordinates c (δ : ℂ) (a : ℂ))} \ {(3 / 4 : ℂ)} := by
@@ -278,24 +222,17 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
         · exact hrealEq c hc δ hδ a ha
         · intro heq
           apply hcn
-          have heqC : (c : ℂ) = (3 / 4 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
-          exact Set.mem_singleton_iff.mpr (Complex.ofReal_injective (heqC.trans (by norm_num)))
-      exact closure_mono hsub (by simpa [SR] using hacc)
-    have hEq := AnalyticOnNhd.eqOn_of_preconnected_of_mem_closure
-      (hfC (δ : ℂ) (a : ℂ) hδC haC) (hgC (δ : ℂ) (a : ℂ) hδC haC)
-      (convex_ball (3 / 4 : ℂ) (1 / 8 : ℝ)).isPreconnected hcCenter hclosure
+          exact Set.mem_singleton_iff.mpr (Complex.ofReal_injective ((show (c : ℂ) = (3 / 4 : ℂ) by simpa only [Set.mem_singleton_iff] using heq).trans (by norm_num)))
+      exact closure_mono hsub (by simpa [SR] using (secondCoefficient_realInterval_accumulates (11 / 16) (3 / 4) (13 / 16) (by norm_num) (by norm_num)))
     intro c hc
-    exact hEq hc
-  have hD (c : ℂ) (hc : c ∈ SC) (a : ℝ) (ha : a ∈ VR) :
+    exact (AnalyticOnNhd.eqOn_of_preconnected_of_mem_closure (hfC (δ : ℂ) (a : ℂ) hδC haC) (hgC (δ : ℂ) (a : ℂ) hδC haC) (convex_ball (3 / 4 : ℂ) (1 / 8 : ℝ)).isPreconnected (by norm_num [SC, Metric.mem_ball, dist_eq_norm]) hclosure) hc
+  have hD c (hc : c ∈ SC) (a : ℝ) (ha : a ∈ VR) :
       ∀ δ ∈ TC, f (gaussConnectionCoordinates c δ (a : ℂ)) =
         g (gaussConnectionCoordinates c δ (a : ℂ)) := by
     have haC := hVCReal ha
     have hclosure : (-(1 / 4 : ℂ)) ∈ closure
         ({δ | f (gaussConnectionCoordinates c δ (a : ℂ)) =
             g (gaussConnectionCoordinates c δ (a : ℂ))} \ {-(1 / 4 : ℂ)}) := by
-      have hacc := secondCoefficient_realInterval_accumulates
-        (-(5 / 16)) (-(1 / 4)) (-(3 / 16)) (by norm_num) (by norm_num)
       have hsub : ((fun x : ℝ => (x : ℂ)) '' (TR \ {-(1 / 4 : ℝ)})) ⊆
           {δ | f (gaussConnectionCoordinates c δ (a : ℂ)) =
             g (gaussConnectionCoordinates c δ (a : ℂ))} \ {-(1 / 4 : ℂ)} := by
@@ -304,24 +241,17 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
         · exact hC δ hδ a ha c hc
         · intro heq
           apply hδn
-          have heqC : (δ : ℂ) = -(1 / 4 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
           exact Set.mem_singleton_iff.mpr
-            (Complex.ofReal_injective (heqC.trans (by norm_num)))
-      exact closure_mono hsub (by simpa [TR] using hacc)
-    have hEq := AnalyticOnNhd.eqOn_of_preconnected_of_mem_closure
-      (hfD c (a : ℂ) hc haC) (hgD c (a : ℂ) hc haC)
-      (convex_ball (-(1 / 4 : ℂ)) (1 / 16 : ℝ)).isPreconnected hδCenter hclosure
+            (Complex.ofReal_injective ((show (δ : ℂ) = -(1 / 4 : ℂ) by simpa only [Set.mem_singleton_iff] using heq).trans (by norm_num)))
+      exact closure_mono hsub (by simpa [TR] using (secondCoefficient_realInterval_accumulates (-(5 / 16)) (-(1 / 4)) (-(3 / 16)) (by norm_num) (by norm_num)))
     intro δ hδ
-    exact hEq hδ
-  have hA (c δ : ℂ) (hc : c ∈ SC) (hδ : δ ∈ TC) :
+    exact (AnalyticOnNhd.eqOn_of_preconnected_of_mem_closure (hfD c (a : ℂ) hc haC) (hgD c (a : ℂ) hc haC) (convex_ball (-(1 / 4 : ℂ)) (1 / 16 : ℝ)).isPreconnected (by norm_num [TC, Metric.mem_ball, dist_eq_norm]) hclosure) hδ
+  have hA c δ (hc : c ∈ SC) (hδ : δ ∈ TC) :
       ∀ a ∈ VC, f (gaussConnectionCoordinates c δ a) =
         g (gaussConnectionCoordinates c δ a) := by
     have hclosure : (1 / 2 : ℂ) ∈ closure
         ({a | f (gaussConnectionCoordinates c δ a) =
             g (gaussConnectionCoordinates c δ a)} \ {(1 / 2 : ℂ)}) := by
-      have hacc := secondCoefficient_realInterval_accumulates
-        (7 / 16) (1 / 2) (9 / 16) (by norm_num) (by norm_num)
       have hsub : ((fun x : ℝ => (x : ℂ)) '' (VR \ {(1 / 2 : ℝ)})) ⊆
           {a | f (gaussConnectionCoordinates c δ a) =
             g (gaussConnectionCoordinates c δ a)} \ {(1 / 2 : ℂ)} := by
@@ -330,15 +260,10 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
         · exact hD c hc a ha δ hδ
         · intro heq
           apply han
-          have heqC : (a : ℂ) = (1 / 2 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
-          exact Set.mem_singleton_iff.mpr (Complex.ofReal_injective (heqC.trans (by norm_num)))
-      exact closure_mono hsub (by simpa [VR] using hacc)
-    have hEq := AnalyticOnNhd.eqOn_of_preconnected_of_mem_closure
-      (hfA c δ hc hδ) (hgA c δ hc hδ)
-      (convex_ball (1 / 2 : ℂ) (1 / 16 : ℝ)).isPreconnected haCenter hclosure
+          exact Set.mem_singleton_iff.mpr (Complex.ofReal_injective ((show (a : ℂ) = (1 / 2 : ℂ) by simpa only [Set.mem_singleton_iff] using heq).trans (by norm_num)))
+      exact closure_mono hsub (by simpa [VR] using (secondCoefficient_realInterval_accumulates (7 / 16) (1 / 2) (9 / 16) (by norm_num) (by norm_num)))
     intro a ha
-    exact hEq ha
+    exact (AnalyticOnNhd.eqOn_of_preconnected_of_mem_closure (hfA c δ hc hδ) (hgA c δ hc hδ) (convex_ball (1 / 2 : ℂ) (1 / 16 : ℝ)).isPreconnected (by norm_num [VC, Metric.mem_ball, dist_eq_norm]) hclosure) ha
   intro c hc δ hδ a ha
   exact hA c δ hc hδ a ha
 

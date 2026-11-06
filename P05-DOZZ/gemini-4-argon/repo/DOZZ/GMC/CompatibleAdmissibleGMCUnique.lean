@@ -19,8 +19,8 @@ namespace DOZZ.Proofs
 
 /-- Subtraction preserves convergence in measure for real-valued families. -/
 theorem tendstoInMeasure_sub
-    {Ω ι : Type*} [MeasurableSpace Ω] (P : Measure Ω) {l : Filter ι}
-    (F G : ι → Ω → ℝ) (Flim Glim : Ω → ℝ)
+    {Ω ι : Type*} [MeasurableSpace Ω] (P : Measure Ω) {l}
+    (F G : ι → Ω → ℝ) Flim Glim
     (hF : TendstoInMeasure P F l Flim)
     (hG : TendstoInMeasure P G l Glim) :
     TendstoInMeasure P (fun i ω => F i ω - G i ω) l
@@ -29,23 +29,13 @@ theorem tendstoInMeasure_sub
   intro ε hε
   let δ : ℝ := ε / 2
   have hδ : 0 < δ := by dsimp [δ]; linarith
-  have hFnorm := (tendstoInMeasure_iff_norm).mp hF
-  have hGnorm := (tendstoInMeasure_iff_norm).mp hG
-  have hFzero : Tendsto
-      (fun i => P {ω | δ ≤ ‖F i ω - Flim ω‖}) l (𝓝 0) := hFnorm δ hδ
-  have hGzero : Tendsto
-      (fun i => P {ω | δ ≤ ‖G i ω - Glim ω‖}) l (𝓝 0) := hGnorm δ hδ
-  have hsum : Tendsto
-      (fun i => P {ω | δ ≤ ‖F i ω - Flim ω‖} +
-        P {ω | δ ≤ ‖G i ω - Glim ω‖}) l (𝓝 0) := by
-    simpa using hFzero.add hGzero
-  refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hsum ?_ ?_
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds (by simpa using (((tendstoInMeasure_iff_norm).mp hF) δ hδ).add (((tendstoInMeasure_iff_norm).mp hG) δ hδ)) ?_ ?_
   · intro i
     exact bot_le
   · intro i
-    let A : Set Ω := {ω | δ ≤ ‖F i ω - Flim ω‖}
-    let B : Set Ω := {ω | δ ≤ ‖G i ω - Glim ω‖}
-    let E : Set Ω := {ω | ε ≤ ‖(F i ω - G i ω) - (Flim ω - Glim ω)‖}
+    let A := {ω | δ ≤ ‖F i ω - Flim ω‖}
+    let B := {ω | δ ≤ ‖G i ω - Glim ω‖}
+    let E := {ω | ε ≤ ‖(F i ω - G i ω) - (Flim ω - Glim ω)‖}
     have hsubset : E ⊆ A ∪ B := by
       intro ω hω
       change ε ≤ ‖(F i ω - G i ω) - (Flim ω - Glim ω)‖ at hω
@@ -62,13 +52,9 @@ theorem tendstoInMeasure_sub
       have hGlt : ‖G i ω - Glim ω‖ < δ := lt_of_not_ge (by
         intro h
         exact hnot (Or.inr h))
-      have hFltNorm : ‖F i ω - Flim ω‖ < δ := by
-        simpa only [Real.norm_eq_abs] using hFlt
-      have hGltNorm : ‖G i ω - Glim ω‖ < δ := by
-        simpa only [Real.norm_eq_abs] using hGlt
       have hsumlt : ‖F i ω - Flim ω‖ + ‖G i ω - Glim ω‖ < ε := by
         calc
-          _ < δ + δ := add_lt_add hFltNorm hGltNorm
+          _ < δ + δ := add_lt_add (by simpa only [Real.norm_eq_abs] using hFlt) (by simpa only [Real.norm_eq_abs] using hGlt)
           _ = ε := by dsimp [δ]; ring
       exact (not_le_of_gt (lt_of_le_of_lt htriangle hsumlt)) hω
     change P E ≤ P A + P B

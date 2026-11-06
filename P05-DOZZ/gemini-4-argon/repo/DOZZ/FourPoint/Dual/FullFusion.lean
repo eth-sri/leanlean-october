@@ -14,9 +14,9 @@ namespace DOZZ.Proofs
 /-- The actual stochastic full-kernel limit and the physical classification give the
 literal dual fusion conclusions on one source reflection family. -/
 theorem dual_full_fusion_and_asymptotic {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+    {H}
     (hH : IsGaussHypergeometricFamily H)
-    (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
+    (P : Measure Ω) (M : Ω → Measure ℂ) X
     (γ μ α₁ α₂ α₃ η ξ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hη : 0 < η) (hη₂ : η < γ / 2) (hξ : 0 < ξ) (hξ₂ : ξ < 1)

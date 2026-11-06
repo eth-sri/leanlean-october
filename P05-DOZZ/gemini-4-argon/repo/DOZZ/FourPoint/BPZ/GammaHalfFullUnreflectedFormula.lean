@@ -22,9 +22,9 @@ namespace DOZZ.Proofs
 
 /-- **The unreflected `γ/2` formula** ([KRV, Theorem 9.1]). -/
 theorem gammaHalf_full_unreflected_formula {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+    {H}
     (hH : IsGaussHypergeometricFamily H)
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α₁ α₂ α₃ : ℝ)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) (γ μ α₁ α₂ α₃ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hαlo : γ / 2 < α₁) (hαhi : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
@@ -46,7 +46,6 @@ theorem gammaHalf_full_unreflected_formula {Ω : Type*} [MeasurableSpace Ω]
         (Or.inl rfl)
         (by
           have hQ : Q γ' = 2 / γ' + γ' / 2 := rfl
-          have : (0 : ℝ) < γ' / 2 := by positivity
           rw [hQ]; linarith)
         h₂ h₃ hs' hX hM'
 

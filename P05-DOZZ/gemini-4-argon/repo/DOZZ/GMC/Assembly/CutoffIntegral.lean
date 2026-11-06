@@ -25,75 +25,7 @@ namespace DOZZ.Assembly
 
 open DOZZ.Proofs
 
-/-- Every subcritical charge has a closed neighbourhood with common barrier parameters. -/
-theorem exists_local_barrier_parameters (γ₀ : ℝ) (hγ₀ : 0 < γ₀) (hγ₀2 : γ₀ < 2) :
-    ∃ δ : ℝ, 0 < δ ∧ ∃ a η κ : ℝ, 0 < γ₀ - δ ∧ γ₀ + δ < a ∧ a < 2 * (γ₀ - δ) ∧
-      0 < η ∧ η < 1 ∧ 0 < κ ∧ κ < 2 ∧
-      ∀ g ∈ Icc (γ₀ - δ) (γ₀ + δ),
-        g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η))) ≤ κ := by
-  obtain ⟨a, κ, η, hγa, ha2, hκ, hκ2, hη, hη1, hexp⟩ :=
-    exists_fixed_charge_robust_barrier_parameters γ₀ hγ₀ hγ₀2
-  set κ' : ℝ := (κ + 2) / 2 with hκ'def
-  let φ : ℝ → ℝ := fun g => g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η)))
-  have hφ : Continuous φ := by fun_prop
-  let V : Set ℝ := {g | 0 < g} ∩ {g | g < a} ∩ {g | a < 2 * g} ∩ {g | φ g < κ'}
-  have hV : IsOpen V :=
-    (((isOpen_lt continuous_const continuous_id).inter
-      (isOpen_lt continuous_id continuous_const)).inter
-      (isOpen_lt continuous_const (continuous_const.mul continuous_id))).inter
-      (isOpen_lt hφ continuous_const)
-  have hγ₀V : γ₀ ∈ V := ⟨⟨⟨hγ₀, hγa⟩, ha2⟩, lt_of_le_of_lt hexp (by rw [hκ'def]; linarith)⟩
-  obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp hV γ₀ hγ₀V
-  have hmem (g : ℝ) (hg : g ∈ Icc (γ₀ - ε / 2) (γ₀ + ε / 2)) : g ∈ V := by
-    apply hball
-    rw [Metric.mem_ball, Real.dist_eq, abs_lt]
-    constructor <;> linarith [hg.1, hg.2]
-  have hlo := hmem (γ₀ - ε / 2) ⟨le_rfl, by linarith⟩
-  have hhi := hmem (γ₀ + ε / 2) ⟨by linarith, le_rfl⟩
-  refine ⟨ε / 2, half_pos hε, a, η, κ', hlo.1.1.1, hhi.1.1.2, hlo.1.2, hη, hη1,
-    by rw [hκ'def]; linarith, by rw [hκ'def]; linarith, fun g hg => (hmem g hg).2.le⟩
 
-/-- Full cutoff masses of tests with values in `[0, L]` are uniformly Cauchy in `L¹(P)` over a
-compact set of subcritical charges. -/
-theorem chartMass_L1_uniform_cauchy
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U)
-    (I : Set ℝ) (hI : IsCompact I) (hI2 : I ⊆ Ioo 0 2)
-    (L : ℝ) (hL : 0 ≤ L) (ε : ℝ) (hε : 0 < ε) :
-    ∃ R : ℝ, ∀ r s : ℝ, R ≤ r → R ≤ s → ∀ g ∈ I, ∀ f : ℂ → ℝ, Measurable f →
-      (∀ x, 0 ≤ f x) → (∀ x, f x ≤ L) →
-      ∫⁻ ω, ennDist (chartMass P U dens K Y g r f ω) (chartMass P U dens K Y g s f ω) ∂P <
-        ENNReal.ofReal ε := by
-  classical
-  have hloc : ∀ γ₀ : I, ∃ δ : ℝ, 0 < δ ∧ ∃ a η κ : ℝ, 0 < (γ₀ : ℝ) - δ ∧
-      (γ₀ : ℝ) + δ < a ∧ a < 2 * ((γ₀ : ℝ) - δ) ∧ 0 < η ∧ η < 1 ∧ 0 < κ ∧ κ < 2 ∧
-      ∀ g ∈ Icc ((γ₀ : ℝ) - δ) ((γ₀ : ℝ) + δ),
-        g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η))) ≤ κ :=
-    fun γ₀ => exists_local_barrier_parameters γ₀ (hI2 γ₀.2).1 (hI2 γ₀.2).2
-  choose δ hδ a η κ hlo hhi ha2 hη hη1 hκ hκ2 hexp using hloc
-  have hR : ∀ γ₀ : I, ∃ R : ℝ, ∀ r s : ℝ, R ≤ r → R ≤ s →
-      ∀ g ∈ Icc ((γ₀ : ℝ) - δ γ₀) ((γ₀ : ℝ) + δ γ₀), ∀ f : ℂ → ℝ, Measurable f →
-      (∀ x, 0 ≤ f x) → (∀ x, f x ≤ L) →
-      ∫⁻ ω, ennDist (chartMass P U dens K Y g r f ω) (chartMass P U dens K Y g s f ω) ∂P <
-        ENNReal.ofReal ε := fun γ₀ =>
-    chartMass_L1_uniform_cauchy_interval P U dens ε₀ Y hY K hK hKU _ _ (a γ₀) (η γ₀) (κ γ₀)
-      (hlo γ₀) (by linarith [hδ γ₀]) (hhi γ₀) (ha2 γ₀) (hη γ₀) (hη1 γ₀) (hκ γ₀) (hκ2 γ₀)
-      (hexp γ₀) L hL ε hε
-  choose R hR using hR
-  obtain ⟨t, ht⟩ := hI.elim_finite_subcover
-    (fun γ₀ : I => Ioo ((γ₀ : ℝ) - δ γ₀) ((γ₀ : ℝ) + δ γ₀)) (fun _ => isOpen_Ioo)
-    (fun g hg => Set.mem_iUnion.mpr ⟨⟨g, hg⟩, by
-      constructor <;> linarith [hδ ⟨g, hg⟩]⟩)
-  refine ⟨∑ i ∈ t, |R i|, ?_⟩
-  intro r s hr hs g hg f hf hf0 hfL
-  obtain ⟨i, hi, hgi⟩ := Set.mem_iUnion₂.mp (ht hg)
-  have hRi : R i ≤ ∑ j ∈ t, |R j| :=
-    (le_abs_self _).trans (Finset.single_le_sum (fun j _ => abs_nonneg (R j)) hi)
-  exact hR i r s (hRi.trans hr) (hRi.trans hs) g ⟨hgi.1.le, hgi.2.le⟩ f hf hf0 hfL
 
 end DOZZ.Assembly
 
@@ -121,8 +53,8 @@ noncomputable def admissibleCutoffIntegral {Ω : Type*} [MeasurableSpace Ω] (P 
 
 /-- The Wick exponential in the cutoff integrand is the admissible Wick weight. -/
 theorem ofReal_exp_eq_admissibleLogWickWeight
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Y : Ω → ℝ → ℂ → ℝ) (g ε : ℝ) (x : ℂ)
-    (ω : Ω) :
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Y : Ω → ℝ → ℂ → ℝ) g ε x
+    ω :
     ENNReal.ofReal (Real.exp (g * Y ω ε x - g ^ 2 / 2 * ∫ ω', Y ω' ε x ^ 2 ∂P)) =
       admissibleLogWickWeight P Y g ε x ω := by
   unfold admissibleLogWickWeight gaussianVariance gaussianCovariance
@@ -132,30 +64,29 @@ theorem ofReal_exp_eq_admissibleLogWickWeight
 theorem admissibleCutoff_integrand_measurable
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (g r : ℝ) (f : ℂ → ℝ)
-    (hf : Measurable f) (ω : Ω) :
+    U (dens : ℂ → ℝ) ε₀
+    Y
+    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) g r f
+    (hf : Measurable f) ω :
     Measurable (fun x => f x * Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 *
       ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) := by
-  have hv := admissibleLogRegularization_variance_measurable P U dens ε₀ Y hY (Real.exp (-r))
-  have hv' : Measurable (fun x => ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P) := by
+  have : Measurable (fun x => ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P) := by
     have heq : (fun x => ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P) =
         fun x => gaussianVariance P (fun ω => Y ω (Real.exp (-r)) x) := by
       funext x
       unfold gaussianVariance gaussianCovariance
       simp only [pow_two]
-    rw [heq]; exact hv
-  have hfield : Measurable (fun x : ℂ => Y ω (Real.exp (-r)) x) :=
+    rw [heq]; exact (admissibleLogRegularization_variance_measurable P U dens ε₀ Y hY (Real.exp (-r)))
+  have : Measurable (fun x => Y ω (Real.exp (-r)) x) :=
     (hY.measurableAtScale (Real.exp (-r))).comp (measurable_const.prodMk measurable_id)
   fun_prop
 
 /-- For a nonnegative test vanishing off the chart, the extended cutoff integral is the chart
 mass. -/
 theorem lintegral_cutoff_integrand_eq_chartMass
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ) (K : Set ℂ) (g r : ℝ) (f : ℂ → ℝ)
-    (hf0 : ∀ x, 0 ≤ f x) (hfK : ∀ x ∉ K, f x = 0) (ω : Ω) :
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) U dens
+    (Y : Ω → ℝ → ℂ → ℝ) K g r (f : ℂ → ℝ)
+    (hf0 : ∀ x, 0 ≤ f x) (hfK : ∀ x ∉ K, f x = 0) ω :
     ∫⁻ x, ENNReal.ofReal (f x * Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 *
         ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) ∂logRegularizationReference U dens =
       chartMass P U dens K Y g r f ω := by
@@ -169,50 +100,31 @@ theorem lintegral_cutoff_integrand_eq_chartMass
     by_contra hxK
     exact hx (by simp [hfK x hxK])
 
-/-- For a nonnegative test vanishing off the chart, the real cutoff integral is the real part of
-the chart mass. -/
-theorem admissibleCutoffIntegral_eq_toReal_chartMass
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (K : Set ℂ) (g r : ℝ) (f : ℂ → ℝ)
-    (hf : Measurable f) (hf0 : ∀ x, 0 ≤ f x) (hfK : ∀ x ∉ K, f x = 0) (ω : Ω) :
-    admissibleCutoffIntegral P U dens Y g r f ω = (chartMass P U dens K Y g r f ω).toReal := by
-  unfold admissibleCutoffIntegral
-  rw [integral_eq_lintegral_of_nonneg_ae
-    (ae_of_all _ fun x => mul_nonneg (hf0 x) (Real.exp_pos _).le)
-    (admissibleCutoff_integrand_measurable P U dens ε₀ Y hY g r f hf ω).aestronglyMeasurable,
-    lintegral_cutoff_integrand_eq_chartMass P U dens Y K g r f hf0 hfK ω]
 
 /-- The admissible Wick weight has expectation one at every admissible cutoff. -/
 theorem lintegral_admissibleLogWickWeight
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (g ε : ℝ) (hε : 0 < ε)
-    (hεcut : ε ≤ ε₀) (x : ℂ) :
+    U (dens : ℂ → ℝ) ε₀
+    Y
+    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) g ε (hε : 0 < ε)
+    (hεcut : ε ≤ ε₀) x :
     ∫⁻ ω, admissibleLogWickWeight P Y g ε x ω ∂P = 1 := by
-  have h := compatibleAdmissibleSelectedWickWeight_lintegral_eq_one P U dens ε₀ ε₀ Y Y hY hY
-    true ε hε (by rw [min_self]; exact hεcut) x g
-  simpa only [ite_self] using h
+  simpa only [ite_self] using (compatibleAdmissibleSelectedWickWeight_lintegral_eq_one P U dens ε₀ ε₀ Y Y hY hY true ε hε (by rw [min_self]; exact hεcut) x g)
 
 /-- The expected chart mass of a test with values in `[0, L]` is at most `L` times the reference
 mass of the chart. -/
 theorem lintegral_chartMass_le
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (K : Set ℂ) (g r : ℝ)
-    (hr : Real.exp (-r) ≤ ε₀) (L : ℝ) (f : ℂ → ℝ) (hf : Measurable f) (hfL : ∀ x, f x ≤ L) :
+    U (dens : ℂ → ℝ) ε₀
+    Y
+    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) K g r
+    (hr : Real.exp (-r) ≤ ε₀) L f (hf : Measurable f) (hfL : ∀ x, f x ≤ L) :
     ∫⁻ ω, chartMass P U dens K Y g r f ω ∂P ≤
       ENNReal.ofReal L * logRegularizationReference U dens K := by
-  have hF := wickEventMass_integrand_measurable P U dens ε₀ Y hY g r Set.univ
-    MeasurableSet.univ f hf
   unfold chartMass wickEventMass
-  rw [lintegral_lintegral_swap hF.aemeasurable]
+  rw [lintegral_lintegral_swap (wickEventMass_integrand_measurable P U dens ε₀ Y hY g r Set.univ MeasurableSet.univ f hf).aemeasurable]
   calc ∫⁻ x, ∫⁻ ω, ENNReal.ofReal (f x) * admissibleLogWickWeight P Y g (Real.exp (-r)) x ω *
         Set.indicator Set.univ (fun _ => (1 : ℝ≥0∞)) (ω, x) ∂P
         ∂(logRegularizationReference U dens).restrict K
@@ -228,47 +140,25 @@ theorem lintegral_chartMass_le
     _ = ENNReal.ofReal L * logRegularizationReference U dens K := by
         rw [lintegral_const, Measure.restrict_apply_univ]
 
-/-- The real distance of two real parts is at most the symmetric extended difference. -/
-theorem ofReal_abs_toReal_sub_le_ennDist (x y : ℝ≥0∞) :
-    ENNReal.ofReal |x.toReal - y.toReal| ≤ ennDist x y := by
-  by_cases hx : x = ⊤
-  · subst hx
-    by_cases hy : y = ⊤
-    · subst hy; simp
-    · simp [ennDist, ENNReal.top_sub hy]
-  by_cases hy : y = ⊤
-  · subst hy; simp [ennDist, ENNReal.top_sub hx]
-  rw [ennDist_eq_ofReal_abs hx hy]
 
 /-- A signed test vanishing off the chart has an almost surely integrable cutoff integrand. -/
 theorem admissibleCutoff_integrand_integrable_ae
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
+    U (dens : ℂ → ℝ) ε₀
+    Y
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U) (g r : ℝ) (hr : Real.exp (-r) ≤ ε₀)
-    (L : ℝ) (f : ℂ → ℝ) (hf : Measurable f) (hfL : ∀ x, |f x| ≤ L)
+    K (hK : IsCompact K) (hKU : K ⊆ U) g r (hr : Real.exp (-r) ≤ ε₀)
+    L f (hf : Measurable f) (hfL : ∀ x, |f x| ≤ L)
     (hfK : ∀ x ∉ K, f x = 0) :
     ∀ᵐ ω ∂P, Integrable (fun x => f x * Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 *
       ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) (logRegularizationReference U dens) := by
-  have hσK := admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU
-  have habs : Measurable (fun x => |f x|) := continuous_abs.measurable.comp hf
-  have hmass := lintegral_chartMass_le P U dens ε₀ Y hY K g r hr L (fun x => |f x|) habs hfL
-  have hmeas : Measurable (chartMass P U dens K Y g r (fun x => |f x|)) :=
-    wickEventMass_measurable P U dens ε₀ Y hY _ g r Set.univ MeasurableSet.univ _ habs
-  have hfin := ae_lt_top hmeas (ne_top_of_le_ne_top
-    (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hσK) hmass)
-  filter_upwards [hfin] with ω hω
+  have habs := continuous_abs.measurable.comp hf
+  filter_upwards [(ae_lt_top (wickEventMass_measurable P U dens ε₀ Y hY _ g r Set.univ MeasurableSet.univ _ habs) (ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top (admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU)) (lintegral_chartMass_le P U dens ε₀ Y hY K g r hr L (fun x => |f x|) habs hfL)))] with ω hω
   refine ⟨(admissibleCutoff_integrand_measurable P U dens ε₀ Y hY g r f hf ω).aestronglyMeasurable,
     ?_⟩
   unfold HasFiniteIntegral
-  have hnorm : (fun x => ‖f x * Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 *
-      ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)‖ₑ) = fun x => ENNReal.ofReal (|f x| *
-      Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 * ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) := by
-    funext x
-    rw [← ofReal_norm, Real.norm_eq_abs, abs_mul, abs_of_pos (Real.exp_pos _)]
-  rw [hnorm, lintegral_cutoff_integrand_eq_chartMass P U dens Y K g r _ (fun x => abs_nonneg _)
+  rw [(show (fun x => ‖f x * Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 * ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)‖ₑ) = fun x => ENNReal.ofReal (|f x| * Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 * ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) by funext x; rw [← ofReal_norm, Real.norm_eq_abs, abs_mul, abs_of_pos (Real.exp_pos _)]), lintegral_cutoff_integrand_eq_chartMass P U dens Y K g r _ (fun x => abs_nonneg _)
     (fun x hx => by rw [hfK x hx, abs_zero]) ω]
   exact hω
 
@@ -277,24 +167,78 @@ uniformly Cauchy in `L¹(P)` over a compact set of subcritical charges. -/
 theorem admissibleCutoffIntegral_L1_uniform_cauchy
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
+    U (dens : ℂ → ℝ) ε₀
+    Y
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U)
-    (I : Set ℝ) (hI : IsCompact I) (hI2 : I ⊆ Ioo 0 2)
-    (L : ℝ) (ε : ℝ) (hε : 0 < ε) :
+    K (hK : IsCompact K) (hKU : K ⊆ U)
+    I (hI : IsCompact I) (hI2 : I ⊆ Ioo 0 2)
+    L ε (hε : 0 < ε) :
     ∃ R : ℝ, ∀ r s : ℝ, R ≤ r → R ≤ s → ∀ g ∈ I, ∀ f : ℂ → ℝ, Measurable f →
       (∀ x, |f x| ≤ L) → (∀ x ∉ K, f x = 0) →
       ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y g r f ω -
         admissibleCutoffIntegral P U dens Y g s f ω| ∂P < ENNReal.ofReal ε := by
+  have ofReal_abs_toReal_sub_le_ennDist (x : ℝ≥0∞) (y : ℝ≥0∞) : ENNReal.ofReal |x.toReal - y.toReal| ≤ ennDist x y := by
+    by_cases hx : x = ⊤
+    · subst hx
+      by_cases hy : y = ⊤
+      · subst hy; simp
+      · simp [ennDist, ENNReal.top_sub hy]
+    by_cases hy : y = ⊤
+    · subst hy; simp [ennDist, ENNReal.top_sub hx]
+    rw [ennDist_eq_ofReal_abs hx hy]
+  have admissibleCutoffIntegral_eq_toReal_chartMass g r f (hf : Measurable f) (hf0 : ∀ x, 0 ≤ f x) (hfK : ∀ x ∉ K, f x = 0) ω : admissibleCutoffIntegral P U dens Y g r f ω = (chartMass P U dens K Y g r f ω).toReal := by
+    unfold admissibleCutoffIntegral
+    rw [integral_eq_lintegral_of_nonneg_ae
+      (ae_of_all _ fun x => mul_nonneg (hf0 x) (Real.exp_pos _).le)
+      (admissibleCutoff_integrand_measurable P U dens ε₀ Y hY g r f hf ω).aestronglyMeasurable,
+      lintegral_cutoff_integrand_eq_chartMass P U dens Y K g r f hf0 hfK ω]
+  have chartMass_L1_uniform_cauchy L (hL : 0 ≤ L) ε (hε : 0 < ε) : ∃ R : ℝ, ∀ r s : ℝ, R ≤ r → R ≤ s → ∀ g ∈ I, ∀ f : ℂ → ℝ, Measurable f → (∀ x, 0 ≤ f x) → (∀ x, f x ≤ L) → ∫⁻ ω, ennDist (chartMass P U dens K Y g r f ω) (chartMass P U dens K Y g s f ω) ∂P < ENNReal.ofReal ε := by
+    classical
+    have exists_local_barrier_parameters γ₀ (hγ₀ : 0 < γ₀) (hγ₀2 : γ₀ < 2) : ∃ δ : ℝ, 0 < δ ∧ ∃ a η κ : ℝ, 0 < γ₀ - δ ∧ γ₀ + δ < a ∧ a < 2 * (γ₀ - δ) ∧ 0 < η ∧ η < 1 ∧ 0 < κ ∧ κ < 2 ∧ ∀ g ∈ Icc (γ₀ - δ) (γ₀ + δ), g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η))) ≤ κ := by
+      obtain ⟨a, κ, η, hγa, ha2, hκ, hκ2, hη, hη1, hexp⟩ :=
+        exists_fixed_charge_robust_barrier_parameters γ₀ hγ₀ hγ₀2
+      set κ' : ℝ := (κ + 2) / 2 with hκ'def
+      let V := {g | 0 < g} ∩ {g | g < a} ∩ {g | a < 2 * g} ∩ {g | (fun g => g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η)))) g < κ'}
+      obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp ((((isOpen_lt continuous_const continuous_id).inter (isOpen_lt continuous_id continuous_const)).inter (isOpen_lt continuous_const (continuous_const.mul continuous_id))).inter (isOpen_lt (by fun_prop) continuous_const) : IsOpen V) γ₀ (⟨⟨⟨hγ₀, hγa⟩, ha2⟩, lt_of_le_of_lt hexp (by rw [hκ'def]; linarith)⟩ : γ₀ ∈ V)
+      have hmem g (hg : g ∈ Icc (γ₀ - ε / 2) (γ₀ + ε / 2)) : g ∈ V := by
+        apply hball
+        rw [Metric.mem_ball, Real.dist_eq, abs_lt]
+        constructor <;> linarith [hg.1, hg.2]
+      have hlo := hmem (γ₀ - ε / 2) ⟨le_rfl, by linarith⟩
+      refine ⟨ε / 2, half_pos hε, a, η, κ', hlo.1.1.1, (hmem (γ₀ + ε / 2) ⟨by linarith, le_rfl⟩).1.1.2, hlo.1.2, hη, hη1,
+        by rw [hκ'def]; linarith, by rw [hκ'def]; linarith, fun g hg => (hmem g hg).2.le⟩
+    have hloc : ∀ γ₀ : I, ∃ δ : ℝ, 0 < δ ∧ ∃ a η κ : ℝ, 0 < (γ₀ : ℝ) - δ ∧
+        (γ₀ : ℝ) + δ < a ∧ a < 2 * ((γ₀ : ℝ) - δ) ∧ 0 < η ∧ η < 1 ∧ 0 < κ ∧ κ < 2 ∧
+        ∀ g ∈ Icc ((γ₀ : ℝ) - δ) ((γ₀ : ℝ) + δ),
+          g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η))) ≤ κ :=
+      fun γ₀ => exists_local_barrier_parameters γ₀ (hI2 γ₀.2).1 (hI2 γ₀.2).2
+    choose δ hδ a η κ hlo hhi ha2 hη hη1 hκ hκ2 hexp using hloc
+    have hR : ∀ γ₀ : I, ∃ R : ℝ, ∀ r s : ℝ, R ≤ r → R ≤ s →
+        ∀ g ∈ Icc ((γ₀ : ℝ) - δ γ₀) ((γ₀ : ℝ) + δ γ₀), ∀ f : ℂ → ℝ, Measurable f →
+        (∀ x, 0 ≤ f x) → (∀ x, f x ≤ L) →
+        ∫⁻ ω, ennDist (chartMass P U dens K Y g r f ω) (chartMass P U dens K Y g s f ω) ∂P <
+          ENNReal.ofReal ε := fun γ₀ =>
+      chartMass_L1_uniform_cauchy_interval P U dens ε₀ Y hY K hK hKU _ _ (a γ₀) (η γ₀) (κ γ₀)
+        (hlo γ₀) (by linarith [hδ γ₀]) (hhi γ₀) (ha2 γ₀) (hη γ₀) (hη1 γ₀) (hκ γ₀) (hκ2 γ₀)
+        (hexp γ₀) L hL ε hε
+    choose R hR using hR
+    obtain ⟨t, ht⟩ := hI.elim_finite_subcover
+      (fun γ₀ : I => Ioo ((γ₀ : ℝ) - δ γ₀) ((γ₀ : ℝ) + δ γ₀)) (fun _ => isOpen_Ioo)
+      (fun g hg => Set.mem_iUnion.mpr ⟨⟨g, hg⟩, by
+        constructor <;> linarith [hδ ⟨g, hg⟩]⟩)
+    refine ⟨∑ i ∈ t, |R i|, ?_⟩
+    intro r s hr hs g hg f hf hf0 hfL
+    obtain ⟨i, hi, hgi⟩ := Set.mem_iUnion₂.mp (ht hg)
+    have hRi : R i ≤ ∑ j ∈ t, |R j| :=
+      (le_abs_self _).trans (Finset.single_le_sum (fun j _ => abs_nonneg (R j)) hi)
+    exact hR i r s (hRi.trans hr) (hRi.trans hs) g ⟨hgi.1.le, hgi.2.le⟩ f hf hf0 hfL
   set L' := max L 0 with hL'def
-  have hL' : 0 ≤ L' := le_max_right _ _
-  obtain ⟨R₁, hR₁⟩ := chartMass_L1_uniform_cauchy P U dens ε₀ Y hY K hK hKU I hI hI2 L' hL'
+  obtain ⟨R₁, hR₁⟩ := chartMass_L1_uniform_cauchy L' (le_max_right _ _)
     (ε / 2) (by linarith)
   refine ⟨max R₁ (-Real.log ε₀), ?_⟩
   intro r s hr hs g hg f hf hfL hfK
-  have hcut (t : ℝ) (ht : max R₁ (-Real.log ε₀) ≤ t) : Real.exp (-t) ≤ ε₀ := by
-    have h1 : -Real.log ε₀ ≤ t := le_trans (le_max_right _ _) ht
+  have hcut t (ht : max R₁ (-Real.log ε₀) ≤ t) : Real.exp (-t) ≤ ε₀ := by
+    have : -Real.log ε₀ ≤ t := le_trans (le_max_right _ _) ht
     calc Real.exp (-t) ≤ Real.exp (Real.log ε₀) := Real.exp_le_exp.mpr (by linarith)
       _ = ε₀ := Real.exp_log hY.cutoffPositive
   let fp : ℂ → ℝ := fun x => max (f x) 0
@@ -309,23 +253,18 @@ theorem admissibleCutoffIntegral_L1_uniform_cauchy
     max_le_max ((neg_le_abs _).trans (hfL x)) le_rfl
   have hfpK : ∀ x ∉ K, fp x = 0 := fun x hx => by simp [fp, hfK x hx]
   have hfmK : ∀ x ∉ K, fm x = 0 := fun x hx => by simp [fm, hfK x hx]
-  have hsplit (x : ℂ) : f x = fp x - fm x := by
+  have hsplit x : f x = fp x - fm x := by
     simp only [fp, fm]
     rcases le_total 0 (f x) with h | h
     · rw [max_eq_left h, max_eq_right (by linarith)]; ring
     · rw [max_eq_right h, max_eq_left (by linarith)]; ring
-  have hdecomp (t : ℝ) (ht : max R₁ (-Real.log ε₀) ≤ t) : ∀ᵐ ω ∂P,
+  have hdecomp t (ht : max R₁ (-Real.log ε₀) ≤ t) : ∀ᵐ ω ∂P,
       admissibleCutoffIntegral P U dens Y g t f ω =
         (chartMass P U dens K Y g t fp ω).toReal - (chartMass P U dens K Y g t fm ω).toReal := by
-    have hfabs : ∀ x, |f x| ≤ L' := fun x => (hfL x).trans (le_max_left _ _)
-    have hpInt := admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU g t (hcut t ht)
-      L' fp hfp (fun x => by rw [abs_of_nonneg (hfp0 x)]; exact hfpL x) hfpK
-    have hmInt := admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU g t (hcut t ht)
-      L' fm hfm (fun x => by rw [abs_of_nonneg (hfm0 x)]; exact hfmL x) hfmK
-    have _ := hfabs
-    filter_upwards [hpInt, hmInt] with ω hp hm
-    rw [← admissibleCutoffIntegral_eq_toReal_chartMass P U dens ε₀ Y hY K g t fp hfp hfp0 hfpK ω,
-      ← admissibleCutoffIntegral_eq_toReal_chartMass P U dens ε₀ Y hY K g t fm hfm hfm0 hfmK ω]
+    have _ := (fun x => (hfL x).trans (le_max_left _ _) : ∀ x, |f x| ≤ L')
+    filter_upwards [(admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU g t (hcut t ht) L' fp hfp (fun x => by rw [abs_of_nonneg (hfp0 x)]; exact hfpL x) hfpK), (admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU g t (hcut t ht) L' fm hfm (fun x => by rw [abs_of_nonneg (hfm0 x)]; exact hfmL x) hfmK)] with ω hp hm
+    rw [← admissibleCutoffIntegral_eq_toReal_chartMass g t fp hfp hfp0 hfpK ω,
+      ← admissibleCutoffIntegral_eq_toReal_chartMass g t fm hfm hfm0 hfmK ω]
     unfold admissibleCutoffIntegral
     rw [← integral_sub hp hm]
     apply integral_congr_ae
@@ -352,7 +291,7 @@ theorem admissibleCutoffIntegral_L1_uniform_cauchy
           (ofReal_abs_toReal_sub_le_ennDist _ _)
   have hR₁r : R₁ ≤ r := le_trans (le_max_left _ _) hr
   have hR₁s : R₁ ≤ s := le_trans (le_max_left _ _) hs
-  have hmp (t : ℝ) : Measurable (chartMass P U dens K Y g t fp) :=
+  have hmp t : Measurable (chartMass P U dens K Y g t fp) :=
     wickEventMass_measurable P U dens ε₀ Y hY _ g t Set.univ MeasurableSet.univ fp hfp
   calc _ ≤ ∫⁻ ω, ennDist (chartMass P U dens K Y g r fp ω) (chartMass P U dens K Y g s fp ω) +
         ennDist (chartMass P U dens K Y g r fm ω) (chartMass P U dens K Y g s fm ω) ∂P :=
@@ -399,22 +338,16 @@ integrable cutoff integrand. -/
 theorem cutoffIntegrand_integrable
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (K : Set ℂ) (g r : ℝ) (ω : Ω)
-    (hω : chartUnitMass P U dens K Y g r ω ≠ ⊤) (L : ℝ) (f : ℂ → ℝ) (hf : Measurable f)
+    U (dens : ℂ → ℝ) ε₀
+    Y
+    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) K g r ω
+    (hω : chartUnitMass P U dens K Y g r ω ≠ ⊤) L f (hf : Measurable f)
     (hfL : ∀ x, |f x| ≤ L) (hfK : ∀ x ∉ K, f x = 0) :
     Integrable (cutoffIntegrand P Y g r f ω) (logRegularizationReference U dens) := by
   refine ⟨(admissibleCutoff_integrand_measurable P U dens ε₀ Y hY g r f hf ω).aestronglyMeasurable,
     ?_⟩
   unfold HasFiniteIntegral
-  have hL : 0 ≤ L := (abs_nonneg _).trans (hfL 0)
-  have hnorm : (fun x => ‖cutoffIntegrand P Y g r f ω x‖ₑ) = fun x => ENNReal.ofReal (|f x| *
-      Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 *
-        ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) := by
-    funext x
-    rw [← ofReal_norm, Real.norm_eq_abs, abs_mul, abs_of_pos (Real.exp_pos _)]
-  rw [hnorm, lintegral_cutoff_integrand_eq_chartMass P U dens Y K g r _ (fun x => abs_nonneg _)
+  rw [(show (fun x => ‖cutoffIntegrand P Y g r f ω x‖ₑ) = fun x => ENNReal.ofReal (|f x| * Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 * ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) by funext x; rw [← ofReal_norm, Real.norm_eq_abs, abs_mul, abs_of_pos (Real.exp_pos _)]), lintegral_cutoff_integrand_eq_chartMass P U dens Y K g r _ (fun x => abs_nonneg _)
     (fun x hx => by rw [hfK x hx, abs_zero]) ω]
   have hle : chartMass P U dens K Y g r (fun x => |f x|) ω ≤
       ENNReal.ofReal L * chartUnitMass P U dens K Y g r ω := by
@@ -431,10 +364,10 @@ theorem cutoffIntegrand_integrable
 theorem admissibleCutoffIntegral_add
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (K : Set ℂ) (g r : ℝ) (ω : Ω)
-    (hω : chartUnitMass P U dens K Y g r ω ≠ ⊤) (L₁ L₂ : ℝ) (f₁ f₂ : ℂ → ℝ)
+    U (dens : ℂ → ℝ) ε₀
+    Y
+    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) K g r ω
+    (hω : chartUnitMass P U dens K Y g r ω ≠ ⊤) L₁ L₂ f₁ f₂
     (hf₁ : Measurable f₁) (hf₂ : Measurable f₂) (hf₁L : ∀ x, |f₁ x| ≤ L₁)
     (hf₂L : ∀ x, |f₂ x| ≤ L₂) (hf₁K : ∀ x ∉ K, f₁ x = 0) (hf₂K : ∀ x ∉ K, f₂ x = 0) :
     admissibleCutoffIntegral P U dens Y g r (fun x => f₁ x + f₂ x) ω =
@@ -449,8 +382,8 @@ theorem admissibleCutoffIntegral_add
 
 /-- Homogeneity of the cutoff integral in the test. -/
 theorem admissibleCutoffIntegral_smul
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ) (g r : ℝ) (c : ℝ) (f : ℂ → ℝ) (ω : Ω) :
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) U (dens : ℂ → ℝ)
+    (Y : Ω → ℝ → ℂ → ℝ) g r c (f : ℂ → ℝ) ω :
     admissibleCutoffIntegral P U dens Y g r (fun x => c * f x) ω =
       c * admissibleCutoffIntegral P U dens Y g r f ω := by
   unfold admissibleCutoffIntegral
@@ -463,10 +396,10 @@ theorem admissibleCutoffIntegral_smul
 theorem admissibleCutoffIntegral_mono
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (K : Set ℂ) (g r : ℝ) (ω : Ω)
-    (hω : chartUnitMass P U dens K Y g r ω ≠ ⊤) (L₁ L₂ : ℝ) (f₁ f₂ : ℂ → ℝ)
+    U (dens : ℂ → ℝ) ε₀
+    Y
+    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) K g r ω
+    (hω : chartUnitMass P U dens K Y g r ω ≠ ⊤) L₁ L₂ f₁ f₂
     (hf₁ : Measurable f₁) (hf₂ : Measurable f₂) (hf₁L : ∀ x, |f₁ x| ≤ L₁)
     (hf₂L : ∀ x, |f₂ x| ≤ L₂) (hf₁K : ∀ x ∉ K, f₁ x = 0) (hf₂K : ∀ x ∉ K, f₂ x = 0)
     (hle : ∀ x, f₁ x ≤ f₂ x) :
@@ -482,18 +415,13 @@ theorem admissibleCutoffIntegral_mono
 theorem chartUnitMass_ne_top_ae
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
+    U (dens : ℂ → ℝ) ε₀
+    Y
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U) (g r : ℝ) (hr : Real.exp (-r) ≤ ε₀) :
+    K (hK : IsCompact K) (hKU : K ⊆ U) g r (hr : Real.exp (-r) ≤ ε₀) :
     ∀ᵐ ω ∂P, chartUnitMass P U dens K Y g r ω ≠ ⊤ := by
-  have hσK := admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU
-  have hmass := lintegral_chartMass_le P U dens ε₀ Y hY K g r hr 1 (fun _ => 1) measurable_const
-    (fun _ => le_rfl)
-  have hmeas : Measurable (chartUnitMass P U dens K Y g r) :=
-    wickEventMass_measurable P U dens ε₀ Y hY _ g r Set.univ MeasurableSet.univ _ measurable_const
-  filter_upwards [ae_lt_top hmeas (ne_top_of_le_ne_top
-    (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hσK) hmass)] with ω hω
+  filter_upwards [ae_lt_top (wickEventMass_measurable P U dens ε₀ Y hY _ g r Set.univ MeasurableSet.univ _ measurable_const) (ne_top_of_le_ne_top
+    (ENNReal.mul_ne_top ENNReal.ofReal_ne_top (admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU)) (lintegral_chartMass_le P U dens ε₀ Y hY K g r hr 1 (fun _ => 1) measurable_const (fun _ => le_rfl)))] with ω hω
   exact hω.ne
 
 end DOZZ.Assembly

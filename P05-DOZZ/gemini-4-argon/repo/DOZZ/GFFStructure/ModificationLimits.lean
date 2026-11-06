@@ -120,7 +120,7 @@ def indicatorProcess (X : T → Ω → E) (A : Set Ω) : T → Ω → E :=
   fun t ω ↦ if ω ∈ A then X t ω else hE.some
 
 @[simp]
-lemma indicatorProcess_apply (X : T → Ω → E) (A : Set Ω) (t : T) (ω : Ω)
+lemma indicatorProcess_apply (X : T → Ω → E) A t ω
     [Decidable (ω ∈ A)] :
     indicatorProcess X A t ω = if ω ∈ A then X t ω else hE.some := by
   simp [indicatorProcess]
@@ -130,16 +130,12 @@ lemma measurable_pair_indicatorProcess {T₁ T₂ : Type*}
     [TopologicalSpace E] [MeasurableSpace E] [BorelSpace E] {X₁ : T₁ → Ω → E} {X₂ : T₂ → Ω → E}
     (hX₁ : ∀ t, Measurable (X₁ t)) (hX₂ : ∀ t, Measurable (X₂ t))
     (hX₁₂ : ∀ i j, Measurable[_, borel (E × E)] fun ω ↦ (X₁ i ω, X₂ j ω))
-    {A₁ A₂ : Set Ω} (hA₁ : MeasurableSet A₁) (hA₂ : MeasurableSet A₂) (s : T₁) (t : T₂) :
+    {A₁ A₂} (hA₁ : MeasurableSet A₁) (hA₂ : MeasurableSet A₂) s t :
     Measurable[_, borel (E × E)]
       (fun ω ↦ (indicatorProcess X₁ A₁ s ω, indicatorProcess X₂ A₂ t ω)) := by
   classical
   borelize (E × E)
-  have h_eq : (fun ω ↦ (indicatorProcess X₁ A₁ s ω, indicatorProcess X₂ A₂ t ω)) =
-      fun ω ↦ if ω ∈ A₁ then if ω ∈ A₂ then (X₁ s ω, X₂ t ω) else (X₁ s ω, hE.some)
-        else if ω ∈ A₂ then (hE.some, X₂ t ω) else (hE.some, hE.some) := by
-    ext ω <;> by_cases hω₁ : ω ∈ A₁ <;> by_cases hω₂ : ω ∈ A₂ <;> simp [hω₁, hω₂]
-  rw [h_eq]
+  rw [(show (fun ω ↦ (indicatorProcess X₁ A₁ s ω, indicatorProcess X₂ A₂ t ω)) = fun ω ↦ if ω ∈ A₁ then if ω ∈ A₂ then (X₁ s ω, X₂ t ω) else (X₁ s ω, hE.some) else if ω ∈ A₂ then (hE.some, X₂ t ω) else (hE.some, hE.some) by ext ω <;> by_cases hω₁ : ω ∈ A₁ <;> by_cases hω₂ : ω ∈ A₂ <;> simp [hω₁, hω₂])]
   refine Measurable.ite hA₁ ?_ ?_
   · refine Measurable.ite hA₂ (hX₁₂ s t) ?_
     change Measurable ((fun x : E ↦ (x, hE.some)) ∘ X₁ s)
@@ -225,7 +221,7 @@ lemma measurable_pair_limUnder_indicatorProcess
     (hX : ∀ t, Measurable (X t)) (hX' : ∀ t, Measurable (X' t))
     (hX_pair : ∀ i j, Measurable[_, borel (E × E)] fun ω ↦ (X i ω, X' j ω))
     {A₁ A₂ : Set Ω} (hA₁ : MeasurableSet A₁) (hA₂ : MeasurableSet A₂)
-    (s t : T)
+    s t
     (h_tendsto₁ : ∀ ω ∈ A₁, ∃ c, Tendsto (fun t' : denseCountable T ↦ X t' ω)
       (comap Subtype.val (𝓝 s)) (𝓝 c))
     (h_tendsto₂ : ∀ ω ∈ A₂, ∃ c, Tendsto (fun t' : denseCountable T ↦ X' t' ω)
@@ -327,11 +323,11 @@ lemma IsLimitOfIndicator.measurable_pair
 lemma IsLimitOfIndicator.measurable_edist
     {T : Type*} [PseudoEMetricSpace T] [SecondCountableTopology T]
     [MeasurableSpace E] [BorelSpace E]
-    {Y X Z X' : T → Ω → E} {U₁ U₂ : Set T}
+    {Y X Z X' : T → Ω → E} {U₁ U₂}
     (hX : ∀ t, Measurable (X t)) (hX' : ∀ t, Measurable (X' t))
     (hX_pair : ∀ i j, Measurable[_, borel (E × E)] fun ω ↦ (X i ω, X' j ω))
     (hY : IsLimitOfIndicator Y X P U₁) (hZ : IsLimitOfIndicator Z X' P U₂)
-    (s t : T) :
+    s t :
     Measurable (fun ω ↦ edist (Y s ω) (Z t ω)) := by
   borelize (E × E)
   refine StronglyMeasurable.measurable ?_

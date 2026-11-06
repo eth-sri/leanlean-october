@@ -37,9 +37,9 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 namespace DOZZ.Proofs
 
 /-- The charge line `z ↦ (z, v, w)`. -/
-noncomputable def tripleFirst (v w : ℂ) (z : ℂ) : Fin 3 → ℂ := ![z, v, w]
+noncomputable def tripleFirst (v w z : ℂ) : Fin 3 → ℂ := ![z, v, w]
 
-theorem differentiable_tripleFirst (v w : ℂ) : Differentiable ℂ (tripleFirst v w) := by
+theorem differentiable_tripleFirst v w : Differentiable ℂ (tripleFirst v w) := by
   rw [differentiable_pi]
   intro i
   fin_cases i
@@ -54,7 +54,7 @@ theorem tripleFirst_ofReal (t v w : ℝ) :
 
 /-- **The unit-volume structure constant at the zero mode** is `2/γ`. -/
 theorem unitVolumeStructureConstant_zeroMode {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    [IsProbabilityMeasure P] (M : Ω → Measure ℂ) {γ α₁ α₂ α₃ : ℝ}
+    [IsProbabilityMeasure P] (M : Ω → Measure ℂ) {γ α₁ α₂ α₃}
     (hs : sExp γ α₁ α₂ α₃ = 0) : unitVolumeStructureConstant P M γ α₁ α₂ α₃ = 2 / γ := by
   unfold unitVolumeStructureConstant
   rw [hs, neg_zero]
@@ -62,48 +62,26 @@ theorem unitVolumeStructureConstant_zeroMode {Ω : Type*} [MeasurableSpace Ω] (
 
 /-- The structure constant is `μ^{-s} Γ(s) C̄`. -/
 theorem structureConstant_eq_mul_unitVolume {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (M : Ω → Measure ℂ) (γ μ α₁ α₂ α₃ : ℝ) :
+    (M : Ω → Measure ℂ) γ μ α₁ α₂ α₃ :
     structureConstant P M γ μ α₁ α₂ α₃ =
       μ ^ (-sExp γ α₁ α₂ α₃) * Real.Gamma (sExp γ α₁ α₂ α₃) *
         unitVolumeStructureConstant P M γ α₁ α₂ α₃ := by
   unfold structureConstant unitVolumeStructureConstant
   ring
 
-/-- For `s > 0`, `C̄ = μ^s Γ(s)⁻¹ C` as complex numbers. -/
-theorem unitVolume_eq_normalized {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (M : Ω → Measure ℂ) {γ μ α₁ α₂ α₃ : ℝ} (hμ : 0 < μ) (hs : 0 < sExp γ α₁ α₂ α₃) :
-    (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ) =
-      ((μ : ℂ) ^ (sExp γ α₁ α₂ α₃ : ℂ) / Complex.Gamma (sExp γ α₁ α₂ α₃)) *
-        (structureConstant P M γ μ α₁ α₂ α₃ : ℂ) := by
-  have hΓ : Real.Gamma (sExp γ α₁ α₂ α₃) ≠ 0 := (Real.Gamma_pos_of_pos hs).ne'
-  have hμs : μ ^ sExp γ α₁ α₂ α₃ * μ ^ (-sExp γ α₁ α₂ α₃) = 1 := by
-    rw [← Real.rpow_add hμ, add_neg_cancel, Real.rpow_zero]
-  have hreal : unitVolumeStructureConstant P M γ α₁ α₂ α₃ =
-      μ ^ sExp γ α₁ α₂ α₃ / Real.Gamma (sExp γ α₁ α₂ α₃) *
-        structureConstant P M γ μ α₁ α₂ α₃ := by
-    rw [structureConstant_eq_mul_unitVolume]
-    calc unitVolumeStructureConstant P M γ α₁ α₂ α₃
-        = (μ ^ sExp γ α₁ α₂ α₃ * μ ^ (-sExp γ α₁ α₂ α₃)) *
-            (Real.Gamma (sExp γ α₁ α₂ α₃) / Real.Gamma (sExp γ α₁ α₂ α₃)) *
-              unitVolumeStructureConstant P M γ α₁ α₂ α₃ := by
-          rw [hμs, div_self hΓ]
-          ring
-      _ = _ := by ring
-  rw [hreal, Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_cpow hμ.le,
-    Complex.Gamma_ofReal]
 
 /-- The slice `(t, α₂, α₃)` lies in the extended domain for `|α₂ - α₃| < t < Q`. -/
-theorem extendedSeiberg3_slice {γ η α₂ α₃ t : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem extendedSeiberg3_slice {γ η α₂ α₃ t} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hη : 0 < η ∧ Q γ - 2 * η > γ) (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
     (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ) (ht₁ : max (α₂ - α₃) (α₃ - α₂) < t) (ht₂ : t < Q γ) :
     ExtendedSeiberg3 γ t α₂ α₃ := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hQ2 : 2 * Q γ = 4 / γ + γ := by rw [hQ]; ring
-  have hγh : γ / 2 < 2 / γ := by
+  have : 2 * Q γ = 4 / γ + γ := by rw [hQ]; ring
+  have : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith
-  have h42 : 4 / γ = 2 * (2 / γ) := by ring
-  have hm1 := le_max_left (α₂ - α₃) (α₃ - α₂)
+  have : 4 / γ = 2 * (2 / γ) := by ring
+  have := le_max_left (α₂ - α₃) (α₃ - α₂)
   have hm2 := le_max_right (α₂ - α₃) (α₃ - α₂)
   refine extendedSeiberg3_of_lt hγ ht₂ hα₂.2 hα₃.2 ?_ ?_ ?_ ?_ <;> linarith [hη.1, hη.2]
 
@@ -121,15 +99,29 @@ theorem slice_identity_calibrated {Ω : Type*} [MeasurableSpace Ω] (P : Measure
       (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ) =
         ((μ : ℂ) ^ (sExp γ α₁ α₂ α₃ : ℂ) / Complex.Gamma (sExp γ α₁ α₂ α₃)) *
           dozzFormula γ μ U α₁ α₂ α₃ := by
+  have unitVolume_eq_normalized {γ : ℝ} {α₁ : ℝ} {α₂ : ℝ} {α₃ : ℝ} (hs : 0 < sExp γ α₁ α₂ α₃) : (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ) = ((μ : ℂ) ^ (sExp γ α₁ α₂ α₃ : ℂ) / Complex.Gamma (sExp γ α₁ α₂ α₃)) * (structureConstant P M γ μ α₁ α₂ α₃ : ℂ) := by
+    have hreal : unitVolumeStructureConstant P M γ α₁ α₂ α₃ =
+        μ ^ sExp γ α₁ α₂ α₃ / Real.Gamma (sExp γ α₁ α₂ α₃) *
+          structureConstant P M γ μ α₁ α₂ α₃ := by
+      rw [structureConstant_eq_mul_unitVolume]
+      calc unitVolumeStructureConstant P M γ α₁ α₂ α₃
+          = (μ ^ sExp γ α₁ α₂ α₃ * μ ^ (-sExp γ α₁ α₂ α₃)) *
+              (Real.Gamma (sExp γ α₁ α₂ α₃) / Real.Gamma (sExp γ α₁ α₂ α₃)) *
+                unitVolumeStructureConstant P M γ α₁ α₂ α₃ := by
+            rw [(show μ ^ sExp γ α₁ α₂ α₃ * μ ^ (-sExp γ α₁ α₂ α₃) = 1 by rw [← Real.rpow_add hμ, add_neg_cancel, Real.rpow_zero]), div_self ((Real.Gamma_pos_of_pos hs).ne')]
+            ring
+        _ = _ := by ring
+    rw [hreal, Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_cpow hμ.le,
+      Complex.Gamma_ofReal]
   have : IsProbabilityMeasure P := hX.1
   obtain ⟨hη0, hηQ⟩ := hη
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hQη : 2 * η < Q γ := by linarith
+  have : Q γ = 2 / γ + γ / 2 := rfl
+  have : 2 * η < Q γ := by linarith
   -- the holomorphic extension along the line `z ↦ (z, α₂, α₃)`
   obtain ⟨V₃, hV₃, hV₃mem, f₃, hf₃, hf₃eq⟩ :=
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   set L₀ : ℝ := max (α₂ - α₃) (α₃ - α₂) with hL₀
-  have hL₀η : L₀ < 2 * η := by
+  have : L₀ < 2 * η := by
     have : L₀ < η := max_lt (by linarith [hα₂.2, hα₃.1]) (by linarith [hα₂.1, hα₃.2])
     linarith
   have hES : ∀ t : ℝ, L₀ < t → t < Q γ → ExtendedSeiberg3 γ t α₂ α₃ := fun t h1 h2 =>
@@ -147,9 +139,7 @@ theorem slice_identity_calibrated {Ω : Type*} [MeasurableSpace Ω] (P : Measure
     change f₃ (tripleFirst (α₂ : ℂ) (α₃ : ℂ) (t : ℂ)) = _
     rw [tripleFirst_ofReal]
     exact hf₃eq ![t, α₂, α₃] (hES t h1 h2)
-  have hgd : DifferentiableOn ℂ g D₀ :=
-    hf₃.comp (differentiable_tripleFirst _ _).differentiableOn fun _ hz => hz
-  have hgan : ∀ z ∈ D₀, AnalyticAt ℂ g z := fun z hz => hgd.analyticAt (hD₀o.mem_nhds hz)
+  have hgan : ∀ z ∈ D₀, AnalyticAt ℂ g z := fun z hz => (hf₃.comp (differentiable_tripleFirst _ _).differentiableOn fun _ hz => hz).analyticAt (hD₀o.mem_nhds hz)
   -- the normalized companion along the same line
   set A : Fin 3 → ℂ → ℂ := ![fun z => z, fun _ => (α₂ : ℂ), fun _ => (α₃ : ℂ)] with hA
   have hAd : ∀ i, Differentiable ℂ (A i) := by
@@ -161,7 +151,6 @@ theorem slice_identity_calibrated {Ω : Type*} [MeasurableSpace Ω] (P : Measure
   set N : ℂ → ℂ := fun z => ((μ : ℂ) ^ ((A 0 z + A 1 z + A 2 z - 2 * Q γ) / γ) /
       Complex.Gamma ((A 0 z + A 1 z + A 2 z - 2 * Q γ) / γ)) *
         dozzFormula γ μ U (A 0 z) (A 1 z) (A 2 z) with hN
-  have hNm : MeromorphicOn N univ := roots_formula_line_meromorphic hγ hγ2 hμ hU A hAd
   have hNval : ∀ t : ℝ, N t = ((μ : ℂ) ^ (sExp γ t α₂ α₃ : ℂ) /
       Complex.Gamma (sExp γ t α₂ α₃)) * dozzFormula γ μ U t α₂ α₃ := fun t => by
     have hexp : ((t : ℂ) + (α₂ : ℂ) + (α₃ : ℂ) - 2 * Q γ) / γ = (sExp γ t α₂ α₃ : ℂ) := by
@@ -179,29 +168,18 @@ theorem slice_identity_calibrated {Ω : Type*} [MeasurableSpace Ω] (P : Measure
   have hagree : ∀ᶠ t : ℝ in 𝓝[≠] x₁, g t = c * N t := by
     filter_upwards [hslice x₁ hx₁1 hx₁2, eventually_nhdsWithin_of_eventually_nhds
       (eventually_of_mem (Ioo_mem_nhds hx₁1 hx₁2) fun t ht => ht)] with t ht hIt
-    have hs : 0 < sExp γ t α₂ α₃ := by
-      unfold sExp
-      exact div_pos (by linarith [hα₂.1, hα₃.1, hIt.1]) hγ
-    rw [hgval t (by linarith [hIt.1]) hIt.2, unitVolume_eq_normalized P M hμ hs, ht, hNval]
+    rw [hgval t (by linarith [hIt.1]) hIt.2, unitVolume_eq_normalized (show 0 < sExp γ t α₂ α₃ by unfold sExp; exact div_pos (by linarith [hα₂.1, hα₃.1, hIt.1]) hγ), ht, hNval]
     ring
   -- the identity theorem along the connected component through the slice
   set W := connectedComponentIn D₀ (x₁ : ℂ) with hW
-  have hWo : IsOpen W := hD₀o.connectedComponentIn
-  have hWsub : W ⊆ D₀ := connectedComponentIn_subset D₀ _
-  have hx₁W : (x₁ : ℂ) ∈ W := mem_connectedComponentIn (hD₀mem x₁ (by linarith) hx₁2)
-  have hgm : MeromorphicOn g W := fun z hz => (hgan z (hWsub hz)).meromorphicAt
-  have hNcm : MeromorphicOn (fun z => c * N z) W := fun z _ =>
-    (MeromorphicAt.const c z).mul (hNm z (mem_univ z))
+  have : IsOpen W := hD₀o.connectedComponentIn
   have hEq : ∀ w ∈ W, g =ᶠ[𝓝[≠] w] (fun z => c * N z) := fun w hw =>
-    ShiftGluing.meromorphicOn_eventuallyEq_of_frequently hgm hNcm
-      isPreconnected_connectedComponentIn hx₁W hw
+    ShiftGluing.meromorphicOn_eventuallyEq_of_frequently (fun z hz => (hgan z ((connectedComponentIn_subset D₀ _) hz)).meromorphicAt) (fun z _ => (MeromorphicAt.const c z).mul ((roots_formula_line_meromorphic hγ hγ2 hμ hU A hAd) z (mem_univ z)))
+      isPreconnected_connectedComponentIn (mem_connectedComponentIn (hD₀mem x₁ (by linarith) hx₁2)) hw
       ((tendsto_ofReal_nhdsNE_slice x₁).frequently hagree.frequently)
   have hIW : ∀ t : ℝ, L₀ < t → t < Q γ → (t : ℂ) ∈ W := by
     intro t h1 h2
-    have hsub : (fun s : ℝ => (s : ℂ)) '' Ioo L₀ (Q γ) ⊆ W :=
-      (isPreconnected_Ioo.image _ Complex.continuous_ofReal.continuousOn).subset_connectedComponentIn
-        ⟨x₁, ⟨by linarith, hx₁2⟩, rfl⟩ (image_subset_iff.mpr fun s hs => hD₀mem s hs.1 hs.2)
-    exact hsub ⟨t, ⟨h1, h2⟩, rfl⟩
+    exact ((isPreconnected_Ioo.image _ Complex.continuous_ofReal.continuousOn).subset_connectedComponentIn ⟨x₁, ⟨by linarith, hx₁2⟩, rfl⟩ (image_subset_iff.mpr fun s hs => hD₀mem s hs.1 hs.2) : (fun s : ℝ => (s : ℂ)) '' Ioo L₀ (Q γ) ⊆ W) ⟨t, ⟨h1, h2⟩, rfl⟩
   -- calibration at the zero mode `s = 0`
   set t₀ : ℝ := 2 * Q γ - α₂ - α₃ with ht₀
   have ht₀1 : L₀ < t₀ := max_lt (by linarith [hα₃.2]) (by linarith [hα₂.2])
@@ -216,40 +194,23 @@ theorem slice_identity_calibrated {Ω : Type*} [MeasurableSpace Ω] (P : Measure
         (Complex.continuous_ofReal.tendsto t₀)).mono_left nhdsWithin_le_nhds
     rw [hgval t₀ ht₀1 ht₀2, unitVolumeStructureConstant_zeroMode P M hs₀] at h
     exact h
-  have hlim₂ : Tendsto (fun t : ℝ => c * N t) (𝓝[≠] t₀) (𝓝 (c * (2 / γ))) := by
-    have hL1 := dozzFormula_zeroMode_limit hγ hγ2 hμ hU (α₂ := α₂) (α₃ := α₃)
-      (by linarith [hα₂.1]) hα₂.2 (by linarith [hα₃.1]) hα₃.2 (by linarith [hα₂.2, hα₃.2])
-      (by linarith [hα₂.1, hα₃.1])
-    exact (hL1.const_mul c).congr fun t => by rw [hNval]
-  have hev : ∀ᶠ t : ℝ in 𝓝[≠] t₀, g t = c * N t :=
-    (tendsto_ofReal_nhdsNE_slice t₀).eventually (hEq _ (hIW t₀ ht₀1 ht₀2))
   have hc1 : c = 1 := by
-    have h := tendsto_nhds_unique (hlim₁.congr' hev) hlim₂
-    have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
-    have h2γ : (2 / (γ : ℂ)) ≠ 0 := div_ne_zero two_ne_zero hγ0
-    have h' : (c - 1) * (2 / (γ : ℂ)) = 0 := by
-      rw [sub_mul, one_mul, ← h]
-      push_cast
-      ring
-    exact sub_eq_zero.mp ((mul_eq_zero.mp h').resolve_right h2γ)
+    exact sub_eq_zero.mp ((mul_eq_zero.mp (by rw [sub_mul, one_mul, ← (tendsto_nhds_unique (hlim₁.congr' ((tendsto_ofReal_nhdsNE_slice t₀).eventually (hEq _ (hIW t₀ ht₀1 ht₀2)) : ∀ᶠ t : ℝ in 𝓝[≠] t₀, g t = c * N t)) (show Tendsto (fun t : ℝ => c * N t) (𝓝[≠] t₀) (𝓝 (c * (2 / γ))) by exact ((dozzFormula_zeroMode_limit hγ hγ2 hμ hU (α₂ := α₂) (α₃ := α₃) (by linarith [hα₂.1]) hα₂.2 (by linarith [hα₃.1]) hα₃.2 (by linarith [hα₂.2, hα₃.2]) (by linarith [hα₂.1, hα₃.1])).const_mul c).congr fun t => by rw [hNval]))]; push_cast; ring)).resolve_right (div_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr hγ.ne')))
   -- pointwise identity on the slice
   intro α₁ h1 h2
   have hL₀α : L₀ < α₁ := by linarith
-  have hs : 0 < sExp γ α₁ α₂ α₃ := by
+  have : 0 < sExp γ α₁ α₂ α₃ := by
     unfold sExp
     exact div_pos (by linarith [hα₂.1, hα₃.1]) hγ
-  have hcont₁ : ContinuousAt g (α₁ : ℂ) := (hgan _ (hD₀mem α₁ hL₀α h2)).continuousAt
   have hNan : AnalyticAt ℂ N (α₁ : ℂ) :=
     roots_formula_line_analyticAt hγ hγ2 hμ hU A (α₁ : ℂ) (fun i => (hAd i).analyticAt _)
       α₁ α₂ α₃ rfl rfl rfl (hES α₁ hL₀α h2)
       (fun n hn => by
         have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
         linarith)
-  have hcont₂ : ContinuousAt (fun z => c * N z) (α₁ : ℂ) :=
-    (analyticAt_const.mul hNan).continuousAt
   have hpt : g α₁ = c * N α₁ :=
-    tendsto_nhds_unique (hcont₁.tendsto.mono_left nhdsWithin_le_nhds)
-      ((hcont₂.tendsto.mono_left nhdsWithin_le_nhds).congr' (hEq _ (hIW α₁ hL₀α h2)).symm)
+    tendsto_nhds_unique (((hgan _ (hD₀mem α₁ hL₀α h2)).continuousAt).tendsto.mono_left nhdsWithin_le_nhds)
+      ((((analyticAt_const.mul hNan).continuousAt).tendsto.mono_left nhdsWithin_le_nhds).congr' (hEq _ (hIW α₁ hL₀α h2)).symm)
   rw [hgval α₁ hL₀α h2, hNval, hc1, one_mul] at hpt
   exact hpt
 

@@ -25,7 +25,7 @@ theorem dual_path_outer_polar_integral_transport
     (hO : AEMeasurable O P) (hO' : AEMeasurable O' R)
     (hZ : AEMeasurable Z S) (hfin : ∀ᵐ ω ∂S, ∀ a b : ℝ, Z ω (Icc a b) < ⊤)
     (hlaw : P.map (fun ω => (A ω,O ω)) = R.map (fun ω => (A' ω,O' ω)))
-    (γ ν h p : ℝ) (z : ℂ) (T : ℝ≥0) :
+    (γ ν h p : ℝ) z (T : ℝ≥0) :
     (∫ ω : Ω × Ξ,
       ((O ω.1).toReal + dualPathRadialScale γ ν h z (A ω.1)*
         (∫⁻ t, (if 0 < t then ENNReal.ofReal (Real.exp (γ*
@@ -37,24 +37,12 @@ theorem dual_path_outer_polar_integral_transport
           (brownianShiftPath T (radialPositiveHalf (A' ω.1)) (Real.toNNReal t)-ν*t))) else 0)
           ∂Z ω.2).toReal)^(-p)-(O' ω.1).toReal^(-p) ∂R.prod S := by
   let D : TwoSidedPath → BrownianPath := fun a => brownianShiftPath T (radialPositiveHalf a)
-  have hD : Measurable D := continuous_brownianShiftPath.measurable.comp
-    (measurable_const.prodMk continuous_radialPositiveHalf.measurable)
   let H : (TwoSidedPath × ℝ≥0∞) × Measure ℝ → ℝ := fun v =>
     (v.1.2.toReal + dualPathRadialScale γ ν h z v.1.1*
       (reflectedInwardPolarMassCode γ ν (D v.1.1,v.2)).toReal)^(-p)-v.1.2.toReal^(-p)
-  have hHm : Measurable H := by
-    have hm : Measurable (fun v : (TwoSidedPath × ℝ≥0∞) × Measure ℝ =>
-        reflectedInwardPolarMassCode γ ν (D v.1.1,v.2)) := (reflected_measurable_inwardPolarMassCode γ ν).comp
-      ((hD.comp (measurable_fst.comp measurable_fst)).prodMk measurable_snd)
-    have hb : Measurable (fun v : (TwoSidedPath × ℝ≥0∞) × Measure ℝ =>
-        dualPathRadialScale γ ν h z v.1.1) := (dual_path_radial_scale_measurable γ ν h z).comp
-      (measurable_fst.comp measurable_fst)
-    exact (((measurable_snd.comp measurable_fst).ennreal_toReal.add
-      (hb.mul hm.ennreal_toReal)).pow_const (-p)).sub
-        ((measurable_snd.comp measurable_fst).ennreal_toReal.pow_const (-p))
   have he := dual_joint_law_independent_inner_integral P R S
     (fun ω => (A ω,O ω)) (fun ω => (A' ω,O' ω)) Z
-    (hA.prodMk hO) (hA'.prodMk hO') hZ hlaw H hHm
+    (hA.prodMk hO) (hA'.prodMk hO') hZ hlaw H ((((measurable_snd.comp measurable_fst).ennreal_toReal.add (((dual_path_radial_scale_measurable γ ν h z).comp (measurable_fst.comp measurable_fst)).mul ((reflected_measurable_inwardPolarMassCode γ ν).comp (((continuous_brownianShiftPath.measurable.comp (measurable_const.prodMk continuous_radialPositiveHalf.measurable)).comp (measurable_fst.comp measurable_fst)).prodMk measurable_snd)).ennreal_toReal)).pow_const (-p)).sub ((measurable_snd.comp measurable_fst).ennreal_toReal.pow_const (-p)))
   have hidP : (∫ ω : Ω × Ξ, H ((A ω.1,O ω.1),Z ω.2) ∂P.prod S) =
       ∫ ω : Ω × Ξ,
         ((O ω.1).toReal + dualPathRadialScale γ ν h z (A ω.1)*
@@ -100,34 +88,20 @@ theorem dual_path_outer_polar_finite_transport
         (brownianShiftPath T (radialPositiveHalf (A' ω.1)) (Real.toNNReal t)-ν*t))) else 0)
         ∂Z ω.2) ≠ ⊤ := by
   let D : TwoSidedPath → BrownianPath := fun a => brownianShiftPath T (radialPositiveHalf a)
-  have hD : Measurable D := continuous_brownianShiftPath.measurable.comp
-    (measurable_const.prodMk continuous_radialPositiveHalf.measurable)
   let K : (TwoSidedPath × ℝ≥0∞) × Measure ℝ → ℝ≥0∞ := fun v =>
     reflectedInwardPolarMassCode γ ν (D v.1.1,v.2)
-  have hK : Measurable K := (reflected_measurable_inwardPolarMassCode γ ν).comp
-    ((hD.comp (measurable_fst.comp measurable_fst)).prodMk measurable_snd)
   have he := dual_joint_law_independent_inner_ae P R S
     (fun ω => (A ω,O ω)) (fun ω => (A' ω,O' ω)) Z
     (hA.prodMk hO) (hA'.prodMk hO') hZ hlaw (fun v => K v ≠ ⊤)
-    (hK (measurableSet_singleton ⊤)).compl
+    (((reflected_measurable_inwardPolarMassCode γ ν).comp (((continuous_brownianShiftPath.measurable.comp (measurable_const.prodMk continuous_radialPositiveHalf.measurable)).comp (measurable_fst.comp measurable_fst)).prodMk measurable_snd)) (measurableSet_singleton ⊤)).compl
   constructor
   · intro hf
-    have hc : ∀ᵐ ω : Ω × Ξ ∂P.prod S, K ((A ω.1,O ω.1),Z ω.2) ≠ ⊤ := by
-      filter_upwards [hf, measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc
-      dsimp only [K]
-      rw [reflected_inwardPolarMassCode_eq γ ν (D (A ω.1)) (Z ω.2) hloc]
-      exact hω
-    filter_upwards [he.mp hc, measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc
+    filter_upwards [he.mp (by filter_upwards [hf, measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc; dsimp only [K]; rw [reflected_inwardPolarMassCode_eq γ ν (D (A ω.1)) (Z ω.2) hloc]; exact hω), measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc
     dsimp only [K] at hω
     rw [reflected_inwardPolarMassCode_eq γ ν (D (A' ω.1)) (Z ω.2) hloc] at hω
     exact hω
   · intro hf
-    have hc : ∀ᵐ ω : Λ × Ξ ∂R.prod S, K ((A' ω.1,O' ω.1),Z ω.2) ≠ ⊤ := by
-      filter_upwards [hf, measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc
-      dsimp only [K]
-      rw [reflected_inwardPolarMassCode_eq γ ν (D (A' ω.1)) (Z ω.2) hloc]
-      exact hω
-    filter_upwards [he.mpr hc, measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc
+    filter_upwards [he.mpr (by filter_upwards [hf, measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc; dsimp only [K]; rw [reflected_inwardPolarMassCode_eq γ ν (D (A' ω.1)) (Z ω.2) hloc]; exact hω), measurePreserving_snd.quasiMeasurePreserving.ae hfin] with ω hω hloc
     dsimp only [K] at hω
     rw [reflected_inwardPolarMassCode_eq γ ν (D (A ω.1)) (Z ω.2) hloc] at hω
     exact hω

@@ -12,9 +12,9 @@ open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- Adding the quadratic exterior errors preserves the exact local coefficient. -/
 theorem fusionFullOneRooted_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hlo : γ / 2 < α₁) (hsq : 2 < γ ^ 2) (hα₁ : α₁ < 2 / γ)
+    α₁ α₂ α₃ (hlo : γ / 2 < α₁) (hsq : 2 < γ ^ 2) (hα₁ : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p) :
     Tendsto (fun z : ℂ => gammaHalfOneRootedTerm P M γ α₁ α₂ α₃ p z /
       (‖z‖ ^ (γ * (Q γ - α₁)) : ℝ)) (nhdsWithin 0 {0}ᶜ)
@@ -22,24 +22,18 @@ theorem fusionFullOneRooted_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
   let κ := γ * (Q γ - α₁)
   let E1 := fusionPureSpatial P M γ α₁ α₂ α₃ p (Metric.ball (0 : ℂ) (1 / 2))ᶜ
   let E2 := fusionMixedSpatial P M γ α₁ α₂ α₃ p (Metric.ball (0 : ℂ) (1 / 2))ᶜ
-  let R1 := fun z : ℂ => ((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) * z ^ 2 *
+  let R1 := fun z => ((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) * z ^ 2 *
     (∫ t in Icc (0 : ℝ) 1, (1 - t : ℝ) * E1 ((t : ℂ) * z))
-  let R2 := fun z : ℂ => ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) * z * star z *
+  let R2 := fun z => ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) * z * star z *
     (∫ t in Icc (0 : ℝ) 1, (1 - t : ℝ) * E2 ((t : ℂ) * z))
-  have hκ : κ < 2 := (fusion_taylor_parameters γ α₁ hγ hlo hsq hα₁).2.2.2.2.2
+  have hκ := (fusion_taylor_parameters γ α₁ hγ hlo hsq hα₁).2.2.2.2.2
   obtain ⟨C1, hC1, hb1⟩ := fusion_exteriorR1_expectation_bound P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
   obtain ⟨C2, hC2, hb2⟩ := fusion_exteriorR2_expectation_bound P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
-  have hR1 : IsComplexLittleOAtZero κ R1 := fusion_quadratic_time_error E1 _ κ C1 hC1.le hκ
-    (fun z hz hz4 => (hb1 z hz hz4).2)
-  have hR2 : IsComplexLittleOAtZero κ R2 := fusion_mixed_quadratic_time_error E2 _ κ C2 hC2.le hκ
-    (fun z hz hz4 => (hb2 z hz hz4).2)
-  have h1 := fusion_normalized_tendsto_of_littleO κ R1 hR1
-  have h2 := fusion_normalized_tendsto_of_littleO κ R2 hR2
-  have hl := fusionLocalOneRooted_normalized_tendsto P X hX γ hγ hγ2 M hM
-    α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp
-  have h := ((hl.add h1).add h2).add h1.star
+  have h1 := fusion_normalized_tendsto_of_littleO κ R1 (fusion_quadratic_time_error E1 _ κ C1 hC1.le hκ (fun z hz hz4 => (hb1 z hz hz4).2))
+  have h2 := fusion_normalized_tendsto_of_littleO κ R2 (fusion_mixed_quadratic_time_error E2 _ κ C2 hC2.le hκ (fun z hz hz4 => (hb2 z hz hz4).2))
+  have h := (((fusionLocalOneRooted_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp).add h1).add h2).add h1.star
   simp only [add_zero, star_zero] at h
   apply h.congr'
   have hz4 : ∀ᶠ z : ℂ in nhdsWithin 0 {0}ᶜ, ‖z‖ ≤ 1 / 4 := by

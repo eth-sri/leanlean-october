@@ -42,7 +42,7 @@ theorem ennreal_finset_sum_rpow_le_card_rpow_sum
 /-- The random full measure supplied by any `DOZZ.IsGMCOf` version is AE measurable. -/
 theorem gmc_measure_aemeasurable_of_isGMCOf
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X) γ
     (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     AEMeasurable M P := by
   obtain ⟨N, hN, _, he⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM

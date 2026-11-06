@@ -34,7 +34,7 @@ def conditionedPositiveFutureRationalAvoidance (t c : ℝ≥0) : Set BrownianPat
   ⋂ q : ℚ, conditionedPositiveFutureAvoidanceCoordinate t c q
 
 theorem measurableSet_conditionedPositiveFutureAvoidanceCoordinate
-    (t c : ℝ≥0) (q : ℚ) :
+    (t c : ℝ≥0) q :
     MeasurableSet (conditionedPositiveFutureAvoidanceCoordinate t c q) := by
   by_cases hq : 0 < (q : ℝ)
   · simp only [conditionedPositiveFutureAvoidanceCoordinate, hq]
@@ -51,7 +51,7 @@ def conditionedPositiveFutureAvoidanceSequence (c : ℝ≥0) : Set (ℚ → ℝ)
 rational avoidance is the endpoint-kernel integral. This applies to arbitrary strongly measurable
 future tests, not only cylinders. -/
 theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
-    {ν : ℝ} {P : Measure BrownianPath} [IsFiniteMeasure P]
+    {ν} {P : Measure BrownianPath} [IsFiniteMeasure P]
     (hP : IsNegativeConditionedBrownianLaw ν P)
     (t : ℝ≥0) (ht : 0 < (t : ℝ)) (c : ℝ≥0)
     (G : (ℚ → ℝ) → ℝ) (hG : StronglyMeasurable G)
@@ -63,19 +63,12 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
         conditionedPositiveEndpointFutureKernel t P (conditionedPositiveHistory t p) := by
   let A : Set (ℚ → ℝ) := conditionedPositiveFutureAvoidanceSequence c
   have hA : MeasurableSet A := by
-    have hrepr : ({y : ℚ → ℝ | ∀ q : ℚ, 0 < (q : ℝ) → (c : ℝ) < y q} : Set (ℚ → ℝ)) =
-        ⋂ q : ℚ, {y : ℚ → ℝ | 0 < (q : ℝ) → (c : ℝ) < y q} := by
-      ext y
-      simp
     change MeasurableSet
       ({y : ℚ → ℝ | ∀ q : ℚ, 0 < (q : ℝ) → (c : ℝ) < y q} : Set (ℚ → ℝ))
-    rw [hrepr]
+    rw [(show ({y : ℚ → ℝ | ∀ q : ℚ, 0 < (q : ℝ) → (c : ℝ) < y q} : Set (ℚ → ℝ)) = ⋂ q : ℚ, {y : ℚ → ℝ | 0 < (q : ℝ) → (c : ℝ) < y q} by ext y; simp)]
     apply MeasurableSet.iInter
     intro q
-    have hset : {y : ℚ → ℝ | 0 < (q : ℝ) → (c : ℝ) < y q} =
-        if hq : 0 < (q : ℝ) then {y : ℚ → ℝ | (c : ℝ) < y q} else Set.univ := by
-      by_cases hq : 0 < (q : ℝ) <;> simp [hq]
-    rw [hset]
+    rw [(show {y : ℚ → ℝ | 0 < (q : ℝ) → (c : ℝ) < y q} = if hq : 0 < (q : ℝ) then {y : ℚ → ℝ | (c : ℝ) < y q} else Set.univ by by_cases hq : 0 < (q : ℝ) <;> simp [hq])]
     split_ifs with hq
     · exact measurableSet_lt measurable_const (measurable_pi_apply q)
     · exact MeasurableSet.univ
@@ -94,12 +87,6 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
       by_cases hq : 0 < (q : ℝ)
       · simpa [hq] using h q hq
       · simp [hq]
-  have hSeqG : StronglyMeasurable (A.indicator G) := hG.indicator hA
-  have hPathG : Integrable (fun p => (A.indicator G)
-      (conditionedPositiveFutureRationalEvals t p)) P := by
-    exact hGint.indicator (hA.preimage (measurable_conditionedPositiveFutureRationalEvals t))
-  have hcond := conditionedPositiveHistory_condExp_rationalFuture hP t ht
-    (A.indicator G) hSeqG hPathG
   have hpath : (conditionedPositiveFutureRationalAvoidance t c).indicator
       (fun p => G (conditionedPositiveFutureRationalEvals t p)) =
       fun p => A.indicator G (conditionedPositiveFutureRationalEvals t p) := by
@@ -114,7 +101,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
     · have hp' : conditionedPositiveFutureRationalEvals t p ∉ A := fun h => hp (hmem.mpr h)
       simp [hp, hp']
   rw [hpath]
-  filter_upwards [hcond] with p hp
+  filter_upwards [(conditionedPositiveHistory_condExp_rationalFuture hP t ht (A.indicator G) (hG.indicator hA) (by exact hGint.indicator (hA.preimage (measurable_conditionedPositiveFutureRationalEvals t))))] with p hp
   simpa [conditionedPositiveEndpointFutureKernel,
     Kernel.comp_deterministic_eq_comap, Kernel.comap_apply,
     conditionedPositiveHistory_current, A, conditionedPositiveFutureAvoidanceSequence] using hp

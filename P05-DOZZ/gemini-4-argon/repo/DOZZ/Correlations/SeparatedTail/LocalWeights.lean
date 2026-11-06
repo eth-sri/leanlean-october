@@ -17,8 +17,8 @@ namespace DOZZ.Proofs
 
 /-- The literal extended-real insertion mass is dominated by the bare singular mass. -/
 theorem separatedTail_localSingularMass_le
-    {Ω : Type*} (M : Ω → Measure ℂ) (F : ℂ → ℝ) (z : ℂ) (γ α : ℝ)
-    (S : ℝ≥0∞) (hS : S ≠ ⊤) (hF : ∀ x, ENNReal.ofReal (F x) ≤ S) (ω : Ω) :
+    {Ω : Type*} (M : Ω → Measure ℂ) (F : ℂ → ℝ) z γ α
+    (S : ℝ≥0∞) (hS : S ≠ ⊤) (hF : ∀ x, ENNReal.ofReal (F x) ≤ S) ω :
     localSingularMass M F z γ α ω ≤ S * weightedGmcBallMass γ (M ω) α z 1 := by
   classical
   unfold localSingularMass weightedGmcBallMass
@@ -34,7 +34,7 @@ theorem separatedTail_localSingularMass_le
 /-- One finite constant works for all bounded multipliers and all insertion orders below `T`. -/
 theorem separatedTail_local_mixed_moment_le
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
-    (F2 F3 : ℂ → ℝ) (z2 z3 : ℂ) (γ α2 α3 a2 a3 T : ℝ)
+    (F2 F3 : ℂ → ℝ) z2 z3 (γ α2 α3 a2 a3 T : ℝ)
     (ha2 : 0 ≤ a2) (ha3 : 0 ≤ a3) (ha2T : a2 ≤ T) (ha3T : a3 ≤ T)
     (S B : ℝ≥0∞) (hS1 : 1 ≤ S) (hS : S ≠ ⊤)
     (hF2 : ∀ x, ENNReal.ofReal (F2 x) ≤ S) (hF3 : ∀ x, ENNReal.ofReal (F3 x) ≤ S)
@@ -42,7 +42,6 @@ theorem separatedTail_local_mixed_moment_le
       weightedGmcBallMass γ (M ω) α3 z3 1 ^ a3 ∂P) ≤ B) :
     (∫⁻ ω, localSingularMass M F2 z2 γ α2 ω ^ a2 *
       localSingularMass M F3 z3 γ α3 ω ^ a3 ∂P) ≤ S^(2*T)*B := by
-  have hSn : S ≠ 0 := ne_of_gt (lt_of_lt_of_le zero_lt_one hS1)
   calc
     _ ≤ ∫⁻ ω, (S*weightedGmcBallMass γ (M ω) α2 z2 1)^a2 *
         (S*weightedGmcBallMass γ (M ω) α3 z3 1)^a3 ∂P := by
@@ -56,7 +55,7 @@ theorem separatedTail_local_mixed_moment_le
       rw [← lintegral_const_mul' _ _ (ENNReal.rpow_ne_top_of_nonneg (add_nonneg ha2 ha3) hS)]
       apply lintegral_congr
       intro ω
-      rw [ENNReal.rpow_add _ _ hSn hS]
+      rw [ENNReal.rpow_add _ _ (ne_of_gt (lt_of_lt_of_le zero_lt_one hS1)) hS]
       ac_rfl
     _ ≤ S^(2*T)*B := mul_le_mul' (ENNReal.rpow_le_rpow_of_exponent_le hS1
       (by linarith)) hB

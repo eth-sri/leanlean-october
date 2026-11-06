@@ -26,7 +26,7 @@ open scoped ENNReal NNReal Distributions
 namespace DOZZ.Proofs
 
 /-- The true Gaussian scale exponent equals the polynomial in the merged exact moment law. -/
-theorem gmcScaleExponent_eq_polynomial (γ p : ℝ) (hγ : γ ≠ 0) :
+theorem gmcScaleExponent_eq_polynomial γ p (hγ : γ ≠ 0) :
     gmcScaleExponent γ p = 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 := by
   unfold gmcScaleExponent Q
   field_simp [hγ]

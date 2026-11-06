@@ -24,36 +24,16 @@ namespace DOZZ.Proofs
 
 /-- Cutoff chaos has no atom at the origin. -/
 theorem regularizedGMC_singleton_eq_zero {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (Xc : Ω → ℂ → ℝ → ℝ) (γ r : ℝ) (ω : Ω) (x : ℂ) : regularizedGMC P Xc γ r ω {x} = 0 := by
+    (Xc : Ω → ℂ → ℝ → ℝ) γ r ω x : regularizedGMC P Xc γ r ω {x} = 0 := by
   rw [regularizedGMC]
   exact withDensity_absolutelyContinuous _ _ (measure_singleton x)
 
-/-- Every point lies near a root, in the bulk, or in the exterior. -/
-theorem weight_le_pieces {N : ℕ} (G : ℂ → ℝ≥0∞) (z : Fin N → ℂ) (ρs R0 : ℝ) (x : ℂ) :
-    G x ≤ ∑ k, (Metric.ball (z k) ρs).indicator G x +
-      {y : ℂ | ‖y‖ ≤ R0 ∧ ∀ k, ρs ≤ ‖y - z k‖}.indicator G x +
-      {y : ℂ | R0 ≤ ‖y‖}.indicator G x := by
-  by_cases hE : R0 ≤ ‖x‖
-  · rw [Set.indicator_of_mem (show x ∈ {y : ℂ | R0 ≤ ‖y‖} from hE)]
-    exact le_add_left le_rfl
-  by_cases hroot : ∃ k, ‖x - z k‖ < ρs
-  · obtain ⟨k, hk⟩ := hroot
-    have hxk : x ∈ Metric.ball (z k) ρs := by rwa [Metric.mem_ball, dist_eq_norm]
-    refine le_trans ?_ (le_add_right (le_add_right le_rfl))
-    calc G x = (Metric.ball (z k) ρs).indicator G x := (Set.indicator_of_mem hxk G).symm
-      _ ≤ ∑ j, (Metric.ball (z j) ρs).indicator G x :=
-        Finset.single_le_sum (f := fun j => (Metric.ball (z j) ρs).indicator G x)
-          (fun _ _ => zero_le) (Finset.mem_univ k)
-  · push Not at hroot hE
-    have hK : x ∈ {y : ℂ | ‖y‖ ≤ R0 ∧ ∀ k, ρs ≤ ‖y - z k‖} := ⟨hE.le, hroot⟩
-    rw [Set.indicator_of_mem hK]
-    exact le_trans (le_add_left le_rfl) (le_add_right le_rfl)
 
 /-- The integral of a weight with root, bulk and exterior bounds against the cutoff chaos. -/
 theorem cutoff_weight_integral_le_pieces
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) (γ : ℝ) {N : ℕ}
-    (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) (r : ℝ) (ω : Ω) (G : ℂ → ℝ≥0∞)
-    (hG : Measurable G) {ρs R0 CR CB CE : ℝ} (hρs1 : ρs ≤ 1)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) (γ : ℝ) {N}
+    (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) r ω (G : ℂ → ℝ≥0∞)
+    (hG : Measurable G) {ρs R0 CR CB CE} (hρs1 : ρs ≤ 1)
     (hroot : ∀ k x, x ∈ Metric.ball (z k) ρs → x ≠ 0 →
       G x ≤ ENNReal.ofReal CR * ENNReal.ofReal ((‖x - z k‖ + Real.exp (-r)) ^ (-γ * α k)))
     (hbulk : ∀ x, ‖x‖ ≤ R0 → (∀ k, ρs ≤ ‖x - z k‖) → x ≠ 0 → G x ≤ ENNReal.ofReal CB)
@@ -65,9 +45,22 @@ theorem cutoff_weight_integral_le_pieces
         ENNReal.ofReal CB * regularizedGMC P Xc γ r ω (Metric.closedBall 0 R0) +
         ENNReal.ofReal CE * ∫⁻ x in {x : ℂ | R0 ≤ ‖x‖}, ENNReal.ofReal (‖x‖ ^ max (γ * αinf) 0)
           ∂regularizedGMC P Xc γ r ω := by
+  have weight_le_pieces x : G x ≤ ∑ k, (Metric.ball (z k) ρs).indicator G x + {y : ℂ | ‖y‖ ≤ R0 ∧ ∀ k, ρs ≤ ‖y - z k‖}.indicator G x + {y : ℂ | R0 ≤ ‖y‖}.indicator G x := by
+    by_cases hE : R0 ≤ ‖x‖
+    · rw [Set.indicator_of_mem (show x ∈ {y : ℂ | R0 ≤ ‖y‖} from hE)]
+      exact le_add_left le_rfl
+    by_cases hroot : ∃ k, ‖x - z k‖ < ρs
+    · obtain ⟨k, hk⟩ := hroot
+      refine le_trans ?_ (le_add_right (le_add_right le_rfl))
+      calc G x = (Metric.ball (z k) ρs).indicator G x := (Set.indicator_of_mem (by rwa [Metric.mem_ball, dist_eq_norm]) G).symm
+        _ ≤ ∑ j, (Metric.ball (z j) ρs).indicator G x :=
+          Finset.single_le_sum (f := fun j => (Metric.ball (z j) ρs).indicator G x)
+            (fun _ _ => zero_le) (Finset.mem_univ k)
+    · push Not at hroot hE
+      have hK : x ∈ {y : ℂ | ‖y‖ ≤ R0 ∧ ∀ k, ρs ≤ ‖y - z k‖} := ⟨hE.le, hroot⟩
+      rw [Set.indicator_of_mem hK]
+      exact le_trans (le_add_left le_rfl) (le_add_right le_rfl)
   set μ : Measure ℂ := regularizedGMC P Xc γ r ω with hμ
-  have hlog : Real.log (1 / Real.exp (-r)) = r := by
-    rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
   have hne : ∀ᵐ x ∂μ, x ≠ 0 := by
     rw [ae_iff]
     simp only [ne_eq, not_not, Set.ofPred_eq_eq_singleton]
@@ -85,7 +78,7 @@ theorem cutoff_weight_integral_le_pieces
     ENNReal.measurable_ofReal.comp (measurable_norm.pow_const _)
   calc ∫⁻ x, G x ∂μ
       ≤ ∫⁻ x, ((∑ k, (Metric.ball (z k) ρs).indicator G x + K.indicator G x) +
-          E.indicator G x) ∂μ := lintegral_mono fun x => weight_le_pieces G z ρs R0 x
+          E.indicator G x) ∂μ := lintegral_mono fun x => weight_le_pieces x
     _ = ∑ k, ∫⁻ x in Metric.ball (z k) ρs, G x ∂μ + ∫⁻ x in K, G x ∂μ + ∫⁻ x in E, G x ∂μ := by
         rw [lintegral_add_left hSK, lintegral_add_left hS,
           lintegral_finsetSum _ fun k _ => hG.indicator (hBm k), lintegral_indicator hKm,
@@ -94,7 +87,7 @@ theorem cutoff_weight_integral_le_pieces
     _ ≤ _ := by
         gcongr with k hk
         · -- root pieces
-          rw [cutoffWeightedGmcBallMass, hlog]
+          rw [cutoffWeightedGmcBallMass, (show Real.log (1 / Real.exp (-r)) = r by rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp])]
           calc ∫⁻ x in Metric.ball (z k) ρs, G x ∂μ
               ≤ ∫⁻ x in Metric.ball (z k) ρs, ENNReal.ofReal CR *
                   ENNReal.ofReal ((‖x - z k‖ + Real.exp (-r)) ^ (-γ * α k)) ∂μ := by

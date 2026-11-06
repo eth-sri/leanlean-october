@@ -18,7 +18,7 @@ namespace DOZZ.Proofs
 
 /-- Admissibility depends on measurability, centered Gaussian laws and the covariance kernel. -/
 theorem isAdmissibleLogRegularization_of_covariance_eq
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : Set ℂ}
+    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U}
     {dens : ℂ → ℝ} {ε₀ : ℝ} {Y Z : Ω → ℝ → ℂ → ℝ}
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (hm : ∀ ε, Measurable (fun q : Ω × ℂ => Z q.1 ε q.2))
@@ -49,14 +49,14 @@ theorem isAdmissibleLogRegularization_of_covariance_eq
 on every open chart, even when constructed by inversion on the source probability space. -/
 theorem inversionCircle_admissible_of_geometry
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (Z : Ω → ℂ → ℝ → ℝ)
+    X (hX : IsEquatorGFF P X) (Z : Ω → ℂ → ℝ → ℝ)
     (hm : ∀ r, Measurable (fun p : Ω × ℂ => Z p.1 p.2 r))
     (hg : IsGaussianProcess (fun p : ℂ × ℝ => fun ω => Z ω p.1 p.2) P)
     (hmean : ∀ p : ℂ × ℝ, (∫ ω, Z ω p.1 p.2 ∂P) = 0)
     (hcov : ∀ p q : ℂ × ℝ, covariance (fun ω => Z ω p.1 p.2)
         (fun ω => Z ω q.1 q.2) P =
       ∫ z, ∫ w, gffKernel z w ∂circleMeasure p.1 p.2 ∂circleMeasure q.1 q.2)
-    (U : Set ℂ) (hU : IsOpen U) :
+    U (hU : IsOpen U) :
     IsAdmissibleLogRegularization P U (fun x => normPlus x ^ (-4 : ℝ)) 1
       (fun ω ε x => Z ω x (Real.log (1 / ε))) := by
   obtain ⟨Xc, hXc⟩ := exists_equatorGFF_circle_average_witness X hX
@@ -69,13 +69,7 @@ theorem inversionCircle_admissible_of_geometry
       (hg.comp_right (fun i => ((q i).2, Real.log (1 / (q i).1))))
       (fun i => hmean ((q i).2, Real.log (1 / (q i).1)))
   · intro ε δ x y
-    have hz : gaussianCovariance P (fun ω => Z ω x (Real.log (1 / ε)))
-        (fun ω => Z ω y (Real.log (1 / δ))) =
-        covariance (fun ω => Z ω x (Real.log (1 / ε)))
-          (fun ω => Z ω y (Real.log (1 / δ))) P := by
-      simp only [gaussianCovariance, covariance,
-        hmean (x, Real.log (1 / ε)), hmean (y, Real.log (1 / δ)), sub_zero]
-    rw [hz, hcov (x, Real.log (1 / ε)) (y, Real.log (1 / δ)),
+    rw [(show gaussianCovariance P (fun ω => Z ω x (Real.log (1 / ε))) (fun ω => Z ω y (Real.log (1 / δ))) = covariance (fun ω => Z ω x (Real.log (1 / ε))) (fun ω => Z ω y (Real.log (1 / δ))) P by simp only [gaussianCovariance, covariance, hmean (x, Real.log (1 / ε)), hmean (y, Real.log (1 / δ)), sub_zero]), hcov (x, Real.log (1 / ε)) (y, Real.log (1 / δ)),
       isCircleAverage_covariance P X hX Xc hXc]
     obtain ⟨_, _, Y0, _, _, _, _, _, _, hc0⟩ :=
       exists_equatorGFF_circle_L2_geometry X hX

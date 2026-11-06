@@ -18,11 +18,11 @@ noncomputable def symmetryRepinnedChaos {Ω : Type*} (γ : ℝ) (M : Ω → Meas
     ((M ω).map (fun x : ℂ => 1 - x)).withDensity
       (fun x => ENNReal.ofReal (symmetryReflectionLimitWeight γ x))
 
-theorem symmetryRepinnedChaos_finite {Ω : Type*} (γ : ℝ) (M : Ω → Measure ℂ)
-    (L : Ω → ℝ) (hM : ∀ ω, IsFiniteMeasure (M ω)) (ω : Ω) :
+theorem symmetryRepinnedChaos_finite {Ω : Type*} γ (M : Ω → Measure ℂ)
+    (L : Ω → ℝ) (hM : ∀ ω, IsFiniteMeasure (M ω)) ω :
     IsFiniteMeasure (symmetryRepinnedChaos γ M L ω) := by
   let := hM ω
-  let := symmetry_bcf_withDensity_finite ((M ω).map (fun x : ℂ => 1 - x))
+  let := symmetry_bcf_withDensity_finite ((M ω).map (fun x => 1 - x))
     (symmetryReflectionLimitWeight γ)
   exact Measure.smul_finite _ ENNReal.ofReal_ne_top
 
@@ -36,10 +36,7 @@ theorem symmetry_reflection_weighted_integral (μ : Measure ℂ)
   have hfinite : ∀ᵐ x ∂μ.map (fun x : ℂ => 1 - x), ENNReal.ofReal (w x) < ∞ :=
     ae_of_all _ (fun _ => ENNReal.ofReal_lt_top)
   rw [integral_withDensity_eq_integral_toReal_smul hW hfinite]
-  have he : (fun x => (ENNReal.ofReal (w x)).toReal • f x) = fun x => f x * w x := by
-    funext x
-    rw [ENNReal.toReal_ofReal (hw x), smul_eq_mul, mul_comm]
-  rw [he]
+  rw [(show (fun x => (ENNReal.ofReal (w x)).toReal • f x) = fun x => f x * w x by funext x; rw [ENNReal.toReal_ofReal (hw x), smul_eq_mul, mul_comm])]
   exact integral_map (measurable_const.sub measurable_id).aemeasurable
     (f.continuous.mul w.continuous).aestronglyMeasurable
 

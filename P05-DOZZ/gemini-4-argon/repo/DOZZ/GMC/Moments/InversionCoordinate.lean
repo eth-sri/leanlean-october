@@ -17,46 +17,16 @@ open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-private theorem gmcReferenceMeasure_restrict_inversionChart_map :
-    (gmcReferenceMeasure.restrict inversionChart).map (fun x : ℂ => x⁻¹) =
-      gmcReferenceMeasure.restrict inversionChart := by
-  classical
-  have hU : MeasurableSet inversionChart := isOpen_compl_singleton.measurableSet
-  have hpre : (fun x : ℂ => x⁻¹) ⁻¹' inversionChart = inversionChart := by
-    ext x
-    simp [inversionChart]
-  let hpres : MeasurePreserving (fun x : ℂ => x⁻¹)
-      gmcReferenceMeasure gmcReferenceMeasure := by
-    refine ⟨by fun_prop, ?_⟩
-    exact gmcReferenceMeasure_map_complexInv
-  have hrestrict := hpres.restrict_preimage hU
-  rw [hpre] at hrestrict
-  exact hrestrict.map_eq
 
-/-- The logarithmic reference measure on the punctured plane is invariant under inversion. -/
-theorem logRegularizationReference_inversionChart_map :
-    logRegularizationReference inversionChart (fun x => normPlus x ^ (-4 : ℝ)) =
-      (logRegularizationReference inversionChart (fun x => normPlus x ^ (-4 : ℝ))).map
-        complexInvOpenPartialHomeomorph := by
-  have hRef : logRegularizationReference inversionChart
-      (fun x => normPlus x ^ (-4 : ℝ)) =
-        gmcReferenceMeasure.restrict inversionChart := by
-    rw [logRegularizationReference_restrict_of_subset Set.univ inversionChart
-      (fun x => normPlus x ^ (-4 : ℝ)) isOpen_compl_singleton.measurableSet
-      (Set.subset_univ _)]
-    simp [logRegularizationReference, gmcReferenceMeasure]
-  rw [hRef]
-  simpa [complexInvOpenPartialHomeomorph] using
-    gmcReferenceMeasure_restrict_inversionChart_map.symm
 
 /-- The finite-cutoff logarithmic chaos test mass transports exactly under inversion, with the
 target test pulled back by the inverse chart map. -/
 theorem regularizedLogChaosTestMass_inversion_coordinate_change
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (Y : Ω → ℝ → ℂ → ℝ)
+    Y
     (hY : IsAdmissibleLogRegularization P inversionChart
       (fun x => normPlus x ^ (-4 : ℝ)) 1 Y)
-    (γ : ℝ) (f : BoundedContinuousFunction ℂ ℝ)
+    γ (f : BoundedContinuousFunction ℂ ℝ)
     (hfCompact : HasCompactSupport (f : ℂ → ℝ))
     (hfSupport : tsupport (f : ℂ → ℝ) ⊆ inversionChart) :
     ∃ g : BoundedContinuousFunction ℂ ℝ,
@@ -70,16 +40,28 @@ theorem regularizedLogChaosTestMass_inversion_coordinate_change
           regularizedLogChaosTestMass P inversionChart
             (fun x => normPlus x ^ (-4 : ℝ))
             (fun ω ε x => Y ω ε (complexInvOpenPartialHomeomorph x)) γ r ω f := by
+  have logRegularizationReference_inversionChart_map : logRegularizationReference inversionChart (fun x => normPlus x ^ (-4 : ℝ)) = (logRegularizationReference inversionChart (fun x => normPlus x ^ (-4 : ℝ))).map complexInvOpenPartialHomeomorph := by
+    have gmcReferenceMeasure_restrict_inversionChart_map : (gmcReferenceMeasure.restrict inversionChart).map (fun x : ℂ => x⁻¹) = gmcReferenceMeasure.restrict inversionChart := by
+      classical
+      have hU : MeasurableSet inversionChart := isOpen_compl_singleton.measurableSet
+      have hpre : (fun x => x⁻¹) ⁻¹' inversionChart = inversionChart := by
+        ext x
+        simp [inversionChart]
+      let hpres : MeasurePreserving (fun x : ℂ => x⁻¹)
+          gmcReferenceMeasure gmcReferenceMeasure := by
+        refine ⟨by fun_prop, ?_⟩
+        exact gmcReferenceMeasure_map_complexInv
+      have hrestrict := hpres.restrict_preimage hU
+      rw [hpre] at hrestrict
+      exact hrestrict.map_eq
+    rw [(show logRegularizationReference inversionChart (fun x => normPlus x ^ (-4 : ℝ)) = gmcReferenceMeasure.restrict inversionChart by rw [logRegularizationReference_restrict_of_subset Set.univ inversionChart (fun x => normPlus x ^ (-4 : ℝ)) isOpen_compl_singleton.measurableSet (Set.subset_univ _)]; simp [logRegularizationReference, gmcReferenceMeasure])]
+    simpa [complexInvOpenPartialHomeomorph] using
+      gmcReferenceMeasure_restrict_inversionChart_map.symm
   let Yinv : Ω → ℝ → ℂ → ℝ := fun ω ε x => Y ω ε (complexInvOpenPartialHomeomorph x)
-  have hYinv : IsAdmissibleLogRegularization P inversionChart
-      (fun x => normPlus x ^ (-4 : ℝ)) 1 Yinv := by
-    simpa [Yinv, complexInvOpenPartialHomeomorph] using
-      isAdmissibleLogRegularization_complexInv P
-        (fun x => normPlus x ^ (-4 : ℝ)) 1 Y hY
   obtain ⟨g, hgCompact, hgSupport, hgOn, hgOff, hmass⟩ :=
     regularizedLogChaosTestMass_coordinate_change P inversionChart inversionChart
       (fun x => normPlus x ^ (-4 : ℝ)) (fun x => normPlus x ^ (-4 : ℝ)) 1 1
-      Y Yinv hY hYinv complexInvOpenPartialHomeomorph rfl rfl
+      Y Yinv hY (by simpa [Yinv, complexInvOpenPartialHomeomorph] using isAdmissibleLogRegularization_complexInv P (fun x => normPlus x ^ (-4 : ℝ)) 1 Y hY) complexInvOpenPartialHomeomorph rfl rfl
       logRegularizationReference_inversionChart_map
       (by
         intro ω ε y hy

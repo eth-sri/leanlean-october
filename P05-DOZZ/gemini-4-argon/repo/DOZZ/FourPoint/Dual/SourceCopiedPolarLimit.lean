@@ -22,10 +22,10 @@ namespace DOZZ.Proofs
 
 /-- Exact copied-carrier transport of the proved source polar increment limit. -/
 theorem dual_source_copied_polar_increment_tendsto
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
+    Xc (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (N : Ω → Measure ℂ) (hNm : Measurable N)
@@ -47,36 +47,18 @@ theorem dual_source_copied_polar_increment_tendsto
     let ν := Q γ-α₁
     let a := 2*ν/γ
     let p := (α₁+α₂+α₃-2/γ-2*Q γ)/γ
-    let T := fun z : ℂ => Real.toNNReal (-Real.log ‖z‖+h)
+    let T := fun z => Real.toNNReal (-Real.log ‖z‖+h)
     let A := originRadialPath Xc
     let O := fun z (v : Ω × Ω) => ∫⁻ x in reflected_outerRegion (‖z‖^(1-ξ)),
       ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)*
         ENNReal.ofReal (reflected_global_reinsertionWeight γ (A v.1) x) ∂N v.2
-    let D := fun z : ℂ => ∫ v : (Ω × Ω) × Ω,
-      (((O z v.1).toReal+dualPathRadialScale γ ν h z (A v.1.1)*
-        (∫⁻ t, (if 0 < t then ENNReal.ofReal (Real.exp (γ*
-          (brownianShiftPath (T z) (radialPositiveHalf (A v.1.1)) (Real.toNNReal t)-ν*t))) else 0)
-            ∂(Z v.2).map (fun s => s-(T z : ℝ))).toReal)^(-p)-(O z v.1).toReal^(-p))
-          ∂(P.prod P).prod P
-    Tendsto (fun z => D z/‖z‖^((4/γ)*ν)) (𝓝[≠] (0 : ℂ))
+    Tendsto (fun z => (fun z : ℂ => ∫ v : (Ω × Ω) × Ω, (((O z v.1).toReal+dualPathRadialScale γ ν h z (A v.1.1)* (∫⁻ t, (if 0 < t then ENNReal.ofReal (Real.exp (γ* (brownianShiftPath (T z) (radialPositiveHalf (A v.1.1)) (Real.toNNReal t)-ν*t))) else 0) ∂(Z v.2).map (fun s => s-(T z : ℝ))).toReal)^(-p)-(O z v.1).toReal^(-p)) ∂(P.prod P).prod P) z/‖z‖^((4/γ)*ν)) (𝓝[≠] (0 : ℂ))
       (𝓝 ((a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃ ^(-(p+a)) ∂P).toReal*
         (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^a ∂P).toReal)) := by
-  have ht := dual_source_restarted_polar_increment_tendsto P X hX γ hγ hγ₂ M hM
-    Xc hc hm hcont α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack
-    hξ hξ1 B Z hData hiZ
-  apply ht.congr'
-  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 ‖(0 : ℂ)‖) :=
-    (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+  apply (dual_source_restarted_polar_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc hm hcont α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack hξ hξ1 B Z hData hiZ).congr'
   filter_upwards [self_mem_nhdsWithin,
-    hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))] with z hz0 hz
-  have hstrict : ‖z‖ < ‖z‖^(1-ξ) := by
-    simpa only [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt
-      (norm_pos_iff.mpr hz0) hz (by linarith only [hξ] : 1-ξ < 1)
-  have he := dual_source_copied_polar_increment_eq P X Xc hX hc hcont γ hγ hγ₂ M hM
-    N hNm hfin Z hData.2.1 α₁ α₂ α₃ ξ h
-    ((α₁+α₂+α₃-2/γ-2*Q γ)/γ) z (Real.toNNReal (-Real.log ‖z‖+h))
-    (hlaw α₁ α₂ α₃ ξ z hstrict)
-  exact congrArg (fun t : ℝ => t/‖z‖^((4/γ)*(Q γ-α₁))) he
+    ((continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds).eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))] with z hz0 hz
+  exact congrArg (fun t : ℝ => t/‖z‖^((4/γ)*(Q γ-α₁))) (dual_source_copied_polar_increment_eq P X Xc hX hc hcont γ hγ hγ₂ M hM N hNm hfin Z hData.2.1 α₁ α₂ α₃ ξ h ((α₁+α₂+α₃-2/γ-2*Q γ)/γ) z (Real.toNNReal (-Real.log ‖z‖+h)) (hlaw α₁ α₂ α₃ ξ z (by simpa only [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt (norm_pos_iff.mpr hz0) hz (by linarith only [hξ] : 1-ξ < 1))))
 
 end DOZZ.Proofs

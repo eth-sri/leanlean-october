@@ -33,60 +33,58 @@ noncomputable def bpzCutRootKernel (γ r : ℝ) (x y : ℂ) : ℝ :=
 noncomputable def bpzLimRootKernel (γ r : ℝ) (x y : ℂ) : ℝ :=
   Real.exp (γ ^ 2 * (bpzTruncLog r (x - y) + Real.log (normPlus y)))
 
-theorem continuous_bpzLam (r : ℝ) : Continuous (bpzLam r) := by
+theorem continuous_bpzLam r : Continuous (bpzLam r) := by
   refine (LipschitzWith.of_dist_le_mul fun w w' => ?_).continuous (K := Real.toNNReal (Real.exp r))
   rw [Real.dist_eq, dist_eq_norm, Real.coe_toNNReal _ (Real.exp_pos r).le]
   exact abs_bpzLam_sub_le r w w'
 
-theorem bpzPin_eq_interval (r : ℝ) (x : ℂ) :
+theorem bpzPin_eq_interval r x :
     bpzPin r x = (2 * Real.pi)⁻¹ *
       ∫ θ in (0 : ℝ)..2 * Real.pi,
         Real.log (normPlus (x + Real.exp (-r) * Complex.exp (θ * Complex.I))) := by
-  have hm : Measurable fun a : ℂ => Real.log (normPlus a) :=
-    Real.measurable_log.comp bpz_measurable_normPlus
-  rw [bpzPin, bpz_integral_circleMeasure_eq x r (fun a => Real.log (normPlus a)) hm]
+  rw [bpzPin, bpz_integral_circleMeasure_eq x r (fun a => Real.log (normPlus a)) (Real.measurable_log.comp bpz_measurable_normPlus)]
   rfl
 
-theorem abs_bpzPin_sub_le' (r : ℝ) (x x' : ℂ) : |bpzPin r x - bpzPin r x'| ≤ ‖x - x'‖ := by
-  have hcont : ∀ c : ℂ, Continuous fun θ : ℝ =>
-      Real.log (normPlus (c + Real.exp (-r) * Complex.exp (θ * Complex.I))) := by
-    intro c
-    refine (Real.continuousOn_log.comp_continuous (bpz_continuous_normPlus.comp
-      (continuous_const.add (continuous_const.mul (Complex.continuous_exp.comp
-        (Complex.continuous_ofReal.mul continuous_const))))) fun θ => ?_)
-    exact (bpz_normPlus_pos _).ne'
-  rw [bpzPin_eq_interval, bpzPin_eq_interval, ← mul_sub,
-    ← intervalIntegral.integral_sub ((hcont x).intervalIntegrable _ _)
-      ((hcont x').intervalIntegrable _ _)]
-  have hpi : 0 < 2 * Real.pi := by positivity
-  rw [abs_mul, abs_of_pos (inv_pos.mpr hpi)]
-  have hb : ∀ θ ∈ Set.uIoc 0 (2 * Real.pi),
-      ‖Real.log (normPlus (x + Real.exp (-r) * Complex.exp (θ * Complex.I))) -
-        Real.log (normPlus (x' + Real.exp (-r) * Complex.exp (θ * Complex.I)))‖ ≤ ‖x - x'‖ := by
-    intro θ _
-    rw [Real.norm_eq_abs]
-    refine (abs_log_normPlus_sub_le' _ _).trans (le_of_eq ?_)
-    congr 1
-    ring
-  have hint := intervalIntegral.norm_integral_le_of_norm_le_const hb
-  rw [Real.norm_eq_abs, sub_zero, abs_of_pos hpi] at hint
-  calc (2 * Real.pi)⁻¹ * |∫ θ in (0 : ℝ)..2 * Real.pi, _|
-      ≤ (2 * Real.pi)⁻¹ * (‖x - x'‖ * (2 * Real.pi)) := by gcongr
-    _ = ‖x - x'‖ := by field_simp
 
-theorem continuous_bpzPin (r : ℝ) : Continuous (bpzPin r) := by
+theorem continuous_bpzPin r : Continuous (bpzPin r) := by
+  have abs_bpzPin_sub_le' x x' : |bpzPin r x - bpzPin r x'| ≤ ‖x - x'‖ := by
+    have hcont : ∀ c : ℂ, Continuous fun θ : ℝ =>
+        Real.log (normPlus (c + Real.exp (-r) * Complex.exp (θ * Complex.I))) := by
+      intro c
+      refine (Real.continuousOn_log.comp_continuous (bpz_continuous_normPlus.comp
+        (continuous_const.add (continuous_const.mul (Complex.continuous_exp.comp
+          (Complex.continuous_ofReal.mul continuous_const))))) fun θ => ?_)
+      exact (bpz_normPlus_pos _).ne'
+    rw [bpzPin_eq_interval, bpzPin_eq_interval, ← mul_sub,
+      ← intervalIntegral.integral_sub ((hcont x).intervalIntegrable _ _)
+        ((hcont x').intervalIntegrable _ _)]
+    have hpi : 0 < 2 * Real.pi := by positivity
+    rw [abs_mul, abs_of_pos (inv_pos.mpr hpi)]
+    have hb : ∀ θ ∈ Set.uIoc 0 (2 * Real.pi),
+        ‖Real.log (normPlus (x + Real.exp (-r) * Complex.exp (θ * Complex.I))) -
+          Real.log (normPlus (x' + Real.exp (-r) * Complex.exp (θ * Complex.I)))‖ ≤ ‖x - x'‖ := by
+      intro θ _
+      rw [Real.norm_eq_abs]
+      refine (abs_log_normPlus_sub_le' _ _).trans (le_of_eq ?_)
+      congr 1
+      ring
+    have hint := intervalIntegral.norm_integral_le_of_norm_le_const hb
+    rw [Real.norm_eq_abs, sub_zero, abs_of_pos hpi] at hint
+    calc (2 * Real.pi)⁻¹ * |∫ θ in (0 : ℝ)..2 * Real.pi, _|
+        ≤ (2 * Real.pi)⁻¹ * (‖x - x'‖ * (2 * Real.pi)) := by gcongr
+      _ = ‖x - x'‖ := by field_simp
   refine (LipschitzWith.of_dist_le_mul fun w w' => ?_).continuous (K := 1)
   rw [Real.dist_eq, dist_eq_norm, NNReal.coe_one, one_mul]
-  exact abs_bpzPin_sub_le' r w w'
+  exact abs_bpzPin_sub_le' w w'
 
-theorem measurable_bpzCutRootDensity (γ r : ℝ) (x : ℂ) :
+theorem measurable_bpzCutRootDensity γ r x :
     Measurable (bpzCutRootDensity γ r x) := by
   unfold bpzCutRootDensity
   refine ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp (Measurable.const_mul ?_ _))
   exact (((continuous_bpzLam r).comp (continuous_const.sub continuous_id)).measurable.add
     measurable_const).add (continuous_bpzPin r).measurable
 
-theorem measurable_bpzLimRootDensity (γ r : ℝ) (x : ℂ) :
+theorem measurable_bpzLimRootDensity γ r x :
     Measurable (bpzLimRootDensity γ r x) := by
   unfold bpzLimRootDensity
   refine ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp (Measurable.const_mul ?_ _))

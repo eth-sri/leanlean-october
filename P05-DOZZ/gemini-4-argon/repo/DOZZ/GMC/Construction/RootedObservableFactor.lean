@@ -46,15 +46,11 @@ theorem rooted_observable_factors_through_coordinates
       ((inferInstance : MeasurableSpace ℂ).prod inferInstance) = _
     rw [MeasurableSpace.comap_prodMap, MeasurableSpace.comap_id, hJoint]
     rfl
-  have hPull : Measurable (fun p : ℂ × (Q × FiniteMeasure ℂ) =>
-      H p.1 p.2.1 (p.2.2 : Measure ℂ)) := by
-    exact hH.comp (measurable_fst.prodMk (measurable_fst.comp measurable_snd |>.prodMk
-      (measurable_subtype_coe.comp (measurable_snd.comp measurable_snd))))
   have hPull' : @Measurable (ℂ × (Q × FiniteMeasure ℂ)) ℝ≥0∞
       (MeasurableSpace.comap lift inferInstance) inferInstance
       (fun p => H p.1 p.2.1 (p.2.2 : Measure ℂ)) := by
     rw [hSigma]
-    exact hPull
+    exact (by exact hH.comp (measurable_fst.prodMk (measurable_fst.comp measurable_snd |>.prodMk (measurable_subtype_coe.comp (measurable_snd.comp measurable_snd)))))
   obtain ⟨G, hG, hGfactor⟩ := hPull'.exists_eq_measurable_comp
   let decode : (gmcTiltCoordinateIndex → ℝ) → Q × E := fun v =>
     (fun f => v (.inl f), fun j => ENNReal.ofReal (v (.inr j)))

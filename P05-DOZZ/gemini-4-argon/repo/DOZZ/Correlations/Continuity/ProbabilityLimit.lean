@@ -14,7 +14,7 @@ namespace DOZZ.Proofs
 preserves parameter continuity in probability. -/
 theorem uniform_approximation_in_measure_continuous
     {Ω T : Type*} [MeasurableSpace Ω] [TopologicalSpace T]
-    (P : Measure Ω) (F : ℝ → T → Ω → ℝ) (G : T → Ω → ℝ) (q₀ : T)
+    (P : Measure Ω) (F : ℝ → T → Ω → ℝ) (G : T → Ω → ℝ) q₀
     (happrox : ∀ ε : ℝ, 0 < ε → Tendsto
       (fun r => ⨆ q, P {ω | ε ≤ dist (F r q ω) (G q ω)}) atTop (𝓝 0))
     (hcont : ∀ r, 0 ≤ r → TendstoInMeasure P (F r) (𝓝 q₀) (F r q₀)) :
@@ -26,8 +26,7 @@ theorem uniform_approximation_in_measure_continuous
   have hδ3 : 0 < δ / 3 := ENNReal.div_pos hδ.ne' (by norm_num)
   obtain ⟨r, hr, hr0⟩ := ((happrox (ε / 3) (by linarith)).eventually
     (Iio_mem_nhds hδ3) |>.and (eventually_ge_atTop (0 : ℝ))).exists
-  have hmid := (tendstoInMeasure_iff_dist.mp (hcont r hr0)) (ε / 3) (by linarith)
-  filter_upwards [hmid.eventually (Iio_mem_nhds hδ3)] with q hq
+  filter_upwards [((tendstoInMeasure_iff_dist.mp (hcont r hr0)) (ε / 3) (by linarith)).eventually (Iio_mem_nhds hδ3)] with q hq
   have hset : {ω | ε ≤ dist (G q ω) (G q₀ ω)} ⊆
       ({ω | ε / 3 ≤ dist (F r q ω) (G q ω)} ∪
         {ω | ε / 3 ≤ dist (F r q ω) (F r q₀ ω)}) ∪
@@ -78,9 +77,7 @@ theorem coulombMass_continuous_in_measure_on_compact
       (continuityCutoffTest_measurable partition r c.val)
   apply uniform_approximation_in_measure_continuous P F _ c₀
   · intro ε hε
-    have h := regularizedCoulombMass_tendstoInProbability_uniform P X hX Xc hXc
-      partition M hM S hS hadm (ENNReal.ofReal ε) (ENNReal.ofReal_pos.mpr hε)
-    refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds h
+    refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds (regularizedCoulombMass_tendstoInProbability_uniform P X hX Xc hXc partition M hM S hS hadm (ENNReal.ofReal ε) (ENNReal.ofReal_pos.mpr hε))
       (fun _ => zero_le) (fun r => iSup_le fun (c : S) => ?_)
     refine le_iSup_of_le c.val (le_iSup_of_le c.property ?_)
     apply measure_mono
@@ -98,38 +95,30 @@ theorem coulombMass_continuous_in_measure_on_compact
 vary. In particular there is no restriction at exponent zero. -/
 theorem continuity_tendstoInMeasure_varying_rpow
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (f : ℕ → Ω → ℝ≥0∞) (g : Ω → ℝ≥0∞) (p : ℕ → ℝ) (p₀ : ℝ)
+    (f : ℕ → Ω → ℝ≥0∞) (g : Ω → ℝ≥0∞) (p : ℕ → ℝ) p₀
     (hf : ∀ n, AEMeasurable (f n) P)
     (hgfin : ∀ᵐ ω ∂P, g ω ≠ ⊤) (hgpos : ∀ᵐ ω ∂P, g ω ≠ 0)
     (hconv : TendstoInMeasure P (fun n ω => (f n ω).toReal) atTop
       (fun ω => (g ω).toReal)) (hp : Tendsto p atTop (𝓝 p₀)) :
     TendstoInMeasure P (fun n ω => (f n ω ^ p n).toReal) atTop
       (fun ω => (g ω ^ p₀).toReal) := by
-  have hreal : ∀ n, AEStronglyMeasurable (fun ω => (f n ω).toReal) P :=
-    fun n => (hf n).ennreal_toReal.aestronglyMeasurable
-  have hpow : ∀ n, AEStronglyMeasurable (fun ω => (f n ω ^ p n).toReal) P :=
-    fun n => ((hf n).pow_const (p n)).ennreal_toReal.aestronglyMeasurable
-  rw [exists_seq_tendstoInMeasure_atTop_iff hpow]
+  rw [exists_seq_tendstoInMeasure_atTop_iff (fun n => ((hf n).pow_const (p n)).ennreal_toReal.aestronglyMeasurable)]
   intro ns hns
-  obtain ⟨ns', hns', hae⟩ := (exists_seq_tendstoInMeasure_atTop_iff hreal).mp hconv ns hns
+  obtain ⟨ns', hns', hae⟩ := (exists_seq_tendstoInMeasure_atTop_iff (fun n => (hf n).ennreal_toReal.aestronglyMeasurable)).mp hconv ns hns
   refine ⟨ns', hns', ?_⟩
   filter_upwards [hae, hgfin, hgpos] with ω hω hfin hpos
-  have hp' := hp.comp ((hns.comp hns').tendsto_atTop)
-  have h := (Real.continuousAt_rpow ((g ω).toReal, p₀)
-    (Or.inl (ENNReal.toReal_pos hpos hfin).ne')).tendsto.comp (hω.prodMk_nhds hp')
-  simpa only [Function.comp_def, ← ENNReal.toReal_rpow] using h
+  simpa only [Function.comp_def, ← ENNReal.toReal_rpow] using ((Real.continuousAt_rpow ((g ω).toReal, p₀) (Or.inl (ENNReal.toReal_pos hpos hfin).ne')).tendsto.comp (hω.prodMk_nhds (hp.comp ((hns.comp hns').tendsto_atTop))))
 
 /-- Subcritical root charges give a strictly positive finite actual Coulomb mass
 on one probability-one event, independently of the chosen moment power. -/
 theorem continuity_coulombMass_positive_finite_ae
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (z : Fin N → ℂ) (hz : Function.Injective z) (α : Fin N → ℝ) (αinf : ℝ)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    z (hz : Function.Injective z) (α : Fin N → ℝ) αinf
     (hα : ∀ k, α k < Q γ) (hinf : αinf < Q γ) :
     ∀ᵐ ω ∂P, 0 < coulombMass γ (M ω) α z αinf ∧ coulombMass γ (M ω) α z αinf ≠ ⊤ := by
   let _ : IsProbabilityMeasure P := hX.1
-  have hm := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf
   have e1 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (4 / γ ^ 2) := Ioo_mem_nhdsGT (by positivity)
   have e2 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (2 / γ * (Q γ - αinf)) :=
     Ioo_mem_nhdsGT (mul_pos (div_pos two_pos hγ) (sub_pos.mpr hinf))
@@ -137,22 +126,13 @@ theorem continuity_coulombMass_positive_finite_ae
     eventually_all.mpr fun k => Ioo_mem_nhdsGT
       (mul_pos (div_pos two_pos hγ) (sub_pos.mpr (hα k)))
   obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
-  have htfin := coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM z hz α αinf t
-    ht.1.1 ht.1.2 (fun k => (ht.2.2 k).2) ht.2.1.2
   have hf : ∀ᵐ ω ∂P, coulombMass γ (M ω) α z αinf ≠ ⊤ := by
-    filter_upwards [ae_lt_top' (hm.pow_const t) htfin.ne] with ω hω htop
+    filter_upwards [ae_lt_top' ((gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf).pow_const t) (coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM z hz α αinf t ht.1.1 ht.1.2 (fun k => (ht.2.2 k).2) ht.2.1.2).ne] with ω hω htop
     rw [htop, ENNReal.top_rpow_of_pos ht.1.1] at hω
     exact lt_irrefl _ hω
   obtain ⟨hR, hzR⟩ := coulomb_exterior_radius_bounds z
-  have hsum : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun _ _ => norm_nonneg _
-  have hc : 0 < ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
-      ENNReal.ofReal ((1 + 2 * ∑ j, ‖z j‖ + 2) ^ (-|γ * αinf|)) :=
-    ENNReal.mul_pos (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
-      (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'
-  have hB := gmc_ball_mass_pos_ae P X hX γ hγ hγ2 M hM
-    (((1 + 2 * ∑ j, ‖z j‖ + 1 : ℝ)) : ℂ) (1 / 8) (by norm_num)
-  filter_upwards [hf, hB] with ω hω hBω
-  exact ⟨lt_of_lt_of_le (ENNReal.mul_pos hc.ne' hBω.ne')
+  filter_upwards [hf, (gmc_ball_mass_pos_ae P X hX γ hγ hγ2 M hM (((1 + 2 * ∑ j, ‖z j‖ + 1 : ℝ)) : ℂ) (1 / 8) (by norm_num))] with ω hω hBω
+  exact ⟨lt_of_lt_of_le (ENNReal.mul_pos (ENNReal.mul_pos (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne' (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne').ne' hBω.ne')
     (coulombMass_ge_exterior_ball (M ω) γ α z αinf hR hzR), hω⟩
 
 end DOZZ.Proofs

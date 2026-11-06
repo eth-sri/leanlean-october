@@ -15,18 +15,16 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- The positive absolute kernel is measurable, with its prescribed values at the roots. -/
-theorem gammaHalf_absolute_kernel_measurable (γ α₁ α₂ α₃ : ℝ) (z : ℂ) :
+theorem gammaHalf_absolute_kernel_measurable γ α₁ α₂ α₃ z :
     Measurable (fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖)) := by
   apply ENNReal.measurable_ofReal.comp
-  have hn : Measurable (normPlus : ℂ → ℝ) := measurable_const.max measurable_norm
-  have hxz : Measurable (fun x : ℂ => ‖x - z‖) := (measurable_id.sub_const z).norm
-  have hx1 : Measurable (fun x : ℂ => ‖x - 1‖) := (measurable_id.sub_const 1).norm
-  exact (((hxz.pow_const _).mul (hn.pow_const _)).div
-    ((measurable_norm.pow_const _).mul (hx1.pow_const _))).div hxz
+  have hxz : Measurable (fun x => ‖x - z‖) := (measurable_id.sub_const z).norm
+  exact (((hxz.pow_const _).mul ((measurable_const.max measurable_norm).pow_const _)).div
+    ((measurable_norm.pow_const _).mul (((measurable_id.sub_const 1).norm).pow_const _))).div hxz
 
 /-- The exact Coulomb mass is a measurable functional on all measures; no clipping is used. -/
-theorem coulombMass_measure_measurable {N : ℕ} (γ : ℝ)
-    (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) :
+theorem coulombMass_measure_measurable {N} γ
+    (α : Fin N → ℝ) (z : Fin N → ℂ) αinf :
     Measurable (fun μ : Measure ℂ => coulombMass γ μ α z αinf) :=
   Measure.measurable_lintegral (measurable_coulombWeight γ α z αinf)
 

@@ -33,9 +33,9 @@ noncomputable def originRadialCovariance (s : ℝ) (w : ℂ) : ℝ :=
   min s (-Real.log ‖w‖) + max 0 (-s) + max 0 (Real.log ‖w‖)
 
 /-- The plane potential of one origin circle is precisely the radial covariance. -/
-theorem origin_circleKernelPotential_eq (s : ℝ) (w : ℂ) (hw : w ≠ 0) :
+theorem origin_circleKernelPotential_eq s w (hw : w ≠ 0) :
     (∫ v, gffKernel w v ∂circleMeasure 0 s) = originRadialCovariance s w := by
-  have hnorm : 0 < ‖w‖ := norm_pos_iff.mpr hw
+  have hnorm := norm_pos_iff.mpr hw
   rw [integral_gffKernel_circleMeasure, integral_log_normPlus_circleMeasure_origin_eq_max,
     zero_sub, norm_neg, neg_log_max_exp_eq_min hnorm]
   unfold originRadialCovariance
@@ -53,8 +53,8 @@ section
 variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
 
 /-- The actual radial/circle covariance has the same scalar plane kernel. -/
-theorem origin_circle_radial_covariance (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (s : ℝ) (w : ℂ) :
+theorem origin_circle_radial_covariance X Xc
+    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) s w :
     covariance (fun ω => Xc ω 0 s)
       (fun ω => Xc ω 0 (-Real.log ‖w‖)) P = originRadialCovariance s w := by
   rw [circleAverage_covariance_integral P X Xc hX hc,
@@ -64,31 +64,23 @@ theorem origin_circle_radial_covariance (X : Ω → Distr) (Xc : Ω → ℂ → 
 end
 
 /-- The equator pin terms are the positive parts of the logarithmic radius. -/
-theorem log_normPlus_eq_max_log {w : ℂ} (hw : w ≠ 0) :
+theorem log_normPlus_eq_max_log {w} (hw : w ≠ 0) :
     Real.log (normPlus w) = max 0 (Real.log ‖w‖) := by
-  have hnorm : 0 < ‖w‖ := norm_pos_iff.mpr hw
   unfold normPlus
   rcases le_total 1 ‖w‖ with hn | hn
   · rw [max_eq_right hn, max_eq_right (Real.log_nonneg hn)]
-  · rw [max_eq_left hn, Real.log_one, max_eq_left (Real.log_nonpos hnorm.le hn)]
+  · rw [max_eq_left hn, Real.log_one, max_eq_left (Real.log_nonpos (norm_pos_iff.mpr hw).le hn)]
 
-/-- The radial covariance at two geometric radii, including radii outside the unit circle. -/
-theorem originRadialCovariance_log_radius {w v : ℂ} (hw : w ≠ 0) (hv : v ≠ 0) :
-    originRadialCovariance (-Real.log ‖w‖) v =
-      -Real.log (max ‖w‖ ‖v‖) + Real.log (normPlus w) + Real.log (normPlus v) := by
-  rw [originRadialCovariance, neg_neg,
-    min_neg_log_eq_neg_log_max (norm_pos_iff.mpr hw) (norm_pos_iff.mpr hv),
-    log_normPlus_eq_max_log hw, log_normPlus_eq_max_log hv]
 
 /-- Subtracting the radial covariance cancels the two equator pin terms pointwise. -/
-theorem origin_lateralKernel_cancellation {w v : ℂ} (hw : w ≠ 0) (hv : v ≠ 0) :
+theorem origin_lateralKernel_cancellation {w v} (hw : w ≠ 0) (hv : v ≠ 0) :
     gffKernel w v - originRadialCovariance (-Real.log ‖w‖) v =
       -Real.log ‖w - v‖ + Real.log (max ‖w‖ ‖v‖) := by
-  rw [originRadialCovariance_log_radius hw hv, gffKernel]
+  rw [(show originRadialCovariance (-Real.log ‖w‖) v = -Real.log (max ‖w‖ ‖v‖) + Real.log (normPlus w) + Real.log (normPlus v) by rw [originRadialCovariance, neg_neg, min_neg_log_eq_neg_log_max (norm_pos_iff.mpr hw) (norm_pos_iff.mpr hv), log_normPlus_eq_max_log hw, log_normPlus_eq_max_log hv]), gffKernel]
   ring
 
 /-- The lateral kernel is a logarithm of the scale-free separation. -/
-theorem origin_lateralKernel_normalized {w v : ℂ}
+theorem origin_lateralKernel_normalized {w v}
     (hw : w ≠ 0) (hv : v ≠ 0) (hsep : w ≠ v) :
     gffKernel w v - originRadialCovariance (-Real.log ‖w‖) v =
       Real.log (max ‖w‖ ‖v‖ / ‖w - v‖) := by
@@ -97,13 +89,6 @@ theorem origin_lateralKernel_normalized {w v : ℂ}
       (norm_ne_zero_iff.mpr (sub_ne_zero.mpr hsep))]
   ring
 
-/-- The scale-free separation is unchanged by any nonzero common complex dilation. -/
-theorem origin_lateral_normalized_separation_dilation
-    (c w v : ℂ) (hc : c ≠ 0) :
-    max ‖c * w‖ ‖c * v‖ / ‖c * w - c * v‖ = max ‖w‖ ‖v‖ / ‖w - v‖ := by
-  rw [← mul_sub, norm_mul, norm_mul, norm_mul,
-    ← mul_max_of_nonneg _ _ (norm_nonneg c)]
-  exact mul_div_mul_left _ _ (norm_ne_zero_iff.mpr hc)
 
 /-- Common plane dilation corresponds to real cylinder translation and rotation. The exact
 lateral covariance is invariant, including across the equator. -/
@@ -112,11 +97,8 @@ theorem origin_lateralKernel_dilation
     gffKernel (c * w) (c * v) -
       originRadialCovariance (-Real.log ‖c * w‖) (c * v) =
         gffKernel w v - originRadialCovariance (-Real.log ‖w‖) v := by
-  have hsep' : c * w ≠ c * v := by
-    intro h
-    exact hsep (mul_left_cancel₀ hc h)
-  rw [origin_lateralKernel_normalized (mul_ne_zero hc hw) (mul_ne_zero hc hv) hsep',
+  rw [origin_lateralKernel_normalized (mul_ne_zero hc hw) (mul_ne_zero hc hv) (show c * w ≠ c * v by intro h; exact hsep (mul_left_cancel₀ hc h)),
     origin_lateralKernel_normalized hw hv hsep,
-    origin_lateral_normalized_separation_dilation c w v hc]
+    (show max ‖c * w‖ ‖c * v‖ / ‖c * w - c * v‖ = max ‖w‖ ‖v‖ / ‖w - v‖ by rw [← mul_sub, norm_mul, norm_mul, norm_mul, ← mul_max_of_nonneg _ _ (norm_nonneg c)]; exact mul_div_mul_left _ _ (norm_ne_zero_iff.mpr hc))]
 
 end DOZZ.Proofs

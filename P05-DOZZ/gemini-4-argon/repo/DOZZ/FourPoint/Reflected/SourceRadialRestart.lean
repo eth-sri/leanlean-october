@@ -17,7 +17,7 @@ theorem reflected_source_copied_radial_restart
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (γ α h : ℝ) (M N : Ω → Measure ℂ)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))))
-    (z : ℂ) (hz : z ≠ 0) (T : ℝ≥0) (hcoord : (T : ℝ) = -Real.log ‖z‖+h) :
+    z (hz : z ≠ 0) (T : ℝ≥0) (hcoord : (T : ℝ) = -Real.log ‖z‖+h) :
     ∀ᵐ ω : Ω × Ω ∂P.prod P,
       ENNReal.ofReal (‖z‖^(γ^2/2))*(∫⁻ x in {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))},
         ENNReal.ofReal (‖x‖^(-(γ*α)))*
@@ -27,7 +27,7 @@ theorem reflected_source_copied_radial_restart
           (γ*(brownianShiftPath T (radialPositiveHalf (originRadialPath Xc ω.1)) (Real.toNNReal u)-
             (Q γ-α)*u))) else 0)
           ∂(lateralProjectedGMC γ (originRadialPath Xc ω.2) (M ω.2)).map (fun s => s-(T : ℝ)) := by
-  have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hn := norm_pos_iff.mpr hz
   filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae (originRadialPath_eval_ae hcont),
     measurePreserving_snd.quasiMeasurePreserving.ae
       (reflected_copied_inner_source_restart P γ α (originRadialPath Xc) M N heq)] with ω hev hi

@@ -20,17 +20,11 @@ theorem reflected_pareto_increment_aestronglyMeasurable
     AEStronglyMeasurable (fun v : Ω × Λ => ∫ w,
       ((A v.1+b v.1*S v.2*w)^(-p)-(A v.1)^(-p)) ∂paretoMeasure 1 a) (P.prod R) := by
   let _ : IsProbabilityMeasure (paretoMeasure 1 a) := isProbabilityMeasure_paretoMeasure zero_lt_one ha
-  have hAp : AEMeasurable (fun v : Ω × Λ => A v.1) (P.prod R) :=
-    hA.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving
-  have hbp : AEMeasurable (fun v : Ω × Λ => b v.1) (P.prod R) :=
-    hb.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving
-  have hSp : AEMeasurable (fun v : Ω × Λ => S v.2) (P.prod R) :=
-    hS.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving
-  have hAA := hAp.comp_quasiMeasurePreserving
+  have hAA := (hA.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving).comp_quasiMeasurePreserving
     (measurePreserving_fst (μ := P.prod R) (ν := paretoMeasure 1 a)).quasiMeasurePreserving
-  have hbb := hbp.comp_quasiMeasurePreserving
+  have hbb := (hb.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving).comp_quasiMeasurePreserving
     (measurePreserving_fst (μ := P.prod R) (ν := paretoMeasure 1 a)).quasiMeasurePreserving
-  have hSS := hSp.comp_quasiMeasurePreserving
+  have hSS := (hS.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving).comp_quasiMeasurePreserving
     (measurePreserving_fst (μ := P.prod R) (ν := paretoMeasure 1 a)).quasiMeasurePreserving
   change AEMeasurable (fun v : (Ω × Λ) × ℝ => A v.1.1)
     ((P.prod R).prod (paretoMeasure 1 a)) at hAA
@@ -39,12 +33,7 @@ theorem reflected_pareto_increment_aestronglyMeasurable
   change AEMeasurable (fun v : (Ω × Λ) × ℝ => S v.1.2)
     ((P.prod R).prod (paretoMeasure 1 a)) at hSS
   have hpow : Measurable (fun x : ℝ => x^(-p)) := by fun_prop
-  have hK : AEMeasurable (fun v : (Ω × Λ) × ℝ =>
-      (A v.1.1+b v.1.1*S v.1.2*v.2)^(-p)-(A v.1.1)^(-p))
-        ((P.prod R).prod (paretoMeasure 1 a)) :=
-    (hpow.comp_aemeasurable (hAA.add ((hbb.mul hSS).mul measurable_snd.aemeasurable))).sub
-      (hpow.comp_aemeasurable hAA)
-  exact hK.aestronglyMeasurable.integral_prod_right'
+  exact ((hpow.comp_aemeasurable (hAA.add ((hbb.mul hSS).mul measurable_snd.aemeasurable))).sub (hpow.comp_aemeasurable hAA)).aestronglyMeasurable.integral_prod_right'
 
 /-- Pareto's leading and first-order weights are exactly the powers supplied by the
 Cameron-Martin charge shift and the freezing estimate. -/
@@ -75,7 +64,6 @@ theorem reflected_pareto_product_increment_error
       (a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫ ω, (A ω)^(-p)*(b ω/A ω)^a ∂P)*(∫ v, (S v)^a ∂R)| ≤
       (a*p/(1-a))*(∫ ω, (A ω)^(-p)*(b ω/A ω) ∂P)*(∫ v, S v ∂R) := by
-  have hE := reflected_pareto_increment_aestronglyMeasurable P R p a ha A b S hAm hbm hSm
   let E := fun v : Ω × Λ => ∫ w,
     ((A v.1+b v.1*S v.2*w)^(-p)-(A v.1)^(-p)) ∂paretoMeasure 1 a
   let F0 := fun ω => (A ω)^(-p)*(b ω/A ω)^a
@@ -83,7 +71,7 @@ theorem reflected_pareto_product_increment_error
   let c := a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p
   let C := a*p/(1-a)
   let L := fun v : Ω × Λ => c*(F0 v.1*(S v.2)^a)
-  have hL : Integrable L (P.prod R) := (hF0.mul_prod hSa).const_mul c
+  have hL := (hF0.mul_prod hSa).const_mul c
   have hdom : Integrable (fun v : Ω × Λ => C*(F1 v.1*S v.2)) (P.prod R) :=
     (hF1.mul_prod hS1).const_mul C
   have hbound : ∀ᵐ v : Ω × Λ ∂P.prod R, ‖E v-L v‖ ≤ C*(F1 v.1*S v.2) := by
@@ -92,32 +80,20 @@ theorem reflected_pareto_product_increment_error
       measurePreserving_snd.quasiMeasurePreserving.ae hS] with v hAv hbv hSv
     have hi := reflected_pareto_increment_error p a (A v.1) (b v.1*S v.2)
       hp ha ha1 hAv (mul_pos hbv hSv)
-    have hr : (b v.1*S v.2)/A v.1 = (b v.1/A v.1)*S v.2 := by ring
-    rw [hr, Real.mul_rpow (div_pos hbv hAv).le hSv.le] at hi
+    rw [(show (b v.1*S v.2)/A v.1 = (b v.1/A v.1)*S v.2 by ring), Real.mul_rpow (div_pos hbv hAv).le hSv.le] at hi
     change |E v-L v| ≤ _
     change |E v-c*(A v.1)^(-p)*((b v.1/A v.1)^a*(S v.2)^a)| ≤
       C*(A v.1)^(-p)*((b v.1/A v.1)*S v.2) at hi
-    have heL : c*(A v.1)^(-p)*((b v.1/A v.1)^a*(S v.2)^a) = L v := by
-      dsimp only [L,F0]
-      ring
-    have heD : C*(A v.1)^(-p)*((b v.1/A v.1)*S v.2) = C*(F1 v.1*S v.2) := by
-      dsimp only [F1]
-      ring
-    rw [heL,heD] at hi
+    rw [(show c*(A v.1)^(-p)*((b v.1/A v.1)^a*(S v.2)^a) = L v by dsimp only [L,F0]; ring),(show C*(A v.1)^(-p)*((b v.1/A v.1)*S v.2) = C*(F1 v.1*S v.2) by dsimp only [F1]; ring)] at hi
     exact hi
-  have hD : Integrable (fun v => E v-L v) (P.prod R) :=
-    hdom.mono' (hE.sub hL.aestronglyMeasurable) hbound
   have hEi : Integrable E (P.prod R) := by
-    have hh := hD.add hL
+    have hh := (hdom.mono' ((reflected_pareto_increment_aestronglyMeasurable P R p a ha A b S hAm hbm hSm).sub hL.aestronglyMeasurable) hbound).add hL
     change Integrable (fun v => (E v-L v)+L v) (P.prod R) at hh
     simpa only [sub_add_cancel] using hh
   refine ⟨hEi, ?_⟩
   have hi := norm_integral_le_of_norm_le hdom hbound
   rw [integral_sub hEi hL] at hi
-  have hlead : (∫ v, L v ∂P.prod R) = c*(∫ ω, F0 ω ∂P)*(∫ v, (S v)^a ∂R) := by
-    rw [show L = (fun v : Ω × Λ => c*(F0 v.1*(S v.2)^a)) from rfl,
-      integral_const_mul, integral_prod_mul F0 (fun v => (S v)^a), mul_assoc]
-  rw [hlead, integral_const_mul, integral_prod_mul] at hi
+  rw [(show (∫ v, L v ∂P.prod R) = c*(∫ ω, F0 ω ∂P)*(∫ v, (S v)^a ∂R) by rw [show L = (fun v : Ω × Λ => c*(F0 v.1*(S v.2)^a)) from rfl, integral_const_mul, integral_prod_mul F0 (fun v => (S v)^a), mul_assoc]), integral_const_mul, integral_prod_mul] at hi
   simpa only [Real.norm_eq_abs,E,F0,F1,c,C,mul_assoc] using hi
 
 end DOZZ.Proofs

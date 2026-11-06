@@ -23,8 +23,8 @@ namespace DOZZ.Proofs
 /-- Both crossing identities of `DOZZ.gammaHalf_crossing` follow from the two literal independent
 BPZ inputs. -/
 theorem gammaHalf_crossing_of_BPZ_and_unreflected {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α' ε α : ℝ)
+    {H} (hH : IsGaussHypergeometricFamily H)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) (γ μ α' ε α : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hεhi : ε < 2 / γ) (hα : α < Q γ) (hα' : α' < Q γ)
     (hs : 2 * Q γ < α + α' + ε - γ / 2)
@@ -47,11 +47,7 @@ theorem gammaHalf_crossing_of_BPZ_and_unreflected {Ω : Type*} [MeasurableSpace 
     unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
       gammaHalfUnitCrossingMultiplier γ μ α' ε α *
         unitVolumeStructureConstant P M γ α' (ε + γ / 2) α := by
-  have hεQ : ε < Q γ := by unfold Q; linarith only [hεhi, hγ]
-  have hsum : 2 * Q γ + γ / 2 < α' + ε + α := by linarith only [hs]
-  have hdiag := gammaHalf_zero_channel_of_gauss_solution hH P X M γ μ α' ε α
-    hγ hγ2 hμ hα' hεQ hα hsum hX hM hBPZ
   exact gammaHalf_crossing_of_diagonal_and_unreflected hH P X M γ μ α' ε α
-    hγ hγ2 hμ hεhi hα hα' hs hX hM hdiag hformula
+    hγ hγ2 hμ hεhi hα hα' hs hX hM (gammaHalf_zero_channel_of_gauss_solution hH P X M γ μ α' ε α hγ hγ2 hμ hα' (by unfold Q; linarith only [hεhi, hγ]) hα (by linarith only [hs]) hX hM hBPZ) hformula
 
 end DOZZ.Proofs

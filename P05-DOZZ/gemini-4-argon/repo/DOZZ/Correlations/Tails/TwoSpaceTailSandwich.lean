@@ -21,7 +21,7 @@ theorem two_space_localization_tail_sandwich
     (hL : AEMeasurable L P) (hL' : AEMeasurable L' P') (hLaw : P.map L = P'.map L')
     (hSource : ∀ᵐ ω ∂P, L ω ≤ A ω ∧ A ω ≤ L ω+E ω)
     (hCopy : ∀ᵐ ω ∂P', L' ω ≤ B ω+E' ω ∧ B ω ≤ L' ω+E' ω)
-    (x h : ℝ) (hh : 0 ≤ h) (hhx : 2*h ≤ x) :
+    x h (hh : 0 ≤ h) (hhx : 2*h ≤ x) :
     (P' {ω | ENNReal.ofReal (x+h) < B ω}).toReal-
       (P' {ω | ENNReal.ofReal h < E' ω}).toReal ≤
         (P {ω | ENNReal.ofReal x < A ω}).toReal ∧
@@ -29,7 +29,7 @@ theorem two_space_localization_tail_sandwich
       (P' {ω | ENNReal.ofReal (x-2*h) < B ω}).toReal+
         (P {ω | ENNReal.ofReal h < E ω}).toReal+
         (P' {ω | ENNReal.ofReal h < E' ω}).toReal := by
-  have hT (y : ℝ) : P {ω | ENNReal.ofReal y < L ω} =
+  have hT y : P {ω | ENNReal.ofReal y < L ω} =
       P' {ω | ENNReal.ofReal y < L' ω} := by
     have h := congrArg (fun μ : Measure ℝ≥0∞ => μ (Ioi (ENNReal.ofReal y))) hLaw
     rw [Measure.map_apply_of_aemeasurable hL measurableSet_Ioi,
@@ -39,17 +39,13 @@ theorem two_space_localization_tail_sandwich
   · have hb := ennreal_tail_domination P' B L' E'
       (hCopy.mono fun _ h => h.2) (x+h) h hh (by linarith only [hh,hhx])
     rw [add_sub_cancel_right,← hT x] at hb
-    have hm : P {ω | ENNReal.ofReal x < L ω} ≤ P {ω | ENNReal.ofReal x < A ω} :=
-      measure_mono_ae (hSource.mono fun ω hω hlt => hlt.trans_le hω.1)
-    have ht := ENNReal.toReal_mono (by finiteness) hm
-    linarith only [hb,ht]
+    linarith only [hb,(ENNReal.toReal_mono (by finiteness) (measure_mono_ae (hSource.mono fun ω hω hlt => hlt.trans_le hω.1) : P {ω | ENNReal.ofReal x < L ω} ≤ P {ω | ENNReal.ofReal x < A ω}))]
   · have ha := ennreal_tail_domination P A L E
       (hSource.mono fun _ h => h.2) x h hh (by linarith only [hh,hhx])
     have hb := ennreal_tail_domination P' L' B E'
       (hCopy.mono fun _ h => h.1) (x-h) h hh (by linarith only [hhx])
     rw [hT (x-h)] at ha
-    have heq : x-h-h = x-2*h := by ring
-    rw [heq] at hb
+    rw [(show x-h-h = x-2*h by ring)] at hb
     linarith only [ha,hb]
 
 

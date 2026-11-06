@@ -23,21 +23,12 @@ namespace DOZZ.Proofs
 theorem real_withDensity_prod_rectangle {α β : Type*}
     [MeasurableSpace α] [MeasurableSpace β]
     (μ : Measure α) (η : Measure β) [SFinite μ] [SFinite η]
-    (f : α × β → ℝ) (hf : Measurable f) (hn : ∀ z, 0 ≤ f z)
+    f (hf : Measurable f) (hn : ∀ z, 0 ≤ f z)
     [IsFiniteMeasure ((μ.prod η).withDensity (fun z => ENNReal.ofReal (f z)))]
-    (A : Set α) (B : Set β) (hA : MeasurableSet A) (hB : MeasurableSet B) :
+    A B (hA : MeasurableSet A) (hB : MeasurableSet B) :
     ((μ.prod η).withDensity (fun z => ENNReal.ofReal (f z))).real (A ×ˢ B) =
       ∫ x in A, ∫ y in B, f (x,y) ∂η ∂μ := by
   let M := (μ.prod η).withDensity (fun z => ENNReal.ofReal (f z))
-  have hmass : (∫⁻ z, ENNReal.ofReal (f z) ∂μ.prod η) ≠ ⊤ := by
-    have he : M univ = ∫⁻ z, ENNReal.ofReal (f z) ∂μ.prod η := by
-      dsimp only [M]
-      rw [withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
-    rw [← he]
-    exact measure_ne_top _ _
-  have hi : Integrable f (μ.prod η) :=
-    (lintegral_ofReal_ne_top_iff_integrable hf.aestronglyMeasurable
-      (ae_of_all _ hn)).mp hmass
   calc
     _ = ∫ z in A ×ˢ B, (1 : ℝ) ∂M := by simp [integral_const, M]
     _ = ∫ z in A ×ˢ B, f z ∂μ.prod η := by
@@ -48,15 +39,15 @@ theorem real_withDensity_prod_rectangle {α β : Type*}
       simp only [ENNReal.toReal_ofReal (hn _), smul_eq_mul, mul_one]
     _ = _ := by
       rw [← Measure.prod_restrict]
-      exact integral_prod _ (by rw [Measure.prod_restrict]; exact hi.integrableOn)
+      exact integral_prod _ (by rw [Measure.prod_restrict]; exact ((lintegral_ofReal_ne_top_iff_integrable hf.aestronglyMeasurable (ae_of_all _ hn)).mp (show (∫⁻ z, ENNReal.ofReal (f z) ∂μ.prod η) ≠ ⊤ by rw [← (show M univ = ∫⁻ z, ENNReal.ofReal (f z) ∂μ.prod η by dsimp only [M]; rw [withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ])]; exact measure_ne_top _ _)).integrableOn)
 
 /-- The actual first-hit reversal law on any finite past rectangle and lifetime interval
 has the conditioned entrance FDD and the final last-exit boundary factor. -/
 theorem brownianPath_firstHit_reversedIncreasing_rectangle
     (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (ν c : ℝ) (hν : 0 < ν) (hc : 0 < c) (n : ℕ)
+    (ν c : ℝ) (hν : 0 < ν) (hc : 0 < c) n
     (ss : Fin (n+1) → ℝ≥0) (hss : StrictMono ss) (hs0 : 0 < ss 0)
-    (A : Set (Fin (n+1) → ℝ)) (hA : MeasurableSet A) (u v : ℝ) :
+    A (hA : MeasurableSet A) u v :
     ((P.restrict {p : BrownianPath | ss (Fin.last n) <
       firstPassageTime (driftedBrownianPath ν p) c}).map
         (brownianFirstHitReversedIncreasingObservation ν c n ss)).real (A ×ˢ Ioc u v) =

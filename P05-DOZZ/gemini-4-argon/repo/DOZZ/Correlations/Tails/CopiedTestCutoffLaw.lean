@@ -19,13 +19,12 @@ namespace DOZZ.Proofs
 
 /-- The deterministic test correction cancels the pin-dependent Wick correction. -/
 theorem copied_wick_weight_factor
-    (g γ v L r N Nbar U c : ℝ) :
+    g γ v L r N Nbar U c :
     (g * Real.exp (γ^2 * (L-v))) * Real.exp
       (γ*(Nbar+U+c*(Nbar-N))-γ^2/2*(r+2*L)) =
       Real.exp (γ*Nbar-γ^2*v) * (g * Real.exp (γ*c*(Nbar-N))) *
         Real.exp (γ*U-γ^2/2*r) := by
-  rw [mul_assoc, ← Real.exp_add]
-  rw [mul_comm (Real.exp (γ*Nbar-γ^2*v)), mul_assoc, mul_assoc, ← Real.exp_add, ← Real.exp_add]
+  rw [mul_assoc, ← Real.exp_add, mul_comm (Real.exp (γ*Nbar-γ^2*v)), mul_assoc, mul_assoc, ← Real.exp_add, ← Real.exp_add]
   congr 1
   ring_nf
 
@@ -54,37 +53,25 @@ theorem copied_test_cutoff_law
     · have hn : ‖x‖ ≤ 1 := by linarith [hgs x hx, Real.exp_pos (-r)]
       have hh := norm_sub_norm_le z (z+x)
       simp only [sub_add_cancel_left, norm_neg] at hh
-      have hnorm : 1 ≤ ‖z+x‖ := by linarith
       change g x * Real.exp (boundedPinCoefficient z x * _) = _
       rw [bounded_pin_coefficient_eq z x hz hn,
-        show normPlus (z+x) = ‖z+x‖ by unfold normPlus; exact max_eq_right hnorm]
+        show normPlus (z+x) = ‖z+x‖ by unfold normPlus; exact max_eq_right (by linarith)]
       congr 2
       unfold localPinCoefficient
       have hl : Real.log ‖z‖ ≠ 0 := ne_of_gt (by
         have hv := offCenter_pin_variance_pos z hz
         linarith)
       field_simp [hl]
-  have hw0 (x : ℂ) : 0 ≤ w x := by
-    rw [hw]
-    exact mul_nonneg (hg0 x) (Real.exp_nonneg _)
-  have hws (x : ℂ) (hx : w x ≠ 0) : ‖x‖ ≤ ρ := by
-    apply hgs x
-    intro hzero
-    exact hx (by rw [hw, hzero, zero_mul])
-  have hlaw := copied_cutoff_volume_law P X Xc hX hc hm z hz γ r ρ hρ hr w hw0 hws
-  have hY := translated_field_isEquatorGFF P X Xc hX hc z
-  have hYc := translated_field_circleAverage P X Xc hX hc z
   have hlocal (x : ℂ) (hx : g x ≠ 0) : ‖x‖ + Real.exp (-r) ≤ 1 := by linarith [hgs x hx]
   have hnorm (x : ℂ) (hx : g x ≠ 0) : normPlus (z+x) = ‖z+x‖ := by
-    have hn : ‖x‖ ≤ 1 := by linarith [hgs x hx, Real.exp_pos (-r)]
+    have : ‖x‖ ≤ 1 := by linarith [hgs x hx, Real.exp_pos (-r)]
     have hh := norm_sub_norm_le z (z+x)
     simp only [sub_add_cancel_left, norm_neg] at hh
     unfold normPlus
     exact max_eq_right (by linarith : 1 ≤ ‖z+x‖)
   have hsrc (ω : Ω) : Real.exp (-γ^2*Real.log ‖z‖) * ∫ y, G y ∂regularizedGMC P Xc γ r ω =
       ∫ x, w x * Real.exp (γ*Xc ω (z+x) r-γ^2/2*(r+2*Real.log ‖z+x‖)) ∂volume := by
-    rw [regularized_integral_volume P X Xc hX hc γ r ω G, ← integral_const_mul]
-    rw [← integral_add_left_eq_self (μ := volume) _ z]
+    rw [regularized_integral_volume P X Xc hX hc γ r ω G, ← integral_const_mul, ← integral_add_left_eq_self (μ := volume) _ z]
     apply integral_congr_ae
     exact ae_of_all _ fun x => by
       dsimp only
@@ -107,7 +94,7 @@ theorem copied_test_cutoff_law
         (γ*(Xc q.2 z 0+(Xc q.1 (z+x) r-Xc q.1 z 0)+
           localPinCoefficient z x*(Xc q.2 z 0-Xc q.1 z 0))-γ^2/2*(r+2*Real.log ‖z+x‖))
             ∂volume := by
-    rw [regularized_integral_volume P _ _ hY hYc γ r q.1, ← integral_const_mul]
+    rw [regularized_integral_volume P _ _ (translated_field_isEquatorGFF P X Xc hX hc z) (translated_field_circleAverage P X Xc hX hc z) γ r q.1, ← integral_const_mul]
     apply integral_congr_ae
     exact ae_of_all _ fun x => by
       dsimp only
@@ -123,7 +110,7 @@ theorem copied_test_cutoff_law
         simpa only [mul_assoc] using (copied_wick_weight_factor (g x) γ (Real.log ‖z‖)
           (Real.log ‖z+x‖) r (Xc q.1 z 0) (Xc q.2 z 0)
             (Xc q.1 (z+x) r-Xc q.1 z 0) (localPinCoefficient z x)).symm
-  simpa only [← hsrc, ← htar] using hlaw
+  simpa only [← hsrc, ← htar] using (copied_cutoff_volume_law P X Xc hX hc hm z hz γ r ρ hρ hr w (fun x => by rw [hw]; exact mul_nonneg (hg0 x) (Real.exp_nonneg _)) (fun x hx => by apply hgs x; intro hzero; exact hx (by rw [hw, hzero, zero_mul])))
 
 
 end DOZZ.Proofs

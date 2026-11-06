@@ -13,8 +13,8 @@ namespace DOZZ.Proofs
 /-- Inversion preserves finite vectors of open-set masses of a measurable GMC. -/
 theorem gmc_inversion_open_mass_fintype_law
     {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hmeas : Measurable M)
     (U : ι → Set ℂ) (hU : ∀ j, IsOpen (U j)) :
     P.map (fun ω j => (M ω).map (fun z : ℂ => z⁻¹) (U j)) =
@@ -57,7 +57,7 @@ theorem gmc_inversion_open_mass_fintype_law
         let := hM.1 ω
         exact gmcOpenApprox_integral_tendsto (M ω) (U (e j)) (hU (e j))
   let post := fun v : Fin (Fintype.card ι) → ℝ =>
-    fun j : ι => ENNReal.ofReal (v (e.symm j))
+    fun j => ENNReal.ofReal (v (e.symm j))
   have hp : Measurable post := by fun_prop
   have heA : post ∘ A = fun ω j => N ω (U j) := by
     funext ω j

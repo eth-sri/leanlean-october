@@ -15,10 +15,10 @@ namespace DOZZ.Proofs
 No moment admissibility is required for this comparison. -/
 theorem cutoffWeightedGmcBallMoment_translate_compact
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (Γ : Set ℝ) (hΓ : IsCompact Γ) (T : Set (ℝ × ℝ)) (hT : IsCompact T)
-    (K : Set ℂ) (hK : IsCompact K) :
+    K (hK : IsCompact K) :
     ∃ C : ℝ, 0 < C ∧ ∀ γ ∈ Γ, ∀ t ∈ T, ∀ z ∈ K, ∀ ρ δ : ℝ,
       0 < ρ → ρ ≤ 1 / 2 → 0 < δ → δ ≤ ρ →
       (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z ρ δ ω ^ t.2 ∂P) ≤
@@ -41,30 +41,16 @@ theorem cutoffWeightedGmcBallMoment_translate_compact
     Real.exp (u.1 ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + B))) / 2 *
       |u.2.2 ^ 2 - u.2.2|) * ((1 + B) ^ 4 : ℝ) ^ |u.2.2|
   have hbase : (1 + B) ^ 4 ≠ 0 := ne_of_gt (pow_pos hB1 4)
-  have hf : Continuous f := by
-    dsimp [f]
-    fun_prop
-  obtain ⟨umax, humax, hmax⟩ := (hΓ.prod hT).exists_isMaxOn hUn hf.continuousOn
-  have hfpos : 0 < f umax := by dsimp [f]; positivity
-  refine ⟨f umax, hfpos, ?_⟩
+  obtain ⟨umax, humax, hmax⟩ := (hΓ.prod hT).exists_isMaxOn hUn (show Continuous f by dsimp [f]; fun_prop).continuousOn
+  refine ⟨f umax, (by dsimp [f]; positivity), ?_⟩
   intro γ hγ t ht z hz ρ δ hρ hρhalf hδ hδρ
   have hzB : ‖z‖ + ρ ≤ B := by
     have hn : ‖z‖ ≤ ‖zmax‖ := hzbound hz
     dsimp [B]
     linarith
-  have hzeroB : ‖(0 : ℂ)‖ + ρ ≤ B := by
-    simp only [norm_zero, zero_add]
-    dsimp [B]
-    linarith [norm_nonneg zmax]
   have hcmp := cutoffWeightedGmcBallMoment_translate_le P X hX Xc hXc γ t.1 t.2
-    z 0 ρ B δ hρ hB hzB hzeroB hδ (by linarith)
-  have hfactor :
-      ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + B))) / 2 *
-        |t.2 ^ 2 - t.2|)) * ENNReal.ofReal ((1 + B) ^ 4) ^ |t.2| =
-      ENNReal.ofReal (f (γ, t)) := by
-    rw [ENNReal.ofReal_rpow_of_pos (pow_pos hB1 4),
-      ← ENNReal.ofReal_mul (Real.exp_nonneg _)]
-  rw [hfactor] at hcmp
+    z 0 ρ B δ hρ hB hzB (by simp only [norm_zero, zero_add]; dsimp [B]; linarith [norm_nonneg zmax]) hδ (by linarith)
+  rw [(show ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + B))) / 2 * |t.2 ^ 2 - t.2|)) * ENNReal.ofReal ((1 + B) ^ 4) ^ |t.2| = ENNReal.ofReal (f (γ, t)) by rw [ENNReal.ofReal_rpow_of_pos (pow_pos hB1 4), ← ENNReal.ofReal_mul (Real.exp_nonneg _)])] at hcmp
   apply hcmp.trans
   apply mul_le_mul_left
   exact ENNReal.ofReal_le_ofReal (hmax ⟨hγ, ht⟩)

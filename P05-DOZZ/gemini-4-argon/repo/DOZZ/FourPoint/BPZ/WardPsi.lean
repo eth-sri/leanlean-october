@@ -20,7 +20,7 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-theorem bpz_ratio_lipschitz' {a b c L δ ε ε' η : ℝ} (hL : 0 ≤ L) (ha : 0 < a) (hb : 0 < b)
+theorem bpz_ratio_lipschitz' {a b c L δ ε ε' η} (hL : 0 ≤ L) (ha : 0 < a) (hb : 0 < b)
     (hc : 0 < c) (h1 : |Real.log a - Real.log c| ≤ L * ε) (h2 : |Real.log b - Real.log c| ≤ L * ε')
     (h3 : |Real.log a - Real.log b| ≤ L * η) (hε : ε ≤ δ) (hε' : ε' ≤ δ) :
     |a - b| ≤ L * Real.exp (L * δ) * c * η := by
@@ -39,7 +39,7 @@ theorem bpz_ratio_lipschitz' {a b c L δ ε ε' η : ℝ} (hL : 0 ≤ L) (ha : 0
         mul_le_mul hmax h3 (abs_nonneg _) (mul_nonneg (Real.exp_pos _).le hc.le)
     _ = _ := by ring
 
-theorem bpz_ratio_lower' {a c L δ ε : ℝ} (hL : 0 ≤ L) (ha : 0 < a) (hc : 0 < c)
+theorem bpz_ratio_lower' {a c L δ ε} (hL : 0 ≤ L) (ha : 0 < a) (hc : 0 < c)
     (h1 : |Real.log a - Real.log c| ≤ L * ε) (hε : ε ≤ δ) : Real.exp (-(L * δ)) * c ≤ a := by
   rw [← Real.exp_log ha, ← Real.exp_log hc, ← Real.exp_add]
   apply Real.exp_le_exp.mpr
@@ -56,28 +56,21 @@ noncomputable def bpzKernelLip (γ r δ : ℝ) : ℝ := max (γ ^ 2 * Real.exp r
 theorem bpzKernelLip_nonneg : 0 ≤ bpzKernelLip γ r δ :=
   le_max_of_le_left (by positivity)
 
-theorem bpz_sep_ball (hsep : ∀ y, ρ y < 1 → 2 * δ ≤ ‖x₀ - y‖) {x : ℂ}
-    (hx : x ∈ Metric.ball x₀ δ) {y : ℂ} (hy : ρ y < 1) : δ ≤ ‖x - y‖ := by
+theorem bpz_sep_ball (hsep : ∀ y, ρ y < 1 → 2 * δ ≤ ‖x₀ - y‖) {x}
+    (hx : x ∈ Metric.ball x₀ δ) {y} (hy : ρ y < 1) : δ ≤ ‖x - y‖ := by
   rw [Metric.mem_ball, dist_eq_norm] at hx
-  have h1 := hsep y hy
+  have := hsep y hy
   have h2 := norm_sub_norm_le (x₀ - y) (x₀ - x)
   rw [show x₀ - y - (x₀ - x) = x - y by ring, norm_sub_rev x₀ x] at h2
   linarith
 
 /-- The cutoff kernel's log-Lipschitz bound with the common constant. -/
-theorem bpz_cut_log_le (x x' y : ℂ) :
+theorem bpz_cut_log_le x x' y :
     |Real.log (bpzCutRootKernel γ r x y) - Real.log (bpzCutRootKernel γ r x' y)| ≤
       bpzKernelLip γ r δ * ‖x - x'‖ :=
   (abs_log_bpzCutRootKernel_sub_le γ r y x x').trans
     (mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg _))
 
-/-- The limit kernel's log-Lipschitz bound with the common constant on a separated ball. -/
-theorem bpz_lim_log_le (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ) {x x' y : ℂ}
-    (hxy : δ ≤ ‖x - y‖) (hxy' : δ ≤ ‖x' - y‖) :
-    |Real.log (bpzLimRootKernel γ r x y) - Real.log (bpzLimRootKernel γ r x' y)| ≤
-      bpzKernelLip γ r δ * ‖x - x'‖ :=
-  (abs_log_bpzLimRootKernel_sub_le γ r hδ hδr hxy hxy').trans
-    (mul_le_mul_of_nonneg_right (le_max_right _ _) (norm_nonneg _))
 
 end Ratio
 
@@ -87,12 +80,12 @@ variable {γ r δ : ℝ} {ρ k₁ k₂ : ℂ → ℝ} {m₁ m₂ : Measure ℂ} 
 
 theorem integrable_bpz_cut_part (hρm : Measurable ρ) (hk₁ : Measurable k₁) (hρ0 : ∀ y, 0 ≤ ρ y)
     (hk₁0 : ∀ y, 0 ≤ k₁ y)
-    (hI₁ : Integrable (fun y => ρ y * k₁ y * Real.exp (γ ^ 2 * bpzPin r y)) m₁) (x : ℂ) :
+    (hI₁ : Integrable (fun y => ρ y * k₁ y * Real.exp (γ ^ 2 * bpzPin r y)) m₁) x :
     Integrable (fun y => ρ y * k₁ y * bpzCutRootKernel γ r x y) m₁ := by
   refine (hI₁.mul_const (Real.exp (γ ^ 2 * r))).mono'
     ((hρm.mul hk₁).mul (continuous_bpzCutRootKernel_snd γ r x).measurable).aestronglyMeasurable
     (Eventually.of_forall fun y => ?_)
-  have hw : 0 ≤ ρ y * k₁ y := mul_nonneg (hρ0 y) (hk₁0 y)
+  have hw := mul_nonneg (hρ0 y) (hk₁0 y)
   rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg hw (bpzCutRootKernel_pos γ r x y).le)]
   calc ρ y * k₁ y * bpzCutRootKernel γ r x y
       ≤ ρ y * k₁ y * (Real.exp (γ ^ 2 * r) * Real.exp (γ ^ 2 * bpzPin r y)) :=
@@ -102,7 +95,7 @@ theorem integrable_bpz_cut_part (hρm : Measurable ρ) (hk₁ : Measurable k₁)
 theorem integrable_bpz_lim_part (hρm : Measurable ρ) (hk₂ : Measurable k₂) (hρ1 : ∀ y, ρ y ≤ 1)
     (hk₂0 : ∀ y, 0 ≤ k₂ y) (hI₂ : Integrable (fun y => (1 - ρ y) * k₂ y) m₂)
     (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ) (hsep : ∀ y, ρ y < 1 → 2 * δ ≤ ‖x₀ - y‖)
-    {x : ℂ} (hx : x ∈ Metric.ball x₀ δ) :
+    {x} (hx : x ∈ Metric.ball x₀ δ) :
     Integrable (fun y => (1 - ρ y) * k₂ y * bpzLimRootKernel γ r x y) m₂ := by
   have hxR : ‖x‖ ≤ ‖x₀‖ + δ := by
     rw [Metric.mem_ball, dist_eq_norm] at hx
@@ -126,12 +119,14 @@ theorem bpzRootedMixedReal_ratio (hρm : Measurable ρ) (hk₁ : Measurable k₁
     (hI₁ : Integrable (fun y => ρ y * k₁ y * Real.exp (γ ^ 2 * bpzPin r y)) m₁)
     (hI₂ : Integrable (fun y => (1 - ρ y) * k₂ y) m₂)
     (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ) (hsep : ∀ y, ρ y < 1 → 2 * δ ≤ ‖x₀ - y‖)
-    {x x' : ℂ} (hx : x ∈ Metric.ball x₀ δ) (hx' : x' ∈ Metric.ball x₀ δ) :
+    {x x'} (hx : x ∈ Metric.ball x₀ δ) (hx' : x' ∈ Metric.ball x₀ δ) :
     Real.exp (-(bpzKernelLip γ r δ * δ)) * bpzRootedMixedReal γ r ρ k₁ k₂ x₀ m₁ m₂ ≤
         bpzRootedMixedReal γ r ρ k₁ k₂ x m₁ m₂ ∧
       |bpzRootedMixedReal γ r ρ k₁ k₂ x m₁ m₂ - bpzRootedMixedReal γ r ρ k₁ k₂ x' m₁ m₂| ≤
         bpzKernelLip γ r δ * Real.exp (bpzKernelLip γ r δ * δ) *
           bpzRootedMixedReal γ r ρ k₁ k₂ x₀ m₁ m₂ * ‖x - x'‖ := by
+  have bpz_lim_log_le {x} {x'} {y} (hxy : δ ≤ ‖x - y‖) (hxy' : δ ≤ ‖x' - y‖) : |Real.log (bpzLimRootKernel γ r x y) - Real.log (bpzLimRootKernel γ r x' y)| ≤ bpzKernelLip γ r δ * ‖x - x'‖ := (abs_log_bpzLimRootKernel_sub_le γ r hδ hδr hxy hxy').trans
+      (mul_le_mul_of_nonneg_right (le_max_right _ _) (norm_nonneg _))
   set L := bpzKernelLip γ r δ with hLdef
   have hL : 0 ≤ L := bpzKernelLip_nonneg
   have hx0 : x₀ ∈ Metric.ball x₀ δ := Metric.mem_ball_self hδ
@@ -141,36 +136,24 @@ theorem bpzRootedMixedReal_ratio (hρm : Measurable ρ) (hk₁ : Measurable k₁
   have hl := fun w (hw : w ∈ Metric.ball x₀ δ) =>
     integrable_bpz_lim_part (γ := γ) hρm hk₂ hρ1 hk₂0 hI₂ hδ hδr hsep hw
   -- pointwise bounds
-  have hcut_low : ∀ y, Real.exp (-(L * δ)) * (ρ y * k₁ y * bpzCutRootKernel γ r x₀ y) ≤
-      ρ y * k₁ y * bpzCutRootKernel γ r x y := by
-    intro y
-    have h := bpz_ratio_lower' hL (bpzCutRootKernel_pos γ r x y) (bpzCutRootKernel_pos γ r x₀ y)
-      (bpz_cut_log_le (δ := δ) x x₀ y) hdx
-    have hw : 0 ≤ ρ y * k₁ y := mul_nonneg (hρ0 y) (hk₁0 y)
-    linarith only [mul_le_mul_of_nonneg_left h hw]
   have hlim_low : ∀ y, Real.exp (-(L * δ)) * ((1 - ρ y) * k₂ y * bpzLimRootKernel γ r x₀ y) ≤
       (1 - ρ y) * k₂ y * bpzLimRootKernel γ r x y := by
     intro y
     rcases lt_or_eq_of_le (hρ1 y) with hy | hy
     · have h := bpz_ratio_lower' hL (bpzLimRootKernel_pos γ r x y)
         (bpzLimRootKernel_pos γ r x₀ y)
-        (bpz_lim_log_le hδ hδr (bpz_sep_ball hsep hx hy) (bpz_sep_ball hsep hx0 hy)) hdx
-      have hw : 0 ≤ (1 - ρ y) * k₂ y := mul_nonneg (by linarith) (hk₂0 y)
-      linarith only [mul_le_mul_of_nonneg_left h hw]
+        (bpz_lim_log_le (bpz_sep_ball hsep hx hy) (bpz_sep_ball hsep hx0 hy)) hdx
+      linarith only [mul_le_mul_of_nonneg_left h (mul_nonneg (by linarith) (hk₂0 y) : 0 ≤ (1 - ρ y) * k₂ y)]
     · rw [hy]; simp
   have hcut_lip : ∀ y, |ρ y * k₁ y * bpzCutRootKernel γ r x y -
       ρ y * k₁ y * bpzCutRootKernel γ r x' y| ≤
         L * Real.exp (L * δ) * (ρ y * k₁ y * bpzCutRootKernel γ r x₀ y) * ‖x - x'‖ := by
     intro y
-    have h := bpz_ratio_lipschitz' hL (bpzCutRootKernel_pos γ r x y)
-      (bpzCutRootKernel_pos γ r x' y) (bpzCutRootKernel_pos γ r x₀ y)
-      (bpz_cut_log_le (δ := δ) x x₀ y) (bpz_cut_log_le (δ := δ) x' x₀ y)
-      (bpz_cut_log_le (δ := δ) x x' y) hdx hdx'
-    have hw : 0 ≤ ρ y * k₁ y := mul_nonneg (hρ0 y) (hk₁0 y)
+    have hw := mul_nonneg (hρ0 y) (hk₁0 y)
     rw [← mul_sub, abs_mul, abs_of_nonneg hw]
     calc ρ y * k₁ y * |bpzCutRootKernel γ r x y - bpzCutRootKernel γ r x' y|
         ≤ ρ y * k₁ y * (L * Real.exp (L * δ) * bpzCutRootKernel γ r x₀ y * ‖x - x'‖) :=
-          mul_le_mul_of_nonneg_left h hw
+          mul_le_mul_of_nonneg_left (bpz_ratio_lipschitz' hL (bpzCutRootKernel_pos γ r x y) (bpzCutRootKernel_pos γ r x' y) (bpzCutRootKernel_pos γ r x₀ y) (bpz_cut_log_le (δ := δ) x x₀ y) (bpz_cut_log_le (δ := δ) x' x₀ y) (bpz_cut_log_le (δ := δ) x x' y) hdx hdx') hw
       _ = _ := by ring
   have hlim_lip : ∀ y, |(1 - ρ y) * k₂ y * bpzLimRootKernel γ r x y -
       (1 - ρ y) * k₂ y * bpzLimRootKernel γ r x' y| ≤
@@ -179,9 +162,9 @@ theorem bpzRootedMixedReal_ratio (hρm : Measurable ρ) (hk₁ : Measurable k₁
     rcases lt_or_eq_of_le (hρ1 y) with hy | hy
     · have h := bpz_ratio_lipschitz' hL (bpzLimRootKernel_pos γ r x y)
         (bpzLimRootKernel_pos γ r x' y) (bpzLimRootKernel_pos γ r x₀ y)
-        (bpz_lim_log_le hδ hδr (bpz_sep_ball hsep hx hy) (bpz_sep_ball hsep hx0 hy))
-        (bpz_lim_log_le hδ hδr (bpz_sep_ball hsep hx' hy) (bpz_sep_ball hsep hx0 hy))
-        (bpz_lim_log_le hδ hδr (bpz_sep_ball hsep hx hy) (bpz_sep_ball hsep hx' hy)) hdx hdx'
+        (bpz_lim_log_le (bpz_sep_ball hsep hx hy) (bpz_sep_ball hsep hx0 hy))
+        (bpz_lim_log_le (bpz_sep_ball hsep hx' hy) (bpz_sep_ball hsep hx0 hy))
+        (bpz_lim_log_le (bpz_sep_ball hsep hx hy) (bpz_sep_ball hsep hx' hy)) hdx hdx'
       have hw : 0 ≤ (1 - ρ y) * k₂ y := mul_nonneg (by linarith) (hk₂0 y)
       rw [← mul_sub, abs_mul, abs_of_nonneg hw]
       calc (1 - ρ y) * k₂ y * |bpzLimRootKernel γ r x y - bpzLimRootKernel γ r x' y|
@@ -192,7 +175,7 @@ theorem bpzRootedMixedReal_ratio (hρm : Measurable ρ) (hk₁ : Measurable k₁
   constructor
   · unfold bpzRootedMixedReal
     rw [mul_add, ← integral_const_mul, ← integral_const_mul]
-    exact add_le_add (integral_mono ((hc x₀).const_mul _) (hc x) hcut_low)
+    exact add_le_add (integral_mono ((hc x₀).const_mul _) (hc x) (by intro y; linarith only [mul_le_mul_of_nonneg_left (bpz_ratio_lower' hL (bpzCutRootKernel_pos γ r x y) (bpzCutRootKernel_pos γ r x₀ y) (bpz_cut_log_le (δ := δ) x x₀ y) hdx) (mul_nonneg (hρ0 y) (hk₁0 y))]))
       (integral_mono ((hl x₀ hx0).const_mul _) (hl x hx) hlim_low)
   · unfold bpzRootedMixedReal
     rw [show ∀ a b c d : ℝ, a + b - (c + d) = (a - c) + (b - d) by intros; ring,
@@ -227,19 +210,9 @@ theorem bpz_abs_rpow_neg_sub_le {a b q : ℝ} (ha : 0 < a) (hb : 0 < b) (hq : 0 
   rw [min_eq_left hab]
   rcases hab.eq_or_lt with h | h
   · subst h; simp
-  have hcont : ContinuousOn (fun t : ℝ => t ^ (-q)) (Set.Icc a b) :=
-    fun t ht => (Real.continuousAt_rpow_const t (-q) (Or.inl (lt_of_lt_of_le ha ht.1).ne')
-      ).continuousWithinAt
-  have hderiv : ∀ t ∈ Set.Ioo a b, HasDerivAt (fun t : ℝ => t ^ (-q)) (-q * t ^ (-q - 1)) t :=
-    fun t ht => Real.hasDerivAt_rpow_const (Or.inl (lt_trans ha ht.1).ne')
-  obtain ⟨c, hc, hcd⟩ := exists_hasDerivAt_eq_slope (fun t : ℝ => t ^ (-q))
-    (fun t => -q * t ^ (-q - 1)) h hcont hderiv
-  have hc0 : 0 < c := lt_trans ha hc.1
-  have hdiff : a ^ (-q) - b ^ (-q) = q * c ^ (-q - 1) * (b - a) := by
-    have hba : b - a ≠ 0 := (sub_pos.mpr h).ne'
-    field_simp at hcd
-    linarith
-  rw [hdiff, abs_of_nonneg (mul_nonneg (mul_nonneg hq (Real.rpow_nonneg hc0.le _))
+  obtain ⟨c, hc, hcd⟩ := exists_hasDerivAt_eq_slope (fun t => t ^ (-q))
+    (fun t => -q * t ^ (-q - 1)) h (fun t ht => (Real.continuousAt_rpow_const t (-q) (Or.inl (lt_of_lt_of_le ha ht.1).ne') ).continuousWithinAt) (fun t ht => Real.hasDerivAt_rpow_const (Or.inl (lt_trans ha ht.1).ne'))
+  rw [(show a ^ (-q) - b ^ (-q) = q * c ^ (-q - 1) * (b - a) by field_simp at hcd; linarith), abs_of_nonneg (mul_nonneg (mul_nonneg hq (Real.rpow_nonneg (lt_trans ha hc.1).le _))
     (sub_pos.mpr h).le), abs_sub_comm, abs_of_pos (sub_pos.mpr h)]
   apply mul_le_mul_of_nonneg_right _ (sub_pos.mpr h).le
   apply mul_le_mul_of_nonneg_left _ hq
@@ -247,7 +220,7 @@ theorem bpz_abs_rpow_neg_sub_le {a b q : ℝ} (ha : 0 < a) (hb : 0 < b) (hq : 0 
 
 /-- The line derivative of the rooted moment, for abstract random measures. -/
 theorem hasDerivAt_bpz_rooted_moment {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {γ r δ q : ℝ} {ρ k₁ k₂ : ℂ → ℝ} {m₁ m₂ : Ω → Measure ℂ} {x₀ v : ℂ}
+    {γ r δ q : ℝ} {ρ k₁ k₂} {m₁ m₂ : Ω → Measure ℂ} {x₀ v}
     (hρm : Measurable ρ) (hk₁ : Measurable k₁) (hk₂ : Measurable k₂)
     (hρ0 : ∀ y, 0 ≤ ρ y) (hρ1 : ∀ y, ρ y ≤ 1) (hk₁0 : ∀ y, 0 ≤ k₁ y) (hk₂0 : ∀ y, 0 ≤ k₂ y)
     (hq : 0 ≤ q) (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ)
@@ -266,7 +239,6 @@ theorem hasDerivAt_bpz_rooted_moment {Ω : Type*} [MeasurableSpace Ω] {P : Meas
       (∫ ω, -q * bpzRootedMixedReal γ r ρ k₁ k₂ x₀ (m₁ ω) (m₂ ω) ^ (-q - 1) *
         bpzRootedMixedDeriv γ r ρ k₁ k₂ x₀ (m₁ ω) (m₂ ω) v ∂P) 0 := by
   set L := bpzKernelLip γ r δ with hLdef
-  have hL : 0 ≤ L := bpzKernelLip_nonneg
   set J : ℂ → Ω → ℝ := fun x ω => bpzRootedMixedReal γ r ρ k₁ k₂ x (m₁ ω) (m₂ ω) with hJ
   set ε : ℝ := δ / (‖v‖ + 1) with hε
   have hε0 : 0 < ε := by positivity
@@ -280,8 +252,6 @@ theorem hasDerivAt_bpz_rooted_moment {Ω : Type*} [MeasurableSpace Ω] {P : Meas
           · linarith only [mul_le_mul_of_nonneg_right ht.le (norm_nonneg v), hε0]
       _ = δ := by rw [hε]; field_simp
   set C : ℝ := q * Real.exp (L * δ * (q + 1)) * (L * Real.exp (L * δ)) * ‖v‖ with hC
-  have hC0 : 0 ≤ C := mul_nonneg (mul_nonneg (mul_nonneg hq (Real.exp_pos _).le)
-    (mul_nonneg hL (Real.exp_pos _).le)) (norm_nonneg v)
   have hmain := hasDerivAt_integral_of_dominated_loc_of_lip (μ := P) (x₀ := (0 : ℝ))
     (s := Metric.ball (0 : ℝ) ε)
     (F := fun t ω => J (x₀ + t • v) ω ^ (-q))
@@ -309,51 +279,31 @@ theorem hasDerivAt_bpz_rooted_moment {Ω : Type*} [MeasurableSpace Ω] {P : Meas
       obtain ⟨-, hlip⟩ := bpzRootedMixedReal_ratio hρm hk₁ hk₂ hρ0 hρ1 hk₁0 hk₂0 hω₁ hω₂
         hδ hδr hsep hx hx'
       have hJ0 : 0 < J x₀ ω := hω₀
-      have ha : 0 < J (x₀ + t • v) ω := lt_of_lt_of_le (by positivity) hlow
-      have hb : 0 < J (x₀ + t' • v) ω := lt_of_lt_of_le (by positivity) hlow'
-      have hmin : Real.exp (-(L * δ)) * J x₀ ω ≤ min (J (x₀ + t • v) ω) (J (x₀ + t' • v) ω) :=
-        le_min hlow hlow'
       rw [Real.dist_eq, Real.dist_eq, Real.coe_nnabs,
-        abs_of_nonneg (mul_nonneg hC0 (Real.rpow_nonneg hJ0.le _))]
-      have hmv := bpz_abs_rpow_neg_sub_le ha hb hq
-      have hpow : (min (J (x₀ + t • v) ω) (J (x₀ + t' • v) ω)) ^ (-q - 1) ≤
+        abs_of_nonneg (mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg hq (Real.exp_pos _).le) (mul_nonneg bpzKernelLip_nonneg (Real.exp_pos _).le)) (norm_nonneg v) : 0 ≤ C) (Real.rpow_nonneg hJ0.le _))]
+      have : (min (J (x₀ + t • v) ω) (J (x₀ + t' • v) ω)) ^ (-q - 1) ≤
           (Real.exp (-(L * δ)) * J x₀ ω) ^ (-q - 1) :=
-        Real.rpow_le_rpow_of_nonpos (by positivity) hmin (by linarith)
+        Real.rpow_le_rpow_of_nonpos (by positivity) (le_min hlow hlow') (by linarith)
       have hsplit : (Real.exp (-(L * δ)) * J x₀ ω) ^ (-q - 1) =
           Real.exp (L * δ * (q + 1)) * J x₀ ω ^ (-q - 1) := by
         rw [Real.mul_rpow (Real.exp_pos _).le hJ0.le, ← Real.exp_mul]
         congr 2
         ring
-      have hdist : ‖x₀ + t • v - (x₀ + t' • v)‖ = |t - t'| * ‖v‖ := by
-        rw [show x₀ + t • v - (x₀ + t' • v) = (t - t') • v by rw [sub_smul]; ring, norm_smul,
-          Real.norm_eq_abs]
-      rw [hdist] at hlip
-      have hJq : J x₀ ω ^ (-q - 1) * J x₀ ω = J x₀ ω ^ (-q) := by
-        rw [← Real.rpow_add_one hJ0.ne']
-        ring_nf
+      rw [(show ‖x₀ + t • v - (x₀ + t' • v)‖ = |t - t'| * ‖v‖ by rw [show x₀ + t • v - (x₀ + t' • v) = (t - t') • v by rw [sub_smul]; ring, norm_smul, Real.norm_eq_abs])] at hlip
       calc |J (x₀ + t • v) ω ^ (-q) - J (x₀ + t' • v) ω ^ (-q)|
           ≤ q * (min (J (x₀ + t • v) ω) (J (x₀ + t' • v) ω)) ^ (-q - 1) *
-              |J (x₀ + t • v) ω - J (x₀ + t' • v) ω| := hmv
+              |J (x₀ + t • v) ω - J (x₀ + t' • v) ω| := (bpz_abs_rpow_neg_sub_le (lt_of_lt_of_le (by positivity) hlow) (lt_of_lt_of_le (by positivity) hlow') hq)
         _ ≤ q * (Real.exp (L * δ * (q + 1)) * J x₀ ω ^ (-q - 1)) *
               (L * Real.exp (L * δ) * J x₀ ω * (|t - t'| * ‖v‖)) := by
             rw [← hsplit]
             gcongr
         _ = C * J x₀ ω ^ (-q) * |t - t'| := by
-            rw [hC, ← hJq]
+            rw [hC, ← (show J x₀ ω ^ (-q - 1) * J x₀ ω = J x₀ ω ^ (-q) by rw [← Real.rpow_add_one hJ0.ne']; ring_nf)]
             ring)
     (hint.const_mul C)
     (by
       filter_upwards [hI₁, hI₂, hatom, hpos] with ω hω₁ hω₂ hωa hω₀
-      have hJd := hasFDerivAt_bpzRootedMixedReal hρm hk₁ hk₂ hρ0 hρ1 hk₁0 hk₂0 hω₁ hω₂ hωa hδ
-        hδr hsep
-      have hline : HasDerivAt (fun t : ℝ => x₀ + t • v) v 0 := by
-        simpa using ((hasDerivAt_id (0 : ℝ)).smul_const v).const_add x₀
-      have hcomp := hJd.comp_hasDerivAt_of_eq (0 : ℝ) hline (by simp)
-      have hne : ((fun x => bpzRootedMixedReal γ r ρ k₁ k₂ x (m₁ ω) (m₂ ω)) ∘
-          fun t : ℝ => x₀ + t • v) 0 ≠ 0 := by
-        simpa [Function.comp_def] using hω₀.ne'
-      have hrpow := hcomp.rpow_const (p := -q) (Or.inl hne)
-      refine hrpow.congr_deriv ?_
+      refine (((hasFDerivAt_bpzRootedMixedReal hρm hk₁ hk₂ hρ0 hρ1 hk₁0 hk₂0 hω₁ hω₂ hωa hδ hδr hsep).comp_hasDerivAt_of_eq (0 : ℝ) (show HasDerivAt (fun t => x₀ + t • v) v 0 by simpa using ((hasDerivAt_id (0 : ℝ)).smul_const v).const_add x₀) (by simp)).rpow_const (p := -q) (Or.inl (by simpa [Function.comp_def] using hω₀.ne'))).congr_deriv ?_
       show (bpzRootedMixedDeriv γ r ρ k₁ k₂ x₀ (m₁ ω) (m₂ ω)) v * -q *
           bpzRootedMixedReal γ r ρ k₁ k₂ (x₀ + (0 : ℝ) • v) (m₁ ω) (m₂ ω) ^ (-q - 1) =
         -q * bpzRootedMixedReal γ r ρ k₁ k₂ x₀ (m₁ ω) (m₂ ω) ^ (-q - 1) *

@@ -17,8 +17,8 @@ namespace DOZZ.Proofs
 
 /-- Change variables in the rooted local integral, retaining the full signed complex kernel. -/
 theorem fusion_localR1_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ s : ℝ) (z : ℂ) (hz : z ≠ 0) :
     (∫ x in Metric.ball (0 : ℂ) (1 / 2),
       (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2 *
@@ -55,15 +55,10 @@ theorem fusion_localR1_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
       simp only [F, Set.indicator_of_notMem hyB, fusionScaledFactor, ite_eq_right hyz,
         Complex.ofReal_zero, mul_zero]
   have hscale := fusion_integral_mul_complex F z hz
-  have heq : (fun y => F (y * z)) = fun y =>
-      (‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) : ℝ) / z ^ 2 *
-        (planarWirtingerKernel (γ ^ 2 / 2) (γ * α₁) 1 y *
-          (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)) := funext hpoint
-  rw [heq, integral_const_mul] at hscale
-  have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  rw [(funext hpoint), integral_const_mul] at hscale
   have hp : ‖z‖ ^ (2 : ℕ) * ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) =
       ‖z‖ ^ (2 + γ ^ 2 / 2 - γ * α₁) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_add hr]
+    rw [← Real.rpow_natCast, ← Real.rpow_add (norm_pos_iff.mpr hz)]
     congr 1
     ring
   calc
@@ -71,10 +66,6 @@ theorem fusion_localR1_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
     _ = _ := hscale
     _ = _ := by
       rw [← mul_assoc]
-      have hc : ((‖z‖ ^ (2 : ℕ) : ℝ) : ℂ) *
-          ((‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) : ℝ) / z ^ 2) =
-          (‖z‖ ^ (2 + γ ^ 2 / 2 - γ * α₁) : ℝ) / z ^ 2 := by
-        rw [← mul_div_assoc, ← Complex.ofReal_mul, hp]
-      rw [hc]
+      rw [(show ((‖z‖ ^ (2 : ℕ) : ℝ) : ℂ) * ((‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) : ℝ) / z ^ 2) = (‖z‖ ^ (2 + γ ^ 2 / 2 - γ * α₁) : ℝ) / z ^ 2 by rw [← mul_div_assoc, ← Complex.ofReal_mul, hp])]
 
 end DOZZ.Proofs

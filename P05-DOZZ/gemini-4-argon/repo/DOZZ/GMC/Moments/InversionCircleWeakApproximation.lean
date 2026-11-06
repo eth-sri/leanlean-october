@@ -18,7 +18,7 @@ namespace DOZZ.Proofs
 
 /-- Circles compactly inside the punctured chart have smooth local approximants with both
 vanishing energy gap and convergence against every continuous potential. -/
-theorem exists_inversionChart_circle_weak_approximation (x : ℂ) (r : ℝ)
+theorem exists_inversionChart_circle_weak_approximation x r
     (hsmall : 2 * Real.exp (-r) < ‖x‖) :
     ∃ f : ℕ → TestFn,
       (∀ n, tsupport (f n : ℂ → ℝ) ⊆ inversionChart) ∧
@@ -26,21 +26,18 @@ theorem exists_inversionChart_circle_weak_approximation (x : ℂ) (r : ℝ)
       ∀ k : ℂ → ℝ, Continuous k → Tendsto (fun n => ∫ z, f n z * k z) atTop
         (𝓝 (∫ z, k z ∂circleMeasure x r)) := by
   let R := ‖x‖ + 2 * Real.exp (-r)
-  have hR : 0 < R := by dsimp [R]; positivity
   have hU n : tsupport (circleAnnularDensity x r n) ⊆ inversionChart := by
     intro z hz
-    have h := tsupport_circleAnnularDensity_subset_centered x r n hz
     change z ≠ 0
     intro hz0
-    have ht := Metric.mem_closedBall.mp h
+    have ht := Metric.mem_closedBall.mp (tsupport_circleAnnularDensity_subset_centered x r n hz)
     simp only [hz0, dist_zero_left] at ht
     linarith
-  have hc n : HasCompactSupport (circleAnnularDensity x r n) :=
-    (isCompact_closedBall (0 : ℂ) R).of_isClosed_subset isClosed_closure
+  have hc n := (isCompact_closedBall (0 : ℂ) R).of_isClosed_subset isClosed_closure
       (tsupport_circleAnnularDensity_subset x r n)
   choose a ha hab hag haU using fun n => exists_inversion_test_mask (hc n) (hU n)
   have hex n := exists_testFn_tendsto_densityCircleGap x r (circleAnnularDensity x r n)
-    (continuous_circleAnnularDensity x r n) hR (tsupport_circleAnnularDensity_subset x r n)
+    (continuous_circleAnnularDensity x r n) (show 0 < R by dsimp [R]; positivity) (tsupport_circleAnnularDensity_subset x r n)
   choose F hFs hFa _hFg using hex
   have hchoose (n : ℕ) : ∃ m : ℕ, 1 / ((m : ℝ) + 2) < 1 / ((n : ℝ) + 2) ^ 3 := by
     have ht : Tendsto (fun m : ℕ => 1 / ((m : ℝ) + 2)) atTop (𝓝 (0 : ℝ)) := by
@@ -72,10 +69,8 @@ theorem exists_inversionChart_circle_weak_approximation (x : ℂ) (r : ℝ)
       (tendsto_add_atTop_nat 2) using 1
     ext n
     simp [Nat.cast_add]
-  have ht3 : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + 2) ^ 3) atTop (𝓝 (0 : ℝ)) := by
-    simpa only [div_pow, one_pow, zero_pow (by norm_num : 3 ≠ 0)] using ht.pow 3
   exact tendsto_integral_testFn_mul_of_circleAnnular_approx x r f
-    (fun n => 1 / ((n : ℝ) + 2) ^ 3) (fun n => by positivity) ht3
+    (fun n => 1 / ((n : ℝ) + 2) ^ 3) (fun n => by positivity) (by simpa only [div_pow, one_pow, zero_pow (by norm_num : 3 ≠ 0)] using ht.pow 3)
     (R := R + 1) (by positivity)
     (fun n => (subset_tsupport _).trans (hs n))
     (fun n => (support_circleAnnularDensity_subset x r n).trans

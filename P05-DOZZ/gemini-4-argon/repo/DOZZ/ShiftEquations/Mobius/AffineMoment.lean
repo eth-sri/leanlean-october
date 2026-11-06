@@ -33,11 +33,10 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- The background ratio through the affine map is the exponential of the defect. -/
-theorem repinWeight_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) :
+theorem repinWeight_affine a b (ha : a ≠ 0) y :
     repinWeight a b (a * y + b) = Real.exp (4 * affineDefect a b y) := by
   have hy := normPlus_pos' y
   have hψ := normPlus_pos' (a * y + b)
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
   unfold repinWeight affineDefect
   rw [affineInv_affine a b ha y,
     show 4 * (Real.log (normPlus (a * y + b)) - Real.log (normPlus y) - Real.log ‖a‖ / 2) =
@@ -51,19 +50,18 @@ theorem repinWeight_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) :
   field_simp
 
 /-- **The Coulomb weight through an affine map**, away from the roots. -/
-theorem coulombWeight_affine {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (a b : ℂ)
-    (ha : a ≠ 0) {y : ℂ} (hyz : ∀ k, y ≠ z k) :
+theorem coulombWeight_affine {N} γ (α : Fin N → ℝ) (z : Fin N → ℂ) a b
+    (ha : a ≠ 0) {y} (hyz : ∀ k, y ≠ z k) :
     coulombWeight γ α (fun k => a * z k + b) 0 (a * y + b) =
       ENNReal.ofReal (Real.exp (γ * (∑ k, α k) * (affineDefect a b y - Real.log ‖a‖ / 2))) *
         coulombWeight γ α z 0 y := by
   have hy := normPlus_pos' y
   have hψ := normPlus_pos' (a * y + b)
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
+  have hapos := norm_pos_iff.mpr ha
   set t : ℝ := normPlus (a * y + b) / (‖a‖ * normPlus y) with htdef
   have ht : 0 < t := by positivity
   have hfac : ∀ k, normPlus (a * y + b) / ‖a * y + b - (a * z k + b)‖ =
       t * (normPlus y / ‖y - z k‖) := fun k => by
-    have hk : 0 < ‖y - z k‖ := norm_pos_iff.mpr (sub_ne_zero.mpr (hyz k))
     rw [show a * y + b - (a * z k + b) = a * (y - z k) by ring, norm_mul, htdef]
     field_simp
   have hlogt : Real.log t = affineDefect a b y - Real.log ‖a‖ / 2 := by
@@ -81,14 +79,14 @@ theorem coulombWeight_affine {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin 
     ← Real.rpow_sum_of_pos ht, ← Finset.mul_sum, Real.rpow_def_of_pos ht, hlogt]
   ring_nf
 
-theorem affine_affineInv (a b : ℂ) (ha : a ≠ 0) (x : ℂ) : a * affineInv a b x + b = x := by
+theorem affine_affineInv a b (ha : a ≠ 0) x : a * affineInv a b x + b = x := by
   unfold affineInv
   field_simp
   ring
 
 /-- Gaussian `L²` limits of test evaluations are closed under scaling. -/
 theorem IsGaussianL2Limit.const_mul {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {X : Ω → Distr} {L : Ω → ℝ} (hL : IsGaussianL2Limit P X L) (c : ℝ) :
+    {X : Ω → Distr} {L} (hL : IsGaussianL2Limit P X L) c :
     IsGaussianL2Limit P X (fun ω => c * L ω) := by
   obtain ⟨hLm, f, hf⟩ := hL
   refine ⟨hLm.const_mul c, fun n => c • f n, ?_⟩

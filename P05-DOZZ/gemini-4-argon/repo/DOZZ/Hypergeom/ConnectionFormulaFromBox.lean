@@ -35,7 +35,7 @@ nonempty open Euler boxes, successive one-variable continuation gives the zero-b
 formula `DOZZ.gauss_connection_minus`. Separate boxes are necessary: the two endpoint coefficient
 evaluations use disjoint exponent-sign regions. -/
 theorem gauss_connection_minus_of_box_coefficients
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+    {H}
     (hH : IsGaussHypergeometricFamily H)
     (firstBox secondBox : GaussConnectionOpenBox)
     (hfirst : ∀ c ∈ firstBox.S, ∀ δ ∈ firstBox.T, ∀ a ∈ firstBox.V,
@@ -53,20 +53,18 @@ theorem gauss_connection_minus_of_box_coefficients
         (Complex.Gamma p.2.2 * Complex.Gamma (p.1 + p.2.1 - p.2.2) *
           (Complex.Gamma p.1)⁻¹ * (Complex.Gamma p.2.1)⁻¹) *
             gaussGPlus H p.1 p.2.1 p.2.2 z := by
-  let firstCramer : ℂ × ℂ × ℂ → ℂ := connectionMinusFirstCramerCoefficient H
-  let firstGamma : ℂ × ℂ × ℂ → ℂ := gaussConnectionMinusGammaCoefficient₁
-  let secondCramer : ℂ × ℂ × ℂ → ℂ := connectionMinusSecondCramerCoefficient H
-  let secondGamma : ℂ × ℂ × ℂ → ℂ := gaussConnectionMinusGammaCoefficient₂
-  have hfirstGlobal : firstCramer p = firstGamma p := by
-    exact eq_of_eq_on_open_gaussConnection_box
+  let firstCramer := connectionMinusFirstCramerCoefficient H
+  let firstGamma := gaussConnectionMinusGammaCoefficient₁
+  let secondCramer := connectionMinusSecondCramerCoefficient H
+  let secondGamma := gaussConnectionMinusGammaCoefficient₂
+  have hfirstGlobal : firstCramer p = firstGamma p := eq_of_eq_on_open_gaussConnection_box
       (f := firstCramer) (g := firstGamma)
       (hf := fun q hq => connectionMinusFirstCramerCoefficient_differentiableAt hH hq)
       (hg := fun q hq => gaussConnectionMinusGammaCoefficient₁_differentiableAt hq)
       firstBox.hSopen firstBox.hTopen firstBox.hVopen
       firstBox.hc₀ firstBox.hδ₀ firstBox.ha₀ firstBox.hS firstBox.hT
       (by intro c hc δ hδ a ha; exact hfirst c hc δ hδ a ha) hp
-  have hsecondGlobal : secondCramer p = secondGamma p := by
-    exact eq_of_eq_on_open_gaussConnection_box
+  have hsecondGlobal : secondCramer p = secondGamma p := eq_of_eq_on_open_gaussConnection_box
       (f := secondCramer) (g := secondGamma)
       (hf := fun q hq => connectionMinusSecondCramerCoefficient_differentiableAt hH hq)
       (hg := fun q hq => gaussConnectionMinusGammaCoefficient₂_differentiableAt hq)
@@ -77,16 +75,15 @@ theorem gauss_connection_minus_of_box_coefficients
     gaussConnectionMinusGammaCoefficient₁ p at hfirstGlobal
   change connectionMinusSecondCramerCoefficient H p =
     gaussConnectionMinusGammaCoefficient₂ p at hsecondGlobal
-  have hexpansion := gaussFMinus_eq_connectionMidpointCramer hH hp
   intro z hz
-  rw [hexpansion z hz, hfirstGlobal, hsecondGlobal]
+  rw [(gaussFMinus_eq_connectionMidpointCramer hH hp) z hz, hfirstGlobal, hsecondGlobal]
   simp [gaussConnectionMinusGammaCoefficient₁, gaussConnectionMinusGammaCoefficient₂]
 
 /-- If the two midpoint Cramer coefficients for the powered zero-basis solution agree with their
 Gamma values on possibly different nonempty open Euler boxes, continuation gives the powered
 connection formula `DOZZ.gauss_connection_plus`. -/
 theorem gauss_connection_plus_of_box_coefficients
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+    {H}
     (hH : IsGaussHypergeometricFamily H)
     (firstBox secondBox : GaussConnectionOpenBox)
     (hfirst : ∀ c ∈ firstBox.S, ∀ δ ∈ firstBox.T, ∀ a ∈ firstBox.V,
@@ -105,20 +102,18 @@ theorem gauss_connection_plus_of_box_coefficients
           (Complex.Gamma (p.1 - p.2.2 + 1))⁻¹ *
             (Complex.Gamma (p.2.1 - p.2.2 + 1))⁻¹) *
             gaussGPlus H p.1 p.2.1 p.2.2 z := by
-  let firstCramer : ℂ × ℂ × ℂ → ℂ := connectionPlusFirstCramerCoefficient H
-  let firstGamma : ℂ × ℂ × ℂ → ℂ := gaussConnectionPlusGammaCoefficient₁
-  let secondCramer : ℂ × ℂ × ℂ → ℂ := connectionPlusSecondCramerCoefficient H
-  let secondGamma : ℂ × ℂ × ℂ → ℂ := gaussConnectionPlusGammaCoefficient₂
-  have hfirstGlobal : firstCramer p = firstGamma p := by
-    exact eq_of_eq_on_open_gaussConnection_box
+  let firstCramer := connectionPlusFirstCramerCoefficient H
+  let firstGamma := gaussConnectionPlusGammaCoefficient₁
+  let secondCramer := connectionPlusSecondCramerCoefficient H
+  let secondGamma := gaussConnectionPlusGammaCoefficient₂
+  have hfirstGlobal : firstCramer p = firstGamma p := eq_of_eq_on_open_gaussConnection_box
       (f := firstCramer) (g := firstGamma)
       (hf := fun q hq => connectionPlusFirstCramerCoefficient_differentiableAt hH hq)
       (hg := fun q hq => gaussConnectionPlusGammaCoefficient₁_differentiableAt hq)
       firstBox.hSopen firstBox.hTopen firstBox.hVopen
       firstBox.hc₀ firstBox.hδ₀ firstBox.ha₀ firstBox.hS firstBox.hT
       (by intro c hc δ hδ a ha; exact hfirst c hc δ hδ a ha) hp
-  have hsecondGlobal : secondCramer p = secondGamma p := by
-    exact eq_of_eq_on_open_gaussConnection_box
+  have hsecondGlobal : secondCramer p = secondGamma p := eq_of_eq_on_open_gaussConnection_box
       (f := secondCramer) (g := secondGamma)
       (hf := fun q hq => connectionPlusSecondCramerCoefficient_differentiableAt hH hq)
       (hg := fun q hq => gaussConnectionPlusGammaCoefficient₂_differentiableAt hq)
@@ -129,9 +124,8 @@ theorem gauss_connection_plus_of_box_coefficients
     gaussConnectionPlusGammaCoefficient₁ p at hfirstGlobal
   change connectionPlusSecondCramerCoefficient H p =
     gaussConnectionPlusGammaCoefficient₂ p at hsecondGlobal
-  have hexpansion := gaussFPlus_eq_connectionMidpointCramer hH hp
   intro z hz
-  rw [hexpansion z hz, hfirstGlobal, hsecondGlobal]
+  rw [(gaussFPlus_eq_connectionMidpointCramer hH hp) z hz, hfirstGlobal, hsecondGlobal]
   simp [gaussConnectionPlusGammaCoefficient₁, gaussConnectionPlusGammaCoefficient₂]
 
 end DOZZ.Proofs

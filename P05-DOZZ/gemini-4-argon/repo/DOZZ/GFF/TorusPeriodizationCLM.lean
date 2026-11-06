@@ -31,19 +31,16 @@ local instance : IsProbabilityMeasure (volume : Measure GFFUnitTorus2) := by inf
 noncomputable def torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) : GFFUnitTorus2 → ℂ :=
   fun x => (f (torusBoxPoint L x) : ℂ)
 
-theorem measurable_torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) :
+theorem measurable_torusBCFFunction L f :
     Measurable (torusBCFFunction L f) := by
   unfold torusBCFFunction
   exact (Complex.measurable_ofReal.comp f.continuous.measurable).comp
     (measurable_torusBoxPoint L)
 
-theorem memLp_torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) :
+theorem memLp_torusBCFFunction L f :
     MemLp (torusBCFFunction L f) 2 (volume : Measure GFFUnitTorus2) := by
-  have hbound (x : GFFUnitTorus2) : ‖torusBCFFunction L f x‖ ≤ ‖f‖ := by
-    simp only [torusBCFFunction, Complex.norm_real]
-    exact f.norm_coe_le_norm (torusBoxPoint L x)
   exact MemLp.of_bound (measurable_torusBCFFunction L f).aestronglyMeasurable
-    ‖f‖ (Filter.Eventually.of_forall hbound)
+    ‖f‖ (Filter.Eventually.of_forall (fun x => by simp only [torusBCFFunction, Complex.norm_real]; exact f.norm_coe_le_norm (torusBoxPoint L x)))
 
 /-- Send a bounded real function on the physical plane to its complex-valued torus `L²`
 periodization. -/
@@ -92,7 +89,7 @@ noncomputable def torusBCFToLp (L : ℝ) :
       _ = (c • (memLp_torusBCFFunction L f).toLp (torusBCFFunction L f)) x := by
         exact hsmulLp.symm
 
-theorem norm_torusBCFToLp_le (L : ℝ) (f : ℂ →ᵇ ℝ) :
+theorem norm_torusBCFToLp_le L f :
     ‖torusBCFToLp L f‖ ≤ ‖f‖ := by
   change ‖(memLp_torusBCFFunction L f).toLp (torusBCFFunction L f)‖ ≤ ‖f‖
   rw [Lp.norm_toLp]
@@ -103,15 +100,11 @@ theorem norm_torusBCFToLp_le (L : ℝ) (f : ℂ →ᵇ ℝ) :
       exact f.norm_coe_le_norm (torusBoxPoint L x)
   have hnorm := eLpNorm_le_of_ae_bound (p := (2 : ℝ≥0∞))
     (measurable_torusBCFFunction L f).aestronglyMeasurable hbound
-  have hprob : (volume : Measure GFFUnitTorus2) Set.univ = 1 := by simp
-  rw [hprob] at hnorm
-  have hnorm' : eLpNorm (torusBCFFunction L f) 2
-      (volume : Measure GFFUnitTorus2) ≤ ENNReal.ofReal ‖f‖ := by
-    simpa using hnorm
+  rw [(show (volume : Measure GFFUnitTorus2) Set.univ = 1 by simp)] at hnorm
   calc
     (eLpNorm (torusBCFFunction L f) 2 (volume : Measure GFFUnitTorus2)).toReal ≤
         (ENNReal.ofReal ‖f‖).toReal :=
-      ENNReal.toReal_mono ENNReal.ofReal_ne_top hnorm'
+      ENNReal.toReal_mono ENNReal.ofReal_ne_top (by simpa using hnorm)
     _ = ‖f‖ := ENNReal.toReal_ofReal (norm_nonneg _)
 
 /-- The bounded-function periodization operator is continuous, with operator norm at most one. -/
@@ -127,7 +120,7 @@ noncomputable def torusPeriodizationLpCLM (L : ℝ) :
   (torusBCFToLpCLM L).comp (TestFunction.toBoundedContinuousFunctionCLM ℝ)
 
 @[simp]
-theorem torusPeriodizationLpCLM_apply (L : ℝ) (f : TestFn) :
+theorem torusPeriodizationLpCLM_apply L f :
     torusPeriodizationLpCLM L f = torusPeriodizationLp L f := by
   change (memLp_torusBCFFunction L (f : ℂ →ᵇ ℝ)).toLp
       (torusBCFFunction L (f : ℂ →ᵇ ℝ)) =

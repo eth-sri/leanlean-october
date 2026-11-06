@@ -18,9 +18,9 @@ namespace DOZZ.Proofs
 /-- Any family of coupled inverted-test limits is jointly Gaussian with the source circle
 family. Thus the mixed law required by regularization uniqueness uses the original coupling. -/
 theorem inversionCircle_source_jointly_gaussian
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {m : ℕ}
-    (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {m}
+    X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
     (q : Fin m → Bool × ℂ × ℝ) (Z : Fin m → Ω → ℝ)
     (hmem : ∀ i, MemLp (Z i) 2 P)
     (f : Fin m → ℕ → TestFn)
@@ -62,10 +62,10 @@ theorem inversionCircle_source_jointly_gaussian
 /-- The measurable transformed circles have the ordinary circle law on every finite family,
 with no equality assertion for the two source cutoff profiles at a fixed scale. -/
 theorem inversionCircle_fdd_law
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω'] {m : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
-    (Xc' : Ω' → ℂ → ℝ → ℝ) (hXc' : IsCircleAverage P' X' Xc')
+    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω'] {m}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    (P' : Measure Ω') X' (hX' : IsEquatorGFF P' X')
+    Xc' (hXc' : IsCircleAverage P' X' Xc')
     (q : Fin m → ℂ × ℝ) (Z : Fin m → Ω → ℝ)
     (hmem : ∀ i, MemLp (Z i) 2 P)
     (f : Fin m → ℕ → TestFn)

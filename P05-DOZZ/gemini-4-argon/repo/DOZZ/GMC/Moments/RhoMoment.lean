@@ -13,9 +13,9 @@ namespace DOZZ.Proofs
 /-- The three-root DKRV moment on the full extended Seiberg domain. -/
 theorem equatorGFF_extendedSeiberg_rho_moment
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
+    (hM : IsGMCOf P X γ M) α₁ α₂ α₃
     (hα : ExtendedSeiberg3 γ α₁ α₂ α₃) :
     0 < (∫⁻ ω,
       ENNReal.rpow (rho γ (M ω) α₁ α₂ α₃)

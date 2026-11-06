@@ -33,7 +33,7 @@ namespace DOZZ.Proofs
 noncomputable def segT (a₀ a₁ b₀ b₁ c₀ c₁ : ℝ) (t : ℂ) : Fin 3 → ℂ :=
   ![segC a₀ a₁ t, segC b₀ b₁ t, segC c₀ c₁ t]
 
-theorem differentiable_segT (a₀ a₁ b₀ b₁ c₀ c₁ : ℝ) :
+theorem differentiable_segT a₀ a₁ b₀ b₁ c₀ c₁ :
     Differentiable ℂ (segT a₀ a₁ b₀ b₁ c₀ c₁) := by
   rw [differentiable_pi]
   intro i
@@ -53,7 +53,7 @@ theorem segT_ofReal (a₀ a₁ b₀ b₁ c₀ c₁ t : ℝ) :
   unfold segT
   rw [segC_ofReal, segC_ofReal, segC_ofReal, vec3_ofReal]
 
-theorem segT_one (a₀ a₁ b₀ b₁ c₀ c₁ : ℝ) :
+theorem segT_one a₀ a₁ b₀ b₁ c₀ c₁ :
     segT a₀ a₁ b₀ b₁ c₀ c₁ 1 = complexifyNCharges ![a₁, b₁, c₁] := by
   unfold segT
   rw [segC_one, segC_one, segC_one, vec3_ofReal]
@@ -70,7 +70,7 @@ theorem segT_mem {γ : ℝ} (hγ : 0 < γ) {V : Set (Fin 3 → ℂ)}
 
 /-- The continued structure constant at a real point of a segment. -/
 theorem segH_ofReal {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
-    {γ μ : ℝ} (hμ : 0 < μ) {f : (Fin 3 → ℂ) → ℂ}
+    {γ μ} (hμ : 0 < μ) {f : (Fin 3 → ℂ) → ℂ}
     (hfeq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
       f (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
     {a₀ a₁ b₀ b₁ c₀ c₁ t : ℝ}
@@ -83,7 +83,7 @@ theorem segH_ofReal {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω �
 
 /-- The continued structure constant at the end of a segment. -/
 theorem segH_one {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
-    {γ μ : ℝ} (hμ : 0 < μ) {f : (Fin 3 → ℂ) → ℂ}
+    {γ μ} (hμ : 0 < μ) {f : (Fin 3 → ℂ) → ℂ}
     (hfeq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
       f (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
     {a₀ a₁ b₀ b₁ c₀ c₁ : ℝ} (h : ExtendedSeiberg3 γ a₁ b₁ c₁) :
@@ -94,16 +94,16 @@ theorem segH_one {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → 
 
 /-- The continued structure constant is meromorphic along a segment, on the preimage of the
 holomorphy domain. -/
-theorem segH_meromorphicOn {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → ℂ)} (hV : IsOpen V)
-    (hf : DifferentiableOn ℂ f V) {γ μ : ℝ} (hμ : 0 < μ) (a₀ a₁ b₀ b₁ c₀ c₁ : ℝ) :
+theorem segH_meromorphicOn {f : (Fin 3 → ℂ) → ℂ} {V} (hV : IsOpen V)
+    (hf : DifferentiableOn ℂ f V) {γ μ} (hμ : 0 < μ) a₀ a₁ b₀ b₁ c₀ c₁ :
     MeromorphicOn (fun t => structureConstantH f γ μ (segT a₀ a₁ b₀ b₁ c₀ c₁ t))
       (segT a₀ a₁ b₀ b₁ c₀ c₁ ⁻¹' V) :=
   meromorphicOn_structureConstantH_comp hV hf hμ (differentiable_segT a₀ a₁ b₀ b₁ c₀ c₁)
 
 /-- The continued structure constant is analytic at the end of a segment when `Γ` is analytic at
 the `s`-parameter of the endpoint. -/
-theorem segH_analyticAt_one {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → ℂ)} (hV : IsOpen V)
-    (hf : DifferentiableOn ℂ f V) {γ μ : ℝ} (hμ : 0 < μ) {a₀ a₁ b₀ b₁ c₀ c₁ : ℝ}
+theorem segH_analyticAt_one {f : (Fin 3 → ℂ) → ℂ} {V} (hV : IsOpen V)
+    (hf : DifferentiableOn ℂ f V) {γ μ} (hμ : 0 < μ) {a₀ a₁ b₀ b₁ c₀ c₁ : ℝ}
     (hmem : complexifyNCharges ![a₁, b₁, c₁] ∈ V)
     (hs : AnalyticAt ℂ Complex.Gamma (sExp γ a₁ b₁ c₁ : ℂ)) :
     AnalyticAt ℂ (fun t => structureConstantH f γ μ (segT a₀ a₁ b₀ b₁ c₀ c₁ t)) 1 := by
@@ -113,8 +113,8 @@ theorem segH_analyticAt_one {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → �
   exact hs
 
 /-- A strip-meromorphic function along a real segment. -/
-theorem segR_meromorphicOn {R : ℂ → ℂ} {h : ℝ} (hR : MeromorphicOn R (horizontalStrip h))
-    (a₀ a₁ : ℝ) :
+theorem segR_meromorphicOn {R : ℂ → ℂ} {h} (hR : MeromorphicOn R (horizontalStrip h))
+    a₀ a₁ :
     MeromorphicOn (fun t => R (segC a₀ a₁ t)) (segC a₀ a₁ ⁻¹' horizontalStrip h) :=
   fun t ht => (hR _ ht).comp_analyticAt (g := segC a₀ a₁) (analyticAt_segC a₀ a₁ t)
 
@@ -124,7 +124,7 @@ theorem segR_analyticAt_one {R : ℂ → ℂ} {a₀ a₁ : ℝ} (hR : AnalyticAt
   AnalyticAt.comp_of_eq (g := R) (f := segC a₀ a₁) hR (analyticAt_segC a₀ a₁ 1) (segC_one a₀ a₁)
 
 /-- Real parameters of a segment map into a strip. -/
-theorem segC_mem_horizontalStrip {h : ℝ} (hh : 0 < h) (a₀ a₁ t : ℝ) :
+theorem segC_mem_horizontalStrip {h} (hh : 0 < h) (a₀ a₁ t : ℝ) :
     segC a₀ a₁ (t : ℂ) ∈ horizontalStrip h := by
   rw [segC_ofReal]
   exact ofReal_mem_horizontalStrip hh _

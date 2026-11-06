@@ -21,36 +21,32 @@ namespace DOZZ.Proofs
 /-- Uniform inverse moments of the literal retained mass, at every nonnegative inverse order. -/
 theorem dual_rooted_outerMass_inverse_moment_uniform
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ q : ℝ) (hq : 0 ≤ q) :
     ∃ C : ℝ, 0 < C ∧ ∀ (z u : ℂ) (ξ : ℝ), ‖z‖ ≤ 1 → ‖z‖ ^ (1 - ξ) ≤ 1 →
       (∫⁻ ω, dualOuterMass γ α₁ α₂ α₃ (gmcRootedMeasure γ u (M ω)) z ξ ^ (-q) ∂P) ≤
         ENNReal.ofReal C := by
-  let w : ℝ := Real.exp (-γ ^ 2 * Real.log 2) * ((2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-2 / γ, α₁, α₂] : Fin 3 → ℝ) i|) *
+  let w := Real.exp (-γ ^ 2 * Real.log 2) * ((2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-2 / γ, α₁, α₂] : Fin 3 → ℝ) i|) *
     (4 : ℝ) ^ (-|γ * α₃|))
   have hw : 0 < w := by dsimp only [w]; positivity
-  have hp : -q < 4 / γ ^ 2 := lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)
   obtain ⟨Cb, hCb, hball⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ₂ M hM
-    (-q) hp {(3 : ℂ)} isCompact_singleton
-  let e : ℝ := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
-  let C : ℝ := w ^ (-q) * (Cb * (1 / 8 : ℝ) ^ e)
-  have hC : 0 < C := by dsimp only [C]; positivity
-  refine ⟨C, hC, ?_⟩
+    (-q) (lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)) {(3 : ℂ)} isCompact_singleton
+  let e := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
+  let C := w ^ (-q) * (Cb * (1 / 8 : ℝ) ^ e)
+  refine ⟨C, (by dsimp only [C]; positivity), ?_⟩
   intro z u ξ hz hr
-  have hb (ω : Ω) : dualOuterMass γ α₁ α₂ α₃ (gmcRootedMeasure γ u (M ω)) z ξ ^ (-q) ≤
+  have hb ω : dualOuterMass γ α₁ α₂ α₃ (gmcRootedMeasure γ u (M ω)) z ξ ^ (-q) ≤
       ENNReal.ofReal (w ^ (-q)) * M ω (Metric.ball (3 : ℂ) (1 / 8)) ^ (-q) := by
-    have hlow := dual_rooted_outerMass_fixed_disk_lower γ α₁ α₂ α₃ ξ (M ω) z u hz hr
     have hanti : dualOuterMass γ α₁ α₂ α₃ (gmcRootedMeasure γ u (M ω)) z ξ ^ (-q) ≤
         (ENNReal.ofReal w * M ω (Metric.ball (3 : ℂ) (1 / 8))) ^ (-q) := by
       rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
-      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hlow hq)
+      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow (dual_rooted_outerMass_fixed_disk_lower γ α₁ α₂ α₃ ξ (M ω) z u hz hr) hq)
     have hfinite : M ω (Metric.ball (3 : ℂ) (1 / 8)) ≠ ⊤ := by
       let _ := hM.1 ω
       exact measure_ne_top _ _
     rwa [ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top hfinite,
       ENNReal.ofReal_rpow_of_pos hw] at hanti
-  have hbound := (hball 3 (Set.mem_singleton _) (1 / 8) (by norm_num) (by norm_num)).2
   calc
     (∫⁻ ω, dualOuterMass γ α₁ α₂ α₃ (gmcRootedMeasure γ u (M ω)) z ξ ^ (-q) ∂P) ≤
         ∫⁻ ω, ENNReal.ofReal (w ^ (-q)) * M ω (Metric.ball (3 : ℂ) (1 / 8)) ^ (-q) ∂P :=
@@ -58,7 +54,7 @@ theorem dual_rooted_outerMass_inverse_moment_uniform
     _ = ENNReal.ofReal (w ^ (-q)) * gmcMassMoment P M (Metric.ball (3 : ℂ) (1 / 8)) (-q) :=
       lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
     _ ≤ ENNReal.ofReal (w ^ (-q)) * ENNReal.ofReal (Cb * (1 / 8 : ℝ) ^ e) :=
-      mul_le_mul' le_rfl hbound
+      mul_le_mul' le_rfl ((hball 3 (Set.mem_singleton _) (1 / 8) (by norm_num) (by norm_num)).2)
     _ = ENNReal.ofReal C := (ENNReal.ofReal_mul (Real.rpow_pos_of_pos hw _).le).symm
 
 

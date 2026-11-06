@@ -17,7 +17,7 @@ namespace DOZZ.Proofs
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
 
 theorem localPicard_homotopy_grid_endpoint_eq
-    (N : ℕ) (r M : ℝ) (hr : 0 < r) (hM : 0 ≤ M)
+    N r M (hr : 0 < r) (hM : 0 ≤ M)
     (H : ℂ → E →L[ℂ] E) (node : ℕ → ℕ → ℂ)
     (data : ∀ i ≤ N, ∀ j ≤ N, LocalHolomorphicODEData r M H (node i j))
     (hcell : ∀ i < N, ∀ j < N,
@@ -50,29 +50,9 @@ theorem localPicard_homotopy_grid_endpoint_eq
   have hsquare : ∀ i < N, ∀ j < N, ∀ v,
       up (i + 1) j (right i j v) = right i (j + 1) (up i j v) := by
     intro i hi j hj v
-    have hiN : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-    have hjN : j + 1 ≤ N := Nat.succ_le_iff.mpr hj
-    have h := localPicardTransfer_square_commutes r M hr hM H
-      (data i (by omega) j (by omega))
-      (data (i + 1) hiN j (by omega))
-      (data i (by omega) (j + 1) hjN)
-      (hcell i hi j hj).1 (hcell i hi j hj).2.1
-      (hcell i hi j hj).2.2 v
-    simpa [right, up, hi, hiN, hj, hjN, Nat.le_of_lt hi, Nat.le_of_lt hj] using h
-  have hleftId : ∀ j < N, ∀ v, up 0 j v = v := by
-    intro j hj v
-    have h0 := hleft j (Nat.le_of_lt hj)
-    have h1 := hleft (j + 1) (by omega)
-    simp [up, hj, h0, h1, localPicardTransfer,
-      holomorphicPicardSolution_apply_center]
-  have hrightId : ∀ j < N, ∀ v, up N j v = v := by
-    intro j hj v
-    have h0 := hright j (by omega)
-    have h1 := hright (j + 1) (by omega)
-    simp [up, hj, h0, h1, localPicardTransfer,
-      holomorphicPicardSolution_apply_center]
-  have hresult := finiteGrid_boundary_transfer_eq_of_bounded_squares
-    N right up hsquare hleftId hrightId y
-  simpa [right] using hresult
+    have hiN := Nat.succ_le_iff.mpr hi
+    have hjN := Nat.succ_le_iff.mpr hj
+    simpa [right, up, hi, hiN, hj, hjN, Nat.le_of_lt hi, Nat.le_of_lt hj] using (localPicardTransfer_square_commutes r M hr hM H (data i (by omega) j (by omega)) (data (i + 1) hiN j (by omega)) (data i (by omega) (j + 1) hjN) (hcell i hi j hj).1 (hcell i hi j hj).2.1 (hcell i hi j hj).2.2 v)
+  simpa [right] using (finiteGrid_boundary_transfer_eq_of_bounded_squares N right up hsquare (by intro j hj v; simp [up, hj, (hleft j (Nat.le_of_lt hj)), (hleft (j + 1) (by omega)), localPicardTransfer, holomorphicPicardSolution_apply_center]) (by intro j hj v; simp [up, hj, (hright j (by omega)), (hright (j + 1) (by omega)), localPicardTransfer, holomorphicPicardSolution_apply_center]) y)
 
 end DOZZ.Proofs

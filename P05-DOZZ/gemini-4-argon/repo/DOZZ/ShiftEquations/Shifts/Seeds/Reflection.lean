@@ -55,26 +55,23 @@ namespace DOZZ.Proofs
 
 /-! ### Crossing symmetry of the dual four-point function -/
 
-/-- Swapping the last two finite roots also swaps their charges. -/
-theorem seeds_mass_swap_last (γ κ a b c : ℝ) (ν : Measure ℂ) (w : ℂ) :
-    coulombMass γ ν ![κ, a, b] ![w, 1, 0] c =
-      coulombMass γ ν ![κ, b, a] ![w, 0, 1] c := by
-  unfold coulombMass
-  apply lintegral_congr
-  intro x
-  simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
-    Fin.prod_univ_zero, mul_one]
-  rw [mul_comm (ENNReal.rpow _ (γ * a)) (ENNReal.rpow _ (γ * b))]
 
 /-- **Crossing symmetry at the dual charge.** The reduced four-point function with degenerate
 charge `-2/γ` is symmetric under `z ↦ 1 - z` with the charges at zero and one exchanged,
 throughout its carrier. -/
 theorem dual_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ a b c : ℝ)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) γ μ a b c
     (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (z : ℂ) :
+    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) z :
     fourPointT P M γ μ (-(2 / γ)) a b c z =
       fourPointT P M γ μ (-(2 / γ)) b a c (1 - z) := by
+  have seeds_mass_swap_last γ κ a b c (ν : Measure ℂ) w : coulombMass γ ν ![κ, a, b] ![w, 1, 0] c = coulombMass γ ν ![κ, b, a] ![w, 0, 1] c := by
+    unfold coulombMass
+    apply lintegral_congr
+    intro x
+    simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
+      Fin.prod_univ_zero, mul_one]
+    rw [mul_comm (ENNReal.rpow _ (γ * a)) (ENNReal.rpow _ (γ * b))]
   have he : infSExp γ ![-(2 / γ), a, b] c = fourPointSExp γ (-(2 / γ)) a b c := by
     unfold infSExp fourPointSExp
     simp only [Fin.sum_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
@@ -83,7 +80,7 @@ theorem dual_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
     ring
   have hm := coulombMass_affine_moment_inf P X hX γ hγ hγ2 M hM
     ![-(2 / γ), a, b] ![z, 0, 1] c (-1) 1 (by norm_num)
-  have hz : (fun k : Fin 3 => (-1 : ℂ) * (![z, 0, 1] : Fin 3 → ℂ) k + 1) =
+  have hz : (fun k => (-1 : ℂ) * (![z, 0, 1] : Fin 3 → ℂ) k + 1) =
       ![1 - z, 1, 0] := by
     funext k
     fin_cases k
@@ -109,55 +106,12 @@ theorem dual_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
 `ξ = 1/2`. -/
 noncomputable def dualSeedWindow (γ : ℝ) : ℝ := (4 - γ ^ 2) * γ / 64
 
-theorem dualSeedWindow_pos {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) : 0 < dualSeedWindow γ := by
+theorem dualSeedWindow_pos {γ} (hγ : 0 < γ) (hγ2 : γ < 2) : 0 < dualSeedWindow γ := by
   unfold dualSeedWindow
-  have h4 : 0 < 4 - γ ^ 2 := by nlinarith
+  have : 0 < 4 - γ ^ 2 := by nlinarith
   positivity
 
-/-- The polynomial core of the second slack condition, over abstract reals. -/
-theorem dualSeedWindow_slack_core {γ d : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hd : 0 < d)
-    (hdw : d < (4 - γ ^ 2) * γ / 64) :
-    4 * d < (2 - γ ^ 2 / 2 - 3 * γ * d) / 2 * γ := by
-  have hγsq : γ ^ 2 < 4 := by nlinarith
-  have h1 : γ ^ 2 * d < 4 * d := mul_lt_mul_of_pos_right hγsq hd
-  have h2 : 64 * d < (4 - γ ^ 2) * γ := by linarith
-  have hexp : (2 - γ ^ 2 / 2 - 3 * γ * d) / 2 * γ = (4 - γ ^ 2) * γ / 4 - 3 / 2 * (γ ^ 2 * d) := by
-    ring
-  rw [hexp]
-  linarith
 
-/-- **The window.** If `0 < Q - α₁ < (4 - γ²) γ / 64`, then `η = 2(Q - α₁)` and `ξ = 1/2` satisfy
-every window hypothesis of the dual fusion. -/
-theorem dual_fusion_window {γ α₁ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hα₁ : α₁ < Q γ)
-    (hnear : Q γ - α₁ < dualSeedWindow γ) :
-    0 < 2 * (Q γ - α₁) ∧ 2 * (Q γ - α₁) < γ / 2 ∧ Q γ - 2 * (Q γ - α₁) < α₁ ∧
-      (4 / γ) * (Q γ - α₁) < 1 / 2 ∧
-      (4 / γ) * (Q γ - α₁) < (1 - 1 / 2) * (4 - γ * α₁ - 2 * γ * (2 * (Q γ - α₁))) := by
-  set d := Q γ - α₁ with hd_def
-  have hd : 0 < d := sub_pos.mpr hα₁
-  have hdw : d < (4 - γ ^ 2) * γ / 64 := hnear
-  have hγsq : γ ^ 2 < 4 := by nlinarith
-  have hd16 : d < γ / 16 := by
-    have : (4 - γ ^ 2) * γ / 64 < 4 * γ / 64 := by
-      have h4 : 4 - γ ^ 2 < 4 := by nlinarith
-      have := mul_lt_mul_of_pos_right h4 hγ
-      linarith
-    linarith
-  have hγQ : γ * Q γ = γ ^ 2 / 2 + 2 := by
-    unfold Q
-    field_simp
-    ring
-  have hα₁d : α₁ = Q γ - d := by rw [hd_def]; ring
-  refine ⟨by linarith, by linarith, by linarith, ?_, ?_⟩
-  · rw [div_mul_eq_mul_div, div_lt_iff₀ hγ]
-    linarith
-  · have hcore := dualSeedWindow_slack_core hγ hγ2 hd hdw
-    have hrhs : (1 - 1 / 2) * (4 - γ * α₁ - 2 * γ * (2 * d)) =
-        (2 - γ ^ 2 / 2 - 3 * γ * d) / 2 := by
-      rw [hα₁d]
-      linear_combination (-1 / 2 : ℝ) * hγQ
-    rw [hrhs, div_mul_eq_mul_div, div_lt_iff₀ hγ]
-    linarith
 
 /-! ### The reflection identity near `Q` -/
 
@@ -176,7 +130,7 @@ the reflected structure constant, for every witness of `R(α₁)`. The input `hF
 statement of `dual_full_fusion_and_asymptotic` at universe `u`. -/
 theorem dual_reflection_identity_near_Q
     {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
-    (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
+    γ μ α₁ α₂ α₃ (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hα₁ : α₁ < Q γ) (hnear : Q γ - α₁ < dualSeedWindow γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hs : 2 * Q γ + 2 / γ < α₁ + α₂ + α₃)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
@@ -223,13 +177,39 @@ theorem dual_reflection_identity_near_Q
         gaussCoefficientRatio (gaussParameterA γ (2 / γ) α₁ α₂ α₃)
           (gaussParameterB γ (2 / γ) α₁ α₂ α₃) (gaussParameterC γ (2 / γ) α₁) =
       reflectionR P γ μ α₁ B Z * structureConstant P M γ μ (2 * Q γ - α₁ - 2 / γ) α₂ α₃ := by
+  have dual_fusion_window : 0 < 2 * (Q γ - α₁) ∧ 2 * (Q γ - α₁) < γ / 2 ∧ Q γ - 2 * (Q γ - α₁) < α₁ ∧ (4 / γ) * (Q γ - α₁) < 1 / 2 ∧ (4 / γ) * (Q γ - α₁) < (1 - 1 / 2) * (4 - γ * α₁ - 2 * γ * (2 * (Q γ - α₁))) := by
+    have dualSeedWindow_slack_core {d} (hd : 0 < d) (hdw : d < (4 - γ ^ 2) * γ / 64) : 4 * d < (2 - γ ^ 2 / 2 - 3 * γ * d) / 2 * γ := by
+      have : γ ^ 2 * d < 4 * d := mul_lt_mul_of_pos_right (by nlinarith) hd
+      have : 64 * d < (4 - γ ^ 2) * γ := by linarith
+      rw [(show (2 - γ ^ 2 / 2 - 3 * γ * d) / 2 * γ = (4 - γ ^ 2) * γ / 4 - 3 / 2 * (γ ^ 2 * d) by ring)]
+      linarith
+    set d := Q γ - α₁ with hd_def
+    have hdw : d < (4 - γ ^ 2) * γ / 64 := hnear
+    have : γ ^ 2 < 4 := by nlinarith
+    have : d < γ / 16 := by
+      have : (4 - γ ^ 2) * γ / 64 < 4 * γ / 64 := by
+        have := mul_lt_mul_of_pos_right (show 4 - γ ^ 2 < 4 by nlinarith) hγ
+        linarith
+      linarith
+    have hγQ : γ * Q γ = γ ^ 2 / 2 + 2 := by
+      unfold Q
+      field_simp
+      ring
+    have hα₁d : α₁ = Q γ - d := by rw [hd_def]; ring
+    refine ⟨by linarith, by linarith, by linarith, ?_, ?_⟩
+    · rw [div_mul_eq_mul_div, div_lt_iff₀ hγ]
+      linarith
+    · have hcore := dualSeedWindow_slack_core (sub_pos.mpr hα₁ : 0 < d) hdw
+      have hrhs : (1 - 1 / 2) * (4 - γ * α₁ - 2 * γ * (2 * d)) =
+          (2 - γ ^ 2 / 2 - 3 * γ * d) / 2 := by
+        rw [hα₁d]
+        linear_combination (-1 / 2 : ℝ) * hγQ
+      rw [hrhs, div_mul_eq_mul_div, div_lt_iff₀ hγ]
+      linarith
   obtain ⟨H, hH⟩ := gauss_hypergeometric_exists
-  obtain ⟨hη0, hη1, hηlo, hslack₁, hslack₂⟩ := dual_fusion_window hγ hγ2 hα₁ hnear
+  obtain ⟨hη0, hη1, hηlo, hslack₁, hslack₂⟩ := dual_fusion_window
   obtain ⟨B', Z', -, hB', hrest⟩ := hFusion hH P M X γ μ α₁ α₂ α₃ (2 * (Q γ - α₁)) (1 / 2)
     hγ hγ2 hμ hη0 hη1 (by norm_num) (by norm_num) hηlo hα₁ hα₂ hα₃ hs hslack₁ hslack₂ hX hM
-  have hformula := hrest.2
-  have hclass := degenerateFourPoint_diagonal_classification hH P X M γ μ (2 / γ) α₁ α₂ α₃
-    hγ hγ2 hμ (Or.inr rfl) hα₁ hα₂ hα₃ hs hX hM
   obtain ⟨-, -, -, -, hC0, hC1, -⟩ :=
     dual_seed_parameter_intervals γ α₁ α₂ α₃ hγ hγ2 hα₁ hα₂ hα₃ hs
   have huniq := diagonal_gauss_coefficients_unique hH (seeds_ne_int_of_mem_Ioo hC0 hC1)
@@ -242,10 +222,10 @@ theorem dual_reflection_identity_near_Q
     (D₂ := reflectionR P γ μ α₁ (B' α₁) Z' *
       structureConstant P M γ μ (2 * Q γ - α₁ - 2 / γ) α₂ α₃)
     (fun z hz => by
-      rw [hclass z hz]
+      rw [(degenerateFourPoint_diagonal_classification hH P X M γ μ (2 / γ) α₁ α₂ α₃ hγ hγ2 hμ (Or.inr rfl) hα₁ hα₂ hα₃ hs hX hM) z hz]
       ring)
     (fun z hz => by
-      have h := hformula z hz
+      have h := hrest.2 z hz
       rw [neg_div] at h
       rw [h])
   rw [huniq.2, reflectionR_eq_of_isReflectionData P P γ μ α₁ (B' α₁) Z' B Z hB' hB]

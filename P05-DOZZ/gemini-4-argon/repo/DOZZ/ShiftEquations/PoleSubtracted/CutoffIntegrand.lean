@@ -49,7 +49,7 @@ noncomputable def cutoffFamily (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ
 
 /-- The cutoff observable `poleSubtractedCutoff` is the diagonal `G_{n,n}`. -/
 theorem poleSubtractedCutoff_eq_cutoffFamily (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (M : Ω → Measure ℂ) (γ η : ℝ) (n : ℕ) :
+    (M : Ω → Measure ℂ) γ η n :
     poleSubtractedCutoff P Xc M γ η n = cutoffFamily P Xc M γ η n n := rfl
 
 /-- The `a`-dependent factor `e^{a X} (B^{-a/γ} + R^{-a/γ})` of the bound. -/
@@ -66,67 +66,55 @@ theorem re_cutoffExponent (z : ℂ) (X : ℝ) (m : ℕ) :
 theorem re_one_sub_div (z : ℂ) (γ : ℝ) : (1 - z / γ).re = 1 - z.re / γ := by
   simp [Complex.div_ofReal_re]
 
-/-- **The pointwise bound** of the cutoff integrand. -/
-theorem norm_cutoffIntegrand_le (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) {γ : ℝ} (η : ℝ)
-    (m n : ℕ) (z : ℂ) (ω : Ω) (hL : 0 < localMassReal M γ η ω)
-    (hLB : localMassReal M γ η ω ≤ baseMassReal M γ η n ω) :
-    ‖cutoffIntegrand Xc M γ η m n z ω‖ ≤
-      Real.exp (m * z.im ^ 2 / 2) * ‖1 - z / γ‖ *
-        (Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
-          ((baseMassReal M γ η n ω - localMassReal M γ η ω) *
-            (baseMassReal M γ η n ω ^ (-z.re / γ) + localMassReal M γ η ω ^ (-z.re / γ)))) := by
-  set B := baseMassReal M γ η n ω
-  set L := localMassReal M γ η ω
-  have hpow := norm_ofReal_cpow_sub_ofReal_cpow_le hL hLB (1 - z / γ)
-  rw [re_one_sub_div] at hpow
-  have he : 1 - z.re / γ - 1 = -z.re / γ := by ring
-  rw [he] at hpow
-  have hexp : ‖Complex.exp (z * (Xc ω 0 m : ℂ) - (m : ℂ) * z ^ 2 / 2)‖ =
-      Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) := by
-    rw [Complex.norm_exp, re_cutoffExponent, ← Real.exp_add]
-    congr 1
-    ring
-  unfold cutoffIntegrand
-  rw [norm_mul, hexp]
-  calc Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
-        ‖(B : ℂ) ^ (1 - z / γ) - (L : ℂ) ^ (1 - z / γ)‖
-      ≤ Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
-          (‖1 - z / γ‖ * (B - L) * (B ^ (-z.re / γ) + L ^ (-z.re / γ))) :=
-        mul_le_mul_of_nonneg_left hpow (by positivity)
-    _ = _ := by ring
 
-/-- Two-endpoint domination of the `a`-dependent factor. -/
-theorem cutoffWeight_le_endpoints {γ X B L a a₁ a₂ : ℝ} (hB : 0 < B) (hL : 0 < L)
-    (ha : a ∈ Icc a₁ a₂) :
-    cutoffWeight γ X B L a ≤ cutoffWeight γ X B L a₁ + cutoffWeight γ X B L a₂ := by
-  have key : ∀ (C : ℝ), 0 < C → ∀ b : ℝ,
-      Real.exp (b * X) * C ^ (-b / γ) = Real.exp (b * (X - Real.log C / γ)) := by
-    intro C hC b
-    rw [Real.rpow_def_of_pos hC, ← Real.exp_add]
-    congr 1
-    ring
-  have h1 := exp_mul_le_add_of_mem_Icc ha (X - Real.log B / γ)
-  have h2 := exp_mul_le_add_of_mem_Icc ha (X - Real.log L / γ)
-  unfold cutoffWeight
-  rw [mul_add, mul_add, mul_add, key B hB, key L hL, key B hB, key L hL, key B hB, key L hL]
-  linarith
 
 /-- **Domination on a parameter box**: for `Re z ∈ [a₁, a₂]`, `|Im z| ≤ b₀` and
 `|1 - z/γ| ≤ W`, the cutoff integrand is dominated by the two endpoint weights. -/
-theorem norm_cutoffIntegrand_le_endpoints (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) {γ : ℝ}
-    (η : ℝ) (m n : ℕ) {z : ℂ} (ω : Ω) (hL : 0 < localMassReal M γ η ω)
-    (hLB : localMassReal M γ η ω ≤ baseMassReal M γ η n ω) {a₁ a₂ b₀ W : ℝ}
+theorem norm_cutoffIntegrand_le_endpoints (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) {γ}
+    η m n {z : ℂ} ω (hL : 0 < localMassReal M γ η ω)
+    (hLB : localMassReal M γ η ω ≤ baseMassReal M γ η n ω) {a₁ a₂ b₀ W}
     (hz : z.re ∈ Icc a₁ a₂) (hb : |z.im| ≤ b₀) (hW : ‖1 - z / γ‖ ≤ W) :
     ‖cutoffIntegrand Xc M γ η m n z ω‖ ≤
       Real.exp (m * b₀ ^ 2 / 2) * W *
         ((baseMassReal M γ η n ω - localMassReal M γ η ω) *
           (cutoffWeight γ (Xc ω 0 m) (baseMassReal M γ η n ω) (localMassReal M γ η ω) a₁ +
             cutoffWeight γ (Xc ω 0 m) (baseMassReal M γ η n ω) (localMassReal M γ η ω) a₂)) := by
+  have cutoffWeight_le_endpoints {γ} {X} {B} {L} {a} {a₁} {a₂} (hB : 0 < B) (hL : 0 < L) (ha : a ∈ Icc a₁ a₂) : cutoffWeight γ X B L a ≤ cutoffWeight γ X B L a₁ + cutoffWeight γ X B L a₂ := by
+    have key : ∀ (C : ℝ), 0 < C → ∀ b : ℝ,
+        Real.exp (b * X) * C ^ (-b / γ) = Real.exp (b * (X - Real.log C / γ)) := by
+      intro C hC b
+      rw [Real.rpow_def_of_pos hC, ← Real.exp_add]
+      congr 1
+      ring
+    have := exp_mul_le_add_of_mem_Icc ha (X - Real.log B / γ)
+    have := exp_mul_le_add_of_mem_Icc ha (X - Real.log L / γ)
+    unfold cutoffWeight
+    rw [mul_add, mul_add, mul_add, key B hB, key L hL, key B hB, key L hL, key B hB, key L hL]
+    linarith
+  have norm_cutoffIntegrand_le : ‖cutoffIntegrand Xc M γ η m n z ω‖ ≤ Real.exp (m * z.im ^ 2 / 2) * ‖1 - z / γ‖ * (Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) * ((baseMassReal M γ η n ω - localMassReal M γ η ω) * (baseMassReal M γ η n ω ^ (-z.re / γ) + localMassReal M γ η ω ^ (-z.re / γ)))) := by
+    set B := baseMassReal M γ η n ω
+    set L := localMassReal M γ η ω
+    have hpow := norm_ofReal_cpow_sub_ofReal_cpow_le hL hLB (1 - z / γ)
+    rw [re_one_sub_div] at hpow
+    rw [(show 1 - z.re / γ - 1 = -z.re / γ by ring)] at hpow
+    have hexp : ‖Complex.exp (z * (Xc ω 0 m : ℂ) - (m : ℂ) * z ^ 2 / 2)‖ =
+        Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) := by
+      rw [Complex.norm_exp, re_cutoffExponent, ← Real.exp_add]
+      congr 1
+      ring
+    unfold cutoffIntegrand
+    rw [norm_mul, hexp]
+    calc Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
+          ‖(B : ℂ) ^ (1 - z / γ) - (L : ℂ) ^ (1 - z / γ)‖
+        ≤ Real.exp (m * z.im ^ 2 / 2) * Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
+            (‖1 - z / γ‖ * (B - L) * (B ^ (-z.re / γ) + L ^ (-z.re / γ))) :=
+          mul_le_mul_of_nonneg_left hpow (by positivity)
+      _ = _ := by ring
   set B := baseMassReal M γ η n ω
   set L := localMassReal M γ η ω
   have hB : 0 < B := hL.trans_le hLB
-  have hBL : 0 ≤ B - L := sub_nonneg.2 hLB
-  refine (norm_cutoffIntegrand_le Xc M η m n z ω hL hLB).trans ?_
+  have hBL := sub_nonneg.2 hLB
+  refine (norm_cutoffIntegrand_le).trans ?_
   have him : Real.exp (m * z.im ^ 2 / 2) ≤ Real.exp (m * b₀ ^ 2 / 2) := by
     apply Real.exp_le_exp.2
     have : z.im ^ 2 ≤ b₀ ^ 2 := by
@@ -150,7 +138,7 @@ theorem norm_cutoffIntegrand_le_endpoints (Xc : Ω → ℂ → ℝ → ℝ) (M :
           unfold cutoffWeight
           ring
       _ ≤ _ := mul_le_mul_of_nonneg_left hweight hBL
-  have hW0 : ‖1 - z / γ‖ ≤ W := hW
+  have hW0 := hW
   calc Real.exp (m * z.im ^ 2 / 2) * ‖1 - z / γ‖ *
         (Real.exp (z.re * Xc ω 0 m - m * z.re ^ 2 / 2) *
           ((B - L) * (B ^ (-z.re / γ) + L ^ (-z.re / γ))))
@@ -161,22 +149,19 @@ theorem norm_cutoffIntegrand_le_endpoints (Xc : Ω → ℂ → ℝ → ℝ) (M :
         exact mul_nonneg (Real.exp_pos _).le ((norm_nonneg _).trans hW0)
 
 /-- For `0 < R₁ ≤ B_n` the cutoff integrand is entire in `z`. -/
-theorem differentiable_cutoffIntegrand (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) (γ η : ℝ)
-    (m n : ℕ) (ω : Ω) (hL : 0 < localMassReal M γ η ω)
+theorem differentiable_cutoffIntegrand (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) γ η
+    m n ω (hL : 0 < localMassReal M γ η ω)
     (hLB : localMassReal M γ η ω ≤ baseMassReal M γ η n ω) :
     Differentiable ℂ fun z => cutoffIntegrand Xc M γ η m n z ω := by
-  have hB : (baseMassReal M γ η n ω : ℂ) ≠ 0 :=
-    Complex.ofReal_ne_zero.2 (hL.trans_le hLB).ne'
-  have hL' : (localMassReal M γ η ω : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 hL.ne'
   intro z
   unfold cutoffIntegrand
   apply DifferentiableAt.mul
   · fun_prop
   · apply DifferentiableAt.sub
     · exact (differentiableAt_const _).sub ((differentiableAt_id).div_const _) |>.const_cpow
-        (Or.inl hB)
+        (Or.inl (Complex.ofReal_ne_zero.2 (hL.trans_le hLB).ne'))
     · exact (differentiableAt_const _).sub ((differentiableAt_id).div_const _) |>.const_cpow
-        (Or.inl hL')
+        (Or.inl (Complex.ofReal_ne_zero.2 hL.ne'))
 
 end DOZZ.Proofs
 

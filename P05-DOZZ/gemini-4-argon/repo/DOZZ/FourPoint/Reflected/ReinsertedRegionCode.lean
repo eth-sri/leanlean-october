@@ -16,14 +16,14 @@ noncomputable def reflectedReinsertedRegionMassCode (γ : ℝ) (U : Set ℂ) (K 
   reflectedPuncturedMassCode (fun q : TwoSidedPath × ℂ => U.indicator
     (fun x => K x*ENNReal.ofReal (reflected_global_reinsertionWeight γ q.1 x)) q.2) p
 
-theorem reflected_reinsertedRegionMassCode_measurable (γ : ℝ) (U : Set ℂ) (hU : MeasurableSet U)
+theorem reflected_reinsertedRegionMassCode_measurable γ U (hU : MeasurableSet U)
     (K : ℂ → ℝ≥0∞) (hK : Measurable K) : Measurable (reflectedReinsertedRegionMassCode γ U K) := by
   apply reflected_puncturedMassCode_measurable
   exact Measurable.ite (hU.preimage measurable_snd)
     ((hK.comp measurable_snd).mul (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal) measurable_const
 
-theorem reflected_reinsertedRegionMassCode_eq (γ : ℝ) (U : Set ℂ) (hU : MeasurableSet U)
-    (hU0 : U ⊆ ({0} : Set ℂ)ᶜ) (K : ℂ → ℝ≥0∞) (a : TwoSidedPath) (μ : Measure ℂ)
+theorem reflected_reinsertedRegionMassCode_eq γ U (hU : MeasurableSet U)
+    (hU0 : U ⊆ ({0} : Set ℂ)ᶜ) (K : ℂ → ℝ≥0∞) a (μ : Measure ℂ)
     (hfin : ∀ K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → μ K < ⊤) :
     reflectedReinsertedRegionMassCode γ U K (a,μ) =
       ∫⁻ x in U, K x*ENNReal.ofReal (reflected_global_reinsertionWeight γ a x) ∂μ := by
@@ -32,15 +32,15 @@ theorem reflected_reinsertedRegionMassCode_eq (γ : ℝ) (U : Set ℂ) (hU : Mea
   rw [setLIntegral_indicator hU,inter_eq_left.mpr hU0]
 
 /-- Exact removal and reinsertion recover any measurable regional mass away from the origin. -/
-theorem reflected_reinserted_region_eq (γ : ℝ) (a : TwoSidedPath) (μ : Measure ℂ)
-    (U : Set ℂ) (hU : MeasurableSet U) (hU0 : U ⊆ ({0} : Set ℂ)ᶜ)
+theorem reflected_reinserted_region_eq γ a (μ : Measure ℂ)
+    U (hU : MeasurableSet U) (hU0 : U ⊆ ({0} : Set ℂ)ᶜ)
     (K : ℂ → ℝ≥0∞) (hK : Measurable K) :
     (∫⁻ x in U, K x*ENNReal.ofReal (reflected_global_reinsertionWeight γ a x)
       ∂μ.withDensity (lateralRadialWeight γ a)) = ∫⁻ x in U, K x ∂μ := by
-  have hW : Measurable (fun x : ℂ => ENNReal.ofReal (reflected_global_reinsertionWeight γ a x)) :=
+  have hW : Measurable (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ a x)) :=
     ((reflected_global_reinsertionWeight_measurable γ).comp
       (measurable_const.prodMk measurable_id)).ennreal_ofReal
-  rw [show (fun x : ℂ => K x*ENNReal.ofReal (reflected_global_reinsertionWeight γ a x)) =
+  rw [show (fun x => K x*ENNReal.ofReal (reflected_global_reinsertionWeight γ a x)) =
     (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ a x)*K x) from
       funext fun _ => mul_comm _ _]
   have hw := setLIntegral_withDensity_eq_setLIntegral_mul

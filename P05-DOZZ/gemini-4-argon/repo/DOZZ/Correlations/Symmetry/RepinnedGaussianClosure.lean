@@ -13,33 +13,27 @@ namespace DOZZ.Proofs
 
 /-- The correlated normalization is also in the re-pinned field's Gaussian closure. -/
 theorem reflection_normalization_in_repinned_closure
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) :
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (hX : IsEquatorGFF P X) Xc (hXc : IsCircleAverage P X Xc) :
     IsGaussianL2Limit P (symmetryRepinnedField X (fun ω => Xc ω 1 0))
       (fun ω => Xc ω 1 0) := by
   let : IsProbabilityMeasure P := hX.1
   let L := fun ω => Xc ω 1 0
-  have hL : MemLp L 2 P := hXc.2.1 1 0
+  have hL := hXc.2.1 1 0
   obtain ⟨f, hgap, hint⟩ := exists_testFn_circleEnergyGap_and_integral_tendsto 0 0
   have hmass : Tendsto (fun n => testMass (f n)) atTop (𝓝 1) := by
-    have h := hint (fun _ => (1 : ℝ)) continuous_const
     let := circleMeasure_isProbability (0 : ℂ) 0
-    simpa [testMass] using h
+    simpa [testMass] using (hint (fun _ => (1 : ℝ)) continuous_const)
   have hsource : Tendsto (fun n => eLpNorm (fun ω => X ω (f n)) 2 P) atTop (𝓝 0) := by
-    have h := hXc.2.2 0 0 f hgap
     have he n : eLpNorm (fun ω => X ω (f n) - Xc ω 0 0) 2 P =
         eLpNorm (fun ω => X ω (f n)) 2 P := by
       apply eLpNorm_congr_ae
       filter_upwards [circleAverage_equator_ae_eq_zero X Xc hXc] with ω hω
       simp only [hω, Pi.zero_apply, sub_zero]
-    simpa only [he] using h
-  have hc : Tendsto (fun n => ‖1 - testMass (f n)‖ₑ) atTop (𝓝 (0 : ℝ≥0∞)) := by
-    have hm : Tendsto (fun n => 1 - testMass (f n)) atTop (𝓝 (0 : ℝ)) := by
-      simpa only [sub_self] using (tendsto_const_nhds : Tendsto (fun _ : ℕ => (1 : ℝ)) atTop (𝓝 1)).sub hmass
-    simpa only [enorm_zero, Function.comp_def] using (continuous_enorm.tendsto (0 : ℝ)).comp hm
+    simpa only [he] using (hXc.2.2 0 0 f hgap)
   have hscalar : Tendsto (fun n => eLpNorm (fun ω =>
       (1 - testMass (f n)) * L ω) 2 P) atTop (𝓝 0) := by
-    have h := ENNReal.Tendsto.mul_const hc (Or.inr hL.eLpNorm_ne_top)
+    have h := ENNReal.Tendsto.mul_const (by simpa only [enorm_zero, Function.comp_def] using (continuous_enorm.tendsto (0 : ℝ)).comp (by simpa only [sub_self] using (tendsto_const_nhds : Tendsto (fun _ : ℕ => (1 : ℝ)) atTop (𝓝 1)).sub hmass)) (Or.inr hL.eLpNorm_ne_top)
     simp only [zero_mul] at h
     have he n : eLpNorm (fun ω => (1 - testMass (f n)) * L ω) 2 P =
         ‖1 - testMass (f n)‖ₑ * eLpNorm L 2 P := by
@@ -70,7 +64,5 @@ theorem reflection_normalization_in_repinned_closure
   intro n
   change eLpNorm (fun ω => L ω - symmetryRepinnedField X L ω (g n)) 2 P ≤ _
   rw [he]
-  have h := eLpNorm_add_le (μ := P) (p := (2 : ℝ≥0∞))
-    (f := fun ω => X ω (f n)) (g := fun ω => (1 - testMass (f n)) * L ω) (by norm_num)
-  simpa only [Pi.add_def] using h
+  simpa only [Pi.add_def] using (eLpNorm_add_le (μ := P) (p := (2 : ℝ≥0∞)) (f := fun ω => X ω (f n)) (g := fun ω => (1 - testMass (f n)) * L ω) (by norm_num))
 end DOZZ.Proofs

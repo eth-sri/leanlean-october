@@ -27,9 +27,7 @@ theorem codiscrete_reflect {p : ℂ → Prop}
       continuous_invFun := continuous_const.sub continuous_id }
   apply eventually_codiscrete_iff_forall_eventually_nhdsNE.mpr
   intro z
-  have ht : Tendsto e (𝓝[≠] z) (𝓝[≠] (e z)) := by
-    rw [Tendsto, e.map_punctured_nhds_eq]
-  exact ht.eventually (eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hp (e z))
+  exact (show Tendsto e (𝓝[≠] z) (𝓝[≠] (e z)) by rw [Tendsto, e.map_punctured_nhds_eq]).eventually (eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hp (e z))
 
 /-- An inversion germ admits a global representative with prescribed physical values.
 Outside the smaller strip both factors are one. The smaller strip also makes all
@@ -47,21 +45,14 @@ theorem exists_physical_inversion_representative
       ∀ᶠ z in codiscrete ℂ, R z * R ((q : ℂ) - z) = 1 := by
   classical
   have hclosure : closure (horizontalStrip h) ⊆ horizontalStrip H := by
-    have hc : IsClosed {z : ℂ | |z.im| ≤ h} :=
-      isClosed_le Complex.continuous_im.abs continuous_const
-    have hcl := closure_minimal
-      (show horizontalStrip h ⊆ {z : ℂ | |z.im| ≤ h} from
-        fun z hz => (show |z.im| < h from hz).le) hc
-    exact fun z hz => (hcl hz).trans_lt hhH
+    exact fun z hz => ((closure_minimal (show horizontalStrip h ⊆ {z : ℂ | |z.im| ≤ h} from fun z hz => (show |z.im| < h from hz).le) (isClosed_le Complex.continuous_im.abs continuous_const)) hz).trans_lt hhH
   let R₀ : ℂ → ℂ := fun z => if z ∈ horizontalStrip h then F z else 1
   let R : ℂ → ℂ := fun z =>
     if z.im = 0 ∧ lo < z.re ∧ z.re < hi then v z.re else R₀ z
   have hreal (z : ℂ) (hz : z.im = 0) : z ∈ horizontalStrip h := by
     simpa only [horizontalStrip, mem_ofPred_eq, hz, abs_zero] using hh
-  have hp := codiscreteWithin_restrict_closure
-    (isOpen_horizontalStrip H) hclosure hphysical
   have heq : R₀ =ᶠ[codiscrete ℂ] R := by
-    filter_upwards [hp] with z hz
+    filter_upwards [(codiscreteWithin_restrict_closure (isOpen_horizontalStrip H) hclosure hphysical)] with z hz
     by_cases hi' : z.im = 0 ∧ lo < z.re ∧ z.re < hi
     · simp only [R, ite_eq_left hi', R₀, ite_eq_left (hreal z hi'.1)]
       exact hz (hreal z hi'.1) hi'.1 hi'.2.1 hi'.2.2

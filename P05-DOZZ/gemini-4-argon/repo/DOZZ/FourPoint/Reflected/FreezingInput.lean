@@ -23,26 +23,21 @@ open scoped ENNReal
 namespace DOZZ.Proofs
 
 /-- The reflected supercritical charge satisfies the full freezing-order threshold. -/
-theorem reflected_freezing_margins (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
+theorem reflected_freezing_margins γ α₁ α₂ α₃ (hγ : 0 < γ)
     (hα₁ : α₁ < Q γ) (hreflect : Q γ - α₁ < γ / 2)
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
     Q γ < α₁ + γ / 2 ∧
       0 < (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1 ∧
       α₁ + γ / 2 - Q γ <
         γ * ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1) := by
-  have hp : 0 < (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ :=
-    div_pos (by linarith only [hs]) hγ
-  have he : γ * ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1) =
-      (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) + γ := by
-    rw [mul_add, mul_div_cancel₀ _ hγ.ne', mul_one]
-  refine ⟨?_, by linarith only [hp], ?_⟩
+  refine ⟨?_, by linarith only [(div_pos (by linarith only [hs]) hγ : 0 < (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ)], ?_⟩
   · linarith only [hreflect]
-  · rw [he]
+  · rw [(show γ * ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1) = (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) + γ by rw [mul_add, mul_div_cancel₀ _ hγ.ne', mul_one])]
     linarith only [hs, hα₁, hγ]
 
 /-- The actual local estimate needed for the buffer and the small-maximum error. -/
 theorem reflected_freezing_local_input {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) γ α₁ α₂ α₃
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hα₁ : α₁ < Q γ)
     (hreflect : Q γ - α₁ < γ / 2)
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)

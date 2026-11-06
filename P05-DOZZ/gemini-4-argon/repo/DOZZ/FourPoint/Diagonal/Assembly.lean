@@ -15,9 +15,9 @@ open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
 
 theorem degenerateFourPoint_diagonal_classification {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+    {H}
     (hH : IsGaussHypergeometricFamily H)
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hχ : χ = γ / 2 ∨ χ = 2 / γ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)

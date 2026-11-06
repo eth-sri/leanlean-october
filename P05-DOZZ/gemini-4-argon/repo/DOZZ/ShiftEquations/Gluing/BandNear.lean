@@ -33,9 +33,9 @@ open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
 /-- Punctured germs are transported by the reflection `w ↦ c - w`. -/
-theorem eventually_comp_reflect {p : ℂ → Prop} {z : ℂ} (c : ℂ)
+theorem eventually_comp_reflect {p : ℂ → Prop} {z} c
     (h : ∀ᶠ w in 𝓝[≠] (c - z), p w) : ∀ᶠ w in 𝓝[≠] z, p (c - w) := by
-  have htend : Tendsto (fun w : ℂ => c - w) (𝓝[≠] z) (𝓝[≠] (c - z)) :=
+  have htend : Tendsto (fun w => c - w) (𝓝[≠] z) (𝓝[≠] (c - z)) :=
     tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
       ((continuous_const.sub continuous_id).continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
       (eventually_nhdsWithin_of_forall fun w hw => by
@@ -57,19 +57,19 @@ theorem eventuallyEq_structureConstantH_of_physical {Ω : Type*} [MeasurableSpac
     (P : Measure Ω) (M : Ω → Measure ℂ) {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hμ : 0 < μ) (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ)
     (hc : Q γ - η < c ∧ c < Q γ)
-    {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
+    {V₃} (hV₃ : IsOpen V₃)
     (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃)
     {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃)
     (hf₃eq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
       f₃ (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
-    {h : ℝ} (hh : 0 < h) {C : ℂ → ℂ} (hCm : MeromorphicOn C (horizontalStrip h))
+    {h} (hh : 0 < h) {C : ℂ → ℂ} (hCm : MeromorphicOn C (horizontalStrip h))
     (hCv : ∀ α : ℝ, 2 * η < α → α < Q γ → C (α : ℂ) = (structureConstant P M γ μ α b c : ℂ))
     {x : ℝ} (hx₁ : 2 * η < x) (hx₂ : x < Q γ) :
     C =ᶠ[𝓝[≠] (x : ℂ)] fun z => structureConstantH f₃ γ μ (tripleFirst (b : ℂ) (c : ℂ) z) := by
   obtain ⟨hη0, hηγ⟩ := hη
   set g : ℂ → ℂ := fun z => structureConstantH f₃ γ μ (tripleFirst (b : ℂ) (c : ℂ) z) with hg
   set D : Set ℂ := horizontalStrip h ∩ tripleFirst (b : ℂ) (c : ℂ) ⁻¹' V₃ with hD
-  have hDo : IsOpen D := (isOpen_horizontalStrip h).inter
+  have : IsOpen D := (isOpen_horizontalStrip h).inter
     (hV₃.preimage (differentiable_tripleFirst _ _).continuous)
   have hES : ∀ t : ℝ, 2 * η < t → t < Q γ → ExtendedSeiberg3 γ t b c := fun t h1 h2 =>
     extendedSeiberg3_slice hγ hγ2 ⟨hη0, hηγ⟩ hb hc
@@ -89,26 +89,19 @@ theorem eventuallyEq_structureConstantH_of_physical {Ω : Type*} [MeasurableSpac
       change structureConstantH f₃ γ μ (tripleFirst (b : ℂ) (c : ℂ) (t : ℂ)) = _
       rw [tripleFirst_ofReal]
       exact structureConstantH_complexify P M hμ ![t, b, c] (hf₃eq ![t, b, c] (hES t h1 h2))
-  have hgm : MeromorphicOn g D := fun z hz =>
-    meromorphicOn_structureConstantH_comp hV₃ hf₃ hμ (differentiable_tripleFirst _ _) z hz.2
-  have hCm' : MeromorphicOn C D := fun z hz => hCm z hz.1
   set W := connectedComponentIn D (x : ℂ) with hW
-  have hWo : IsOpen W := hDo.connectedComponentIn
   have hWsub : W ⊆ D := connectedComponentIn_subset D _
-  have hxW : (x : ℂ) ∈ W := mem_connectedComponentIn (hDmem x hx₁ hx₂)
-  have hev : ∀ᶠ t : ℝ in 𝓝[≠] x, C t = g t :=
-    eventually_nhdsWithin_of_eventually_nhds (eventually_of_mem (Ioo_mem_nhds hx₁ hx₂)
-      fun t ht => (hCv t ht.1 ht.2).trans (hgval t ht.1 ht.2).symm)
+  have hxW := mem_connectedComponentIn (hDmem x hx₁ hx₂)
   exact ShiftGluing.meromorphicOn_eventuallyEq_of_frequently
-    (fun z hz => hCm' z (hWsub hz)) (fun z hz => hgm z (hWsub hz))
+    (fun z hz => (fun z hz => hCm z hz.1) z (hWsub hz)) (fun z hz => (fun z hz => meromorphicOn_structureConstantH_comp hV₃ hf₃ hμ (differentiable_tripleFirst _ _) z hz.2) z (hWsub hz))
     isPreconnected_connectedComponentIn hxW hxW
-    ((tendsto_ofReal_nhdsNE_slice x).frequently hev.frequently)
+    ((tendsto_ofReal_nhdsNE_slice x).frequently (eventually_nhdsWithin_of_eventually_nhds (eventually_of_mem (Ioo_mem_nhds hx₁ hx₂) fun t ht => (hCv t ht.1 ht.2).trans (hgval t ht.1 ht.2).symm)).frequently)
 
 /-- The continued slice is analytic at real points of `(2η, Q)` (there `s > 0`). -/
 theorem analyticAt_structureConstantH_slice {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hμ : 0 < μ) (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ)
     (hc : Q γ - η < c ∧ c < Q γ)
-    {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
+    {V₃} (hV₃ : IsOpen V₃)
     (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃)
     {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃)
     {x : ℝ} (hx₁ : 2 * η < x) (hx₂ : x < Q γ) :
@@ -124,10 +117,10 @@ theorem analyticAt_structureConstantH_slice {γ μ η b c : ℝ} (hγ : 0 < γ) 
     exact hV₃mem ![x, b, c] hES
   · intro n hn
     rw [tripleFirst_ofReal, sExpC_complexify] at hn
-    have hs : 0 < sExp γ x b c := by
+    have : 0 < sExp γ x b c := by
       unfold sExp
       exact div_pos (by linarith [hb.1, hc.1]) hγ
-    have hn' : sExp γ x b c = -(n : ℝ) := by exact_mod_cast hn
+    have : sExp γ x b c = -(n : ℝ) := by exact_mod_cast hn
     have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
     linarith
 
@@ -153,14 +146,6 @@ theorem firstShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure
         (structureConstant P M γ μ (α - γ) b c : ℂ) := by
   set g : ℂ → ℂ := fun z => structureConstantH f₃ γ μ (tripleFirst (b : ℂ) (c : ℂ) z) with hg
   set z₀ : ℂ := (α : ℂ) - γ / 2 with hz₀
-  have hg₁ := eventuallyEq_structureConstantH_of_physical P M hγ hγ2 hμ hη hb hc hV₃ hV₃mem hf₃
-    hf₃eq hh hCm hCv (x := α) (by linarith) hα₂
-  have hg₂ := eventuallyEq_structureConstantH_of_physical P M hγ hγ2 hμ hη hb hc hV₃ hV₃mem hf₃
-    hf₃eq hh hCm hCv (x := α - γ) (by linarith) (by linarith)
-  have hga₁ := analyticAt_structureConstantH_slice hγ hγ2 hμ hη hb hc hV₃ hV₃mem hf₃
-    (x := α) (by linarith) hα₂
-  have hga₂ := analyticAt_structureConstantH_slice hγ hγ2 hμ hη hb hc hV₃ hV₃mem hf₃
-    (x := α - γ) (by linarith) (by linarith)
   have hval : ∀ t : ℝ, 2 * η < t → t < Q γ → g t = (structureConstant P M γ μ t b c : ℂ) :=
     fun t h1 h2 => by
       have hES : ExtendedSeiberg3 γ t b c :=
@@ -177,11 +162,11 @@ theorem firstShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure
       -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (b : ℂ) (c : ℂ) * g (z - γ / 2) := by
     have e₁ : ∀ᶠ z in 𝓝[≠] z₀, C (z + γ / 2) = g (z + γ / 2) :=
       ShiftGluing.eventually_comp_add (z := z₀) ((γ : ℂ) / 2)
-        (by rw [hz₀, sub_add_cancel]; exact hg₁)
+        (by rw [hz₀, sub_add_cancel]; exact (eventuallyEq_structureConstantH_of_physical P M hγ hγ2 hμ hη hb hc hV₃ hV₃mem hf₃ hf₃eq hh hCm hCv (x := α) (by linarith) hα₂))
     have e₂ : ∀ᶠ z in 𝓝[≠] z₀, C (z - γ / 2) = g (z - γ / 2) :=
       ShiftGluing.eventually_comp_sub (z := z₀) ((γ : ℂ) / 2)
         (by rw [show z₀ - (γ : ℂ) / 2 = ((α - γ : ℝ) : ℂ) by rw [hz₀]; push_cast; ring]
-            exact hg₂)
+            exact (eventuallyEq_structureConstantH_of_physical P M hγ hγ2 hμ hη hb hc hV₃ hV₃mem hf₃ hf₃eq hh hCm hCv (x := α - γ) (by linarith) (by linarith)))
     filter_upwards [(eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hCs) z₀, e₁, e₂]
       with z h0 h1 h2
     rw [← h1, ← h2]
@@ -190,14 +175,11 @@ theorem firstShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure
     (by
       have : ContinuousAt g (z₀ + γ / 2) := by
         rw [hz₀, sub_add_cancel]
-        exact hga₁.continuousAt
+        exact (analyticAt_structureConstantH_slice hγ hγ2 hμ hη hb hc hV₃ hV₃mem hf₃ (x := α) (by linarith) hα₂).continuousAt
       exact ContinuousAt.comp (f := fun w : ℂ => w + (γ : ℂ) / 2) this (by fun_prop))
     (by
-      have hg' : ContinuousAt g (z₀ - γ / 2) := by
-        rw [show z₀ - (γ : ℂ) / 2 = ((α - γ : ℝ) : ℂ) by rw [hz₀]; push_cast; ring]
-        exact hga₂.continuousAt
       exact (continuousAt_const.mul hA.continuousAt).mul
-        (ContinuousAt.comp (f := fun w : ℂ => w - (γ : ℂ) / 2) hg' (by fun_prop)))
+        (ContinuousAt.comp (f := fun w : ℂ => w - (γ : ℂ) / 2) (show ContinuousAt g (z₀ - γ / 2) by rw [show z₀ - (γ : ℂ) / 2 = ((α - γ : ℝ) : ℂ) by rw [hz₀]; push_cast; ring]; exact (analyticAt_structureConstantH_slice hγ hγ2 hμ hη hb hc hV₃ hV₃mem hf₃ (x := α - γ) (by linarith) (by linarith)).continuousAt) (by fun_prop)))
   rw [hz₀, sub_add_cancel, show (α : ℂ) - γ / 2 - γ / 2 = ((α - γ : ℝ) : ℂ) by push_cast; ring,
     hval α (by linarith) hα₂, hval (α - γ) (by linarith) (by linarith)] at hpt
   exact hpt
@@ -226,20 +208,12 @@ theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Mea
       -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) ((α : ℂ) - γ / 2) (b : ℂ) (c : ℂ) *
         (structureConstant P M γ μ (α - γ) b c : ℂ) := by
   obtain ⟨hη0, hηγ⟩ := hη
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
+  have : Q γ = 2 / γ + γ / 2 := rfl
+  have : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith
   set g : ℂ → ℂ := fun z => structureConstantH f₃ γ μ (tripleFirst (b : ℂ) (c : ℂ) z) with hg
   set z₀ : ℂ := (α : ℂ) - γ / 2 with hz₀
-  have hg₁ := eventuallyEq_structureConstantH_of_physical P M hγ hγ2 hμ ⟨hη0, hηγ⟩ hb hc hV₃
-    hV₃mem hf₃ hf₃eq hh hCm hCv (x := 2 * Q γ - α) (by linarith) (by linarith)
-  have hg₂ := eventuallyEq_structureConstantH_of_physical P M hγ hγ2 hμ ⟨hη0, hηγ⟩ hb hc hV₃
-    hV₃mem hf₃ hf₃eq hh hCm hCv (x := α - γ) (by linarith) (by linarith)
-  have hga₁ := analyticAt_structureConstantH_slice hγ hγ2 hμ ⟨hη0, hηγ⟩ hb hc hV₃ hV₃mem hf₃
-    (x := 2 * Q γ - α) (by linarith) (by linarith)
-  have hga₂ := analyticAt_structureConstantH_slice hγ hγ2 hμ ⟨hη0, hηγ⟩ hb hc hV₃ hV₃mem hf₃
-    (x := α - γ) (by linarith) (by linarith)
   have hval : ∀ t : ℝ, 2 * η < t → t < Q γ → g t = (structureConstant P M γ μ t b c : ℂ) :=
     fun t h1 h2 => by
       have hES : ExtendedSeiberg3 γ t b c :=
@@ -254,10 +228,8 @@ theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Mea
   -- the two reflection germs agree on the strip
   have hRR : Rs =ᶠ[𝓝[≠] (α : ℂ)] R := by
     set x₀ : ℝ := (γ / 2 + Q γ) / 2 with hx₀
-    have hx₀1 : γ / 2 < x₀ := by rw [hx₀]; linarith
-    have hx₀2 : x₀ < Q γ := by rw [hx₀]; linarith
     have hev : ∀ᶠ t : ℝ in 𝓝[≠] x₀, Rs t = R t :=
-      eventually_nhdsWithin_of_eventually_nhds (eventually_of_mem (Ioo_mem_nhds hx₀1 hx₀2)
+      eventually_nhdsWithin_of_eventually_nhds (eventually_of_mem (Ioo_mem_nhds (by rw [hx₀]; linarith) (show x₀ < Q γ by rw [hx₀]; linarith))
         fun t ht => hRsR t ht.1 ht.2)
     exact ShiftGluing.meromorphicOn_eventuallyEq_of_frequently hRsm hRm
       (isPreconnected_horizontalStrip h)
@@ -266,40 +238,31 @@ theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Mea
       ((tendsto_ofReal_nhdsNE_slice x₀).frequently hev.frequently)
   have hrel : ∀ᶠ z in 𝓝[≠] z₀, R (z + γ / 2) * g (2 * Q γ - z - γ / 2) =
       -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (b : ℂ) (c : ℂ) * g (z - γ / 2) := by
-    have e₀ : ∀ᶠ z in 𝓝[≠] z₀, Rs (z + γ / 2) = R (z + γ / 2) :=
-      ShiftGluing.eventually_comp_add (z := z₀) ((γ : ℂ) / 2)
-        (by rw [hz₀, sub_add_cancel]; exact hRR)
     have e₁ : ∀ᶠ z in 𝓝[≠] z₀, C (2 * Q γ - γ / 2 - z) = g (2 * Q γ - γ / 2 - z) :=
       eventually_comp_reflect (z := z₀) (2 * (Q γ : ℂ) - γ / 2)
         (by rw [show 2 * (Q γ : ℂ) - γ / 2 - z₀ = ((2 * Q γ - α : ℝ) : ℂ) by
               rw [hz₀]; push_cast; ring]
-            exact hg₁)
+            exact (eventuallyEq_structureConstantH_of_physical P M hγ hγ2 hμ ⟨hη0, hηγ⟩ hb hc hV₃ hV₃mem hf₃ hf₃eq hh hCm hCv (x := 2 * Q γ - α) (by linarith) (by linarith)))
     have e₂ : ∀ᶠ z in 𝓝[≠] z₀, C (z - γ / 2) = g (z - γ / 2) :=
       ShiftGluing.eventually_comp_sub (z := z₀) ((γ : ℂ) / 2)
         (by rw [show z₀ - (γ : ℂ) / 2 = ((α - γ : ℝ) : ℂ) by rw [hz₀]; push_cast; ring]
-            exact hg₂)
-    filter_upwards [(eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hrefl) z₀, e₀, e₁, e₂]
+            exact (eventuallyEq_structureConstantH_of_physical P M hγ hγ2 hμ ⟨hη0, hηγ⟩ hb hc hV₃ hV₃mem hf₃ hf₃eq hh hCm hCv (x := α - γ) (by linarith) (by linarith)))
+    filter_upwards [(eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hrefl) z₀, (ShiftGluing.eventually_comp_add (z := z₀) ((γ : ℂ) / 2) (by rw [hz₀, sub_add_cancel]; exact hRR)), e₁, e₂]
       with z h0 h1 h2 h3
     rw [← h1, show 2 * (Q γ : ℂ) - z - γ / 2 = 2 * Q γ - γ / 2 - z by ring, ← h2, ← h3,
       show 2 * (Q γ : ℂ) - γ / 2 - z = 2 * Q γ - z - γ / 2 by ring]
     exact h0
   have hpt := eq_of_eventuallyEq_nhdsNE_of_continuousAt hrel
     (by
-      have hRc : ContinuousAt R (z₀ + γ / 2) := by
-        rw [hz₀, sub_add_cancel]
-        exact hR.continuousAt
       have hgc : ContinuousAt g (2 * Q γ - z₀ - γ / 2) := by
         rw [show 2 * (Q γ : ℂ) - z₀ - γ / 2 = ((2 * Q γ - α : ℝ) : ℂ) by
           rw [hz₀]; push_cast; ring]
-        exact hga₁.continuousAt
-      exact (ContinuousAt.comp (f := fun w : ℂ => w + (γ : ℂ) / 2) hRc (by fun_prop)).mul
+        exact (analyticAt_structureConstantH_slice hγ hγ2 hμ ⟨hη0, hηγ⟩ hb hc hV₃ hV₃mem hf₃ (x := 2 * Q γ - α) (by linarith) (by linarith)).continuousAt
+      exact (ContinuousAt.comp (f := fun w : ℂ => w + (γ : ℂ) / 2) (by rw [hz₀, sub_add_cancel]; exact hR.continuousAt) (by fun_prop)).mul
         (ContinuousAt.comp (f := fun w : ℂ => 2 * (Q γ : ℂ) - w - γ / 2) hgc (by fun_prop)))
     (by
-      have hg' : ContinuousAt g (z₀ - γ / 2) := by
-        rw [show z₀ - (γ : ℂ) / 2 = ((α - γ : ℝ) : ℂ) by rw [hz₀]; push_cast; ring]
-        exact hga₂.continuousAt
       exact (continuousAt_const.mul hA.continuousAt).mul
-        (ContinuousAt.comp (f := fun w : ℂ => w - (γ : ℂ) / 2) hg' (by fun_prop)))
+        (ContinuousAt.comp (f := fun w : ℂ => w - (γ : ℂ) / 2) (show ContinuousAt g (z₀ - γ / 2) by rw [show z₀ - (γ : ℂ) / 2 = ((α - γ : ℝ) : ℂ) by rw [hz₀]; push_cast; ring]; exact (analyticAt_structureConstantH_slice hγ hγ2 hμ ⟨hη0, hηγ⟩ hb hc hV₃ hV₃mem hf₃ (x := α - γ) (by linarith) (by linarith)).continuousAt) (by fun_prop)))
   rw [hz₀, sub_add_cancel,
     show 2 * (Q γ : ℂ) - ((α : ℂ) - γ / 2) - γ / 2 = ((2 * Q γ - α : ℝ) : ℂ) by push_cast; ring,
     show (α : ℂ) - γ / 2 - γ / 2 = ((α - γ : ℝ) : ℂ) by push_cast; ring,

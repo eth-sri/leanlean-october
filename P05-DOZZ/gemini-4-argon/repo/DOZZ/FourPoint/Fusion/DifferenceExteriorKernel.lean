@@ -9,7 +9,7 @@ public import DOZZ.FourPoint.Fusion.DifferenceExteriorPower
 @[expose] public section
 namespace DOZZ.Proofs
 /-- The signed exterior kernel has a first-order bound by the zero-insertion mass density. -/
-theorem fusion_difference_exterior_kernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
+theorem fusion_difference_exterior_kernel_bound (γ α₁ α₂ α₃ : ℝ) z x
     (hz : ‖z‖ ≤ 1 / 4) (hx : 1 / 2 ≤ ‖x‖) :
     |fusionDifferenceKernel γ α₁ α₂ α₃ z x| ≤
       (2 * (|γ ^ 2 / 2| * max ((1 / 2 : ℝ) ^ (γ ^ 2 / 2 - 1))
@@ -31,12 +31,12 @@ theorem fusion_difference_exterior_kernel_bound (γ α₁ α₂ α₃ : ℝ) (z 
   rw [he, abs_mul, abs_of_nonneg hF, hk]
   exact (mul_le_mul_of_nonneg_right (fusion_difference_exterior_numerator (γ ^ 2 / 2) z x hz hx) hF).trans_eq (by ring)
 /-- The zero-insertion exterior density is controlled by the moving density. -/
-theorem fusion_gammaHalfKernel_exterior_compare (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
+theorem fusion_gammaHalfKernel_exterior_compare (γ α₁ α₂ α₃ : ℝ) z x
     (hz : ‖z‖ ≤ 1 / 4) (hx : 1 / 2 ≤ ‖x‖) :
     gammaHalfKernel γ α₁ α₂ α₃ 0 x ≤
       (2 : ℝ) ^ (γ ^ 2 / 2) * gammaHalfKernel γ α₁ α₂ α₃ z x := by
   have hn : ‖x‖ ≤ 2 * ‖x - z‖ := by
-    have h := norm_sub_norm_le x z
+    have := norm_sub_norm_le x z
     linarith
   have hp : ‖x‖ ^ (γ ^ 2 / 2) ≤ (2 : ℝ) ^ (γ ^ 2 / 2) * ‖x - z‖ ^ (γ ^ 2 / 2) := by
     rw [← Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) (norm_nonneg _)]

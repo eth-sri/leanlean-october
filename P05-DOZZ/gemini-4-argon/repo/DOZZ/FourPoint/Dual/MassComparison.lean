@@ -13,7 +13,7 @@ open MeasureTheory Set
 namespace DOZZ.Proofs
 
 /-- The dual density is nonnegative, including its prescribed root values. -/
-theorem dual_kernel_nonneg (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) :
+theorem dual_kernel_nonneg (γ α₁ α₂ α₃ : ℝ) z x :
     0 ≤ dualFusionKernel γ α₁ α₂ α₃ z x := by
   unfold dualFusionKernel
   exact div_nonneg

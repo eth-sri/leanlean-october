@@ -95,89 +95,71 @@ noncomputable def haarBasisLp {d : Nat} :
   | HaarBasisIndex.father cell => haarFatherPacketLp cell
   | HaarBasisIndex.wavelet idx => haarWaveletPacketLp idx.1
 
-theorem inner_haarFatherPacketLp {d : Nat} (cell₁ cell₂ : Fin d → ℤ) :
-    ⟪haarFatherPacketLp cell₁, haarFatherPacketLp cell₂⟫_ℝ =
-      if cell₁ = cell₂ then 1 else 0 := by
-  have h := inner_haarPacketLp_same_scale
-    (haarFatherPacketIndex cell₁) (haarFatherPacketIndex cell₂) rfl
-  simpa [haarFatherPacketLp, haarFatherPacketIndex] using h
 
-theorem haarFatherPacketIndex_ne_wavelet_toHaarIndex {d : Nat}
-    (cell : Fin d → ℤ) (idx : HaarWaveletIndex d) :
+theorem haarFatherPacketIndex_ne_wavelet_toHaarIndex {d}
+    cell (idx : HaarWaveletIndex d) :
     haarFatherPacketIndex cell ≠ idx.toHaarIndex := by
   intro hidx
-  have hsig : idx.signature.1 = fun _ : Fin d => false := by
-    funext r
-    have hr := congrArg (fun idx : HaarIndex d => idx.signature r) hidx
-    simpa [haarFatherPacketIndex, HaarWaveletIndex.toHaarIndex] using hr
-  exact idx.signature.2 hsig
+  exact idx.signature.2 (by funext r; simpa [haarFatherPacketIndex, HaarWaveletIndex.toHaarIndex] using (congrArg (fun idx : HaarIndex d => idx.signature r) hidx))
 
-theorem inner_haarFatherPacketLp_haarWaveletPacketLp {d : Nat}
-    (cell : Fin d → ℤ) (idx : HaarNonnegativeWaveletIndex d) :
+theorem inner_haarFatherPacketLp_haarWaveletPacketLp {d}
+    cell (idx : HaarNonnegativeWaveletIndex d) :
     ⟪haarFatherPacketLp cell, haarWaveletPacketLp idx.1⟫_ℝ = 0 := by
   rw [haarWaveletPacketLp_eq_haarPacketLp]
   by_cases hzero : idx.1.scale = 0
   · have hsame := inner_haarPacketLp_same_scale
       (haarFatherPacketIndex cell) idx.1.toHaarIndex (by
         simp [haarFatherPacketIndex, HaarWaveletIndex.toHaarIndex, hzero])
-    have hne := haarFatherPacketIndex_ne_wavelet_toHaarIndex cell idx.1
-    simpa [haarFatherPacketLp, hne] using hsame
+    simpa [haarFatherPacketLp, (haarFatherPacketIndex_ne_wavelet_toHaarIndex cell idx.1)] using hsame
   · have hpos : 0 < idx.1.scale := lt_of_le_of_ne idx.2 (Ne.symm hzero)
     obtain ⟨n, hn⟩ := exists_nat_succ_scale_gap hpos
     rcases exists_true_of_ne_false_signature idx.1.signature.property with ⟨r, hsig⟩
-    have hscale :
-        idx.1.toHaarIndex.scale =
-          (haarFatherPacketIndex cell).scale + ((n + 1 : ℕ) : ℤ) := by
-      simpa [haarFatherPacketIndex, HaarWaveletIndex.toHaarIndex] using hn
     exact inner_haarPacketLp_finer_of_signature_true_nat_succ
-      (haarFatherPacketIndex cell) idx.1.toHaarIndex n hscale hsig
+      (haarFatherPacketIndex cell) idx.1.toHaarIndex n (by simpa [haarFatherPacketIndex, HaarWaveletIndex.toHaarIndex] using hn) hsig
 
-theorem inner_haarWaveletPacketLp_haarFatherPacketLp {d : Nat}
-    (idx : HaarNonnegativeWaveletIndex d) (cell : Fin d → ℤ) :
-    ⟪haarWaveletPacketLp idx.1, haarFatherPacketLp cell⟫_ℝ = 0 := by
-  rw [← inner_conj_symm]
-  simp [inner_haarFatherPacketLp_haarWaveletPacketLp cell idx]
 
-/-- Inner products in the inhomogeneous Haar system are Kronecker deltas. -/
-theorem inner_haarBasisLp (d : Nat) (idx₁ idx₂ : HaarBasisIndex d) :
-    ⟪haarBasisLp idx₁, haarBasisLp idx₂⟫_ℝ =
-      if idx₁ = idx₂ then 1 else 0 := by
-  cases idx₁ with
-  | father cell₁ =>
-      cases idx₂ with
-      | father cell₂ =>
-          simpa [haarBasisLp] using inner_haarFatherPacketLp cell₁ cell₂
-      | wavelet idx₂ =>
-          rw [ite_eq_right]
-          · exact inner_haarFatherPacketLp_haarWaveletPacketLp cell₁ idx₂
-          · intro h
-            cases h
-  | wavelet idx₁ =>
-      cases idx₂ with
-      | father cell₂ =>
-          rw [ite_eq_right]
-          · exact inner_haarWaveletPacketLp_haarFatherPacketLp idx₁ cell₂
-          · intro h
-            cases h
-      | wavelet idx₂ =>
-          rw [haarBasisLp]
-          have h := inner_haarWaveletPacketLp d idx₁.1 idx₂.1
-          by_cases hidx : idx₁ = idx₂
-          · subst idx₂
-            simpa [haarBasisLp] using h
-          · have hval : idx₁.1 ≠ idx₂.1 := by
-              intro hval
-              exact hidx (Subtype.ext hval)
-            simp [hidx, hval] at h ⊢
-            exact h
 
 /-- The inhomogeneous Haar system is orthonormal in `L²(R^d)`. -/
-theorem orthonormal_haarBasisLp (d : Nat) :
+theorem orthonormal_haarBasisLp d :
     Orthonormal ℝ (haarBasisLp : HaarBasisIndex d → Lp ℝ 2 (volume : Measure (Vec d))) := by
   classical
+  have inner_haarBasisLp (idx₁ : HaarBasisIndex d) (idx₂ : HaarBasisIndex d) : ⟪haarBasisLp idx₁, haarBasisLp idx₂⟫_ℝ = if idx₁ = idx₂ then 1 else 0 := by
+    have inner_haarWaveletPacketLp_haarFatherPacketLp {d} (idx : HaarNonnegativeWaveletIndex d) cell : ⟪haarWaveletPacketLp idx.1, haarFatherPacketLp cell⟫_ℝ = 0 := by
+      rw [← inner_conj_symm]
+      simp [inner_haarFatherPacketLp_haarWaveletPacketLp cell idx]
+    have inner_haarFatherPacketLp {d : Nat} (cell₁ : Fin d → ℤ) (cell₂ : Fin d → ℤ) : ⟪haarFatherPacketLp cell₁, haarFatherPacketLp cell₂⟫_ℝ = if cell₁ = cell₂ then 1 else 0 := by
+      simpa [haarFatherPacketLp, haarFatherPacketIndex] using (inner_haarPacketLp_same_scale (haarFatherPacketIndex cell₁) (haarFatherPacketIndex cell₂) rfl)
+    cases idx₁ with
+    | father cell₁ =>
+        cases idx₂ with
+        | father cell₂ =>
+            simpa [haarBasisLp] using inner_haarFatherPacketLp cell₁ cell₂
+        | wavelet idx₂ =>
+            rw [ite_eq_right]
+            · exact inner_haarFatherPacketLp_haarWaveletPacketLp cell₁ idx₂
+            · intro h
+              cases h
+    | wavelet idx₁ =>
+        cases idx₂ with
+        | father cell₂ =>
+            rw [ite_eq_right]
+            · exact inner_haarWaveletPacketLp_haarFatherPacketLp idx₁ cell₂
+            · intro h
+              cases h
+        | wavelet idx₂ =>
+            rw [haarBasisLp]
+            have h := inner_haarWaveletPacketLp d idx₁.1 idx₂.1
+            by_cases hidx : idx₁ = idx₂
+            · subst idx₂
+              simpa [haarBasisLp] using h
+            · have hval : idx₁.1 ≠ idx₂.1 := by
+                intro hval
+                exact hidx (Subtype.ext hval)
+              simp [hidx, hval] at h ⊢
+              exact h
   rw [orthonormal_iff_ite]
   intro idx₁ idx₂
-  exact inner_haarBasisLp d idx₁ idx₂
+  exact inner_haarBasisLp idx₁ idx₂
 
 /-- The algebraic span of the inhomogeneous Haar basis vectors. -/
 @[expose]
@@ -186,41 +168,19 @@ noncomputable def haarBasisSubmodule (d : Nat) :
   Submodule.span ℝ
     (Set.range (haarBasisLp : HaarBasisIndex d → Lp ℝ 2 (volume : Measure (Vec d))))
 
-theorem haarBasisLp_mem_haarBasisSubmodule {d : Nat} (idx : HaarBasisIndex d) :
+theorem haarBasisLp_mem_haarBasisSubmodule {d} idx :
     haarBasisLp idx ∈ haarBasisSubmodule d := by
   exact Submodule.subset_span ⟨idx, rfl⟩
 
-theorem haarFatherPacketLp_mem_haarBasisSubmodule {d : Nat} (cell : Fin d → ℤ) :
+theorem haarFatherPacketLp_mem_haarBasisSubmodule {d} cell :
     haarFatherPacketLp cell ∈ haarBasisSubmodule d := by
   exact haarBasisLp_mem_haarBasisSubmodule (HaarBasisIndex.father cell)
 
-theorem haarWaveletPacketLp_mem_haarBasisSubmodule_of_nonnegative {d : Nat}
-    (idx : HaarWaveletIndex d) (hscale : 0 ≤ idx.scale) :
-    haarWaveletPacketLp idx ∈ haarBasisSubmodule d := by
-  exact haarBasisLp_mem_haarBasisSubmodule
-    (HaarBasisIndex.wavelet ⟨idx, hscale⟩)
 
-theorem haarPacketLp_mem_haarBasisSubmodule_of_signature
-    {d : Nat} {j : ℤ} (hj : 0 ≤ j) (cell : Fin d → ℤ)
-    (signature : Fin d → Bool)
-    (hfather :
-      haarPacketLp { scale := j, cell := cell, signature := fun _ => false } ∈
-        haarBasisSubmodule d) :
-    haarPacketLp { scale := j, cell := cell, signature := signature } ∈
-      haarBasisSubmodule d := by
-  by_cases hsig : signature = fun _ : Fin d => false
-  · subst signature
-    exact hfather
-  · let idx : HaarWaveletIndex d :=
-      { scale := j
-        cell := cell
-        signature := ⟨signature, hsig⟩ }
-    have hmem := haarWaveletPacketLp_mem_haarBasisSubmodule_of_nonnegative idx hj
-    simpa [idx, haarWaveletPacketLp_eq_haarPacketLp, HaarWaveletIndex.toHaarIndex] using hmem
 
 theorem haarPacketLp_child_father_mem_haarBasisSubmodule
-    {d : Nat} {j : ℤ} (hj : 0 ≤ j) (cell : Fin d → ℤ)
-    (side : Fin d → Bool)
+    {d} {j} (hj : 0 ≤ j) (cell : Fin d → ℤ)
+    side
     (hparent :
       haarPacketLp { scale := j, cell := cell, signature := fun _ => false } ∈
         haarBasisSubmodule d) :
@@ -229,10 +189,22 @@ theorem haarPacketLp_child_father_mem_haarBasisSubmodule
           cell := haarChildCell cell side
           signature := fun _ => false } ∈
       haarBasisSubmodule d := by
+  have haarPacketLp_mem_haarBasisSubmodule_of_signature (signature : Fin d → Bool) (hfather : haarPacketLp { scale := j, cell := cell, signature := fun _ => false } ∈ haarBasisSubmodule d) : haarPacketLp { scale := j, cell := cell, signature := signature } ∈ haarBasisSubmodule d := by
+    have haarWaveletPacketLp_mem_haarBasisSubmodule_of_nonnegative {d} (idx : HaarWaveletIndex d) (hscale : 0 ≤ idx.scale) : haarWaveletPacketLp idx ∈ haarBasisSubmodule d := by
+      exact haarBasisLp_mem_haarBasisSubmodule
+        (HaarBasisIndex.wavelet ⟨idx, hscale⟩)
+    by_cases hsig : signature = fun _ : Fin d => false
+    · subst signature
+      exact hfather
+    · let idx : HaarWaveletIndex d :=
+        { scale := j
+          cell := cell
+          signature := ⟨signature, hsig⟩ }
+      simpa [idx, haarWaveletPacketLp_eq_haarPacketLp, HaarWaveletIndex.toHaarIndex] using (haarWaveletPacketLp_mem_haarBasisSubmodule_of_nonnegative idx hj)
   rw [haarPacketLp_child_father_refine]
   exact Submodule.sum_mem _ fun signature _ =>
     Submodule.smul_mem _ _
-      (haarPacketLp_mem_haarBasisSubmodule_of_signature hj cell signature hparent)
+      (haarPacketLp_mem_haarBasisSubmodule_of_signature signature hparent)
 
 /-- The parent cell of an integer dyadic cell. -/
 @[expose]
@@ -273,24 +245,13 @@ theorem haarPacketLp_father_mem_haarBasisSubmodule_nat_scale
       intro cell
       let parent := haarParentCell cell
       let side := haarCellSide cell
-      have hparent :
-          haarPacketLp
-              { scale := (n : ℤ), cell := parent, signature := fun _ => false } ∈
-            haarBasisSubmodule d :=
-        ih parent
-      have hchild := haarPacketLp_child_father_mem_haarBasisSubmodule
-        (d := d) (j := (n : ℤ)) (by exact_mod_cast Nat.zero_le n)
-        parent side hparent
-      have hcell : haarChildCell parent side = cell := by
-        simpa [parent, side] using haarChildCell_parent_side cell
-      simpa [hcell, Nat.cast_add, Nat.cast_one] using hchild
+      simpa [(show haarChildCell parent side = cell by simpa [parent, side] using haarChildCell_parent_side cell), Nat.cast_add, Nat.cast_one] using (haarPacketLp_child_father_mem_haarBasisSubmodule (d := d) (j := (n : ℤ)) (by exact_mod_cast Nat.zero_le n) parent side (ih parent))
 
 theorem haarPacketLp_father_mem_haarBasisSubmodule_of_nonnegative
-    {d : Nat} {j : ℤ} (hj : 0 ≤ j) (cell : Fin d → ℤ) :
+    {d} {j} (hj : 0 ≤ j) (cell : Fin d → ℤ) :
     haarPacketLp { scale := j, cell := cell, signature := fun _ => false } ∈
       haarBasisSubmodule d := by
-  have hjcast : j = (j.toNat : ℤ) := (Int.eq_natCast_toNat).2 hj
-  rw [hjcast]
+  rw [((Int.eq_natCast_toNat).2 hj)]
   exact haarPacketLp_father_mem_haarBasisSubmodule_nat_scale j.toNat cell
 
 end GaussianFields

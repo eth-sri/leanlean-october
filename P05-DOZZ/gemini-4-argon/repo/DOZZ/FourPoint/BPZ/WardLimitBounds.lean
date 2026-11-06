@@ -46,8 +46,8 @@ theorem phi_bdd (hd : BPZLimitData γ q δ ρ kt k₂ φ D) : ∃ B : ℝ, 0 ≤
   exact ⟨max B 0, le_max_right _ _, fun x => by
     rw [← Real.norm_eq_abs]; exact (hB x).trans (le_max_left _ _)⟩
 
-theorem abs_phi_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB : ∀ x, |φ x| ≤ B)
-    (x : ℂ) : |φ x| ≤ B * ρ x := by
+theorem abs_phi_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B} (hB : ∀ x, |φ x| ≤ B)
+    x : |φ x| ≤ B * ρ x := by
   by_cases hx : φ x = 0
   · rw [hx, abs_zero]
     exact mul_nonneg ((abs_nonneg _).trans (hB x)) (hd.ρ_nonneg x)
@@ -55,7 +55,7 @@ theorem abs_phi_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB : �
     exact hB x
 
 /-- The antisymmetrized kernel is bounded by `ρ|k| ⊗ ρ|k|`, uniformly in the kernel `L`. -/
-theorem abs_symKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB : ∀ x, |φ x| ≤ B)
+theorem abs_symKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B} (hB : ∀ x, |φ x| ≤ B)
     {Lφ : ℝ≥0} (hLφ : LipschitzWith Lφ φ) {c : ℝ} (hc : 0 ≤ c) (v : ℂ) {k L : ℂ → ℝ}
     (hL : ∀ w, |L w| ≤ c * ‖v‖ / ‖w‖) (x y : ℂ) :
     |bpzSymKer φ ρ k L x y| ≤
@@ -70,7 +70,7 @@ theorem abs_symKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB 
   rcases eq_or_ne x y with rfl | hxy
   · simp only [sub_self, zero_mul, zero_div, abs_zero]
     exact mul_nonneg hC hP
-  have hxy' : 0 < ‖x - y‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxy)
+  have hxy' := norm_pos_iff.mpr (sub_ne_zero.mpr hxy)
   rw [abs_div, abs_two, abs_mul, abs_mul, abs_mul]
   by_cases hnear : ‖x - y‖ < 2 * δ
   · rw [hd.near_diag hnear]
@@ -138,7 +138,7 @@ theorem abs_mixTest_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB
     {m : Measure ℂ} (hint : Integrable (fun y => (1 - ρ y) * k₂ y) m) (x : ℂ) :
     |bpzMixTest φ ρ k k₂ L m x| ≤
       c * ‖v‖ / (2 * δ) * B * (ρ x * |k x|) * ∫ y, (1 - ρ y) * k₂ y ∂m := by
-  have hδ := hd.δ_pos
+  have := hd.δ_pos
   have hB0 : 0 ≤ B := (abs_nonneg _).trans (hB 0)
   unfold bpzMixTest
   rw [← Real.norm_eq_abs, ← integral_const_mul]
@@ -155,12 +155,10 @@ theorem abs_mixTest_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB
   by_cases hρy : ρ y = 1
   · rw [hρy]
     simp
-  have hxt := subset_tsupport φ hφx
-  have hsep := hd.sep x hxt y (lt_of_le_of_ne (hd.ρ_le_one y) hρy)
-  have hLb : |L (x - y)| ≤ c * ‖v‖ / (2 * δ) :=
-    (hL (x - y)).trans (div_le_div_of_nonneg_left (by positivity) (by positivity) hsep)
-  have hφ' : |φ x| ≤ B * ρ x := hd.abs_phi_le hB x
-  have hBρ : 0 ≤ B * ρ x * |k x| := mul_nonneg (mul_nonneg hB0 (hd.ρ_nonneg x)) (abs_nonneg _)
+  have : |L (x - y)| ≤ c * ‖v‖ / (2 * δ) :=
+    (hL (x - y)).trans (div_le_div_of_nonneg_left (by positivity) (by positivity) (hd.sep x (subset_tsupport φ hφx) y (lt_of_le_of_ne (hd.ρ_le_one y) hρy)))
+  have := hd.abs_phi_le hB x
+  have : 0 ≤ B * ρ x * |k x| := mul_nonneg (mul_nonneg hB0 (hd.ρ_nonneg x)) (abs_nonneg _)
   rw [abs_mul, abs_mul]
   calc (1 - ρ y) * k₂ y * (|φ x| * |k x| * |L (x - y)|)
       ≤ (1 - ρ y) * k₂ y * (B * ρ x * |k x| * (c * ‖v‖ / (2 * δ))) := by gcongr

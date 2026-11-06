@@ -11,13 +11,12 @@ open scoped ENNReal
 namespace DOZZ.Proofs
 
 /-- A compact chart test uses the true unclamped radial factor against the global measure. -/
-theorem reflected_global_radial_test_integral (ρ γ : ℝ) (hρ : 0 < ρ)
-    (a : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ)
+theorem reflected_global_radial_test_integral ρ γ (hρ : 0 < ρ)
+    a (f : BoundedContinuousFunction ℂ ℝ)
     (hfU : tsupport (f : ℂ → ℝ) ⊆ originLateralChart ρ) (μ : Measure ℂ) :
     (∫ x, f x*originRadialReinsertionWeight ρ γ a x ∂μ.restrict (originLateralChart ρ)) =
       ∫ x, f x*reflected_global_reinsertionWeight γ a x ∂μ := by
-  have hz (x : ℂ) (hx : x ∉ originLateralChart ρ) : f x = 0 :=
-    image_eq_zero_of_notMem_tsupport (fun hs => hx (hfU hs))
+  have hz (x : ℂ) (hx : x ∉ originLateralChart ρ) := image_eq_zero_of_notMem_tsupport (fun hs => hx (hfU hs))
   have he : (∫ x, f x*originRadialReinsertionWeight ρ γ a x
       ∂μ.restrict (originLateralChart ρ)) =
       ∫ x, f x*originRadialReinsertionWeight ρ γ a x ∂μ := by
@@ -35,21 +34,21 @@ theorem reflected_global_radial_test_integral (ρ γ : ℝ) (hρ : 0 < ρ)
 /-- Both limiting compact comparisons apply to the global carrier, with the unclamped
 radial path weights and the exact common-Gaussian factor. -/
 theorem reflected_global_compact_chaos_comparison
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (ρ γ : ℝ) (hρ : 0 < ρ) (N : Ω → Measure ℂ)
+    ρ γ (hρ : 0 < ρ) (N : Ω → Measure ℂ)
     (hN : IsAdmissibleGMCVersion P (originLateralChart ρ) originLateralPlaneDensity
       (originLateralCircleRegularization Xc ρ) γ (fun ω => (N ω).restrict (originLateralChart ρ)))
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ originLateralChart ρ)
-    (A : Set ℂ) (hA : MeasurableSet A)
-    (R r η : ℝ) (hR0 : 0 ≤ R) (hR : R ≤ 1/2) (hr : 0 < r) (hη : 0 < η)
+    K (hK : IsCompact K) (hKU : K ⊆ originLateralChart ρ)
+    A (hA : MeasurableSet A)
+    R r η (hR0 : 0 ≤ R) (hR : R ≤ 1/2) (hr : 0 < r) (hη : 0 < η)
     (hinner : ∀ x ∈ K, x ∈ A → ‖x‖ ≤ R*r)
     (houter : ∀ x ∈ K, x ∉ A → r ≤ ‖x‖)
     (f₀ f₁ : BoundedContinuousFunction ℂ ℝ) (hf₀ : ∀ x, 0 ≤ f₀ x) (hf₁ : ∀ x, 0 ≤ f₁ x)
     (hf₀K : tsupport (f₀ : ℂ → ℝ) ⊆ K) (hf₁K : tsupport (f₁ : ℂ → ℝ) ⊆ K)
     (hf₀A : tsupport (f₀ : ℂ → ℝ) ⊆ A) (hf₁A : tsupport (f₁ : ℂ → ℝ) ⊆ Aᶜ)
-    (q : ℝ) (hq : 0 < q) :
+    q (hq : 0 < q) :
     let W := reflected_global_reinsertionWeight γ
     let m := ENNReal.ofReal (Real.exp (γ^2*(2*R+η)/2*(q^2+q)))
     ∀ a : TwoSidedPath,
@@ -77,15 +76,12 @@ theorem reflected_global_compact_chaos_comparison
     ((tsupport_originRadialWeightedTest_subset ρ γ hρ a f₀ hfc₀).trans hf₀A)
     ((tsupport_originRadialWeightedTest_subset ρ γ hρ a f₁ hfc₁).trans hf₁A) q hq
   simp only [originRadialWeightedTest_apply, BoundedContinuousFunction.add_apply, ← add_mul] at hb
-  have hfU : tsupport ((f₀+f₁ : BoundedContinuousFunction ℂ ℝ) : ℂ → ℝ) ⊆ originLateralChart ρ :=
-    (tsupport_add (f := (f₀ : ℂ → ℝ)) (g := (f₁ : ℂ → ℝ))).trans
-      ((union_subset hf₀K hf₁K).trans hKU)
   have hsum (μ : Measure ℂ) :
       (∫ x, (f₀ x+f₁ x)*originRadialReinsertionWeight ρ γ a x
         ∂μ.restrict (originLateralChart ρ)) =
         ∫ x, (f₀ x+f₁ x)*reflected_global_reinsertionWeight γ a x ∂μ := by
     simpa only [BoundedContinuousFunction.add_apply] using
-      reflected_global_radial_test_integral ρ γ hρ a (f₀+f₁) hfU μ
+      reflected_global_radial_test_integral ρ γ hρ a (f₀+f₁) ((tsupport_add (f := (f₀ : ℂ → ℝ)) (g := (f₁ : ℂ → ℝ))).trans ((union_subset hf₀K hf₁K).trans hKU)) μ
   simpa only [hsum,
     reflected_global_radial_test_integral ρ γ hρ a f₀ (hf₀K.trans hKU),
     reflected_global_radial_test_integral ρ γ hρ a f₁ (hf₁K.trans hKU),

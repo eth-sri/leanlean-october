@@ -19,10 +19,10 @@ namespace DOZZ.Proofs
 /-- Every measurable or nonmeasurable set mass is bounded in subunit moment by the total mass;
 the measure-mono argument is pointwise and does not require measurability of the set evaluation. -/
 theorem gmc_mass_subunit_moment_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (O : Set ℂ)
-    {p : ℝ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) :
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (hX : IsEquatorGFF P X) γ (M : Ω → Measure ℂ)
+    (hM : IsGMCOf P X γ M) O
+    {p} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) :
     gmcMassMoment P M O p ≤ 1 + gmcReferenceMeasure Set.univ := by
   unfold gmcMassMoment
   calc

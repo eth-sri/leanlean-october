@@ -10,13 +10,11 @@ open Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 /-- A common endpoint majorant is also a majorant for every positive segment. -/
-theorem fusion_convex_mass_majorant (J a b C : ℝ≥0∞) (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
+theorem fusion_convex_mass_majorant (J a b C : ℝ≥0∞) t (ht : t ∈ Icc (0 : ℝ) 1)
     (ha : J ≤ C * a) (hb : J ≤ C * b) :
     J ≤ C * (ENNReal.ofReal t * a + ENNReal.ofReal (1 - t) * b) := by
-  have hsum : ENNReal.ofReal t + ENNReal.ofReal (1 - t) = 1 := by
-    rw [← ENNReal.ofReal_add ht.1 (sub_nonneg.mpr ht.2)]; simp
   calc
-    J = ENNReal.ofReal t * J + ENNReal.ofReal (1 - t) * J := by rw [← add_mul, hsum, one_mul]
+    J = ENNReal.ofReal t * J + ENNReal.ofReal (1 - t) * J := by rw [← add_mul, (show ENNReal.ofReal t + ENNReal.ofReal (1 - t) = 1 by rw [← ENNReal.ofReal_add ht.1 (sub_nonneg.mpr ht.2)]; simp), one_mul]
     _ ≤ ENNReal.ofReal t * (C * a) + ENNReal.ofReal (1 - t) * (C * b) :=
       add_le_add (mul_le_mul' le_rfl ha) (mul_le_mul' le_rfl hb)
     _ = _ := by ring

@@ -26,7 +26,7 @@ noncomputable def gammaHalfTwoRootedMajorant {Ω : Type*} [MeasurableSpace Ω]
     (gammaHalfRootMajorant M γ α₁ α₂ α₃ ω z) ^ 2 ∂P
 
 /-- The literal real kernel is nonnegative even at the prescribed singular-point values. -/
-theorem gammaHalfKernel_nonneg (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) :
+theorem gammaHalfKernel_nonneg γ α₁ α₂ α₃ z x :
     0 ≤ gammaHalfKernel γ α₁ α₂ α₃ z x := by
   unfold gammaHalfKernel
   apply div_nonneg
@@ -37,7 +37,7 @@ theorem gammaHalfKernel_nonneg (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) :
 
 /-- The absolute root mass dominates the actual complex first-root integral. -/
 theorem rootKernelZ_enorm_le {Ω : Type*}
-    (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ) (ω : Ω) (z : ℂ) :
+    (M : Ω → Measure ℂ) γ α₁ α₂ α₃ ω z :
     ‖gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω z‖ₑ ≤
       gammaHalfRootMajorant M γ α₁ α₂ α₃ ω z := by
   refine (enorm_integral_le_lintegral_enorm _).trans_eq ?_
@@ -46,16 +46,6 @@ theorem rootKernelZ_enorm_le {Ω : Type*}
   rw [← ofReal_norm, norm_div, Complex.norm_real,
     Real.norm_of_nonneg (gammaHalfKernel_nonneg γ α₁ α₂ α₃ z x)]
 
-/-- The same absolute mass dominates the conjugate-root integral. -/
-theorem rootKernelBar_enorm_le {Ω : Type*}
-    (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ) (ω : Ω) (z : ℂ) :
-    ‖gammaHalfRootKernelBar M γ α₁ α₂ α₃ ω z‖ₑ ≤
-      gammaHalfRootMajorant M γ α₁ α₂ α₃ ω z := by
-  refine (enorm_integral_le_lintegral_enorm _).trans_eq ?_
-  apply lintegral_congr
-  intro x
-  rw [← ofReal_norm, norm_div, norm_star, Complex.norm_real,
-    Real.norm_of_nonneg (gammaHalfKernel_nonneg γ α₁ α₂ α₃ z x)]
 
 /-- Taking `toReal` of a negative mass power cannot increase its extended absolute coefficient. -/
 theorem mass_coefficient_enorm_le (a : ℝ≥0∞) :
@@ -65,7 +55,7 @@ theorem mass_coefficient_enorm_le (a : ℝ≥0∞) :
 
 /-- The square inner expectation is bounded by the nonnegative source expectation. -/
 theorem twoRooted_square_expectation_enorm_le {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p : ℝ) (z : ℂ) :
+    (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p : ℝ) z :
     ‖∫ ω, ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^
       (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω z ^ 2 ∂P‖ₑ ≤
       gammaHalfTwoRootedMajorant P M γ α₁ α₂ α₃ p z := by
@@ -80,11 +70,17 @@ theorem twoRooted_square_expectation_enorm_le {Ω : Type*} [MeasurableSpace Ω]
 
 /-- The mixed inner expectation has the same majorant, with two absolute denominators. -/
 theorem twoRooted_mixed_expectation_enorm_le {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p : ℝ) (z : ℂ) :
+    (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p : ℝ) z :
     ‖∫ ω, ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^
       (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω z *
         gammaHalfRootKernelBar M γ α₁ α₂ α₃ ω z ∂P‖ₑ ≤
       gammaHalfTwoRootedMajorant P M γ α₁ α₂ α₃ p z := by
+  have rootKernelBar_enorm_le ω z : ‖gammaHalfRootKernelBar M γ α₁ α₂ α₃ ω z‖ₑ ≤ gammaHalfRootMajorant M γ α₁ α₂ α₃ ω z := by
+    refine (enorm_integral_le_lintegral_enorm _).trans_eq ?_
+    apply lintegral_congr
+    intro x
+    rw [← ofReal_norm, norm_div, norm_star, Complex.norm_real,
+      Real.norm_of_nonneg (gammaHalfKernel_nonneg γ α₁ α₂ α₃ z x)]
   apply (enorm_integral_le_lintegral_enorm _).trans
   apply lintegral_mono
   intro ω
@@ -92,6 +88,6 @@ theorem twoRooted_mixed_expectation_enorm_le {Ω : Type*} [MeasurableSpace Ω]
   rw [enorm_mul, enorm_mul, pow_two, mul_assoc]
   exact mul_le_mul' (mass_coefficient_enorm_le _)
     (mul_le_mul' (rootKernelZ_enorm_le M γ α₁ α₂ α₃ ω z)
-      (rootKernelBar_enorm_le M γ α₁ α₂ α₃ ω z))
+      (rootKernelBar_enorm_le ω z))
 
 end DOZZ.Proofs

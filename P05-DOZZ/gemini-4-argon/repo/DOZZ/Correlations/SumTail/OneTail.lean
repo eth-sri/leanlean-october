@@ -36,13 +36,13 @@ theorem sumtail_uniform_one_tail_for_common_witness
                 oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z) *
                   Real.rpow x (-reflectionExponent γ α)| ≤
                 C * Real.rpow x (-reflectionExponent γ α - η) )
-    (Kz : Set ℂ) (hKz : IsCompact Kz) (hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
-    (Kα : Set ℝ) (hKα : IsCompact Kα) (hα : ∀ α ∈ Kα, γ/2 < α ∧ α < Q γ)
-    (Family : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
+    Kz (hKz : IsCompact Kz) (hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
+    Kα (hKα : IsCompact Kα) (hα : ∀ α ∈ Kα, γ/2 < α ∧ α < Q γ)
+    (Family : ℂ → Set (ℂ → ℝ)) radius supBound derivBound lowerBound
     (hFamily : UniformPositiveC1Family Kz Family radius supBound derivBound lowerBound)
     (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hB : ∀ α ∈ Kα, IsReflectionData P γ α (B α) Z)
-    (d : ℝ) (hd : 0 < d) :
+    d (hd : 0 < d) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ z ∈ Kz, ∀ α ∈ Kα, ∀ F ∈ Family z, ∀ x : ℝ, 1 ≤ x →
       |(P {ω | ENNReal.ofReal x < localSingularMass M F z γ α ω}).toReal -
         oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z)*x^(-reflectionExponent γ α)| ≤
@@ -62,9 +62,7 @@ theorem sumtail_uniform_one_tail_for_common_witness
     refine ⟨C,hC,?_⟩
     intro α hαL s x hx
     have hb := hCb s.1.1 s.2.1 α hαL s.1.2 s.2.2 x hx
-    have hr := reflectionBarR_eq_of_isReflectionData P P γ α (B' α) Z' (B α) Z
-      (hB' α hαL) (hB α (hLK hαL))
-    rw [hr] at hb
+    rw [(reflectionBarR_eq_of_isReflectionData P P γ α (B' α) Z' (B α) Z (hB' α hαL) (hB α (hLK hαL)))] at hb
     simpa only [err,Real.rpow_eq_pow] using hb
   obtain ⟨C,hC,hCb⟩ := sumtail_uniform_variable_rate Kα hKα (oneInsertionErrorCeiling γ)
     (reflectionExponent γ) (sumtail_one_error_continuousOn γ Kα hγ hα)

@@ -30,8 +30,8 @@ namespace DOZZ.Proofs
 /-- With the original diagonal classification and the admissible epsilon-channel
 unreflected formula, the connection matrix gives both literal crossing identities. -/
 theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α' ε α : ℝ)
+    {H} (hH : IsGaussHypergeometricFamily H)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) (γ μ α' ε α : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hεhi : ε < 2 / γ) (hα : α < Q γ) (hα' : α' < Q γ)
     (hs : 2 * Q γ < α + α' + ε - γ / 2)
@@ -73,20 +73,14 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
   let e₀ := structureConstant P M γ μ (ε - γ / 2) α' α
   let Bε := -μ * (planarGaussConstant (γ ^ 2 / 2) (γ * ε)).re
   let e₁ := Bε * structureConstant P M γ μ (ε + γ / 2) α' α
-  have hεQ : ε < Q γ := by unfold Q; linarith only [hεhi, hγ]
-  have hsum : 2 * Q γ + γ / 2 < α' + ε + α := by linarith only [hs]
   obtain ⟨ha, hab, hbc, hc1, hδ, hδ1, _, hK₂⟩ :=
     DOZZ.gauss_physical_parameter_range γ (γ / 2) α' ε α hγ hγ2 (Or.inl rfl)
-      hsum hα' hεQ hα
+      (by linarith only [hs]) hα' (by unfold Q; linarith only [hεhi, hγ]) hα
   obtain ⟨hcn, hδn, _⟩ := crossing_gammaHalf_parameter_guards γ α' ε α hγ hγ2 hεhi hα' hα hs
-  have hb : 0 < b := lt_trans ha hab
-  have hc : 0 < c := lt_trans hb hbc
-  have ha1 : a < 1 := lt_trans (lt_trans hab hbc) hc1
-  have hb1 : b < 1 := lt_trans hbc hc1
-  have hratio := gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero a b c hK₂.ne'
+  have hb := lt_trans ha hab
   have hconstraint : gaussK₁ a b c * d₀ + gaussK₂ a b c * d₁ = 0 := by
     dsimp [d₁]
-    linear_combination d₀ * hratio
+    linear_combination d₀ * (gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero a b c hK₂.ne')
   have hcross : d₀ * u * v + d₁ * w * x = 0 := by
     calc
       _ = Real.Gamma (c - a - b) * Real.Gamma (a + b - c) *
@@ -94,8 +88,6 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
         dsimp [u, v, w, x, gaussK₁, gaussK₂]
         ring
       _ = 0 := by rw [hconstraint, mul_zero]
-  have htransfer := gauss_diagonal_one_basis_of_constraint hH a b c d₀ d₁ hcn hδn hconstraint
-  have hone := gammaHalf_one_channel_of_full_unreflected H P X M γ μ α' ε α hγ hγ2 hX hM hformula
   have he : ∀ z ∈ gaussCutPlane,
       (d₀ * u ^ 2 + d₁ * w ^ 2) * ‖gaussGMinus H a b c z‖ ^ 2 +
         (d₀ * v ^ 2 + d₁ * x ^ 2) * ‖gaussGPlus H a b c z‖ ^ 2 =
@@ -103,16 +95,14 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
     intro z hz
     calc
       _ = d₀ * ‖gaussFMinus H a b c z‖ ^ 2 + d₁ * ‖gaussFPlus H a b c z‖ ^ 2 :=
-        (htransfer z hz).symm
+        ((gauss_diagonal_one_basis_of_constraint hH a b c d₀ d₁ hcn hδn hconstraint) z hz).symm
       _ = fourPointT P M γ μ (-γ / 2) α' ε α z := by
         rw [hdiagonal z hz]
         dsimp [d₁, d₀, a, b, c]
         ring
-      _ = _ := hone z hz
-  have hE := (crossing_one_channel_coefficients_unique hH a b c
-    (d₀ * u ^ 2 + d₁ * w ^ 2) (d₀ * v ^ 2 + d₁ * x ^ 2) e₀ e₁ hδn he).2.symm
+      _ = _ := (gammaHalf_one_channel_of_full_unreflected H P X M γ μ α' ε α hγ hγ2 hX hM hformula) z hz
   have hex := crossing_diagonal_coefficient_extraction a b c d₀ d₁ e₁
-    ha ha1 hb hb1 hc hc1 hδ hδ1 hcn hδn hcross hE
+    ha (lt_trans (lt_trans hab hbc) hc1) hb (lt_trans hbc hc1) (lt_trans hb hbc) hc1 hδ hδ1 hcn hδn hcross ((crossing_one_channel_coefficients_unique hH a b c (d₀ * u ^ 2 + d₁ * w ^ 2) (d₀ * v ^ 2 + d₁ * x ^ 2) e₀ e₁ hδn he).2.symm)
   have hswap : structureConstant P M γ μ (ε + γ / 2) α' α =
       structureConstant P M γ μ α' (ε + γ / 2) α := by
     rw [residue_structureConstant_eq_unitVolume, residue_structureConstant_eq_unitVolume]
@@ -121,13 +111,9 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
       congr 1
       ring
     have hpQ : ε + γ / 2 < Q γ := by unfold Q; linarith only [hεhi]
-    have hpS : 0 < sExp γ (ε + γ / 2) α' α := by
-      unfold sExp
-      apply div_pos _ hγ
-      linarith only [hs, hγ]
     have hdom : ExtendedSeiberg3 γ (ε + γ / 2) α' α := by
       refine ⟨hpQ, hα', hα, ?_⟩
-      apply lt_trans (neg_neg_of_pos hpS)
+      apply lt_trans (neg_neg_of_pos (by unfold sExp; apply div_pos _ hγ; linarith only [hs, hγ]))
       apply lt_min
       · positivity
       · apply lt_min
@@ -135,9 +121,7 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
         · apply lt_min
           · exact mul_pos (div_pos (by norm_num) hγ) (sub_pos.mpr hα')
           · exact mul_pos (div_pos (by norm_num) hγ) (sub_pos.mpr hα)
-    have hsym := DOZZ.unitVolumeStructureConstant_symmetric_extended
-      P X M γ (ε + γ / 2) α' α hγ hγ2 hX hM hdom
-    rw [heS, hsym.1]
+    rw [heS, (DOZZ.unitVolumeStructureConstant_symmetric_extended P X M γ (ε + γ / 2) α' α hγ hγ2 hX hM hdom).1]
   have hfull : structureConstant P M γ μ (α' - γ / 2) ε α =
       gammaHalfCrossingMultiplier γ μ α' ε α *
         structureConstant P M γ μ α' (ε + γ / 2) α := by

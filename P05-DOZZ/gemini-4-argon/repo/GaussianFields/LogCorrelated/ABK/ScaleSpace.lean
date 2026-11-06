@@ -39,7 +39,7 @@ noncomputable def scaleSpaceMeasurableEquiv (d : Nat) :
   MeasurableEquiv.piFinSuccAbove (fun _ : Fin (d + 1) => ℝ) 0
 
 /-- The split into scale and spatial coordinates preserves Lebesgue volume. -/
-theorem scaleSpaceMeasurePreserving (d : Nat) :
+theorem scaleSpaceMeasurePreserving d :
     MeasurePreserving (scaleSpaceMeasurableEquiv d) := by
   simpa [ScaleSpace, scaleSpaceMeasurableEquiv] using
     (volume_preserving_piFinSuccAbove (fun _ : Fin (d + 1) => ℝ) 0)
@@ -55,12 +55,12 @@ def spaceCoord {d : Nat} (z : ScaleSpace d) : Vec d :=
   fun i => z (Fin.succ i)
 
 @[simp]
-theorem scaleSpaceMeasurableEquiv_fst {d : Nat} (z : ScaleSpace d) :
+theorem scaleSpaceMeasurableEquiv_fst {d} z :
     (scaleSpaceMeasurableEquiv d z).1 = scaleCoord z :=
   rfl
 
 @[simp]
-theorem scaleSpaceMeasurableEquiv_snd {d : Nat} (z : ScaleSpace d) :
+theorem scaleSpaceMeasurableEquiv_snd {d} z :
     (scaleSpaceMeasurableEquiv d z).2 = spaceCoord z :=
   rfl
 
@@ -90,12 +90,12 @@ noncomputable def scaleSpaceWhiteNoiseL2 (d : Nat) :
   scalarWhiteNoiseL2 (d + 1)
 
 @[simp]
-theorem scaleSpaceWhiteNoiseL2_apply {d : Nat} (f : ScaleSpaceWhiteNoiseHilbert d) :
+theorem scaleSpaceWhiteNoiseL2_apply {d} f :
     scaleSpaceWhiteNoiseL2 d f = scalarWhiteNoiseL2 (d + 1) f :=
   rfl
 
-theorem covariance_scaleSpaceWhiteNoiseL2 {d : Nat}
-    (f g : ScaleSpaceWhiteNoiseHilbert d) :
+theorem covariance_scaleSpaceWhiteNoiseL2 {d}
+    f g :
     cov[scaleSpaceWhiteNoiseL2 d f, scaleSpaceWhiteNoiseL2 d g;
         scaleSpaceWhiteNoiseMeasure d] =
       ⟪f, g⟫_ℝ := by
@@ -124,7 +124,7 @@ instance {d : Nat} : CoeFun (MeanZeroTestFunction d) (fun _ => Vec d → ℝ) wh
   coe ψ := ψ.toFun
 
 @[ext]
-theorem ext {d : Nat} {ψ φ : MeanZeroTestFunction d} (h : ∀ x, ψ x = φ x) : ψ = φ := by
+theorem ext {d} {ψ φ : MeanZeroTestFunction d} (h : ∀ x, ψ x = φ x) : ψ = φ := by
   cases ψ
   cases φ
   simp only [mk.injEq]

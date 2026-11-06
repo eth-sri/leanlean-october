@@ -16,7 +16,7 @@ namespace DOZZ.Proofs
 
 theorem equatorGFF_GMC_weighted_cutoff_bound_uniform_gamma
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (Γ : Set ℝ) (hΓ : IsCompact Γ) (hΓ2 : Γ ⊆ Set.Ioo (0 : ℝ) 2)
     (Xc : Ω → ℂ → ℝ → ℝ)
     (hXc : IsCircleAverage P X Xc)
@@ -39,13 +39,11 @@ theorem equatorGFF_GMC_weighted_cutoff_bound_uniform_gamma
     P X hX Xc hXc Γ hΓ hΓ2 T hT hadm K hK r₀ hr₀
   obtain ⟨L, U, hL, hU, hupper, hlower⟩ := exists_compact_cutoff_scale_bounds
     Γ hΓ (fun γ hγ => (hΓ2 hγ).1) T hT (1 / 8 : ℝ) r₀ (by norm_num)
-  let Cl : ℝ := (E.toReal + 1) / L
-  have hCl : 0 < Cl := by dsimp [Cl]; positivity
-  let C : ℝ := max Cs Cl
-  have hC : 0 < C := hCs.trans_le (le_max_left _ _)
-  refine ⟨C, hC, ?_⟩
+  let Cl := (E.toReal + 1) / L
+  let C := max Cs Cl
+  refine ⟨C, (hCs.trans_le (le_max_left _ _)), ?_⟩
   intro γ hγ t ht z hz δ R hδ hδR hR₀
-  have hR : 0 < R := hδ.trans_le hδR
+  have hR := hδ.trans_le hδR
   change (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ^ t.2 ∂P) ≤
     ENNReal.ofReal (C * R ^ weightedCutoffMomentScaleExponent γ t.1 t.2)
   by_cases hRsmall : R ≤ 1 / 2
@@ -53,14 +51,13 @@ theorem equatorGFF_GMC_weighted_cutoff_bound_uniform_gamma
     exact ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_right
       (le_max_left Cs Cl) (Real.rpow_nonneg hR.le _))
   have hRa : 1 / 8 ≤ R := by linarith
-  have hscale := hlower γ hγ t ht R ⟨hRa, hR₀⟩
   have hEscale : E ≤ ENNReal.ofReal (Cl * R ^ weightedCutoffMomentScaleExponent γ t.1 t.2) := by
     rw [← ENNReal.ofReal_toReal hE.ne]
     apply ENNReal.ofReal_le_ofReal
     calc
       E.toReal ≤ E.toReal + 1 := by linarith
       _ = Cl * L := by dsimp [Cl]; field_simp
-      _ ≤ _ := mul_le_mul_of_nonneg_left hscale hCl.le
+      _ ≤ _ := mul_le_mul_of_nonneg_left (hlower γ hγ t ht R ⟨hRa, hR₀⟩) (show 0 < Cl by dsimp [Cl]; positivity).le
   calc
     _ ≤ E := hlarge γ hγ t ht z hz R δ hRa hR₀ hδ hδR
     _ ≤ _ := hEscale

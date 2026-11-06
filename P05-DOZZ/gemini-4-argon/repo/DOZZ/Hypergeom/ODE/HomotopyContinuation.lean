@@ -21,26 +21,18 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E
 paths are fixed-endpoint homotopic through an open regular domain. -/
 theorem homotopy_path_continuation_endpoint_eq
     {Γ : ℝ × ℝ → ℂ} (hΓ : ContinuousOn Γ (Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1))
-    (U : Set ℂ) (hU : IsOpen U) (H : ℂ → E →L[ℂ] E)
+    U (hU : IsOpen U) (H : ℂ → E →L[ℂ] E)
     (hH : DifferentiableOn ℂ H U)
     (himage : ∀ p ∈ Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1, Γ p ∈ U)
-    (z₀ z₁ : ℂ)
+    z₀ z₁
     (hleft : ∀ s ∈ Icc (0 : ℝ) 1, Γ (0, s) = z₀)
     (hright : ∀ s ∈ Icc (0 : ℝ) 1, Γ (1, s) = z₁)
-    (y : E)
+    y
     (A : PathContinuationLift (fun t => Γ (t, 0)) H y)
     (B : PathContinuationLift (fun t => Γ (t, 1)) H y) :
     A.value 1 = B.value 1 := by
   let bottomPath : ℝ → ℂ := fun t => Γ (t, 0)
   let topPath : ℝ → ℂ := fun t => Γ (t, 1)
-  have hbottomCont : ContinuousOn bottomPath (Icc (0 : ℝ) 1) := by
-    apply hΓ.comp (by fun_prop)
-    intro t ht
-    exact ⟨ht, by norm_num⟩
-  have htopCont : ContinuousOn topPath (Icc (0 : ℝ) 1) := by
-    apply hΓ.comp (by fun_prop)
-    intro t ht
-    exact ⟨ht, by norm_num⟩
   let G := homotopyPicardGridOf hΓ U hU H hH himage z₀ z₁ hleft hright y
   obtain ⟨bottom, top, hbottomCont', htopCont', hbottomStart, htopStart, hendEq,
       hbottomFormula, htopFormula, hbottomCenters, hbottomBound, hbottomCover,
@@ -116,11 +108,9 @@ theorem homotopy_path_continuation_endpoint_eq
       intro i hi t ht
       simpa [Dt, topPath] using htopFormula i hi t ht
   }
-  have hbottomEq := path_continuation_lifts_unique hbottomCont H y A gridBottom
-  have htopEq := path_continuation_lifts_unique htopCont H y gridTop B
   calc
-    A.value 1 = bottom 1 := hbottomEq 1 (by norm_num)
+    A.value 1 = bottom 1 := (path_continuation_lifts_unique (by apply hΓ.comp (by fun_prop); intro t ht; exact ⟨ht, by norm_num⟩) H y A gridBottom) 1 (by norm_num)
     _ = top 1 := hendEq
-    _ = B.value 1 := htopEq 1 (by norm_num)
+    _ = B.value 1 := (path_continuation_lifts_unique (by apply hΓ.comp (by fun_prop); intro t ht; exact ⟨ht, by norm_num⟩) H y gridTop B) 1 (by norm_num)
 
 end DOZZ.Proofs

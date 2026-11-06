@@ -38,7 +38,7 @@ theorem complex_ne_int_of_mem_unit {c : ℝ} (h0 : 0 < c) (h1 : c < 1) :
 
 /-- **The second diagonal coefficient is fixed by the classification.** -/
 theorem second_coefficient_of_classification {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (M : Ω → Measure ℂ) {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
+    (M : Ω → Measure ℂ) {H} (hH : IsGaussHypergeometricFamily H)
     (γ μ χ α₁ α₂ α₃ K : ℝ)
     (hc : ∀ n : ℤ, (gaussParameterC γ χ α₁ : ℂ) ≠ (n : ℂ))
     (h22 : ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-χ) α₁ α₂ α₃ z =
@@ -57,12 +57,7 @@ theorem second_coefficient_of_classification {Ω : Type*} [MeasurableSpace Ω] (
             (gaussParameterC γ χ α₁) z‖ ^ 2) :
     K = gaussCoefficientRatio (gaussParameterA γ χ α₁ α₂ α₃) (gaussParameterB γ χ α₁ α₂ α₃)
         (gaussParameterC γ χ α₁) * structureConstant P M γ μ (α₁ - χ) α₂ α₃ := by
-  have h := diagonal_gauss_coefficients_unique hH hc (T := fourPointT P M γ μ (-χ) α₁ α₂ α₃)
-    (A₁ := structureConstant P M γ μ (α₁ - χ) α₂ α₃) (A₂ := structureConstant P M γ μ (α₁ - χ) α₂ α₃)
-    (D₁ := K) (D₂ := structureConstant P M γ μ (α₁ - χ) α₂ α₃ *
-      gaussCoefficientRatio (gaussParameterA γ χ α₁ α₂ α₃) (gaussParameterB γ χ α₁ α₂ α₃)
-        (gaussParameterC γ χ α₁)) hform (fun z hz => by rw [h22 z hz]; ring)
-  rw [h.2]
+  rw [(diagonal_gauss_coefficients_unique hH hc (T := fourPointT P M γ μ (-χ) α₁ α₂ α₃) (A₁ := structureConstant P M γ μ (α₁ - χ) α₂ α₃) (A₂ := structureConstant P M γ μ (α₁ - χ) α₂ α₃) (D₁ := K) (D₂ := structureConstant P M γ μ (α₁ - χ) α₂ α₃ * gaussCoefficientRatio (gaussParameterA γ χ α₁ α₂ α₃) (gaussParameterB γ χ α₁ α₂ α₃) (gaussParameterC γ χ α₁)) hform (fun z hz => by rw [h22 z hz]; ring)).2]
   ring
 
 end DOZZ.Proofs

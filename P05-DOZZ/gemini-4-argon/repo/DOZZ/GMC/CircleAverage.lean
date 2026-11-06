@@ -24,8 +24,8 @@ namespace DOZZ.Proofs
 /-- The second-moment covariance of two circle averages is their double-circle kernel energy. -/
 theorem isCircleAverage_covariance
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hXc : IsCircleAverage P X Xc) (x y : ℂ) (r s : ℝ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X) Xc
+    (hXc : IsCircleAverage P X Xc) x y r s :
     gaussianCovariance P (fun ω => Xc ω x r) (fun ω => Xc ω y s) =
       ∫ u, ∫ v, gffKernel u v ∂circleMeasure y s ∂circleMeasure x r := by
   obtain ⟨_, hMean⟩ := circleAverage_isGaussianProcess P X Xc hX hXc
@@ -63,18 +63,18 @@ end DOZZ.Proofs
 
 namespace DOZZ.Proofs
 
-theorem log_one_div_exp_neg_eq (t : ℝ) : Real.log (1 / Real.exp (-t)) = t := by
+theorem log_one_div_exp_neg_eq t : Real.log (1 / Real.exp (-t)) = t := by
   rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
 
-theorem exp_neg_log_one_div {ε : ℝ} (hε : 0 < ε) : Real.exp (-Real.log (1 / ε)) = ε := by
+theorem exp_neg_log_one_div {ε} (hε : 0 < ε) : Real.exp (-Real.log (1 / ε)) = ε := by
   rw [one_div, Real.log_inv, neg_neg, Real.exp_log hε]
 
-theorem log_one_div_nonneg_of_le_one {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) : 0 ≤ Real.log (1 / ε) := by
+theorem log_one_div_nonneg_of_le_one {ε} (hε : 0 < ε) (hε1 : ε ≤ 1) : 0 ≤ Real.log (1 / ε) := by
   apply Real.log_nonneg
   rw [le_div_iff₀ hε]
   linarith
 
-theorem normPlus_pos (x : ℂ) : 0 < normPlus x :=
+theorem normPlus_pos x : 0 < normPlus x :=
   lt_of_lt_of_le one_pos (le_max_left _ _)
 
 theorem continuous_normPlus : Continuous normPlus :=
@@ -84,8 +84,8 @@ theorem continuous_normPlus : Continuous normPlus :=
 on every open chart (bounded or not), given the explicit inputs below. -/
 theorem circleAverage_admissible_of_inputs
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (U : Set ℂ) (hU : IsOpen U)
+    Xc (hXc : IsCircleAverage P X Xc)
+    U (hU : IsOpen U)
     -- (S1) joint Gaussianity of finitely many circle averages (Gaussian closure applied to
     -- mollified circles)
     (hJG : ∀ (n : ℕ) (p : Fin n → ℂ × ℝ),
@@ -162,7 +162,7 @@ theorem circleAverage_admissible_of_inputs
     obtain ⟨R, hR0, hR⟩ := hball K hK
     refine ⟨Real.log 3 + 2 * Real.log (1 + R), hC0 R hR0, ?_⟩
     intro k _ ε hε hεk x hx
-    have hε1 : ε ≤ 1 := hεk.trans (Real.exp_le_one_iff.2 (by
+    have hε1 := hεk.trans (Real.exp_le_one_iff.2 (by
       have := Nat.cast_nonneg (α := ℝ) k; linarith))
     have h := hD1 R hR0 x x (hR x hx) (hR x hx) (k : ℝ) (Real.log (1 / ε))
       (Nat.cast_nonneg k) (log_one_div_nonneg_of_le_one hε hε1)
@@ -173,7 +173,7 @@ theorem circleAverage_admissible_of_inputs
     exact h
   · -- separated off-diagonal limit with continuous regular part
     refine ⟨fun x y => Real.log (normPlus x) + Real.log (normPlus y), ?_, ?_⟩
-    · have hc : Continuous (fun x : ℂ => Real.log (normPlus x)) :=
+    · have hc : Continuous (fun x => Real.log (normPlus x)) :=
         continuous_normPlus.log (fun x => (normPlus_pos x).ne')
       exact ((hc.comp continuous_fst).add (hc.comp continuous_snd)).continuousOn
     · intro K _ _ s hs η hη
@@ -197,25 +197,23 @@ theorem circleAverage_admissible_of_inputs
   · -- fixed-coarse-scale limit
     refine ⟨fun k x y => ∫ v, gffKernel x v ∂circleMeasure y k, ?_⟩
     intro K _ _ k _ η hη
-    have hpos : 0 < Real.exp k + 1 := by positivity
     refine ⟨η / (2 * (Real.exp k + 1)), by positivity, ?_⟩
     intro ε hε hεδ x _ y _
-    have hεη : ε ≤ η / (2 * (Real.exp k + 1)) := hεδ.trans (min_le_left _ _)
     have h := hD3 x y (Real.log (1 / ε)) (k : ℝ)
     rw [exp_neg_log_one_div hε] at h
     simp only [log_one_div_exp_neg_eq]
     rw [hCov]
     have hb : (Real.exp k + 1) * ε ≤ η / 2 := by
       calc (Real.exp k + 1) * ε ≤ (Real.exp k + 1) * (η / (2 * (Real.exp k + 1))) :=
-            mul_le_mul_of_nonneg_left hεη hpos.le
+            mul_le_mul_of_nonneg_left (hεδ.trans (min_le_left _ _)) (show 0 < Real.exp k + 1 by positivity).le
         _ = η / 2 := by field_simp
     linarith
 
 /-- Circle averages of an equator GFF are admissible on every open chart. -/
 theorem isCircleAverage_admissible
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (U : Set ℂ) (hU : IsOpen U) :
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
+    U (hU : IsOpen U) :
     IsAdmissibleLogRegularization P U (fun x => normPlus x ^ (-4 : ℝ)) 1
       (fun ω ε x => Xc ω x (Real.log (1 / ε))) := by
   exact circleAverage_admissible_of_inputs P X Xc hXc U hU

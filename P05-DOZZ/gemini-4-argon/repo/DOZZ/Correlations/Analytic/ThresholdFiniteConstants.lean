@@ -24,21 +24,13 @@ theorem threshold_finite_constants (D B C : ℝ≥0∞)
             (1 / (q / (q - 1))) ≤ ENNReal.ofReal (K * Real.exp (-κ * r)) := by
   let τ := rate / (2 * m)
   let h := 1 / (q / (q - 1))
-  have hτ : 0 < τ := div_pos hrate (mul_pos (by norm_num) hm)
-  have hh : 0 < h := one_div_pos.mpr (div_pos (by linarith) (by linarith))
   have hres : rate - τ * m = rate / 2 := by
     dsimp only [τ]
     field_simp
     ring
   let κ := min τ ((rate - τ * m) * h)
-  have hκ : 0 < κ := lt_min hτ (by rw [hres]; positivity)
-  let K := D.toReal + B.toReal * C.toReal ^ h
-  have hK : 0 ≤ K := add_nonneg ENNReal.toReal_nonneg
-    (mul_nonneg ENNReal.toReal_nonneg (Real.rpow_nonneg ENNReal.toReal_nonneg _))
-  refine ⟨K, κ, hK, hκ, fun r hr => ?_⟩
-  have hb := threshold_ennreal_bound D.toReal B.toReal C.toReal rate τ m h r
-    ENNReal.toReal_nonneg ENNReal.toReal_nonneg ENNReal.toReal_nonneg hh.le hr
+  refine ⟨(D.toReal + B.toReal * C.toReal ^ h), κ, (add_nonneg ENNReal.toReal_nonneg (mul_nonneg ENNReal.toReal_nonneg (Real.rpow_nonneg ENNReal.toReal_nonneg _))), (lt_min (div_pos hrate (mul_pos (by norm_num) hm)) (by rw [hres]; positivity)), fun r hr => ?_⟩
   simpa only [ENNReal.ofReal_toReal hD, ENNReal.ofReal_toReal hB,
-    ENNReal.ofReal_toReal hC] using hb
+    ENNReal.ofReal_toReal hC] using (threshold_ennreal_bound D.toReal B.toReal C.toReal rate τ m h r ENNReal.toReal_nonneg ENNReal.toReal_nonneg ENNReal.toReal_nonneg (one_div_pos.mpr (div_pos (by linarith) (by linarith))).le hr)
 
 end DOZZ.Proofs

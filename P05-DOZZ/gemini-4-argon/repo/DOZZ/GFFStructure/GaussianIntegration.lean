@@ -35,10 +35,7 @@ theorem hasGaussianLaw_of_mem_span {Z : T → Lp ℝ 2 P}
     (hU : U ∈ Submodule.span ℝ (range Z)) : HasGaussianLaw U P := by
   classical
   obtain ⟨a, ha⟩ := Finsupp.mem_span_range_iff_exists_finsupp.mp hU
-  have he : U = ∑ i : a.support, a i • Z i := by
-    rw [← ha]
-    simpa only [Finsupp.sum] using (Finset.sum_coe_sort a.support (fun i => a i • Z i)).symm
-  rw [he]
+  rw [(show U = ∑ i : a.support, a i • Z i by rw [← ha]; simpa only [Finsupp.sum] using (Finset.sum_coe_sort a.support (fun i => a i • Z i)).symm)]
   exact (gaussianProcess_linearCombination hZ a.support (fun i => a i)).congr
     (coeFn_L2_linearCombination (fun i : a.support => a i) (fun i => Z i)).symm
 
@@ -61,14 +58,12 @@ theorem isGaussianProcess_of_mem_gaussianHilbertSpan {S : Type*} {Z : T → Lp �
   · intro i
     exact (Lp.aestronglyMeasurable _).aemeasurable
   · intro a
-    have hmem : (∑ i : I, a i • U i) ∈ gaussianHilbertSpan Z :=
-      Submodule.sum_mem _ (fun i _ => Submodule.smul_mem _ _ (hU i))
-    exact (hasGaussianLaw_of_mem_gaussianHilbertSpan hZ _ hmem).congr
-      (coeFn_L2_linearCombination a (fun i : I => U i))
+    exact (hasGaussianLaw_of_mem_gaussianHilbertSpan hZ _ (Submodule.sum_mem _ (fun i _ => Submodule.smul_mem _ _ (hU i)) : (∑ i : I, a i • U i) ∈ gaussianHilbertSpan Z)).congr
+      (coeFn_L2_linearCombination a (fun i => U i))
 
 omit [IsProbabilityMeasure P] in
 /-- A coordinate belongs to the Gaussian linear space it generates. -/
-theorem mem_gaussianHilbertSpan (Z : T → Lp ℝ 2 P) (t : T) :
+theorem mem_gaussianHilbertSpan (Z : T → Lp ℝ 2 P) t :
     Z t ∈ gaussianHilbertSpan Z :=
   Submodule.le_topologicalClosure _ (Submodule.subset_span (mem_range_self t))
 
@@ -81,8 +76,7 @@ theorem integral_mem_closedSubmodule {A E : Type*} [MeasurableSpace A]
   by_cases hμ : μ = 0
   · simp only [hμ, integral_zero_measure, Submodule.zero_mem]
   · let _ : NeZero μ := ⟨hμ⟩
-    have hav := K.convex.average_mem hK hmem hF
-    have h := K.smul_mem (μ.real univ) hav
+    have h := K.smul_mem (μ.real univ) (K.convex.average_mem hK hmem hF)
     rwa [measure_smul_average] at h
 
 omit [IsProbabilityMeasure P] in
@@ -131,11 +125,8 @@ theorem integral_mem_closedHilbertSubmodule {A E : Type*} [MeasurableSpace A]
     (F : A → E) (hF : Integrable F μ) (hmem : ∀ᵐ a ∂μ, F a ∈ K) :
     (∫ a, F a ∂μ) ∈ K := by
   let _ : CompleteSpace K := hK.completeSpace_coe
-  have hae : (fun a => K.starProjection (F a)) =ᵐ[μ] F := by
-    filter_upwards [hmem] with a ha
-    exact Submodule.starProjection_eq_self_iff.mpr ha
   have hcomm := K.starProjection.integral_comp_comm hF
-  rw [integral_congr_ae hae] at hcomm
+  rw [integral_congr_ae (show (fun a => K.starProjection (F a)) =ᵐ[μ] F by filter_upwards [hmem] with a ha; exact Submodule.starProjection_eq_self_iff.mpr ha)] at hcomm
   have hm := K.starProjection_apply_mem (∫ a, F a ∂μ)
   rwa [← hcomm] at hm
 
@@ -165,50 +156,42 @@ theorem gffStructureL2Family_isGaussianProcess (X : Ω → Distr) (Xc : Ω → �
 
 omit [IsProbabilityMeasure P] in
 /-- Scalar multiplication commutes with expectation of an L² representative. -/
-theorem integral_mean_L2_smul (a : ℝ) (U : Lp ℝ 2 P) :
+theorem integral_mean_L2_smul a (U : Lp ℝ 2 P) :
     (∫ ω, (a • U) ω ∂P) = a * (∫ ω, U ω ∂P) := by
   rw [integral_congr_ae (Lp.coeFn_smul a U)]
   simpa only [Pi.smul_apply, smul_eq_mul] using integral_const_mul a (fun ω => U ω)
 
 omit [IsProbabilityMeasure P] in
 /-- Scalar multiplication commutes with covariance of L² representatives. -/
-theorem covariance_L2_smul_left (a : ℝ) (U V : Lp ℝ 2 P) :
+theorem covariance_L2_smul_left a (U V : Lp ℝ 2 P) :
     covariance (⇑(a • U)) V P = a * covariance U V P := by
   rw [covariance_congr_ae (Lp.coeFn_smul a U) (EventuallyEq.rfl : (⇑V) =ᵐ[P] V)]
   simpa only [Pi.smul_def, smul_eq_mul] using covariance_const_mul_left a
 
-/-- On a probability space, the L¹ norm of an L² representative is bounded by its L² norm. -/
-theorem integral_norm_L2_le (U : Lp ℝ 2 P) : (∫ ω, ‖U ω‖ ∂P) ≤ ‖U‖ := by
-  have h := eLpNorm_le_eLpNorm_of_exponent_le (f := (⇑U)) (μ := P)
-    (by norm_num : (1 : ℝ≥0∞) ≤ 2)
-  rw [integral_norm_eq_lintegral_enorm (Lp.aestronglyMeasurable U),
-    ← eLpNorm_one_eq_lintegral_enorm (Lp.aestronglyMeasurable U), Lp.norm_def]
-  exact ENNReal.toReal_mono (Lp.memLp U).ne_top h
 
-/-- A jointly measurable representative of an integrable L²-valued family is product
-integrable. This proves the Fubini premise rather than assuming it. -/
-theorem integrable_L2_representative_prod {A : Type*} [MeasurableSpace A]
-    (μ : Measure A) [SFinite μ] (F : A → Lp ℝ 2 P) (hF : Integrable F μ)
-    (f : A → Ω → ℝ) (hm : AEStronglyMeasurable (Function.uncurry f) (μ.prod P))
-    (heq : ∀ a, (⇑(F a)) =ᵐ[P] f a) : Integrable (Function.uncurry f) (μ.prod P) := by
-  apply (integrable_prod_iff hm).mpr
-  refine ⟨Eventually.of_forall (fun a => ((Lp.memLp (F a)).integrable (by norm_num)).congr (heq a)), ?_⟩
-  apply hF.norm.mono' hm.norm.integral_prod_right'
-  apply Eventually.of_forall
-  intro a
-  rw [Real.norm_eq_abs, abs_of_nonneg (integral_nonneg (fun ω => norm_nonneg (f a ω)))]
-  calc
-    _ = ∫ ω, ‖F a ω‖ ∂P := integral_congr_ae ((heq a).fun_comp norm).symm
-    _ ≤ ‖F a‖ := integral_norm_L2_le (F a)
 
 /-- The representative of the L² Bochner integral agrees almost surely with integration of
 any jointly measurable coordinate representatives. -/
 theorem L2_integral_ae_eq_integral {A : Type*} [MeasurableSpace A]
     (μ : Measure A) [SFinite μ] (F : A → Lp ℝ 2 P) (hF : Integrable F μ)
-    (f : A → Ω → ℝ) (hm : AEStronglyMeasurable (Function.uncurry f) (μ.prod P))
+    f (hm : AEStronglyMeasurable (Function.uncurry f) (μ.prod P))
     (heq : ∀ a, (⇑(F a)) =ᵐ[P] f a) :
     (⇑(∫ a, F a ∂μ)) =ᵐ[P] fun ω => ∫ a, f a ω ∂μ := by
-  have hi := integrable_L2_representative_prod μ F hF f hm heq
+  have integrable_L2_representative_prod : Integrable (Function.uncurry f) (μ.prod P) := by
+    have integral_norm_L2_le (U : Lp ℝ 2 P) : (∫ ω, ‖U ω‖ ∂P) ≤ ‖U‖ := by
+      rw [integral_norm_eq_lintegral_enorm (Lp.aestronglyMeasurable U),
+        ← eLpNorm_one_eq_lintegral_enorm (Lp.aestronglyMeasurable U), Lp.norm_def]
+      exact ENNReal.toReal_mono (Lp.memLp U).ne_top (eLpNorm_le_eLpNorm_of_exponent_le (f := (⇑U)) (μ := P) (by norm_num : (1 : ℝ≥0∞) ≤ 2))
+    apply (integrable_prod_iff hm).mpr
+    refine ⟨Eventually.of_forall (fun a => ((Lp.memLp (F a)).integrable (by norm_num)).congr (heq a)), ?_⟩
+    apply hF.norm.mono' hm.norm.integral_prod_right'
+    apply Eventually.of_forall
+    intro a
+    rw [Real.norm_eq_abs, abs_of_nonneg (integral_nonneg (fun ω => norm_nonneg (f a ω)))]
+    calc
+      _ = ∫ ω, ‖F a ω‖ ∂P := integral_congr_ae ((heq a).fun_comp norm).symm
+      _ ≤ ‖F a‖ := integral_norm_L2_le (F a)
+  have hi := integrable_L2_representative_prod
   apply Integrable.ae_eq_of_forall_setIntegral_eq _ _
     ((Lp.memLp _).integrable (by norm_num)) hi.integral_prod_right
   intro s hs hPs
@@ -221,8 +204,6 @@ theorem L2_integral_ae_eq_integral {A : Type*} [MeasurableSpace A]
     rw [L2.inner_indicatorConstLp_one hs hPs.ne]
     exact integral_congr_ae (ae_restrict_of_ae (heq a))
   simp_rw [hsection]
-  have his : Integrable (Function.uncurry f) (μ.prod (P.restrict s)) :=
-    hi.mono_measure (Measure.prod_mono le_rfl Measure.restrict_le_self)
-  exact integral_integral_swap his
+  exact integral_integral_swap (hi.mono_measure (Measure.prod_mono le_rfl Measure.restrict_le_self))
 
 end DOZZ.Proofs

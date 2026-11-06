@@ -50,9 +50,8 @@ theorem ennrpow_le_one_add_rpow_neg {x : ℝ≥0∞} {s c : ℝ} (hs : s ≤ 0) 
 
 theorem ennrpow_le_of_le_of_nonpos {x y : ℝ≥0∞} (hxy : x ≤ y) {s : ℝ} (hs : s ≤ 0) :
     y ^ s ≤ x ^ s := by
-  have h := ENNReal.rpow_le_rpow hxy (neg_nonneg.2 hs)
   rw [← neg_neg s, ENNReal.rpow_neg y, ENNReal.rpow_neg x]
-  exact ENNReal.inv_le_inv.2 h
+  exact ENNReal.inv_le_inv.2 (ENNReal.rpow_le_rpow hxy (neg_nonneg.2 hs))
 
 /-- `(1 + x)^q ≤ 2^q (1 + x^q)` for `q ≥ 1`. -/
 theorem one_add_rpow_le {x : ℝ≥0∞} {q : ℝ} (hq : 1 ≤ q) :
@@ -67,45 +66,37 @@ theorem one_add_rpow_le {x : ℝ≥0∞} {q : ℝ} (hq : 1 ≤ q) :
 
 /-- Hölder with a decaying `r`-th moment and a fixed finite conjugate moment. -/
 theorem holder_decay {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : ℕ → Ω → ℝ≥0∞}
-    {V : Ω → ℝ≥0∞} (hU : ∀ n, AEMeasurable (U n) P) (hV : AEMeasurable V P) {r : ℝ}
-    (hr : 1 < r) {C ζ : ℝ}
+    {V : Ω → ℝ≥0∞} (hU : ∀ n, AEMeasurable (U n) P) (hV : AEMeasurable V P) {r}
+    (hr : 1 < r) {C ζ}
     (hUr : ∀ n : ℕ, ∫⁻ ω, U n ω ^ r ∂P ≤ ENNReal.ofReal (C * Real.exp (-(n : ℝ) * ζ)))
     (hVr : ∫⁻ ω, V ω ^ (r / (r - 1)) ∂P < ⊤) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ n : ℕ,
       ∫⁻ ω, U n ω * V ω ∂P ≤ ENNReal.ofReal (K * Real.exp (-(ζ / r) * n)) := by
   set q : ℝ := r / (r - 1) with hqdef
-  have hr0 : 0 < r := by linarith
-  have hq0 : 0 < q := div_pos hr0 (by linarith)
   set I : ℝ := (∫⁻ ω, V ω ^ q ∂P).toReal with hI
   refine ⟨max C 0 ^ (1 / r) * I ^ (1 / q), by positivity, fun n => ?_⟩
-  have hH := lintegral_mul_le_holder (hU n) hV hr
-  refine hH.trans ?_
+  refine (lintegral_mul_le_holder (hU n) hV hr).trans ?_
   have h1 : (∫⁻ ω, U n ω ^ r ∂P) ^ (1 / r) ≤
       ENNReal.ofReal ((max C 0 * Real.exp (-(n : ℝ) * ζ)) ^ (1 / r)) := by
     rw [← ENNReal.ofReal_rpow_of_nonneg (by positivity) (by positivity)]
     refine ENNReal.rpow_le_rpow ((hUr n).trans (ENNReal.ofReal_le_ofReal ?_)) (by positivity)
     exact mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.exp_pos _).le
-  have h2 : (∫⁻ ω, V ω ^ q ∂P) ^ (1 / q) = ENNReal.ofReal (I ^ (1 / q)) := by
-    rw [← ENNReal.ofReal_rpow_of_nonneg ENNReal.toReal_nonneg (by positivity),
-      ENNReal.ofReal_toReal hVr.ne]
-  rw [h2]
+  rw [(show (∫⁻ ω, V ω ^ q ∂P) ^ (1 / q) = ENNReal.ofReal (I ^ (1 / q)) by rw [← ENNReal.ofReal_rpow_of_nonneg ENNReal.toReal_nonneg (by positivity), ENNReal.ofReal_toReal hVr.ne])]
   calc (∫⁻ ω, U n ω ^ r ∂P) ^ (1 / r) * ENNReal.ofReal (I ^ (1 / q))
       ≤ ENNReal.ofReal ((max C 0 * Real.exp (-(n : ℝ) * ζ)) ^ (1 / r)) *
           ENNReal.ofReal (I ^ (1 / q)) := mul_le_mul_left h1 _
     _ = ENNReal.ofReal (max C 0 ^ (1 / r) * I ^ (1 / q) * Real.exp (-(ζ / r) * n)) := by
         rw [← ENNReal.ofReal_mul (by positivity)]
         congr 1
-        rw [Real.mul_rpow (le_max_right _ _) (Real.exp_pos _).le, ← Real.exp_mul]
-        have : -(n : ℝ) * ζ * (1 / r) = -(ζ / r) * n := by ring
-        rw [this]
+        rw [Real.mul_rpow (le_max_right _ _) (Real.exp_pos _).le, ← Real.exp_mul, (show -(n : ℝ) * ζ * (1 / r) = -(ζ / r) * n by ring)]
         ring
 
 /-! ### Fixed-cutoff domination -/
 
 /-- **Domination of the cutoff integrand** after the tilt (`interpol2`). -/
 theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
+    X (hX : IsEquatorGFF P X) γ (hγ : 0 < γ) (hγ2 : γ < 2)
+    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ} (hW : TwoPoleWindow γ η δ)
     {a : ℝ} (ha : -2 * η - δ < a) (n : ℕ) :
     ∫⁻ ω, (cutoffTiltedMass γ η a n (M ω) -
         poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω)) *
@@ -114,13 +105,12 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
   have _ := hX.1
   have hη := (window_eta_pos hW).le
   have hηγ := window_eta_le_two_div hγ hγ2 hW
-  have hp := window_threshold_pos hγ hW
+  have := window_threshold_pos hγ hW
   have hroom := window_holder_room hγ hγ2 hW
   have hκ : 1 < 4 / γ ^ 2 := by
     rw [lt_div_iff₀ (by positivity)]
     nlinarith
-  have hUmeas : AEMeasurable (fun ω => M ω univ) P :=
-    aemeasurable_measure_functional P X hX γ hγ hγ2 M hM (Measure.measurable_coe MeasurableSet.univ)
+  have hUmeas := aemeasurable_measure_functional P X hX γ hγ hγ2 M hM (Measure.measurable_coe MeasurableSet.univ)
   have hreg : ∀ ω, cutoffTiltedMass γ η a n (M ω) -
       poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ≤
       81 * ENNReal.ofReal (Real.exp (γ * max a 0 * n)) * M ω univ := by
@@ -132,8 +122,7 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
     set s : ℝ := -a / γ with hs
     have hs0 : 0 ≤ s := div_nonneg (by linarith) hγ.le
     have hsp : s < (1 - 2 * η / γ) * (1 - 1 / (4 / γ ^ 2)) := by
-      have : 1 / (4 / γ ^ 2) = γ ^ 2 / 4 := by field_simp
-      rw [this]
+      rw [(show 1 / (4 / γ ^ 2) = γ ^ 2 / 4 by field_simp)]
       refine lt_of_le_of_lt ?_ hroom
       rw [hs, div_le_div_iff_of_pos_right hγ]
       linarith
@@ -144,29 +133,18 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
           poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s) ≤
         162 * (M ω univ * poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s) := by
       intro ω
-      have hmax : max a 0 = 0 := max_eq_right ha0
-      have h1 : cutoffTiltedMass γ η a n (M ω) ^ s ≤
-          poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s :=
-        ENNReal.rpow_le_rpow (cutoffTiltedMass_le_totalMass_zero hγ ha0 n (M ω)) hs0
-      have h2 : poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s ≤
-          poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s :=
-        ENNReal.rpow_le_rpow (localMass_le_totalMass γ η (M ω)) hs0
       have h3 := hreg ω
-      rw [hmax, mul_zero, zero_mul, Real.exp_zero, ENNReal.ofReal_one, mul_one] at h3
+      rw [(max_eq_right ha0), mul_zero, zero_mul, Real.exp_zero, ENNReal.ofReal_one, mul_one] at h3
       calc _ ≤ (81 * M ω univ) * (poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s +
             poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s) :=
-            mul_le_mul' h3 (add_le_add h1 h2)
+            mul_le_mul' h3 (add_le_add (ENNReal.rpow_le_rpow (cutoffTiltedMass_le_totalMass_zero hγ ha0 n (M ω)) hs0) (ENNReal.rpow_le_rpow (localMass_le_totalMass γ η (M ω)) hs0))
         _ = 162 * (M ω univ * poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s) := by
             rw [← two_mul]
             ring
     refine (lintegral_mono hpt).trans_lt ?_
     rw [lintegral_const_mul' _ _ (by simp)]
     refine ENNReal.mul_lt_top (by simp) ?_
-    have hVmeas : AEMeasurable (fun ω =>
-        poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s) P :=
-      (aemeasurable_measure_functional P X hX γ hγ hγ2 M hM
-        (measurable_poleTotalMass γ η 0)).pow_const _
-    refine lintegral_mul_lt_top_of_holder hUmeas hVmeas hr1
+    refine lintegral_mul_lt_top_of_holder hUmeas ((aemeasurable_measure_functional P X hX γ hγ hγ2 M hM (measurable_poleTotalMass γ η 0)).pow_const _) hr1
       (lintegral_mass_univ_rpow_lt_top P X hX γ hγ hγ2 M hM (by linarith) hr4) ?_
     simp_rw [← ENNReal.rpow_mul]
     rcases eq_or_lt_of_le hs0 with hs00 | hs00
@@ -187,13 +165,10 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
         (162 * ENNReal.ofReal (Real.exp (γ * max a 0 * n))) *
           (M ω univ * poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s) := by
       intro ω
-      have h1 : cutoffTiltedMass γ η a n (M ω) ^ s ≤
-          poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s :=
-        ennrpow_le_of_le_of_nonpos (localMass_le_cutoffTiltedMass γ η a n (M ω)) hs0.le
       calc _ ≤ (81 * ENNReal.ofReal (Real.exp (γ * max a 0 * n)) * M ω univ) *
             (poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s +
               poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s) :=
-            mul_le_mul' (hreg ω) (add_le_add h1 le_rfl)
+            mul_le_mul' (hreg ω) (add_le_add (ennrpow_le_of_le_of_nonpos (localMass_le_cutoffTiltedMass γ η a n (M ω)) hs0.le) le_rfl)
         _ = _ := by
             rw [← two_mul]
             ring

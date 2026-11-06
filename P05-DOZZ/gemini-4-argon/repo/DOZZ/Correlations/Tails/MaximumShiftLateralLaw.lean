@@ -22,27 +22,24 @@ literal time on one event. -/
 theorem maximum_shift_lateral_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (D : Ω → BrownianPath)
     (hD : AEMeasurable D P) (hB : IsBrownianReal (fun t p => p t) (P.map D))
-    (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
-    (hInd : IndepFun D Z P) (ν : ℝ) (hν : 0 < ν) :
+    γ (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
+    (hInd : IndepFun D Z P) ν (hν : 0 < ν) :
     AEMeasurable (fun ω => (Z ω).map
       (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))) P ∧
       P.map (fun ω => (Z ω).map
         (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))) = P.map Z ∧
       IndepFun D (fun ω => (Z ω).map
         (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))) P := by
-  have ht : AEMeasurable (fun p : BrownianPath =>
-      -(driftedBrownianMaximumTime ν p : ℝ)) (P.map D) :=
-    (NNReal.continuous_coe.measurable.comp_aemeasurable
+  have ht := (NNReal.continuous_coe.measurable.comp_aemeasurable
       (aemeasurable_driftedBrownianMaximumTime (P.map D) hB ν hν)).neg
   let T := ht.mk (fun p : BrownianPath => -(driftedBrownianMaximumTime ν p : ℝ))
-  have hT : Measurable T := ht.measurable_mk
   have hshift : (fun ω => (Z ω).map
       (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))) =ᵐ[P]
       (fun ω => (Z ω).map (fun s => s + T (D ω))) := by
     filter_upwards [ae_of_ae_map hD ht.ae_eq_mk] with ω hω
     change -(driftedBrownianMaximumTime ν (D ω) : ℝ) = T (D ω) at hω
     simp only [sub_eq_add_neg, ← hω]
-  obtain ⟨hm, hlaw, hi⟩ := lateralGMC_random_translation P γ Z hZ D hD hInd T hT
+  obtain ⟨hm, hlaw, hi⟩ := lateralGMC_random_translation P γ Z hZ D hD hInd T ht.measurable_mk
   exact ⟨hm.congr hshift.symm, (Measure.map_congr hshift).trans hlaw,
     hi.congr (Filter.EventuallyEq.refl _ _) hshift.symm⟩
 

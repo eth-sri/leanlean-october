@@ -19,7 +19,7 @@ interpolation derivative, the diagonal Hessian term cancels the derivative of th
 scalar test of the Wick chaos mass. -/
 theorem kahaneInterpolation_diagonal_cancellation
     {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (γ t : ℝ) (covX covY : ι → ι → ℝ)
+    γ t (covX covY : ι → ι → ℝ)
     (A B : ι → ℝ) (H K : ι → ι → ℝ) (D : ι → ℝ)
     (ht : 0 < t) (ht1 : t < 1)
     (hXibp : ∀ i, A i = Real.sqrt t * ∑ j, covX i j * H i j)
@@ -31,8 +31,8 @@ theorem kahaneInterpolation_diagonal_cancellation
         γ ^ 2 / 2 * ∑ i, (covX i i - covY i i) * D i =
       γ ^ 2 / 2 * ∑ i, ∑ j, (covX i j - covY i j) * K i j := by
   classical
-  have hsqrtT : Real.sqrt t ≠ 0 := ne_of_gt (Real.sqrt_pos.2 ht)
-  have hsqrtOne : Real.sqrt (1 - t) ≠ 0 :=
+  have := ne_of_gt (Real.sqrt_pos.2 ht)
+  have : Real.sqrt (1 - t) ≠ 0 :=
     ne_of_gt (Real.sqrt_pos.2 (by linarith))
   have hX : (∑ i, A i) / (2 * Real.sqrt t) =
       (1 / 2 : ℝ) * ∑ i, ∑ j, covX i j * H i j := by
@@ -113,7 +113,7 @@ theorem kahaneInterpolation_diagonal_cancellation
 nonpositive when the path runs from `Y` at zero to `X` at one. -/
 theorem kahaneInterpolation_derivative_nonpos_of_covariance_order
     {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (γ t : ℝ) (covX covY : ι → ι → ℝ)
+    γ t (covX covY : ι → ι → ℝ)
     (A B : ι → ℝ) (H K : ι → ι → ℝ) (D : ι → ℝ)
     (ht : 0 < t) (ht1 : t < 1)
     (hcov : ∀ i j, covX i j ≤ covY i j)

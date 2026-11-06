@@ -12,22 +12,19 @@ namespace DOZZ.Proofs
 theorem cutoffWeightedGmcBallMass_le_inner_add_outer
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (γ α a r₀ W B R δ : ℝ) (z : ℂ)
+    (γ α a r₀ W B R δ : ℝ) z
     (hR : a ≤ R) (hR₀ : R ≤ r₀) (hδ : 0 < δ) (hδR : δ ≤ R)
     (hz : ‖z‖ + R ≤ B)
-    (hW : ∀ s ∈ Set.Icc a (2 * r₀), s ^ (-γ * α) ≤ W) (ω : Ω) :
+    (hW : ∀ s ∈ Set.Icc a (2 * r₀), s ^ (-γ * α) ≤ W) ω :
     cutoffWeightedGmcBallMass P Xc γ α z R δ ω ≤
       cutoffWeightedGmcBallMass P Xc γ α z a δ ω +
         ENNReal.ofReal W * regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball 0 B) := by
   have _ := hR
   let μ := regularizedGMC P Xc γ (Real.log (1 / δ)) ω
   let w : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal ((‖x - z‖ + δ) ^ (-γ * α))
-  have hw : Measurable w := by dsimp [w]; fun_prop
-  have hi : Measurable ((Metric.ball z a).indicator w) :=
-    hw.indicator Metric.isOpen_ball.measurableSet
   have hball : Metric.ball z R ⊆ Metric.ball (0 : ℂ) B := by
     intro x hx
-    have hx' : ‖x - z‖ < R := by simpa [Metric.mem_ball, dist_eq_norm] using hx
+    have : ‖x - z‖ < R := by simpa [Metric.mem_ball, dist_eq_norm] using hx
     have hn := norm_add_le (x - z) z
     rw [sub_add_cancel] at hn
     simpa using lt_of_le_of_lt hn (by linarith)
@@ -40,12 +37,12 @@ theorem cutoffWeightedGmcBallMass_le_inner_add_outer
       · simp only [Set.indicator_of_mem hxa]
         exact le_add_of_nonneg_right (by positivity)
       · have hx' : ‖x - z‖ < R := by simpa [Metric.mem_ball, dist_eq_norm] using hx
-        have hxa' : a ≤ ‖x - z‖ := by simpa [Metric.mem_ball, dist_eq_norm] using hxa
+        have : a ≤ ‖x - z‖ := by simpa [Metric.mem_ball, dist_eq_norm] using hxa
         simp only [Set.indicator_of_notMem hxa, zero_add]
         exact ENNReal.ofReal_le_ofReal (hW (‖x - z‖ + δ) ⟨by linarith, by linarith⟩)
     _ = (∫⁻ x in Metric.ball z R, (Metric.ball z a).indicator w x ∂μ) +
         ENNReal.ofReal W * μ (Metric.ball z R) := by
-      rw [lintegral_add_left hi, lintegral_const, Measure.restrict_apply_univ]
+      rw [lintegral_add_left ((show Measurable w by dsimp [w]; fun_prop).indicator Metric.isOpen_ball.measurableSet), lintegral_const, Measure.restrict_apply_univ]
     _ ≤ (∫⁻ x, (Metric.ball z a).indicator w x ∂μ) +
         ENNReal.ofReal W * μ (Metric.ball 0 B) :=
       add_le_add (lintegral_mono' Measure.restrict_le_self le_rfl)
@@ -55,15 +52,15 @@ theorem cutoffWeightedGmcBallMass_le_inner_add_outer
 theorem cutoffWeightedGmcBallMass_le_coarse_weight
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (γ α a r₀ W B R δ : ℝ) (z : ℂ)
+    (γ α a r₀ W B R δ : ℝ) z
     (hR₀ : R ≤ r₀) (hδa : a ≤ δ) (hδR : δ ≤ R) (hz : ‖z‖ + R ≤ B)
-    (hW : ∀ s ∈ Set.Icc a (2 * r₀), s ^ (-γ * α) ≤ W) (ω : Ω) :
+    (hW : ∀ s ∈ Set.Icc a (2 * r₀), s ^ (-γ * α) ≤ W) ω :
     cutoffWeightedGmcBallMass P Xc γ α z R δ ω ≤
       ENNReal.ofReal W * regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball 0 B) := by
   let μ := regularizedGMC P Xc γ (Real.log (1 / δ)) ω
   have hball : Metric.ball z R ⊆ Metric.ball (0 : ℂ) B := by
     intro x hx
-    have hx' : ‖x - z‖ < R := by simpa [Metric.mem_ball, dist_eq_norm] using hx
+    have : ‖x - z‖ < R := by simpa [Metric.mem_ball, dist_eq_norm] using hx
     have hn := norm_add_le (x - z) z
     rw [sub_add_cancel] at hn
     simpa using lt_of_le_of_lt hn (by linarith)
@@ -71,7 +68,7 @@ theorem cutoffWeightedGmcBallMass_le_coarse_weight
     _ ≤ ∫⁻ _x in Metric.ball z R, ENNReal.ofReal W ∂μ := by
       apply setLIntegral_mono' Metric.isOpen_ball.measurableSet
       intro x hx
-      have hx' : ‖x - z‖ < R := by simpa [Metric.mem_ball, dist_eq_norm] using hx
+      have : ‖x - z‖ < R := by simpa [Metric.mem_ball, dist_eq_norm] using hx
       exact ENNReal.ofReal_le_ofReal (hW (‖x - z‖ + δ)
         ⟨by linarith [norm_nonneg (x - z)], by linarith⟩)
     _ = ENNReal.ofReal W * μ (Metric.ball z R) := by

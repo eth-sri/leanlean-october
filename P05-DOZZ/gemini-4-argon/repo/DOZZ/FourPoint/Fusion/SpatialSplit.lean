@@ -29,13 +29,9 @@ theorem fusion_pureSpatial_expectation_split {Ω : Type*} [MeasurableSpace Ω]
       (∫ ω, I ω * (∫ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ, f x ∂M ω) ∂P) := by
   intro I f
   let B := Metric.ball (0 : ℂ) (1 / 2)
-  have hf : Measurable f := (Complex.measurable_ofReal.comp
-    ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
-      (measurable_const.prodMk measurable_id))).div ((measurable_id.sub_const z).pow_const 2)
   have hβ2 : γ * α₁ < 2 := by
-    have h := (lt_div_iff₀ hγ).mp hα₁
+    have := (lt_div_iff₀ hγ).mp hα₁
     nlinarith
-  have hfi := fusion_localSecondKernel_integrable γ α₁ α₂ α₃ (by positivity) hβ hβ2 z hz
   have hzunit : ∀ j : Fin 3, ‖(![z, 0, 1] : Fin 3 → ℂ) j‖ ≤ 1 := by
     intro j
     fin_cases j
@@ -45,28 +41,10 @@ theorem fusion_pureSpatial_expectation_split {Ω : Type*} [MeasurableSpace Ω]
   have hm := fusion_gammaHalfMass_pos_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ z hz hz4
   obtain ⟨hfLocal, hiLocal, _, _⟩ := fusion_rooted_coulomb_complex_integral P X hX γ hγ hγ2 M hM
     ![-γ / 2, α₁, α₂] ![z, 0, 1] hzunit α₃ (-p - 1) (by linarith)
-    (hm.mono fun _ h => h.2.lt_top) (B.indicator f) (hf.indicator Metric.isOpen_ball.measurableSet) hfi
-  have hiL : Integrable (fun ω => I ω * (∫ x in B, f x ∂M ω)) P := by
-    simpa only [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] using hiLocal
+    (hm.mono fun _ h => h.2.lt_top) (B.indicator f) (((Complex.measurable_ofReal.comp ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (measurable_const.prodMk measurable_id))).div ((measurable_id.sub_const z).pow_const 2)).indicator Metric.isOpen_ball.measurableSet) (fusion_localSecondKernel_integrable γ α₁ α₂ α₃ (by positivity) hβ hβ2 z hz)
   obtain ⟨C, _, hb⟩ := fusion_exteriorR1_expectation_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
-  have hiR : Integrable (fun ω => I ω * (∫ x in Bᶜ, f x ∂M ω)) P := (hb z hz hz4).1
-  have heq : (fun ω => I ω * (∫ x, f x ∂M ω)) =ᵐ[P]
-      (fun ω => I ω * (∫ x in B, f x ∂M ω) + I ω * (∫ x in Bᶜ, f x ∂M ω)) := by
-    filter_upwards [hfLocal, hm,
-      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z,
-      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
-      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hωL hω hωz hω0 hω1
-    have hL : IntegrableOn f B (M ω) := (integrable_indicator_iff Metric.isOpen_ball.measurableSet).mp hωL
-    have hk : (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω) < ⊤ := by
-      rw [← fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1]
-      exact hω.2.lt_top
-    have hR : IntegrableOn f Bᶜ (M ω) := fusion_exteriorSecondKernel_integrable γ α₁ α₂ α₃ z hz4 (M ω) hk
-    have hfull : Integrable f (M ω) := by
-      have h := hL.union hR
-      simpa only [Set.union_compl_self, integrableOn_univ] using h
-    rw [← integral_add_compl (show MeasurableSet B from Metric.isOpen_ball.measurableSet) hfull, mul_add]
   calc
-    _ = ∫ ω, (I ω * (∫ x in B, f x ∂M ω) + I ω * (∫ x in Bᶜ, f x ∂M ω)) ∂P := integral_congr_ae heq
-    _ = _ := integral_add hiL hiR
+    _ = ∫ ω, (I ω * (∫ x in B, f x ∂M ω) + I ω * (∫ x in Bᶜ, f x ∂M ω)) ∂P := integral_congr_ae (by filter_upwards [hfLocal, hm, gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z, gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0, gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hωL hω hωz hω0 hω1; rw [← integral_add_compl (show MeasurableSet B from Metric.isOpen_ball.measurableSet) (show Integrable f (M ω) by simpa only [Set.union_compl_self, integrableOn_univ] using (((integrable_indicator_iff Metric.isOpen_ball.measurableSet).mp hωL).union (fusion_exteriorSecondKernel_integrable γ α₁ α₂ α₃ z hz4 (M ω) (by rw [← fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1]; exact hω.2.lt_top)))), mul_add])
+    _ = _ := integral_add (by simpa only [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] using hiLocal) ((hb z hz hz4).1)
 
 end DOZZ.Proofs

@@ -24,69 +24,6 @@ open scoped Topology
 
 namespace DOZZ.Proofs
 
-/-- On uniform levels, the generalized inverse lies below `x` exactly when the CDF at `x`
-reaches the level. -/
-theorem cdfGeneralizedQuantile_le_iff
-    (μ : Measure ℝ) [IsProbabilityMeasure μ] {u x : ℝ}
-    (hu : 0 < u) (hu1 : u < 1) :
-    cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u ≤ x ↔
-      u ≤ ProbabilityTheory.cdf μ x := by
-  let F := ProbabilityTheory.cdf μ
-  let S : Set ℝ := {y | u ≤ F y}
-  have hnonempty : S.Nonempty := by
-    have hev : ∀ᶠ y : ℝ in atTop, u < F y :=
-      (ProbabilityTheory.tendsto_cdf_atTop μ).eventually (Ioi_mem_nhds hu1)
-    obtain ⟨y, hy⟩ := Filter.eventually_atTop.1 hev
-    exact ⟨y, le_of_lt (hy y le_rfl)⟩
-  have hbounded : BddBelow S := by
-    have hev : ∀ᶠ y : ℝ in atBot, F y < u :=
-      (ProbabilityTheory.tendsto_cdf_atBot μ).eventually (Iio_mem_nhds hu)
-    obtain ⟨a, ha⟩ := Filter.eventually_atBot.1 hev
-    refine ⟨a, ?_⟩
-    intro y hy
-    change u ≤ F y at hy
-    by_contra hnot
-    exact (not_lt_of_ge hy) (ha y (le_of_lt (lt_of_not_ge hnot)))
-  change sInf S ≤ x ↔ u ≤ F x
-  constructor
-  · intro hqx
-    have hseq0 : Tendsto (fun n : ℕ => x + 1 / ((n : ℝ) + 1)) atTop (𝓝 x) := by
-      have hsmall : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + 1)) atTop (𝓝 0) :=
-        tendsto_one_div_add_atTop_nhds_zero_nat
-      simpa using tendsto_const_nhds.add hsmall
-    have hseq : Tendsto (fun n : ℕ => x + 1 / ((n : ℝ) + 1)) atTop
-        (𝓝[Set.Ici x] x) := by
-      apply tendsto_nhdsWithin_iff.mpr
-      refine ⟨hseq0, Filter.Eventually.of_forall ?_⟩
-      intro n
-      simp only [Set.mem_Ici]
-      exact le_add_of_nonneg_right (by positivity)
-    have hFright : Tendsto F (𝓝[Set.Ici x] x) (𝓝 (F x)) :=
-      F.right_continuous x |>.tendsto
-    have hFseq : Tendsto (fun n : ℕ => F (x + 1 / ((n : ℝ) + 1))) atTop
-        (𝓝 (F x)) := by
-      convert hFright.comp hseq using 1
-      rfl
-    have hvalues : ∀ n : ℕ, u ≤ F (x + 1 / ((n : ℝ) + 1)) := by
-      intro n
-      by_contra hnot
-      have hlt : F (x + 1 / ((n : ℝ) + 1)) < u := lt_of_not_ge hnot
-      have hbelow : x + 1 / ((n : ℝ) + 1) ≤ sInf S := by
-        apply le_csInf hnonempty
-        intro y hy
-        change u ≤ F y at hy
-        by_contra hxy
-        have hyx : y ≤ x + 1 / ((n : ℝ) + 1) := le_of_lt (lt_of_not_ge hxy)
-        have hmono := ProbabilityTheory.monotone_cdf μ hyx
-        exact (not_lt_of_ge hy) (lt_of_le_of_lt hmono hlt)
-      have he : 0 < 1 / ((n : ℝ) + 1) := by positivity
-      linarith
-    have hclosed : IsClosed (Set.Ici u) := isClosed_Ici
-    have hlimit : F x ∈ Set.Ici u :=
-      hclosed.mem_of_tendsto hFseq (Filter.Eventually.of_forall hvalues)
-    exact hlimit
-  · intro hux
-    exact csInf_le hbounded hux
 
 /-- A uniform random variable on `(0,1)`, using unnormalized Lebesgue restriction (whose total
 mass is one). -/
@@ -102,6 +39,43 @@ theorem cdfGeneralizedQuantile_map_uniformOpenUnit
     (μ : Measure ℝ) [IsProbabilityMeasure μ] :
     (uniformOpenUnit).map (fun u => cdfGeneralizedQuantile
       (ProbabilityTheory.cdf μ) u) = μ := by
+  have cdfGeneralizedQuantile_le_iff {u} {x} (hu : 0 < u) (hu1 : u < 1) : cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u ≤ x ↔ u ≤ ProbabilityTheory.cdf μ x := by
+    let F := ProbabilityTheory.cdf μ
+    let S := {y | u ≤ F y}
+    have hnonempty : S.Nonempty := by
+      obtain ⟨y, hy⟩ := Filter.eventually_atTop.1 ((ProbabilityTheory.tendsto_cdf_atTop μ).eventually (Ioi_mem_nhds hu1))
+      exact ⟨y, le_of_lt (hy y le_rfl)⟩
+    have hbounded : BddBelow S := by
+      obtain ⟨a, ha⟩ := Filter.eventually_atBot.1 ((ProbabilityTheory.tendsto_cdf_atBot μ).eventually (Iio_mem_nhds hu))
+      refine ⟨a, ?_⟩
+      intro y hy
+      change u ≤ F y at hy
+      by_contra hnot
+      exact (not_lt_of_ge hy) (ha y (le_of_lt (lt_of_not_ge hnot)))
+    change sInf S ≤ x ↔ u ≤ F x
+    constructor
+    · intro hqx
+      have hseq : Tendsto (fun n : ℕ => x + 1 / ((n : ℝ) + 1)) atTop
+          (𝓝[Set.Ici x] x) := by
+        apply tendsto_nhdsWithin_iff.mpr
+        refine ⟨(by simpa using tendsto_const_nhds.add (tendsto_one_div_add_atTop_nhds_zero_nat : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + 1)) atTop (𝓝 0))), Filter.Eventually.of_forall ?_⟩
+        intro n
+        simp only [Set.mem_Ici]
+        exact le_add_of_nonneg_right (by positivity)
+      have hvalues : ∀ n : ℕ, u ≤ F (x + 1 / ((n : ℝ) + 1)) := by
+        intro n
+        by_contra hnot
+        have : x + 1 / ((n : ℝ) + 1) ≤ sInf S := by
+          apply le_csInf hnonempty
+          intro y hy
+          change u ≤ F y at hy
+          by_contra hxy
+          exact (not_lt_of_ge hy) (lt_of_le_of_lt (ProbabilityTheory.monotone_cdf μ (le_of_lt (lt_of_not_ge hxy))) (lt_of_not_ge hnot))
+        have he : 0 < 1 / ((n : ℝ) + 1) := by positivity
+        linarith
+      exact (isClosed_Ici.mem_of_tendsto (by convert (F.right_continuous x |>.tendsto).comp hseq using 1; rfl) (Filter.Eventually.of_forall hvalues) : F x ∈ Set.Ici u)
+    · intro hux
+      exact csInf_le hbounded hux
   let Q : ℝ → ℝ := fun u => cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u
   have hQ : AEMeasurable Q uniformOpenUnit := by
     simpa [Q, uniformOpenUnit] using aemeasurable_cdfGeneralizedQuantile_Ioo μ
@@ -114,16 +88,11 @@ theorem cdfGeneralizedQuantile_map_uniformOpenUnit
     ext u
     constructor
     · intro hu
-      have hq : Q u ≤ x := hu.1
-      have hu01 : u ∈ Set.Ioo 0 1 := hu.2
-      have hux : u ≤ ProbabilityTheory.cdf μ x :=
-        (cdfGeneralizedQuantile_le_iff μ hu01.1 hu01.2).mp hq
-      exact ⟨⟨hu01.1, hux⟩, hu01.2⟩
+      have hu01 := hu.2
+      exact ⟨⟨hu01.1, ((cdfGeneralizedQuantile_le_iff hu01.1 hu01.2).mp hu.1)⟩, hu01.2⟩
     · intro hu
       have hu01 : u ∈ Set.Ioo 0 1 := ⟨hu.1.1, hu.2⟩
-      have hq : Q u ≤ x :=
-        (cdfGeneralizedQuantile_le_iff μ hu01.1 hu01.2).mpr hu.1.2
-      exact ⟨hq, hu01⟩
+      exact ⟨((cdfGeneralizedQuantile_le_iff hu01.1 hu01.2).mpr hu.1.2), hu01⟩
   calc
     (uniformOpenUnit.map Q) (Set.Iic x) =
         uniformOpenUnit (Q ⁻¹' Set.Iic x) :=
@@ -151,10 +120,7 @@ theorem cdfGeneralizedQuantile_map_uniformOpenUnit
           · rintro ⟨⟨hpos, hle⟩, hlt⟩
             exact ⟨⟨hpos, hle⟩, by intro heq; subst y; linarith⟩
           · rintro ⟨⟨hpos, hle⟩, hne⟩
-            have hlt : y < 1 := by
-              by_contra hnot
-              exact hne (le_antisymm hle (le_of_not_gt hnot))
-            exact ⟨⟨hpos, hle⟩, hlt⟩
+            exact ⟨⟨hpos, hle⟩, (by by_contra hnot; exact hne (le_antisymm hle (le_of_not_gt hnot)))⟩
         rw [hset', measure_sdiff_null']
         · rw [Real.volume_Ioc]
           simp
@@ -163,7 +129,7 @@ theorem cdfGeneralizedQuantile_map_uniformOpenUnit
 
 /-- The entrance-density quantile sampler pushes uniform levels to the explicit entrance law. -/
 theorem conditionedPositiveEntranceQuantile_map_uniformOpenUnit
-    {ν t : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) :
+    {ν t} (hν : 0 ≤ ν) (ht : 0 < t) :
     (uniformOpenUnit).map (fun u => cdfGeneralizedQuantile
       (ProbabilityTheory.cdf (conditionedPositiveEntranceMeasure ν t)) u) =
         conditionedPositiveEntranceMeasure ν t := by
@@ -175,7 +141,7 @@ theorem conditionedPositiveEntranceQuantile_map_uniformOpenUnit
 /-- The transition-kernel quantile sampler pushes uniform levels to the explicit conditioned
 transition law. -/
 theorem conditionedPositiveTransitionQuantile_map_uniformOpenUnit
-    {ν t x : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (hx : 0 < x) :
+    {ν t x} (hν : 0 ≤ ν) (ht : 0 < t) (hx : 0 < x) :
     (uniformOpenUnit).map (conditionedTransitionQuantile ν t x) =
       conditionedPositiveTransitionMeasure ν t x := by
   let : IsProbabilityMeasure (conditionedPositiveTransitionMeasure ν t x) :=

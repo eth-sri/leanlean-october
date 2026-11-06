@@ -54,126 +54,65 @@ private theorem connection_neg_delta_polefree {p : ℂ × ℂ × ℂ}
     ∀ n : ℕ, p.1 + p.2.1 - p.2.2 ≠ -(n : ℂ) := by
   intro n he
   apply hp.2 n
-  have he' := congrArg (fun z : ℂ => -z) he
-  linear_combination he'
+  linear_combination (congrArg (fun z : ℂ => -z) he)
 
 private theorem connection_two_sub_c_polefree {p : ℂ × ℂ × ℂ}
     (hp : p ∈ gaussConnectionParameterDomain) :
     ∀ n : ℕ, 2 - p.2.2 ≠ -(n : ℂ) := by
   intro n he
   apply hp.1 ((n : ℤ) + 2)
-  have hcast : p.2.2 = (((n : ℤ) + 2 : ℤ) : ℂ) := by
-    push_cast at he ⊢
-    linear_combination -he
-  exact hcast
+  exact (by push_cast at he ⊢; linear_combination -he)
 
 private theorem gamma_comp_differentiableAt
-    {p : ℂ × ℂ × ℂ} (f : ℂ × ℂ × ℂ → ℂ)
+    {p} (f : ℂ × ℂ × ℂ → ℂ)
     (hf : DifferentiableAt ℂ f p)
     (hfree : ∀ n : ℕ, f p ≠ -(n : ℂ)) :
     DifferentiableAt ℂ (fun q => Complex.Gamma (f q)) p := by
-  have hGamma := Complex.differentiableAt_Gamma (f p) hfree
   change DifferentiableAt ℂ (Complex.Gamma ∘ f) p
-  exact hGamma.comp p hf
+  exact (Complex.differentiableAt_Gamma (f p) hfree).comp p hf
 
 private theorem invGamma_comp_differentiableAt
-    {p : ℂ × ℂ × ℂ} (f : ℂ × ℂ × ℂ → ℂ)
+    {p} (f : ℂ × ℂ × ℂ → ℂ)
     (hf : DifferentiableAt ℂ f p) :
     DifferentiableAt ℂ (fun q => (Complex.Gamma (f q))⁻¹) p := by
-  have hGammaInv : Differentiable ℂ (fun z : ℂ => (Complex.Gamma z)⁻¹) :=
-    Complex.differentiable_one_div_Gamma
-  have hAt := hGammaInv (f p)
   change DifferentiableAt ℂ ((fun z : ℂ => (Complex.Gamma z)⁻¹) ∘ f) p
-  exact hAt.comp p hf
+  exact (Complex.differentiable_one_div_Gamma (f p)).comp p hf
 
 /-- The first unpowered Gamma coefficient is differentiable throughout the connection domain. -/
 theorem gaussConnectionMinusGammaCoefficient₁_differentiableAt
-    {p : ℂ × ℂ × ℂ} (hp : p ∈ gaussConnectionParameterDomain) :
+    {p} (hp : p ∈ gaussConnectionParameterDomain) :
     DifferentiableAt ℂ gaussConnectionMinusGammaCoefficient₁ p := by
-  have hc : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => q.2.2) p := by fun_prop
-  have hδ : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => q.2.2 - q.1 - q.2.1) p := by fun_prop
-  have hca : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => q.2.2 - q.1) p := by fun_prop
-  have hcb : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => q.2.2 - q.2.1) p := by fun_prop
-  have hGammaC := gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.2.2) hc
-    (connection_c_polefree hp)
-  have hGammaDelta := gamma_comp_differentiableAt
-    (fun q : ℂ × ℂ × ℂ => q.2.2 - q.1 - q.2.1) hδ (connection_delta_polefree hp)
-  have hRecipCA := invGamma_comp_differentiableAt
-    (fun q : ℂ × ℂ × ℂ => q.2.2 - q.1) hca
-  have hRecipCB := invGamma_comp_differentiableAt
-    (fun q : ℂ × ℂ × ℂ => q.2.2 - q.2.1) hcb
   change DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ =>
     Complex.Gamma q.2.2 * Complex.Gamma (q.2.2 - q.1 - q.2.1) *
       (Complex.Gamma (q.2.2 - q.1))⁻¹ * (Complex.Gamma (q.2.2 - q.2.1))⁻¹) p
-  exact ((hGammaC.mul hGammaDelta).mul hRecipCA).mul hRecipCB
+  exact (((gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.2.2) (by fun_prop) (connection_c_polefree hp)).mul (gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.2.2 - q.1 - q.2.1) (by fun_prop) (connection_delta_polefree hp))).mul (invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.2.2 - q.1) (by fun_prop))).mul (invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.2.2 - q.2.1) (by fun_prop))
 
 /-- The second unpowered Gamma coefficient is differentiable throughout the connection domain. -/
 theorem gaussConnectionMinusGammaCoefficient₂_differentiableAt
-    {p : ℂ × ℂ × ℂ} (hp : p ∈ gaussConnectionParameterDomain) :
+    {p} (hp : p ∈ gaussConnectionParameterDomain) :
     DifferentiableAt ℂ gaussConnectionMinusGammaCoefficient₂ p := by
-  have hc : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => q.2.2) p := by fun_prop
-  have hNegDelta : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => q.1 + q.2.1 - q.2.2) p := by fun_prop
-  have ha : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => q.1) p := by fun_prop
-  have hb : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => q.2.1) p := by fun_prop
-  have hGammaC := gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.2.2) hc
-    (connection_c_polefree hp)
-  have hGammaNegDelta := gamma_comp_differentiableAt
-    (fun q : ℂ × ℂ × ℂ => q.1 + q.2.1 - q.2.2) hNegDelta
-    (connection_neg_delta_polefree hp)
-  have hRecipA := invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.1) ha
-  have hRecipB := invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.2.1) hb
   change DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ =>
     Complex.Gamma q.2.2 * Complex.Gamma (q.1 + q.2.1 - q.2.2) *
       (Complex.Gamma q.1)⁻¹ * (Complex.Gamma q.2.1)⁻¹) p
-  exact ((hGammaC.mul hGammaNegDelta).mul hRecipA).mul hRecipB
+  exact (((gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.2.2) (by fun_prop) (connection_c_polefree hp)).mul (gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.1 + q.2.1 - q.2.2) (by fun_prop) (connection_neg_delta_polefree hp))).mul (invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.1) (by fun_prop))).mul (invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.2.1) (by fun_prop))
 
 /-- The first powered Gamma coefficient is differentiable throughout the connection domain. -/
 theorem gaussConnectionPlusGammaCoefficient₁_differentiableAt
-    {p : ℂ × ℂ × ℂ} (hp : p ∈ gaussConnectionParameterDomain) :
+    {p} (hp : p ∈ gaussConnectionParameterDomain) :
     DifferentiableAt ℂ gaussConnectionPlusGammaCoefficient₁ p := by
-  have hC : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => 2 - q.2.2) p := by fun_prop
-  have hDelta : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => q.2.2 - q.1 - q.2.1) p := by fun_prop
-  have hOneA : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => 1 - q.1) p := by fun_prop
-  have hOneB : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => 1 - q.2.1) p := by fun_prop
-  have hGammaC := gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => 2 - q.2.2) hC
-    (connection_two_sub_c_polefree hp)
-  have hGammaDelta := gamma_comp_differentiableAt
-    (fun q : ℂ × ℂ × ℂ => q.2.2 - q.1 - q.2.1) hDelta
-    (connection_delta_polefree hp)
-  have hRecipA := invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => 1 - q.1) hOneA
-  have hRecipB := invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => 1 - q.2.1) hOneB
   change DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ =>
     Complex.Gamma (2 - q.2.2) * Complex.Gamma (q.2.2 - q.1 - q.2.1) *
       (Complex.Gamma (1 - q.1))⁻¹ * (Complex.Gamma (1 - q.2.1))⁻¹) p
-  exact ((hGammaC.mul hGammaDelta).mul hRecipA).mul hRecipB
+  exact (((gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => 2 - q.2.2) (by fun_prop) (connection_two_sub_c_polefree hp)).mul (gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.2.2 - q.1 - q.2.1) (by fun_prop) (connection_delta_polefree hp))).mul (invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => 1 - q.1) (by fun_prop))).mul (invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => 1 - q.2.1) (by fun_prop))
 
 /-- The second powered Gamma coefficient is differentiable throughout the connection domain. -/
 theorem gaussConnectionPlusGammaCoefficient₂_differentiableAt
-    {p : ℂ × ℂ × ℂ} (hp : p ∈ gaussConnectionParameterDomain) :
+    {p} (hp : p ∈ gaussConnectionParameterDomain) :
     DifferentiableAt ℂ gaussConnectionPlusGammaCoefficient₂ p := by
-  have hC : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => 2 - q.2.2) p := by fun_prop
-  have hNegDelta : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => q.1 + q.2.1 - q.2.2) p := by fun_prop
-  have hAC : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => q.1 - q.2.2 + 1) p := by fun_prop
-  have hBC : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => q.2.1 - q.2.2 + 1) p := by fun_prop
-  have hGammaC := gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => 2 - q.2.2) hC
-    (connection_two_sub_c_polefree hp)
-  have hGammaNegDelta := gamma_comp_differentiableAt
-    (fun q : ℂ × ℂ × ℂ => q.1 + q.2.1 - q.2.2) hNegDelta
-    (connection_neg_delta_polefree hp)
-  have hRecipAC := invGamma_comp_differentiableAt
-    (fun q : ℂ × ℂ × ℂ => q.1 - q.2.2 + 1) hAC
-  have hRecipBC := invGamma_comp_differentiableAt
-    (fun q : ℂ × ℂ × ℂ => q.2.1 - q.2.2 + 1) hBC
   change DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ =>
     Complex.Gamma (2 - q.2.2) * Complex.Gamma (q.1 + q.2.1 - q.2.2) *
       (Complex.Gamma (q.1 - q.2.2 + 1))⁻¹ *
         (Complex.Gamma (q.2.1 - q.2.2 + 1))⁻¹) p
-  exact ((hGammaC.mul hGammaNegDelta).mul hRecipAC).mul hRecipBC
+  exact (((gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => 2 - q.2.2) (by fun_prop) (connection_two_sub_c_polefree hp)).mul (gamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.1 + q.2.1 - q.2.2) (by fun_prop) (connection_neg_delta_polefree hp))).mul (invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.1 - q.2.2 + 1) (by fun_prop))).mul (invGamma_comp_differentiableAt (fun q : ℂ × ℂ × ℂ => q.2.1 - q.2.2 + 1) (by fun_prop))
 
 end DOZZ.Proofs

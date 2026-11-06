@@ -11,8 +11,8 @@ namespace DOZZ.Proofs
 
 /-- Inversion chart law of the equator chaos. -/
 theorem equatorGFF_GMC_inversion_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (H : Measure ℂ → ℝ≥0∞) (hH : Measurable H) :
     ∫⁻ ω, H ((M ω).map (fun x => x⁻¹)) ∂P = ∫⁻ ω, H (M ω) ∂P := by
   obtain ⟨N, hNmeas, hNfin, hMN⟩ :=
@@ -25,13 +25,12 @@ theorem equatorGFF_GMC_inversion_law
       (hMN.mono fun _ h => h.symm) (hconv f)
   let : IsProbabilityMeasure P := hX.1
   let A := fun ω => (N ω).map (fun z : ℂ => z⁻¹)
-  have hAmeas : Measurable A := (Measure.measurable_map _ measurable_inv).comp hNmeas
   have hAfin : ∀ ω, IsFiniteMeasure (A ω) := by
     intro ω
     let := hNfin ω
     infer_instance
   have hlaw : ∫⁻ ω, H (A ω) ∂P = ∫⁻ ω, H (N ω) ∂P := by
-    apply finite_random_measure_law_of_open_fdd P A N hAmeas hNmeas hAfin hNfin
+    apply finite_random_measure_law_of_open_fdd P A N ((Measure.measurable_map _ measurable_inv).comp hNmeas) hNmeas hAfin hNfin
     · intro ι _ U hU
       exact gmc_inversion_open_mass_fintype_law P X hX γ hγ hγ2 N hN hNmeas U hU
     · exact hH

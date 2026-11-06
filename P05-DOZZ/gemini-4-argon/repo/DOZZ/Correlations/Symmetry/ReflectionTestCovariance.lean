@@ -11,21 +11,16 @@ open scoped Distributions
 namespace DOZZ.Proofs
 
 /-- The reflection pullback preserves test mass. -/
-theorem symmetryReflection_testMass (f : TestFn) :
+theorem symmetryReflection_testMass f :
     testMass (symmetryReflectionTest f) = testMass f :=
   symmetryReflection_integral f
 
 /-- Translation and negation preserve the logarithmic part of the test pairing. -/
-theorem symmetryReflection_logPairing (f g : TestFn) :
+theorem symmetryReflection_logPairing f g :
     testFnLogPairing (symmetryReflectionTest f) (symmetryReflectionTest g) =
       testFnLogPairing f g := by
   rw [testFnLogPairing_eq_complex, testFnLogPairing_eq_complex]
-  let F : ℂ × ℂ → ℝ := fun p => f p.1 * g p.2 * (-Real.log ‖p.1 - p.2‖)
-  have hmp := (Measure.measurePreserving_sub_left (volume : Measure ℂ) 1).prod
-    (Measure.measurePreserving_sub_left (volume : Measure ℂ) 1)
-  have h := hmp.integral_comp
-    (symmetryReflectionHomeomorph.prodCongr symmetryReflectionHomeomorph).measurableEmbedding F
-  convert h using 1
+  convert (((Measure.measurePreserving_sub_left (volume : Measure ℂ) 1).prod (Measure.measurePreserving_sub_left (volume : Measure ℂ) 1)).integral_comp (symmetryReflectionHomeomorph.prodCongr symmetryReflectionHomeomorph).measurableEmbedding (fun p => f p.1 * g p.2 * (-Real.log ‖p.1 - p.2‖))) using 1
   · congr 1
     funext p
     change f (1 - p.1) * g (1 - p.2) * (-Real.log ‖p.1 - p.2‖) =
@@ -33,25 +28,17 @@ theorem symmetryReflection_logPairing (f g : TestFn) :
     rw [show (1 - p.1) - (1 - p.2) = -(p.1 - p.2) by ring, norm_neg]
 
 /-- Replacing the pinning potential adds exactly its bounded difference. -/
-theorem symmetryReflection_testPotential (f : TestFn) :
+theorem symmetryReflection_testPotential f :
     testFnPotential (symmetryReflectionTest f) = testFnPotential f +
       ∫ x, f x * symmetryReflectionPotential x := by
   rw [testFnPotential_eq_complex_logPlus, testFnPotential_eq_complex_logPlus]
   have h := symmetryReflection_integral (fun x => f x * Real.log (normPlus (1 - x)))
-  have he : (fun x : ℂ => f (1 - x) * Real.log (normPlus (1 - (1 - x)))) =
-      fun x => f (1 - x) * Real.log (normPlus x) := by
-    funext x
-    rw [show (1 : ℂ) - (1 - x) = x by ring]
-  rw [he] at h
+  rw [(show (fun x => f (1 - x) * Real.log (normPlus (1 - (1 - x)))) = fun x => f (1 - x) * Real.log (normPlus x) by funext x; rw [show (1 : ℂ) - (1 - x) = x by ring])] at h
   change (∫ x, f (1 - x) * Real.log (normPlus x)) =
     (∫ x, f x * Real.log (normPlus x)) + ∫ x, f x * symmetryReflectionPotential x
   rw [h]
-  have hi : Integrable (fun x : ℂ => f x * Real.log (normPlus x)) volume := by
-    have hn : Continuous (fun x : ℂ => Real.log (normPlus x)) :=
-      (continuous_const.max continuous_norm).log
-        (fun x => (lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖x‖)).ne')
-    exact (f.continuous.mul hn).integrable_of_hasCompactSupport f.hasCompactSupport.mul_right
-  have hd : Integrable (fun x : ℂ => f x * symmetryReflectionPotential x) volume :=
+  have hi : Integrable (fun x : ℂ => f x * Real.log (normPlus x)) volume := (f.continuous.mul ((continuous_const.max continuous_norm).log (fun x => (lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖x‖)).ne'))).integrable_of_hasCompactSupport f.hasCompactSupport.mul_right
+  have hd : Integrable (fun x => f x * symmetryReflectionPotential x) volume :=
     (f.continuous.mul symmetryReflectionPotential_continuous).integrable_of_hasCompactSupport
       f.hasCompactSupport.mul_right
   rw [← integral_add hi hd]
@@ -61,7 +48,7 @@ theorem symmetryReflection_testPotential (f : TestFn) :
   ring
 
 /-- The covariance form carries the two correlated pinning corrections. -/
-theorem gffCov_symmetryReflectionTest (f g : TestFn) :
+theorem gffCov_symmetryReflectionTest f g :
     gffCov (symmetryReflectionTest f) (symmetryReflectionTest g) = gffCov f g +
       (∫ x, f x * symmetryReflectionPotential x) * testMass g +
       testMass f * (∫ x, g x * symmetryReflectionPotential x) := by

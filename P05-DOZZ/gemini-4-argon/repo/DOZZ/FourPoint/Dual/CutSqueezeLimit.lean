@@ -12,8 +12,8 @@ namespace DOZZ.Proofs
 
 /-- First take the spatial limit at each fixed cut, then send the cut level to infinity.
 The proof retains the one-sided signed bounds rather than taking absolute values early. -/
-theorem dual_cut_squeeze_tendsto {A : Type*} (l : Filter A)
-    (f lower : A → ℝ) (upper error : ℝ → A → ℝ) (C : ℝ → ℝ) (L : ℝ)
+theorem dual_cut_squeeze_tendsto {A : Type*} l
+    (f lower : A → ℝ) (upper error : ℝ → A → ℝ) (C : ℝ → ℝ) L
     (hLower : Tendsto lower l (𝓝 L))
     (hUpper : ∀ c, Tendsto (fun x => upper c x + error c x) l (𝓝 (C c)))
     (hC : Tendsto C atTop (𝓝 L))

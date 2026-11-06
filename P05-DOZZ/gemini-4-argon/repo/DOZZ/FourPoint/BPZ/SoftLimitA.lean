@@ -40,10 +40,10 @@ theorem bpz_tendsto_integral_of_approx {Ω E : Type*} [MeasurableSpace Ω] [Norm
   obtain ⟨hFn, hGn, hn₂⟩ := hN₂ n (le_trans (le_max_right _ _) hn)
   have h1 := hN₁ n (le_trans (le_max_left _ _) hn)
   rw [dist_eq_norm] at h1 ⊢
-  have e1 : ‖∫ ω, F n ω ∂P - ∫ ω, G n ω ∂P‖ ≤ δ / 4 := by
+  have : ‖∫ ω, F n ω ∂P - ∫ ω, G n ω ∂P‖ ≤ δ / 4 := by
     rw [← integral_sub hFn hGn]
     exact (norm_integral_le_integral_norm _).trans hn₂
-  have e2 : ‖∫ ω, G₀ ω ∂P - ∫ ω, F₀ ω ∂P‖ ≤ δ / 4 := by
+  have : ‖∫ ω, G₀ ω ∂P - ∫ ω, F₀ ω ∂P‖ ≤ δ / 4 := by
     rw [← integral_sub hG₀ hF₀, ← norm_neg, ← integral_neg]
     refine (norm_integral_le_integral_norm _).trans (le_of_eq_of_le ?_ h₀)
     congr 1; funext ω; rw [neg_sub]

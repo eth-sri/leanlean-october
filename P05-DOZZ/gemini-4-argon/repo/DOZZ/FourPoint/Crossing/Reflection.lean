@@ -20,7 +20,7 @@ open scoped ENNReal
 namespace DOZZ.Proofs
 
 /-- Swapping the last two finite roots also swaps their charges. -/
-theorem crossing_mass_swap_last (γ a b c : ℝ) (ν : Measure ℂ) (w : ℂ) :
+theorem crossing_mass_swap_last γ a b c (ν : Measure ℂ) w :
     coulombMass γ ν ![-γ / 2, a, b] ![w, 1, 0] c =
       coulombMass γ ν ![-γ / 2, b, a] ![w, 0, 1] c := by
   unfold coulombMass
@@ -33,9 +33,9 @@ theorem crossing_mass_swap_last (γ a b c : ℝ) (ν : Measure ℂ) (w : ℂ) :
 /-- The half-charge reduced four-point function is symmetric under exchange
 of zero and one, throughout its whole carrier. -/
 theorem gammaHalf_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ a b c : ℝ)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) γ μ a b c
     (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (z : ℂ) :
+    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) z :
     fourPointT P M γ μ (-γ / 2) a b c z =
       fourPointT P M γ μ (-γ / 2) b a c (1 - z) := by
   have he : infSExp γ ![-γ / 2, a, b] c = fourPointSExp γ (-γ / 2) a b c := by
@@ -46,7 +46,7 @@ theorem gammaHalf_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
     ring
   have hm := coulombMass_affine_moment_inf P X hX γ hγ hγ2 M hM
     ![-γ / 2, a, b] ![z, 0, 1] c (-1) 1 (by norm_num)
-  have hz : (fun k : Fin 3 => (-1 : ℂ) * (![z, 0, 1] : Fin 3 → ℂ) k + 1) =
+  have hz : (fun k => (-1 : ℂ) * (![z, 0, 1] : Fin 3 → ℂ) k + 1) =
       ![1 - z, 1, 0] := by
     funext k
     fin_cases k

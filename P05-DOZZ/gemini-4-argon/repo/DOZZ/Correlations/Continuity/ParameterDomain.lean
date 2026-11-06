@@ -32,11 +32,11 @@ theorem continuityChartWeight_continuous : Continuous continuityChartWeight := b
   unfold continuityChartWeight
   fun_prop (disch := intro x; exact (add_pos_of_pos_of_nonneg zero_lt_one (norm_nonneg x)).ne')
 
-theorem continuityChartWeight_le_one (x : ℂ) : continuityChartWeight x ≤ 1 := by
+theorem continuityChartWeight_le_one x : continuityChartWeight x ≤ 1 := by
   rw [continuityChartWeight, Real.toNNReal_le_iff_le_coe]
   exact max_le zero_le_one (min_le_left _ _)
 
-theorem continuityChartWeight_zero {x : ℂ} (hx : 2 ≤ ‖x‖) :
+theorem continuityChartWeight_zero {x} (hx : 2 ≤ ‖x‖) :
     continuityChartWeight x = 0 := by
   rw [continuityChartWeight, max_eq_left (min_le_right _ _ |>.trans
     (div_nonpos_of_nonpos_of_nonneg (by linarith) (by positivity)))]
@@ -61,9 +61,8 @@ noncomputable def continuityChartWeightBCF : BoundedContinuousFunction ℂ ℝ�
         (continuityChartWeight x).coe_nonneg], by linarith [hx,
         (continuityChartWeight y).coe_nonneg]⟩)
 
-theorem continuityChartWeight_sum_one {x : ℂ} (hx : x ≠ 0) :
+theorem continuityChartWeight_sum_one {x} (hx : x ≠ 0) :
     continuityChartWeight x + continuityChartWeight x⁻¹ = 1 := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
   have he : (2 - ‖x⁻¹‖) / (1 + ‖x⁻¹‖) = 1 - (2 - ‖x‖) / (1 + ‖x‖) := by
     rw [norm_inv]
     field_simp

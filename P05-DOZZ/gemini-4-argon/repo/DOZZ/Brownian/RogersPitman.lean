@@ -50,7 +50,7 @@ noncomputable def rogersPitmanPath (μ : ℝ) (V : BrownianTriple) : BrownianPat
     intro i
     split_ifs <;> fun_prop⟩
 
-theorem measurable_rogersPitmanPath (μ : ℝ) :
+theorem measurable_rogersPitmanPath μ :
     Measurable (fun V : BrownianTriple => rogersPitmanPath μ V) := by
   apply ContinuousMap.measurable_iff_eval.mpr
   intro t
@@ -59,16 +59,14 @@ theorem measurable_rogersPitmanPath (μ : ℝ) :
   apply (PiLp.continuous_toLp 2 _).measurable.comp
   apply measurable_pi_iff.mpr
   intro i
-  have h_eval : Measurable (fun V : BrownianTriple => (V i) t) :=
-    (ContinuousMap.measurable_eval t).comp (measurable_pi_apply i)
-  split_ifs <;> exact h_eval.add_const _
+  split_ifs <;> exact ((ContinuousMap.measurable_eval t).comp (measurable_pi_apply i)).add_const _
 
-theorem rogersPitmanPath_nonneg (μ : ℝ) (V : BrownianTriple) (t : ℝ≥0) :
+theorem rogersPitmanPath_nonneg μ V (t : ℝ≥0) :
     0 ≤ rogersPitmanPath μ V t := by
   change 0 ≤ ‖rogersPitmanVectorAt μ V t‖
   exact norm_nonneg _
 
-theorem rogersPitmanPath_zero (μ : ℝ) (V : BrownianTriple)
+theorem rogersPitmanPath_zero μ V
     (hV : ∀ i, V i 0 = 0) :
     rogersPitmanPath μ V 0 = 0 := by
   change ‖rogersPitmanVectorAt μ V 0‖ = 0
@@ -93,7 +91,7 @@ instance isProbabilityMeasure_rogersPitmanEntranceMeasure (μ : ℝ)
 noncomputable def negativeRogersPitmanPath (μ : ℝ) (V : BrownianTriple) : BrownianPath :=
   -(rogersPitmanPath μ V)
 
-theorem measurable_negativeRogersPitmanPath (μ : ℝ) :
+theorem measurable_negativeRogersPitmanPath μ :
     Measurable (fun V : BrownianTriple => negativeRogersPitmanPath μ V) := by
   exact (measurable_rogersPitmanPath μ).neg
 
@@ -108,7 +106,7 @@ instance isProbabilityMeasure_negativeRogersPitmanEntranceMeasure (μ : ℝ)
   unfold negativeRogersPitmanEntranceMeasure
   infer_instance
 
-theorem negativeRogersPitmanPath_zero (μ : ℝ) (V : BrownianTriple)
+theorem negativeRogersPitmanPath_zero μ V
     (hV : ∀ i, V i 0 = 0) :
     negativeRogersPitmanPath μ V 0 = 0 := by
   simp [negativeRogersPitmanPath, rogersPitmanPath_zero μ V hV]

@@ -30,13 +30,10 @@ theorem dual_joint_law_outer_inverse_data
     measurableSet_lt measurable_const measurable_snd.ennreal_toReal
   have hp := (ae_map_iff hpair hs).mpr hpos
   rw [hlaw] at hp
-  let H : α × ℝ≥0∞ → ℝ := fun v => v.2.toReal^(-p)
-  have hHm : Measurable H := measurable_snd.ennreal_toReal.pow_const (-p)
-  have hi : Integrable H (P.map (fun ω => (A ω,O ω))) :=
-    (integrable_map_measure hHm.aestronglyMeasurable hpair).mpr hInv
+  have hHm : Measurable (fun v => v.2.toReal^(-p) : α × ℝ≥0∞ → ℝ) := measurable_snd.ennreal_toReal.pow_const (-p)
+  have hi := (integrable_map_measure hHm.aestronglyMeasurable hpair).mpr hInv
   rw [hlaw] at hi
-  have hi' := (integrable_map_measure hHm.aestronglyMeasurable hpair').mp hi
-  refine ⟨(ae_map_iff hpair' hs).mp hp, hi', ?_⟩
+  refine ⟨(ae_map_iff hpair' hs).mp hp, ((integrable_map_measure hHm.aestronglyMeasurable hpair').mp hi), ?_⟩
   rw [← integral_map hpair hHm.aestronglyMeasurable,
     ← integral_map hpair' hHm.aestronglyMeasurable, hlaw]
 
@@ -50,8 +47,7 @@ theorem dual_joint_law_outer_inverse_lintegral
     (hlaw : P.map (fun ω => (A ω,O ω)) = R.map (fun ω => (A' ω,O' ω)))
     (p : ℝ) :
     (∫⁻ ω, O ω^(-p) ∂P) = ∫⁻ ω, O' ω^(-p) ∂R := by
-  let H : α × ℝ≥0∞ → ℝ≥0∞ := fun v => v.2^(-p)
-  have hH : Measurable H := measurable_snd.pow_const (-p)
+  have hH : Measurable (fun v => v.2^(-p) : α × ℝ≥0∞ → ℝ≥0∞) := measurable_snd.pow_const (-p)
   rw [← lintegral_map' hH.aemeasurable (hA.prodMk hO),
     ← lintegral_map' hH.aemeasurable (hA'.prodMk hO'), hlaw]
 

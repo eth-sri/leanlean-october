@@ -31,83 +31,67 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- The circle of radius `e^{-m}` at the origin, written as a repinning circle. -/
-theorem circleMeasure_origin_repin (m : ℕ) :
-    circleMeasure 0 (-Real.log ‖((Real.exp (-(m : ℝ)) : ℝ) : ℂ)‖) = circleMeasure 0 m := by
-  rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.log_exp, neg_neg]
 
-/-- On the circle of radius `e^{-m} ≤ 1` the background `log |·|_+` vanishes. -/
-theorem integral_log_normPlus_circle_origin (m : ℕ) :
-    ∫ w, Real.log (normPlus w) ∂circleMeasure 0 m = 0 := by
-  have hae : (fun w => Real.log (normPlus w)) =ᵐ[circleMeasure 0 m] fun _ => (0 : ℝ) := by
-    filter_upwards [ae_norm_sub_center_circleMeasure 0 m] with w hw
-    rw [sub_zero] at hw
-    have hle : ‖w‖ ≤ 1 := by
-      rw [hw]
-      exact Real.exp_le_one_iff.mpr (by
-        have := Nat.cast_nonneg (α := ℝ) m
-        linarith)
-    rw [normPlus, max_eq_left hle, Real.log_one]
-  rw [integral_congr_ae hae, integral_zero]
 
-/-- **The potential of the circle at the origin**:
-`∫ G(x,u) dσ_{0,e^{-m}}(u) = log |x|_+ - log max(e^{-m}, |x|)`. -/
-theorem repinPotential_origin (m : ℕ) (x : ℂ) :
-    repinPotential ((Real.exp (-(m : ℝ)) : ℝ) : ℂ) 0 x =
-      Real.log (normPlus x) - Real.log (max (Real.exp (-(m : ℝ))) ‖x‖) := by
-  have ha : ((Real.exp (-(m : ℝ)) : ℝ) : ℂ) ≠ 0 :=
-    Complex.ofReal_ne_zero.mpr (Real.exp_pos _).ne'
-  rw [repinPotential_eq _ 0 ha x, Complex.norm_real, Real.norm_eq_abs,
-    abs_of_pos (Real.exp_pos _), zero_sub, norm_neg]
-  have hc : repinConst ((Real.exp (-(m : ℝ)) : ℝ) : ℂ) 0 = 0 := by
-    unfold repinConst
-    rw [circleMeasure_origin_repin]
-    exact integral_log_normPlus_circle_origin m
-  rw [hc]
-  ring
 
-/-- The circle average at the origin at radius `e^{-m}` has variance `m`. -/
-theorem gaussianVariance_circleAverage_origin {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hXc : IsCircleAverage P X Xc) (m : ℕ) :
-    gaussianVariance P (fun ω => Xc ω 0 m) = m := by
-  have _ := circleMeasure_isProbability 0 (m : ℝ)
-  unfold gaussianVariance
-  rw [isCircleAverage_covariance P X hX Xc hXc 0 0 m m]
-  have hinner : ∀ u, ∫ v, gffKernel u v ∂circleMeasure 0 m =
-      Real.log (normPlus u) - Real.log (max (Real.exp (-(m : ℝ))) ‖u‖) := fun u => by
-    rw [← repinPotential_origin m u, repinPotential, circleMeasure_origin_repin]
-  simp_rw [hinner]
-  have hae : (fun u : ℂ => Real.log (normPlus u) - Real.log (max (Real.exp (-(m : ℝ))) ‖u‖))
-      =ᵐ[circleMeasure 0 m] fun _ => (m : ℝ) := by
-    filter_upwards [ae_norm_sub_center_circleMeasure 0 m] with u hu
-    rw [sub_zero] at hu
-    have hle : ‖u‖ ≤ 1 := by
-      rw [hu]
-      exact Real.exp_le_one_iff.mpr (by
-        have := Nat.cast_nonneg (α := ℝ) m
-        linarith)
-    rw [normPlus, max_eq_left hle, Real.log_one, hu, max_self, Real.log_exp]
-    ring
-  rw [integral_congr_ae hae, integral_const, probReal_univ, one_smul]
 
 /-- **Cameron–Martin tilt by the circle average at the origin.** For real `a`, `m ∈ ℕ` and every
 measurable functional `H` of the chaos,
 `E[e^{a X_m(0) - m a²/2} H(M)] = E[H(e^{γ a Cov(X(·), X_m(0))} M)]`. -/
 theorem lintegral_circleTilt {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hXc : IsCircleAverage P X Xc) (a : ℝ) (m : ℕ) (H : Measure ℂ → ℝ≥0∞)
+    X (hX : IsEquatorGFF P X) γ (hγ : 0 < γ) (hγ2 : γ < 2)
+    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) Xc
+    (hXc : IsCircleAverage P X Xc) a (m : ℕ) (H : Measure ℂ → ℝ≥0∞)
     (hH : Measurable H) :
     ∫⁻ ω, ENNReal.ofReal (Real.exp (a * Xc ω 0 m - m * a ^ 2 / 2)) * H (M ω) ∂P =
       ∫⁻ ω, H ((M ω).withDensity (circleTiltDensity γ a m)) ∂P := by
+  have circleMeasure_origin_repin (m : ℕ) : circleMeasure 0 (-Real.log ‖((Real.exp (-(m : ℝ)) : ℝ) : ℂ)‖) = circleMeasure 0 m := by
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.log_exp, neg_neg]
+  have repinPotential_origin x : repinPotential ((Real.exp (-(m : ℝ)) : ℝ) : ℂ) 0 x = Real.log (normPlus x) - Real.log (max (Real.exp (-(m : ℝ))) ‖x‖) := by
+    have integral_log_normPlus_circle_origin : ∫ w, Real.log (normPlus w) ∂circleMeasure 0 m = 0 := by
+      have hae : (fun w => Real.log (normPlus w)) =ᵐ[circleMeasure 0 m] fun _ => (0 : ℝ) := by
+        filter_upwards [ae_norm_sub_center_circleMeasure 0 m] with w hw
+        rw [sub_zero] at hw
+        have hle : ‖w‖ ≤ 1 := by
+          rw [hw]
+          exact Real.exp_le_one_iff.mpr (by
+            have := Nat.cast_nonneg (α := ℝ) m
+            linarith)
+        rw [normPlus, max_eq_left hle, Real.log_one]
+      rw [integral_congr_ae hae, integral_zero]
+    rw [repinPotential_eq _ 0 (Complex.ofReal_ne_zero.mpr (Real.exp_pos _).ne') x, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_pos (Real.exp_pos _), zero_sub, norm_neg]
+    have hc : repinConst ((Real.exp (-(m : ℝ)) : ℝ) : ℂ) 0 = 0 := by
+      unfold repinConst
+      rw [circleMeasure_origin_repin]
+      exact integral_log_normPlus_circle_origin
+    rw [hc]
+    ring
+  have gaussianVariance_circleAverage_origin : gaussianVariance P (fun ω => Xc ω 0 m) = m := by
+    have _ := circleMeasure_isProbability 0 (m : ℝ)
+    unfold gaussianVariance
+    rw [isCircleAverage_covariance P X hX Xc hXc 0 0 m m]
+    have hinner : ∀ u, ∫ v, gffKernel u v ∂circleMeasure 0 m =
+        Real.log (normPlus u) - Real.log (max (Real.exp (-(m : ℝ))) ‖u‖) := fun u => by
+      rw [← repinPotential_origin u, repinPotential, circleMeasure_origin_repin]
+    simp_rw [hinner]
+    have hae : (fun u => Real.log (normPlus u) - Real.log (max (Real.exp (-(m : ℝ))) ‖u‖))
+        =ᵐ[circleMeasure 0 m] fun _ => (m : ℝ) := by
+      filter_upwards [ae_norm_sub_center_circleMeasure 0 m] with u hu
+      rw [sub_zero] at hu
+      have hle : ‖u‖ ≤ 1 := by
+        rw [hu]
+        exact Real.exp_le_one_iff.mpr (by
+          have := Nat.cast_nonneg (α := ℝ) m
+          linarith)
+      rw [normPlus, max_eq_left hle, Real.log_one, hu, max_self, Real.log_exp]
+      ring
+    rw [integral_congr_ae hae, integral_const, probReal_univ, one_smul]
   set a' : ℂ := ((Real.exp (-(m : ℝ)) : ℝ) : ℂ) with ha'def
   have ha' : a' ≠ 0 := Complex.ofReal_ne_zero.mpr (Real.exp_pos _).ne'
   set L : Ω → ℝ := fun ω => a * Xc ω 0 m with hLdef
-  have hL : IsGaussianL2Limit P X L :=
-    IsGaussianL2Limit.const_mul (isCircleAverage_isGaussianL2Limit P X hX Xc hXc 0 m) a
   have hVar : gaussianVariance P L = a ^ 2 * m := by
-    have h := gaussianVariance_circleAverage_origin P X hX Xc hXc m
+    have h := gaussianVariance_circleAverage_origin
     simp only [gaussianVariance, gaussianCovariance] at h ⊢
     have hfun : (fun ω => L ω * L ω) = fun ω => a ^ 2 * (Xc ω 0 m * Xc ω 0 m) := by
       funext ω
@@ -150,11 +134,6 @@ theorem lintegral_circleTilt {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
       _ < ε := by
           rw [mul_div_assoc', div_lt_iff₀ hpos]
           nlinarith [abs_nonneg a]
-  have htilt := equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L hL c hc
-    (fun _ μ => H μ) (hH.comp measurable_snd)
-  have hdens : (fun x => ENNReal.ofReal (Real.exp (γ * c x))) = circleTiltDensity γ a m := by
-    funext x
-    rw [hcx, repinPotential_origin m x, circleTiltDensity]
   have hexp : ∀ ω, Real.exp (a * Xc ω 0 m - m * a ^ 2 / 2) =
       Real.exp (L ω - gaussianVariance P L / 2) := fun ω => by
     rw [hVar]
@@ -162,7 +141,7 @@ theorem lintegral_circleTilt {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     simp only [hLdef]
     ring
   simp_rw [hexp]
-  rw [htilt, hdens]
+  rw [(equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L (IsGaussianL2Limit.const_mul (isCircleAverage_isGaussianL2Limit P X hX Xc hXc 0 m) a) c hc (fun _ μ => H μ) (hH.comp measurable_snd)), (show (fun x => ENNReal.ofReal (Real.exp (γ * c x))) = circleTiltDensity γ a m by funext x; rw [hcx, repinPotential_origin x, circleTiltDensity])]
 
 end DOZZ.Proofs
 

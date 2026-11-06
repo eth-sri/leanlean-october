@@ -26,10 +26,7 @@ theorem weightedGmcMomentExponent_pos_iff
     {γ α p : ℝ} (hγ : 0 < γ) (hp : 0 < p) :
     0 < γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2 ↔
       p < 2 * (Q γ - α) / γ := by
-  rw [weightedGmcMomentExponent_factorization]
-  have hscale : 0 < γ * p / 2 := by positivity
-  rw [mul_pos_iff_of_pos_left hscale]
-  rw [lt_div_iff₀ hγ]
+  rw [weightedGmcMomentExponent_factorization, mul_pos_iff_of_pos_left (show 0 < γ * p / 2 by positivity), lt_div_iff₀ hγ]
   constructor <;> intro h <;> nlinarith
 
 end DOZZ.Proofs

@@ -18,7 +18,7 @@ namespace DOZZ.Proofs
 theorem translated_ball_rpow_integral (u : ℂ) (R b : ℝ) :
     (∫⁻ v in Metric.ball u R, ENNReal.ofReal (‖u - v‖ ^ b)) =
       ∫⁻ v in Metric.ball (0 : ℂ) R, ENNReal.ofReal (‖v‖ ^ b) := by
-  let f : ℂ → ℝ≥0∞ := (Metric.ball u R).indicator (fun v => ENNReal.ofReal (‖u - v‖ ^ b))
+  let f := (Metric.ball u R).indicator (fun v => ENNReal.ofReal (‖u - v‖ ^ b))
   have hf : Measurable f := (ENNReal.measurable_ofReal.comp
     ((measurable_const.sub measurable_id).norm.pow_const b)).indicator measurableSet_ball
   have hcomp : (fun x : ℂ => f (x + u)) =

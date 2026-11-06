@@ -37,7 +37,7 @@ namespace DOZZ.Proofs
 
 /-- The BPZ equation, for a measurable GMC measure. -/
 theorem bpz_gauss_of_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) γ μ χ α₁ α₂ α₃
     (hγ : 0 < γ) (hγ₂ : γ < 2)
     (hχ : χ = γ / 2 ∨ χ = 2 / γ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
@@ -69,17 +69,7 @@ theorem bpz_gauss_of_measurable {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨-, hD⟩ := bpz_wirt2L_momField2_zero P X hX hγ hγ₂ M hM hMm hχpos ha1 hα₁ hα₂ hα₃
     hspos.le hz.1 hz.2
   have hL := bpz_wardLHS_combination P X hX hγ hγ₂ M hM hMm hχpos hα₁ hα₂ hα₃ hspos.le hz.1 hz.2
-  have hR := bpz_wardRHS_combination P X hX hγ hγ₂ M hM hMm hχpos hα₁ hα₂ hα₃ hspos.le hz.1 hz.2
-  have hw : ∀ (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ),
-      bpzWardLHS P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z ℓ v =
-        bpzWardRHS P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z ℓ v := fun ℓ v =>
-    bpzWardLHS_eq_wardRHS P X hX hγ hγ₂ M hM hMm hχpos hα₁ hα₂ hα₃ hspos.le hz.1 hz.2 ℓ v
-  simp only [hw] at hL
-  have hward := hL.symm.trans hR
-  have hT : fourPointT P M γ μ (-χ) α₁ α₂ α₃ z =
-      2 * μ ^ (-fourPointSExp γ (-χ) α₁ α₂ α₃) / γ * Real.Gamma (fourPointSExp γ (-χ) α₁ α₂ α₃) *
-        bpzMomJ P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z :=
-    bpz_fourPointT_eq_moment P X hX hγ hγ₂ M hM hMm hχpos hα₁ hα₂ hα₃ μ hz.1 hz.2
+  simp only [(fun ℓ v => bpzWardLHS_eq_wardRHS P X hX hγ hγ₂ M hM hMm hχpos hα₁ hα₂ hα₃ hspos.le hz.1 hz.2 ℓ v)] at hL
   refine bpz_gauss_of_ward hγ hχ hz.1 hz.2
     (2 * μ ^ (-fourPointSExp γ (-χ) α₁ α₂ α₃) / γ * Real.Gamma (fourPointSExp γ (-χ) α₁ α₂ α₃))
     (bpzMomJ P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z)
@@ -87,7 +77,7 @@ theorem bpz_gauss_of_measurable {Ω : Type*} [MeasurableSpace Ω]
     (bpzMomE1 P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z)
     (bpzMomD1 P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z)
     (bpzMomD2 P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z)
-    _ _ hT ?_ ?_ hward
+    _ _ (bpz_fourPointT_eq_moment P X hX hγ hγ₂ M hM hMm hχpos hα₁ hα₂ hα₃ μ hz.1 hz.2) ?_ ?_ (hL.symm.trans (bpz_wardRHS_combination P X hX hγ hγ₂ M hM hMm hχpos hα₁ hα₂ hα₃ hspos.le hz.1 hz.2))
   · rw [hW1, hE1]
     push_cast
     ring
@@ -99,7 +89,7 @@ theorem bpz_gauss_of_measurable {Ω : Type*} [MeasurableSpace Ω]
 insertion, the reduced function `T` satisfies the Wirtinger form of the Gauss equation with the
 parameters of [KRV, (defabcfirst)]. -/
 theorem degenerateFourPoint_BPZ {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) γ μ χ α₁ α₂ α₃
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hχ : χ = γ / 2 ∨ χ = 2 / γ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
@@ -112,11 +102,7 @@ theorem degenerateFourPoint_BPZ {Ω : Type*} [MeasurableSpace Ω]
       (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) := by
   let _ := hμ
   obtain ⟨N, hNm, hNfin, hMN⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ₂ M hM
-  have hN : IsGMCOf P X γ N := bpz_isGMCOf_congr hM hNfin hMN
-  have hT : (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) =
-      fun z => fourPointT P N γ μ (-χ) α₁ α₂ α₃ z :=
-    funext fun z => bpz_fourPointT_congr P hMN μ (-χ) z
-  rw [hT]
-  exact bpz_gauss_of_measurable P X N γ μ χ α₁ α₂ α₃ hγ hγ₂ hχ hα₁ hα₂ hα₃ hs hX hN hNm
+  rw [(funext fun z => bpz_fourPointT_congr P hMN μ (-χ) z)]
+  exact bpz_gauss_of_measurable P X N γ μ χ α₁ α₂ α₃ hγ hγ₂ hχ hα₁ hα₂ hα₃ hs hX (bpz_isGMCOf_congr hM hNfin hMN) hNm
 
 end DOZZ.Proofs

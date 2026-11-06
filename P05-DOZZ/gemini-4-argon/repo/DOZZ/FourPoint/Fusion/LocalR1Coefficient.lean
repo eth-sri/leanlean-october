@@ -14,7 +14,7 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- The exact Wirtinger integral and elementary time integral determine the pure coefficient. -/
-theorem fusion_pure_coefficient (p e q E : ℝ) (he : -1 < e) (W A : ℂ)
+theorem fusion_pure_coefficient (p e q E : ℝ) (he : -1 < e) W A
     (hW : (q : ℂ) * (q - 1 : ℝ) * W = ((e + 2) / 2 : ℝ) * ((e + 2) / 2 - 1 : ℝ) * A) :
     ((-p * q * (q - 1) : ℝ) : ℂ) *
       ((1 / ((e + 1) * (e + 2)) : ℝ) * (W * (E : ℂ))) =
@@ -30,8 +30,8 @@ theorem fusion_pure_coefficient (p e q E : ℝ) (he : -1 < e) (W A : ℂ)
 /-- The limiting moving inverse expectation is exactly the moment in
 `gammaHalfRootedCoefficient`. -/
 theorem fusion_local_inverse_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ s : ℝ) :
     (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P) =
       ∫⁻ ω, gammaHalfRootedMass γ α₁ α₂ α₃ M ω ^ s ∂P := by
@@ -42,9 +42,9 @@ theorem fusion_local_inverse_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
 /-- The local `r₁` coefficient is the exact rooted coefficient `gammaHalfRootedCoefficient`
 times the planar ratio. -/
 theorem fusionLocalR1_coefficient_tendsto {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hlo : γ / 2 < α₁) (hsq : 2 < γ ^ 2) (hα₁ : α₁ < 2 / γ)
+    α₁ α₂ α₃ (hlo : γ / 2 < α₁) (hsq : 2 < γ ^ 2) (hα₁ : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p) :
     Filter.Tendsto (fun z : ℂ => fusionLocalR1 P M γ α₁ α₂ α₃ p z /
       (‖z‖ ^ (γ * (Q γ - α₁)) : ℝ)) (nhdsWithin 0 {0}ᶜ)
@@ -55,14 +55,9 @@ theorem fusionLocalR1_coefficient_tendsto {Ω : Type*} [MeasurableSpace Ω]
     hlo hsq hα₁ hα₂ hα₃ p hp
   have hW := (planar_wirtinger_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 1 (by norm_num)).2
   simp only [norm_one, Real.one_rpow, one_pow, div_one, Complex.ofReal_one, mul_one] at hW
-  have hq : γ ^ 2 / 2 / 2 = γ ^ 2 / 4 := by ring
-  rw [hq] at hW
-  have he : 2 + γ ^ 2 / 2 - γ * α₁ = γ ^ 2 / 2 - γ * α₁ + 2 := by ring
-  rw [he] at hW
-  have hc := fusion_pure_coefficient p (γ ^ 2 / 2 - γ * α₁) (γ ^ 2 / 4)
-    (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ (-p - 1) ∂P).toReal
-    (by linarith) _ _ hW
-  rw [hc, fusion_planarGauss_real _ _ hk hβ hβ2 hβlin,
+  rw [(show γ ^ 2 / 2 / 2 = γ ^ 2 / 4 by ring)] at hW
+  rw [(show 2 + γ ^ 2 / 2 - γ * α₁ = γ ^ 2 / 2 - γ * α₁ + 2 by ring)] at hW
+  rw [(fusion_pure_coefficient p (γ ^ 2 / 2 - γ * α₁) (γ ^ 2 / 4) (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ (-p - 1) ∂P).toReal (by linarith) _ _ hW), fusion_planarGauss_real _ _ hk hβ hβ2 hβlin,
     fusion_local_inverse_coefficient_eq P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1)] at h
   simpa only [gammaHalfRootedCoefficient, ENNReal.rpow_eq_pow, Complex.ofReal_mul, mul_assoc] using h
 

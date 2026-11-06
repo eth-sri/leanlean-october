@@ -41,17 +41,12 @@ theorem inversionMoment_mul_rpow {c : ℝ≥0∞} (hc0 : c ≠ 0) (hct : c ≠ �
   · exact ENNReal.mul_rpow_of_ne_zero hc0 ht q
 
 /-- The equator chaos is almost surely atomless at every point. -/
-theorem gmc_atomless_of_isGMCOf {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (x : ℂ) : ∀ᵐ ω ∂P, M ω {x} = 0 := by
+theorem gmc_atomless_of_isGMCOf {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (hX : IsEquatorGFF P X) γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
+    (hM : IsGMCOf P X γ M) x : ∀ᵐ ω ∂P, M ω {x} = 0 := by
   have hint := equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM {x} (measurableSet_singleton x)
-  have href : gmcReferenceMeasure {x} = 0 := by
-    unfold gmcReferenceMeasure
-    exact withDensity_absolutelyContinuous _ _ (measure_singleton x)
-  rw [href] at hint
-  have hmeas : AEMeasurable (fun ω => M ω {x}) P :=
-    gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM {x} (measurableSet_singleton x)
-  exact (lintegral_eq_zero_iff' hmeas).1 hint
+  rw [(show gmcReferenceMeasure {x} = 0 by unfold gmcReferenceMeasure; exact withDensity_absolutelyContinuous _ _ (measure_singleton x))] at hint
+  exact (lintegral_eq_zero_iff' (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM {x} (measurableSet_singleton x))).1 hint
 
 end DOZZ.Proofs
 

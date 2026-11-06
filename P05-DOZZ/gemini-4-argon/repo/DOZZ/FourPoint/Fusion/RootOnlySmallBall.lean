@@ -20,11 +20,11 @@ namespace DOZZ.Proofs
 
 /-- The small-ball error of the moving rooted kernel has a uniformly vanishing positive moment. -/
 theorem fusion_rootOnlyKernel_smallBall_moment {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ p : ℝ) (hα : γ / 2 ≤ α₁) (hp : 0 < p) (hp1 : p ≤ 1)
     (hpRange : p < min (4 / γ ^ 2) (2 / γ * (Q γ - (α₁ + γ / 2))))
-    (y : ℂ) (hy : y ≠ 0) :
+    y (hy : y ≠ 0) :
     let ξ := γ * (Q γ - (α₁ + γ / 2)) * p - γ ^ 2 * p ^ 2 / 2
     0 < ξ ∧ ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ (δ : ℝ), 0 < δ → δ ≤ 1 / 16 →
       ∀ z : ℂ, ‖y * z‖ ≤ δ →
@@ -43,8 +43,6 @@ theorem fusion_rootOnlyKernel_smallBall_moment {Ω : Type*} [MeasurableSpace Ω]
       (ENNReal.add_lt_top.mpr ⟨hD, ENNReal.mul_lt_top hD ENNReal.ofReal_lt_top⟩)
   · intro δ hδ hδ16 z hz
     have hw0 := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (α₁ + γ / 2) 0 δ
-    have hwu := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM
-      (α₁ + γ / 2) (y * z) (2 * δ)
     have hae : ∀ᵐ ω ∂P, (∫⁻ x in Metric.ball (0 : ℂ) δ,
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x *
           Real.exp (γ ^ 2 * gffKernel (y * z) x)) ∂M ω) ^ p ≤
@@ -71,7 +69,7 @@ theorem fusion_rootOnlyKernel_smallBall_moment {Ω : Type*} [MeasurableSpace Ω]
         have hm : AEMeasurable (fun ω =>
             weightedGmcBallMass γ (M ω) (α₁ + γ / 2) 0 δ ^ p +
             weightedGmcBallMass γ (M ω) (α₁ + γ / 2) (y * z) (2 * δ) ^ p) P :=
-          (hw0.pow_const p).add (hwu.pow_const p)
+          (hw0.pow_const p).add ((gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (α₁ + γ / 2) (y * z) (2 * δ)).pow_const p)
         rw [lintegral_const_mul'' _ hm,
           lintegral_add_left' (hw0.pow_const p)]
         rfl

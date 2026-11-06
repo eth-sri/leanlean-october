@@ -16,7 +16,7 @@ noncomputable def dualPathRadialScale (γ ν h : ℝ) (z : ℂ) (A : TwoSidedPat
   Real.exp (γ*A (-Real.log ‖z‖+h)-γ*ν*(-Real.log ‖z‖+h)-2*(-Real.log ‖z‖))
 
 /-- Fixed-time radial evaluation gives a measurable path likelihood. -/
-theorem dual_path_radial_scale_measurable (γ ν h : ℝ) (z : ℂ) :
+theorem dual_path_radial_scale_measurable γ ν h z :
     Measurable (dualPathRadialScale γ ν h z) :=
   (((ContinuousMap.measurable_eval _).const_mul γ).sub measurable_const).sub measurable_const |>.exp
 
@@ -24,7 +24,7 @@ theorem dual_path_radial_scale_measurable (γ ν h : ℝ) (z : ℂ) :
 theorem dual_source_radial_scale_eq_path_ae
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ ν h : ℝ) (z : ℂ) :
+    γ ν h z :
     dual_radial_scale γ ν h Xc z =ᵐ[P]
       (fun ω => dualPathRadialScale γ ν h z (originRadialPath Xc ω)) := by
   filter_upwards [originRadialPath_eval_ae hcont] with ω hω
@@ -33,8 +33,8 @@ theorem dual_source_radial_scale_eq_path_ae
 
 /-- At the actual restart time, the path likelihood is exactly the stopped-past terminal
 likelihood used in the Williams joint law. -/
-theorem dual_path_radial_scale_eq_past (γ ν h : ℝ) (z : ℂ) (hz0 : z ≠ 0)
-    (A : TwoSidedPath) (T : ℝ≥0) (hT : (T : ℝ) = -Real.log ‖z‖+h) :
+theorem dual_path_radial_scale_eq_past γ ν h z (hz0 : z ≠ 0)
+    A (T : ℝ≥0) (hT : (T : ℝ) = -Real.log ‖z‖+h) :
     dualPathRadialScale γ ν h z A = dualPastRestartWeight γ ν T z
       (stopBrownianPath (radialPositiveHalf A) T, radialNegativeHalf A) := by
   have he := dual_radial_scale_eq_restart γ ν h

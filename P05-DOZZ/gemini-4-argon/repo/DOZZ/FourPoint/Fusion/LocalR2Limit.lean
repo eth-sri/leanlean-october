@@ -16,10 +16,10 @@ namespace DOZZ.Proofs
 
 /-- The normalized local `r₂` term tends to its scaled spatial-time integral coefficient. -/
 theorem fusionLocalR2_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hlo : γ / 2 < α₁) (hsq : 2 < γ ^ 2) (hα₁ : α₁ < 2 / γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p) :
+    α₁ α₂ α₃ (hlo : γ / 2 < α₁) (hsq : 2 < γ ^ 2) (hα₁ : α₁ < 2 / γ)
+    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) p (hp : 0 ≤ p) :
     Tendsto (fun z : ℂ => fusionLocalR2 P M γ α₁ α₂ α₃ p z /
       (‖z‖ ^ (γ * (Q γ - α₁)) : ℝ)) (nhdsWithin 0 {0}ᶜ)
       (nhds (((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) *
@@ -36,8 +36,7 @@ theorem fusionLocalR2_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
   have h := fusionScaledTimeIntegral_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo.le hα₁ hα₂ hα₃
     (-p - 1) (by linarith) _ hKm hK (γ ^ 2 / 2 - γ * α₁) (by linarith)
   simp only [integral_complex_ofReal] at h
-  have hc := (tendsto_const_nhds (x := ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ))).mul h
-  apply (hc.mono_left (show nhdsWithin (0 : ℂ) {0}ᶜ ≤ nhds 0 from nhdsWithin_le_nhds)).congr' 
+  apply (((tendsto_const_nhds (x := ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ))).mul h).mono_left (show nhdsWithin (0 : ℂ) {0}ᶜ ≤ nhds 0 from nhdsWithin_le_nhds)).congr' 
   have hz4 : ∀ᶠ z : ℂ in nhdsWithin 0 {0}ᶜ, ‖z‖ ≤ 1 / 4 := by
     have h : ∀ᶠ z : ℂ in nhds 0, ‖z‖ < 1 / 4 :=
       (continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)
@@ -45,10 +44,8 @@ theorem fusionLocalR2_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
   filter_upwards [hz4, self_mem_nhdsWithin] with z hz4 hz
   have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
   rw [fusionLocalR2_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃ p hp z hz0 hz4]
-  have hr : (‖z‖ ^ (γ * (Q γ - α₁)) : ℝ) ≠ 0 :=
-    (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _).ne'
   have hcancel (a b c : ℂ) (hb : b ≠ 0) : a * b * c / b = a * c := by
     rw [mul_assoc, mul_comm b c, ← mul_assoc, mul_div_cancel_right₀ _ hb]
-  exact (hcancel _ _ _ (Complex.ofReal_ne_zero.mpr hr)).symm
+  exact (hcancel _ _ _ (Complex.ofReal_ne_zero.mpr ((Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _).ne'))).symm
 
 end DOZZ.Proofs

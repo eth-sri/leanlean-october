@@ -17,7 +17,7 @@ namespace DOZZ.Proofs
 a small positive annular moment, and a higher positive endpoint moment with strict slack.
 The lower endpoint leaves room for the derivative power. -/
 theorem real_charge_moment_budget {I : Type*} [Fintype I]
-    (γ : ℝ) (hγ : 0 < γ) (α : I → ℝ) (p : ℝ)
+    (γ : ℝ) (hγ : 0 < γ) (α : I → ℝ) p
     (ha : ∀ i, α i < Q γ) (hp : p < 4 / γ ^ 2)
     (hpi : ∀ i, p < 2 / γ * (Q γ - α i)) :
     ∃ A a gap m g lo hi q b : ℝ,
@@ -27,7 +27,7 @@ theorem real_charge_moment_budget {I : Type*} [Fintype I]
       hi * q + g ≤ 4 / γ ^ 2 ∧ hi * q + g ≤ 2 / γ * (Q γ - a) := by
   classical
   have hb0 : 0 < 4 / γ ^ 2 := by positivity
-  have hi0 (i : I) : 0 < 2 / γ * (Q γ - α i) :=
+  have hi0 i : 0 < 2 / γ * (Q γ - α i) :=
     mul_pos (by positivity) (sub_pos.mpr (ha i))
   have eb : ∀ᶠ t in 𝓝[>] (max p 0), t ∈ Ioo (max p 0) (4 / γ ^ 2) :=
     Ioo_mem_nhdsGT (max_lt hp hb0)
@@ -37,7 +37,7 @@ theorem real_charge_moment_budget {I : Type*} [Fintype I]
   have ht0 : 0 < t := (le_max_right p 0).trans_lt ht.1
   have hpt : p < t := (le_max_left p 0).trans_lt ht.1
   let u := Q γ - γ * t / 2
-  have hau (i : I) : α i < u := by
+  have hau i : α i < u := by
     have hi := mul_lt_mul_of_pos_right (hti i).2 hγ
     have he : (2 / γ * (Q γ - α i)) * γ = 2 * (Q γ - α i) := by field_simp
     rw [he] at hi
@@ -82,7 +82,7 @@ theorem real_charge_moment_budget {I : Type*} [Fintype I]
   have hg : 0 < g := by dsimp only [g]; rw [hhiq]; linarith
   have hgt : hi * q + g < t := by dsimp only [g]; rw [hhiq]; linarith
   let A := 1 + ∑ i, |α i|
-  have hA (i : I) : |α i| < A := by
+  have hA i : |α i| < A := by
     have he := Finset.single_le_sum (f := fun j => |α j|)
       (fun j _ => abs_nonneg (α j)) (Finset.mem_univ i)
     dsimp only [A]

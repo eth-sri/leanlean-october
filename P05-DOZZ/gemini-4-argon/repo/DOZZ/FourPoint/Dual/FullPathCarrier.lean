@@ -17,8 +17,8 @@ error is little-o at every exponent below `ξ`. Their radial removal and indepen
 proved on the same eventual family of source carriers. The joint law retains the full
 radial path, including the future increment and terminal likelihood simultaneously. -/
 theorem dual_full_copied_path_law_carrier
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun v : Ω × (ℂ × ℝ) => Xc v.1 v.2.1 v.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun v : ℂ × ℝ => Xc ω v.1 v.2))
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
@@ -49,11 +49,8 @@ theorem dual_full_copied_path_law_carrier
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM α₁ α₂ α₃ q h ξ κ
       hq hα₁ hα₂ hα₃ hβ hslack hξ hξ1 hκ
   refine ⟨N, hNm, hi, hfin, heq, hlaw, ?_⟩
-  have hAr := originRadialPath_aemeasurable P X Xc hc hcont
   apply ht.congr
   intro z
-  have he := dual_copied_inverse_moment_congr P Xc hAr N₀ N
-    (heq₀.trans heq.symm) γ α₁ α₂ α₃ q z (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ))
-  rw [he]
+  rw [(dual_copied_inverse_moment_congr P Xc (originRadialPath_aemeasurable P X Xc hc hcont) N₀ N (heq₀.trans heq.symm) γ α₁ α₂ α₃ q z (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ)))]
 
 end DOZZ.Proofs

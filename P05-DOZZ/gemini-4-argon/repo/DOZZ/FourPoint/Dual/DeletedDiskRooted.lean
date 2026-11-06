@@ -16,8 +16,8 @@ namespace DOZZ.Proofs
 /-- Rooting and spatial integration give the deleted-disk power for the actual
 retained inverse mass, uniformly in the insertion and retained radius. -/
 theorem dual_deleted_disk_rooted_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ q : ℝ) (hq : 0 ≤ q) (hβ : γ * α₁ < 4) :
     ∃ C : ℝ, 0 < C ∧ ∀ (z : ℂ) (ξ r : ℝ), ‖z‖ ≤ 1 → ‖z‖ ^ (1 - ξ) ≤ 1 →
       0 < r → r ≤ 1 / 2 →
@@ -32,16 +32,11 @@ theorem dual_deleted_disk_rooted_bound {Ω : Type*} [MeasurableSpace Ω]
   intro z ξ r hz hcut hr hr₁
   let D := Metric.ball (0 : ℂ) r
   let f := D.indicator (dualFusionKernel γ α₁ α₂ α₃ 0)
-  have hf : Measurable f := (dual_kernel_measurable γ α₁ α₂ α₃ 0).indicator measurableSet_ball
-  have he : (fun x => ENNReal.ofReal (f x)) =
-      D.indicator (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x)) := by
-    funext x
-    by_cases hx : x ∈ D <;> simp [f, hx]
-  have ht := hb z ξ hz hcut f hf
+  have ht := hb z ξ hz hcut f ((dual_kernel_measurable γ α₁ α₂ α₃ 0).indicator measurableSet_ball)
   simp_rw [show ∀ x, ENNReal.ofReal (f x) = D.indicator
-    (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x)) x from fun x => congrFun he x] at ht
+    (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x)) x from fun x => congrFun (show (fun x => ENNReal.ofReal (f x)) = D.indicator (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x)) by funext x; by_cases hx : x ∈ D <;> simp [f, hx]) x] at ht
   rw [lintegral_indicator measurableSet_ball] at ht
-  have heω (ω : Ω) : (∫⁻ u, D.indicator
+  have heω ω : (∫⁻ u, D.indicator
       (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x)) u *
         dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q) ∂M ω) =
       (∫⁻ x in D, ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x) ∂M ω) *
@@ -58,8 +53,8 @@ theorem dual_deleted_disk_rooted_bound {Ω : Type*} [MeasurableSpace Ω]
 
 /-- The actual rooted deleted-disk term is negligible at the dual fusion power. -/
 theorem dual_deleted_disk_rooted_littleO {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ q ξ κ : ℝ) (hq : 0 ≤ q) (hβ : γ * α₁ < 4) (hξ₁ : ξ < 1)
     (hslack : κ < (1 - ξ) * (4 - γ * α₁)) :
     Tendsto (fun z : ℂ =>

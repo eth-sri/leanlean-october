@@ -20,18 +20,18 @@ noncomputable def normalizedDiskPrimitive (c : ℂ) (r : ℝ) (f : ℂ → E) (y
     (hf : DifferentiableOn ℂ f (Metric.ball c r)) : ℂ → E :=
   Classical.choose (hf.isExactOn_ball.with_val_at c y)
 
-theorem normalizedDiskPrimitive_apply_center (c : ℂ) (r : ℝ) (f : ℂ → E) (y : E)
-    (hf : DifferentiableOn ℂ f (Metric.ball c r)) :
+theorem normalizedDiskPrimitive_apply_center c r (f : ℂ → E) y
+    hf :
     normalizedDiskPrimitive c r f y hf c = y := by
   exact (Classical.choose_spec (hf.isExactOn_ball.with_val_at c y)).1
 
-theorem hasDerivAt_normalizedDiskPrimitive {c z : ℂ} {r : ℝ} {f : ℂ → E} {y : E}
-    (hf : DifferentiableOn ℂ f (Metric.ball c r)) (hz : z ∈ Metric.ball c r) :
+theorem hasDerivAt_normalizedDiskPrimitive {c z} {r} {f : ℂ → E} {y}
+    hf (hz : z ∈ Metric.ball c r) :
     HasDerivAt (normalizedDiskPrimitive c r f y hf) (f z) z := by
   exact (Classical.choose_spec (hf.isExactOn_ball.with_val_at c y)).2 z hz
 
-theorem differentiableOn_normalizedDiskPrimitive (c : ℂ) (r : ℝ) (f : ℂ → E) (y : E)
-    (hf : DifferentiableOn ℂ f (Metric.ball c r)) :
+theorem differentiableOn_normalizedDiskPrimitive c r (f : ℂ → E) y
+    hf :
     DifferentiableOn ℂ (normalizedDiskPrimitive c r f y hf) (Metric.ball c r) := by
   intro z hz
   exact (hasDerivAt_normalizedDiskPrimitive hf hz).differentiableAt.differentiableWithinAt

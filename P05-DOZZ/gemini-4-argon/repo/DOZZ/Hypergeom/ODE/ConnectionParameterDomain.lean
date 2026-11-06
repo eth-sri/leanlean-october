@@ -22,28 +22,12 @@ def gaussConnectionParameterDomain : Set (ℂ × ℂ × ℂ) :=
   {p | (∀ n : ℤ, p.2.2 ≠ (n : ℂ)) ∧
     ∀ n : ℤ, p.2.2 - p.1 - p.2.1 ≠ (n : ℂ)}
 
-/-- The integer lattice is closed in the complex plane. -/
-private theorem gaussIntegerRange_isClosed : IsClosed gaussIntegerRange := by
-  have hIso : Isometry (fun n : ℤ => (n : ℂ)) := Complex.isometry_intCast
-  exact hIso.isClosedEmbedding.isClosed_range
 
 /-- The nonresonant parameter domain is open. -/
 theorem gaussConnectionParameterDomain_isOpen :
     IsOpen gaussConnectionParameterDomain := by
-  have hc : IsOpen {p : ℂ × ℂ × ℂ | p.2.2 ∉ gaussIntegerRange} := by
-    exact gaussIntegerRange_isClosed.isOpen_compl.preimage
-      (continuous_snd.comp continuous_snd)
-  have hδ : IsOpen {p : ℂ × ℂ × ℂ |
-      p.2.2 - p.1 - p.2.1 ∉ gaussIntegerRange} := by
-    have hcont : Continuous (fun p : ℂ × ℂ × ℂ => p.2.2 - p.1 - p.2.1) := by
-      fun_prop
-    exact gaussIntegerRange_isClosed.isOpen_compl.preimage hcont
-  have hEq : gaussConnectionParameterDomain =
-      {p | p.2.2 ∉ gaussIntegerRange} ∩
-        {p | p.2.2 - p.1 - p.2.1 ∉ gaussIntegerRange} := by
-    ext p
-    simp [gaussConnectionParameterDomain, gaussIntegerRange, eq_comm]
-  rw [hEq]
-  exact hc.inter hδ
+  have gaussIntegerRange_isClosed := Complex.isometry_intCast.isClosedEmbedding.isClosed_range
+  rw [(show gaussConnectionParameterDomain = {p | p.2.2 ∉ gaussIntegerRange} ∩ {p | p.2.2 - p.1 - p.2.1 ∉ gaussIntegerRange} by ext p; simp [gaussConnectionParameterDomain, gaussIntegerRange, eq_comm])]
+  exact (gaussIntegerRange_isClosed.isOpen_compl.preimage (continuous_snd.comp continuous_snd)).inter (by exact gaussIntegerRange_isClosed.isOpen_compl.preimage (by fun_prop))
 
 end DOZZ.Proofs

@@ -16,13 +16,13 @@ reference measure. The spatial domination uses the mean-one normalization. -/
 theorem admissibleCutoffIntegral_L1_continuous_finite_reference
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
+    U (dens : ℂ → ℝ) ε₀
+    Y
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (hν : logRegularizationReference U dens Set.univ ≠ ⊤)
-    (r : ℝ) (hr : Real.exp (-r) ≤ ε₀)
-    (L : ℝ) (g : ℂ → ℝ) (hg : Measurable g) (hgL : ∀ x, |g x| ≤ L)
-    (γ₀ : ℝ) :
+    r (hr : Real.exp (-r) ≤ ε₀)
+    L g (hg : Measurable g) (hgL : ∀ x, |g x| ≤ L)
+    γ₀ :
     Tendsto (fun γ => ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ r g ω -
         admissibleCutoffIntegral P U dens Y γ₀ r g ω| ∂P) (𝓝 γ₀) (𝓝 0) := by
   set ε := Real.exp (-r) with hεdef
@@ -38,15 +38,13 @@ theorem admissibleCutoffIntegral_L1_continuous_finite_reference
       simp only [pow_two]
     rw [heq]
     exact admissibleLogRegularization_variance_measurable P U dens ε₀ Y hY ε
-  have hfield : Measurable (fun q : Ω × ℂ => Y q.1 ε q.2) := hY.measurableAtScale ε
-  have hjoint (γ : ℝ) : Measurable (fun q : ℂ × Ω => ENNReal.ofReal
+  have hfield := hY.measurableAtScale ε
+  have hjoint γ : Measurable (fun q : ℂ × Ω => ENNReal.ofReal
       |Real.exp (γ * Y q.2 ε q.1 - γ ^ 2 / 2 * ∫ ω', Y ω' ε q.1 ^ 2 ∂P) -
         Real.exp (γ₀ * Y q.2 ε q.1 - γ₀ ^ 2 / 2 * ∫ ω', Y ω' ε q.1 ^ 2 ∂P)|) := by
-    have h1 : Measurable (fun q : ℂ × Ω => Y q.2 ε q.1) := hfield.comp measurable_swap
-    have h2 : Measurable (fun q : ℂ × Ω => ∫ ω', Y ω' ε q.1 ^ 2 ∂P) := hv.comp measurable_fst
+    have : Measurable (fun q : ℂ × Ω => ∫ ω', Y ω' ε q.1 ^ 2 ∂P) := hv.comp measurable_fst
     fun_prop
-  have hDmeas (γ : ℝ) : Measurable (D γ) := (hjoint γ).lintegral_prod_right'
-  have hDle (γ : ℝ) (x : ℂ) : D γ x ≤ 2 := by
+  have hDle (γ : ℝ) x : D γ x ≤ 2 := by
     calc D γ x ≤ ∫⁻ ω, (ENNReal.ofReal (Real.exp (γ * Y ω ε x - γ ^ 2 / 2 *
           ∫ ω', Y ω' ε x ^ 2 ∂P)) + ENNReal.ofReal (Real.exp (γ₀ * Y ω ε x - γ₀ ^ 2 / 2 *
           ∫ ω', Y ω' ε x ^ 2 ∂P))) ∂P := by
@@ -66,10 +64,10 @@ theorem admissibleCutoffIntegral_L1_continuous_finite_reference
             lintegral_admissibleLogWickWeight P U dens ε₀ Y hY γ₀ ε hε hr x]
       _ = 2 := by norm_num
   -- the expected difference is bounded by the integrated weight difference
-  have hbound (γ : ℝ) : ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ r g ω -
+  have hbound γ : ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ r g ω -
       admissibleCutoffIntegral P U dens Y γ₀ r g ω| ∂P ≤
       ENNReal.ofReal L * ∫⁻ x, D γ x ∂logRegularizationReference U dens := by
-    have hpt (ω : Ω) : ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ r g ω -
+    have hpt ω : ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ r g ω -
         admissibleCutoffIntegral P U dens Y γ₀ r g ω| ≤
         ENNReal.ofReal L * ∫⁻ x, ENNReal.ofReal
           |Real.exp (γ * Y ω ε x - γ ^ 2 / 2 * ∫ ω', Y ω' ε x ^ 2 ∂P) -
@@ -82,7 +80,7 @@ theorem admissibleCutoffIntegral_L1_continuous_finite_reference
       have hFx : Measurable (fun x => ENNReal.ofReal
           |Real.exp (γ * Y ω ε x - γ ^ 2 / 2 * ∫ ω', Y ω' ε x ^ 2 ∂P) -
             Real.exp (γ₀ * Y ω ε x - γ₀ ^ 2 / 2 * ∫ ω', Y ω' ε x ^ 2 ∂P)|) :=
-        (hjoint γ).comp (f := fun x : ℂ => (x, ω)) (measurable_id.prodMk measurable_const)
+        (hjoint γ).comp (f := fun x => (x, ω)) (measurable_id.prodMk measurable_const)
       rw [← lintegral_const_mul _ hFx]
       apply lintegral_mono
       intro x
@@ -115,18 +113,13 @@ theorem admissibleCutoffIntegral_L1_continuous_finite_reference
       (𝓝 γ₀) (𝓝 0) := by
     have h := tendsto_lintegral_filter_of_dominated_convergence
       (μ := logRegularizationReference U dens) (f := fun _ => 0) (fun _ => 2)
-      (Eventually.of_forall hDmeas) (Eventually.of_forall fun γ => ae_of_all _ (hDle γ))
+      (Eventually.of_forall (fun γ => (hjoint γ).lintegral_prod_right')) (Eventually.of_forall fun γ => ae_of_all _ (hDle γ))
       (by
         rw [lintegral_const]
         exact ENNReal.mul_ne_top (by norm_num) hν)
       (ae_of_all _ fun x => admissible_wick_weight_L1_continuous P U dens ε₀ Y hY ε hε hr x γ₀)
     simpa using h
-  have hmul : Tendsto (fun γ => ENNReal.ofReal L *
-      ∫⁻ x, D γ x ∂logRegularizationReference U dens) (𝓝 γ₀) (𝓝 0) := by
-    have h := ENNReal.Tendsto.const_mul (a := ENNReal.ofReal L) hDlim
-      (Or.inr ENNReal.ofReal_ne_top)
-    simpa using h
-  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hmul (fun _ => zero_le)
+  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds (by simpa using (ENNReal.Tendsto.const_mul (a := ENNReal.ofReal L) hDlim (Or.inr ENNReal.ofReal_ne_top))) (fun _ => zero_le)
     hbound
 
 
@@ -134,27 +127,21 @@ theorem admissibleCutoffIntegral_L1_continuous_finite_reference
 can vary simultaneously with the charge in the circle cutoff integral. -/
 theorem regularizedGMC_testFamily_L1_continuous
     {Ω T : Type*} [MeasurableSpace Ω] [PseudoMetricSpace T]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (r : ℝ) (hr : 0 ≤ r) (γ : T → ℝ) (hγ : Continuous γ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
+    r (hr : 0 ≤ r) γ (hγ : Continuous γ)
     (f : T → ℂ → ℝ) (hf : ∀ q, Measurable (f q))
-    (hfc : ∀ x, Continuous (fun q => f q x)) (L : ℝ)
-    (hL : ∀ q x, |f q x| ≤ L) (q₀ : T) :
+    (hfc : ∀ x, Continuous (fun q => f q x)) L
+    (hL : ∀ q x, |f q x| ≤ L) q₀ :
     Tendsto (fun q => ∫⁻ ω, ENNReal.ofReal
       |∫ x, f q x ∂regularizedGMC P Xc (γ q) r ω -
         ∫ x, f q₀ x ∂regularizedGMC P Xc (γ q₀) r ω| ∂P) (𝓝 q₀) (𝓝 0) := by
   let _ : IsProbabilityMeasure P := hX.1
-  have hν : logRegularizationReference Set.univ circleDensity Set.univ ≠ ⊤ := by
-    rw [logRegularizationReference_univ_circleDensity]
-    exact gmcReferenceMeasure_univ_ne_top
-  have hfixed := admissibleCutoffIntegral_L1_continuous_finite_reference P Set.univ
-    circleDensity 1 (circleRegularization Xc) (circleRegularization_admissible P X hX Xc hXc)
-    hν r (Real.exp_le_one_iff.mpr (neg_nonpos.mpr hr)) L (f q₀) (hf q₀) (hL q₀) (γ q₀)
   have hfixed' : Tendsto (fun q => ∫⁻ ω, ENNReal.ofReal
       |∫ x, f q₀ x ∂regularizedGMC P Xc (γ q) r ω -
         ∫ x, f q₀ x ∂regularizedGMC P Xc (γ q₀) r ω| ∂P) (𝓝 q₀) (𝓝 0) := by
     simpa only [Function.comp_def, integral_regularizedGMC_eq_admissibleCutoffIntegral P X hX Xc hXc]
-      using hfixed.comp (hγ.tendsto q₀)
+      using (admissibleCutoffIntegral_L1_continuous_finite_reference P Set.univ circleDensity 1 (circleRegularization Xc) (circleRegularization_admissible P X hX Xc hXc) (by rw [logRegularizationReference_univ_circleDensity]; exact gmcReferenceMeasure_univ_ne_top) r (Real.exp_le_one_iff.mpr (neg_nonpos.mpr hr)) L (f q₀) (hf q₀) (hL q₀) (γ q₀)).comp (hγ.tendsto q₀)
   have htest : Tendsto (fun q => ∫⁻ x, ENNReal.ofReal |f q x - f q₀ x|
       ∂gmcReferenceMeasure) (𝓝 q₀) (𝓝 0) := by
     have h := tendsto_lintegral_filter_of_dominated_convergence
@@ -167,10 +154,9 @@ theorem regularizedGMC_testFamily_L1_continuous
         rw [lintegral_const]
         exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top gmcReferenceMeasure_univ_ne_top)
       (ae_of_all _ fun x => by
-        have hh := ENNReal.tendsto_ofReal (((hfc x).tendsto q₀).sub_const (f q₀ x) |>.abs)
-        simpa only [Function.comp_apply, Pi.sub_apply, sub_self, abs_zero, ENNReal.ofReal_zero] using hh)
+        simpa only [Function.comp_apply, Pi.sub_apply, sub_self, abs_zero, ENNReal.ofReal_zero] using (ENNReal.tendsto_ofReal (((hfc x).tendsto q₀).sub_const (f q₀ x) |>.abs)))
     simpa only [Function.comp_apply, Pi.sub_apply, lintegral_zero] using h
-  have hvar (q : T) : ∫⁻ ω, ENNReal.ofReal
+  have hvar q : ∫⁻ ω, ENNReal.ofReal
       |∫ x, f q x ∂regularizedGMC P Xc (γ q) r ω -
         ∫ x, f q₀ x ∂regularizedGMC P Xc (γ q) r ω| ∂P ≤
         ∫⁻ x, ENNReal.ofReal |f q x - f q₀ x| ∂gmcReferenceMeasure := by
@@ -210,8 +196,8 @@ theorem continuityCutoffTest_measurable {N : ℕ} (partition : GMCChartPartition
 /-- The real part of the cutoff mass `DOZZ.regularizedCoulombMass` is exactly the integral of its
 bounded single-chart real test. This identity also respects the integral totalizations. -/
 theorem regularizedCoulombMass_real_eq_integral_test
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (partition : GMCChartPartition) (r : ℝ) (c : ContinuityCoulombParameter N) (ω : Ω) :
     (regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω).toReal =
@@ -220,10 +206,7 @@ theorem regularizedCoulombMass_real_eq_integral_test
   simp_rw [coulombCutoffWeight_eq_ofReal_continuityCutoffTest]
   change (∫⁻ x, ENNReal.ofReal (continuityCutoffTest partition r c x)
     ∂regularizedGMC P Xc c.1 r ω).toReal = _
-  have h := integral_toReal
-    (ENNReal.measurable_ofReal.comp (continuityCutoffTest_measurable partition r c)).aemeasurable
-    (ae_of_all (regularizedGMC P Xc c.1 r ω) (fun _ => ENNReal.ofReal_lt_top))
-  simpa only [Function.comp_apply, ENNReal.toReal_ofReal (continuityCutoffTest_nonneg partition r c _)] using h.symm
+  simpa only [Function.comp_apply, ENNReal.toReal_ofReal (continuityCutoffTest_nonneg partition r c _)] using (integral_toReal (ENNReal.measurable_ofReal.comp (continuityCutoffTest_measurable partition r c)).aemeasurable (ae_of_all (regularizedGMC P Xc c.1 r ω) (fun _ => ENNReal.ofReal_lt_top))).symm
 
 /-- At a fixed cutoff, the actual chartwise Coulomb mass is continuous in all
 couplings, roots and charges in `L¹(P)` on every compact parameter set. -/
@@ -238,43 +221,26 @@ theorem regularizedCoulombMass_L1_continuous_on_compact
         (regularizedCoulombMass P Xc c₀.val.1 partition c₀.val.2.2.1 c₀.val.2.1 c₀.val.2.2.2 r ω).toReal|
         ∂P) (𝓝 c₀) (𝓝 0) := by
   obtain ⟨L, _hL0, hL⟩ := continuityCutoffTests_uniform_bound partition r S hS
-  have hfc : ∀ x, Continuous (fun c : S => continuityCutoffTest partition r c.val x) := by
-    intro x
-    exact ((continuityFiniteCutoffTest_continuous partition r).comp
-      (continuous_subtype_val.prodMk continuous_const)).add
-      ((continuityInfinityCutoffTest_continuous partition r).comp
-        (continuous_subtype_val.prodMk continuous_const))
-  have hb : ∀ c : S, ∀ x, |continuityCutoffTest partition r c.val x| ≤ 2 * L := by
-    intro c x
-    exact (abs_add_le _ _).trans (by linarith [(hL c.val c.property x).1,
-      (hL c.val c.property x⁻¹).2])
-  have h := regularizedGMC_testFamily_L1_continuous P X hX Xc hXc r hr
-    (fun c : S => c.val.1) (continuous_fst.comp continuous_subtype_val)
-    (fun c : S => continuityCutoffTest partition r c.val)
-    (fun c => continuityCutoffTest_measurable partition r c.val) hfc (2 * L) hb c₀
-  simpa only [regularizedCoulombMass_real_eq_integral_test P X hX Xc hXc] using h
+  simpa only [regularizedCoulombMass_real_eq_integral_test P X hX Xc hXc] using (regularizedGMC_testFamily_L1_continuous P X hX Xc hXc r hr (fun c : S => c.val.1) (continuous_fst.comp continuous_subtype_val) (fun c : S => continuityCutoffTest partition r c.val) (fun c => continuityCutoffTest_measurable partition r c.val) (by intro x; exact ((continuityFiniteCutoffTest_continuous partition r).comp (continuous_subtype_val.prodMk continuous_const)).add ((continuityInfinityCutoffTest_continuous partition r).comp (continuous_subtype_val.prodMk continuous_const))) (2 * L) (by intro c x; exact (abs_add_le _ _).trans (by linarith [(hL c.val c.property x).1, (hL c.val c.property x⁻¹).2])) c₀)
 
 /-- The actual extended cutoff mass is measurable for every fixed parameter. -/
 theorem continuity_regularizedCoulombMass_measurable
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (partition : GMCChartPartition) (r : ℝ) (c : ContinuityCoulombParameter N) :
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
+    partition r (c : ContinuityCoulombParameter N) :
     Measurable (fun ω => regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω) := by
-  have h := (Measure.measurable_lintegral
-    (measurable_coulombCutoffWeight partition c.1 c.2.2.1 c.2.1 c.2.2.2 r)).comp
-      (regularizedGMC_measurable P X hX Xc hXc c.1 r)
-  simpa only [Function.comp_def, regularizedCoulombMass_eq_lintegral P X hX Xc hXc] using h
+  simpa only [Function.comp_def, regularizedCoulombMass_eq_lintegral P X hX Xc hXc] using ((Measure.measurable_lintegral (measurable_coulombCutoffWeight partition c.1 c.2.2.1 c.2.1 c.2.2.2 r)).comp (regularizedGMC_measurable P X hX Xc hXc c.1 r))
 
 /-- The bounded chart tests make the actual cutoff mass finite almost surely. -/
 theorem continuity_regularizedCoulombMass_finite_ae
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (partition : GMCChartPartition) (r : ℝ) (c : ContinuityCoulombParameter N) :
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
+    partition r (c : ContinuityCoulombParameter N) :
     ∀ᵐ ω ∂P, regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω ≠ ⊤ := by
   obtain ⟨L, _hL0, hL⟩ := continuityCutoffTests_uniform_bound partition r {c} isCompact_singleton
-  have hb (x : ℂ) : continuityCutoffTest partition r c x ≤ 2 * L :=
+  have hb x : continuityCutoffTest partition r c x ≤ 2 * L :=
     (le_abs_self _).trans ((abs_add_le _ _).trans (by
       linarith [(hL c rfl x).1, (hL c rfl x⁻¹).2]))
   filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc c.1 r] with ω hω

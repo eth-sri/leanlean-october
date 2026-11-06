@@ -27,9 +27,9 @@ namespace DOZZ.Proofs
 set_option linter.unusedVariables false in
 /-- From the literal full inverse-moment limit to both dual fusion conclusions. -/
 theorem dual_full_fusion_of_normalized_inverse_limit {Ω : Type*} [MeasurableSpace Ω]
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+    {H}
     (hH : IsGaussHypergeometricFamily H)
-    (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
+    (P : Measure Ω) (M : Ω → Measure ℂ) X
     (γ μ α₁ α₂ α₃ η ξ : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hη : 0 < η) (hη₂ : η < γ / 2) (hξ : 0 < ξ) (hξ₂ : ξ < 1)
@@ -79,13 +79,12 @@ let κ := (4 / γ) * (Q γ - α₁)
   let C₀ := structureConstant P M γ μ (α₁-2/γ) α₂ α₃
   let D := reflectionR P γ μ α₁ (B α₁) Z *
     structureConstant P M γ μ (2*Q γ-α₁-2/γ) α₂ α₃
-  let E := fun z : ℂ => (∫⁻ ω,
+  let E := fun z => (∫⁻ ω,
     (∫⁻ x, ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω)^(-p) ∂P).toReal
   let E₀ := (∫⁻ ω, coulombMass γ (M ω) ![-2/γ,α₁,α₂] ![0,0,1] α₃^(-p) ∂P).toReal
   let L := (a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
     (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃^(-(p+a)) ∂P).toReal*
     (∫⁻ ω, twoSidedReflectionMass γ (B α₁) Z ω^a ∂P).toReal
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have hcoeff : N*L = D := by
     have hi := dual_inner_coefficient_eq P M (B α₁) Z γ μ α₁ α₂ α₃ hγ hμ hs
     have he : L = 1/2*μ^p*γ*(Real.Gamma p)⁻¹ *
@@ -97,21 +96,16 @@ let κ := (4 / γ) * (Q γ - α₁)
       rw [← hi]
       ring
     rw [he]
-    exact reflected_prefactor_cancel γ μ p _ _ hγ hμ hp
-  have hT (z : ℂ) : fourPointT P M γ μ (-2/γ) α₁ α₂ α₃ z = N*E z :=
-    fourPointT_eq_dualKernelMoment P X hX γ hγ hγ₂ M hM μ α₁ α₂ α₃ z
+    exact reflected_prefactor_cancel γ μ p _ _ hγ hμ (div_pos (by linarith only [hs]) hγ)
+  have hT (z : ℂ) := fourPointT_eq_dualKernelMoment P X hX γ hγ hγ₂ M hM μ α₁ α₂ α₃ z
   have hzero : N*E₀ = C₀ := by
-    have h2 : 0 < 2/γ := by positivity
-    have hz := DOZZ.fourPointT_zero_eq_structureConstant P X M γ μ (2/γ) α₁ α₂ α₃
-      hγ hγ₂ hμ (by linarith only [hαhi,h2])
-      hα₂ hα₃ (by linarith only [hs]) hX hM
     change N*E₀ = structureConstant P M γ μ (α₁-2/γ) α₂ α₃
-    rw [← hz]
+    rw [← (DOZZ.fourPointT_zero_eq_structureConstant P X M γ μ (2/γ) α₁ α₂ α₃ hγ hγ₂ hμ (by linarith only [hαhi,(show 0 < 2/γ by positivity)]) hα₂ hα₃ (by linarith only [hs]) hX hM)]
     unfold fourPointT
     rw [show fourPointSExp γ (-(2/γ)) α₁ α₂ α₃ = p from
       by simpa only [neg_div] using fourPointSExp_dual γ α₁ α₂ α₃]
     simp only [N, E₀, ENNReal.rpow_eq_pow, neg_div]
-  have hfull : Tendsto (fun z : ℂ =>
+  have hfull : Tendsto (fun z =>
       (fourPointT P M γ μ (-2/γ) α₁ α₂ α₃ z-C₀)/‖z‖^κ)
       (𝓝[≠] (0 : ℂ)) (𝓝 D) := by
     change Tendsto (fun z : ℂ => (E z-E₀)/‖z‖^κ) _ (𝓝 L) at hLimit
@@ -132,10 +126,9 @@ let κ := (4 / γ) * (Q γ - α₁)
       simp only [sub_self] at ht
       apply ht.congr'
       filter_upwards [self_mem_nhdsWithin] with z hz
-      have hn : ‖z‖^κ ≠ 0 := (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) _).ne'
       change (fourPointT P M γ μ (-2/γ) α₁ α₂ α₃ z-C₀)/‖z‖^κ-D =
         ((fourPointT P M γ μ (-2/γ) α₁ α₂ α₃ z-C₀)-D*‖z‖^κ)/‖z‖^κ
-      simp only [sub_div, mul_div_cancel_right₀ _ hn]
+      simp only [sub_div, mul_div_cancel_right₀ _ ((Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) _).ne')]
   · have hcast : Tendsto (fun t : ℝ => (t : ℂ))
         (𝓝[>] (0 : ℝ)) (𝓝[≠] (0 : ℂ)) := by
       apply tendsto_nhdsWithin_iff.mpr
@@ -148,8 +141,6 @@ let κ := (4 / γ) * (Q γ - α₁)
       apply (hfull.comp hcast).congr'
       filter_upwards [self_mem_nhdsWithin] with t ht
       simp only [Function.comp_def, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht, neg_div]
-    have hclass := dual_physical_fusion_coefficient hH P X M γ μ α₁ α₂ α₃ D
-      hγ hγ₂ hμ hαhi hα₂ hα₃ hs (hslack₁.trans hξ₂) hX hM hray
-    simpa only [neg_div] using hclass.2
+    simpa only [neg_div] using (dual_physical_fusion_coefficient hH P X M γ μ α₁ α₂ α₃ D hγ hγ₂ hμ hαhi hα₂ hα₃ hs (hslack₁.trans hξ₂) hX hM hray).2
 
 end DOZZ.Proofs

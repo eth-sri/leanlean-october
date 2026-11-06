@@ -37,13 +37,9 @@ theorem reflected_admissible_copied_test_limit
   obtain ⟨hν, hc₀⟩ := reflected_admissible_field_test_limit P U dens ε₀ Y hY γ N hN
     K hK hKU f₀ hf₀ hf₀K R₀ hR₀
   let _ := hν
-  have hc₁ := (reflected_admissible_field_test_limit P U dens ε₀ Y hY γ N hN
-    K hK hKU f₁ hf₁ hf₁K R₀ hR₀).2
   let Φ := fun r ω x => Y ω (Real.exp (-max r R₀)) x
-  have h0 (x : ℂ) (hx : x ∉ A) : f₀ x = 0 :=
-    image_eq_zero_of_notMem_tsupport (fun h => hx (hf₀A h))
-  have h1 (x : ℂ) (hx : x ∈ A) : f₁ x = 0 :=
-    image_eq_zero_of_notMem_tsupport (fun h => hf₁A h hx)
+  have h0 (x : ℂ) (hx : x ∉ A) := image_eq_zero_of_notMem_tsupport (fun h => hx (hf₀A h))
+  have h1 (x : ℂ) (hx : x ∈ A) := image_eq_zero_of_notMem_tsupport (fun h => hf₁A h hx)
   have he (r : ℝ) (ω : Ω × Ω) :
       fieldChaosMass (P.prod P) (reflected_decoupled_field (Φ r) A) ν
         (fun x => (f₀ x + f₁ x).toNNReal) γ ω =
@@ -68,13 +64,7 @@ theorem reflected_admissible_copied_test_limit
       · rw [indicator_of_notMem (show x ∉ Aᶜ from fun hh => hh hx), h1 x hx,
           Real.toNNReal_zero, ENNReal.coe_zero, zero_mul]
       · rw [indicator_of_mem (show x ∈ Aᶜ from hx), h0 x hx, zero_add]
-  have hm₀ := tendstoInMeasure_measurePreserving P (P.prod P) Prod.fst
-    measurePreserving_fst _ _ atTop hc₀
-  have hm₁ := tendstoInMeasure_measurePreserving P (P.prod P) Prod.snd
-    measurePreserving_snd _ _ atTop hc₁
-  have hneg := tendstoInMeasure_mul_same_space _ _
-    (fun _ : Ω × Ω => (-1 : ℝ)) measurable_const hm₁
-  have ht := tendstoInMeasure_sub (P.prod P) _ _ _ _ hm₀ hneg
+  have ht := tendstoInMeasure_sub (P.prod P) _ _ _ _ (tendstoInMeasure_measurePreserving P (P.prod P) Prod.fst measurePreserving_fst _ _ atTop hc₀) (tendstoInMeasure_mul_same_space _ _ (fun _ => (-1 : ℝ)) measurable_const (tendstoInMeasure_measurePreserving P (P.prod P) Prod.snd measurePreserving_snd _ _ atTop ((reflected_admissible_field_test_limit P U dens ε₀ Y hY γ N hN K hK hKU f₁ hf₁ hf₁K R₀ hR₀).2)))
   simp only [neg_one_mul, sub_neg_eq_add] at ht
   apply TendstoInMeasure.congr _ (Filter.EventuallyEq.refl _ _) ht
   intro r
@@ -84,13 +74,7 @@ theorem reflected_admissible_copied_test_limit
       (fun x => (f x).toNNReal) f.continuous.measurable.real_toNNReal
       ⟨‖f‖.toNNReal, fun x => Real.toNNReal_mono (by
         simpa only [Real.norm_eq_abs] using (le_abs_self (f x)).trans (f.norm_coe_le_norm x))⟩ γ
-  have hfin₀ : ∀ᵐ ω : Ω × Ω ∂P.prod P,
-      fieldChaosMass P (Φ r) ν (fun x => (f₀ x).toNNReal) γ ω.1 ≠ ⊤ :=
-    measurePreserving_fst.quasiMeasurePreserving.ae (hfinite f₀)
-  have hfin₁ : ∀ᵐ ω : Ω × Ω ∂P.prod P,
-      fieldChaosMass P (Φ r) ν (fun x => (f₁ x).toNNReal) γ ω.2 ≠ ⊤ :=
-    measurePreserving_snd.quasiMeasurePreserving.ae (hfinite f₁)
-  filter_upwards [hfin₀, hfin₁] with ω hω hω'
+  filter_upwards [(measurePreserving_fst.quasiMeasurePreserving.ae (hfinite f₀)), (measurePreserving_snd.quasiMeasurePreserving.ae (hfinite f₁))] with ω hω hω'
   rw [he, ENNReal.toReal_add hω hω']
 
 end DOZZ.Proofs

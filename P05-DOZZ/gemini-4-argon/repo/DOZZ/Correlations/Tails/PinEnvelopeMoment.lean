@@ -18,7 +18,7 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- The correction exponent is dominated by absolute pin values with a fixed coefficient. -/
-theorem pin_envelope_bound (z : ℂ) (γ N Nbar a : ℝ)
+theorem pin_envelope_bound z (γ N Nbar a : ℝ)
     (hz : 2 ≤ ‖z‖) (ha : |γ| / (2 * Real.log ‖z‖) ≤ a) :
     pinCorrectionEnvelope z γ N Nbar ≤ a * (|Nbar| + |N|) + γ ^ 2 := by
   unfold pinCorrectionEnvelope

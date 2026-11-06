@@ -18,9 +18,9 @@ namespace DOZZ.Proofs
 /-- The annular Taylor contribution, uniformly before the moving root and inner radius. -/
 theorem twoRooted_annular_bound
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ p : ℝ) (hp : 0 ≤ p) (hα : γ / 2 < α₁) :
+    α₁ α₂ α₃ p (hp : 0 ≤ p) (hα : γ / 2 < α₁) :
     ∃ C : ℝ, 0 < C ∧ ∀ ρ : ℝ, 0 < ρ → ρ ≤ 1 / 2 →
       ∀ z : ℂ, ‖z‖ ≤ ρ / 2 →
         gammaHalfTwoRootedMajorantOn P M γ α₁ α₂ α₃ p z
@@ -43,15 +43,12 @@ theorem twoRooted_annular_bound
   intro ρ hρ hρ2 z hz
   let B : Set ℂ := Metric.ball 0 (1 / 2) \ Metric.ball 0 ρ
   have hB : MeasurableSet B := measurableSet_ball.diff measurableSet_ball
-  have hunit (x : ℂ) (hx : x ∈ B) : ‖x‖ ≤ 1 / 2 := by
-    exact (show ‖x‖ < 1 / 2 by simpa only [Metric.mem_ball, dist_zero_right] using hx.1).le
-  have hz4 : ‖z‖ ≤ 1 / 4 := by linarith only [hz, hρ2]
-  have hpoint (x : ℂ) (hx : x ∈ B) :
+  have hunit x (hx : x ∈ B) : ‖x‖ ≤ 1 / 2 := (show ‖x‖ < 1 / 2 by simpa only [Metric.mem_ball, dist_zero_right] using hx.1).le
+  have hpoint x (hx : x ∈ B) :
       ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2) ≤
         ENNReal.ofReal k * ENNReal.ofReal (‖x‖ ^ a) := by
     have hxr : ρ ≤ ‖x‖ := by
-      have hh := hx.2
-      simpa only [Metric.mem_ball, dist_zero_right, not_lt] using hh
+      simpa only [Metric.mem_ball, dist_zero_right, not_lt] using hx.2
     exact gammaHalf_annular_kernel_bound γ α₁ α₂ α₃ hγ z x (hunit x hx)
       (hρ.trans_le hxr) (by linarith only [hz, hxr])
   have hkernel : (∫⁻ x in B, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2)) ≤
@@ -62,7 +59,7 @@ theorem twoRooted_annular_bound
       _ ≤ _ := mul_le_mul' le_rfl (lintegral_mono_set (fun x hx => hx.2))
   calc
     _ ≤ ENNReal.ofReal C₀ * (ENNReal.ofReal k * (∫⁻ x : ℂ in (Metric.ball 0 ρ)ᶜ, ENNReal.ofReal (‖x‖ ^ a))) :=
-      (hsp z hz4 B hB hunit).trans (mul_le_mul' le_rfl hkernel)
+      (hsp z (by linarith only [hz, hρ2]) B hB hunit).trans (mul_le_mul' le_rfl hkernel)
     _ ≤ ENNReal.ofReal C₀ * (ENNReal.ofReal k * ENNReal.ofReal (C₁ * ρ ^ (a + 2))) :=
       mul_le_mul' le_rfl (mul_le_mul' le_rfl (htail ρ hρ))
     _ = _ := by

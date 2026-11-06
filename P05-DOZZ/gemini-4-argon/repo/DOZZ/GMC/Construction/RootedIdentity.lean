@@ -17,8 +17,8 @@ namespace DOZZ.Proofs
 /-- The exact rooted identity, using almost sure finiteness at every deterministic root. -/
 theorem equatorGFF_rooted_GMC_identity
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M)
     (H : ℂ → (TestFn → ℝ) → Measure ℂ → ℝ≥0∞)
     (hH : Measurable (fun q : ℂ × ((TestFn → ℝ) × Measure ℂ) =>

@@ -17,8 +17,8 @@ namespace DOZZ.Proofs
 `DOZZ.equatorGFF_GMC_inversion_law` transfers the exterior power integral to a shrinking weighted
 disk. -/
 theorem coulomb_exterior_moment_decay
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (z : Fin N → ℂ) (A a gap m : ℝ) (hgap : 0 < gap)
     (ha : a + gap < Q γ) (hm : 0 < m)
@@ -34,7 +34,7 @@ theorem coulomb_exterior_moment_decay
   refine ⟨B ^ m * C, ENNReal.mul_lt_top
     (ENNReal.rpow_lt_top_of_nonneg hm.le ENNReal.ofReal_ne_top) hC, ?_⟩
   intro α αinf hα hi R hR hz
-  have hR0 : 0 < R := lt_of_lt_of_le zero_lt_one hR
+  have hR0 := lt_of_lt_of_le zero_lt_one hR
   have hb : ENNReal.ofReal ((2 : ℝ) ^ (∑ j, |γ * α j|)) ≤ B := by
     apply ENNReal.ofReal_le_ofReal
     apply Real.rpow_le_rpow_of_exponent_le (by norm_num)
@@ -50,8 +50,6 @@ theorem coulomb_exterior_moment_decay
       (ENNReal.measurable_ofReal.comp measurable_norm)
   have hE : MeasurableSet {x : ℂ | R < ‖x‖} :=
     measurableSet_lt measurable_const measurable_norm
-  have hw : AEMeasurable W P :=
-    gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _ hg _ hE
   have hpt (ω : Ω) :
       (∫⁻ x in {x : ℂ | R < ‖x‖}, coulombWeight γ α z αinf x ∂M ω) ≤ B * W ω := by
     dsimp only [W]
@@ -64,7 +62,7 @@ theorem coulomb_exterior_moment_decay
       lintegral_mono (fun ω => ENNReal.rpow_le_rpow (hpt ω) hm.le)
     _ = B ^ m * ∫⁻ ω, W ω ^ m ∂P := by
       simp_rw [ENNReal.mul_rpow_of_nonneg _ _ hm.le]
-      exact lintegral_const_mul'' _ (hw.pow_const m)
+      exact lintegral_const_mul'' _ ((gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _ hg _ hE).pow_const m)
     _ ≤ B ^ m * weightedGmcBallMoment P M γ αinf 0 (1 / R) m :=
       mul_le_mul_right (gmc_exterior_moment_le_weighted P X hX γ hγ hγ2 M hM αinf hR0 m hm.le) _
     _ ≤ B ^ m * (ENNReal.ofReal ((1 / R) ^ (γ * gap * m)) * C) := by

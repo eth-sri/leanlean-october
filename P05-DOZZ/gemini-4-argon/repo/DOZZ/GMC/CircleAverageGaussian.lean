@@ -21,8 +21,8 @@ namespace DOZZ.Proofs
 /-- Every finite family of circle averages of an equator GFF is centered jointly Gaussian. -/
 theorem circleAverage_finite_family_jointly_gaussian
     {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (p : ι → ℂ × ℝ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) (p : ι → ℂ × ℝ) :
     IsCenteredJointlyGaussian P (fun ω i => Xc ω (p i).1 (p i).2) := by
   obtain ⟨hProcess, hMean⟩ := circleAverage_isGaussianProcess P X Xc hX hXc
   refine ⟨hX.1, ?_, ?_⟩
@@ -30,15 +30,9 @@ theorem circleAverage_finite_family_jointly_gaussian
     exact hProcess.aemeasurable (p i)
   · intro a
     let S : Ω → ℝ := fun ω => ∑ i, a i * Xc ω (p i).1 (p i).2
-    have hWeighted : IsGaussianProcess
-        (fun i => fun ω => a i * Xc ω (p i).1 (p i).2) P := by
-      have hParam : IsGaussianProcess
-          (fun i => fun ω => Xc ω (p i).1 (p i).2) P := by
-        simpa only [Function.comp_def] using hProcess.comp_right p
-      simpa only [smul_eq_mul] using hParam.smul a
     have hLaw : HasGaussianLaw S P := by
       simpa only [S, smul_eq_mul] using
-        hWeighted.hasGaussianLaw_fun_sum (I := Finset.univ)
+        (show IsGaussianProcess (fun i => fun ω => a i * Xc ω (p i).1 (p i).2) P by simpa only [smul_eq_mul] using (show IsGaussianProcess (fun i => fun ω => Xc ω (p i).1 (p i).2) P by simpa only [Function.comp_def] using hProcess.comp_right p).smul a).hasGaussianLaw_fun_sum (I := Finset.univ)
     have hMeanS : (∫ ω, S ω ∂P) = 0 := by
       dsimp [S]
       rw [integral_finsetSum]

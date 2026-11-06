@@ -22,7 +22,7 @@ namespace DOZZ.Proofs
 /-- Every open planar chart admits a countable family of compactly supported continuous tests
 which is uniformly dense on each member of a compact exhaustion of the chart. -/
 theorem exists_countable_dense_admissible_tests
-    (U : Set ℂ) (hU : IsOpen U) :
+    U (hU : IsOpen U) :
     ∃ K : ℕ → Set ℂ,
       (∀ n, IsCompact (K n)) ∧
       (∀ n, K n ⊆ U) ∧
@@ -46,8 +46,6 @@ theorem exists_countable_dense_admissible_tests
   have hKU (n : ℕ) : K n ⊆ U := by
     rintro x ⟨y, hy, rfl⟩
     exact y.property
-  have hKmono (n : ℕ) : K n ⊆ K (n + 1) := by
-    exact Set.image_mono (E.subset_succ n)
   have hKcover : (⋃ n, K n) = U := by
     ext x
     constructor
@@ -60,12 +58,10 @@ theorem exists_countable_dense_admissible_tests
       apply mem_iUnion.mpr
       refine ⟨n, ?_⟩
       exact ⟨⟨x, hx⟩, hn, rfl⟩
-  have hKcofinal (L : Set ℂ) (hL : IsCompact L) (hLU : L ⊆ U) :
+  have hKcofinal L (hL : IsCompact L) (hLU : L ⊆ U) :
       ∃ n, L ⊆ K n := by
-    let j : L → ↥U := fun x => ⟨x.1, hLU x.2⟩
-    have hj : Continuous j := by fun_prop
     let S : Set (↥U) := {y | (y : ℂ) ∈ L}
-    have hS : Set.range j = S := by
+    have hS : Set.range (fun x => ⟨x.1, hLU x.2⟩ : L → ↥U) = S := by
       ext y
       constructor
       · rintro ⟨x, rfl⟩
@@ -76,7 +72,7 @@ theorem exists_countable_dense_admissible_tests
     have hSc : IsCompact S := by
       rw [← hS]
       let : CompactSpace L := isCompact_iff_compactSpace.mp hL
-      exact isCompact_range hj
+      exact isCompact_range (by fun_prop)
     obtain ⟨n, hn⟩ := E.exists_superset_of_isCompact hSc
     refine ⟨n, ?_⟩
     intro x hx
@@ -131,43 +127,24 @@ theorem exists_countable_dense_admissible_tests
     let : SecondCountableTopology C(↑(K n), ℝ) := inferInstance
     let : SecondCountableTopology (↥(R n)) := inferInstance
     let : PseudoMetricSpace (↥(R n)) := inferInstance
-    let gS : ↥(S n) := ⟨g, ⟨hg, hgs⟩⟩
     let target : C(↑(K n), ℝ) := g.restrict (K n)
-    have htarget : target ∈ R n := ⟨gS, rfl⟩
-    let targetR : ↥(R n) := ⟨target, htarget⟩
-    have hclosure : targetR ∈ closure (Set.range (seq n)) := hseq n targetR
-    obtain ⟨q, hq, hdist⟩ := (Metric.mem_closure_iff.mp hclosure) δ hδ
+    obtain ⟨q, hq, hdist⟩ := (Metric.mem_closure_iff.mp (hseq n ⟨target, ⟨⟨g, ⟨hg, hgs⟩⟩, rfl⟩⟩)) δ hδ
     obtain ⟨m, rfl⟩ := hq
     refine ⟨m, ?_⟩
     intro x
     by_cases hx : x ∈ K n
     · have hpoint := ContinuousMap.dist_apply_le_dist
         (f := target) (g := (seq n m).1) ⟨x, hx⟩
-      have hdistAmbient : dist target (seq n m).1 < δ := by
-        change dist target (↑(seq n m)) < δ at hdist
-        exact hdist
-      have hdistx : dist (g x) ((seq n m).1 ⟨x, hx⟩) < δ :=
-        lt_of_le_of_lt hpoint hdistAmbient
-      have hsourceeq : (source n m).1.restrict (K n) = (seq n m).1 := hsource n m
-      let xK : ↑(K n) := ⟨x, hx⟩
-      have hsourceval : ((source n m).1.restrict (K n)) xK = (seq n m).1 xK :=
-        congrArg (fun F : C(↑(K n), ℝ) => F xK) hsourceeq
-      have htesteq : test (n, m) x = (seq n m).1 ⟨x, hx⟩ := by
-        simpa [test, CompactlySupportedContinuousMap.toBoundedContinuousFunction]
-          using hsourceval
-      rw [htesteq]
+      rw [(show test (n, m) x = (seq n m).1 ⟨x, hx⟩ by simpa [test, CompactlySupportedContinuousMap.toBoundedContinuousFunction] using (congrArg (fun F : C(↑(K n), ℝ) => F ⟨x, hx⟩) (hsource n m)))]
       calc
         ‖(seq n m).1 ⟨x, hx⟩ - g x‖ =
             dist ((seq n m).1 ⟨x, hx⟩) (g x) := (dist_eq_norm _ _).symm
         _ = dist (g x) ((seq n m).1 ⟨x, hx⟩) := dist_comm _ _
-        _ < δ := hdistx
+        _ < δ := (lt_of_le_of_lt hpoint (by change dist target (↑(seq n m)) < δ at hdist; exact hdist))
     · have hgzero : g x = 0 := image_eq_zero_of_notMem_tsupport
         (fun hx' => hx (hgs hx'))
-      have hsourcezero : (test (n, m) : ℂ → ℝ) x = 0 :=
-        image_eq_zero_of_notMem_tsupport
-          (fun hx' => hx ((source n m).property.2 hx'))
-      simpa [hgzero, hsourcezero] using hδ
-  refine ⟨K, hKcompact, hKU, hKmono, hKcover, hKcofinal, test, ?_, ?_⟩
+      simpa [hgzero, (image_eq_zero_of_notMem_tsupport (fun hx' => hx ((source n m).property.2 hx')) : (test (n, m) : ℂ → ℝ) x = 0)] using hδ
+  refine ⟨K, hKcompact, hKU, (fun n => by exact Set.image_mono (E.subset_succ n)), hKcover, hKcofinal, test, ?_, ?_⟩
   · intro n m
     exact htestSupport n m
   · intro n g hg hgs δ hδ

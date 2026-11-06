@@ -23,7 +23,7 @@ namespace DOZZ.Proofs
 a nonzero germ, while its reflection germ supplies the physical values on the given probability
 space. No dual crossing is assumed. -/
 theorem reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) (γ μ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
@@ -63,12 +63,12 @@ theorem reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing
                 R (α : ℂ) =
                   (reflectionR P γ μ α (B α) Z : ℂ)) ∧
               ∀ᶠ z in codiscrete ℂ, R z * R (2 * Q γ - z) = 1 := by
-  have hhalf : γ / 2 < 2 / γ := (lt_div_iff₀ hγ).mpr (by nlinarith)
+  have : γ / 2 < 2 / γ := (lt_div_iff₀ hγ).mpr (by nlinarith)
   have hγQ : γ < Q γ := by unfold Q; linarith
   obtain ⟨η, hηpos, hηlt⟩ := exists_between
     (div_pos (sub_pos.mpr hγQ) (show (0 : ℝ) < 4 by norm_num))
   have hη : 0 < η ∧ Q γ - 2 * η > γ := ⟨hηpos, by linarith⟩
-  let a : ℝ := Q γ - η / 2
+  let a := Q γ - η / 2
   have ha : Q γ - η < a ∧ a < Q γ := by dsimp [a]; constructor <;> linarith
   obtain ⟨B, Z, hSLP, hRD, H, hH, C, F, hC, hF, hCr, hFr, hglue, -⟩ :=
     hShiftGluing η hη a a ha ha
@@ -81,10 +81,6 @@ theorem reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing
     apply div_pos _ hγ
     dsimp [a]
     linarith
-  have hglue' : ∀ᶠ z in codiscrete ℂ, C z = F z * C (((2 * Q γ : ℝ) : ℂ) - z) := by
-    simpa only [Complex.ofReal_mul, Complex.ofReal_ofNat] using hglue
-  have hinv := inversion_of_gluing C F (2 * Q γ) H (2 * η) (Q γ)
-    hH (by linarith [hη.2]) hC hCne hglue'
   have hphysical : ∀ᶠ z in codiscreteWithin (horizontalStrip H),
       z.im = 0 → γ / 2 < z.re → z.re < Q γ →
         F z = (reflectionR P γ μ z.re (B z.re) Z : ℂ) := by
@@ -98,7 +94,7 @@ theorem reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing
     exact hFr z.re hlo hhi
   obtain ⟨R, hRm, hRr, hRi⟩ := exists_physical_inversion_representative F
     (fun α => (reflectionR P γ μ α (B α) Z : ℂ)) (2 * Q γ) H (H / 2)
-    (γ / 2) (Q γ) (half_pos hH) (half_lt_self hH) hF hinv hphysical
+    (γ / 2) (Q γ) (half_pos hH) (half_lt_self hH) hF (inversion_of_gluing C F (2 * Q γ) H (2 * η) (Q γ) hH (by linarith [hη.2]) hC hCne (by simpa only [Complex.ofReal_mul, Complex.ofReal_ofNat] using hglue)) hphysical
   refine ⟨B, Z, hSLP, hRD, H / 2, half_pos hH, R, hRm, hRr, ?_⟩
   simpa only [Complex.ofReal_mul, Complex.ofReal_ofNat] using hRi
 

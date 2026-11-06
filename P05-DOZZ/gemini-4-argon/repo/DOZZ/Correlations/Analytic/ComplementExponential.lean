@@ -15,7 +15,7 @@ open scoped ENNReal
 namespace DOZZ.Proofs
 
 /-- A power of the doubled cutoff radius has the exact exponential rate. -/
-theorem scaled_exp_radius_power (r k : ℝ) :
+theorem scaled_exp_radius_power r k :
     (2 * Real.exp (-r)) ^ k = (2 : ℝ) ^ k * Real.exp (-k * r) := by
   rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) (Real.exp_nonneg _), ← Real.exp_mul]
   congr 1
@@ -24,12 +24,12 @@ theorem scaled_exp_radius_power (r k : ℝ) :
 /-- The complete excluded Coulomb mass has a uniform exponentially decaying small moment
 on every bounded charge box with a strict upper charge gap. -/
 theorem complement_exponential_moment
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (z : Fin N → ℂ) (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ ≤ 1)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (z : Fin N → ℂ) δ (hδ : 0 < δ) (hδ1 : δ ≤ 1)
     (hsep : ∀ k j, j ≠ k → 2 * δ ≤ ‖z j - z k‖)
-    (A a gap m : ℝ) (hgap : 0 < gap) (ha : a + gap < Q γ)
+    A a gap m (hgap : 0 < gap) (ha : a + gap < Q γ)
     (hm : 0 < m) (hm1 : m ≤ 1)
     (hms : m < min (4 / γ ^ 2) (2 / γ * (Q γ - (a + gap)))) :
     ∃ K : ℝ≥0∞, K < ⊤ ∧ ∀ᶠ n : ℕ in atTop,

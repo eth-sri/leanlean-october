@@ -27,7 +27,7 @@ namespace DOZZ.Proofs
 `DOZZ.degenerateFourPoint_BPZ` and `DOZZ.gammaHalf_full_unreflected_formula`. The Gauss family,
 physical guards, normalization and coefficient extraction are all discharged. -/
 theorem gammaHalf_crossing_of_unreflected {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α' ε α : ℝ)
+    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) γ μ α' ε α
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hεlo : γ / 2 < ε) (hεhi : ε < 2 / γ)
     (hα : α < Q γ) (hα' : α' < Q γ)
@@ -71,19 +71,12 @@ theorem gammaHalf_crossing_of_unreflected {Ω : Type*} [MeasurableSpace Ω]
         gammaHalfUnitCrossingMultiplier γ μ α' ε α *
           unitVolumeStructureConstant P M γ α' (ε + γ / 2) α := by
   obtain ⟨H, hH⟩ := DOZZ.gauss_hypergeometric_exists
-  have hεQ : ε < Q γ := by unfold Q; linarith only [hεhi, hγ]
-  have hsum : 2 * Q γ + γ / 2 < α' + ε + α := by linarith only [hs]
-  have hsum' : 2 * Q γ + γ / 2 < ε + α' + α := by linarith only [hs]
-  have hbpz := hBPZ P X M γ μ (γ / 2) α' ε α hγ hγ₂ hμ
-    (Or.inl rfl) hα' hεQ hα hsum hX hM
-  have hformula := hUnreflected hH P X M γ μ ε α' α hγ hγ₂ hμ
-    hεlo hεhi hα' hα hsum' hX hM
   exact gammaHalf_crossing_of_BPZ_and_unreflected hH P X M γ μ α' ε α
-    hγ hγ₂ hμ hεhi hα hα' hs hX hM (by simpa only [neg_div] using hbpz) hformula
+    hγ hγ₂ hμ hεhi hα hα' hs hX hM (by simpa only [neg_div] using (hBPZ P X M γ μ (γ / 2) α' ε α hγ hγ₂ hμ (Or.inl rfl) hα' (by unfold Q; linarith only [hεhi, hγ]) hα (by linarith only [hs]) hX hM)) (hUnreflected hH P X M γ μ ε α' α hγ hγ₂ hμ hεlo hεhi hα' hα (by linarith only [hs]) hX hM)
 
 /-- Unconditional crossing theorem, with precisely the statement of `DOZZ.gammaHalf_crossing`. -/
 theorem gammaHalf_crossing {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α' ε α : ℝ)
+    (P : Measure Ω) X (M : Ω → Measure ℂ) γ μ α' ε α
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hεlo : γ / 2 < ε) (hεhi : ε < 2 / γ)
     (hα : α < Q γ) (hα' : α' < Q γ)

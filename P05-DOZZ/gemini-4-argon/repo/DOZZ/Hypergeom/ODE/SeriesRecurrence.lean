@@ -15,7 +15,7 @@ open Polynomial
 
 namespace DOZZ.Proofs
 
-theorem ordinaryHypergeometric_pochhammer_denominator_ne_zero {c : ℂ} (n : ℕ)
+theorem ordinaryHypergeometric_pochhammer_denominator_ne_zero {c} n
     (hc : ∀ k : ℕ, c ≠ -(k : ℂ)) :
     Polynomial.eval c (ascPochhammer ℂ n) ≠ 0 := by
   intro h
@@ -24,22 +24,17 @@ theorem ordinaryHypergeometric_pochhammer_denominator_ne_zero {c : ℂ} (n : ℕ
 
 /-- Multiplying successive ordinary-series coefficients by their denominator factors gives the
 three-term recurrence for the Gauss equation. -/
-theorem ordinaryHypergeometricCoefficient_gauss_recurrence (a b c : ℂ) (n : ℕ)
+theorem ordinaryHypergeometricCoefficient_gauss_recurrence a b c (n : ℕ)
     (hc : ∀ k : ℕ, c ≠ -(k : ℂ)) :
     ((n + 1 : ℂ) * ((n : ℂ) + c)) * ordinaryHypergeometricCoefficient a b c (n + 1) =
       ((n : ℂ) + a) * ((n : ℂ) + b) * ordinaryHypergeometricCoefficient a b c n := by
   have hcn : c + (n : ℂ) ≠ 0 := by
     intro h
-    have h' : c = -(n : ℂ) := by linear_combination h
-    exact hc n h'
-  have hcpn : Polynomial.eval c (ascPochhammer ℂ n) ≠ 0 :=
-    ordinaryHypergeometric_pochhammer_denominator_ne_zero n hc
-  have hfact : ((n + 1).factorial : ℂ) = (n + 1 : ℂ) * (n.factorial : ℂ) := by
-    exact_mod_cast Nat.factorial_succ n
+    exact hc n (by linear_combination h)
   have hfact0 : (n.factorial : ℂ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
   simp only [ordinaryHypergeometricCoefficient, ascPochhammer_succ_eval]
-  rw [hfact]
-  field_simp [hcpn, hcn, hfact0]
+  rw [(show ((n + 1).factorial : ℂ) = (n + 1 : ℂ) * (n.factorial : ℂ) by exact_mod_cast Nat.factorial_succ n)]
+  field_simp [(ordinaryHypergeometric_pochhammer_denominator_ne_zero n hc), hcn, hfact0]
   ring
 
 end DOZZ.Proofs

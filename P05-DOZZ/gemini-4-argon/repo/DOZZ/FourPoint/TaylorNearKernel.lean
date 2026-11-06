@@ -15,20 +15,19 @@ namespace DOZZ.Proofs
 
 /-- Away from the origin, the near-root kernel keeps its integrable radial power γ²/2-2. -/
 theorem gammaHalf_near_kernel_bound
-    (γ α₁ α₂ α₃ : ℝ) (_hγ : 0 < γ) (z x : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4)
+    (γ α₁ α₂ α₃ : ℝ) (_hγ : 0 < γ) z x (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4)
     (hnear : ‖x - z‖ ≤ ‖z‖ / 2) :
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2) ≤
       ENNReal.ofReal ((2 : ℝ) ^ (|γ * α₁| + |γ * α₂|) * ‖z‖ ^ (-γ * α₁)) *
         ENNReal.ofReal (‖x - z‖ ^ (γ ^ 2 / 2 - 2)) := by
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hzpos := norm_pos_iff.mpr hz
   have hxlow : ‖z‖ / 2 ≤ ‖x‖ := by
     have hh := norm_sub_norm_le z x
     rw [norm_sub_rev] at hh
     linarith only [hh, hnear]
   have hxhigh : ‖x‖ ≤ 2 * ‖z‖ := by
-    have hh := norm_sub_norm_le x z
-    linarith only [hh, hnear, hzpos]
-  have hxpos : 0 < ‖x‖ := (by positivity : 0 < ‖z‖ / 2).trans_le hxlow
+    linarith only [(norm_sub_norm_le x z), hnear, hzpos]
+  have hxpos := (by positivity : 0 < ‖z‖ / 2).trans_le hxlow
   have hxhalf : ‖x‖ ≤ 1 / 2 := by linarith only [hxhigh, hz4]
   have hn : normPlus x = 1 := max_eq_left (by linarith only [hxhalf])
   have hlow1 : 1 / 2 ≤ ‖x - 1‖ := by
@@ -43,11 +42,10 @@ theorem gammaHalf_near_kernel_bound
   by_cases hxz : x = z
   · subst x
     simp only [sub_self, norm_zero, zero_pow (by decide : 2 ≠ 0), div_zero, ENNReal.ofReal_zero, zero_le]
-  have hdpos : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   have heq : gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2 =
       ‖x - z‖ ^ (γ ^ 2 / 2 - 2) * ‖x‖ ^ (-γ * α₁) * ‖x - 1‖ ^ (-γ * α₂) := by
     unfold gammaHalfKernel
-    rw [hn, Real.one_rpow, mul_one, Real.rpow_sub hdpos, Real.rpow_two,
+    rw [hn, Real.one_rpow, mul_one, Real.rpow_sub (norm_pos_iff.mpr (sub_ne_zero.mpr hxz)), Real.rpow_two,
       neg_mul γ α₁, neg_mul γ α₂, Real.rpow_neg hxpos.le, Real.rpow_neg hx1.le]
     field_simp
   have hweight := rpow_distance_comparison ‖x‖ ‖z‖ 2 (-γ * α₁) |γ * α₁|

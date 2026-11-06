@@ -35,14 +35,14 @@ theorem exponential_parameter_test_support
   tsupport_mul_subset_left
 
 theorem exponential_parameter_test_measurable
-    (f c : BoundedContinuousFunction ℂ ℝ) :
+    f c :
     Measurable (fun p : ℝ × ℂ => exponentialParameterTest f c p.1 p.2) :=
   (f.continuous.measurable.comp measurable_snd).mul
     (((c.continuous.measurable.comp measurable_snd).mul measurable_fst).exp)
 
 /-- The parameter derivative is bounded by an exponential of the absolute pin difference. -/
 theorem exponential_parameter_test_lipschitz
-    (f c : BoundedContinuousFunction ℂ ℝ) (t u : ℝ) (h : |t-u| ≤ 1) (x : ℂ) :
+    f c t u (h : |t-u| ≤ 1) x :
     |exponentialParameterTest f c t x - exponentialParameterTest f c u x| ≤
       (‖f‖ * ‖c‖ * Real.exp (‖c‖ * (|t|+1))) * |t-u| := by
   have hi := exp_parameter_increment (c x) 0 ‖c‖ t u (norm_nonneg _)

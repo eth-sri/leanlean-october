@@ -44,22 +44,18 @@ theorem finite_random_measure_law_of_open_fdd
       exact ⟨inversionMeasureCode q, ⟨hq.1, hq.2⟩⟩
     · rw [← Set.preimage_inter]
   have hcode : Measurable inversionMeasureCode := Measurable.of_comap_le le_rfl
-  have hcm : Measurable (inversionMeasureCode ∘ outM) :=
-    measurable_pi_iff.mpr fun U => (Measure.measurable_coe U.2.measurableSet).comp hM
-  have hcn : Measurable (inversionMeasureCode ∘ outN) :=
-    measurable_pi_iff.mpr fun U => (Measure.measurable_coe U.2.measurableSet).comp hN
   have hom : Measurable outM := by
     rw [measurable_iff_comap_le]
     change mOutput.comap outM ≤ ‹MeasurableSpace Ω›
     rw [show mOutput = MeasurableSpace.pi.comap inversionMeasureCode by rfl,
       MeasurableSpace.comap_comp]
-    exact hcm.comap_le
+    exact (measurable_pi_iff.mpr fun U => (Measure.measurable_coe U.2.measurableSet).comp hM).comap_le
   have hon : Measurable outN := by
     rw [measurable_iff_comap_le]
     change mOutput.comap outN ≤ ‹MeasurableSpace Ω›
     rw [show mOutput = MeasurableSpace.pi.comap inversionMeasureCode by rfl,
       MeasurableSpace.comap_comp]
-    exact hcn.comap_le
+    exact (measurable_pi_iff.mpr fun U => (Measure.measurable_coe U.2.measurableSet).comp hN).comap_le
   have hOpenGen : (inferInstance : MeasurableSpace ℂ) =
       MeasurableSpace.generateFrom {s : Set ℂ | IsOpen s} := by
     calc
@@ -79,14 +75,10 @@ theorem finite_random_measure_law_of_open_fdd
       rcases (mem_measurableCylinders A).1 hA with ⟨s, As, hAs, rfl⟩
       let vm := fun ω (j : s) => M ω j.1.1
       let vn := fun ω (j : s) => N ω j.1.1
-      have hm : Measurable vm := measurable_pi_iff.mpr fun j =>
-        (Measure.measurable_coe j.1.2.measurableSet).comp hM
-      have hn : Measurable vn := measurable_pi_iff.mpr fun j =>
-        (Measure.measurable_coe j.1.2.measurableSet).comp hN
       have hv := hfdd s (fun j => j.1.1) (fun j => j.1.2)
       have hp : P (vm ⁻¹' As) = P (vn ⁻¹' As) := by
         have h := congrArg (fun μ => μ As) hv
-        rw [Measure.map_apply hm hAs, Measure.map_apply hn hAs] at h
+        rw [Measure.map_apply (measurable_pi_iff.mpr fun j => (Measure.measurable_coe j.1.2.measurableSet).comp hM : Measurable vm) hAs, Measure.map_apply (measurable_pi_iff.mpr fun j => (Measure.measurable_coe j.1.2.measurableSet).comp hN : Measurable vn) hAs] at h
         exact h
       have hs : MeasurableSet (inversionMeasureCode ⁻¹' cylinder s As) := by
         apply hcode

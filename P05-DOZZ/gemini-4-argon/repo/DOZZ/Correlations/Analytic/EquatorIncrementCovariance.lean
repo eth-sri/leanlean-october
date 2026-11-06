@@ -19,9 +19,9 @@ noncomputable def equatorCircleMean (z : ℂ) (r : ℝ) : ℝ :=
 
 /-- The concentric covariance retains both equator circle means. -/
 theorem circle_covariance_concentric
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) (r s : ℝ) :
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    z r s :
     covariance (fun ω => Xc ω z r) (fun ω => Xc ω z s) P =
       min r s + equatorCircleMean z r + equatorCircleMean z s := by
   rw [circleAverage_covariance P X Xc hX hc]

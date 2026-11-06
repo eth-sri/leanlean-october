@@ -29,16 +29,10 @@ noncomputable def conditionedPastStateKernel (ν dt : ℝ) (k : ℕ) :
     (fun x y => ENNReal.ofReal (max 0
       (conditionedPositiveTransitionDensity ν dt (x (Fin.last k)) y)))
 
-theorem measurable_conditionedPastStateKernel_density (ν dt : ℝ) (k : ℕ) :
+theorem measurable_conditionedPastStateKernel_density ν dt k :
     Measurable (fun z : (Fin (k+1) → ℝ) × ℝ => ENNReal.ofReal (max 0
       (conditionedPositiveTransitionDensity ν dt (z.1 (Fin.last k)) z.2))) := by
-  have hp : Measurable (fun z : (Fin (k+1) → ℝ) × ℝ =>
-      conditionedPositiveTransitionDensity ν dt (z.1 (Fin.last k)) z.2) := by
-    have hpair : Measurable (fun z : (Fin (k+1) → ℝ) × ℝ =>
-        (z.1 (Fin.last k), z.2)) :=
-      ((measurable_pi_apply _).comp measurable_fst).prodMk measurable_snd
-    exact (measurable_conditionedPositiveTransitionDensity_pair ν dt).comp hpair
-  exact ((measurable_const (a := (0 : ℝ))).max hp).ennreal_ofReal
+  exact ((measurable_const (a := (0 : ℝ))).max (by exact (measurable_conditionedPositiveTransitionDensity_pair ν dt).comp (((measurable_pi_apply _).comp measurable_fst).prodMk measurable_snd : Measurable (fun z : (Fin (k+1) → ℝ) × ℝ => (z.1 (Fin.last k), z.2))))).ennreal_ofReal
 
 instance (ν dt : ℝ) (k : ℕ) : IsSFiniteKernel (conditionedPastStateKernel ν dt k) := by
   apply Kernel.IsSFiniteKernel.withDensity
@@ -47,8 +41,8 @@ instance (ν dt : ℝ) (k : ℕ) : IsSFiniteKernel (conditionedPastStateKernel �
 
 /-- The explicit finite past followed by a scalar deterministic-time state. -/
 theorem negativeConditionedLaw_finitePast_state_compProd
-    {ν : ℝ} {P : Measure BrownianPath} (hP : IsNegativeConditionedBrownianLaw ν P)
-    (k : ℕ) (ss : Fin (k+1) → ℝ≥0) (hs : ∀ i, 0 < (ss i : ℝ))
+    {ν} {P : Measure BrownianPath} (hP : IsNegativeConditionedBrownianLaw ν P)
+    k (ss : Fin (k+1) → ℝ≥0) (hs : ∀ i, 0 < (ss i : ℝ))
     (hmono : StrictMono ss) (u : ℝ≥0) (hu : ss (Fin.last k) < u) :
     P.map (fun p : BrownianPath => (fun i => -(p (ss i)), -(p u))) =
       ((volume : Measure (Fin (k+1) → ℝ)).withDensity
@@ -64,12 +58,6 @@ theorem negativeConditionedLaw_finitePast_state_compProd
     apply Kernel.IsSFiniteKernel.withDensity
     intro x y
     exact ENNReal.ofReal_ne_top
-  have horder : StrictMono (Fin.append ss future) :=
-    strictMono_finAppend_of_cross ss future hmono (Subsingleton.strictMono future)
-      (fun i _ => (hmono.monotone (Fin.le_last i)).trans_lt hu)
-  have hu0 : 0 < (u : ℝ) := (hs (Fin.last k)).trans (NNReal.coe_lt_coe.mpr hu)
-  have hj := negativeConditionedLaw_finitePastFuture_compProd hP ss future hs
-    (fun _ => hu0) horder
   let e : (Fin 1 → ℝ) ≃ᵐ ℝ := MeasurableEquiv.piUnique fun _ => ℝ
   have hmapKernel : κ.map e =
       conditionedPastStateKernel ν ((u : ℝ)-(ss (Fin.last k) : ℝ)) k := by
@@ -101,7 +89,7 @@ theorem negativeConditionedLaw_finitePast_state_compProd
       rfl
     _ = (((volume : Measure (Fin (k+1) → ℝ)).withDensity
         (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))) ⊗ₘ κ).map
-        (Prod.map id e) := by rw [hj]
+        (Prod.map id e) := by rw [(negativeConditionedLaw_finitePastFuture_compProd hP ss future hs (fun _ => ((hs (Fin.last k)).trans (NNReal.coe_lt_coe.mpr hu))) (strictMono_finAppend_of_cross ss future hmono (Subsingleton.strictMono future) (fun i _ => (hmono.monotone (Fin.le_last i)).trans_lt hu)))]
     _ = _ := by rw [← Measure.compProd_map e.measurable, hmapKernel]
 
 end DOZZ.Proofs

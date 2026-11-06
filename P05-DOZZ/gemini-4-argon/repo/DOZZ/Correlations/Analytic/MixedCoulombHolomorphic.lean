@@ -19,11 +19,11 @@ namespace DOZZ.Proofs
 the full strict mixed-frame moment domain. Every real value is the literal Coulomb expectation;
 no continuity or analyticity hypothesis on that expectation is assumed. -/
 theorem mixed_coulomb_holomorphic
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (z : Fin N → ℂ) (hz : Function.Injective z) :
+    Xc (hc : IsCircleAverage P X Xc)
+    z (hz : Function.Injective z) :
     ∃ V : Set (Fin (N + 1) → ℂ), IsOpen V ∧
       (∀ α : Fin (N + 1) → ℝ, (∀ i, α i < Q γ) →
         (2 * Q γ - ∑ i, α i) / γ < 4 / γ ^ 2 →
@@ -53,21 +53,12 @@ theorem mixed_coulomb_holomorphic
       (complexPolydisc (fun i => (α.val i : ℂ)) S) (isOpen_complexPolydisc _ _) F K κ hK hκ hest
     exact ⟨S, hS, he.1, he.2⟩
   choose S hS hd hlim using hlocal
-  let V := ⋃ α : D, complexPolydisc (fun i => (α.val i : ℂ)) (S α)
-  have hV : IsOpen V := isOpen_iUnion (fun α => isOpen_complexPolydisc _ _)
-  have hmem (α : Fin (N + 1) → ℝ) (ha : ∀ i, α i < Q γ)
-      (hp : (2 * Q γ - ∑ i, α i) / γ < 4 / γ ^ 2)
-      (hpi : ∀ i, (2 * Q γ - ∑ j, α j) / γ < 2 / γ * (Q γ - α i)) :
-      (fun i => (α i : ℂ)) ∈ V :=
-    mem_iUnion.mpr ⟨⟨α, ha, hp, hpi⟩, mem_complexPolydisc_center _ _ (hS _)⟩
-  refine ⟨V, hV, hmem, f, ?_, ?_⟩
+  refine ⟨(⋃ α : D, complexPolydisc (fun i => (α.val i : ℂ)) (S α)), (isOpen_iUnion (fun α => isOpen_complexPolydisc _ _)), (fun (α : Fin (N + 1) → ℝ) (ha : ∀ i, α i < Q γ) (hp : (2 * Q γ - ∑ i, α i) / γ < 4 / γ ^ 2) (hpi : ∀ i, (2 * Q γ - ∑ j, α j) / γ < 2 / γ * (Q γ - α i)) => mem_iUnion.mpr ⟨⟨α, ha, hp, hpi⟩, mem_complexPolydisc_center _ _ (hS _)⟩), f, ?_, ?_⟩
   · intro β hβ
     obtain ⟨α, hα⟩ := mem_iUnion.mp hβ
     exact ((hd α).differentiableAt ((isOpen_complexPolydisc _ _).mem_nhds hα)).differentiableWithinAt
   · intro α ha hp hpi
     let αD : D := ⟨α, ha, hp, hpi⟩
-    have he := (hlim αD).tendsto_at (mem_complexPolydisc_center _ _ (hS αD))
-    have hr := normalized_vertex_real_limit P X hX γ hγ hγ2 M hM Xc hc z hz α hp hpi
-    exact tendsto_nhds_unique he hr
+    exact tendsto_nhds_unique ((hlim αD).tendsto_at (mem_complexPolydisc_center _ _ (hS αD))) (normalized_vertex_real_limit P X hX γ hγ hγ2 M hM Xc hc z hz α hp hpi)
 
 end DOZZ.Proofs

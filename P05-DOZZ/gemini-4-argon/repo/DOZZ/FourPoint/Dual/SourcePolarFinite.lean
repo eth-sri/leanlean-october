@@ -34,37 +34,13 @@ theorem dual_source_restarted_polar_finite_ae
         ∂(Z ω.2).map (fun s => s-(T : ℝ))) ≠ ⊤ := by
   let _ : IsProbabilityMeasure P := hX.1
   let ν := Q γ-α₁
-  let A := originRadialPath Xc
   have hA := originRadialPath_aemeasurable P X Xc hc hcont
-  let R := (brownianMaximumReferenceLaw ν).prod P
   let _ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα₁)
-  let D := fun ω => brownianShiftPath T (radialPositiveHalf (A ω))
+  let D := fun ω => brownianShiftPath T (radialPositiveHalf ((originRadialPath Xc) ω))
   have hs : Measurable (fun a => brownianShiftPath T (radialPositiveHalf a)) :=
     continuous_brownianShiftPath.measurable.comp
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)
-  have hDm : AEMeasurable D P := hs.comp_aemeasurable hA
-  have hDZ : IndepFun D Z P := hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
-  let Y := fun ω => (dual_radial_scale γ ν h Xc z ω,
-    (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)
-  have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
-  have hβ : AEMeasurable (dual_radial_scale γ ν h Xc z) P :=
-    ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
-  have hYm : AEMeasurable Y P := hβ.prodMk
-    (((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
-      (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal)
-  let V := fun ω : Ω × Ω => ∫⁻ t,
-    (if 0 < t then ENNReal.ofReal (Real.exp (γ*(D ω.1 (Real.toNNReal t)-ν*t))) else 0)
-      ∂(Z ω.2).map (fun s => s-(T : ℝ))
-  have hVm : AEMeasurable V (P.prod P) :=
-    dual_translated_polar_mass_aemeasurable P D hDm γ ν Z hZ hDZ T
-  let J := fun q : ℝ × Ω => ENNReal.ofReal (Real.exp (γ*q.1))*twoSidedReflectionCutMass γ q.1 B Z₀ q.2
-  have hJm : AEMeasurable J R :=
-    (measurable_fst.aemeasurable.const_mul γ).exp.ennreal_ofReal.mul
-      (actual_cut_mass_joint_aemeasurable P _ γ B Z₀
-        (aemeasurable_of_twoSidedConditioned hData.1) hData.2.1.2.2.2.1 hData.2.1.2.2.2.2.1)
-  have hLaw := dual_source_restart_outer_williams_law P X Xc hX hc hm hcont γ hγ hγ₂ M hM
-    h α₁ α₂ α₃ ξ hα₁ z hz0 hz T hT hr Z hZ hiZ B Z₀ hData
-  exact dual_copied_joint_law_finite P R Y hYm V hVm J hJm hLaw
+  exact dual_copied_joint_law_finite P ((brownianMaximumReferenceLaw ν).prod P) (fun ω => (dual_radial_scale γ ν h Xc z ω, (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)) ((((((hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable).const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp).prodMk (((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal)) (fun ω : Ω × Ω => ∫⁻ t, (if 0 < t then ENNReal.ofReal (Real.exp (γ*(D ω.1 (Real.toNNReal t)-ν*t))) else 0) ∂(Z ω.2).map (fun s => s-(T : ℝ))) (dual_translated_polar_mass_aemeasurable P D (hs.comp_aemeasurable hA) γ ν Z hZ (hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable) T) (fun q : ℝ × Ω => ENNReal.ofReal (Real.exp (γ*q.1))*twoSidedReflectionCutMass γ q.1 B Z₀ q.2) ((measurable_fst.aemeasurable.const_mul γ).exp.ennreal_ofReal.mul (actual_cut_mass_joint_aemeasurable P _ γ B Z₀ (aemeasurable_of_twoSidedConditioned hData.1) hData.2.1.2.2.2.1 hData.2.1.2.2.2.2.1)) (dual_source_restart_outer_williams_law P X Xc hX hc hm hcont γ hγ hγ₂ M hM h α₁ α₂ α₃ ξ hα₁ z hz0 hz T hT hr Z hZ hiZ B Z₀ hData)
     (dual_williams_cut_mass_finite_ae P γ α₁ hγ hγ₂ hα₁ B Z₀ hData)
 
 end DOZZ.Proofs

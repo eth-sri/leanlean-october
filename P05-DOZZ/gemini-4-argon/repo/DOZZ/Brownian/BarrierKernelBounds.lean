@@ -27,7 +27,7 @@ theorem gaussianKernelDifference_nonneg
     (t y β : ℝ) (ht : 0 < t) (hy : 0 ≤ y) (hβ : 0 ≤ β) :
     0 ≤ exp (-((y - β) ^ 2 / (2 * t))) -
       exp (-((y + β) ^ 2 / (2 * t))) := by
-  have hz : 0 ≤ 2 * y * β / t := by positivity
+  have : 0 ≤ 2 * y * β / t := by positivity
   have hfactor :
       exp (-((y + β) ^ 2 / (2 * t))) =
         exp (-((y - β) ^ 2 / (2 * t))) * exp (-(2 * y * β / t)) := by
@@ -35,13 +35,11 @@ theorem gaussianKernelDifference_nonneg
     congr 1
     field_simp
     ring
-  have hexp : exp (-(2 * y * β / t)) ≤ 1 :=
-    exp_le_one_iff.mpr (by linarith)
   rw [hfactor]
   calc
     _ = exp (-((y - β) ^ 2 / (2 * t))) *
         (1 - exp (-(2 * y * β / t))) := by ring
-    _ ≥ 0 := mul_nonneg (exp_pos _).le (sub_nonneg.mpr hexp)
+    _ ≥ 0 := mul_nonneg (exp_pos _).le (sub_nonneg.mpr (exp_le_one_iff.mpr (by linarith)))
 
 end DOZZ.Proofs
 

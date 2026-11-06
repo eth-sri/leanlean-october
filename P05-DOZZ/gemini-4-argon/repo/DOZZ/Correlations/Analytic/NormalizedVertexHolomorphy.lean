@@ -57,12 +57,12 @@ noncomputable def normalizedVertexMoment
 /-- The exact joint Wick and equator-normalized cutoff family is integrable and holomorphic
 throughout the finite-radius bulk moment half-space. -/
 theorem normalized_vertex_moment_holomorphic
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+    Xc (hXc : IsCircleAverage P X Xc)
     (O : Set ℂ) (ho : IsOpen O) (hb : Bornology.IsBounded O) (hn : O.Nonempty)
-    (z : Fin N → ℂ) (r : ℝ) :
+    (z : Fin N → ℂ) r :
     (∀ β : Fin (N + 1) → ℂ, (complexMomentPower γ β).re < 4 / γ ^ 2 →
       Integrable (fun ω => Complex.exp (normalizedVertexPolynomial P Xc γ z r β +
         ∑ i, β i * (Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i) : ℂ)) *
@@ -71,35 +71,17 @@ theorem normalized_vertex_moment_holomorphic
       {β | (complexMomentPower γ β).re < 4 / γ ^ 2} := by
   let := hX.1
   let A : Ω → ℝ := fun ω => (M ω O).toReal
-  have hm := gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM O ho.measurableSet
-  have hA : AEMeasurable A P := ENNReal.measurable_toReal.comp_aemeasurable hm
-  have hpos : ∀ᵐ ω ∂P, 0 < A ω := by
-    filter_upwards [open_mass_pos_finite_ae P X hX γ hγ hγ2 M hM O ho hb hn] with ω hω
-    exact ENNReal.toReal_pos hω.1 hω.2
-  have hinv (q : ℝ) (hq : 0 < q) : Integrable (fun ω => A ω ^ (-q)) P := by
-    apply open_mass_real_power_integrable P X hX γ hγ hγ2 M hM O ho hb hn
-    linarith [show (0 : ℝ) < 4 / γ ^ 2 by positivity]
-  have hmoment (p : ℝ) (_ : 0 ≤ p) (hp : p < 4 / γ ^ 2) :
-      Integrable (fun ω => A ω ^ p) P :=
-    open_mass_real_power_integrable P X hX γ hγ hγ2 M hM O ho hb hn p hp
-  have hc : DifferentiableOn ℂ (normalizedVertexPolynomial P Xc γ z r) univ := by
-    unfold normalizedVertexPolynomial jointVertexPolynomial complexMomentPower
-    fun_prop
   have hd := differentiableOn_gaussian_charge_moment P univ isOpen_univ
     (fun ω i => Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i))
     (circle_vertex_hasGaussianLaw P X hX Xc hXc
-      (mixedVertexCenters z) (mixedVertexTimes N r)) A hA hpos
-    (4 / γ ^ 2) (by positivity) hinv hmoment
-    (normalizedVertexPolynomial P Xc γ z r) hc
+      (mixedVertexCenters z) (mixedVertexTimes N r)) A (ENNReal.measurable_toReal.comp_aemeasurable (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM O ho.measurableSet)) (by filter_upwards [open_mass_pos_finite_ae P X hX γ hγ hγ2 M hM O ho hb hn] with ω hω; exact ENNReal.toReal_pos hω.1 hω.2)
+    (4 / γ ^ 2) (by positivity) (fun q hq => by apply open_mass_real_power_integrable P X hX γ hγ hγ2 M hM O ho hb hn; linarith [show (0 : ℝ) < 4 / γ ^ 2 by positivity]) (fun p _ hp => open_mass_real_power_integrable P X hX γ hγ hγ2 M hM O ho hb hn p hp)
+    (normalizedVertexPolynomial P Xc γ z r) (by unfold normalizedVertexPolynomial jointVertexPolynomial complexMomentPower; fun_prop)
     ((-2 * Q γ / γ : ℝ) : ℂ) ((γ : ℂ)⁻¹ • chargeSumCLM (N + 1))
   constructor
   · intro β hβ
-    have hb' : -(↑(-2 * Q γ / γ) + ((γ : ℂ)⁻¹ • chargeSumCLM (N + 1)) β).re <
-        4 / γ ^ 2 := by
-      simpa only [complexMomentPower, smul_apply, smul_eq_mul,
-        chargeSumCLM_apply, Complex.neg_re] using hβ
     simpa only [complexMomentPower, A, smul_apply, smul_eq_mul,
-      chargeSumCLM_apply] using hd.1 β ⟨mem_univ β, hb'⟩
+      chargeSumCLM_apply] using hd.1 β ⟨mem_univ β, (by simpa only [complexMomentPower, smul_apply, smul_eq_mul, chargeSumCLM_apply, Complex.neg_re] using hβ)⟩
   · change DifferentiableOn ℂ (fun β => normalizedVertexMoment P Xc M O γ z r β) _
     simpa only [normalizedVertexMoment, complexMomentPower, A,
       smul_apply, smul_eq_mul, chargeSumCLM_apply, mem_univ, true_and,

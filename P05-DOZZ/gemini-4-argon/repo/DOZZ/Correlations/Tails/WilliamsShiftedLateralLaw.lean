@@ -21,8 +21,8 @@ truncated at its last exit from that level), and the original lateral law. -/
 theorem williams_shifted_lateral_joint_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (D : Ω → BrownianPath)
     (hD : AEMeasurable D P) (hB : IsBrownianReal (fun t p => p t) (P.map D))
-    (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
-    (hInd : IndepFun D Z P) (ν : ℝ) (hν : 0 < ν)
+    γ (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
+    (hInd : IndepFun D Z P) ν (hν : 0 < ν)
     (Qν : Measure BrownianPath) (hQν : IsNegativeConditionedBrownianLaw ν Qν) :
     P.map (fun ω => (williamsReversedMark ν (D ω),
       (Z ω).map (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ)))) =
@@ -34,10 +34,7 @@ theorem williams_shifted_lateral_joint_law
     (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))
   obtain ⟨hY, hYlaw, hDY⟩ := maximum_shift_lateral_law P D hD hB γ Z hZ hInd ν hν
   have hW := williamsReversedMark_aemeasurable (P.map D) hB ν hν
-  have hWD : AEMeasurable ((williamsReversedMark ν) ∘ D) P := hW.comp_aemeasurable hD
-  have hWY : IndepFun ((williamsReversedMark ν) ∘ D) Y P :=
-    hDY.comp₀ hD hY hW measurable_id.aemeasurable
-  have hmap := (indepFun_iff_map_prod_eq_prod_map_map hWD hY).mp hWY
+  have hmap := (indepFun_iff_map_prod_eq_prod_map_map (hW.comp_aemeasurable hD) hY).mp (hDY.comp₀ hD hY hW measurable_id.aemeasurable)
   change P.map (fun ω => (williamsReversedMark ν (D ω), Y ω)) =
     (P.map ((williamsReversedMark ν) ∘ D)).prod (P.map Y) at hmap
   rw [hmap, hYlaw, ← AEMeasurable.map_map_of_aemeasurable hW hD]

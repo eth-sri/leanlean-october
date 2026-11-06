@@ -42,8 +42,8 @@ universe u
 namespace DOZZ.Proofs
 
 /-- Swapping the first two charges of a structure constant in the extended Seiberg domain. -/
-theorem structureConstant_swap12 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) {γ μ a b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem structureConstant_swap12 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (M : Ω → Measure ℂ) {γ μ a b c} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (h : ExtendedSeiberg3 γ a b c) :
     structureConstant P M γ μ a b c = structureConstant P M γ μ b a c := by
   rw [residue_structureConstant_eq_unitVolume, residue_structureConstant_eq_unitVolume,
@@ -55,7 +55,7 @@ conclusion of `dual_full_fusion_and_asymptotic`, quantified over all probability
 universe of `Ω`. -/
 theorem dual_crossing_seed_one_of_fusion {Ω : Type u} [MeasurableSpace Ω]
     (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
-    (γ μ α ε α' : ℝ)
+    γ μ α ε α'
     (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
     (hα : α < Q γ) (hε : ε < Q γ) (hα' : α' < Q γ)
     (hs : 2 * Q γ + 2 / γ < α + ε + α')
@@ -128,10 +128,7 @@ theorem dual_crossing_seed_one_of_fusion {Ω : Type u} [MeasurableSpace Ω]
     hX hM
   -- permutation symmetry of the last factor
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
-  have hES : ExtendedSeiberg3 γ (2 * Q γ - ε - 2 / γ) α α' :=
-    extendedSeiberg3_of_lt hγ (by linarith) hα hα' (by linarith) (by linarith) (by linarith)
-      (by linarith)
-  rw [htwo, hrefl, structureConstant_swap12 P X M hγ hγ₂ hX hM hES]
+  rw [htwo, hrefl, structureConstant_swap12 P X M hγ hγ₂ hX hM (extendedSeiberg3_of_lt hγ (by linarith) hα hα' (by linarith) (by linarith) (by linarith) (by linarith))]
   ring
 
 end DOZZ.Proofs

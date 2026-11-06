@@ -24,59 +24,8 @@ open MeasureTheory Filter Topology Set
 
 namespace DOZZ.Proofs
 
-/-- **The shifted second dual seed at one point.** -/
-theorem starG_point {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hSeed : ∀ α ε α' : ℝ, α < Q γ → ε < Q γ → α' < Q γ → 2 * Q γ + 2 / γ < α + ε + α' →
-      ∃ Bε Bα : Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ ε Bε Z ∧
-          IsReflectionData P γ α Bα Z ∧
-          reflectionR P γ μ ε Bε Z * structureConstant P M γ μ (2 * Q γ - ε - 2 / γ) α α' =
-            dualCrossingL γ ε α α' * reflectionR P γ μ α Bα Z *
-              structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α')
-    (hShiftGluing : ∀ η : ℝ, (0 < η ∧ Q γ - 2 * η > γ) → ∀ α₂ α₃ : ℝ,
-      (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ, C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)))
-    {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
-    {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
-    (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)
-    (hRv : ∀ α : ℝ, γ / 2 < α → α < Q γ → R (α : ℂ) = (reflectionR P γ μ α (BR α) ZR : ℂ))
-    {ε α α' : ℝ} (h₁ : ExtendedSeiberg3 γ (2 * Q γ - ε - 2 / γ) α α')
-    (h₂ : ExtendedSeiberg3 γ ε (2 * Q γ - α - 2 / γ) α')
-    (h₃ : ExtendedSeiberg3 γ (2 * Q γ - ε - 2 / γ - γ) α α')
-    (hRε : AnalyticAt ℂ R (ε : ℂ)) (hRα : AnalyticAt ℂ R (α : ℂ))
-    (hs₁ : AnalyticAt ℂ Complex.Gamma (sExp γ (2 * Q γ - ε - 2 / γ) α α' : ℂ))
-    (hs₂ : AnalyticAt ℂ Complex.Gamma (sExp γ ε (2 * Q γ - α - 2 / γ) α' : ℂ))
-    (hs₃ : AnalyticAt ℂ Complex.Gamma (sExp γ (2 * Q γ - ε - 2 / γ - γ) α α' : ℂ))
-    (g₁ : AnalyticAt ℂ Complex.Gamma (dualArg₁ γ ε))
-    (g₂ : AnalyticAt ℂ Complex.Gamma (dualArg₂ γ α))
-    (g₃ : AnalyticAt ℂ Complex.Gamma (1 - dualArg₃ γ ε α α'))
-    (g₄ : AnalyticAt ℂ Complex.Gamma (1 - dualArg₄ γ ε α α'))
-    (hA : ShiftCoeffGood γ (((2 * Q γ - ε - 2 / γ : ℝ) : ℂ) - γ / 2) α α') :
-    R ε * (-(1 / (Real.pi * μ)) *
-        shiftCoeffA γ (γ / 2) (((2 * Q γ - ε - 2 / γ : ℝ) : ℂ) - γ / 2) α α' *
-          (structureConstant P M γ μ (2 * Q γ - ε - 2 / γ - γ) α α' : ℂ)) =
-      dualLC γ ε α α' * R α * (structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α' : ℂ) := by
-  rw [← firstShift_full P X M hγ hγ2 hμ hX hM hShiftGluing h₁ h₃ hs₁ hs₃ hA]
-  exact seed_full P X M hγ hγ2 hμ hX hM hSeed hhR hRm hBR hRv h₁ h₂ hRε hRα hs₁ hs₂ g₁ g₂ g₃ g₄
-
 /-- **The shifted second dual seed near a good point of a continuous curve.** -/
-theorem starG_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+theorem starG_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hSeed : ∀ α ε α' : ℝ, α < Q γ → ε < Q γ → α' < Q γ → 2 * Q γ + 2 / γ < α + ε + α' →
@@ -103,11 +52,11 @@ theorem starG_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X :
                 R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
                   -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
                     C (z - γ / 2)))
-    {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
+    {hR} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
     (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)
     (hRv : ∀ α : ℝ, γ / 2 < α → α < Q γ → R (α : ℂ) = (reflectionR P γ μ α (BR α) ZR : ℂ))
-    {f₁ f₂ f₃ : ℝ → ℝ} (hc₁ : Continuous f₁) (hc₂ : Continuous f₂) (hc₃ : Continuous f₃)
+    {f₁ f₂ f₃} (hc₁ : Continuous f₁) (hc₂ : Continuous f₂) (hc₃ : Continuous f₃)
     {t₀ : ℝ} (h₁ : ExtendedSeiberg3 γ (2 * Q γ - f₁ t₀ - 2 / γ) (f₂ t₀) (f₃ t₀))
     (h₂ : ExtendedSeiberg3 γ (f₁ t₀) (2 * Q γ - f₂ t₀ - 2 / γ) (f₃ t₀))
     (h₃ : ExtendedSeiberg3 γ (2 * Q γ - f₁ t₀ - 2 / γ - γ) (f₂ t₀) (f₃ t₀))
@@ -156,8 +105,8 @@ theorem starG_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X :
       (f₂ := fun t => (f₂ t : ℂ)) (f₃ := fun t => (f₃ t : ℂ)) (by fun_prop) (by fun_prop)
       (by fun_prop) hA]
     with t a₁ a₂ a₃ a₄ a₅ a₆ a₇ a₈ a₉ a₁₀ a₁₁ a₁₂ a₁₃
-  exact starG_point P X M hγ hγ2 hμ hX hM hSeed hShiftGluing hhR hRm hBR hRv a₁ a₂ a₃ a₄ a₅ a₆ a₇ a₈ a₉
-    a₁₀ a₁₁ a₁₂ a₁₃
+  rw [← firstShift_full P X M hγ hγ2 hμ hX hM hShiftGluing a₁ a₃ a₆ a₈ a₁₃]
+  exact seed_full P X M hγ hγ2 hμ hX hM hSeed hhR hRm hBR hRv a₁ a₂ a₄ a₅ a₆ a₇ a₉ a₁₀ a₁₁ a₁₂
 
 end DOZZ.Proofs
 

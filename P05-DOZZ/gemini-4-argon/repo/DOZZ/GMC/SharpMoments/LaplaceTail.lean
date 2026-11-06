@@ -31,22 +31,22 @@ noncomputable def cutoffLaplace {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
 
 theorem measurable_regularizedGMC_apply_toReal
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
-    (A : Set ℂ) (hA : MeasurableSet A) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) γ r
+    A (hA : MeasurableSet A) :
     Measurable (fun ω => (regularizedGMC P Xc γ r ω A).toReal) :=
   ENNReal.measurable_toReal.comp
     ((Measure.measurable_coe hA).comp (regularizedGMC_measurable P X hX Xc hXc γ r))
 
-theorem cutoffLaplace_integrand_le_one (s m : ℝ) (hs : 0 ≤ s) (hm : 0 ≤ m) :
+theorem cutoffLaplace_integrand_le_one s m (hs : 0 ≤ s) (hm : 0 ≤ m) :
     Real.exp (-s * m) ≤ 1 :=
   Real.exp_le_one_iff.mpr (by nlinarith)
 
 theorem integrable_cutoffLaplace_integrand
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
-    (A : Set ℂ) (hA : MeasurableSet A) (s : ℝ) (hs : 0 ≤ s) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) γ r
+    A (hA : MeasurableSet A) s (hs : 0 ≤ s) :
     Integrable (fun ω => Real.exp (-s * (regularizedGMC P Xc γ r ω A).toReal)) P := by
   let _ : IsProbabilityMeasure P := hX.1
   refine Integrable.of_bound (C := 1) ?_ (Eventually.of_forall fun ω => ?_)
@@ -57,14 +57,14 @@ theorem integrable_cutoffLaplace_integrand
 
 theorem cutoffLaplace_nonneg
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (Xc : Ω → ℂ → ℝ → ℝ) (γ r : ℝ) (A : Set ℂ) (x : ℝ) :
+    (Xc : Ω → ℂ → ℝ → ℝ) γ r A x :
     0 ≤ cutoffLaplace P Xc γ r A x :=
   integral_nonneg fun _ => (Real.exp_pos _).le
 
 theorem cutoffLaplace_le_one
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (γ r : ℝ) (A : Set ℂ) (x : ℝ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    (Xc : Ω → ℂ → ℝ → ℝ) γ r A x :
     cutoffLaplace P Xc γ r A x ≤ 1 := by
   let _ : IsProbabilityMeasure P := hX.1
   unfold cutoffLaplace
@@ -77,9 +77,9 @@ theorem cutoffLaplace_le_one
 
 theorem cutoffLaplace_antitone
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
-    (A : Set ℂ) (hA : MeasurableSet A) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) γ r
+    A (hA : MeasurableSet A) :
     Antitone (cutoffLaplace P Xc γ r A) := by
   intro x y hxy
   unfold cutoffLaplace
@@ -95,7 +95,7 @@ theorem cutoffLaplace_antitone
 the reciprocal level. -/
 theorem measure_toReal_le_le_exp_mul_laplace
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (m : Ω → ℝ) (hm : Measurable m) (hm0 : ∀ ω, 0 ≤ m ω) (x : ℝ) :
+    m (hm : Measurable m) (hm0 : ∀ ω, 0 ≤ m ω) x :
     P {ω | m ω ≤ Real.exp (-x)} ≤
       ENNReal.ofReal (Real.exp 1 * ∫ ω, Real.exp (-(Real.exp x) * m ω) ∂P) := by
   have hint : Integrable (fun ω => Real.exp (-(Real.exp x) * m ω)) P := by
@@ -111,31 +111,25 @@ theorem measure_toReal_le_le_exp_mul_laplace
     · rw [Set.indicator_of_mem (show ω ∈ {ω | m ω ≤ Real.exp (-x)} from hω), Pi.one_apply]
       rw [← Real.exp_add]
       apply Real.one_le_exp_iff.mpr
-      have hmul : Real.exp x * m ω ≤ Real.exp x * Real.exp (-x) :=
-        mul_le_mul_of_nonneg_left hω (Real.exp_pos x).le
+      have hmul := mul_le_mul_of_nonneg_left hω (Real.exp_pos x).le
       rw [← Real.exp_add, add_neg_cancel, Real.exp_zero] at hmul
       linarith
     · rw [Set.indicator_of_notMem (show ω ∉ {ω | m ω ≤ Real.exp (-x)} from hω)]
       exact mul_nonneg (Real.exp_pos _).le (Real.exp_pos _).le
-  have hP : P {ω | m ω ≤ Real.exp (-x)} =
-      ENNReal.ofReal (∫ ω, {ω | m ω ≤ Real.exp (-x)}.indicator 1 ω ∂P) := by
-    rw [integral_indicator_one hset, measureReal_def, ENNReal.ofReal_toReal (measure_ne_top _ _)]
-  rw [hP, ← integral_const_mul]
+  rw [(show P {ω | m ω ≤ Real.exp (-x)} = ENNReal.ofReal (∫ ω, {ω | m ω ≤ Real.exp (-x)}.indicator 1 ω ∂P) by rw [integral_indicator_one hset, measureReal_def, ENNReal.ofReal_toReal (measure_ne_top _ _)]), ← integral_const_mul]
   apply ENNReal.ofReal_le_ofReal
   exact integral_mono ((integrable_const 1).indicator hset) (hint.const_mul _) hpoint
 
 /-- Gaussian-type negative moments give Gaussian small-value tails (Chernoff). -/
 theorem measure_le_exp_neg_of_negMoment
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (Y : Ω → ℝ≥0∞) (hY : AEMeasurable Y P) (a b : ℝ) (hb : 0 < b)
+    (Y : Ω → ℝ≥0∞) (hY : AEMeasurable Y P) a b (hb : 0 < b)
     (hmom : ∀ q : ℝ, 0 < q → ∫⁻ ω, Y ω ^ (-q) ∂P ≤ ENNReal.ofReal (Real.exp (a * q + b * q ^ 2)))
-    (t : ℝ) (ht : a < t) :
+    t (ht : a < t) :
     P {ω | Y ω ≤ ENNReal.ofReal (Real.exp (-t))} ≤
       ENNReal.ofReal (Real.exp (-(t - a) ^ 2 / (4 * b))) := by
   set q : ℝ := (t - a) / (2 * b) with hqdef
   have hq : 0 < q := div_pos (by linarith) (by linarith)
-  have hYq : AEMeasurable (fun ω => Y ω ^ (-q)) P :=
-    hY.pow_const (-q)
   have hlevel : ∀ ω, Y ω ≤ ENNReal.ofReal (Real.exp (-t)) →
       ENNReal.ofReal (Real.exp (q * t)) ≤ Y ω ^ (-q) := by
     intro ω hω
@@ -147,17 +141,11 @@ theorem measure_le_exp_neg_of_negMoment
       congr 2
       ring
     rwa [h2] at h1
-  have hsub : {ω | Y ω ≤ ENNReal.ofReal (Real.exp (-t))} ⊆
-      {ω | ENNReal.ofReal (Real.exp (q * t)) ≤ Y ω ^ (-q)} := fun ω hω => hlevel ω hω
-  have hmarkov := mul_meas_ge_le_lintegral₀ hYq (ENNReal.ofReal (Real.exp (q * t)))
-  have hpos : ENNReal.ofReal (Real.exp (q * t)) ≠ 0 :=
-    (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
-  have hfin : ENNReal.ofReal (Real.exp (q * t)) ≠ ⊤ := ENNReal.ofReal_ne_top
   calc P {ω | Y ω ≤ ENNReal.ofReal (Real.exp (-t))}
-      ≤ P {ω | ENNReal.ofReal (Real.exp (q * t)) ≤ Y ω ^ (-q)} := measure_mono hsub
+      ≤ P {ω | ENNReal.ofReal (Real.exp (q * t)) ≤ Y ω ^ (-q)} := measure_mono (fun ω hω => hlevel ω hω)
     _ ≤ (∫⁻ ω, Y ω ^ (-q) ∂P) / ENNReal.ofReal (Real.exp (q * t)) := by
-        rw [ENNReal.le_div_iff_mul_le (Or.inl hpos) (Or.inl hfin), mul_comm]
-        exact hmarkov
+        rw [ENNReal.le_div_iff_mul_le (Or.inl ((ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne')) (Or.inl ENNReal.ofReal_ne_top), mul_comm]
+        exact (mul_meas_ge_le_lintegral₀ (hY.pow_const (-q)) (ENNReal.ofReal (Real.exp (q * t))))
     _ ≤ ENNReal.ofReal (Real.exp (a * q + b * q ^ 2)) / ENNReal.ofReal (Real.exp (q * t)) := by
         gcongr
         exact hmom q hq

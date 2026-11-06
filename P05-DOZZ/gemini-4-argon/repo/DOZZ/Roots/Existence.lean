@@ -25,7 +25,7 @@ namespace DOZZ.Proofs
 
 /-- Upsilon and a probability space carrying an equator GFF with its circle GMC exist for every
 `0 < γ < 2`: proof of `DOZZ.dozz_existence`. -/
-theorem dozz_existence (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) :
+theorem dozz_existence γ (hγ : 0 < γ) (hγ2 : γ < 2) :
     (∃ U : ℂ → ℂ, IsUpsilon γ U) ∧
       ∃ (Ω : Type) (_ : MeasurableSpace Ω) (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ),
         IsEquatorGFF P X ∧ IsGMCOf P X γ M := by

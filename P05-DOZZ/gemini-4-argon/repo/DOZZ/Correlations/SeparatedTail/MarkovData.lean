@@ -52,7 +52,7 @@ structure SeparatedTailMarkovData {Ω : Type*} [MeasurableSpace Ω]
 /-- One realization-independent envelope bound supports all separated center pairs. This lemma
 applies `DOZZ.exists_exteriorPinned_markov_uniform` and discards only clauses unused by the
 cutoff transfer. -/
-theorem separatedTail_exists_markov_data (R : ℝ) (hR : 1 < R) :
+theorem separatedTail_exists_markov_data R (hR : 1 < R) :
     ∃ C : ℝ → ℝ, (∀ l, 0 < l → 0 < C l) ∧
       ∀ (Ω : Type*) [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
         (Xc : Ω → ℂ → ℝ → ℝ), IsEquatorGFF P X → IsCircleAverage P X Xc →
@@ -62,12 +62,8 @@ theorem separatedTail_exists_markov_data (R : ℝ) (hR : 1 < R) :
     (by norm_num) (by norm_num) (by norm_num)
   refine ⟨C,hC,fun Ω _ P X Xc hX hc c hpin hsep => ?_⟩
   let _ : IsProbabilityMeasure P := hX.1
-  have hsep' : ∀ i j, i ≠ j → 2*(5/4 : ℝ)+1/4 ≤ dist (c i) (c j) := by
-    intro i j hij
-    rw [dist_eq_norm]
-    linarith [hsep i j hij]
   obtain ⟨D,H,Hi,Dc,ε,q,p,hε,hεδ,hq,hp,hlim,hD,hH,hHm,hHi,hHim,hHic,
-    hdecomp,hind,hDext,henv,hDcm,hDcg,hDcs,hDcc⟩ := h Ω P X Xc hX hc c hpin hsep'
+    hdecomp,hind,hDext,henv,hDcm,hDcg,hDcs,hDcc⟩ := h Ω P X Xc hX hc c hpin (by intro i j hij; rw [dist_eq_norm]; linarith [hsep i j hij])
   refine ⟨{
     D := D
     H := Hi

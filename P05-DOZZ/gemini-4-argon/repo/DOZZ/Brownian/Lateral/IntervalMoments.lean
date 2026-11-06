@@ -26,52 +26,44 @@ open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
 
-/-- The expected lateral measure is precisely its flat reference measure. -/
-theorem lateralGMC_bind_eq_volume {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z) :
-    P.bind Z = ENNReal.ofReal (2 * Real.pi) • (volume : Measure ℝ) := by
-  have hZm : AEMeasurable Z P := hZ.2.2.2.1
-  have hI : ∀ a b : ℝ, a < b →
-      (P.bind Z) (Ioc a b) = ENNReal.ofReal (2 * Real.pi * (b - a)) := by
-    intro a b hab
-    rw [Measure.bind_apply measurableSet_Ioc hZm]
-    exact lateralGMC_interval_first_moment P γ Z hZ a b hab
-  apply Measure.ext_of_Ioc'
-  · intro a b hab
-    rw [hI a b hab]
-    exact ENNReal.ofReal_ne_top
-  · intro a b hab
-    rw [hI a b hab, Measure.smul_apply, Real.volume_Ioc, smul_eq_mul,
-      ENNReal.ofReal_mul (by positivity : 0 ≤ 2 * Real.pi)]
 
-/-- The mean of each measurable set mass is its flat reference mass. -/
-theorem lateralGMC_set_mean {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
-    (S : Set ℝ) (hS : MeasurableSet S) :
-    (∫⁻ ω, Z ω S ∂P) = ENNReal.ofReal (2 * Real.pi) * volume S := by
-  rw [← Measure.bind_apply hS hZ.2.2.2.1,
-    lateralGMC_bind_eq_volume P γ Z hZ, Measure.smul_apply, smul_eq_mul]
 
 /-- Any fixed Lebesgue-null Borel set has zero lateral mass almost surely. -/
 theorem lateralGMC_null_set_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
-    (S : Set ℝ) (hS : MeasurableSet S) (hnull : volume S = 0) :
+    (P : Measure Ω) γ (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
+    S (hS : MeasurableSet S) (hnull : volume S = 0) :
     ∀ᵐ ω ∂P, Z ω S = 0 := by
+  have lateralGMC_set_mean : (∫⁻ ω, Z ω S ∂P) = ENNReal.ofReal (2 * Real.pi) * volume S := by
+    have lateralGMC_bind_eq_volume : P.bind Z = ENNReal.ofReal (2 * Real.pi) • (volume : Measure ℝ) := by
+      have hI : ∀ a b : ℝ, a < b →
+          (P.bind Z) (Ioc a b) = ENNReal.ofReal (2 * Real.pi * (b - a)) := by
+        intro a b hab
+        rw [Measure.bind_apply measurableSet_Ioc hZ.2.2.2.1]
+        exact lateralGMC_interval_first_moment P γ Z hZ a b hab
+      apply Measure.ext_of_Ioc'
+      · intro a b hab
+        rw [hI a b hab]
+        exact ENNReal.ofReal_ne_top
+      · intro a b hab
+        rw [hI a b hab, Measure.smul_apply, Real.volume_Ioc, smul_eq_mul,
+          ENNReal.ofReal_mul (by positivity : 0 ≤ 2 * Real.pi)]
+    rw [← Measure.bind_apply hS hZ.2.2.2.1,
+      lateralGMC_bind_eq_volume, Measure.smul_apply, smul_eq_mul]
   have hm : AEMeasurable (fun ω => Z ω S) P :=
     (Measure.measurable_coe hS).comp_aemeasurable hZ.2.2.2.1
   apply (lintegral_eq_zero_iff' hm).1
-  rw [lateralGMC_set_mean P γ Z hZ S hS, hnull, mul_zero]
+  rw [lateralGMC_set_mean, hnull, mul_zero]
 
 /-- Each deterministic endpoint has zero mass, without asserting an uncountable common event. -/
 theorem lateralGMC_singleton_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
-    (a : ℝ) : ∀ᵐ ω ∂P, Z ω {a} = 0 :=
+    (P : Measure Ω) γ (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
+    a : ∀ᵐ ω ∂P, Z ω {a} = 0 :=
   lateralGMC_null_set_ae P γ Z hZ {a} (measurableSet_singleton a) (measure_singleton a)
 
 /-- A fixed closed interval and its open-closed version agree almost surely. -/
 theorem lateralGMC_Icc_eq_Ioc_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
-    (a b : ℝ) (hab : a ≤ b) :
+    (P : Measure Ω) γ (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
+    a b (hab : a ≤ b) :
     ∀ᵐ ω ∂P, Z ω (Icc a b) = Z ω (Ioc a b) := by
   filter_upwards [lateralGMC_singleton_ae P γ Z hZ a] with ω hω
   have hset : Icc a b = {a} ∪ Ioc a b := by
@@ -90,7 +82,7 @@ theorem lateralGMC_Icc_eq_Ioc_ae {Ω : Type*} [MeasurableSpace Ω]
 /-- A deterministic real translate has exactly the same interval moment, for positive,
 zero, and negative exponents. -/
 theorem lateralGMC_interval_moment_translation_eq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
+    (P : Measure Ω) γ (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
     (a b q t : ℝ) :
     (∫⁻ ω, (Z ω (Ioc (a + t) (b + t))) ^ q ∂P) =
       ∫⁻ ω, (Z ω (Ioc a b)) ^ q ∂P := by
@@ -98,59 +90,35 @@ theorem lateralGMC_interval_moment_translation_eq {Ω : Type*} [MeasurableSpace 
   have hF : Measurable F :=
     ENNReal.continuous_rpow_const.measurable.comp (Measure.measurable_coe measurableSet_Ioc)
   let T : Measure ℝ → Measure ℝ := fun μ => μ.map (fun s : ℝ => s + (-t))
-  have hT : Measurable T := Measure.measurable_map _ (by fun_prop)
-  have hTZ : AEMeasurable (fun ω => T (Z ω)) P :=
-    hT.comp_aemeasurable hZ.2.2.2.1
-  have hstat : P.map (fun ω => T (Z ω)) = P.map Z := hZ.2.2.2.2.2.1 (-t)
-  have hpre : (fun s : ℝ => s + (-t)) ⁻¹' Ioc a b = Ioc (a + t) (b + t) := by
+  have hpre : (fun s => s + (-t)) ⁻¹' Ioc a b = Ioc (a + t) (b + t) := by
     ext s
     simp only [mem_preimage, mem_Ioc]
     constructor <;> intro h <;> constructor <;> linarith [h.1, h.2]
-  have hpoint (ω : Ω) : F (T (Z ω)) = (Z ω (Ioc (a + t) (b + t))) ^ q := by
+  have hpoint ω : F (T (Z ω)) = (Z ω (Ioc (a + t) (b + t))) ^ q := by
     dsimp [F, T]
     rw [Measure.map_apply (by fun_prop) measurableSet_Ioc, hpre]
   calc
     _ = ∫⁻ ω, F (T (Z ω)) ∂P := lintegral_congr (fun ω => (hpoint ω).symm)
     _ = ∫⁻ μ, F μ ∂P.map (fun ω => T (Z ω)) :=
-      (lintegral_map' hF.aemeasurable hTZ).symm
-    _ = ∫⁻ μ, F μ ∂P.map Z := by rw [hstat]
+      (lintegral_map' hF.aemeasurable ((Measure.measurable_map _ (by fun_prop) : Measurable T).comp_aemeasurable hZ.2.2.2.1)).symm
+    _ = ∫⁻ μ, F μ ∂P.map Z := by rw [(hZ.2.2.2.2.2.1 (-t))]
     _ = ∫⁻ ω, (Z ω (Ioc a b)) ^ q ∂P := lintegral_map' hF.aemeasurable hZ.2.2.2.1
 
-/-- Every exponent between two real endpoints is bounded by the sum of their powers,
-including at the extended-real boundary values. -/
-theorem ennreal_rpow_le_endpoint_sum (x : ℝ≥0∞) {l q u : ℝ} (hl : l ≤ q) (hu : q ≤ u) :
-    x ^ q ≤ x ^ l + x ^ u := by
-  rcases le_total x 1 with hx | hx
-  · exact (ENNReal.rpow_le_rpow_of_exponent_ge hx hl).trans (le_add_right le_rfl)
-  · exact (ENNReal.rpow_le_rpow_of_exponent_le hx hu).trans (le_add_left le_rfl)
 
 /-- Two endpoint moments bound every exponent between them. -/
 theorem lintegral_rpow_le_endpoint_sum {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (V : Ω → ℝ≥0∞) (hV : AEMeasurable V P)
     {l q u : ℝ} (hl : l ≤ q) (hu : q ≤ u) :
     (∫⁻ ω, (V ω) ^ q ∂P) ≤ (∫⁻ ω, (V ω) ^ l ∂P) + ∫⁻ ω, (V ω) ^ u ∂P := by
+  have ennreal_rpow_le_endpoint_sum (x : ℝ≥0∞) {l : ℝ} {q : ℝ} {u : ℝ} (hl : l ≤ q) (hu : q ≤ u) : x ^ q ≤ x ^ l + x ^ u := by
+    rcases le_total x 1 with hx | hx
+    · exact (ENNReal.rpow_le_rpow_of_exponent_ge hx hl).trans (le_add_right le_rfl)
+    · exact (ENNReal.rpow_le_rpow_of_exponent_le hx hu).trans (le_add_left le_rfl)
   calc
     _ ≤ ∫⁻ ω, (V ω) ^ l + (V ω) ^ u ∂P :=
       lintegral_mono (fun ω => ennreal_rpow_le_endpoint_sum (V ω) hl hu)
     _ = _ := lintegral_add_left' (ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hV) _
 
-/-- Compact strict subcritical parameter ranges have a quantitative uniform margin. -/
-theorem lateralGMC_compact_moment_margin
-    (Kγ Kq : Set ℝ) (hKγ : IsCompact Kγ) (hKq : IsCompact Kq)
-    (hγne : Kγ.Nonempty) (hqne : Kq.Nonempty)
-    (hγ : ∀ γ ∈ Kγ, 0 < γ) (hq : ∀ γ ∈ Kγ, ∀ q ∈ Kq, q < 4 / γ ^ 2) :
-    ∃ δ : ℝ, 0 < δ ∧ ∀ γ ∈ Kγ, ∀ q ∈ Kq, q + δ ≤ 4 / γ ^ 2 := by
-  let D : ℝ × ℝ → ℝ := fun p => 4 / p.1 ^ 2 - p.2
-  have hc : ContinuousOn D (Kγ ×ˢ Kq) := by
-    exact (continuousOn_const.div (continuous_fst.pow 2).continuousOn
-      (fun p hp => pow_ne_zero 2 (hγ p.1 hp.1).ne')).sub continuous_snd.continuousOn
-  obtain ⟨p, hp, hmin⟩ := (hKγ.prod hKq).exists_isMinOn (hγne.prod hqne) hc
-  have hd : 0 < D p := sub_pos.mpr (hq p.1 hp.1 p.2 hp.2)
-  refine ⟨D p, hd, ?_⟩
-  intro γ hγm q hqm
-  have h := hmin (show (γ, q) ∈ Kγ ×ˢ Kq from ⟨hγm, hqm⟩)
-  change D p ≤ 4 / γ ^ 2 - q at h
-  linarith
 
 /-- Choose two exponents strictly enclosing the compact moment set, with one common positive
 subcritical margin for the upper endpoint over the entire compact charge set. -/
@@ -160,6 +128,14 @@ theorem lateralGMC_compact_moment_endpoints
     (hγ : ∀ γ ∈ Kγ, 0 < γ) (hq : ∀ γ ∈ Kγ, ∀ q ∈ Kq, q < 4 / γ ^ 2) :
     ∃ l u δ : ℝ, 0 < δ ∧
       (∀ q ∈ Kq, l < q ∧ q < u) ∧ (∀ γ ∈ Kγ, u + δ ≤ 4 / γ ^ 2) := by
+  have lateralGMC_compact_moment_margin (Kγ : Set ℝ) (Kq : Set ℝ) (hKγ : IsCompact Kγ) (hKq : IsCompact Kq) (hγne : Kγ.Nonempty) (hqne : Kq.Nonempty) (hγ : ∀ γ ∈ Kγ, 0 < γ) (hq : ∀ γ ∈ Kγ, ∀ q ∈ Kq, q < 4 / γ ^ 2) : ∃ δ : ℝ, 0 < δ ∧ ∀ γ ∈ Kγ, ∀ q ∈ Kq, q + δ ≤ 4 / γ ^ 2 := by
+    let D : ℝ × ℝ → ℝ := fun p => 4 / p.1 ^ 2 - p.2
+    obtain ⟨p, hp, hmin⟩ := (hKγ.prod hKq).exists_isMinOn (hγne.prod hqne) ((continuousOn_const.div (continuous_fst.pow 2).continuousOn (fun p hp => pow_ne_zero 2 (hγ p.1 hp.1).ne')).sub continuous_snd.continuousOn)
+    refine ⟨D p, (sub_pos.mpr (hq p.1 hp.1 p.2 hp.2)), ?_⟩
+    intro γ hγm q hqm
+    have h := hmin (show (γ, q) ∈ Kγ ×ˢ Kq from ⟨hγm, hqm⟩)
+    change D p ≤ 4 / γ ^ 2 - q at h
+    linarith
   obtain ⟨qlo, hlo, hmin⟩ := hKq.exists_isMinOn hqne continuous_id.continuousOn
   obtain ⟨qhi, hhi, hmax⟩ := hKq.exists_isMaxOn hqne continuous_id.continuousOn
   obtain ⟨δ, hδ, hmargin⟩ := lateralGMC_compact_moment_margin
@@ -175,8 +151,8 @@ theorem lateralGMC_compact_moment_endpoints
 
 /-- Fixed closed-interval masses have exactly the same moments as their open-closed versions. -/
 theorem lateralGMC_Icc_moment_eq_Ioc {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
-    (a b q : ℝ) (hab : a ≤ b) :
+    (P : Measure Ω) γ (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
+    a b (q : ℝ) (hab : a ≤ b) :
     (∫⁻ ω, (Z ω (Icc a b)) ^ q ∂P) = ∫⁻ ω, (Z ω (Ioc a b)) ^ q ∂P := by
   apply lintegral_congr_ae
   filter_upwards [lateralGMC_Icc_eq_Ioc_ae P γ Z hZ a b hab] with ω hω
@@ -184,7 +160,7 @@ theorem lateralGMC_Icc_moment_eq_Ioc {Ω : Type*} [MeasurableSpace Ω]
 
 /-- Finite interval mass holds on one common event for every deterministic translate. -/
 theorem lateralGMC_interval_mass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z) :
+    (P : Measure Ω) γ (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z) :
     ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Ioc a b) < ⊤ := by
   filter_upwards [hZ.2.2.2.2.1] with ω hω a b
   exact (measure_mono Ioc_subset_Icc_self).trans_lt (hω a b)

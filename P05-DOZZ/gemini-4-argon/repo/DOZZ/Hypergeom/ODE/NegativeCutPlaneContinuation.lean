@@ -43,36 +43,22 @@ noncomputable def gaussNegativeCutPlaneCanonicalPath (z : gaussNegativeCutPlane)
   · apply Subtype.ext
     simp [f, g]
 
-/-- The canonical negative-cut path is continuous on its real parameter interval. -/
-theorem gaussNegativeCutPlaneCanonicalPath_continuousOn (z : gaussNegativeCutPlane) :
-    ContinuousOn (subtypePathFunction (gaussNegativeCutPlaneCanonicalPath z))
-      (Icc (0 : ℝ) 1) := by
-  change ContinuousOn
-    (fun t => ((gaussNegativeCutPlaneCanonicalPath z)
-      (Set.projIcc 0 1 zero_le_one t) : ℂ)) _
-  exact (continuous_subtype_val.comp
-    ((gaussNegativeCutPlaneCanonicalPath z).continuous.comp continuous_projIcc)).continuousOn
 
-/-- The canonical path remains in the negative cut plane under endpoint projection. -/
-theorem gaussNegativeCutPlaneCanonicalPath_mem (z : gaussNegativeCutPlane) (t : ℝ) :
-    subtypePathFunction (gaussNegativeCutPlaneCanonicalPath z) t ∈ gaussNegativeCutPlane :=
-  (gaussNegativeCutPlaneCanonicalPath z
-    (Set.projIcc 0 1 zero_le_one t)).property
 
 /-- A finite-chain continuation exists along the canonical path to every negative-cut point. -/
 theorem exists_gauss_negative_cut_plane_canonical_continuation
-    (a b c : ℂ) (z : gaussNegativeCutPlane) :
+    a b c z :
     Nonempty (PathContinuationLift
       (subtypePathFunction (gaussNegativeCutPlaneCanonicalPath z))
       (gaussSystemOperator a b c)
       (ordinaryHypergeometricState a b c (-1 / 2 : ℂ))) := by
   apply exists_path_continuation_lift
-    (gaussNegativeCutPlaneCanonicalPath_continuousOn z) gaussRegularPlane
+    ((by change ContinuousOn (fun t => ((gaussNegativeCutPlaneCanonicalPath z) (Set.projIcc 0 1 zero_le_one t) : ℂ)) _; exact (continuous_subtype_val.comp ((gaussNegativeCutPlaneCanonicalPath z).continuous.comp continuous_projIcc)).continuousOn)) gaussRegularPlane
     gaussRegularPlane_isOpen (gaussSystemOperator a b c)
     (gaussSystemOperator_differentiableOn a b c)
   · intro t ht
     exact gaussNegativeCutPlane_subset_regularPlane
-      (gaussNegativeCutPlaneCanonicalPath_mem z t)
+      ((fun t => (gaussNegativeCutPlaneCanonicalPath z (Set.projIcc 0 1 zero_le_one t)).property) t)
 
 /-- A chosen finite-chain continuation of the series state from `-1/2` to `z`. -/
 noncomputable def gaussNegativeCutPlaneCanonicalContinuationLift

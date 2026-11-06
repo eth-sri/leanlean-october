@@ -20,7 +20,7 @@ coarse coordinates may be any selected coordinates of the jointly Gaussian famil
 finite-barrier identity used to compare mixed cutoffs. -/
 theorem finite_gaussian_wick_pair_tilt_with_coarse_rectangle
     {Ω : Type*} [MeasurableSpace Ω] {ι κ : Type*} [Fintype ι] [Fintype κ]
-    (P : Measure Ω) (V : Ω → ι → ℝ)
+    (P : Measure Ω) V
     (hV : IsCenteredJointlyGaussian P V) (p q : ι) (γ : ℝ)
     (e : κ → ι) (barrier : κ → ℝ) :
     let F : (ι → ℝ) → ℝ≥0∞ := fun z =>
@@ -42,52 +42,27 @@ theorem finite_gaussian_wick_pair_tilt_with_coarse_rectangle
   let F : (ι → ℝ) → ℝ≥0∞ := fun z =>
     Set.indicator {z | ∀ i, z (e i) ≤ barrier i}
       (fun _ => (1 : ℝ≥0∞)) z
-  have hEq : (⋂ i : κ, {z : ι → ℝ | z (e i) ≤ barrier i}) =
-      {z | ∀ i : κ, z (e i) ≤ barrier i} := by
-    ext z
-    simp only [Set.mem_iInter, Set.mem_ofPred_eq]
-  have hset : MeasurableSet {z : ι → ℝ | ∀ i : κ, z (e i) ≤ barrier i} := by
-    rw [← hEq]
-    apply MeasurableSet.iInter
-    intro i
-    exact measurableSet_le (measurable_pi_apply (e i)) measurable_const
-  have hF : Measurable F := by
-    dsimp [F]
-    exact measurable_const.indicator hset
-  simpa [F] using finite_gaussian_wick_pair_tilt P V hV p q γ F hF
+  simpa [F] using finite_gaussian_wick_pair_tilt P V hV p q γ F (by dsimp [F]; exact measurable_const.indicator (by rw [← (show (⋂ i : κ, {z : ι → ℝ | z (e i) ≤ barrier i}) = {z | ∀ i : κ, z (e i) ≤ barrier i} by ext z; simp only [Set.mem_iInter, Set.mem_ofPred_eq])]; apply MeasurableSet.iInter; intro i; exact measurableSet_le (measurable_pi_apply (e i)) measurable_const))
 
 
 /-- Every finite Gaussian rectangle indicator has expectation between zero and one. -/
 theorem integral_gaussianRectangleIndicator_abs_le_one
     {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z)
+    (P : Measure Ω) Z (hZ : IsCenteredJointlyGaussian P Z)
     (barrier shift : ι → ℝ) :
     |∫ ω, gaussianRectangleIndicator Z barrier shift ω ∂P| ≤ 1 := by
   classical
   let R : Set (ι → ℝ) := {z | ∀ i, z i + shift i ≤ barrier i}
   have hR : MeasurableSet R := by
-    have hEq : (⋂ i, {z : ι → ℝ | z i + shift i ≤ barrier i}) = R := by
-      ext z
-      simp [R]
-    rw [← hEq]
+    rw [← (show (⋂ i, {z : ι → ℝ | z i + shift i ≤ barrier i}) = R by ext z; simp [R])]
     apply MeasurableSet.iInter
     intro i
-    have hcoord : Measurable (fun z : ι → ℝ => z i + shift i) := by fun_prop
-    exact measurableSet_le hcoord measurable_const
+    exact measurableSet_le (by fun_prop) measurable_const
   have hZae : AEMeasurable Z P := by
     apply AEMeasurable.of_eval
     intro i
     exact hZ.2.1 i
   let F : (ι → ℝ) → ℝ := fun z => if z ∈ R then 1 else 0
-  have hF : Measurable F := by
-    dsimp [F]
-    exact Measurable.ite hR measurable_const measurable_const
-  have hEq : gaussianRectangleIndicator Z barrier shift = F ∘ Z := by
-    funext ω
-    simp [gaussianRectangleIndicator, F, R]
-  have hRect : AEStronglyMeasurable (gaussianRectangleIndicator Z barrier shift) P := by
-    rw [hEq]
-    exact (hF.comp_aemeasurable hZae).aestronglyMeasurable
   have hbound : ∀ᵐ ω ∂P, ‖gaussianRectangleIndicator Z barrier shift ω‖ ≤ 1 := by
     apply ae_of_all
     intro ω
@@ -97,23 +72,16 @@ theorem integral_gaussianRectangleIndicator_abs_le_one
     refine ⟨?_⟩
     rw [hZ.1.measure_univ]
     exact ENNReal.one_lt_top
-  have hone : Integrable (fun _ : Ω => (1 : ℝ)) P := by
-    exact (integrable_const_iff (μ := P) (c := (1 : ℝ))).2 (Or.inr hPfinite)
-  have hRectIntegrable : Integrable (gaussianRectangleIndicator Z barrier shift) P :=
-    hone.mono' hRect hbound
-  have hnorm := norm_integral_le_integral_norm (μ := P)
-    (gaussianRectangleIndicator Z barrier shift)
+  have hone := (integrable_const_iff (μ := P) (c := (1 : ℝ))).2 (Or.inr hPfinite)
   have hnormBound :
       (∫ ω, ‖gaussianRectangleIndicator Z barrier shift ω‖ ∂P) ≤ 1 := by
     calc
       _ ≤ ∫ ω, (1 : ℝ) ∂P :=
-        integral_mono_ae hRectIntegrable.norm hone hbound
+        integral_mono_ae (hone.mono' (by rw [(show gaussianRectangleIndicator Z barrier shift = F ∘ Z by funext ω; simp [gaussianRectangleIndicator, F, R])]; exact ((show Measurable F by dsimp [F]; exact Measurable.ite hR measurable_const measurable_const).comp_aemeasurable hZae).aestronglyMeasurable) hbound).norm hone hbound
       _ = 1 := by
         rw [integral_const, Measure.real_def, hZ.1.measure_univ]
         norm_num
-  have hnormResult : ‖∫ ω, gaussianRectangleIndicator Z barrier shift ω ∂P‖ ≤ 1 :=
-    hnorm.trans hnormBound
-  simpa [Real.norm_eq_abs] using hnormResult
+  simpa [Real.norm_eq_abs] using ((norm_integral_le_integral_norm (μ := P) (gaussianRectangleIndicator Z barrier shift)).trans hnormBound)
 
 /-- Uniform convergence of the Wick prefactor and the finite-barrier probability implies uniform
 convergence of their mixed two-point product. The probability factors are bounded by one; only
@@ -136,20 +104,15 @@ theorem tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
   intro η' hη'
   let δ : ℝ := min 1 (η' / (4 * (M + 1)))
   have hδ : 0 < δ := lt_min one_pos (div_pos hη' (by positivity))
-  have hδone : δ ≤ 1 := min_le_left _ _
   have hδsmall : δ ≤ η' / (4 * (M + 1)) := min_le_right _ _
   obtain ⟨εF, hεF, hFclose⟩ := hF δ hδ
   obtain ⟨εG, hεG, hGclose⟩ := hGcloseFam δ hδ
   let ε₀ : ℝ := min εF εG
-  have hε₀ : 0 < ε₀ := lt_min hεF hεG
-  refine ⟨ε₀, hε₀, ?_⟩
+  refine ⟨ε₀, (lt_min hεF hεG), ?_⟩
   intro ε ε' hε hεcut hε' hε'cut p hp
   have hFc : |F ε ε' p - F₀ 0 0 p| < δ :=
     hFclose ε ε' hε (le_trans hεcut (min_le_left _ _)) hε'
       (le_trans hε'cut (min_le_left _ _)) p hp
-  have hGc : |G ε ε' p - G₀ 0 0 p| < δ :=
-    hGclose ε ε' hε (le_trans hεcut (min_le_right _ _)) hε'
-      (le_trans hε'cut (min_le_right _ _)) p hp
   have hFbound : |F ε ε' p| ≤ M + δ := by
     calc
       |F ε ε' p| = |(F ε ε' p - F₀ 0 0 p) + F₀ 0 0 p| := by
@@ -174,7 +137,7 @@ theorem tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
                 _ = _ := by rw [abs_mul, abs_mul]
       _ ≤ (M + δ) * δ + δ := by
         apply add_le_add
-        · exact mul_le_mul (hFbound) hGc.le (abs_nonneg _) (by positivity)
+        · exact mul_le_mul (hFbound) (hGclose ε ε' hε (le_trans hεcut (min_le_right _ _)) hε' (le_trans hε'cut (min_le_right _ _)) p hp).le (abs_nonneg _) (by positivity)
         · calc
             |F ε ε' p - F₀ 0 0 p| * |G₀ 0 0 p| ≤ δ * 1 :=
               mul_le_mul hFc.le (hG₀ p hp) (abs_nonneg _) (by positivity)
@@ -198,8 +161,7 @@ theorem tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
           apply (div_le_div_iff₀ (by positivity : (0 : ℝ) < 4 * (M + 1))
             (by norm_num : (0 : ℝ) < 4)).2
           nlinarith [hM, hη']
-    have hδsq : δ ^ 2 ≤ δ := by nlinarith [hδone, sq_nonneg (δ - 1)]
-    nlinarith [hMd, hδsmall', hδsq]
+    nlinarith [hMd, hδsmall', (show δ ^ 2 ≤ δ by nlinarith [(min_le_left _ _ : δ ≤ 1), sq_nonneg (δ - 1)])]
   exact lt_of_le_of_lt hprod hsmall
 
 /-- One regularized Gaussian Wick weight, in nonnegative form for Tonelli arguments. -/
@@ -244,14 +206,14 @@ noncomputable def compatibleAdmissibleSelectedFiniteBarrierPairKernel
 dominated by its finite-barrier truncation. -/
 theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarrier
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Y Z : Ω → ℝ → ℂ → ℝ) (γ a : ℝ) (k₀ m : ℕ)
-    (r s : ℝ) (x y : ℂ) (b₁ b₂ : Bool)
+    (P : Measure Ω) (Y Z : Ω → ℝ → ℂ → ℝ) γ a (k₀ m : ℕ)
+    r s x y b₁ b₂
     (hmr : (m : ℝ) ≤ r) (hms : (m : ℝ) ≤ s) :
     compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel P Y Z γ a k₀ r s x y b₁ b₂ ≤
       compatibleAdmissibleSelectedFiniteBarrierPairKernel P Y Z γ a k₀ m
         (Real.exp (-r)) (Real.exp (-s)) x y b₁ b₂ := by
   classical
-  have hsubset (t : ℝ) (hmt : (m : ℝ) ≤ t) (ω : Ω) (z : ℂ) :
+  have hsubset t (hmt : (m : ℝ) ≤ t) ω z :
       Set.indicator (admissibleGrowingBarrierSet Y a k₀ t)
           (fun _ => (1 : ℝ≥0∞)) (ω, z) ≤
         Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
@@ -259,8 +221,7 @@ theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarri
     by_cases hgood : (ω, z) ∈ admissibleGrowingBarrierSet Y a k₀ t
     · have hsmall : (ω, z) ∈ admissibleGrowingBarrierSet Y a k₀ (m : ℝ) := by
         intro k hk₀ hkm
-        have hkt : (k : ℝ) ≤ t := le_trans hkm hmt
-        exact hgood k hk₀ hkt
+        exact hgood k hk₀ (le_trans hkm hmt)
       simp [Set.indicator, hgood, hsmall]
     · simp [Set.indicator, hgood]
   unfold compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel

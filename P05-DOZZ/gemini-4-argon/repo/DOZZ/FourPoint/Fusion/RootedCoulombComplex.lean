@@ -18,12 +18,12 @@ namespace DOZZ.Proofs
 /-- The uniform inverse moments `fusion_rootedMass_inverse_moment_uniform` supply the
 absolute-integrability condition in complex rooting. All insertion points are in the unit chart. -/
 theorem fusion_rooted_coulomb_complex_integral {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    {N : ℕ} (α : Fin N → ℝ) (z : Fin N → ℂ) (hz : ∀ j, ‖z j‖ ≤ 1)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    {N} (α : Fin N → ℝ) (z : Fin N → ℂ) (hz : ∀ j, ‖z j‖ ≤ 1)
     (αinf s : ℝ) (hs : s < 0)
     (hmfin : ∀ᵐ ω ∂P, coulombMass γ (M ω) α z αinf < ⊤)
-    (f : ℂ → ℂ) (hf : Measurable f) (hfi : Integrable f gmcReferenceMeasure) :
+    f (hf : Measurable f) (hfi : Integrable f gmcReferenceMeasure) :
     (∀ᵐ ω ∂P, Integrable f (M ω)) ∧
     Integrable (fun ω => ((coulombMass γ (M ω) α z αinf ^ s).toReal : ℂ) *
       (∫ u, f u ∂M ω)) P ∧
@@ -35,7 +35,7 @@ theorem fusion_rooted_coulomb_complex_integral {Ω : Type*} [MeasurableSpace Ω]
         ((∫⁻ ω, coulombMass γ (gmcRootedMeasure γ u (M ω)) α z αinf ^ s ∂P).toReal : ℂ)
         ∂gmcReferenceMeasure := by
   let G := fun μ : Measure ℂ => coulombMass γ μ α z αinf ^ s
-  have hG : Measurable G := (fusion_measurable_coulombMass γ α z αinf).pow_const s
+  have hG := (fusion_measurable_coulombMass γ α z αinf).pow_const s
   obtain ⟨C, hC, hbound⟩ := fusion_rootedMass_inverse_moment_uniform P X hX γ hγ hγ2 M hM
     α αinf s hs.le
   have hb : (∫⁻ u, ENNReal.ofReal ‖f u‖ *

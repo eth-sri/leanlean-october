@@ -18,7 +18,7 @@ in measure. The use of `max · 0` lets the lemma apply to test integrals whose n
 known only almost everywhere. -/
 theorem lintegral_ennreal_rpow_le_of_tendstoInMeasure
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (f : ℕ → Ω → ℝ) (g : Ω → ℝ) (p : ℝ) (C : ℝ≥0∞)
+    (f : ℕ → Ω → ℝ) g p (C : ℝ≥0∞)
     (hfg : TendstoInMeasure P f atTop g)
     (hfmeas : ∀ n, AEMeasurable
       (fun ω => ENNReal.rpow (ENNReal.ofReal (max (f n ω) 0)) p) P)
@@ -28,25 +28,10 @@ theorem lintegral_ennreal_rpow_le_of_tendstoInMeasure
     ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (g ω)) p ∂P ≤ C := by
   obtain ⟨ns, hns, hsub⟩ := hfg.exists_seq_tendsto_ae
   let ψ : ℝ → ℝ≥0∞ := fun x => ENNReal.rpow (ENNReal.ofReal (max x 0)) p
-  have hψ : Continuous ψ := by
-    exact ENNReal.continuous_rpow_const.comp
-      (ENNReal.continuous_ofReal.comp
-        (continuous_max.comp (continuous_id.prodMk continuous_const)))
-  have hlim : ∀ᵐ ω ∂P,
-      Filter.liminf (fun i => ψ (f (ns i) ω)) atTop = ψ (g ω) := by
-    filter_upwards [hsub] with ω hω
-    exact Filter.Tendsto.liminf_eq (hψ.continuousAt.tendsto.comp hω)
-  have htarget : ∀ᵐ ω ∂P, ψ (g ω) = ENNReal.rpow (ENNReal.ofReal (g ω)) p := by
-    filter_upwards [hgbound] with ω hω
-    simp [ψ]
-  have hEq : (fun ω => ENNReal.rpow (ENNReal.ofReal (g ω)) p) =ᵐ[P]
-      (fun ω => Filter.liminf (fun i => ψ (f (ns i) ω)) atTop) := by
-    filter_upwards [hlim, htarget] with ω hlimω htargetω
-    exact (hlimω.trans htargetω).symm
   calc
     ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (g ω)) p ∂P
         = ∫⁻ ω, Filter.liminf (fun i => ψ (f (ns i) ω)) atTop ∂P := by
-            exact lintegral_congr_ae hEq
+            exact lintegral_congr_ae (by filter_upwards [(by filter_upwards [hsub] with ω hω; exact Filter.Tendsto.liminf_eq ((ENNReal.continuous_rpow_const.comp (ENNReal.continuous_ofReal.comp (continuous_max.comp (continuous_id.prodMk continuous_const))) : Continuous ψ).continuousAt.tendsto.comp hω)), (show ∀ᵐ ω ∂P, ψ (g ω) = ENNReal.rpow (ENNReal.ofReal (g ω)) p by filter_upwards [hgbound] with ω hω; simp [ψ])] with ω hlimω htargetω; exact (hlimω.trans htargetω).symm)
     _ ≤ Filter.liminf (fun i => ∫⁻ ω, ψ (f (ns i) ω) ∂P) atTop :=
       lintegral_liminf_le' (fun i => hfmeas (ns i))
     _ ≤ Filter.limsup (fun i => ∫⁻ ω, ψ (f (ns i) ω) ∂P) atTop :=

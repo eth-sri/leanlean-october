@@ -23,20 +23,19 @@ The frame factor `(2/γ) 2^{4(1-z/γ)}` cancels these position factors, leaving 
 
 namespace DOZZ.Proofs
 
-theorem reflectionExponent_pole_neg {γ : ℝ} (hγ : 0 < γ) (η : ℝ) :
+theorem reflectionExponent_pole_neg {γ} (hγ : 0 < γ) η :
     reflectionExponent γ (2 / γ - η) = 1 + 2 * η / γ := by
   rw [reflectionExponent, Q]
   field_simp
   ring
 
 /-- The tail coefficient at `2` is `2^{-4p₂} R̄`. -/
-theorem tailCoefficient_two {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
+theorem tailCoefficient_two {γ} (hγ : 0 < γ) η R :
     oneInsertionTailCoefficient γ (2 / γ + η) 2 (poleFactorTwo γ η 2) R =
       2 ^ (-(4 * (1 - 2 * η / γ))) * R := by
   unfold oneInsertionTailCoefficient
   rw [poleFactorTwo_two hγ, reflectionExponent_pole hγ η]
-  have h2 : ‖(2 : ℂ)‖ = 2 := by simp
-  rw [h2, Real.rpow_eq_pow, Real.rpow_eq_pow, ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2),
+  rw [(show ‖(2 : ℂ)‖ = 2 by simp), Real.rpow_eq_pow, Real.rpow_eq_pow, ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2),
     ← Real.rpow_add (by norm_num : (0 : ℝ) < 2)]
   congr 2
   rw [Q]
@@ -44,13 +43,12 @@ theorem tailCoefficient_two {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
   ring
 
 /-- The tail coefficient at `-2` is `2^{-4p₃} R̄`. -/
-theorem tailCoefficient_negTwo {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
+theorem tailCoefficient_negTwo {γ} (hγ : 0 < γ) η R :
     oneInsertionTailCoefficient γ (2 / γ - η) (-2) (poleFactorNegTwo γ η (-2)) R =
       2 ^ (-(4 * (1 + 2 * η / γ))) * R := by
   unfold oneInsertionTailCoefficient
   rw [poleFactorNegTwo_negTwo hγ, reflectionExponent_pole_neg hγ η]
-  have h2 : ‖(-2 : ℂ)‖ = 2 := by simp
-  rw [h2, Real.rpow_eq_pow, Real.rpow_eq_pow, ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2),
+  rw [(show ‖(-2 : ℂ)‖ = 2 by simp), Real.rpow_eq_pow, Real.rpow_eq_pow, ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2),
     ← Real.rpow_add (by norm_num : (0 : ℝ) < 2)]
   congr 2
   rw [Q]
@@ -67,7 +65,7 @@ theorem firstResidue_eq {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
   have hA0 : (2 : ℝ) ^ (-(4 * (1 - 2 * η / γ))) ≠ 0 := by positivity
   generalize (2 : ℝ) ^ (-(4 * (1 - 2 * η / γ))) = A at h hA0 ⊢
   generalize (2 : ℝ) ^ (4 * (1 - 2 * η / γ)) = B at h ⊢
-  have hB : B = A⁻¹ := eq_inv_of_mul_eq_one_right h
+  have hB := eq_inv_of_mul_eq_one_right h
   subst hB
   rw [Q]
   field_simp
@@ -83,7 +81,7 @@ theorem secondResidue_eq {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
   have hA0 : (2 : ℝ) ^ (-(4 * (1 + 2 * η / γ))) ≠ 0 := by positivity
   generalize (2 : ℝ) ^ (-(4 * (1 + 2 * η / γ))) = A at h hA0 ⊢
   generalize (2 : ℝ) ^ (4 * (1 + 2 * η / γ)) = B at h ⊢
-  have hB : B = A⁻¹ := eq_inv_of_mul_eq_one_right h
+  have hB := eq_inv_of_mul_eq_one_right h
   subst hB
   field_simp
   ring

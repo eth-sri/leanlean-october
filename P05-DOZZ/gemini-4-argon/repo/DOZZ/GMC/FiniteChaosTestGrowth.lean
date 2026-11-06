@@ -18,26 +18,20 @@ namespace DOZZ.Proofs
 /-- Every Wick weight in a finite family has a common absolute-exponential envelope. -/
 theorem finiteChaosVectorWeight_absExp_bound
     {ι : Type*} [Fintype ι]
-    (a v : ι → ℝ) (γ : ℝ) :
+    (a v : ι → ℝ) γ :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ z i,
       ‖finiteChaosVectorWeight a v γ z i‖ ≤
         B * Real.exp (|γ| * ∑ j, |z j|) := by
   classical
   let b : ι → ℝ := fun i => |a i| * Real.exp (|γ ^ 2 / 2 * v i|)
   let B : ℝ := 1 + ∑ i, b i
-  have hb (i : ι) : 0 ≤ b i := by
-    dsimp [b]
-    positivity
-  have hB : 0 ≤ B := by
-    dsimp [B]
-    positivity
-  have hbi (i : ι) : b i ≤ B := by
+  have hbi i : b i ≤ B := by
     have hle : b i ≤ ∑ j, b j := by
       simpa using (Finset.single_le_sum (s := Finset.univ) (f := b)
-        (fun j hj => hb j) (Finset.mem_univ i))
+        (fun j hj => (fun i => by dsimp [b]; positivity) j) (Finset.mem_univ i))
     dsimp [B]
     linarith
-  refine ⟨B, hB, ?_⟩
+  refine ⟨B, (by dsimp [B]; positivity), ?_⟩
   intro z i
   rw [finiteChaosVectorWeight, Real.norm_eq_abs, abs_mul,
     abs_of_pos (Real.exp_pos _)]
@@ -47,12 +41,8 @@ theorem finiteChaosVectorWeight_absExp_bound
       calc
         γ * z i ≤ |γ * z i| := le_abs_self _
         _ = |γ| * |z i| := abs_mul _ _
-    have hcoord : |z i| ≤ ∑ j, |z j| := by
-      simpa using (Finset.single_le_sum (s := Finset.univ)
-        (f := fun j : ι => |z j|)
-        (fun j hj => abs_nonneg (z j)) (Finset.mem_univ i))
     have hcoord' : |γ| * |z i| ≤ |γ| * ∑ j, |z j| :=
-      mul_le_mul_of_nonneg_left hcoord (abs_nonneg γ)
+      mul_le_mul_of_nonneg_left (by simpa using (Finset.single_le_sum (s := Finset.univ) (f := fun j => |z j|) (fun j hj => abs_nonneg (z j)) (Finset.mem_univ i))) (abs_nonneg γ)
     have hconst : -(γ ^ 2 / 2 * v i) ≤ |γ ^ 2 / 2 * v i| := neg_le_abs _
     linarith
   calc
@@ -70,7 +60,7 @@ theorem finiteChaosVectorWeight_absExp_bound
 in the Gaussian integration-by-parts formula. -/
 theorem finiteChaosVectorTestScore_exp_growth_bounds
     {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (a v : ι → ℝ) (γ B₁ B₂ : ℝ) (hB₁ : 0 ≤ B₁) (hB₂ : 0 ≤ B₂)
+    (a v : ι → ℝ) γ B₁ B₂ (hB₁ : 0 ≤ B₁) (hB₂ : 0 ≤ B₂)
     (F' F'' : ℝ → ℝ)
     (hF' : ∀ x, ‖F' x‖ ≤ B₁) (hF'' : ∀ x, ‖F'' x‖ ≤ B₂) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ z i j,
@@ -82,13 +72,13 @@ theorem finiteChaosVectorTestScore_exp_growth_bounds
   obtain ⟨B, hB, hWeight⟩ := finiteChaosVectorWeight_absExp_bound a v γ
   let u : (ι → ℝ) → ℝ := fun z => |γ| * ∑ k, |z k|
   let E : (ι → ℝ) → ℝ := fun z => Real.exp (2 * u z)
-  let M : ℝ := B * B₁ + |γ| * (B * B₁ + B ^ 2 * B₂)
-  have hu (z : ι → ℝ) : 0 ≤ u z :=
+  let M := B * B₁ + |γ| * (B * B₁ + B ^ 2 * B₂)
+  have hu z : 0 ≤ u z :=
     mul_nonneg (abs_nonneg _) (Finset.sum_nonneg fun k hk => abs_nonneg _)
-  have hExp (z : ι → ℝ) : Real.exp (u z) ≤ E z := by
+  have hExp z : Real.exp (u z) ≤ E z := by
     apply Real.exp_le_exp.mpr
     linarith [hu z]
-  have hExpSq (z : ι → ℝ) :
+  have hExpSq z :
       Real.exp (u z) * Real.exp (u z) = E z := by
     rw [← Real.exp_add]
     congr 1
@@ -99,7 +89,6 @@ theorem finiteChaosVectorTestScore_exp_growth_bounds
   · intro z i j
     constructor
     · rw [finiteChaosVectorTestScore]
-      have hw := hWeight z i
       calc
         ‖finiteChaosVectorWeight a v γ z i * F'
             (finiteChaosVectorMass a v γ z)‖ ≤
@@ -107,7 +96,7 @@ theorem finiteChaosVectorTestScore_exp_growth_bounds
               rw [norm_mul]
               exact mul_le_mul_of_nonneg_left (hF' _) (norm_nonneg _)
         _ ≤ B * Real.exp (u z) * B₁ := by
-              exact mul_le_mul_of_nonneg_right hw hB₁
+              exact mul_le_mul_of_nonneg_right (hWeight z i) hB₁
         _ ≤ B * B₁ * E z := by
               calc
                 _ = (B * B₁) * Real.exp (u z) := by ring
@@ -120,7 +109,6 @@ theorem finiteChaosVectorTestScore_exp_growth_bounds
                 (mul_nonneg (abs_nonneg γ) (by positivity))
     · rw [finiteChaosVectorTestScoreDerivative]
       have hw₁ := hWeight z i
-      have hw₂ := hWeight z j
       have hdiag : ‖if i = j then
           finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z)
           else 0‖ ≤ B * B₁ * E z := by
@@ -155,7 +143,7 @@ theorem finiteChaosVectorTestScore_exp_growth_bounds
               rw [norm_mul, norm_mul]
           _ ≤ (B * Real.exp (u z)) * (B * Real.exp (u z)) * B₂ := by
             apply mul_le_mul
-              (mul_le_mul hw₁ hw₂ (norm_nonneg _) (by positivity))
+              (mul_le_mul hw₁ (hWeight z j) (norm_nonneg _) (by positivity))
               (hF'' _)
               (norm_nonneg _)
               (by positivity)
@@ -171,13 +159,6 @@ theorem finiteChaosVectorTestScore_exp_growth_bounds
               finiteChaosVectorWeight a v γ z j *
                 F'' (finiteChaosVectorMass a v γ z)‖ ≤
           |γ| * (B * B₁ + B ^ 2 * B₂) * E z := by
-        have hnormDiag :
-            ‖γ * (if i = j then
-              finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z)
-              else 0)‖ = |γ| * ‖if i = j then
-              finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z)
-              else 0‖ := by
-          rw [norm_mul, Real.norm_eq_abs]
         have hnormProd :
             ‖γ * finiteChaosVectorWeight a v γ z i *
               finiteChaosVectorWeight a v γ z j *
@@ -203,7 +184,7 @@ theorem finiteChaosVectorTestScore_exp_growth_bounds
               |γ| * ‖finiteChaosVectorWeight a v γ z i *
                 finiteChaosVectorWeight a v γ z j *
                   F'' (finiteChaosVectorMass a v γ z)‖ := by
-                rw [hnormDiag, hnormProd]
+                rw [(show ‖γ * (if i = j then finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z) else 0)‖ = |γ| * ‖if i = j then finiteChaosVectorWeight a v γ z i * F' (finiteChaosVectorMass a v γ z) else 0‖ by rw [norm_mul, Real.norm_eq_abs]), hnormProd]
           _ ≤ |γ| * (B * B₁ * E z) + |γ| * (B ^ 2 * B₂ * E z) := by
             exact add_le_add
               (mul_le_mul_of_nonneg_left hdiag (abs_nonneg γ))

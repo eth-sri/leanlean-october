@@ -28,28 +28,26 @@ theorem lastExitAvoidanceFactor_tendsto_one_atTop
     Tendsto (fun y : ℝ => lastExitAvoidanceFactor ν c y) atTop (𝓝 1) := by
   have hcoef : -2 * ν < 0 := by nlinarith
   have harg : Tendsto (fun y : ℝ => -2 * ν * (y - c)) atTop atBot := by
-    have hmul : Tendsto (fun y : ℝ => (-2 * ν) * y) atTop atBot :=
+    have hmul : Tendsto (fun y => (-2 * ν) * y) atTop atBot :=
       tendsto_id.const_mul_atTop_of_neg hcoef
     have hshift := tendsto_atBot_add_const_right _ (2 * ν * c) hmul
     convert hshift using 1
     ext y
     ring
-  have harg' : Tendsto (fun y : ℝ => -2 * ν * y) atTop atBot :=
+  have harg' : Tendsto (fun y => -2 * ν * y) atTop atBot :=
     tendsto_id.const_mul_atTop_of_neg hcoef
-  have hexp : Tendsto (fun y : ℝ => Real.exp (-2 * ν * (y - c))) atTop (𝓝 0) :=
-    Real.tendsto_exp_atBot.comp harg
-  have hexp' : Tendsto (fun y : ℝ => Real.exp (-2 * ν * y)) atTop (𝓝 0) :=
-    Real.tendsto_exp_atBot.comp harg'
-  have hnum : Tendsto (fun y : ℝ => 1 - Real.exp (-2 * ν * (y - c))) atTop (𝓝 1) := by
+  have hexp := Real.tendsto_exp_atBot.comp harg
+  have hexp' := Real.tendsto_exp_atBot.comp harg'
+  have hnum : Tendsto (fun y => 1 - Real.exp (-2 * ν * (y - c))) atTop (𝓝 1) := by
     simpa using tendsto_const_nhds.sub hexp
-  have hden : Tendsto (fun y : ℝ => 1 - Real.exp (-2 * ν * y)) atTop (𝓝 1) := by
+  have hden : Tendsto (fun y => 1 - Real.exp (-2 * ν * y)) atTop (𝓝 1) := by
     simpa using tendsto_const_nhds.sub hexp'
-  have hratio : Tendsto (fun y : ℝ =>
+  have hratio : Tendsto (fun y =>
       (1 - Real.exp (-2 * ν * (y - c))) / (1 - Real.exp (-2 * ν * y)))
       atTop (𝓝 1) := by
     convert hnum.div hden (by norm_num) using 1
     simp
-  have heq : (fun y : ℝ => lastExitAvoidanceFactor ν c y) =ᶠ[atTop]
+  have heq : (fun y => lastExitAvoidanceFactor ν c y) =ᶠ[atTop]
       (fun y => (1 - Real.exp (-2 * ν * (y - c))) /
         (1 - Real.exp (-2 * ν * y))) := by
     filter_upwards [eventually_gt_atTop c] with y hy

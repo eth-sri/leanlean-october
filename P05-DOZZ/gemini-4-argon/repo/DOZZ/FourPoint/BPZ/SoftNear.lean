@@ -26,22 +26,22 @@ variable {γ χ α₁ α₂ α₃ : ℝ}
 noncomputable def bpzNearWeight (γ χ α₁ α₂ α₃ : ℝ) (z₀ : ℂ) (r : ℝ) (x : ℂ) : ℝ :=
   if ‖x - z₀‖ < r then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0
 
-theorem bpzNearWeight_nonneg (z₀ : ℂ) (r : ℝ) (x : ℂ) :
+theorem bpzNearWeight_nonneg z₀ r x :
     0 ≤ bpzNearWeight γ χ α₁ α₂ α₃ z₀ r x := by
   unfold bpzNearWeight; split_ifs
   · exact bpzBaseWeight_nonneg x
   · exact le_rfl
 
-theorem measurable_bpzNearWeight (z₀ : ℂ) (r : ℝ) :
+theorem measurable_bpzNearWeight z₀ r :
     Measurable (bpzNearWeight γ χ α₁ α₂ α₃ z₀ r) := by
   unfold bpzNearWeight
   exact Measurable.ite (measurableSet_lt (measurable_id.sub measurable_const).norm
     measurable_const) measurable_bpzBaseWeight measurable_const
 
 /-- **Near-root expectation bound**, uniform in the root and the softening. -/
-theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) {p : ℝ} (hp : 0 ≤ p) {z₀ : ℂ} (hz0 : z₀ ≠ 0) (hz1 : z₀ ≠ 1) :
+    (hM : IsGMCOf P X γ M) {p : ℝ} (hp : 0 ≤ p) {z₀} (hz0 : z₀ ≠ 0) (hz1 : z₀ ≠ 1) :
     ∃ r₀ : ℝ, 0 < r₀ ∧ ∃ C : ℝ, 0 ≤ C ∧ ∀ r : ℝ, 0 < r → r ≤ r₀ → ∀ z : ℂ,
       ‖z - z₀‖ ≤ r / 2 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 → ∀ β : ℝ, -2 < β →
         ∫⁻ ω, bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) *
@@ -57,9 +57,7 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     linarith
   set f : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (bpzNearWeight γ χ α₁ α₂ α₃ z₀ r x * ‖x - z‖ ^ β)
     with hf
-  have hfm : Measurable f := ENNReal.measurable_ofReal.comp
-    ((measurable_bpzNearWeight z₀ r).mul ((measurable_id.sub measurable_const).norm.pow_const _))
-  refine (hCn z hzR ε hε0 hε1 f hfm).trans ?_
+  refine (hCn z hzR ε hε0 hε1 f (ENNReal.measurable_ofReal.comp ((measurable_bpzNearWeight z₀ r).mul ((measurable_id.sub measurable_const).norm.pow_const _)))).trans ?_
   -- the Lebesgue integral
   have hpt : ∀ x, f x ≤ (Metric.ball z (2 * r)).indicator
       (fun x => ENNReal.ofReal (CB * ‖x - z‖ ^ β)) x := by
@@ -74,9 +72,7 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
       apply ENNReal.ofReal_le_ofReal
       unfold bpzNearWeight
       rw [ite_eq_left hx]
-      have hxB : x ∈ Metric.closedBall z₀ r₁ := by
-        rw [Metric.mem_closedBall, dist_eq_norm]; linarith
-      exact mul_le_mul_of_nonneg_right (hCB x hxB) (Real.rpow_nonneg (norm_nonneg _) _)
+      exact mul_le_mul_of_nonneg_right (hCB x (by rw [Metric.mem_closedBall, dist_eq_norm]; linarith)) (Real.rpow_nonneg (norm_nonneg _) _)
     · have h0 : f x = 0 := by
         simp only [hf, bpzNearWeight, hx, ↓reduceIte, zero_mul, ENNReal.ofReal_zero]
       rw [h0]; exact zero_le
@@ -97,9 +93,6 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
         gcongr
         exact bpz_lintegral_ball_rpow_le hβ (by positivity) z
     _ = ENNReal.ofReal (Cn * CB * (2 * Real.pi * (2 * r) ^ (β + 2) / (β + 2))) := by
-        have h2 : 0 ≤ 2 * Real.pi * (2 * r) ^ (β + 2) / (β + 2) := by
-          have : 0 < β + 2 := by linarith
-          positivity
         rw [← ENNReal.ofReal_mul hCB0, ← ENNReal.ofReal_mul hCn0]
         congr 1
         ring

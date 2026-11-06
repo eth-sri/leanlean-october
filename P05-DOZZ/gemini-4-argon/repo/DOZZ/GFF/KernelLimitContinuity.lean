@@ -27,35 +27,20 @@ abbrev GFFLocalTest (K : TopologicalSpace.Compacts ℂ) :=
 /-- The local L² norm of a compactly supported smooth function is controlled by its zeroth
 compact-support seminorm on any ball. -/
 theorem integral_sq_localTest_le_seminorm (K : TopologicalSpace.Compacts ℂ)
-    (f : GFFLocalTest K) (R : ℝ) :
+    (f : GFFLocalTest K) R :
     (∫ z in ball (0 : ℂ) R, ‖f z‖ ^ 2) ≤
       (volume (ball (0 : ℂ) R)).toReal * ‖(f : ℂ →ᵇ ℝ)‖ ^ 2 := by
   let B : Set ℂ := ball 0 R
   let μ : Measure ℂ := (volume : Measure ℂ).restrict B
   let C : ℝ := ‖(f : ℂ →ᵇ ℝ)‖
-  have hfinite : volume B < ⊤ := by
-    dsimp [B]
-    exact measure_ball_lt_top
-  have hpoint (z : ℂ) : ‖f z‖ ^ 2 ≤ C ^ 2 := by
-    dsimp [C]
-    exact (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).2
-      (BoundedContinuousFunction.norm_coe_le_norm (f : ℂ →ᵇ ℝ) z)
-  have hfint : Integrable (fun z : ℂ => ‖f z‖ ^ 2)
-      μ := by
-    have hfmem : MemLp f 2 μ :=
-      f.continuous.memLp_of_hasCompactSupport f.compact_supp
-    simpa [Real.norm_eq_abs, sq_abs] using hfmem.integrable_sq
   have hconst : Integrable (fun _ : ℂ => C ^ 2) μ := by
     by_cases hC : C ^ 2 = 0
     · simp [hC]
     · exact (integrable_const_iff_isFiniteMeasure hC).2
-        (MeasureTheory.isFiniteMeasure_restrict.mpr hfinite.ne)
-  have hmono :
-      (∫ z in B, ‖f z‖ ^ 2) ≤ ∫ z in B, C ^ 2 :=
-    integral_mono_ae hfint hconst (ae_of_all _ hpoint)
+        (MeasureTheory.isFiniteMeasure_restrict.mpr (show volume B < ⊤ by dsimp [B]; exact measure_ball_lt_top).ne)
   calc
     (∫ z in ball (0 : ℂ) R, ‖f z‖ ^ 2) = ∫ z in B, ‖f z‖ ^ 2 := by rfl
-    _ ≤ ∫ z in B, C ^ 2 := hmono
+    _ ≤ ∫ z in B, C ^ 2 := (integral_mono_ae (by simpa [Real.norm_eq_abs, sq_abs] using (f.continuous.memLp_of_hasCompactSupport f.compact_supp).integrable_sq) hconst (ae_of_all _ (fun z => by dsimp [C]; exact (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).2 (BoundedContinuousFunction.norm_coe_le_norm (f : ℂ →ᵇ ℝ) z))))
     _ = (volume B).toReal * C ^ 2 := by
       rw [integral_const]
       simp [B, Measure.real_def, Measure.restrict_apply MeasurableSet.univ]
@@ -142,7 +127,7 @@ noncomputable def equatorKernelLimitMapCLM :
     exact (ContDiffMapSupportedIn.mkCLMtoNormedSpace ℝ A hAadd hAsmul hbound).continuous
 
 @[simp]
-theorem equatorKernelLimitMapCLM_apply (f : TestFn) :
+theorem equatorKernelLimitMapCLM_apply f :
     equatorKernelLimitMapCLM f = equatorKernelLimitMap f := rfl
 
 end DOZZ

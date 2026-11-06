@@ -39,17 +39,14 @@ theorem continuityInfinityCutoffTest_nonneg {N : ℕ} (partition : GMCChartParti
   unfold continuityInfinityCutoffTest normPlus
   positivity
 
-theorem continuityFiniteCutoffTest_continuous {N : ℕ} (partition : GMCChartPartition) (r : ℝ) :
+theorem continuityFiniteCutoffTest_continuous {N} partition r :
     Continuous (fun p : ContinuityCoulombParameter N × ℂ =>
       continuityFiniteCutoffTest partition r p.1 p.2) := by
-  have hp : Continuous (fun p : ContinuityCoulombParameter N × ℂ =>
-      (partition.finiteWeight p.2 : ℝ)) :=
-    NNReal.continuous_coe.comp (partition.finiteWeight.continuous.comp continuous_snd)
   have hn : Continuous (fun p : ContinuityCoulombParameter N × ℂ => normPlus p.2) := by
     unfold normPlus
     fun_prop
   unfold continuityFiniteCutoffTest
-  refine (hp.mul (continuous_finsetProd _ fun k _ => ?_)).mul ?_
+  refine ((NNReal.continuous_coe.comp (partition.finiteWeight.continuous.comp continuous_snd)).mul (continuous_finsetProd _ fun k _ => ?_)).mul ?_
   · have hd : Continuous (fun p : ContinuityCoulombParameter N × ℂ =>
         ‖p.2 - p.1.2.1 k‖ + Real.exp (-r)) := by fun_prop
     exact (hn.div hd (fun p => (add_pos_of_nonneg_of_pos (norm_nonneg _)
@@ -59,17 +56,14 @@ theorem continuityFiniteCutoffTest_continuous {N : ℕ} (partition : GMCChartPar
   · exact hn.rpow (by fun_prop) (fun p => Or.inl
       (lt_of_lt_of_le zero_lt_one (one_le_normPlus _)).ne')
 
-theorem continuityInfinityCutoffTest_continuous {N : ℕ} (partition : GMCChartPartition) (r : ℝ) :
+theorem continuityInfinityCutoffTest_continuous {N} partition r :
     Continuous (fun p : ContinuityCoulombParameter N × ℂ =>
       continuityInfinityCutoffTest partition r p.1 p.2) := by
-  have hp : Continuous (fun p : ContinuityCoulombParameter N × ℂ =>
-      (partition.infinityWeight p.2 : ℝ)) :=
-    NNReal.continuous_coe.comp (partition.infinityWeight.continuous.comp continuous_snd)
   have hn : Continuous (fun p : ContinuityCoulombParameter N × ℂ => normPlus p.2) := by
     unfold normPlus
     fun_prop
   unfold continuityInfinityCutoffTest
-  refine (hp.mul (continuous_finsetProd _ fun k _ => ?_)).mul ?_
+  refine ((NNReal.continuous_coe.comp (partition.infinityWeight.continuous.comp continuous_snd)).mul (continuous_finsetProd _ fun k _ => ?_)).mul ?_
   · have hd : Continuous (fun p : ContinuityCoulombParameter N × ℂ =>
         ‖1 - p.1.2.1 k * p.2‖ + Real.exp (-r)) := by fun_prop
     exact (hn.div hd (fun p => (add_pos_of_nonneg_of_pos (norm_nonneg _)
@@ -107,13 +101,11 @@ theorem continuityCutoffTests_uniform_bound {N : ℕ} (partition : GMCChartParti
   obtain ⟨Lf, hLf, hf⟩ := continuity_compact_support_bound S hS _
     partition.finite_hasCompactSupport.isCompact _
     (continuityFiniteCutoffTest_continuous partition r) (fun c x hx => by
-      have hz := image_eq_zero_of_notMem_tsupport hx
-      simp only [continuityFiniteCutoffTest, hz, NNReal.coe_zero, zero_mul])
+      simp only [continuityFiniteCutoffTest, (image_eq_zero_of_notMem_tsupport hx), NNReal.coe_zero, zero_mul])
   obtain ⟨Li, hLi, hi⟩ := continuity_compact_support_bound S hS _
     partition.infinity_hasCompactSupport.isCompact _
     (continuityInfinityCutoffTest_continuous partition r) (fun c x hx => by
-      have hz := image_eq_zero_of_notMem_tsupport hx
-      simp only [continuityInfinityCutoffTest, hz, NNReal.coe_zero, zero_mul])
+      simp only [continuityInfinityCutoffTest, (image_eq_zero_of_notMem_tsupport hx), NNReal.coe_zero, zero_mul])
   exact ⟨Lf + Li, add_nonneg hLf hLi, fun c hc x =>
     ⟨(hf c hc x).trans (le_add_of_nonneg_right hLi),
       (hi c hc x).trans (le_add_of_nonneg_left hLf)⟩⟩
@@ -124,7 +116,7 @@ theorem coulombCutoffWeight_eq_ofReal_continuityCutoffTest {N : ℕ}
     coulombCutoffWeight partition c.1 c.2.2.1 c.2.1 c.2.2.2 r x =
       ENNReal.ofReal (continuityFiniteCutoffTest partition r c x +
         continuityInfinityCutoffTest partition r c x⁻¹) := by
-  have hnorm (x : ℂ) : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (one_le_normPlus x)
+  have hnorm (x : ℂ) := lt_of_lt_of_le zero_lt_one (one_le_normPlus x)
   have hf : coulombCutoffFiniteWeight c.1 c.2.2.1 c.2.1 c.2.2.2 r x =
       ENNReal.ofReal ((∏ k, (normPlus x / (‖x - c.2.1 k‖ + Real.exp (-r))) ^
         (c.1 * c.2.2.1 k)) * normPlus x ^ (c.1 * c.2.2.2)) := by

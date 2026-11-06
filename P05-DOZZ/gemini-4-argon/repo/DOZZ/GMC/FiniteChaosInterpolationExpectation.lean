@@ -38,7 +38,7 @@ theorem kahaneInterpolatedExpectation_hasDerivAt
     {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
     (PX : Measure ΩX) (PY : Measure ΩY)
     (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (vX vY a : ι → ℝ) (γ t ε : ℝ) (F F' : ℝ → ℝ)
+    (vX vY a : ι → ℝ) γ t ε (F F' : ℝ → ℝ)
     (hF : ∀ x, HasDerivAt F (F' x) x)
     (hε : 0 < ε) (hεleft : ε ≤ t) (hεright : ε ≤ 1 - t)
     (hMeas : ∀ᶠ s in 𝓝 t, AEStronglyMeasurable
@@ -60,11 +60,6 @@ theorem kahaneInterpolatedExpectation_hasDerivAt
     F (kahaneInterpolatedMass X Y vX vY a γ s ω)
   let D : ℝ → ΩX × ΩY → ℝ := fun s ω =>
     kahaneInterpolatedTestDerivative X Y vX vY a γ F' s ω
-  have hInt' : Integrable (I t) (PX.prod PY) := by simpa [I] using hInt
-  have hDMeas' : AEStronglyMeasurable (D t) (PX.prod PY) := by
-    simpa [D] using hDMeas
-  have hbound' : ∀ᵐ ω ∂(PX.prod PY), ∀ s ∈ Metric.ball t ε,
-      ‖D s ω‖ ≤ b ω := by simpa [D] using hbound
   have hderiv : ∀ᵐ ω ∂(PX.prod PY), ∀ s ∈ Metric.ball t ε,
       HasDerivAt (I · ω) (D s ω) s := by
     filter_upwards [] with ω s hs
@@ -79,8 +74,6 @@ theorem kahaneInterpolatedExpectation_hasDerivAt
     exact by
       simpa [I, D, kahaneInterpolatedTestDerivative] using
         (kahaneInterpolatedTest_hasDerivAt X Y vX vY a γ s ω F F' hF hspos hslt)
-  have hdom := hasDerivAt_integral_of_dominated_loc_of_deriv_le
-    (Metric.ball_mem_nhds t hε) hMeas hInt' hDMeas' hbound' hb hderiv
-  simpa [I, D] using hdom.2
+  simpa [I, D] using (hasDerivAt_integral_of_dominated_loc_of_deriv_le (Metric.ball_mem_nhds t hε) hMeas (by simpa [I] using hInt) (by simpa [D] using hDMeas) (by simpa [D] using hbound) hb hderiv).2
 
 end DOZZ.Proofs

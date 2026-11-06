@@ -65,9 +65,7 @@ theorem lintegral_rpow_le_of_le_pieces
   rw [lintegral_const_mul'' _ hall, lintegral_add_left' hLAB, lintegral_const_mul'' _ hAB,
     lintegral_add_left' hA, lintegral_const_mul'' _ hS, lintegral_finsetSum' _ hXk,
     lintegral_const_mul'' _ (hB.pow_const t), lintegral_const_mul'' _ (hV.pow_const t)]
-  have hk : ∀ k, ∫⁻ ω, a k ^ t * Xr k ω ^ t ∂P = a k ^ t * ∫⁻ ω, Xr k ω ^ t ∂P := fun k =>
-    lintegral_const_mul'' _ ((hXr k).pow_const t)
-  simp only [hk]
+  simp only [(fun k => lintegral_const_mul'' _ ((hXr k).pow_const t) : ∀ k, ∫⁻ ω, a k ^ t * Xr k ω ^ t ∂P = a k ^ t * ∫⁻ ω, Xr k ω ^ t ∂P)]
 
 /-- A power with exponent in `[0, tm]` is at most the `tm`th power of the larger of the base and
 one. -/

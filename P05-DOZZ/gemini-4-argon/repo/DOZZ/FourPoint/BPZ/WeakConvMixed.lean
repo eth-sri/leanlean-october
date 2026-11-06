@@ -35,7 +35,6 @@ theorem bpz_single_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (G G₀ : �
   rw [← integral_bpzGrid_step h S (fun i => G₀ (bpzGridCorner h i))]
   set st : ℂ → ℝ := fun x =>
     if bpzGridIdx h x ∈ S then G₀ (bpzGridCorner h (bpzGridIdx h x)) else 0 with hst
-  have hstm : Measurable st := measurable_bpzGrid_step h S (fun i => G₀ (bpzGridCorner h i))
   have hstb : ∀ x, |st x| ≤ V := by
     intro x
     simp only [hst]
@@ -49,25 +48,18 @@ theorem bpz_single_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (G G₀ : �
     · have hx2 : ‖x‖ ≤ 2 * R + 1 :=
         (norm_le_of_bpzGridIdx_mem_box hh hxS).trans (bpzGrid_box_radius hR hh hh1)
       have hi : B₂.indicator (1 : ℂ → ℝ) x = 1 := Set.indicator_of_mem (by simpa [B₂] using hx2) _
-      have hst' : st x = G₀ (bpzGridCorner h (bpzGridIdx h x)) := by
-        simp only [hst]; exact ite_eq_left hxS
-      have hxc : ‖x - bpzGridCorner h (bpzGridIdx h x)‖ ≤ δ :=
-        (norm_sub_bpzGridCorner_le hh x).trans hhδ
-      rw [hi, hst', mul_one]
+      rw [hi, (show st x = G₀ (bpzGridCorner h (bpzGridIdx h x)) by simp only [hst]; exact ite_eq_left hxS), mul_one]
       calc |G x - G₀ (bpzGridCorner h (bpzGridIdx h x))|
           ≤ |G x - G₀ x| + |G₀ x - G₀ (bpzGridCorner h (bpzGridIdx h x))| := abs_sub_le _ _ _
-        _ ≤ ε₁ * V + ε₁ * V := add_le_add (hGG x) (hcδ x _ hxc)
+        _ ≤ ε₁ * V + ε₁ * V := add_le_add (hGG x) (hcδ x _ ((norm_sub_bpzGridCorner_le hh x).trans hhδ))
         _ = 2 * ε₁ * V := by ring
     · have hx : R < ‖x‖ := by
         by_contra hcon
         push Not at hcon
         exact hxS (bpzGridIdx_mem_box hh hcon)
-      have hst' : st x = 0 := by simp only [hst]; exact ite_eq_right hxS
-      rw [hGs x hx, hst', sub_zero, abs_zero]
+      rw [hGs x hx, (show st x = 0 by simp only [hst]; exact ite_eq_right hxS), sub_zero, abs_zero]
       exact mul_nonneg (by positivity) (Set.indicator_nonneg (fun _ _ => zero_le_one) x)
-  have hIG : Integrable G m := integrable_of_bdd_finite hGm hGb
-  have hIst : Integrable st m := integrable_of_bdd_finite hstm hstb
-  rw [← integral_sub hIG hIst, ← Real.norm_eq_abs]
+  rw [← integral_sub (integrable_of_bdd_finite hGm hGb) (integrable_of_bdd_finite (measurable_bpzGrid_step h S (fun i => G₀ (bpzGridCorner h i))) hstb), ← Real.norm_eq_abs]
   calc ‖∫ x, (G x - st x) ∂m‖ ≤ ∫ x, 2 * ε₁ * V * B₂.indicator 1 x ∂m := by
         refine norm_integral_le_of_norm_le
           ((((integrable_const (1 : ℝ)).indicator measurableSet_closedBall).const_mul
@@ -95,7 +87,7 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
     (g : ℕ → Ω → ℂ → ℝ) (g₀ : Ω → ℂ → ℝ)
     (hgm : ∀ n, Measurable (fun p : Ω × ℂ => g n p.1 p.2))
     (hg₀m : Measurable (fun p : Ω × ℂ => g₀ p.1 p.2))
-    {R : ℝ} (hR : 0 ≤ R) {V : Ω → ℝ} (hVm : Measurable V) (hV0 : ∀ ω, 0 ≤ V ω)
+    {R} (hR : 0 ≤ R) {V} (hVm : Measurable V) (hV0 : ∀ ω, 0 ≤ V ω)
     (hgb : ∀ n, ∀ᵐ ω ∂P, ∀ x, |g n ω x| ≤ V ω) (hg₀b : ∀ᵐ ω ∂P, ∀ x, |g₀ ω x| ≤ V ω)
     (hsupp : ∀ n ω x, R < ‖x‖ → g n ω x = 0) (hsupp₀ : ∀ ω x, R < ‖x‖ → g₀ ω x = 0)
     (hcont : ∀ ε : ℝ, 0 < ε → ∃ δ : ℝ, 0 < δ ∧ ∀ᵐ ω ∂P, ∀ x x', ‖x - x'‖ ≤ δ →
@@ -107,12 +99,10 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
   have hB₂m : MeasurableSet B₂ := measurableSet_closedBall
   have hmassm : ∀ (s : Set ℂ), MeasurableSet s → ∀ n, Measurable fun ω => (μ n ω).real s :=
     fun s hs n => ((Measure.measurable_coe hs).comp (hμ.meas n)).ennreal_toReal
-  have hmassm₀ : ∀ (s : Set ℂ), MeasurableSet s → Measurable fun ω => (μ₀ ω).real s :=
-    fun s hs => ((Measure.measurable_coe hs).comp hμ.meas₀).ennreal_toReal
   have hg₀pt : ∀ x, Measurable fun ω => g₀ ω x := fun x =>
     hg₀m.comp (measurable_id.prodMk measurable_const)
   refine bpz_tendstoInMeasure_of_approx fun ε hε => ?_
-  have hWm : Measurable (fun ω => V ω * (μ₀ ω).real B₂) := hVm.mul (hmassm₀ B₂ hB₂m)
+  have hWm : Measurable (fun ω => V ω * (μ₀ ω).real B₂) := hVm.mul ((fun s hs => ((Measure.measurable_coe hs).comp hμ.meas₀).ennreal_toReal) B₂ hB₂m)
   obtain ⟨k, hk⟩ := bpz_exists_scale_small (P := P) hWm
     (s := ε / 4) (by positivity) (t := ENNReal.ofReal (ε / 2))
     (ENNReal.ofReal_pos.2 (by positivity))
@@ -154,18 +144,12 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
         (fun x hx => bpz_indicator_one_eq_zero_of_subset subset_rfl x hx)
       simp only [integral_indicator_one hB₂m] at h
       exact h
-    have hV2 : TendstoInMeasure P (fun (_ : ℕ) ω => 2 * ε₁ * V ω) atTop
-        (fun ω => 2 * ε₁ * V ω) :=
-      tendstoInMeasure_of_tendsto_ae (fun _ => (hVm.const_mul _).aestronglyMeasurable)
-        (Eventually.of_forall fun _ => tendsto_const_nhds)
     exact bpz_tendstoInMeasure_mul (fun _ => (hVm.const_mul _).aestronglyMeasurable)
-      (fun n => (hmassm _ hB₂m n).aestronglyMeasurable) hV2 hmass
+      (fun n => (hmassm _ hB₂m n).aestronglyMeasurable) (tendstoInMeasure_of_tendsto_ae (fun _ => (hVm.const_mul _).aestronglyMeasurable) (Eventually.of_forall fun _ => tendsto_const_nhds)) hmass
   have hP₀ : P {ω | ε / 2 ≤ B₀ ω} ≤ ENNReal.ofReal (ε / 2) := by
     refine le_trans (measure_mono fun ω hω => ?_) hk
     simp only [Set.mem_ofPred_eq, hB₀] at hω ⊢
-    have hpos : 0 ≤ ε₁ * (V ω * (μ₀ ω).real B₂) :=
-      mul_nonneg hε₁0.le (mul_nonneg (hV0 ω) measureReal_nonneg)
-    rw [abs_of_nonneg hpos]
+    rw [abs_of_nonneg (mul_nonneg hε₁0.le (mul_nonneg (hV0 ω) measureReal_nonneg))]
     linarith
   refine ⟨A, A₀, hAconv, ?_, ?_⟩
   · obtain ⟨n₀, hn₀⟩ := (hunif ε₁ hε₁0).exists_forall_of_atTop
@@ -186,9 +170,7 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
       · refine Eventually.of_forall fun ω => ?_
         simp only [hE, ite_eq_right hn, abs_zero]
         exact hBn0 ω
-    have hfin := bpz_eventually_measure_le_of_le_tendstoInMeasure hBconv hEB hε
-      (lt_of_le_of_lt hP₀ ((ENNReal.ofReal_lt_ofReal_iff hε).2 (by linarith)))
-    filter_upwards [hfin, eventually_ge_atTop n₀] with n hn hn'
+    filter_upwards [(bpz_eventually_measure_le_of_le_tendstoInMeasure hBconv hEB hε (lt_of_le_of_lt hP₀ ((ENNReal.ofReal_lt_ofReal_iff hε).2 (by linarith)))), eventually_ge_atTop n₀] with n hn hn'
     simp only [hE, ite_eq_left hn'] at hn
     exact hn
   · have hle : ∀ᵐ ω ∂P, |(∫ x, g₀ ω x ∂μ₀ ω) - A₀ ω| ≤ B₀ ω := by

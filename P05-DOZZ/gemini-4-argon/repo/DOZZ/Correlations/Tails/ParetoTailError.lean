@@ -27,7 +27,7 @@ theorem pareto_scalar_error_le (a x p r : ℝ) (ha : 0 ≤ a)
       exact Real.rpow_nonneg (div_nonneg ha hx.le) _
     · rw [ite_eq_right hax]
       have hu : 1 ≤ a/x := (one_le_div hx).mpr (le_of_not_ge hax)
-      have hv : 1 ≤ (a/x)^p := Real.one_le_rpow hu hp.le
+      have := Real.one_le_rpow hu hp.le
       rw [abs_of_nonpos (by linarith)]
       linarith [Real.rpow_le_rpow_of_exponent_le hu hpr]
 
@@ -35,7 +35,7 @@ theorem pareto_scalar_error_le (a x p r : ℝ) (ha : 0 ≤ a)
 independent amplitude. -/
 theorem williams_pareto_tail_error
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (A : Ω → ℝ) (hA : Measurable A) (hA0 : ∀ ω, 0 ≤ A ω)
+    A (hA : Measurable A) (hA0 : ∀ ω, 0 ≤ A ω)
     (ν γ x r : ℝ) (hν : 0 < ν) (hγ : 0 < γ) (hx : 0 < x)
     (hpr : 2*ν/γ ≤ r)
     (hAp : Integrable (fun ω => A ω^(2*ν/γ)) P)
@@ -49,7 +49,7 @@ theorem williams_pareto_tail_error
     apply Measurable.ite (measurableSet_le hA measurable_const) measurable_const
     exact Measurable.ite (measurableSet_le hA measurable_const)
       ((hA.div_const x).pow_const p) measurable_const
-  have hFb (ω : Ω) : 0 ≤ F ω ∧ F ω ≤ 1 := by
+  have hFb ω : 0 ≤ F ω ∧ F ω ≤ 1 := by
     dsimp [F]
     split_ifs with h0 hax
     · exact ⟨le_rfl, zero_le_one⟩
@@ -61,16 +61,12 @@ theorem williams_pareto_tail_error
   have heq (a : ℝ) (ha : 0 ≤ a) (s : ℝ) : (a/x)^s = x^(-s)*a^s := by
     rw [Real.div_rpow ha hx.le, Real.rpow_neg hx.le]
     ring
-  have hpi : Integrable (fun ω => (A ω/x)^p) P := by
-    simpa only [heq _ (hA0 _) p] using hAp.const_mul (x^(-p))
   rw [williams_pareto_product_tail P A hA ν γ x hν hγ hx]
   change |(∫ ω, F ω ∂P)-x^(-p)*(∫ ω, A ω^p ∂P)| ≤ _
   rw [← integral_const_mul]
   simp_rw [← heq _ (hA0 _) p]
-  rw [← integral_sub hFi hpi]
-  have hg : Integrable (fun ω => (A ω/x)^r) P := by
-    simpa only [heq _ (hA0 _) r] using hAr.const_mul (x^(-r))
-  have hb := norm_integral_le_of_norm_le hg (ae_of_all _ fun ω => by
+  rw [← integral_sub hFi (show Integrable (fun ω => (A ω/x)^p) P by simpa only [heq _ (hA0 _) p] using hAp.const_mul (x^(-p)))]
+  have hb := norm_integral_le_of_norm_le (show Integrable (fun ω => (A ω/x)^r) P by simpa only [heq _ (hA0 _) r] using hAr.const_mul (x^(-r))) (ae_of_all _ fun ω => by
     rw [Real.norm_eq_abs]
     exact pareto_scalar_error_le (A ω) x p r (hA0 ω) hx hp hpr)
   simp only [Real.norm_eq_abs] at hb

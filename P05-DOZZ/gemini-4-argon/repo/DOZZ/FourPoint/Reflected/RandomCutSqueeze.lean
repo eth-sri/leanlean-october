@@ -14,7 +14,7 @@ namespace DOZZ.Proofs
 maximum, with the measurable-version transport handling the variable-level null event. -/
 theorem reflected_random_reflection_cut_squeeze_ae
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (μ : Measure ℝ) [SFinite μ] (γ ν : ℝ)
+    (μ : Measure ℝ) [SFinite μ] γ ν
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hB : IsTwoSidedConditionedBrownianProcess P B ν)
     (B₀ : Measure BrownianPath) [SFinite B₀]
@@ -25,9 +25,9 @@ theorem reflected_random_reflection_cut_squeeze_ae
         twoSidedReflectionCutMass γ v.1 B Z v.2 ∧
       twoSidedReflectionCutMass γ v.1 B Z v.2 ≤ twoSidedReflectionMass γ B Z v.2 := by
   let f : Ω → BrownianPath := fun ω => (B ω).2
-  have hf : AEMeasurable f P := hB.2.1.1
+  have hf := hB.2.1.1
   let f' := hf.mk f
-  have hfm : Measurable f' := hf.measurable_mk
+  have hfm := hf.measurable_mk
   have hmap : P.map f' = P.map f := (Measure.map_congr hf.ae_eq_mk).symm
   have hpf : MeasurePreserving f' P (P.map f) := ⟨hfm,hmap⟩
   have hpm : MeasurePreserving Real.toNNReal μ (μ.map Real.toNNReal) :=
@@ -40,7 +40,7 @@ theorem reflected_random_reflection_cut_squeeze_ae
   filter_upwards [hpull,heq] with v hv he hvH
   have hm : H ≤ Real.toNNReal v.1 := by
     exact_mod_cast (show (H : ℝ) ≤ max v.1 0 from hvH.trans (le_max_left _ _))
-  have hm0 : 0 ≤ v.1 := hH.le.trans hvH
+  have hm0 := hH.le.trans hvH
   have hl := hv hm
   change negativeLastExitTime (f' v.2) H ≤
     negativeLastExitTime (f' v.2) (Real.toNNReal v.1) at hl

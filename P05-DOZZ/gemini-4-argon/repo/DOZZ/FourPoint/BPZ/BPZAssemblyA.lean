@@ -39,7 +39,7 @@ theorem bpz_isGMCOf_congr {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {X 
 
 /-- The reduced function only depends on the almost sure class of the measure. -/
 theorem bpz_fourPointT_congr {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    {M N : Ω → Measure ℂ} (hMN : ∀ᵐ ω ∂P, M ω = N ω) (μ α₀ : ℝ) (z : ℂ) :
+    {M N : Ω → Measure ℂ} (hMN : ∀ᵐ ω ∂P, M ω = N ω) μ α₀ z :
     fourPointT P M γ μ α₀ α₁ α₂ α₃ z = fourPointT P N γ μ α₀ α₁ α₂ α₃ z := by
   unfold fourPointT
   have h : (∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) ![α₀, α₁, α₂] ![z, 0, 1] α₃)
@@ -51,23 +51,16 @@ theorem bpz_fourPointT_congr {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- Off `0` and `1`, the reduced function is `K E[I^{-s}]`. -/
 theorem bpz_fourPointT_eq_moment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
+    X (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (μ : ℝ) {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
+    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) μ {z} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     fourPointT P M γ μ (-χ) α₁ α₂ α₃ z =
       2 * μ ^ (-fourPointSExp γ (-χ) α₁ α₂ α₃) / γ * Real.Gamma (fourPointSExp γ (-χ) α₁ α₂ α₃) *
         ∫ ω, bpzSoftMassReal (γ * χ / 2) 0 (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z ^
           (-fourPointSExp γ (-χ) α₁ α₂ α₃) ∂P := by
   rw [fourPointT_eq_bpzMass P X hX hγ hγ2 M hM μ z]
   congr 1
-  have hmeas : AEStronglyMeasurable (fun ω => bpzSoftMassReal (γ * χ / 2) 0
-      (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z ^ (-fourPointSExp γ (-χ) α₁ α₂ α₃)) P :=
-    (((bpz_measurable_softMassReal _ 0 measurable_bpzBaseWeight z).comp hMm).pow_const
-      _).aestronglyMeasurable
-  have h0 : 0 ≤ᵐ[P] fun ω => bpzSoftMassReal (γ * χ / 2) 0 (bpzBaseWeight γ χ α₁ α₂ α₃)
-      (M ω) z ^ (-fourPointSExp γ (-χ) α₁ α₂ α₃) :=
-    Eventually.of_forall fun ω => Real.rpow_nonneg (bpzSoftI_nonneg 0 _ z) _
-  rw [integral_eq_lintegral_of_nonneg_ae h0 hmeas]
+  rw [integral_eq_lintegral_of_nonneg_ae (Eventually.of_forall fun ω => Real.rpow_nonneg (bpzSoftI_nonneg 0 _ z) _ : 0 ≤ᵐ[P] fun ω => bpzSoftMassReal (γ * χ / 2) 0 (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z ^ (-fourPointSExp γ (-χ) α₁ α₂ α₃)) ((((bpz_measurable_softMassReal _ 0 measurable_bpzBaseWeight z).comp hMm).pow_const _).aestronglyMeasurable)]
   congr 1
   apply lintegral_congr_ae
   filter_upwards [bpzMass_pos_ae P X hX hγ hγ2 M hM 0 le_rfl zero_le_one z,
@@ -82,10 +75,10 @@ theorem bpz_fourPointT_eq_moment {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
 Wirtinger derivatives are `K` times the Wirtinger functionals of the expectations of the moment
 fields. -/
 theorem bpz_fourPointT_contDiff_wirtinger {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
+    X (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
-    (hs : 0 < fourPointSExp γ (-χ) α₁ α₂ α₃) (μ : ℝ) :
+    (hs : 0 < fourPointSExp γ (-χ) α₁ α₂ α₃) μ :
     ContDiffOn ℝ 2 (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) {z : ℂ | z ≠ 0 ∧ z ≠ 1} ∧
     ∀ z ∈ {z : ℂ | z ≠ 0 ∧ z ≠ 1},
       wirtingerZ (fun w => (fourPointT P M γ μ (-χ) α₁ α₂ α₃ w : ℂ)) z =
@@ -107,19 +100,15 @@ theorem bpz_fourPointT_contDiff_wirtinger {Ω : Type*} [MeasurableSpace Ω] (P :
   set F2 : ℂ → ℂ →L[ℝ] ℂ →L[ℝ] ℝ := fun z => ∫ ω, bpzMomField2 (γ * χ / 2) s 0
     (bpzBaseWeight γ χ α₁ α₂ α₃) (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z ∂P with hF2
   set U : Set ℂ := {z : ℂ | z ≠ 0 ∧ z ≠ 1} with hU
-  have hUo : IsOpen U := bpz_isOpen_regularPlane
+  have hUo := bpz_isOpen_regularPlane
   obtain ⟨hd1, hd2⟩ := bpz_hasFDerivAt_moments P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs
-  have hEq : ∀ z ∈ U, fourPointT P M γ μ (-χ) α₁ α₂ α₃ z = K * F0 z := fun z hz =>
-    bpz_fourPointT_eq_moment P X hX hγ hγ2 M hM hMm hχ hα₁ hα₂ hα₃ μ hz.1 hz.2
   have hTd : ∀ z ∈ U, HasFDerivAt (fun w => fourPointT P M γ μ (-χ) α₁ α₂ α₃ w) (K • F1 z) z := by
     intro z hz
     refine ((hd1 z hz).const_mul K).congr_of_eventuallyEq ?_
-    filter_upwards [hUo.mem_nhds hz] with w hw using hEq w hw
+    filter_upwards [hUo.mem_nhds hz] with w hw using (fun z hz => bpz_fourPointT_eq_moment P X hX hγ hγ2 M hM hMm hχ hα₁ hα₂ hα₃ μ hz.1 hz.2) w hw
   have hD : ∀ z ∈ U, HasFDerivAt (fun w => K • F1 w) (K • F2 z) z := fun z hz =>
     (hd2 z hz).const_smul K
-  have hc2 : ContinuousOn (fun w => K • F2 w) U :=
-    (bpz_continuousOn_momField2 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs.le).const_smul K
-  refine ⟨bpz_contDiffOn_two_of hUo hTd hD hc2, fun z hz => ⟨?_, ?_⟩⟩
+  refine ⟨bpz_contDiffOn_two_of hUo hTd hD ((bpz_continuousOn_momField2 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs.le).const_smul K), fun z hz => ⟨?_, ?_⟩⟩
   · rw [bpz_wirtingerZ_ofReal (hTd z hz), bpzWirtL_apply]
     simp only [smul_apply, smul_eq_mul, Complex.ofReal_mul]
     ring

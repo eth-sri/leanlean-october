@@ -30,90 +30,16 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- **Cauchy bounds on a rectangle** around a point of the interval. -/
-theorem exists_rectangle_cauchy_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hXc : IsCircleAverage P X Xc) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
-    (x₀ : Ioo (-2 * η - δ) (1 / γ)) :
-    ∃ ρ h K κ : ℝ, 0 < ρ ∧ 0 < h ∧ 0 ≤ K ∧ 0 < κ ∧ -2 * η - δ < (x₀ : ℝ) - ρ ∧
-      (x₀ : ℝ) + ρ < 1 / γ ∧ ∀ z : ℂ, |z.re - x₀| < ρ → |z.im| < h → ∀ n : ℕ,
-        ‖poleSubtractedCutoff P Xc M γ η (n + 1) z -
-            poleSubtractedCutoff P Xc M γ η n z‖ ≤ K * Real.exp (-κ * n) := by
-  obtain ⟨x, hx1, hx2⟩ := x₀
-  set ρ : ℝ := min (x - (-2 * η - δ)) (1 / γ - x) / 2 with hρ
-  have hρ0 : 0 < ρ := by
-    rw [hρ]
-    have : 0 < min (x - (-2 * η - δ)) (1 / γ - x) := lt_min (by linarith) (by linarith)
-    linarith
-  have hlo : -2 * η - δ < x - ρ := by
-    have : ρ ≤ (x - (-2 * η - δ)) / 2 := by
-      rw [hρ]
-      exact div_le_div_of_nonneg_right (min_le_left _ _) (by norm_num)
-    linarith
-  have hhi : x + ρ < 1 / γ := by
-    have : ρ ≤ (1 / γ - x) / 2 := by
-      rw [hρ]
-      exact div_le_div_of_nonneg_right (min_le_right _ _) (by norm_num)
-    linarith
-  obtain ⟨C, κ, hC, hκ, hb⟩ :=
-    exists_cutoff_cauchy_bound P X hX γ hγ hγ2 M hM Xc hXc hW hlo hhi
-  set h : ℝ := min 1 (κ / 2) with hh
-  set W : ℝ := 1 + (|x| + ρ + 1) / γ with hWdef
-  refine ⟨ρ, h, W * C * Real.exp (κ / 4), 3 * κ / 4, hρ0, lt_min one_pos (by linarith),
-    by positivity, by linarith, hlo, hhi, fun z hzre hzim n => ?_⟩
-  have hz : z.re ∈ Icc (x - ρ) (x + ρ) := by
-    rw [abs_lt] at hzre
-    constructor <;> linarith
-  refine (hb z hz n).trans ?_
-  have him1 : |z.im| ≤ 1 := hzim.le.trans (min_le_left _ _)
-  have him2 : |z.im| ≤ κ / 2 := hzim.le.trans (min_le_right _ _)
-  have himsq : z.im ^ 2 ≤ κ / 2 := by
-    rw [← sq_abs]
-    calc |z.im| ^ 2 = |z.im| * |z.im| := sq _
-      _ ≤ 1 * (κ / 2) := mul_le_mul him1 him2 (abs_nonneg _) zero_le_one
-      _ = κ / 2 := one_mul _
-  have hexp : Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) ≤
-      Real.exp (κ / 4) * Real.exp (κ / 4 * n) := by
-    rw [← Real.exp_add]
-    apply Real.exp_le_exp.2
-    have hn : (0 : ℝ) ≤ (n + 1 : ℕ) := Nat.cast_nonneg _
-    have := mul_le_mul_of_nonneg_left himsq hn
-    push_cast at this ⊢
-    nlinarith
-  have hnorm : ‖1 - z / γ‖ ≤ W := by
-    have hzn : ‖z‖ ≤ |x| + ρ + 1 := by
-      have hre : |z.re| ≤ |x| + ρ := by
-        have := abs_sub_abs_le_abs_sub z.re x
-        rw [abs_lt] at hzre
-        rw [abs_le]
-        constructor <;> cases abs_cases x <;> cases abs_cases z.re <;> linarith
-      linarith [Complex.norm_le_abs_re_add_abs_im z]
-    calc ‖1 - z / γ‖ ≤ ‖(1 : ℂ)‖ + ‖z / γ‖ := norm_sub_le _ _
-      _ = 1 + ‖z‖ / γ := by
-          rw [norm_one, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hγ]
-      _ ≤ W := by
-          rw [hWdef]
-          gcongr
-  calc Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) * ‖1 - z / γ‖ * (C * Real.exp (-κ * n))
-      ≤ (Real.exp (κ / 4) * Real.exp (κ / 4 * n)) * W * (C * Real.exp (-κ * n)) := by
-        apply mul_le_mul_of_nonneg_right _ (by positivity)
-        exact mul_le_mul hexp hnorm (norm_nonneg _) (by positivity)
-    _ = W * C * Real.exp (κ / 4) * Real.exp (-(3 * κ / 4) * n) := by
-        rw [show Real.exp (-(3 * κ / 4) * n) = Real.exp (κ / 4 * n) * Real.exp (-κ * n) by
-          rw [← Real.exp_add]
-          ring_nf]
-        ring
 
 /-- After subtracting the two local masses, the real observable of [KRV, Lemma 10.3] extends
 holomorphically to a neighborhood of the entire interval of that lemma. The last conjunct records
 the compact-uniform Cauchy decay of the limit-chaos analytic approximants; the corrected Markov
 threshold (erratum K4, see docs/ERRATA-AND-DEVIATIONS.md) is part of this assertion. -/
 theorem poleSubtractedObservable_holomorphic
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ η δ : ℝ)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    (M : Ω → Measure ℂ) γ η δ
     (hγ : 0 < γ) (hγ2 : γ < 2) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+    Xc (hXc : IsCircleAverage P X Xc)
     (hM : IsGMCOf P X γ M) (hWindow : TwoPoleWindow γ η δ) :
     ∃ V : Set ℂ, IsOpen V ∧
       (∀ x : ℝ, -2 * η - δ < x ∧ x < 1 / γ → (x : ℂ) ∈ V) ∧
@@ -130,10 +56,72 @@ theorem poleSubtractedObservable_holomorphic
                 ‖poleSubtractedCutoff P Xc M γ η (n + 1) z -
                     poleSubtractedCutoff P Xc M γ η n z‖ ≤
                   C * Real.exp (-κ * n) := by
+  have exists_rectangle_cauchy_bound {η} {δ} (hW : TwoPoleWindow γ η δ) (x₀ : Ioo (-2 * η - δ) (1 / γ)) : ∃ ρ h K κ : ℝ, 0 < ρ ∧ 0 < h ∧ 0 ≤ K ∧ 0 < κ ∧ -2 * η - δ < (x₀ : ℝ) - ρ ∧ (x₀ : ℝ) + ρ < 1 / γ ∧ ∀ z : ℂ, |z.re - x₀| < ρ → |z.im| < h → ∀ n : ℕ, ‖poleSubtractedCutoff P Xc M γ η (n + 1) z - poleSubtractedCutoff P Xc M γ η n z‖ ≤ K * Real.exp (-κ * n) := by
+    obtain ⟨x, hx1, hx2⟩ := x₀
+    set ρ : ℝ := min (x - (-2 * η - δ)) (1 / γ - x) / 2 with hρ
+    have hρ0 : 0 < ρ := by
+      rw [hρ]
+      have : 0 < min (x - (-2 * η - δ)) (1 / γ - x) := lt_min (by linarith) (by linarith)
+      linarith
+    have hlo : -2 * η - δ < x - ρ := by
+      have : ρ ≤ (x - (-2 * η - δ)) / 2 := by
+        rw [hρ]
+        exact div_le_div_of_nonneg_right (min_le_left _ _) (by norm_num)
+      linarith
+    have hhi : x + ρ < 1 / γ := by
+      have : ρ ≤ (1 / γ - x) / 2 := by
+        rw [hρ]
+        exact div_le_div_of_nonneg_right (min_le_right _ _) (by norm_num)
+      linarith
+    obtain ⟨C, κ, hC, hκ, hb⟩ :=
+      exists_cutoff_cauchy_bound P X hX γ hγ hγ2 M hM Xc hXc hW hlo hhi
+    set h : ℝ := min 1 (κ / 2) with hh
+    set W : ℝ := 1 + (|x| + ρ + 1) / γ with hWdef
+    refine ⟨ρ, h, W * C * Real.exp (κ / 4), 3 * κ / 4, hρ0, lt_min one_pos (by linarith),
+      by positivity, by linarith, hlo, hhi, fun z hzre hzim n => ?_⟩
+    have hz : z.re ∈ Icc (x - ρ) (x + ρ) := by
+      rw [abs_lt] at hzre
+      constructor <;> linarith
+    refine (hb z hz n).trans ?_
+    have him1 : |z.im| ≤ 1 := hzim.le.trans (min_le_left _ _)
+    have him2 : |z.im| ≤ κ / 2 := hzim.le.trans (min_le_right _ _)
+    have himsq : z.im ^ 2 ≤ κ / 2 := by
+      rw [← sq_abs]
+      calc |z.im| ^ 2 = |z.im| * |z.im| := sq _
+        _ ≤ 1 * (κ / 2) := mul_le_mul him1 him2 (abs_nonneg _) zero_le_one
+        _ = κ / 2 := one_mul _
+    have hexp : Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) ≤
+        Real.exp (κ / 4) * Real.exp (κ / 4 * n) := by
+      rw [← Real.exp_add]
+      apply Real.exp_le_exp.2
+      have := mul_le_mul_of_nonneg_left himsq (Nat.cast_nonneg _ : (0 : ℝ) ≤ (n + 1 : ℕ))
+      push_cast at this ⊢
+      nlinarith
+    have hnorm : ‖1 - z / γ‖ ≤ W := by
+      have : ‖z‖ ≤ |x| + ρ + 1 := by
+        have hre : |z.re| ≤ |x| + ρ := by
+          have := abs_sub_abs_le_abs_sub z.re x
+          rw [abs_lt] at hzre
+          rw [abs_le]
+          constructor <;> cases abs_cases x <;> cases abs_cases z.re <;> linarith
+        linarith [Complex.norm_le_abs_re_add_abs_im z]
+      calc ‖1 - z / γ‖ ≤ ‖(1 : ℂ)‖ + ‖z / γ‖ := norm_sub_le _ _
+        _ = 1 + ‖z‖ / γ := by
+            rw [norm_one, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hγ]
+        _ ≤ W := by
+            rw [hWdef]
+            gcongr
+    calc Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) * ‖1 - z / γ‖ * (C * Real.exp (-κ * n))
+        ≤ (Real.exp (κ / 4) * Real.exp (κ / 4 * n)) * W * (C * Real.exp (-κ * n)) := by
+          apply mul_le_mul_of_nonneg_right _ (by positivity)
+          exact mul_le_mul hexp hnorm (norm_nonneg _) (by positivity)
+      _ = W * C * Real.exp (κ / 4) * Real.exp (-(3 * κ / 4) * n) := by
+          rw [show Real.exp (-(3 * κ / 4) * n) = Real.exp (κ / 4 * n) * Real.exp (-κ * n) by
+            rw [← Real.exp_add]
+            ring_nf]
+          ring
   set F : ℕ → ℂ → ℂ := poleSubtractedCutoff P Xc M γ η with hFdef
-  have hrect := fun x₀ : Ioo (-2 * η - δ) (1 / γ) =>
-    exists_rectangle_cauchy_bound P X hX γ hγ hγ2 M hM Xc hXc hWindow x₀
-  choose ρ hgt Kb κ hρ hhgt hKb hκ hlo _ hbound using hrect
+  choose ρ hgt Kb κ hρ hhgt hKb hκ hlo _ hbound using (fun x₀ => exists_rectangle_cauchy_bound hWindow x₀)
   set R : Ioo (-2 * η - δ) (1 / γ) → Set ℂ :=
     fun x₀ => {z : ℂ | |z.re - x₀| < ρ x₀ ∧ |z.im| < hgt x₀} with hRdef
   have hRopen : ∀ x₀, IsOpen (R x₀) := fun x₀ =>
@@ -141,7 +129,7 @@ theorem poleSubtractedObservable_holomorphic
       continuous_const).inter (isOpen_lt (continuous_abs.comp Complex.continuous_im)
         continuous_const)
   set V : Set ℂ := ⋃ x₀, R x₀ with hVdef
-  have hVopen : IsOpen V := isOpen_iUnion hRopen
+  have hVopen := isOpen_iUnion hRopen
   have hVH : V ⊆ cutoffHalfPlane η δ := by
     intro z hz
     obtain ⟨x₀, hz⟩ := mem_iUnion.1 hz
@@ -169,10 +157,6 @@ theorem poleSubtractedObservable_holomorphic
   set Flim : ℂ → ℂ := fun z => limUnder atTop (fun n => F n z) with hFlim
   have hlim : ∀ z ∈ V, Tendsto (fun n => F n z) atTop (𝓝 (Flim z)) := fun z hz =>
     tendsto_nhds_limUnder (hconv z hz)
-  have hdist : ∀ x₀, ∀ z ∈ R x₀, ∀ n : ℕ, dist (F n z) (Flim z) ≤
-      Kb x₀ * Real.exp (-κ x₀) ^ n / (1 - Real.exp (-κ x₀)) := fun x₀ z hz n =>
-    dist_le_of_le_geometric_of_tendsto _ _ (hr1 x₀) (hgeom x₀ z hz)
-      (hlim z (mem_iUnion.2 ⟨x₀, hz⟩)) n
   have hFdiff : ∀ n, DifferentiableOn ℂ (F n) V := fun n => by
     have h1 := (differentiableOn_cutoffFamily P X hX γ hγ hγ2 M hM Xc hXc hWindow
       (le_refl n)).1
@@ -183,14 +167,9 @@ theorem poleSubtractedObservable_holomorphic
     intro ε hε z hz
     obtain ⟨x₀, hzR⟩ := mem_iUnion.1 hz
     refine ⟨R x₀, mem_nhdsWithin_of_mem_nhds ((hRopen x₀).mem_nhds hzR), ?_⟩
-    have htend : Tendsto (fun n : ℕ => Kb x₀ * Real.exp (-κ x₀) ^ n /
-        (1 - Real.exp (-κ x₀))) atTop (𝓝 0) := by
-      have h1 := ((tendsto_pow_atTop_nhds_zero_of_lt_one (Real.exp_pos _).le
-        (hr1 x₀)).const_mul (Kb x₀)).div_const (1 - Real.exp (-κ x₀))
-      simpa using h1
-    filter_upwards [htend.eventually (gt_mem_nhds hε)] with n hn y hy
+    filter_upwards [(show Tendsto (fun n => Kb x₀ * Real.exp (-κ x₀) ^ n / (1 - Real.exp (-κ x₀))) atTop (𝓝 0) by simpa using (((tendsto_pow_atTop_nhds_zero_of_lt_one (Real.exp_pos _).le (hr1 x₀)).const_mul (Kb x₀)).div_const (1 - Real.exp (-κ x₀)))).eventually (gt_mem_nhds hε)] with n hn y hy
     rw [dist_comm]
-    exact (hdist x₀ y hy n).trans_lt hn
+    exact ((fun x₀ z hz n => dist_le_of_le_geometric_of_tendsto _ _ (hr1 x₀) (hgeom x₀ z hz) (hlim z (mem_iUnion.2 ⟨x₀, hz⟩)) n) x₀ y hy n).trans_lt hn
   refine ⟨V, hVopen, fun x hx => mem_iUnion.2 ⟨⟨x, hx⟩, hmemR x hx⟩, Flim,
     hTLU.differentiableOn (Eventually.of_forall hFdiff) hVopen, ?_, hFdiff, hTLU, ?_⟩
   · intro x hx

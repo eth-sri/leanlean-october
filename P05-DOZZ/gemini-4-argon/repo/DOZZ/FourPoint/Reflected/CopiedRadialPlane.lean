@@ -14,11 +14,11 @@ namespace DOZZ.Proofs
 /-- Independent radial reinsertion preserves every measurable radial-path and weighted-mass observable on the full
 punctured plane, including extended-real masses. -/
 theorem reflected_copied_radial_plane_observable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
+    γ (hγ : 0 < γ) (hγ₂ : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     ∃ N : Ω → Measure ℂ,
       Measurable N ∧ IndepFun (originRadialPath Xc) N P ∧
@@ -43,8 +43,8 @@ theorem reflected_copied_radial_plane_observable
   let _ : LocallyCompactSpace U := hU.locallyCompactSpace
   let E := CompactExhaustion.choice U
   let K : ℕ → Set ℂ := fun n => Subtype.val '' E n
-  have hK (n : ℕ) : IsCompact (K n) := (E.isCompact n).image continuous_subtype_val
-  have hKU (n : ℕ) : K n ⊆ (({0} : Set ℂ)ᶜ) := by
+  have hK n : IsCompact (K n) := (E.isCompact n).image continuous_subtype_val
+  have hKU n : K n ⊆ (({0} : Set ℂ)ᶜ) := by
     rintro x ⟨y, _, rfl⟩
     exact y.property
   have hKm : Monotone K := by
@@ -84,7 +84,7 @@ theorem reflected_copied_radial_plane_observable
       ((hf.comp measurable_snd).mul (ENNReal.measurable_ofReal.comp
         (reflected_global_reinsertionWeight_measurable γ)))).comp
           (measurable_fst.prodMk ((measurable_pi_apply n).comp measurable_snd))
-  have hmass (a : TwoSidedPath) (ω : Ω) : F (a, NF ω) =
+  have hmass a ω : F (a, NF ω) =
       G (a, ∫⁻ x in (({0} : Set ℂ)ᶜ), f x * ENNReal.ofReal
         (reflected_global_reinsertionWeight γ a x) ∂N ω) := by
     change G (a, ⨆ n, ∫⁻ x in K n, f x * ENNReal.ofReal
@@ -109,8 +109,6 @@ theorem reflected_copied_radial_plane_observable
     hNF.aemeasurable.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving
   have hjc : (P.prod P).map (fun ω : Ω × Ω => (A ω.1, NF ω.2)) =
       (P.map A).prod (P.map NF) := by
-    have hi' := (indepFun_iff_map_prod_eq_prod_map_map hAc hNc).mp
-      (indepFun_prod₀ hA hNF.aemeasurable)
     have hfst : (P.prod P).map (fun ω : Ω × Ω => A ω.1) = P.map A := by
       have h := AEMeasurable.map_map_of_aemeasurable
         (show AEMeasurable A ((P.prod P).map Prod.fst) by
@@ -123,7 +121,7 @@ theorem reflected_copied_radial_plane_observable
           simpa only [Measure.map_snd_prod, measure_univ, one_smul] using hNF.aemeasurable)
         measurable_snd.aemeasurable
       simpa only [Function.comp_def, Measure.map_snd_prod, measure_univ, one_smul] using h.symm
-    exact hi'.trans (by rw [hfst, hsnd])
+    exact ((indepFun_iff_map_prod_eq_prod_map_map hAc hNc).mp (indepFun_prod₀ hA hNF.aemeasurable)).trans (by rw [hfst, hsnd])
   calc
     _ = ∫⁻ ω, F (A ω, NF ω) ∂P := lintegral_congr_ae hid
     _ = ∫⁻ p, F p ∂(P.map A).prod (P.map NF) := by

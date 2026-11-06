@@ -22,15 +22,15 @@ finite Gaussian tilt identity under the integral. No nondegeneracy assumption on
 used. -/
 theorem finite_gaussian_integration_by_parts
     {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ)
-    (hZ : IsCenteredJointlyGaussian P Z) (i : ι)
-    (F : (ι → ℝ) → ℝ) (hF : Measurable F)
+    (P : Measure Ω) Z
+    (hZ : IsCenteredJointlyGaussian P Z) i
+    F (hF : Measurable F)
     (D : (ι → ℝ) → ι → ℝ)
     (hDint : ∀ j, Integrable (fun ω => D (Z ω) j) P)
     (hShiftInt : ∀ t, Integrable
       (fun ω => F (fun j => Z ω j + t *
         gaussianCovariance P (fun ω => Z ω j) (fun ω => Z ω i))) P)
-    (ε : ℝ) (hε : 0 < ε)
+    ε (hε : 0 < ε)
     (hLmeas : ∀ᶠ t in 𝓝 0, AEStronglyMeasurable
       (fun ω => Real.exp (t * Z ω i - t ^ 2 / 2 *
         gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω i)) * F (Z ω)) P)
@@ -75,7 +75,7 @@ theorem finite_gaussian_integration_by_parts
       ∑ j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) *
         ∫ ω, D (Z ω) j ∂P := by
   classical
-  let c : ℝ := gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω i)
+  let c := gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω i)
   let L : ℝ → Ω → ℝ := fun t ω =>
     Real.exp (t * Z ω i - t ^ 2 / 2 * c) * F (Z ω)
   let L' : ℝ → Ω → ℝ := fun t ω =>
@@ -85,16 +85,12 @@ theorem finite_gaussian_integration_by_parts
   let R' : ℝ → Ω → ℝ := fun t ω =>
     ∑ j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) *
       D (fun j => Z ω j + t * gaussianCovariance P (fun ω => Z ω j) (fun ω => Z ω i)) j
-  have hLmeas' : ∀ᶠ t in 𝓝 0, AEStronglyMeasurable (L t) P := by
-    simpa [L, c] using hLmeas
   have hLint' : Integrable (L 0) P := by simpa [L, c] using hLint
   have hLDmeas' : AEStronglyMeasurable (L' 0) P := by simpa [L', c] using hLDmeas
   have hLbound' : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 ε, ‖L' t ω‖ ≤ bL ω := by
     simpa [L', c] using hLbound
   have hLdiff' : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 ε,
       HasDerivAt (L · ω) (L' t ω) t := by simpa [L, L', c] using hLdiff
-  have hRmeas' : ∀ᶠ t in 𝓝 0, AEStronglyMeasurable (R t) P := by
-    simpa [R] using hRmeas
   have hRint' : Integrable (R 0) P := by simpa [R] using hShiftInt 0
   have hRderivMeas' : AEStronglyMeasurable (R' 0) P := by
     simpa [R', c] using hRderivMeas
@@ -103,18 +99,14 @@ theorem finite_gaussian_integration_by_parts
   have hRdiff' : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 ε,
       HasDerivAt (R · ω) (R' t ω) t := by simpa [R, R'] using hRdiff
   have hLderiv := hasDerivAt_integral_of_dominated_loc_of_deriv_le
-    (Metric.ball_mem_nhds 0 hε) hLmeas' hLint' hLDmeas' hLbound' hLb hLdiff'
+    (Metric.ball_mem_nhds 0 hε) (by simpa [L, c] using hLmeas) hLint' hLDmeas' hLbound' hLb hLdiff'
   have hRderiv := hasDerivAt_integral_of_dominated_loc_of_deriv_le
-    (Metric.ball_mem_nhds 0 hε) hRmeas' hRint' hRderivMeas' hRbound' hRb hRdiff'
-  have hTilt (t : ℝ) : ∫ ω, L t ω ∂P = ∫ ω, R t ω ∂P := by
+    (Metric.ball_mem_nhds 0 hε) (by simpa [R] using hRmeas) hRint' hRderivMeas' hRbound' hRb hRdiff'
+  have hTilt t : ∫ ω, L t ω ∂P = ∫ ω, R t ω ∂P := by
     let a : ι → ℝ := fun j => if j = i then t else 0
-    have hlin (ω : Ω) : (∑ j, a j * Z ω j) = t * Z ω i := by
+    have hlin ω : (∑ j, a j * Z ω j) = t * Z ω i := by
       simp [a]
-    have hvar : (∑ k, ∑ j, a k * gaussianCovariance P
-        (fun ω => Z ω k) (fun ω => Z ω j) * a j) = t ^ 2 * c := by
-      simp [a, c]
-      ring
-    have hshift (k : ι) : (∑ j, gaussianCovariance P
+    have hshift k : (∑ j, gaussianCovariance P
         (fun ω => Z ω k) (fun ω => Z ω j) * a j) =
           t * gaussianCovariance P (fun ω => Z ω k) (fun ω => Z ω i) := by
       simp [a]
@@ -134,7 +126,7 @@ theorem finite_gaussian_integration_by_parts
                 apply integral_congr_ae
                 filter_upwards [] with ω
                 simp only [L]
-                rw [hlin ω, hvar]
+                rw [hlin ω, (show (∑ k, ∑ j, a k * gaussianCovariance P (fun ω => Z ω k) (fun ω => Z ω j) * a j) = t ^ 2 * c by simp [a, c]; ring)]
                 congr 2
                 ring
       _ = ∫ ω, F (fun k => Z ω k +
@@ -146,15 +138,11 @@ theorem finite_gaussian_integration_by_parts
             congr 2
             funext k
             rw [hshift k]
-  have hLhas : HasDerivAt (fun t => ∫ ω, L t ω ∂P)
-      (∫ ω, L' 0 ω ∂P) 0 := hLderiv.2
-  have hRhas : HasDerivAt (fun t => ∫ ω, R t ω ∂P)
-      (∫ ω, R' 0 ω ∂P) 0 := hRderiv.2
+  have hRhas := hRderiv.2
   have heq : (fun t => ∫ ω, L t ω ∂P) = fun t => ∫ ω, R t ω ∂P := by
     funext t
     exact hTilt t
-  have hderivEq : (∫ ω, L' 0 ω ∂P) = ∫ ω, R' 0 ω ∂P := by
-    exact HasDerivAt.unique (heq ▸ hLhas) hRhas
+  have hderivEq := HasDerivAt.unique (heq ▸ hLderiv.2) hRhas
   have hLvalue : (∫ ω, L' 0 ω ∂P) = ∫ ω, Z ω i * F (Z ω) ∂P := by
     apply integral_congr_ae
     filter_upwards [] with ω
@@ -162,11 +150,7 @@ theorem finite_gaussian_integration_by_parts
   have hRvalue : (∫ ω, R' 0 ω ∂P) =
       ∑ j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) *
         ∫ ω, D (Z ω) j ∂P := by
-    have hRzero : R' 0 = fun ω =>
-        ∑ j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * D (Z ω) j := by
-      funext ω
-      simp [R']
-    rw [hRzero]
+    rw [(show R' 0 = fun ω => ∑ j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * D (Z ω) j by funext ω; simp [R'])]
     rw [integral_finsetSum]
     · apply Finset.sum_congr rfl
       intro j hj

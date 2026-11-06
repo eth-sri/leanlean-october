@@ -17,7 +17,7 @@ open scoped CompactlySupported
 namespace DOZZ.Proofs
 
 /-- The pin-removal weight applied to a translated compact test is again a compact test. -/
-theorem transferred_compact_test (z : ℂ) (γ : ℝ)
+theorem transferred_compact_test z (γ : ℝ)
     (f : BoundedContinuousFunction ℂ ℝ) (hf : HasCompactSupport (f : ℂ → ℝ)) :
     ∃ g : BoundedContinuousFunction ℂ ℝ, HasCompactSupport (g : ℂ → ℝ) ∧
       ∀ w, g w = f (w-z) * Real.exp ((γ ^ 2 + 4) * Real.log (normPlus w)) := by
@@ -30,14 +30,12 @@ theorem transferred_compact_test (z : ℂ) (γ : ℝ)
     · unfold normPlus
       exact continuous_const.max continuous_norm
     · intro w
-      have h : 0 < normPlus w := by unfold normPlus; positivity
-      exact h.ne'
+      exact (show 0 < normPlus w by unfold normPlus; positivity).ne'
   have hs : HasCompactSupport (fun w => f (w-z)) := by
     have h := hf.comp_homeomorph (Homeomorph.addRight (-z))
     change HasCompactSupport (fun w => f (w + -z)) at h
     simpa only [sub_eq_add_neg] using h
-  have hg : HasCompactSupport g := hs.mul_right
-  let gc : C_c(ℂ, ℝ) := ⟨⟨g, hc⟩, hg⟩
+  let gc : C_c(ℂ, ℝ) := ⟨⟨g, hc⟩, hs.mul_right⟩
   exact ⟨gc.toBoundedContinuousFunction, gc.hasCompactSupport, fun w => rfl⟩
 
 

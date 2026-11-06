@@ -14,7 +14,7 @@ public import Mathlib.Analysis.SpecialFunctions.Exp
 namespace DOZZ.Proofs
 
 /-- The first scaled exponential moment is bounded on the nonnegative half-line. -/
-lemma mul_exp_neg_le_one {x : ℝ} : x * Real.exp (-x) ≤ 1 := by
+lemma mul_exp_neg_le_one {x} : x * Real.exp (-x) ≤ 1 := by
   have hxe : x ≤ Real.exp x := by
     linarith [Real.add_one_le_exp x]
   have hmul := mul_le_mul_of_nonneg_right hxe (le_of_lt (Real.exp_pos (-x)))
@@ -22,15 +22,14 @@ lemma mul_exp_neg_le_one {x : ℝ} : x * Real.exp (-x) ≤ 1 := by
   exact hmul
 
 /-- The second scaled exponential moment is bounded uniformly as well. -/
-lemma sq_mul_exp_neg_le_four {x : ℝ} (hx : 0 ≤ x) : x ^ 2 * Real.exp (-x) ≤ 4 := by
-  let y : ℝ := x / 2
-  have hy : 0 ≤ y := by dsimp [y]; positivity
+lemma sq_mul_exp_neg_le_four {x} (hx : 0 ≤ x) : x ^ 2 * Real.exp (-x) ≤ 4 := by
+  let y := x / 2
   have hye : y ≤ Real.exp y := by
     linarith [Real.add_one_le_exp y]
   have hsq : y ^ 2 ≤ Real.exp y * Real.exp y := by
     calc
       y ^ 2 = y * y := by ring
-      _ ≤ Real.exp y * y := mul_le_mul_of_nonneg_right hye hy
+      _ ≤ Real.exp y * y := mul_le_mul_of_nonneg_right hye (by dsimp [y]; positivity)
       _ ≤ Real.exp y * Real.exp y := mul_le_mul_of_nonneg_left hye (le_of_lt (Real.exp_pos y))
   have hexp : Real.exp y * Real.exp y = Real.exp x := by
     rw [← Real.exp_add]
@@ -49,8 +48,8 @@ lemma sq_mul_exp_neg_le_four {x : ℝ} (hx : 0 ≤ x) : x ^ 2 * Real.exp (-x) �
 /-- Each nonnegative Wick weight is bounded by the total finite-chaos mass. -/
 lemma finiteChaosVectorWeight_le_mass
     {ι : Type*} [Fintype ι]
-    (a v : ι → ℝ) (γ : ℝ) (ha : ∀ i, 0 ≤ a i)
-    (x : ι → ℝ) (i : ι) :
+    (a v : ι → ℝ) γ (ha : ∀ i, 0 ≤ a i)
+    (x : ι → ℝ) i :
     0 ≤ finiteChaosVectorWeight a v γ x i ∧
       finiteChaosVectorWeight a v γ x i ≤ finiteChaosVectorMass a v γ x := by
   classical
@@ -67,7 +66,7 @@ lemma finiteChaosVectorWeight_le_mass
 /-- The finite-chaos mass is nonnegative when all coefficients are nonnegative. -/
 lemma finiteChaosVectorMass_nonneg
     {ι : Type*} [Fintype ι]
-    (a v : ι → ℝ) (γ : ℝ) (ha : ∀ i, 0 ≤ a i) (x : ι → ℝ) :
+    (a v : ι → ℝ) γ (ha : ∀ i, 0 ≤ a i) x :
     0 ≤ finiteChaosVectorMass a v γ x := by
   classical
   unfold finiteChaosVectorMass
@@ -78,28 +77,21 @@ lemma finiteChaosVectorMass_nonneg
 the field coordinate. -/
 lemma finiteChaos_laplace_first_weight_bound
     {ι : Type*} [Fintype ι]
-    (a v : ι → ℝ) (γ s : ℝ) (ha : ∀ i, 0 ≤ a i) (hs : 0 ≤ s)
-    (x : ι → ℝ) (i : ι) :
+    (a v : ι → ℝ) γ s (ha : ∀ i, 0 ≤ a i) (hs : 0 ≤ s)
+    (x : ι → ℝ) i :
     ‖finiteChaosVectorWeight a v γ x i *
       (-s * Real.exp (-s * finiteChaosVectorMass a v γ x))‖ ≤ 1 := by
   have hmass := finiteChaosVectorWeight_le_mass a v γ ha x i
-  have hm := finiteChaosVectorMass_nonneg a v γ ha x
-  have hscaled :
-      s * finiteChaosVectorWeight a v γ x i ≤
-        s * finiteChaosVectorMass a v γ x := mul_le_mul_of_nonneg_left hmass.2 hs
-  have hbound := mul_exp_neg_le_one (x := s * finiteChaosVectorMass a v γ x)
-  have hmul := mul_le_mul_of_nonneg_right hscaled
-    (le_of_lt (Real.exp_pos (-s * finiteChaosVectorMass a v γ x)))
   have hmul' :
       s * finiteChaosVectorWeight a v γ x i *
         Real.exp (-s * finiteChaosVectorMass a v γ x) ≤ 1 := by
     calc
       _ ≤ (s * finiteChaosVectorMass a v γ x) *
-          Real.exp (-s * finiteChaosVectorMass a v γ x) := hmul
+          Real.exp (-s * finiteChaosVectorMass a v γ x) := (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hmass.2 hs) (le_of_lt (Real.exp_pos (-s * finiteChaosVectorMass a v γ x))))
       _ ≤ 1 := by
         rw [show -s * finiteChaosVectorMass a v γ x =
           -(s * finiteChaosVectorMass a v γ x) by ring]
-        exact hbound
+        exact (mul_exp_neg_le_one (x := s * finiteChaosVectorMass a v γ x))
   simpa [Real.norm_eq_abs, abs_mul, abs_neg, abs_of_nonneg hmass.1,
     abs_of_nonneg hs, abs_of_nonneg (Real.exp_nonneg _), mul_assoc, mul_left_comm,
     mul_comm] using hmul'
@@ -108,30 +100,13 @@ lemma finiteChaos_laplace_first_weight_bound
 four, uniformly over all field coordinates. -/
 lemma finiteChaos_laplace_second_weight_bound
     {ι : Type*} [Fintype ι]
-    (a v : ι → ℝ) (γ s : ℝ) (ha : ∀ i, 0 ≤ a i) (hs : 0 ≤ s)
-    (x : ι → ℝ) (i j : ι) :
+    (a v : ι → ℝ) γ s (ha : ∀ i, 0 ≤ a i) (hs : 0 ≤ s)
+    (x : ι → ℝ) i j :
     ‖finiteChaosVectorWeight a v γ x i * finiteChaosVectorWeight a v γ x j *
       (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x))‖ ≤ 4 := by
   have hmass := finiteChaosVectorWeight_le_mass a v γ ha x i
   have hmassj := finiteChaosVectorWeight_le_mass a v γ ha x j
   have hm := finiteChaosVectorMass_nonneg a v γ ha x
-  have hi : s * finiteChaosVectorWeight a v γ x i ≤ s * finiteChaosVectorMass a v γ x :=
-    mul_le_mul_of_nonneg_left hmass.2 hs
-  have hj : s * finiteChaosVectorWeight a v γ x j ≤ s * finiteChaosVectorMass a v γ x :=
-    mul_le_mul_of_nonneg_left hmassj.2 hs
-  have hprod :
-      (s * finiteChaosVectorWeight a v γ x i) *
-        (s * finiteChaosVectorWeight a v γ x j) ≤
-      (s * finiteChaosVectorMass a v γ x) *
-        (s * finiteChaosVectorMass a v γ x) :=
-    mul_le_mul hi hj (mul_nonneg hs hmassj.1) (mul_nonneg hs hm)
-  have hpow := sq_mul_exp_neg_le_four (mul_nonneg hs hm)
-  have hpow' :
-      (s * finiteChaosVectorMass a v γ x) ^ 2 *
-        Real.exp (-s * finiteChaosVectorMass a v γ x) ≤ 4 := by
-    rw [show -s * finiteChaosVectorMass a v γ x =
-      -(s * finiteChaosVectorMass a v γ x) by ring]
-    exact hpow
   have hbound :
       (s * finiteChaosVectorWeight a v γ x i) *
         (s * finiteChaosVectorWeight a v γ x j) *
@@ -140,23 +115,10 @@ lemma finiteChaos_laplace_second_weight_bound
       _ ≤ (s * finiteChaosVectorMass a v γ x) ^ 2 *
           Real.exp (-s * finiteChaosVectorMass a v γ x) := by
             rw [pow_two]
-            exact mul_le_mul_of_nonneg_right hprod (le_of_lt (Real.exp_pos _))
+            exact mul_le_mul_of_nonneg_right (mul_le_mul (mul_le_mul_of_nonneg_left hmass.2 hs) (mul_le_mul_of_nonneg_left hmassj.2 hs) (mul_nonneg hs hmassj.1) (mul_nonneg hs hm)) (le_of_lt (Real.exp_pos _))
       _ ≤ 4 := by
-        convert hpow' using 1
-  have hval : 0 ≤ finiteChaosVectorWeight a v γ x i *
-      finiteChaosVectorWeight a v γ x j *
-        (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x)) :=
-    mul_nonneg (mul_nonneg hmass.1 hmassj.1)
-      (mul_nonneg (sq_nonneg _) (Real.exp_nonneg _))
-  have hnorm :
-      ‖finiteChaosVectorWeight a v γ x i * finiteChaosVectorWeight a v γ x j *
-        (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x))‖ =
-      (s * finiteChaosVectorWeight a v γ x i) *
-        (s * finiteChaosVectorWeight a v γ x j) *
-          Real.exp (-s * finiteChaosVectorMass a v γ x) := by
-    rw [Real.norm_eq_abs, abs_of_nonneg hval]
-    ring
-  rw [hnorm]
+        convert (show (s * finiteChaosVectorMass a v γ x) ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x) ≤ 4 by rw [show -s * finiteChaosVectorMass a v γ x = -(s * finiteChaosVectorMass a v γ x) by ring]; exact (sq_mul_exp_neg_le_four (mul_nonneg hs hm))) using 1
+  rw [(show ‖finiteChaosVectorWeight a v γ x i * finiteChaosVectorWeight a v γ x j * (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x))‖ = (s * finiteChaosVectorWeight a v γ x i) * (s * finiteChaosVectorWeight a v γ x j) * Real.exp (-s * finiteChaosVectorMass a v γ x) by rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (mul_nonneg hmass.1 hmassj.1) (mul_nonneg (sq_nonneg _) (Real.exp_nonneg _)))]; ring)]
   exact hbound
 
 
@@ -164,29 +126,21 @@ lemma finiteChaos_laplace_second_weight_bound
 growth estimate needed to discharge the Gaussian Stein domination hypotheses for Laplace tests. -/
 theorem finiteChaos_laplace_score_derivative_norm_le
     {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (a v : ι → ℝ) (γ s : ℝ) (ha : ∀ i, 0 ≤ a i) (hs : 0 ≤ s)
-    (x : ι → ℝ) (i j : ι) :
+    (a v : ι → ℝ) γ s (ha : ∀ i, 0 ≤ a i) (hs : 0 ≤ s)
+    (x : ι → ℝ) i j :
     ‖γ * (if i = j then finiteChaosVectorWeight a v γ x i *
         (-s * Real.exp (-s * finiteChaosVectorMass a v γ x)) else 0) +
       γ * finiteChaosVectorWeight a v γ x i *
         finiteChaosVectorWeight a v γ x j *
           (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x))‖ ≤
       5 * |γ| := by
-  have hfirst := finiteChaos_laplace_first_weight_bound a v γ s ha hs x i
-  have hsecond := finiteChaos_laplace_second_weight_bound a v γ s ha hs x i j
   have hdiag :
       ‖(if i = j then finiteChaosVectorWeight a v γ x i *
           (-s * Real.exp (-s * finiteChaosVectorMass a v γ x)) else 0)‖ ≤ 1 := by
     by_cases hij : i = j
     · subst j
-      simpa using hfirst
+      simpa using (finiteChaos_laplace_first_weight_bound a v γ s ha hs x i)
     · simp [hij]
-  have hadd := norm_add_le
-    (γ * (if i = j then finiteChaosVectorWeight a v γ x i *
-        (-s * Real.exp (-s * finiteChaosVectorMass a v γ x)) else 0))
-    (γ * finiteChaosVectorWeight a v γ x i *
-      finiteChaosVectorWeight a v γ x j *
-        (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x)))
   have hmul1 :
       ‖γ * (if i = j then finiteChaosVectorWeight a v γ x i *
           (-s * Real.exp (-s * finiteChaosVectorMass a v γ x)) else 0)‖ ≤ |γ| := by
@@ -211,7 +165,7 @@ theorem finiteChaos_laplace_score_derivative_norm_le
                     finiteChaosVectorWeight a v γ x j *
                       (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x))) by ring,
                 norm_mul, Real.norm_eq_abs]
-      _ ≤ |γ| * 4 := mul_le_mul_of_nonneg_left hsecond (abs_nonneg γ)
+      _ ≤ |γ| * 4 := mul_le_mul_of_nonneg_left (finiteChaos_laplace_second_weight_bound a v γ s ha hs x i j) (abs_nonneg γ)
       _ = 4 * |γ| := by ring
   calc
     _ ≤ |γ| + 4 * |γ| := by
@@ -220,7 +174,7 @@ theorem finiteChaos_laplace_score_derivative_norm_le
               (-s * Real.exp (-s * finiteChaosVectorMass a v γ x)) else 0)‖ +
             ‖γ * finiteChaosVectorWeight a v γ x i *
               finiteChaosVectorWeight a v γ x j *
-                (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x))‖ := hadd
+                (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x))‖ := (norm_add_le (γ * (if i = j then finiteChaosVectorWeight a v γ x i * (-s * Real.exp (-s * finiteChaosVectorMass a v γ x)) else 0)) (γ * finiteChaosVectorWeight a v γ x i * finiteChaosVectorWeight a v γ x j * (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x))))
         _ ≤ |γ| + 4 * |γ| := add_le_add hmul1 hmul2
     _ = 5 * |γ| := by ring
 

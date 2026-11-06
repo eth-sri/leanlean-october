@@ -41,7 +41,7 @@ lemma exists_modification_holder'' (hT : HasBoundedCoveringNumber U c d)
       (∀ (β : ℝ≥0), 0 < β → β < (q - d) / p → ∀ ω, ∃ C, HolderOnWith C β (Y · ω) U) ∧
       IsLimitOfIndicator Y X P U := by
   have h_ratio_pos : 0 < (q - d) / p := by
-    have : 0 < p := hX.p_pos
+    have := hX.p_pos
     bound
   obtain ⟨β', hβ'_mono, hβ'_mem, hβ'_tendsto⟩ := exists_seq_strictMono_tendsto' h_ratio_pos
   let β : ℕ → ℝ≥0 := fun n ↦ ⟨β' n, (hβ'_mem n).1.le⟩
@@ -64,8 +64,7 @@ lemma exists_modification_holder'' (hT : HasBoundedCoveringNumber U c d)
   rw [← ae_all_iff] at hZ_ae_eq'
   let A := {ω | ∀ n t, t ∈ U → edist (Z n t ω) (Z 0 t ω) = 0}
   have hA : MeasurableSet A := by
-    have : A = ⋂ n, {ω | ∀ t, t ∈ U → edist (Z n t ω) (Z 0 t ω) = 0} := by ext; simp [A]
-    rw [this]
+    rw [(show A = ⋂ n, {ω | ∀ t, t ∈ U → edist (Z n t ω) (Z 0 t ω) = 0} by ext; simp [A])]
     refine MeasurableSet.iInter (fun n ↦ ?_)
     refine Measurable.measurableSet_edist_eqOn_zero_of_continuous hU (fun ω ↦ ?_) (fun ω ↦ ?_)
       fun t ↦ ?_
@@ -92,8 +91,7 @@ lemma exists_modification_holder'' (hT : HasBoundedCoveringNumber U c d)
     suffices ∃ C, HolderOnWith C (β n) (fun x ↦ Z 0 x ω) U by
       obtain ⟨C, hC⟩ := this
       refine HolderOnWith.mono_right' hC hn.le (C' := (Metric.ediam U).toNNReal) ?_
-      have h_diam : Metric.ediam U < ∞ := hT.ediam_lt_top
-      rw [ENNReal.coe_toNNReal h_diam.ne]
+      rw [ENNReal.coe_toNNReal hT.ediam_lt_top.ne]
       exact fun x hx y hy ↦ Metric.edist_le_ediam_of_mem hx hy
     simp only [Set.mem_ofPred_eq, A] at hω
     obtain ⟨C, hC⟩ := hZ_holder n ω
@@ -111,12 +109,12 @@ lemma exists_modification_holder''' {C : ℕ → Set T} {c : ℕ → ℝ≥0∞}
     ∃ Y : T → Ω → E, (∀ t, Measurable (Y t)) ∧ (∀ t, Y t =ᵐ[P] X t) ∧
       (∀ ω t, ∃ U ∈ 𝓝 t, ∀ (β : ℝ≥0), 0 < β → β < (q - d) / p → ∃ C, HolderOnWith C β (Y · ω) U) ∧
       IsLimitOfIndicator Y X P Set.univ := by
-  have hp_pos : 0 < p := hX.p_pos
+  have hp_pos := hX.p_pos
   have h_div_pos : 0 < (q - d) / p := by bound
   let ⟨β₀', hβ₀_pos', hβ₀_lt'⟩ := exists_between h_div_pos
   let β₀ : ℝ≥0 := ⟨β₀', hβ₀_pos'.le⟩
-  have hβ₀_pos : 0 < β₀ := mod_cast hβ₀_pos'
-  have hβ₀_lt : β₀ < (q - d) / p := mod_cast hβ₀_lt'
+  have hβ₀_pos := mod_cast hβ₀_pos'
+  have hβ₀_lt := mod_cast hβ₀_lt'
   classical
   choose Z hZ hZ_eq hZ_holder hZ_extend
     using fun n ↦ exists_modification_holder'' (hC.hasBoundedCoveringNumber n) (hC.isOpen n) hX
@@ -129,8 +127,7 @@ lemma exists_modification_holder''' {C : ℕ → Set T} {c : ℕ → ℝ≥0∞}
     · obtain ⟨_, h⟩ := hZ_holder n β₀ hβ₀_pos hβ₀_lt ω
       exact h.continuousOn hβ₀_pos
     · obtain ⟨_, h⟩ := hZ_holder (n + 1) β₀ hβ₀_pos hβ₀_lt ω
-      have h_n_add_one := h.continuousOn hβ₀_pos
-      refine h_n_add_one.mono ?_
+      refine (h.continuousOn hβ₀_pos).mono ?_
       exact hC.mono _ _ (Nat.le_succ _)
     · intro t htCn
       filter_upwards [hZ_eq n t htCn, hZ_eq (n + 1) t (hC.mono _ _ (Nat.le_succ _) htCn)]
@@ -148,28 +145,25 @@ lemma exists_modification_holder''' {C : ℕ → Set T} {c : ℕ → ℝ≥0∞}
       · have : n = m + 1 := by omega
         simp [this]
   have hA : MeasurableSet A := by
-    have : A = ⋂ n, {ω | ∀ t ∈ C n, edist (Z n t ω) (Z (n + 1) t ω) = 0} := by ext; simp [A]
-    rw [this]
+    rw [(show A = ⋂ n, {ω | ∀ t ∈ C n, edist (Z n t ω) (Z (n + 1) t ω) = 0} by ext; simp [A])]
     refine MeasurableSet.iInter (fun n ↦ ?_)
     refine Measurable.measurableSet_edist_eqOn_zero_of_continuous (hC.isOpen n)
       (fun ω ↦ ?_) (fun ω ↦ ?_) fun t ↦ ?_
     · obtain ⟨_, h⟩ :=  hZ_holder n β₀ hβ₀_pos hβ₀_lt ω
       exact h.continuousOn hβ₀_pos
     · obtain ⟨_, h⟩ :=  hZ_holder (n + 1) β₀ hβ₀_pos hβ₀_lt ω
-      have h_cont := h.continuousOn hβ₀_pos
-      refine h_cont.mono ?_
+      refine (h.continuousOn hβ₀_pos).mono ?_
       exact hC.mono _ _ (Nat.le_succ _)
     · refine IsLimitOfIndicator.measurable_edist ?_ ?_ ?_ (hZ_extend n) (hZ_extend (n + 1)) _ _
       · exact hX.measurable
       · exact hX.measurable
       · intro i j
         exact hX.measurablePair i j
-  have hA_ae : ∀ᵐ ω ∂P, ω ∈ A := hZ_ae_eq
+  have hA_ae := hZ_ae_eq
   classical
   -- for each `t`, find `n` such that `t ∈ C n` and call it `nt t`
   have h_mem t : ∃ n, t ∈ C n := by
-    have ht : t ∈ ⋃ n, C n := hC.subset_iUnion (by simp : t ∈ Set.univ)
-    simpa using ht
+    simpa using (hC.subset_iUnion (by simp : t ∈ Set.univ))
   let nt t := Nat.find (h_mem t)
   have hnt t : t ∈ C (nt t) := Nat.find_spec (h_mem t)
   choose A' hA'_meas hA'_ae hZ_tendsto hZC_eq hZCc_eq using hZ_extend
@@ -178,14 +172,9 @@ lemma exists_modification_holder''' {C : ℕ → Set T} {c : ℕ → ℝ≥0∞}
       edist (Y t ω) (Z n t ω) = 0 := by
     simp only [hω, ↓reduceIte, Y]
     exact hA_eq_le hω.1 (Nat.find_le ht) ⟨t, hnt t⟩
-  have hA_inter_meas : MeasurableSet (A ∩ ⋂ n, A' n) :=
-    MeasurableSet.inter hA (MeasurableSet.iInter hA'_meas)
-  have hA_inter_ae : ∀ᵐ ω ∂P, ω ∈ A ∩ ⋂ n, A' n := by
-    simp only [Set.mem_inter_iff, Set.mem_iInter, eventually_and, ae_all_iff]
-    exact ⟨hA_ae, hA'_ae⟩
-  refine ⟨Y, fun t ↦ Measurable.ite hA_inter_meas (hZ _ _) (by fun_prop), fun t ↦ ?_, ?_, ?_⟩
+  refine ⟨Y, fun t ↦ Measurable.ite (MeasurableSet.inter hA (MeasurableSet.iInter hA'_meas)) (hZ _ _) (by fun_prop), fun t ↦ ?_, ?_, ?_⟩
   · specialize hZ (nt t) t
-    filter_upwards [hA_inter_ae, hZ_eq (nt t) t (hnt t)] with ω hω hω₂
+    filter_upwards [(show ∀ᵐ ω ∂P, ω ∈ A ∩ ⋂ n, A' n by simp only [Set.mem_inter_iff, Set.mem_iInter, eventually_and, ae_all_iff]; exact ⟨hA_ae, hA'_ae⟩), hZ_eq (nt t) t (hnt t)] with ω hω hω₂
     simp only [hω, ↓reduceIte, hω₂, Y, A]
   · intro ω t
     refine ⟨C (nt t), (hC.isOpen (nt t)).mem_nhds (hnt t), ?_⟩
@@ -265,19 +254,7 @@ theorem exists_continuous_modification_of_open_cover {T Ω I : Type*}
       Measurable (fun p : Ω × T => Y p.2 p.1) := by
   classical
   choose index hindex using hcover
-  let A : Set Ω := {ω | ∀ i j t, t ∈ U i ∩ U j → Z i t ω = Z j t ω}
-  have hAmeas : MeasurableSet A := by
-    have hpair i j : MeasurableSet {ω | ∀ t ∈ U i ∩ U j,
-        edist (Z i t ω) (Z j t ω) = 0} := by
-      exact DOZZ.Proofs.Measurable.measurableSet_edist_eqOn_zero_of_continuous
-        ((hU i).inter (hU j)) (fun ω => (hZcont i ω).continuousOn)
-        (fun ω => (hZcont j ω).continuousOn) (fun t => (hZmeas i t).edist (hZmeas j t))
-    have hA : A = ⋂ i, ⋂ j, {ω | ∀ t ∈ U i ∩ U j,
-        edist (Z i t ω) (Z j t ω) = 0} := by
-      ext ω
-      simp only [A, mem_ofPred_eq, mem_iInter, edist_eq_zero]
-    rw [hA]
-    exact MeasurableSet.iInter fun i => MeasurableSet.iInter (hpair i)
+  let A := {ω | ∀ i j t, t ∈ U i ∩ U j → Z i t ω = Z j t ω}
   have hAae : ∀ᵐ ω ∂P, ω ∈ A := by
     have hpair i j : ∀ᵐ ω ∂P, ∀ t ∈ U i ∩ U j, Z i t ω = Z j t ω := by
       have h := indistinguishable_of_edist_modification_on ((hU i).inter (hU j))
@@ -288,7 +265,7 @@ theorem exists_continuous_modification_of_open_cover {T Ω I : Type*}
         simp only [hi, hj, edist_self]
     simpa only [A, mem_ofPred_eq, ae_all_iff] using hpair
   let Y (t : T) (ω : Ω) := if ω ∈ A then Z (index t) t ω else 0
-  have hYmeas t : Measurable (Y t) := Measurable.ite hAmeas (hZmeas (index t) t) measurable_const
+  have hYmeas t : Measurable (Y t) := Measurable.ite (by rw [(show A = ⋂ i, ⋂ j, {ω | ∀ t ∈ U i ∩ U j, edist (Z i t ω) (Z j t ω) = 0} by ext ω; simp only [A, mem_ofPred_eq, mem_iInter, edist_eq_zero])]; exact MeasurableSet.iInter fun i => MeasurableSet.iInter ((fun i j => by exact DOZZ.Proofs.Measurable.measurableSet_edist_eqOn_zero_of_continuous ((hU i).inter (hU j)) (fun ω => (hZcont i ω).continuousOn) (fun ω => (hZcont j ω).continuousOn) (fun t => (hZmeas i t).edist (hZmeas j t))) i)) (hZmeas (index t) t) measurable_const
   have hYeq i {ω} (hω : ω ∈ A) : EqOn (fun t => Y t ω) (fun t => Z i t ω) (U i) := by
     intro t ht
     simp only [Y, hω, ↓reduceIte]
@@ -297,10 +274,8 @@ theorem exists_continuous_modification_of_open_cover {T Ω I : Type*}
     by_cases hω : ω ∈ A
     · apply continuous_iff_continuousAt.mpr
       intro t
-      have heq : (fun s => Y s ω) =ᶠ[𝓝 t] (fun s => Z (index t) s ω) :=
-        Filter.eventually_of_mem ((hU (index t)).mem_nhds (hindex t)) (hYeq (index t) hω)
-      exact (hZcont (index t) ω).continuousAt.congr_of_eventuallyEq heq
-    · simpa only [Y, hω, ↓reduceIte] using (continuous_const : Continuous (fun _ : T => (0 : ℝ)))
+      exact (hZcont (index t) ω).continuousAt.congr_of_eventuallyEq (Filter.eventually_of_mem ((hU (index t)).mem_nhds (hindex t)) (hYeq (index t) hω))
+    · simpa only [Y, hω, ↓reduceIte] using (continuous_const : Continuous (fun _ => (0 : ℝ)))
   refine ⟨Y, hYmeas, hYcont, ?_, ?_⟩
   · intro t
     filter_upwards [hAae, hZeq (index t) t (hindex t)] with ω hω ht

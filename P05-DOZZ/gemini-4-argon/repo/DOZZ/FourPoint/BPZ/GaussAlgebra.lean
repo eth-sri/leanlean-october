@@ -27,9 +27,7 @@ namespace DOZZ.Proofs
 /-- Clearing the common denominator in a three-term combination. -/
 theorem bpz_gauss_div_combo {d W2 X W1 Y T : ℂ} (hd : d ≠ 0)
     (h : d * W2 + X * W1 - Y * T = 0) : W2 + X / d * W1 - Y / d * T = 0 := by
-  have e : W2 + X / d * W1 - Y / d * T = (d * W2 + X * W1 - Y * T) / d := by
-    field_simp
-  rw [e, h, zero_div]
+  rw [(show W2 + X / d * W1 - Y / d * T = (d * W2 + X * W1 - Y * T) / d by field_simp), h, zero_div]
 
 /-- The quadratic relation `χ Q = χ² + 1` for both degenerate values of `χ`. -/
 theorem bpz_gauss_chi_relation {γ χ : ℝ} (hγ : γ ≠ 0) (hχ : χ = γ / 2 ∨ χ = 2 / γ) :
@@ -42,13 +40,13 @@ theorem bpz_gauss_chi_relation {γ χ : ℝ} (hγ : γ ≠ 0) (hχ : χ = γ / 2
     field_simp
 
 /-- The `z`-independent Gauss parameter `C` in terms of `χ`. -/
-theorem bpz_gauss_C_eq {γ χ α₁ : ℝ} (hQ : χ * Q γ = χ ^ 2 + 1) :
+theorem bpz_gauss_C_eq {γ χ α₁} (hQ : χ * Q γ = χ ^ 2 + 1) :
     gaussParameterC γ χ α₁ = χ * (α₁ - χ) := by
   unfold gaussParameterC
   linear_combination (-1 : ℝ) * hQ
 
 /-- The combination `A + B + 1` of Gauss parameters in terms of `χ`. -/
-theorem bpz_gauss_sum_eq {γ χ α₁ α₂ α₃ : ℝ} (hQ : χ * Q γ = χ ^ 2 + 1) :
+theorem bpz_gauss_sum_eq {γ χ α₁ α₂ α₃} (hQ : χ * Q γ = χ ^ 2 + 1) :
     gaussParameterA γ χ α₁ α₂ α₃ + gaussParameterB γ χ α₁ α₂ α₃ + 1 =
       χ * (α₁ + α₂ - 2 * χ) := by
   unfold gaussParameterA gaussParameterB
@@ -64,7 +62,7 @@ theorem bpz_gauss_factor {γ χ : ℝ} (hγ : γ ≠ 0) (hχ : χ = γ / 2 ∨ �
 
 /-- The `J`-coefficient identity `-s χ² ((s + 1) γ² / 4 - c₀) - A B = 0`, where
 `s = fourPointSExp γ (-χ) α₁ α₂ α₃` and `c₀ = -1 - γ χ / 2 + γ (α₁ + α₂) / 2`. -/
-theorem bpz_gauss_J_coeff {γ χ α₁ α₂ α₃ : ℝ} (hγ : γ ≠ 0) (hχ : χ = γ / 2 ∨ χ = 2 / γ) :
+theorem bpz_gauss_J_coeff {γ χ α₁ α₂ α₃} (hγ : γ ≠ 0) (hχ : χ = γ / 2 ∨ χ = 2 / γ) :
     -(fourPointSExp γ (-χ) α₁ α₂ α₃ * χ ^ 2) *
       ((fourPointSExp γ (-χ) α₁ α₂ α₃ + 1) * (γ ^ 2 / 4) -
         (-1 - γ * χ / 2 + γ * (α₁ + α₂) / 2)) -
@@ -78,7 +76,7 @@ theorem bpz_gauss_J_coeff {γ χ α₁ α₂ α₃ : ℝ} (hγ : γ ≠ 0) (hχ 
 `z (1 - z)`, the defect equals `-s K χ²` times the Ward relation, plus multiples of the scalar
 identities `bpz_gauss_factor`, `bpz_gauss_C_eq`, `bpz_gauss_sum_eq` and `bpz_gauss_J_coeff`. -/
 theorem bpz_gauss_of_ward {γ χ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (hχ : χ = γ / 2 ∨ χ = 2 / γ)
-    {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (K J T : ℝ) (E₁ D₁ D₂ W1 W2 : ℂ)
+    {z} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (K J T : ℝ) E₁ D₁ D₂ W1 W2
     (hT : T = K * J)
     (hW1 : W1 = -((fourPointSExp γ (-χ) α₁ α₂ α₃ * K * (γ * χ / 2) : ℝ) : ℂ) * E₁)
     (hW2 : W2 = ((fourPointSExp γ (-χ) α₁ α₂ α₃ * (fourPointSExp γ (-χ) α₁ α₂ α₃ + 1) * K *
@@ -94,8 +92,7 @@ theorem bpz_gauss_of_ward {γ χ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (hχ : 
         ((gaussParameterB γ χ α₁ α₂ α₃ : ℝ) : ℂ) + 1)) / (z * (1 - z)) * W1 -
       ((gaussParameterA γ χ α₁ α₂ α₃ : ℝ) : ℂ) * ((gaussParameterB γ χ α₁ α₂ α₃ : ℝ) : ℂ) /
         (z * (1 - z)) * (T : ℂ) = 0 := by
-  have hγ0 : γ ≠ 0 := hγ.ne'
-  have hd : z * (1 - z) ≠ 0 := mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1))
+  have hγ0 := hγ.ne'
   have hQ := bpz_gauss_chi_relation hγ0 hχ
   have hC := congrArg (fun x : ℝ => (x : ℂ)) (bpz_gauss_C_eq (α₁ := α₁) hQ)
   have hAB := congrArg (fun x : ℝ => (x : ℂ)) (bpz_gauss_sum_eq (α₁ := α₁) (α₂ := α₂)
@@ -104,7 +101,7 @@ theorem bpz_gauss_of_ward {γ χ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (hχ : 
   have hJ := congrArg (fun x : ℝ => (x : ℂ)) (bpz_gauss_J_coeff (α₁ := α₁) (α₂ := α₂)
     (α₃ := α₃) hγ0 hχ)
   push_cast at hC hAB hF hJ
-  refine bpz_gauss_div_combo hd ?_
+  refine bpz_gauss_div_combo (mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1))) ?_
   subst hT hW1 hW2
   push_cast at hward ⊢
   linear_combination (-(↑(fourPointSExp γ (-χ) α₁ α₂ α₃) * (K : ℂ) * (χ : ℂ) ^ 2)) * hward +

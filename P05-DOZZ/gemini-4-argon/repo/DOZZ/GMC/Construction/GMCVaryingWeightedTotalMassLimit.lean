@@ -18,21 +18,15 @@ namespace DOZZ.Proofs
 
 private theorem tendstoInMeasure_add_of_sub
     {Ω ι : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    {l : Filter ι} (f g : ι → Ω → ℝ) (y : Ω → ℝ)
+    {l} (f g : ι → Ω → ℝ) y
     (hfg : TendstoInMeasure P (fun i ω => f i ω - g i ω) l (fun _ => 0))
     (hgy : TendstoInMeasure P g l y) : TendstoInMeasure P f l y := by
   rw [tendstoInMeasure_iff_norm] at hfg hgy ⊢
   intro ε hε
   let δ : ℝ := ε / 2
   have hδ : 0 < δ := by dsimp [δ]; linarith
-  have hfg' : Tendsto (fun i => P {ω | δ ≤ ‖f i ω - g i ω‖}) l (𝓝 0) := by
-    simpa [δ, sub_zero] using hfg δ hδ
-  have hgy' : Tendsto (fun i => P {ω | δ ≤ ‖g i ω - y ω‖}) l (𝓝 0) := hgy δ hδ
-  have hadd : Tendsto (fun i =>
-      P {ω | δ ≤ ‖f i ω - g i ω‖} + P {ω | δ ≤ ‖g i ω - y ω‖}) l (𝓝 0) := by
-    simpa using hfg'.add hgy'
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
-    (tendsto_const_nhds : Tendsto (fun _ : ι => (0 : ℝ≥0∞)) l (𝓝 0)) hadd
+    (tendsto_const_nhds : Tendsto (fun _ => (0 : ℝ≥0∞)) l (𝓝 0)) (by simpa using (show Tendsto (fun i => P {ω | δ ≤ ‖f i ω - g i ω‖}) l (𝓝 0) by simpa [δ, sub_zero] using hfg δ hδ).add (hgy δ hδ))
   · exact Filter.Eventually.of_forall (fun _ => bot_le)
   · filter_upwards [] with i
     calc
@@ -41,17 +35,12 @@ private theorem tendstoInMeasure_add_of_sub
             apply measure_mono
             intro ω hω
             by_contra hnot
-            have hnot' : ¬ (ω ∈ {ω | δ ≤ ‖f i ω - g i ω‖} ∨
-                ω ∈ {ω | δ ≤ ‖g i ω - y ω‖}) := by
-              simpa only [Set.mem_union] using hnot
-            rcases not_or.mp hnot' with ⟨h1, h2⟩
-            have h1' : ‖f i ω - g i ω‖ < δ := lt_of_not_ge h1
-            have h2' : ‖g i ω - y ω‖ < δ := lt_of_not_ge h2
+            rcases not_or.mp (by simpa only [Set.mem_union] using hnot) with ⟨h1, h2⟩
             have hsum : ‖f i ω - y ω‖ < ε := by
               calc
                 ‖f i ω - y ω‖ = ‖(f i ω - g i ω) + (g i ω - y ω)‖ := by congr 1; ring
                 _ ≤ ‖f i ω - g i ω‖ + ‖g i ω - y ω‖ := norm_add_le _ _
-                _ < δ + δ := add_lt_add h1' h2'
+                _ < δ + δ := add_lt_add (lt_of_not_ge h1) (lt_of_not_ge h2)
                 _ = ε := by dsimp [δ]; ring
             exact (not_le_of_gt hsum) hω
         _ ≤ P {ω | δ ≤ ‖f i ω - g i ω‖} + P {ω | δ ≤ ‖g i ω - y ω‖} := MeasureTheory.measure_union_le _ _
@@ -78,15 +67,7 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_tendstoInMeasure
     (fun z => ENNReal.ofReal (v z))) Set.univ).toReal
   let y : Ω → ℝ := fun ω => ((M ω).withDensity
     (fun z => ENNReal.ofReal (v z)) Set.univ).toReal
-  have hdiff : TendstoInMeasure P (fun r ω => f r ω - g r ω) atTop (fun _ => 0) := by
-    simpa [f, g] using
-      regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
-        P X hX Xc hXc γ u hu v hv hconv
-  have hfixed : TendstoInMeasure P g atTop y := by
-    simpa [g, y] using
-      regularizedGMC_withDensity_univ_mass_tendstoInMeasure
-        P X hX Xc hXc γ M hM v hv
-  simpa [f, y] using tendstoInMeasure_add_of_sub P f g y hdiff hfixed
+  simpa [f, y] using tendstoInMeasure_add_of_sub P f g y (by simpa [f, g] using regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure P X hX Xc hXc γ u hu v hv hconv) (by simpa [g, y] using regularizedGMC_withDensity_univ_mass_tendstoInMeasure P X hX Xc hXc γ M hM v hv)
 
 
 end DOZZ.Proofs

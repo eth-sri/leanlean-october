@@ -38,8 +38,7 @@ theorem copied_cutoff_volume_law
   let ν : FiniteMeasure ℂ := ⟨volume.restrict K, ⟨by
     simpa only [Measure.restrict_apply_univ] using (isCompact_closedBall (0 : ℂ) ρ).measure_lt_top⟩⟩
   have hr0 : 0 ≤ r := by
-    have he : Real.exp (-r) ≤ 1 := by linarith
-    have := Real.exp_le_one_iff.mp he
+    have := Real.exp_le_one_iff.mp (by linarith)
     linarith
   let p : ℂ → localCircle := fun x =>
     if hx : x ∈ K then ⟨(x,r), by
@@ -58,44 +57,21 @@ theorem copied_cutoff_volume_law
     rw [heq]
     exact Measurable.ite hK (measurable_id.prodMk measurable_const) measurable_const
   have hpx (x : ℂ) (hx : x ∈ K) : (p x).val = (x,r) := by simp only [p, dite_eq_left hx]
-  have hweight : Integrable (f : ℂ → ℝ) (ν : Measure ℂ) := f.integrable (μ := (ν : Measure ℂ))
-  have hlaw := offCenter_wick_copy_finite_law P X Xc hX hc hm z hz ν p hp γ
-    (fun _ : Fin 1 => (f : ℂ → ℝ)) (fun _ => f.continuous.measurable) (fun _ => hf0)
-      (fun _ => hweight)
   have hsrc : Measurable (fun ω (_ : Fin 1) => ∫ x, f x * Real.exp
       (γ * Xc ω (z+(p x).val.1) (p x).val.2 - γ^2/2 *
         ((p x).val.2+2*Real.log ‖z+(p x).val.1‖).toNNReal) ∂(ν : Measure ℂ)) := by
     apply measurable_pi_iff.mpr
     intro i
     have hpv := measurable_subtype_coe.comp hp
-    have hh : Measurable (fun q : Ω × ℂ => f q.2 * Real.exp
-      (γ * Xc q.1 (z+(p q.2).val.1) (p q.2).val.2 - γ^2/2 *
-        ((p q.2).val.2+2*Real.log ‖z+(p q.2).val.1‖).toNNReal)) := by
-      have hx : Measurable (fun q : Ω × ℂ => Xc q.1
-        (z+(p q.2).val.1) (p q.2).val.2) := hm.comp (measurable_fst.prodMk
-        (((measurable_const (a := z)).add (hpv.fst.comp measurable_snd)).prodMk (hpv.snd.comp measurable_snd)))
-      fun_prop
-    exact hh.stronglyMeasurable.integral_prod_right.measurable
+    exact (show Measurable (fun q : Ω × ℂ => f q.2 * Real.exp (γ * Xc q.1 (z+(p q.2).val.1) (p q.2).val.2 - γ^2/2 * ((p q.2).val.2+2*Real.log ‖z+(p q.2).val.1‖).toNNReal)) by fun_prop).stronglyMeasurable.integral_prod_right.measurable
   have htar : Measurable (fun q (_ : Fin 1) => ∫ x, f x * Real.exp
       (γ * copiedCircle Xc z q (p x) - γ^2/2 *
         ((p x).val.2+2*Real.log ‖z+(p x).val.1‖).toNNReal) ∂(ν : Measure ℂ)) := by
     apply measurable_pi_iff.mpr
     intro i
     have hpv := measurable_subtype_coe.comp hp
-    have hh : Measurable (fun q : (Ω × Ω) × ℂ => f q.2 * Real.exp
-      (γ * copiedCircle Xc z q.1 (p q.2) - γ^2/2 *
-        ((p q.2).val.2+2*Real.log ‖z+(p q.2).val.1‖).toNNReal)) := by
-      unfold copiedCircle localPinCoefficient
-      have h1 (x : ℂ) (r : ℝ) : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.1 x r) := hm.comp
-        (measurable_fst.fst.prodMk (measurable_const (a := (x,r))))
-      have h2 (x : ℂ) (r : ℝ) : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.2 x r) := hm.comp
-        (measurable_fst.snd.prodMk (measurable_const (a := (x,r))))
-      have hloc : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.1
-        (z+(p q.2).val.1) (p q.2).val.2) := hm.comp (measurable_fst.fst.prodMk
-        (((measurable_const (a := z)).add (hpv.fst.comp measurable_snd)).prodMk (hpv.snd.comp measurable_snd)))
-      fun_prop
-    exact hh.stronglyMeasurable.integral_prod_right.measurable
-  have h := congrArg (fun μ : Measure (Fin 1 → ℝ) => μ.map (fun v => v 0)) hlaw
+    exact (show Measurable (fun q : (Ω × Ω) × ℂ => f q.2 * Real.exp (γ * copiedCircle Xc z q.1 (p q.2) - γ^2/2 * ((p q.2).val.2+2*Real.log ‖z+(p q.2).val.1‖).toNNReal)) by unfold copiedCircle localPinCoefficient; fun_prop).stronglyMeasurable.integral_prod_right.measurable
+  have h := congrArg (fun μ : Measure (Fin 1 → ℝ) => μ.map (fun v => v 0)) (offCenter_wick_copy_finite_law P X Xc hX hc hm z hz ν p hp γ (fun _ : Fin 1 => (f : ℂ → ℝ)) (fun _ => f.continuous.measurable) (fun _ => hf0) (fun _ => (f.integrable (μ := (ν : Measure ℂ)))))
   rw [Measure.map_map (measurable_pi_apply 0) hsrc,
     Measure.map_map (measurable_pi_apply 0) htar] at h
   have hv (x : ℂ) (hx : x ∈ K) : 0 ≤ r+2*Real.log ‖z+x‖ := by
@@ -103,8 +79,7 @@ theorem copied_cutoff_volume_law
     have hx1 : ‖x‖ ≤ 1 := by linarith [Real.exp_pos (-r)]
     have hh := norm_sub_norm_le z (z+x)
     simp only [sub_add_cancel_left, norm_neg] at hh
-    have hn1 : 1 ≤ ‖z+x‖ := by linarith
-    have hl := Real.log_nonneg hn1
+    have hl := Real.log_nonneg (by linarith)
     linarith
   have hzero (x : ℂ) (hx : x ∉ K) : f x = 0 := by
     by_contra hn

@@ -49,7 +49,7 @@ open scoped NNReal ENNReal Topology BigOperators
 namespace DOZZ.Proofs
 
 /-- Tail projection of a finite real tuple is measurable. -/
-theorem measurable_fin_tail_real (n : ℕ) : Measurable (Fin.tail : (Fin (n+1) → ℝ) → Fin n → ℝ) := by
+theorem measurable_fin_tail_real n : Measurable (Fin.tail : (Fin (n+1) → ℝ) → Fin n → ℝ) := by
   apply measurable_pi_iff.mpr
   intro i
   exact measurable_pi_apply i.succ
@@ -62,7 +62,7 @@ noncomputable def brownianFirstHitFinitePDF (a : ℝ) :
       brownianFirstHitFinitePDF a n (Fin.tail ds) (xs 0) (Fin.tail xs) (t-(ds 0 : ℝ))
 
 /-- Joint measurability of the finite killed/hitting density in the starting level, finite states and absolute lifetime. -/
-theorem measurable_brownianFirstHitFinitePDF (a : ℝ) (n : ℕ) (ds : Fin n → ℝ≥0) :
+theorem measurable_brownianFirstHitFinitePDF a n (ds : Fin n → ℝ≥0) :
     Measurable (fun z : ℝ × ((Fin n → ℝ) × ℝ) => brownianFirstHitFinitePDF a n ds z.1 z.2.1 z.2.2) := by
   induction n with
   | zero =>
@@ -71,33 +71,30 @@ theorem measurable_brownianFirstHitFinitePDF (a : ℝ) (n : ℕ) (ds : Fin n →
   | succ n ih =>
       have hmX : Measurable (fun z : ℝ × ((Fin (n+1) → ℝ) × ℝ) => z.2.1 0) :=
         (measurable_pi_apply 0).comp (measurable_fst.comp measurable_snd)
-      have hmTail : Measurable (fun z : ℝ × ((Fin (n+1) → ℝ) × ℝ) => Fin.tail z.2.1) :=
-        (measurable_fin_tail_real n).comp (measurable_fst.comp measurable_snd)
       exact (((measurable_brownianKilledTransitionPDF (-a) (ds 0)).comp (measurable_fst.prodMk hmX)).ennreal_ofReal).mul
-        ((ih (Fin.tail ds)).comp (hmX.prodMk (hmTail.prodMk ((measurable_snd.comp measurable_snd).sub measurable_const))))
+        ((ih (Fin.tail ds)).comp (hmX.prodMk (((measurable_fin_tail_real n).comp (measurable_fst.comp measurable_snd)).prodMk ((measurable_snd.comp measurable_snd).sub measurable_const))))
 
 /-- Nonnegative integration over a finite real tuple separates its first coordinate and tail. -/
-theorem brownian_lintegral_fin_cons (n : ℕ) (F : (Fin (n+1) → ℝ) → ℝ≥0∞) (hF : Measurable F) :
+theorem brownian_lintegral_fin_cons n (F : (Fin (n+1) → ℝ) → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ xs, F xs) = ∫⁻ y, ∫⁻ ys : Fin n → ℝ, F (Fin.cons y ys) := by
-  have hp := (volume_preserving_piFinSuccAbove (fun _ : Fin (n+1) => ℝ) 0).symm
-  have he := hp.lintegral_comp hF
+  have he := ((volume_preserving_piFinSuccAbove (fun _ : Fin (n+1) => ℝ) 0).symm).lintegral_comp hF
   simp only [MeasurableEquiv.piFinSuccAbove_symm_apply,Fin.insertNthEquiv,Fin.insertNth_zero,Fin.zero_succAbove,
     cast_eq] at he
   rw [← he]
   exact lintegral_prod _ (hF.comp (measurable_fin_cons_real n)).aemeasurable
 
 /-- Real Lebesgue translation changes a remaining lifetime into its absolute clock without a Jacobian factor. -/
-theorem brownian_lintegral_lifetime_translate (s : ℝ) (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
+theorem brownian_lintegral_lifetime_translate s (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ u, F (s+u)) = ∫⁻ t, F t :=
   (measurePreserving_add_left (volume : Measure ℝ) s).lintegral_comp hF
 
 /-- With a fixed starting level, the explicit finite density remains jointly measurable in all states and the absolute lifetime. -/
-theorem measurable_brownianFirstHitFinitePDF_fixed (a c : ℝ) (n : ℕ) (ds : Fin n → ℝ≥0) :
+theorem measurable_brownianFirstHitFinitePDF_fixed a c n (ds : Fin n → ℝ≥0) :
     Measurable (fun z : (Fin n → ℝ) × ℝ => brownianFirstHitFinitePDF a n ds c z.1 z.2) :=
   (measurable_brownianFirstHitFinitePDF a n ds).comp (measurable_const.prodMk measurable_id)
 
 /-- The complete iterated killed/hitting integral equals integration against its explicit finite product density in absolute lifetime coordinates. -/
-theorem brownianFirstHitFiniteIntegral_eq_density (a c : ℝ) (n : ℕ) (ds : Fin n → ℝ≥0)
+theorem brownianFirstHitFiniteIntegral_eq_density a c n (ds : Fin n → ℝ≥0)
     (H : ((Fin n → ℝ) × ℝ) → ℝ≥0∞) (hH : Measurable H) :
     brownianFirstHitFiniteIntegral a n ds c H =
       ∫⁻ z : (Fin n → ℝ) × ℝ, brownianFirstHitFinitePDF a n ds c z.1 z.2*H z ∂volume.prod volume := by
@@ -121,11 +118,10 @@ theorem brownianFirstHitFiniteIntegral_eq_density (a c : ℝ) (n : ℕ) (ds : Fi
         brownianFirstHitFinitePDF a n (Fin.tail ds) y z.1 z.2
       let J : ℝ → ((Fin n → ℝ) × ℝ) → ℝ≥0∞ := fun y z =>
         H (Fin.cons y z.1,(ds 0 : ℝ)+z.2)
-      have hK (y : ℝ) : Measurable (K y) := measurable_brownianFirstHitFinitePDF_fixed a y n (Fin.tail ds)
-      have hJ (y : ℝ) : Measurable (J y) :=
+      have hK (y : ℝ) := measurable_brownianFirstHitFinitePDF_fixed a y n (Fin.tail ds)
+      have hJ y : Measurable (J y) :=
         ((hH.comp (measurable_brownianFirstHit_prepend n (ds 0))).comp (measurable_const.prodMk measurable_id))
-      have hD : Measurable (fun z : (Fin (n+1) → ℝ) × ℝ => brownianFirstHitFinitePDF a (n+1) ds c z.1 z.2*H z) :=
-        (measurable_brownianFirstHitFinitePDF_fixed a c (n+1) ds).mul hH
+      have hD := (measurable_brownianFirstHitFinitePDF_fixed a c (n+1) ds).mul hH
       calc
         _ = ∫⁻ y, W y*∫⁻ z : (Fin n → ℝ) × ℝ, K y z*J y z ∂volume.prod volume := by
           change (∫⁻ y, W y*brownianFirstHitFiniteIntegral a n (Fin.tail ds) y (J y)) = _
@@ -136,7 +132,7 @@ theorem brownianFirstHitFiniteIntegral_eq_density (a c : ℝ) (n : ℕ) (ds : Fi
           apply lintegral_congr
           intro y
           rw [← lintegral_const_mul (W y) (show Measurable (fun z => K y z*J y z) from (hK y).mul (hJ y))]
-          have hm : Measurable (fun z : (Fin n → ℝ) × ℝ => W y*(K y z*J y z)) :=
+          have hm : Measurable (fun z => W y*(K y z*J y z)) :=
             measurable_const.mul ((hK y).mul (hJ y))
           rw [lintegral_prod _ hm.aemeasurable]
           apply lintegral_congr
@@ -150,18 +146,16 @@ theorem brownianFirstHitFiniteIntegral_eq_density (a c : ℝ) (n : ℕ) (ds : Fi
           intro y
           apply lintegral_congr
           intro ys
-          have hm : Measurable (fun t : ℝ => W y*K y (ys,t-(ds 0 : ℝ))*H (Fin.cons y ys,t)) :=
+          have hm : Measurable (fun t => W y*K y (ys,t-(ds 0 : ℝ))*H (Fin.cons y ys,t)) :=
             (measurable_const.mul ((hK y).comp (measurable_const.prodMk (measurable_id.sub measurable_const)))).mul
               (hH.comp (measurable_const.prodMk measurable_id))
-          have he := brownian_lintegral_lifetime_translate (ds 0 : ℝ)
-            (fun t => W y*K y (ys,t-(ds 0 : ℝ))*H (Fin.cons y ys,t)) hm
           calc
             _ = ∫⁻ u, W y*K y (ys,((ds 0 : ℝ)+u)-(ds 0 : ℝ))*H (Fin.cons y ys,(ds 0 : ℝ)+u) := by
               apply lintegral_congr
               intro u
               have hc : ((ds 0 : ℝ)+u)-(ds 0 : ℝ) = u := by ring_nf
               rw [hc]
-            _ = _ := he
+            _ = _ := (brownian_lintegral_lifetime_translate (ds 0 : ℝ) (fun t => W y*K y (ys,t-(ds 0 : ℝ))*H (Fin.cons y ys,t)) hm)
         _ = ∫⁻ xs : Fin (n+1) → ℝ, ∫⁻ t, brownianFirstHitFinitePDF a (n+1) ds c xs t*H (xs,t) := by
           have ht : Measurable (fun xs : Fin (n+1) → ℝ => ∫⁻ t,
               brownianFirstHitFinitePDF a (n+1) ds c xs t*H (xs,t)) :=
@@ -173,7 +167,7 @@ theorem brownianFirstHitFiniteIntegral_eq_density (a c : ℝ) (n : ℕ) (ds : Fi
 /-- The actual complete finite observation/lifetime measure has the explicit killed/hitting product density. -/
 theorem brownianPath_firstHit_finite_density_map (P : Measure BrownianPath)
     (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
-    (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) :
+    n (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) :
     (P.restrict {p : BrownianPath | brownianFirstHitHorizon n ds < firstPassageTime (driftedBrownianPath a p) c}).map
       (fun p => (brownianFirstHitSamples n ds a c p,(firstPassageTime (driftedBrownianPath a p) c : ℝ))) =
       (volume.prod volume).withDensity (fun z : (Fin n → ℝ) × ℝ => brownianFirstHitFinitePDF a n ds c z.1 z.2) := by
@@ -191,7 +185,7 @@ def brownianFirstHitElapsed : (n : ℕ) → (Fin n → ℝ≥0) → Fin n → �
   | _n+1, ts => Fin.cons (ts 0) (fun i => ts i.succ-ts i.castSucc)
 
 /-- Successive cumulative observation times differ by their elapsed time. -/
-theorem brownianFirstHitTimes_step (n : ℕ) (ds : Fin (n+1) → ℝ≥0) (i : Fin n) :
+theorem brownianFirstHitTimes_step n (ds : Fin (n+1) → ℝ≥0) (i : Fin n) :
     brownianFirstHitTimes (n+1) ds i.succ = brownianFirstHitTimes (n+1) ds i.castSucc+ds i.succ := by
   induction n with
   | zero => exact Fin.elim0 i
@@ -206,7 +200,7 @@ theorem brownianFirstHitTimes_step (n : ℕ) (ds : Fin (n+1) → ℝ≥0) (i : F
         exact (add_assoc _ _ _).symm
 
 /-- Reconstructing cumulative times from the elapsed times recovers every monotone absolute time tuple. -/
-theorem brownianFirstHitTimes_elapsed (n : ℕ) (ts : Fin (n+1) → ℝ≥0) (hts : Monotone ts) :
+theorem brownianFirstHitTimes_elapsed n (ts : Fin (n+1) → ℝ≥0) (hts : Monotone ts) :
     brownianFirstHitTimes (n+1) (brownianFirstHitElapsed (n+1) ts) = ts := by
   funext i
   refine Fin.induction ?_ (fun j hj => ?_) i
@@ -216,8 +210,8 @@ theorem brownianFirstHitTimes_elapsed (n : ℕ) (ts : Fin (n+1) → ℝ≥0) (ht
     exact add_tsub_cancel_of_le (hts (Fin.castSucc_le_succ j))
 
 /-- Strictly ordered positive absolute times have strictly positive elapsed times. -/
-theorem brownianFirstHitElapsed_pos (n : ℕ) (ts : Fin n → ℝ≥0)
-    (ht0 : ∀ i, 0 < ts i) (hts : StrictMono ts) (i : Fin n) :
+theorem brownianFirstHitElapsed_pos n (ts : Fin n → ℝ≥0)
+    (ht0 : ∀ i, 0 < ts i) (hts : StrictMono ts) i :
     0 < brownianFirstHitElapsed n ts i := by
   cases n with
   | zero => exact Fin.elim0 i
@@ -227,14 +221,14 @@ theorem brownianFirstHitElapsed_pos (n : ℕ) (ts : Fin n → ℝ≥0)
       exact tsub_pos_iff_lt.mpr (hts (show j.castSucc < j.succ from Fin.castSucc_lt_succ))
 
 /-- The final horizon reconstructed from ordered absolute times is their last observation time. -/
-theorem brownianFirstHitHorizon_elapsed (n : ℕ) (ts : Fin (n+1) → ℝ≥0) (hts : Monotone ts) :
+theorem brownianFirstHitHorizon_elapsed n (ts : Fin (n+1) → ℝ≥0) (hts : Monotone ts) :
     brownianFirstHitHorizon (n+1) (brownianFirstHitElapsed (n+1) ts) = ts (Fin.last n) := by
   rw [← brownianFirstHitTimes_last,brownianFirstHitTimes_elapsed n ts hts]
 
 /-- The actual finite ordered observation/lifetime law has the explicit density at those exact absolute times. -/
 theorem brownianPath_firstHit_ordered_density_map (P : Measure BrownianPath)
     (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
-    (n : ℕ) (ts : Fin (n+1) → ℝ≥0) (ht0 : ∀ i, 0 < ts i) (hts : StrictMono ts) :
+    n (ts : Fin (n+1) → ℝ≥0) (ht0 : ∀ i, 0 < ts i) (hts : StrictMono ts) :
     (P.restrict {p : BrownianPath | ts (Fin.last n) < firstPassageTime (driftedBrownianPath a p) c}).map
       (fun p => ((fun i => c-(p (ts i)+a*(ts i : ℝ))),
         (firstPassageTime (driftedBrownianPath a p) c : ℝ))) =
@@ -243,16 +237,12 @@ theorem brownianPath_firstHit_ordered_density_map (P : Measure BrownianPath)
   have he := brownianPath_firstHit_finite_density_map P hB a c ha hc (n+1)
     (brownianFirstHitElapsed (n+1) ts) (brownianFirstHitElapsed_pos (n+1) ts ht0 hts)
   rw [brownianFirstHitHorizon_elapsed n ts hts.monotone] at he
-  have hs : brownianFirstHitSamples (n+1) (brownianFirstHitElapsed (n+1) ts) a c =
-      (fun p : BrownianPath => fun i => c-(p (ts i)+a*(ts i : ℝ))) := by
-    funext p i
-    simp only [brownianFirstHitSamples,brownianFirstHitTimes_elapsed n ts hts.monotone]
-  rw [hs] at he
+  rw [(show brownianFirstHitSamples (n+1) (brownianFirstHitElapsed (n+1) ts) a c = (fun p => fun i => c-(p (ts i)+a*(ts i : ℝ))) by funext p i; simp only [brownianFirstHitSamples,brownianFirstHitTimes_elapsed n ts hts.monotone])] at he
   exact he
 
 /-- The explicit finite marked density vanishes when any observed remaining level is nonpositive. -/
-theorem brownianFirstHitFinitePDF_of_state_le_zero (a c : ℝ) (n : ℕ) (ds : Fin n → ℝ≥0)
-    (xs : Fin n → ℝ) (t : ℝ) (i : Fin n) (hi : xs i ≤ 0) :
+theorem brownianFirstHitFinitePDF_of_state_le_zero a c n (ds : Fin n → ℝ≥0)
+    (xs : Fin n → ℝ) t i (hi : xs i ≤ 0) :
     brownianFirstHitFinitePDF a n ds c xs t = 0 := by
   classical
   induction n generalizing c t with
@@ -267,47 +257,31 @@ theorem brownianFirstHitFinitePDF_of_state_le_zero (a c : ℝ) (n : ℕ) (ds : F
         rw [brownianFirstHitFinitePDF,ih (xs 0) (Fin.tail ds) (Fin.tail xs) _ j hj,mul_zero]
 
 /-- All finite density values are finite ENNReal values, directly from their scalar formulas. -/
-theorem brownianFirstHitFinitePDF_ne_top (a c : ℝ) (n : ℕ) (ds : Fin n → ℝ≥0)
-    (xs : Fin n → ℝ) (t : ℝ) : brownianFirstHitFinitePDF a n ds c xs t ≠ ⊤ := by
+theorem brownianFirstHitFinitePDF_ne_top a c n (ds : Fin n → ℝ≥0)
+    (xs : Fin n → ℝ) t : brownianFirstHitFinitePDF a n ds c xs t ≠ ⊤ := by
   induction n generalizing c t with
   | zero => exact ENNReal.ofReal_ne_top
   | succ n ih =>
       exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top (ih (xs 0) (Fin.tail ds) (Fin.tail xs) _)
 
 /-- The exact scalar killed kernel is jointly measurable in elapsed time and both states. -/
-theorem measurable_brownianKilledTransitionPDF_time (a : ℝ) :
+theorem measurable_brownianKilledTransitionPDF_time a :
     Measurable (fun z : ℝ≥0 × (ℝ × ℝ) => brownianKilledTransitionPDF a z.1 z.2.1 z.2.2) := by
   classical
   have hx : Measurable (fun z : ℝ≥0 × (ℝ × ℝ) => z.2.1) := measurable_fst.comp measurable_snd
   have hy : Measurable (fun z : ℝ≥0 × (ℝ × ℝ) => z.2.2) := measurable_snd.comp measurable_snd
-  have h1 : Measurable (fun z : ℝ≥0 × (ℝ × ℝ) => gaussianPDFReal 0 z.1 (z.2.2-z.2.1)) :=
-    measurable_uncurry_gaussianPDFReal.comp (measurable_const.prodMk (measurable_fst.prodMk (hy.sub hx)))
-  have h2 : Measurable (fun z : ℝ≥0 × (ℝ × ℝ) => gaussianPDFReal 0 z.1 (z.2.2+z.2.1)) :=
-    measurable_uncurry_gaussianPDFReal.comp (measurable_const.prodMk (measurable_fst.prodMk (hy.add hx)))
-  have he : Measurable (fun z : ℝ≥0 × (ℝ × ℝ) => Real.exp (a*(z.2.2-z.2.1)-a^2*(z.1 : ℝ)/2)) := by
-    fun_prop
   exact Measurable.ite ((measurableSet_lt measurable_const hx).inter (measurableSet_lt measurable_const hy))
-    (he.mul (h1.sub h2)) measurable_const
+    ((show Measurable (fun z : ℝ≥0 × (ℝ × ℝ) => Real.exp (a*(z.2.2-z.2.1)-a^2*(z.1 : ℝ)/2)) by fun_prop).mul ((measurable_uncurry_gaussianPDFReal.comp (measurable_const.prodMk (measurable_fst.prodMk (hy.sub hx)))).sub (measurable_uncurry_gaussianPDFReal.comp (measurable_const.prodMk (measurable_fst.prodMk (hy.add hx)))))) measurable_const
 
 /-- The Gaussian heat density is jointly continuous in positive elapsed time and state. -/
-theorem continuousAt_brownian_heatPDF (T : ℝ≥0) (x : ℝ) (hT : T ≠ 0) :
+theorem continuousAt_brownian_heatPDF (T : ℝ≥0) x (hT : T ≠ 0) :
     ContinuousAt (fun z : ℝ≥0 × ℝ => gaussianPDFReal 0 z.1 z.2) (T,x) := by
-  have hpos : 0 < (T : ℝ) := NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr hT)
   unfold gaussianPDFReal
   fun_prop (disch := positivity)
 
 /-- The first-hit density is jointly continuous in remaining level and positive remaining time. -/
-theorem continuousAt_brownianFirstHitDensity_joint (a c t : ℝ) (ht : 0 < t) :
+theorem continuousAt_brownianFirstHitDensity_joint a c t (ht : 0 < t) :
     ContinuousAt (fun z : ℝ × ℝ => brownianFirstHitDensity a z.1 z.2) (c,t) := by
-  have hc : ContinuousAt (fun z : ℝ × ℝ => z.1/z.2*(Real.sqrt (2*Real.pi*z.2))⁻¹*
-      Real.exp (-z.1^2/(2*z.2)+a*z.1-a^2*z.2/2)) (c,t) := by
-    fun_prop (disch := positivity)
-  have he : (fun z : ℝ × ℝ => brownianFirstHitDensity a z.1 z.2) =ᶠ[𝓝 (c,t)]
-      (fun z : ℝ × ℝ => z.1/z.2*(Real.sqrt (2*Real.pi*z.2))⁻¹*
-        Real.exp (-z.1^2/(2*z.2)+a*z.1-a^2*z.2/2)) := by
-    filter_upwards [(continuous_snd.tendsto (c,t)).eventually (Ioi_mem_nhds ht)] with z hz
-    change 0 < z.2 at hz
-    simp only [brownianFirstHitDensity,ite_eq_left hz]
-  exact hc.congr_of_eventuallyEq he
+  exact (show ContinuousAt (fun z : ℝ × ℝ => z.1/z.2*(Real.sqrt (2*Real.pi*z.2))⁻¹* Real.exp (-z.1^2/(2*z.2)+a*z.1-a^2*z.2/2)) (c,t) by fun_prop (disch := positivity)).congr_of_eventuallyEq (by filter_upwards [(continuous_snd.tendsto (c,t)).eventually (Ioi_mem_nhds ht)] with z hz; change 0 < z.2 at hz; simp only [brownianFirstHitDensity,ite_eq_left hz])
 
 end DOZZ.Proofs

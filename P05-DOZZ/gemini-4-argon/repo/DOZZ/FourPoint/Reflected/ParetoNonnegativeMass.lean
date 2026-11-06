@@ -16,7 +16,7 @@ namespace DOZZ.Proofs
 theorem reflected_pareto_product_increment_error_nonneg
     {Ω Λ : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ]
     (P : Measure Ω) (R : Measure Λ) [IsProbabilityMeasure P] [IsProbabilityMeasure R]
-    (p a : ℝ) (hp : 0 < p) (ha : 0 < a) (ha1 : a < 1)
+    p a (hp : 0 < p) (ha : 0 < a) (ha1 : a < 1)
     (A b : Ω → ℝ) (S : Λ → ℝ)
     (hA : ∀ᵐ ω ∂P, 0 < A ω) (hb : ∀ᵐ ω ∂P, 0 < b ω) (hS : ∀ᵐ v ∂R, 0 ≤ S v)
     (hF0 : Integrable (fun ω => (A ω)^(-p)*(b ω/A ω)^a) P)
@@ -30,7 +30,6 @@ theorem reflected_pareto_product_increment_error_nonneg
       (a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫ ω, (A ω)^(-p)*(b ω/A ω)^a ∂P)*(∫ v, (S v)^a ∂R)| ≤
       (a*p/(1-a))*(∫ ω, (A ω)^(-p)*(b ω/A ω) ∂P)*(∫ v, S v ∂R) := by
-  have hE := reflected_pareto_increment_aestronglyMeasurable P R p a ha A b S hAm hbm hSm
   let E := fun v : Ω × Λ => ∫ w,
     ((A v.1+b v.1*S v.2*w)^(-p)-(A v.1)^(-p)) ∂paretoMeasure 1 a
   let F0 := fun ω => (A ω)^(-p)*(b ω/A ω)^a
@@ -48,35 +47,22 @@ theorem reflected_pareto_product_increment_error_nonneg
     by_cases hzero : S v.2 = 0
     · simp only [E,L,hzero,mul_zero,add_zero,sub_self,integral_zero,
         Real.zero_rpow ha.ne',zero_mul,norm_zero,le_refl]
-    have hSpos : 0 < S v.2 := lt_of_le_of_ne hSv (Ne.symm hzero)
     have hi := reflected_pareto_increment_error p a (A v.1) (b v.1*S v.2)
-      hp ha ha1 hAv (mul_pos hbv hSpos)
-    have hr : (b v.1*S v.2)/A v.1 = (b v.1/A v.1)*S v.2 := by ring
-    rw [hr, Real.mul_rpow (div_pos hbv hAv).le hSv] at hi
+      hp ha ha1 hAv (mul_pos hbv (lt_of_le_of_ne hSv (Ne.symm hzero)))
+    rw [(show (b v.1*S v.2)/A v.1 = (b v.1/A v.1)*S v.2 by ring), Real.mul_rpow (div_pos hbv hAv).le hSv] at hi
     change |E v-L v| ≤ _
     change |E v-c*(A v.1)^(-p)*((b v.1/A v.1)^a*(S v.2)^a)| ≤
       C*(A v.1)^(-p)*((b v.1/A v.1)*S v.2) at hi
-    have heL : c*(A v.1)^(-p)*((b v.1/A v.1)^a*(S v.2)^a) = L v := by
-      dsimp only [L,F0]
-      ring
-    have heD : C*(A v.1)^(-p)*((b v.1/A v.1)*S v.2) = C*(F1 v.1*S v.2) := by
-      dsimp only [F1]
-      ring
-    rw [heL,heD] at hi
+    rw [(show c*(A v.1)^(-p)*((b v.1/A v.1)^a*(S v.2)^a) = L v by dsimp only [L,F0]; ring),(show C*(A v.1)^(-p)*((b v.1/A v.1)*S v.2) = C*(F1 v.1*S v.2) by dsimp only [F1]; ring)] at hi
     exact hi
-  have hD : Integrable (fun v => E v-L v) (P.prod R) :=
-    hdom.mono' (hE.sub hL.aestronglyMeasurable) hbound
   have hEi : Integrable E (P.prod R) := by
-    have hh := hD.add hL
+    have hh := (hdom.mono' ((reflected_pareto_increment_aestronglyMeasurable P R p a ha A b S hAm hbm hSm).sub hL.aestronglyMeasurable) hbound).add hL
     change Integrable (fun v => (E v-L v)+L v) (P.prod R) at hh
     simpa only [sub_add_cancel] using hh
   refine ⟨hEi, ?_⟩
   have hi := norm_integral_le_of_norm_le hdom hbound
   rw [integral_sub hEi hL] at hi
-  have hlead : (∫ v, L v ∂P.prod R) = c*(∫ ω, F0 ω ∂P)*(∫ v, (S v)^a ∂R) := by
-    rw [show L = (fun v : Ω × Λ => c*(F0 v.1*(S v.2)^a)) from rfl,
-      integral_const_mul, integral_prod_mul F0 (fun v => (S v)^a), mul_assoc]
-  rw [hlead, integral_const_mul, integral_prod_mul] at hi
+  rw [(show (∫ v, L v ∂P.prod R) = c*(∫ ω, F0 ω ∂P)*(∫ v, (S v)^a ∂R) by rw [show L = (fun v : Ω × Λ => c*(F0 v.1*(S v.2)^a)) from rfl, integral_const_mul, integral_prod_mul F0 (fun v => (S v)^a), mul_assoc]), integral_const_mul, integral_prod_mul] at hi
   simpa only [Real.norm_eq_abs,E,F0,F1,c,C,mul_assoc] using hi
 
 end DOZZ.Proofs

@@ -21,58 +21,6 @@ open scoped ENNReal Topology
 namespace GaussianFields
 
 
-/-- For fixed `x`, the α-regularized ABK self-convolution kernel paired against a test function is
-the corresponding Riesz-kernel pairing multiplied by `M_α^{-1}`. -/
-theorem integral_abkPowerDecomposition_kernel_eq_riesz_pairing {d : Nat}
-    (hd : 0 < d) (ζ : ABKCutoff d) (φ : MeanZeroTestFunction d)
-    (α : ℝ) (x : Vec d) :
-    (∫ z : Vec d,
-        φ z *
-          (∫ r in Set.Ioi (0 : ℝ),
-            r ^ (-(1 + (d : ℝ) + α)) *
-              abkScaledCutoffSelfConvolution ζ r (x - z)
-            ∂(volume : Measure ℝ))
-        ∂(volume : Measure (Vec d))) =
-      abkMAlphaInv ζ α *
-        (∫ z : Vec d,
-          φ z * (euclideanNorm (x - z)) ^ (-α)
-          ∂(volume : Measure (Vec d))) := by
-  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
-  have hzne : ∀ᵐ z : Vec d ∂(volume : Measure (Vec d)), z ≠ x := by
-    have hsingle : {x}ᶜ ∈ ae (volume : Measure (Vec d)) :=
-      compl_mem_ae_iff.mpr (measure_singleton (μ := (volume : Measure (Vec d))) x)
-    filter_upwards [hsingle] with z hz
-    simpa using hz
-  calc
-    (∫ z : Vec d,
-        φ z *
-          (∫ r in Set.Ioi (0 : ℝ),
-            r ^ (-(1 + (d : ℝ) + α)) *
-              abkScaledCutoffSelfConvolution ζ r (x - z)
-            ∂(volume : Measure ℝ))
-        ∂(volume : Measure (Vec d)))
-        = ∫ z : Vec d,
-            φ z * ((euclideanNorm (x - z)) ^ (-α) * abkMAlphaInv ζ α)
-            ∂(volume : Measure (Vec d)) := by
-          refine integral_congr_ae ?_
-          filter_upwards [hzne] with z hz_ne
-          have hdiff : x - z ≠ 0 := by
-            intro hzero
-            exact hz_ne (Eq.symm (sub_eq_zero.mp hzero))
-          rw [abk_powerDecomposition_integral_eq hd ζ α
-            (abkEuclideanNorm_pos_of_ne_zero hdiff)]
-    _ = ∫ z : Vec d,
-          abkMAlphaInv ζ α *
-            (φ z * (euclideanNorm (x - z)) ^ (-α))
-          ∂(volume : Measure (Vec d)) := by
-          refine integral_congr_ae ?_
-          filter_upwards with z
-          ring
-    _ = abkMAlphaInv ζ α *
-        (∫ z : Vec d,
-          φ z * (euclideanNorm (x - z)) ^ (-α)
-          ∂(volume : Measure (Vec d))) := by
-          rw [integral_const_mul]
 
 /-- Test-function pairing form of the α-regularized ABK power decomposition. -/
 theorem integral_integral_abkPowerDecomposition_kernel_eq_riesz_pairing {d : Nat}
@@ -95,6 +43,35 @@ theorem integral_integral_abkPowerDecomposition_kernel_eq_riesz_pairing {d : Nat
               φ z * (euclideanNorm (x - z)) ^ (-α)
               ∂(volume : Measure (Vec d)))
           ∂(volume : Measure (Vec d))) := by
+  have integral_abkPowerDecomposition_kernel_eq_riesz_pairing x : (∫ z : Vec d, φ z * (∫ r in Set.Ioi (0 : ℝ), r ^ (-(1 + (d : ℝ) + α)) * abkScaledCutoffSelfConvolution ζ r (x - z) ∂(volume : Measure ℝ)) ∂(volume : Measure (Vec d))) = abkMAlphaInv ζ α * (∫ z : Vec d, φ z * (euclideanNorm (x - z)) ^ (-α) ∂(volume : Measure (Vec d))) := by
+    have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+    calc
+      (∫ z : Vec d,
+          φ z *
+            (∫ r in Set.Ioi (0 : ℝ),
+              r ^ (-(1 + (d : ℝ) + α)) *
+                abkScaledCutoffSelfConvolution ζ r (x - z)
+              ∂(volume : Measure ℝ))
+          ∂(volume : Measure (Vec d)))
+          = ∫ z : Vec d,
+              φ z * ((euclideanNorm (x - z)) ^ (-α) * abkMAlphaInv ζ α)
+              ∂(volume : Measure (Vec d)) := by
+            refine integral_congr_ae ?_
+            filter_upwards [(show ∀ᵐ z : Vec d ∂(volume : Measure (Vec d)), z ≠ x by filter_upwards [(compl_mem_ae_iff.mpr (measure_singleton (μ := (volume : Measure (Vec d))) x))] with z hz; simpa using hz)] with z hz_ne
+            rw [abk_powerDecomposition_integral_eq hd ζ α
+              (abkEuclideanNorm_pos_of_ne_zero (by intro hzero; exact hz_ne (Eq.symm (sub_eq_zero.mp hzero))))]
+      _ = ∫ z : Vec d,
+            abkMAlphaInv ζ α *
+              (φ z * (euclideanNorm (x - z)) ^ (-α))
+            ∂(volume : Measure (Vec d)) := by
+            refine integral_congr_ae ?_
+            filter_upwards with z
+            ring
+      _ = abkMAlphaInv ζ α *
+          (∫ z : Vec d,
+            φ z * (euclideanNorm (x - z)) ^ (-α)
+            ∂(volume : Measure (Vec d))) := by
+            rw [integral_const_mul]
   calc
     (∫ x : Vec d,
         ψ x *
@@ -115,7 +92,7 @@ theorem integral_integral_abkPowerDecomposition_kernel_eq_riesz_pairing {d : Nat
             ∂(volume : Measure (Vec d)) := by
           refine integral_congr_ae ?_
           filter_upwards with x
-          rw [integral_abkPowerDecomposition_kernel_eq_riesz_pairing hd ζ φ α x]
+          rw [integral_abkPowerDecomposition_kernel_eq_riesz_pairing x]
     _ = ∫ x : Vec d,
           abkMAlphaInv ζ α *
             (ψ x *

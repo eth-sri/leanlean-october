@@ -22,11 +22,9 @@ theorem vertex_variance_expansion
       ∑ i, ∑ j, a i * a j * gaussianCovariance P (L i) (L j) := by
   classical
   let Z (i : I) (ω : Ω) := a i * L i ω
-  have hm (i : I) : MemLp (Z i) 2 P := (hL i).const_mul (a i)
-  have hs : MemLp (fun ω => ∑ i, Z i ω) 2 P :=
-    memLp_finsetSum Finset.univ (fun i _ => hm i)
+  have hm (i : I) := (hL i).const_mul (a i)
   change gaussianCovariance P (fun ω => ∑ i, Z i ω) (fun ω => ∑ i, Z i ω) = _
-  rw [gaussianCovariance_finset_sum_right P _ Z Finset.univ hs (fun i _ => hm i)]
+  rw [gaussianCovariance_finset_sum_right P _ Z Finset.univ (memLp_finsetSum Finset.univ (fun i _ => hm i)) (fun i _ => hm i)]
   apply Finset.sum_congr rfl
   intro i _
   rw [DOZZ.Assembly.gaussianCovariance_comm,

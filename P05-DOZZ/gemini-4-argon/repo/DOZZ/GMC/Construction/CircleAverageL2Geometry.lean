@@ -25,7 +25,7 @@ namespace DOZZ.Proofs
 /-- The coordinatewise L² circle limits have their deterministic double-circle covariance. -/
 theorem exists_equatorGFF_circle_L2_geometry
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) :
+    (X : Ω → Distr) hX :
     ∃ f : (ℂ × ℝ) → ℕ → TestFn, ∃ W : (ℂ × ℝ) → Lp ℝ 2 P,
     ∃ Y : (ℂ × ℝ) → Ω → ℝ,
       (∀ p, Tendsto (fun n => circleEnergyGap p.1 p.2 (f p n)) atTop (𝓝 0)) ∧
@@ -54,23 +54,6 @@ theorem exists_equatorGFF_circle_L2_geometry
       tendsto_gffCov_test_circleCross_of_gap p.1 p.2 q.1 q.2 (f p) (f q)
         (hgap p) (hgap q) (by
           simpa only [circleSelfEnergy] using (hcross q q.1 q.2))
-    have hpair : Tendsto (fun n => gffCov (f p n) (f q n)) atTop
-        (𝓝 (∫ z, ∫ w, gffKernel z w ∂circleMeasure p.1 p.2
-          ∂circleMeasure q.1 q.2)) := by
-      have h := henergyErr.add (hcross q p.1 p.2)
-      have he n : (gffCov (f p n) (f q n) - circleCross p.1 p.2 (f q n)) +
-          circleCross p.1 p.2 (f q n) = gffCov (f p n) (f q n) := by ring
-      have h' := h.congr' (Filter.Eventually.of_forall he)
-      simpa only [zero_add] using h'
-    have hcovlim := tendsto_covariance_of_eLpNorm_sub
-      (fun n => equatorGFF_test_memLp X hX (f p n))
-      (fun n => equatorGFF_test_memLp X hX (f q n))
-      (hY p).2.2.1 (hY q).2.2.1 (hY p).2.2.2.2 (hY q).2.2.2.2
-    have hcovseq : Tendsto
-        (fun n => covariance (fun ω => X ω (f p n)) (fun ω => X ω (f q n)) P)
-        atTop (𝓝 (covariance (Y p) (Y q) P)) := hcovlim
-    have hcovseq' := hcovseq.congr' (Filter.Eventually.of_forall fun n =>
-      equatorGFF_test_covariance X hX (f p n) (f q n))
-    exact tendsto_nhds_unique hcovseq' hpair
+    exact tendsto_nhds_unique ((tendsto_covariance_of_eLpNorm_sub (fun n => equatorGFF_test_memLp X hX (f p n)) (fun n => equatorGFF_test_memLp X hX (f q n)) (hY p).2.2.1 (hY q).2.2.1 (hY p).2.2.2.2 (hY q).2.2.2.2).congr' (Filter.Eventually.of_forall fun n => equatorGFF_test_covariance X hX (f p n) (f q n))) (by simpa only [zero_add] using ((henergyErr.add (hcross q p.1 p.2)).congr' (Filter.Eventually.of_forall (fun n => by ring))))
 
 end DOZZ.Proofs

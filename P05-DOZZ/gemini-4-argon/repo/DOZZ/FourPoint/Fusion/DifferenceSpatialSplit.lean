@@ -24,24 +24,10 @@ theorem fusion_difference_spatial_expectation_split {Ω : Type*} [MeasurableSpac
       (∫ ω, I ω * (∫ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ, f x ∂M ω) ∂P) := by
   intro I f
   let B := Metric.ball (0 : ℂ) (1 / 2)
-  have hf : Measurable f := by
-    have hm : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
-    simpa only [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
   obtain ⟨hk, hβ, hβ2, _, _⟩ := fusion_difference_parameters γ α₁ hγ hlo hα₁
-  have hfi := fusion_difference_local_integrable γ α₁ α₂ α₃ hk hβ hβ2 z hz
   have hl := (fusion_segment_rooting P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ t ht
-    (-p - 1) (by linarith) z hz hz4 (B.indicator f) (hf.indicator Metric.isOpen_ball.measurableSet) hfi).1
+    (-p - 1) (by linarith) z hz hz4 (B.indicator f) ((show Measurable f by simpa only [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp (measurable_const.prodMk measurable_id : Measurable (fun x : ℂ => (z, x)))).indicator Metric.isOpen_ball.measurableSet) (fusion_difference_local_integrable γ α₁ α₂ α₃ hk hβ hβ2 z hz)).1
   simp only [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] at hl
   obtain ⟨C, _, hb⟩ := fusion_difference_exterior_expectation_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
-  have hr := (hb t ht z hz hz4).1
-  have he : (fun ω => I ω * (∫ x, f x ∂M ω)) =ᵐ[P]
-      (fun ω => I ω * (∫ x in B, f x ∂M ω) + I ω * (∫ x in Bᶜ, f x ∂M ω)) := by
-    filter_upwards [fusion_gammaHalfMass_pos_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ z hz hz4,
-      fusion_zeroMass_pos_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃,
-      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z,
-      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
-      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hbω haω hωz hω0 hω1
-    have hfull := (fusion_difference_mass_integral γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1 hbω.2 haω.2).1
-    rw [← integral_add_compl (show MeasurableSet B from Metric.isOpen_ball.measurableSet) hfull, mul_add]
-  rw [integral_congr_ae he, integral_add hl hr]
+  rw [integral_congr_ae (show (fun ω => I ω * (∫ x, f x ∂M ω)) =ᵐ[P] (fun ω => I ω * (∫ x in B, f x ∂M ω) + I ω * (∫ x in Bᶜ, f x ∂M ω)) by filter_upwards [fusion_gammaHalfMass_pos_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ z hz hz4, fusion_zeroMass_pos_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃, gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z, gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0, gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hbω haω hωz hω0 hω1; rw [← integral_add_compl (show MeasurableSet B from Metric.isOpen_ball.measurableSet) ((fusion_difference_mass_integral γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1 hbω.2 haω.2).1), mul_add]), integral_add hl ((hb t ht z hz hz4).1)]
 end DOZZ.Proofs

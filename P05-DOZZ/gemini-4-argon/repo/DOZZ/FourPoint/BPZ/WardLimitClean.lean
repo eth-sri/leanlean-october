@@ -31,14 +31,14 @@ namespace BPZLimitData
 
 /-- The difference-quotient kernel is bounded by `Lip(φ)|v|/2` times the weights. -/
 theorem abs_diffKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {Lφ : ℝ≥0} (hLφ : LipschitzWith Lφ φ)
-    (v x y : ℂ) :
+    v x y :
     |(φ x - φ y) * (k₂ x * k₂ y) * bpzKern v (x - y) / 2| ≤
       (Lφ : ℝ) * ‖v‖ / 2 * (k₂ x * k₂ y) := by
-  have hk : 0 ≤ k₂ x * k₂ y := mul_nonneg (hd.k₂_nonneg x) (hd.k₂_nonneg y)
+  have hk := mul_nonneg (hd.k₂_nonneg x) (hd.k₂_nonneg y)
   rcases eq_or_ne x y with rfl | hxy
   · simp only [sub_self, zero_mul, zero_div, abs_zero]; positivity
-  have hxy' : 0 < ‖x - y‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxy)
-  have hlip : |φ x - φ y| ≤ Lφ * ‖x - y‖ := by
+  have := norm_pos_iff.mpr (sub_ne_zero.mpr hxy)
+  have : |φ x - φ y| ≤ Lφ * ‖x - y‖ := by
     rw [← Real.dist_eq, ← dist_eq_norm]; exact hLφ.dist_le_mul x y
   rw [abs_div, abs_two, abs_mul, abs_mul, abs_of_nonneg hk]
   calc |φ x - φ y| * (k₂ x * k₂ y) * |bpzKern v (x - y)| / 2
@@ -48,7 +48,7 @@ theorem abs_diffKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {Lφ : ℝ≥
     _ = (Lφ : ℝ) * ‖v‖ / 2 * (k₂ x * k₂ y) := by field_simp
 
 /-- Pathwise: the two antisymmetrized limit terms combine into the difference-quotient kernel. -/
-theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m : Measure ℂ}
+theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) v {m : Measure ℂ}
     [IsFiniteMeasure m] (hk₂ : Integrable k₂ m) :
     (∫ x, ∫ y, bpzSymKer φ ρ k₂ (bpzKern v) x y ∂m ∂m) +
         ∫ x, bpzMixTest φ ρ k₂ k₂ (bpzKern v) m x ∂m =
@@ -56,7 +56,7 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
   obtain ⟨K, hK0, hK⟩ := hd.cutWeight_bound
   obtain ⟨B, hB0, hB⟩ := hd.phi_bdd
   obtain ⟨Lφ, hLφ⟩ := hd.φ_lip
-  have hδ := hd.δ_pos
+  have := hd.δ_pos
   have hk₂m := hd.k₂_meas
   have hφm := hd.phi_cont.measurable
   have hKm := measurable_bpzKern v
@@ -65,16 +65,6 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
   set S : ℂ → ℂ → ℝ := bpzSymKer φ ρ k₂ (bpzKern v) with hSdef
   set F : ℂ → ℂ → ℝ := fun x y => (1 - ρ y) * k₂ y * (φ x * k₂ x * bpzKern v (x - y)) with hF
   set G : ℂ → ℂ → ℝ := fun x y => (φ x - φ y) * (k₂ x * k₂ y) * bpzKern v (x - y) / 2 with hG
-  have hSm : Measurable (Function.uncurry S) :=
-    measurable_bpzSymKer hφm hd.ρ_meas hk₂m hKm
-  have hFm : Measurable (Function.uncurry F) :=
-    (((measurable_const.sub (hd.ρ_meas.comp measurable_snd)).mul (hk₂m.comp measurable_snd)).mul
-      (((hφm.comp measurable_fst).mul (hk₂m.comp measurable_fst)).mul
-        (hKm.comp (measurable_fst.sub measurable_snd))))
-  have hGm : Measurable (Function.uncurry G) :=
-    (((((hφm.comp measurable_fst).sub (hφm.comp measurable_snd)).mul
-      ((hk₂m.comp measurable_fst).mul (hk₂m.comp measurable_snd))).mul
-        (hKm.comp (measurable_fst.sub measurable_snd))).div_const _)
   have hprod : Integrable (fun p : ℂ × ℂ => k₂ p.1 * k₂ p.2) (m.prod m) := hk₂.mul_prod hk₂
   -- integrability on the product
   have hSi : Integrable (fun p : ℂ × ℂ => S p.1 p.2) (m.prod m) := by
@@ -84,22 +74,18 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
         (div_le_div_of_nonneg_right (by linarith [norm_nonneg v]) (norm_nonneg w))) x y).trans ?_
       exact mul_le_mul_of_nonneg_left (mul_le_mul (hρk x) (hρk y)
         (mul_nonneg (hd.ρ_nonneg y) (abs_nonneg _)) hK0) (by positivity)
-    exact bpz_integrable_prod_of_bdd hSm hb
+    exact bpz_integrable_prod_of_bdd (measurable_bpzSymKer hφm hd.ρ_meas hk₂m hKm) hb
   have hFi : Integrable (fun p : ℂ × ℂ => F p.1 p.2) (m.prod m) := by
     refine ((integrable_const (1 : ℝ)).mul_prod hk₂).const_mul (1 * ‖v‖ / (2 * δ) * B * K)
-      |>.mono' hFm.aestronglyMeasurable (Eventually.of_forall fun p => ?_)
+      |>.mono' (((measurable_const.sub (hd.ρ_meas.comp measurable_snd)).mul (hk₂m.comp measurable_snd)).mul (((hφm.comp measurable_fst).mul (hk₂m.comp measurable_fst)).mul (hKm.comp (measurable_fst.sub measurable_snd)))).aestronglyMeasurable (Eventually.of_forall fun p => ?_)
     rw [Real.norm_eq_abs]
-    have h := hd.abs_mixIntegrand_le hB zero_le_one v (L := bpzKern v) (k := k₂)
-      (fun w => by rw [one_mul]; exact abs_bpzKern_le v w) hρk p.1 p.2
-    refine h.trans ?_
-    have hw : (1 - ρ p.2) * k₂ p.2 ≤ k₂ p.2 := by
-      have := hd.ρ_nonneg p.2; have := hd.k₂_nonneg p.2; nlinarith
+    refine (hd.abs_mixIntegrand_le hB zero_le_one v (L := bpzKern v) (k := k₂) (fun w => by rw [one_mul]; exact abs_bpzKern_le v w) hρk p.1 p.2).trans ?_
     calc 1 * ‖v‖ / (2 * δ) * B * K * ((1 - ρ p.2) * k₂ p.2)
         ≤ 1 * ‖v‖ / (2 * δ) * B * K * k₂ p.2 :=
-          mul_le_mul_of_nonneg_left hw (by positivity)
+          mul_le_mul_of_nonneg_left (by have := hd.ρ_nonneg p.2; have := hd.k₂_nonneg p.2; nlinarith) (by positivity)
       _ = 1 * ‖v‖ / (2 * δ) * B * K * (1 * k₂ p.2) := by ring
   have hGi : Integrable (fun p : ℂ × ℂ => G p.1 p.2) (m.prod m) :=
-    (hprod.const_mul ((Lφ : ℝ) * ‖v‖ / 2)).mono' hGm.aestronglyMeasurable
+    (hprod.const_mul ((Lφ : ℝ) * ‖v‖ / 2)).mono' (((((hφm.comp measurable_fst).sub (hφm.comp measurable_snd)).mul ((hk₂m.comp measurable_fst).mul (hk₂m.comp measurable_snd))).mul (hKm.comp (measurable_fst.sub measurable_snd))).div_const _).aestronglyMeasurable
       (Eventually.of_forall fun p => by
         rw [Real.norm_eq_abs]; exact hd.abs_diffKer_le hLφ v p.1 p.2)
   -- the mixed term as a double integral and its antisymmetrization
@@ -118,7 +104,7 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
 
 /-- **The Ward identity in the limit, without the auxiliary cutoff.** -/
 theorem ward_limit_clean (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
-    (hp : BPZWardProb P X γ M Xc ρ k₂ D) (v : ℂ) :
+    (hp : BPZWardProb P X γ M Xc ρ k₂ D) v :
     ∫ ω, (∫ x, k₂ x ∂M ω) ^ (-q) *
         ∫ x, fderiv ℝ (fun x => φ x * kt x) x v * normPlus x ^ (4 + γ ^ 2 * q) ∂M ω ∂P =
       ∫ ω, q * ((∫ x, k₂ x ∂M ω) ^ (-q - 1) *

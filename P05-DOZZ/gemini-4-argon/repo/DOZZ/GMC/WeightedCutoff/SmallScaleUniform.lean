@@ -16,10 +16,10 @@ namespace DOZZ.Proofs
 order one endpoint. -/
 theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (Γ : Set ℝ) (hΓ : IsCompact Γ) (hΓpos : ∀ γ ∈ Γ, 0 < γ)
-    (q : ℝ) (hq : 1 < q) (hcrit : ∀ γ ∈ Γ, q < 4 / γ ^ 2) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
+    Γ (hΓ : IsCompact Γ) (hΓpos : ∀ γ ∈ Γ, 0 < γ)
+    q (hq : 1 < q) (hcrit : ∀ γ ∈ Γ, q < 4 / γ ^ 2) :
     ∃ A : ℝ≥0∞, A < ⊤ ∧ ∀ γ ∈ Γ, ∀ p : ℝ, 1 ≤ p → p ≤ q →
       ∀ (z : ℂ) (R δ : ℝ), 0 < R → R ≤ 1 / 8 → 0 < δ → δ ≤ R →
       ‖z‖ + 2 * R ≤ 1 →
@@ -32,7 +32,7 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
     P X hX Xc hXc Γ hΓ hΓpos q hq hcrit
   let R₀ : ℝ := 1 / 8
   let Csmall : ℝ≥0∞ := 1 + Cref
-  let A : ℝ≥0∞ := Csmall
+  let A := Csmall
   have hCsmall : Csmall < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hCref⟩
   have hCsmallOne : 1 ≤ Csmall := le_add_of_nonneg_right (by positivity)
   have hCsmallA : Csmall ≤ A := le_rfl
@@ -48,9 +48,8 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
     rw [Real.exp_neg, Real.exp_log (by positivity)]
     field_simp
   have hratio : δ * (R₀ / R) ≤ R₀ := by
-    have hmul := mul_le_mul_of_nonneg_right hδR (div_nonneg (le_of_lt hR₀pos) hR.le)
     calc
-      δ * (R₀ / R) ≤ R * (R₀ / R) := hmul
+      δ * (R₀ / R) ≤ R * (R₀ / R) := (mul_le_mul_of_nonneg_right hδR (div_nonneg (le_of_lt hR₀pos) hR.le))
       _ = R₀ := by field_simp [ne_of_gt hR]
   have hbase : R₀ + Real.exp (-t) * (R₀ / R) ≤ 1 := by
     rw [hδeq]
@@ -64,23 +63,17 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
   have htbase : 0 ≤ t + Real.log (R / R₀) := by
     have hquot : 1 ≤ R / (δ * R₀) := by
       apply (le_div_iff₀ (mul_pos hδ hR₀pos)).2
-      have hδR₀ : δ * R₀ ≤ R * R₀ :=
-        mul_le_mul_of_nonneg_right hδR (le_of_lt hR₀pos)
+      have hδR₀ := mul_le_mul_of_nonneg_right hδR (le_of_lt hR₀pos)
       have hR₀le : R * R₀ ≤ R := by nlinarith [hRsmall]
       simpa using hδR₀.trans hR₀le
-    have hlog : 0 ≤ Real.log (R / (δ * R₀)) := Real.log_nonneg hquot
     have hlogmul : Real.log (R / (δ * R₀)) = t + Real.log (R / R₀) := by
-      have hmul : (1 / δ) * (R / R₀) = R / (δ * R₀) := by
-        field_simp [ne_of_gt hδ, ne_of_gt hR₀pos]
-      rw [← hmul, Real.log_mul (by positivity) (by positivity)]
+      rw [← (show (1 / δ) * (R / R₀) = R / (δ * R₀) by field_simp [ne_of_gt hδ, ne_of_gt hR₀pos]), Real.log_mul (by positivity) (by positivity)]
     rw [← hlogmul]
-    exact hlog
+    exact (Real.log_nonneg hquot)
   let massQ : Ω → ℝ≥0∞ := fun ω =>
     regularizedGMC P Xc γ (t + Real.log (R / R₀)) ω (Metric.ball 0 R₀)
-  have hmassQ : AEMeasurable massQ P := by
-    exact regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
+  have hmassQ : AEMeasurable massQ P := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
       (t + Real.log (R / R₀)) (Metric.ball 0 R₀) Metric.isOpen_ball.measurableSet
-  have hqbound := hRef γ hγ (t + Real.log (R / R₀)) htbase
   have hRefp : (∫⁻ ω, ENNReal.rpow (massQ ω) p ∂P) ≤ Csmall := by
     calc
       _ ≤ P Set.univ + ∫⁻ ω, ENNReal.rpow (massQ ω) q ∂P :=
@@ -95,10 +88,7 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
         rw [hX.1.measure_univ]
       _ ≤ Csmall := by
         dsimp [Csmall]
-        simpa [add_comm, gmcMassMoment, R₀] using add_le_add_left hqbound 1
-  have hRefpMass : gmcMassMoment P
-      (regularizedGMC P Xc γ (t + Real.log (R / R₀))) (Metric.ball 0 R₀) p ≤ Csmall := by
-    simpa [gmcMassMoment, massQ] using hRefp
+        simpa [add_comm, gmcMassMoment, R₀] using add_le_add_left (hRef γ hγ (t + Real.log (R / R₀)) htbase) 1
   have hscale := regularizedGMC_local_ball_moment_scale P X hX γ Xc hXc z
     (s := R) (R := R₀) (t := t) hR hRsmall hR₀pos hR₀one
     (by linarith [hchart]) hbase htarget p
@@ -115,11 +105,7 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
             ((R / R₀) ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) := by ac_rfl
       _ ≤ Csmall * ENNReal.ofReal
           ((R / R₀) ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) :=
-        mul_le_mul' hRefpMass le_rfl
-  have hmomentTop := hmoment.trans_lt (ENNReal.mul_lt_top hCsmall ENNReal.ofReal_lt_top)
-  have hrootConst := ennreal_root_mul_ofReal_rpow_eq Csmall hCsmall
-    (R / R₀) (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) p
-    (div_pos hR hR₀pos) hp0
+        mul_le_mul' (by simpa [gmcMassMoment, massQ] using hRefp) le_rfl
   have hCroot : Csmall ^ (1 / p) ≤ Csmall := by
     calc
       Csmall ^ (1 / p) ≤ Csmall ^ (1 : ℝ) :=
@@ -135,10 +121,10 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
           (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2))) ^ (1 / p) :=
         ENNReal.rpow_le_rpow hmoment (one_div_nonneg.mpr hp0.le)
       _ = Csmall ^ (1 / p) * ENNReal.ofReal ((R / R₀) ^ beta) := by
-        rw [hrootConst]
+        rw [(ennreal_root_mul_ofReal_rpow_eq Csmall hCsmall (R / R₀) (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) p (div_pos hR hR₀pos) hp0)]
       _ ≤ Csmall * ENNReal.ofReal ((R / R₀) ^ beta) :=
         mul_le_mul_of_nonneg_right hCroot (by positivity)
-  refine ⟨?_, hmomentTop⟩
+  refine ⟨?_, (hmoment.trans_lt (ENNReal.mul_lt_top hCsmall ENNReal.ofReal_lt_top))⟩
   calc
     _ ≤ Csmall * ENNReal.ofReal ((R / R₀) ^ beta) := hroot
     _ ≤ A * ENNReal.ofReal ((R / R₀) ^ beta) :=

@@ -22,12 +22,8 @@ theorem residue_integral_lower_power_le
     Integrable (fun ω => Y ω ^ q) P ∧
       (∫ ω, Y ω ^ q ∂P) ≤ 1 + ∫ ω, Y ω ^ r ∂P := by
   have hb : Integrable (fun ω => 1 + Y ω ^ r) P := (integrable_const _).add hr
-  have hdom : ∀ᵐ ω ∂P, ‖Y ω ^ q‖ ≤ 1 + Y ω ^ r := by
-    filter_upwards [hpos] with ω hω
-    rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hω _)]
-    exact residue_rpow_le_one_add (Y ω) q r hω hq hqr
   have hi : Integrable (fun ω => Y ω ^ q) P :=
-    hb.mono' (hY.pow_const q).aestronglyMeasurable hdom
+    hb.mono' (hY.pow_const q).aestronglyMeasurable (by filter_upwards [hpos] with ω hω; rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hω _)]; exact residue_rpow_le_one_add (Y ω) q r hω hq hqr)
   refine ⟨hi, ?_⟩
   calc (∫ ω, Y ω ^ q ∂P) ≤ ∫ ω, 1 + Y ω ^ r ∂P :=
       integral_mono_ae hi hb (hpos.mono fun ω hω => residue_rpow_le_one_add (Y ω) q r hω hq hqr)
@@ -37,7 +33,7 @@ theorem residue_integral_lower_power_le
 residue. The adjustable deterministic comparison replaces an independence assumption. -/
 theorem residue_addition_preserves_limit
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (A R : ℝ → Ω → ℝ) (q : ℝ → ℝ) (β d₀ C L : ℝ)
+    (A R : ℝ → Ω → ℝ) (q : ℝ → ℝ) β d₀ C L
     (hd₀ : 0 < d₀)
     (hA : ∀ d, 0 < d → d < d₀ → AEMeasurable (A d) P)
     (hR : ∀ d, 0 < d → d < d₀ → AEMeasurable (R d) P)
@@ -54,7 +50,7 @@ theorem residue_addition_preserves_limit
       (Filter.eventually_of_mem (Iio_mem_nhds hd₀) (fun _ h => h)).filter_mono nhdsWithin_le_nhds]
       with d hd hd'
     exact ⟨hd, hd'⟩
-  have hbounds (d : ℝ) (hd : 0 < d) (hd' : d < d₀) (δ : ℝ) (hδ : 0 < δ) :
+  have hbounds d (hd : 0 < d) (hd' : d < d₀) (δ : ℝ) (hδ : 0 < δ) :
       d * (∫ ω, A d ω ^ q d ∂P) ≤ d * ∫ ω, (A d ω + R d ω) ^ q d ∂P ∧
       d * (∫ ω, (A d ω + R d ω) ^ q d ∂P) ≤
         (1 + δ) ^ β * (d * ∫ ω, A d ω ^ q d ∂P) + (1 + 1 / δ) ^ β * (d * C) := by
@@ -76,15 +72,8 @@ theorem residue_addition_preserves_limit
       filter_upwards [hAnn d hd hd', hRnn d hd hd'] with ω ha hr
       exact Real.rpow_le_rpow ha (le_add_of_nonneg_right hr) (hq d hd hd').1
     · have hu := integral_mono_ae hsumi hUi hdom
-      have hue : (∫ ω, U ω ∂P) =
-          (1 + δ) ^ β * (∫ ω, A d ω ^ q d ∂P) +
-            (1 + 1 / δ) ^ β * (∫ ω, R d ω ^ q d ∂P) := by
-        rw [integral_add ((hiA d hd hd').const_mul _) ((hiR d hd hd').const_mul _),
-          integral_const_mul, integral_const_mul]
-      rw [hue] at hu
-      have hc := mul_le_mul_of_nonneg_left (hC d hd hd') (by positivity : 0 ≤ (1 + 1 / δ) ^ β)
-      have hh := mul_le_mul_of_nonneg_left (hu.trans (add_le_add le_rfl hc)) hd.le
-      convert hh using 1
+      rw [(show (∫ ω, U ω ∂P) = (1 + δ) ^ β * (∫ ω, A d ω ^ q d ∂P) + (1 + 1 / δ) ^ β * (∫ ω, R d ω ^ q d ∂P) by rw [integral_add ((hiA d hd hd').const_mul _) ((hiR d hd hd').const_mul _), integral_const_mul, integral_const_mul])] at hu
+      convert (mul_le_mul_of_nonneg_left (hu.trans (add_le_add le_rfl (mul_le_mul_of_nonneg_left (hC d hd hd') (by positivity : 0 ≤ (1 + 1 / δ) ^ β)))) hd.le) using 1
       ring
   apply tendsto_order.2
   constructor
@@ -93,19 +82,17 @@ theorem residue_addition_preserves_limit
     exact hh.trans_le (hbounds d hd.1 hd.2 1 zero_lt_one).1
   · intro b hb
     have hf : Tendsto (fun δ : ℝ => (1 + δ) ^ β * L) (𝓝[>] 0) (𝓝 L) := by
-      have hh : ContinuousAt (fun δ : ℝ => (1 + δ) ^ β * L) 0 :=
+      have hh : ContinuousAt (fun δ => (1 + δ) ^ β * L) 0 :=
         ((continuousAt_const.add continuousAt_id).rpow_const (Or.inl (by norm_num))).mul continuousAt_const
       simpa only [add_zero, Real.one_rpow, one_mul] using hh.tendsto.mono_left nhdsWithin_le_nhds
     obtain ⟨δ, hδb, hδ⟩ := ((hf.eventually (Iio_mem_nhds hb)).and self_mem_nhdsWithin).exists
     have he : Tendsto (fun d : ℝ => d) (𝓝[>] 0) (𝓝 0) := tendsto_id.mono_left nhdsWithin_le_nhds
-    have hu := (hlim.const_mul ((1 + δ) ^ β)).add
-      ((he.mul_const C).const_mul ((1 + 1 / δ) ^ β))
     have hub : ∀ᶠ d : ℝ in 𝓝[>] 0,
         (1 + δ) ^ β * (d * ∫ ω, A d ω ^ q d ∂P) + (1 + 1 / δ) ^ β * (d * C) < b := by
-      have hu' : Tendsto (fun d : ℝ =>
+      have hu' : Tendsto (fun d =>
           (1 + δ) ^ β * (d * ∫ ω, A d ω ^ q d ∂P) + (1 + 1 / δ) ^ β * (d * C))
           (𝓝[>] 0) (𝓝 ((1 + δ) ^ β * L)) := by
-        simpa only [zero_mul, mul_zero, add_zero] using hu
+        simpa only [zero_mul, mul_zero, add_zero] using ((hlim.const_mul ((1 + δ) ^ β)).add ((he.mul_const C).const_mul ((1 + 1 / δ) ^ β)))
       exact hu'.eventually (Iio_mem_nhds hδb)
     filter_upwards [hnear, hub] with d hd hh
     exact (hbounds d hd.1 hd.2 δ hδ).2.trans_lt hh

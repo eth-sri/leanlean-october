@@ -43,7 +43,7 @@ of `DOZZ.gammaHalf_full_unreflected_formula` at the given field, chaos, coupling
 constant; the diagonal classification `DOZZ.degenerateFourPoint_diagonal_classification` is used
 directly. -/
 theorem structureConstant_first_shift_strip_of_unreflected
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
     (M : Ω → Measure ℂ) (γ μ η : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hη : 0 < η ∧ Q γ - 2 * η > γ)
@@ -74,13 +74,13 @@ theorem structureConstant_first_shift_strip_of_unreflected
   obtain ⟨V₃, hV₃, hV₃mem, f₃, hf₃, hf₃eq⟩ :=
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   obtain ⟨hη0, hηQ⟩ := hη
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
+  have : Q γ = 2 / γ + γ / 2 := rfl
+  have : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     linarith only [mul_lt_mul'' hγ2 hγ2 hγ.le hγ.le]
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
-  have hμc : (μ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hμ.ne'
-  have hπc : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_pos.ne'
+  have hγc := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hμc := Complex.ofReal_ne_zero.mpr hμ.ne'
+  have hπc := Complex.ofReal_ne_zero.mpr Real.pi_pos.ne'
   -- the continued slice and its window of holomorphy
   set ℓ : ℂ → Fin 3 → ℂ := tripleFirst (α₂ : ℂ) (α₃ : ℂ) with hℓ
   set g : ℂ → ℂ := fun z => structureConstantH f₃ γ μ (ℓ z) with hg
@@ -91,15 +91,12 @@ theorem structureConstant_first_shift_strip_of_unreflected
       (differentiable_pi.mp (differentiable_tripleFirst _ _) 1).continuous).add
       (differentiable_pi.mp (differentiable_tripleFirst _ _) 2).continuous).sub
       continuous_const).div_const _
-  have hWo : IsOpen W := (hV₃.preimage (differentiable_tripleFirst _ _).continuous).inter
-    (isOpen_lt continuous_const (Complex.continuous_re.comp hsc))
   have hgd : DifferentiableOn ℂ g W := fun z hz =>
     (analyticAt_structureConstantH_comp' hV₃ hf₃ hμ (differentiable_tripleFirst _ _) hz.1
       (analyticAt_Gamma_of_ne fun n hn => by
         have h : 0 < (sExpC γ (ℓ z)).re := hz.2
         rw [hn] at h
         simp at h
-        have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
         linarith)).differentiableAt.differentiableWithinAt
   have hES : ∀ x : ℝ, 2 * η < x → x < Q γ → ExtendedSeiberg3 γ x α₂ α₃ := fun x h1 h2 =>
     extendedSeiberg3_slice hγ hγ2 ⟨hη0, hηQ⟩ hα₂ hα₃ (by
@@ -134,11 +131,8 @@ theorem structureConstant_first_shift_strip_of_unreflected
         rw [← hn]
         push_cast
         ring) (fun n => by
-        have h := ofReal_ne_neg_nat_of_mem (r := 1 + (γ / 2) ^ 2)
-          (Or.inr (Or.inr ⟨by linarith only [sq_pos_of_pos hγ],
-            by linarith only [mul_lt_mul'' hγ2 hγ2 hγ.le hγ.le]⟩)) n
         intro hn
-        apply h
+        apply (ofReal_ne_neg_nat_of_mem (r := 1 + (γ / 2) ^ 2) (Or.inr (Or.inr ⟨by linarith only [sq_pos_of_pos hγ], by linarith only [mul_lt_mul'' hγ2 hγ2 hγ.le hγ.le]⟩)) n)
         rw [← hn]
         push_cast
         ring))
@@ -147,27 +141,17 @@ theorem structureConstant_first_shift_strip_of_unreflected
   obtain ⟨u, ⟨hu1, hu2⟩, hu3⟩ : ∃ u : ℝ, (AnalyticAt ℂ A (((x₀ + u : ℝ) : ℂ) - γ / 2) ∧
       A (((x₀ + u : ℝ) : ℂ) - γ / 2) ≠ 0) ∧ u ∈ Ioo (-((Q γ - γ - 2 * η) / 4))
         ((Q γ - γ - 2 * η) / 4) := by
-    have e1 := eventually_ofReal_affine (x₀ := x₀ - γ / 2) (s := 1) one_ne_zero
-      (hAm (((x₀ - γ / 2 : ℝ) : ℂ)) (mem_univ _)).eventually_analyticAt
-    have e2 := eventually_ofReal_affine (p := fun z => A z ≠ 0) (x₀ := x₀ - γ / 2) (s := 1)
-      one_ne_zero ((eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hAne) _)
     have hI : Ioo (-((Q γ - γ - 2 * η) / 4)) ((Q γ - γ - 2 * η) / 4) ∈ 𝓝 (0 : ℝ) :=
       Ioo_mem_nhds (by linarith) (by linarith)
-    obtain ⟨u, ⟨h1, h2⟩, h3⟩ := ((e1.and e2).and (nhdsWithin_le_nhds hI)).exists
-    have e : (((x₀ - γ / 2 + u * 1 : ℝ) : ℂ)) = ((x₀ + u : ℝ) : ℂ) - γ / 2 := by
-      push_cast; ring
-    rw [e] at h1 h2
+    obtain ⟨u, ⟨h1, h2⟩, h3⟩ := (((eventually_ofReal_affine (x₀ := x₀ - γ / 2) (s := 1) one_ne_zero (hAm (((x₀ - γ / 2 : ℝ) : ℂ)) (mem_univ _)).eventually_analyticAt).and (eventually_ofReal_affine (p := fun z => A z ≠ 0) (x₀ := x₀ - γ / 2) (s := 1) one_ne_zero ((eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hAne) _))).and (nhdsWithin_le_nhds hI)).exists
+    rw [(show (((x₀ - γ / 2 + u * 1 : ℝ) : ℂ)) = ((x₀ + u : ℝ) : ℂ) - γ / 2 by push_cast; ring)] at h1 h2
     exact ⟨u, ⟨h1, h2⟩, h3⟩
   set x₁ : ℝ := x₀ + u with hx₁
-  have hx₁a : γ + 2 * η < x₁ := by rw [hx₁, hx₀]; linarith [hu3.1]
-  have hx₁b : x₁ < Q γ := by rw [hx₁, hx₀]; linarith [hu3.2]
+  have : γ + 2 * η < x₁ := by rw [hx₁, hx₀]; linarith [hu3.1]
+  have : x₁ < Q γ := by rw [hx₁, hx₀]; linarith [hu3.2]
   have hloc : ∀ᶠ x : ℝ in 𝓝 x₁, AnalyticAt ℂ A ((x : ℂ) - γ / 2) ∧ A ((x : ℂ) - γ / 2) ≠ 0 := by
     have hc : ContinuousAt (fun x : ℝ => (x : ℂ) - γ / 2) x₁ := by fun_prop
-    have h1 := eventually_analyticAt_comp (φ := fun x : ℝ => (x : ℂ) - γ / 2) hc hu1
-    have h2 : ∀ᶠ x : ℝ in 𝓝 x₁, A ((x : ℂ) - γ / 2) ≠ 0 :=
-      (ContinuousAt.comp (f := fun x : ℝ => (x : ℂ) - γ / 2) (x := x₁) hu1.continuousAt
-        hc).eventually_ne hu2
-    exact h1.and h2
+    exact (eventually_analyticAt_comp (φ := fun x : ℝ => (x : ℂ) - γ / 2) hc hu1).and ((ContinuousAt.comp (f := fun x : ℝ => (x : ℂ) - γ / 2) (x := x₁) hu1.continuousAt hc).eventually_ne hu2)
   obtain ⟨δ, hδ, hδball⟩ := Metric.eventually_nhds_iff.mp hloc
   set d₁ : ℝ := max (x₁ - δ / 2) (γ + 2 * η) with hd₁
   set d₂ : ℝ := min (x₁ + δ / 2) (Q γ) with hd₂
@@ -189,8 +173,7 @@ theorem structureConstant_first_shift_strip_of_unreflected
       exact mul_ne_zero (neg_ne_zero.mpr (mul_ne_zero hπc hμc)) (inv_ne_zero hu2)
   have hrel : ∀ x : ℝ, d₁ < x → x < d₂ → g ((x : ℂ) - (γ : ℂ)) = m x * g x := by
     intro x h1 h2
-    have hxa : γ + 2 * η < x := lt_of_le_of_lt (le_max_right _ _) h1
-    have hxb : x < Q γ := lt_of_lt_of_le h2 (min_le_right _ _)
+    have : γ + 2 * η < x := lt_of_le_of_lt (le_max_right _ _) h1
     have hxδ : dist x x₁ < δ := by
       rw [Real.dist_eq, abs_lt]
       constructor
@@ -206,7 +189,7 @@ theorem structureConstant_first_shift_strip_of_unreflected
     rw [show x - γ / 2 + γ / 2 = x by ring, show x - γ / 2 - γ / 2 = x - γ by ring,
       show ((x - γ / 2 : ℝ) : ℂ) = (x : ℂ) - γ / 2 by push_cast; ring] at hseed
     rw [show (x : ℂ) - (γ : ℂ) = ((x - γ : ℝ) : ℂ) by push_cast; ring,
-      hgv (x - γ) (by linarith) (by linarith), hgv x (by linarith) hxb]
+      hgv (x - γ) (by linarith) (by linarith), hgv x (by linarith) (lt_of_lt_of_le h2 (min_le_right _ _))]
     simp only [hm]
     change A ((x : ℂ) - γ / 2) ≠ 0 at hAx
     rw [hseed]
@@ -215,28 +198,22 @@ theorem structureConstant_first_shift_strip_of_unreflected
     field_simp
   -- the strip continuation
   obtain ⟨h, hh, G, hGm, hGg, hGrel⟩ := exists_meromorphicOn_strip_of_shift (c := γ) (a := 2 * η)
-    (b := Q γ) hγ (by linarith) hd₁a hd₁₂ hd₂b hWo hWab hgd hmm hm0 hrel
+    (b := Q γ) hγ (by linarith) hd₁a hd₁₂ hd₂b ((hV₃.preimage (differentiable_tripleFirst _ _).continuous).inter (isOpen_lt continuous_const (Complex.continuous_re.comp hsc))) hWab hgd hmm hm0 hrel
   -- the first shift near every point of the strip
   have hrel' : ∀ w ∈ horizontalStrip h, ∀ᶠ z in 𝓝[≠] w,
       G (z + ((γ / 2 : ℝ) : ℂ)) = (fun z => -(1 / (Real.pi * μ)) * A z) z *
         G (z + ((-(γ / 2) : ℝ) : ℂ)) := by
     intro w hw
-    have hw' : w + ((γ / 2 : ℝ) : ℂ) ∈ horizontalStrip h := add_ofReal_mem_horizontalStrip_glue hw _
-    have h1 := ShiftGluing.eventually_comp_add (z := w) ((γ / 2 : ℝ) : ℂ) (hGrel _ hw')
-    have h2 := (eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hAne) w
-    filter_upwards [h1, h2] with z hz hAz
-    have e1 : z + ((γ / 2 : ℝ) : ℂ) - (γ : ℂ) = z + ((-(γ / 2) : ℝ) : ℂ) := by push_cast; ring
-    have e2 : z + ((γ / 2 : ℝ) : ℂ) - (γ : ℂ) / 2 = z := by push_cast; ring
-    rw [e1] at hz
-    simp only [hm, e2] at hz
+    filter_upwards [(ShiftGluing.eventually_comp_add (z := w) ((γ / 2 : ℝ) : ℂ) (hGrel _ (add_ofReal_mem_horizontalStrip_glue hw _))), ((eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hAne) w)] with z hz hAz
+    rw [(show z + ((γ / 2 : ℝ) : ℂ) - (γ : ℂ) = z + ((-(γ / 2) : ℝ) : ℂ) by push_cast; ring)] at hz
+    simp only [hm, (show z + ((γ / 2 : ℝ) : ℂ) - (γ : ℂ) / 2 = z by push_cast; ring)] at hz
     rw [hz]
     field_simp
-  have hcut := cutoff_relation_codiscrete hh (γ / 2) (-(γ / 2)) hrel'
   refine ⟨h / 2, half_pos hh, cutoffStrip (h / 2) G,
     meromorphicOn_cutoffStrip hGm (half_le_self hh.le), fun α h1 h2 => ?_, ?_⟩
   · rw [cutoffStrip_of_lt (by simp only [Complex.ofReal_im, abs_zero]; positivity), hGg α h1 h2]
     exact hgv α h1 h2
-  · filter_upwards [hcut] with z hz
+  · filter_upwards [(cutoff_relation_codiscrete hh (γ / 2) (-(γ / 2)) hrel')] with z hz
     simp only [hA] at hz
     convert hz using 2 <;> push_cast <;> ring_nf
 

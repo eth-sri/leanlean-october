@@ -21,11 +21,11 @@ namespace DOZZ.Proofs
 linear combination of circle averages. -/
 theorem equatorGFF_GMC_vertex_tilt
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    {N : ℕ} (α : Fin N → ℝ) (z : Fin N → ℂ) (r : ℝ)
+    Xc (hXc : IsCircleAverage P X Xc)
+    {N} (α : Fin N → ℝ) (z : Fin N → ℂ) r
     (H : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞)
     (hH : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => H q.1 q.2)) :
     (∫⁻ ω, ENNReal.ofReal (Real.exp ((∑ k, α k * Xc ω (z k) r) -

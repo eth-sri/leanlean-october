@@ -18,9 +18,9 @@ namespace DOZZ.Proofs
 on the common cut plane. This is the direct input to the classification of real solutions, before
 its monodromy constraints. -/
 theorem realGaussSolution_canonical_hermitian_representation
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
+    {H} (hH : IsGaussHypergeometricFamily H)
     (a b c : ℝ) (hc : ∀ n : ℤ, c ≠ (n : ℝ))
-    (T : ℂ → ℝ) (hT : IsRealGaussSolution a b c T) :
+    T (hT : IsRealGaussSolution a b c T) :
     ∃ α δ : ℝ, ∃ β : ℂ, ∀ z ∈ gaussCutPlane,
       (T z : ℂ) =
         gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z *
@@ -29,52 +29,20 @@ theorem realGaussSolution_canonical_hermitian_representation
           gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z *
             star (star β * gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z +
               (δ : ℂ) * gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z) := by
-  have hcC : ∀ n : ℤ, (c : ℂ) ≠ (n : ℂ) := by
-    intro n hn
-    apply hc n
-    exact_mod_cast hn
-  have hzero := gauss_local_basis_zero hH (a : ℂ) (b : ℂ) (c : ℂ) hcC
-  have hFanalytic : AnalyticOnNhd ℂ (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ))
-      gaussCutPlane := hzero.1.analyticOnNhd gaussCutPlane_isOpen
-  have hGanalytic : AnalyticOnNhd ℂ (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ))
-      gaussCutPlane := hzero.2.1.analyticOnNhd gaussCutPlane_isOpen
-  have hFode : ∀ z ∈ gaussCutPlane,
-      gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ)
-        (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) z = 0 := by
-    intro z hz
-    exact (hzero.2.2.1 z hz).1
-  have hGode : ∀ z ∈ gaussCutPlane,
-      gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ)
-        (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) z = 0 := by
-    intro z hz
-    exact (hzero.2.2.1 z hz).2.1
+  have hzero := gauss_local_basis_zero hH (a : ℂ) (b : ℂ) (c : ℂ) (by intro n hn; apply hc n; exact_mod_cast hn)
   have hW : ∀ z ∈ gaussCutPlane,
       gaussCramerWronskian
         (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ))
         (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) z ≠ 0 := by
     intro z hz
     have hzreg := gaussCutPlane_subset_regularPlane hz
-    have hw0 : (1 : ℂ) - z ≠ 0 := by
-      intro he
-      apply hzreg.2
-      exact (sub_eq_zero.mp he).symm
-    have hzpow : z ^ (-(c : ℂ)) ≠ 0 :=
-      Complex.cpow_ne_zero_iff.mpr (Or.inl hzreg.1)
-    have hwpow : ((1 : ℂ) - z) ^
-        ((c : ℂ) - (a : ℂ) - (b : ℂ) - 1) ≠ 0 :=
-      Complex.cpow_ne_zero_iff.mpr (Or.inl hw0)
-    have hcoeff : (1 : ℂ) - (c : ℂ) ≠ 0 := by
-      intro he
-      apply hc 1
-      exact_mod_cast (sub_eq_zero.mp he).symm
-    have hWr := (hzero.2.2.1 z hz).2.2
     change gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z *
         deriv (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) z -
       deriv (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) z *
         gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z ≠ 0
-    rw [hWr]
-    exact mul_ne_zero (mul_ne_zero hcoeff hzpow) hwpow
-  exact realGaussCramer_hermitian_representation a b c T hT hFanalytic hGanalytic
-    hFode hGode hW
+    rw [((hzero.2.2.1 z hz).2.2)]
+    exact mul_ne_zero (mul_ne_zero (by intro he; apply hc 1; exact_mod_cast (sub_eq_zero.mp he).symm) (Complex.cpow_ne_zero_iff.mpr (Or.inl hzreg.1))) (Complex.cpow_ne_zero_iff.mpr (Or.inl (by intro he; apply hzreg.2; exact (sub_eq_zero.mp he).symm)))
+  exact realGaussCramer_hermitian_representation a b c T hT (hzero.1.analyticOnNhd gaussCutPlane_isOpen) (hzero.2.1.analyticOnNhd gaussCutPlane_isOpen)
+    (by intro z hz; exact (hzero.2.2.1 z hz).1) (by intro z hz; exact (hzero.2.2.1 z hz).2.1) hW
 
 end DOZZ.Proofs

@@ -26,13 +26,12 @@ namespace DOZZ.Proofs
 noncomputable def gmcBoxEval (μ : Measure ℂ) : Option (ℚ × ℚ) → ℝ≥0∞ :=
   fun j => μ (gmcTiltCoordinateSet j)
 
-theorem gmcTiltCoordinateSet_measurableSet (j : Option (ℚ × ℚ)) :
-    MeasurableSet (gmcTiltCoordinateSet j) := by
-  cases j with
-  | none => exact MeasurableSet.univ
-  | some i => exact gmcLowerBox_measurableSet i
 
 theorem measurable_gmcBoxEval : Measurable gmcBoxEval := by
+  have gmcTiltCoordinateSet_measurableSet j : MeasurableSet (gmcTiltCoordinateSet j) := by
+    cases j with
+    | none => exact MeasurableSet.univ
+    | some i => exact gmcLowerBox_measurableSet i
   rw [measurable_pi_iff]
   intro j
   exact Measure.measurable_coe (gmcTiltCoordinateSet_measurableSet j)
@@ -42,16 +41,6 @@ theorem gmcBoxEval_eq_finiteMeasureEval (μ : FiniteMeasure ℂ) :
   funext j
   cases j <;> rfl
 
-/-- Weighting a measure by a fixed measurable density is a measurable operation. -/
-theorem measurable_measure_withDensity (w : ℂ → ℝ≥0∞) (hw : Measurable w) :
-    Measurable (fun μ : Measure ℂ => μ.withDensity w) := by
-  refine Measure.measurable_of_measurable_coe _ (fun A hA => ?_)
-  have hEq : (fun μ : Measure ℂ => μ.withDensity w A) =
-      fun μ => ∫⁻ x, A.indicator w x ∂μ := by
-    funext μ
-    rw [withDensity_apply _ hA, ← lintegral_indicator hA]
-  rw [hEq]
-  exact Measure.measurable_lintegral (hw.indicator hA)
 
 /-- A measurable functional of a parameter and a finite measure factors measurably through the
 parameter and the box coordinates of the measure. -/
@@ -71,15 +60,11 @@ theorem gmc_measurable_factor_finiteEval_param {α : Type*} [MeasurableSpace α]
       simpa [mFM, mCoord] using gmcFiniteMeasure_sigma_eq]
     rw [MeasurableSpace.comap_comp]
     rfl
-  have hInput : Measurable (fun p : α × FiniteMeasure ℂ => (p.1, (p.2 : Measure ℂ))) :=
-    Measurable.prodMk measurable_fst (measurable_subtype_coe.comp measurable_snd)
-  have hPull : Measurable (fun p : α × FiniteMeasure ℂ => H p.1 (p.2 : Measure ℂ)) :=
-    hH.comp hInput
   have hPull' : @Measurable (α × FiniteMeasure ℂ) ℝ≥0∞
       (MeasurableSpace.comap j (mA.prod mCoord)) _
       (fun p => H p.1 (p.2 : Measure ℂ)) := by
     rw [hSigma]
-    exact hPull
+    exact (hH.comp (Measurable.prodMk measurable_fst (measurable_subtype_coe.comp measurable_snd)))
   obtain ⟨G, hG, hGfactor⟩ := hPull'.exists_eq_measurable_comp
   exact ⟨G, hG, fun a μ => congrFun hGfactor (a, μ)⟩
 
@@ -92,146 +77,36 @@ theorem gmc_measurable_factor_two_finiteEval {α : Type*} [MeasurableSpace α]
       ∀ (a : α) (μ ν : FiniteMeasure ℂ),
         H a (μ : Measure ℂ) (ν : Measure ℂ) =
           G (a, gmcFiniteMeasureEval μ, gmcFiniteMeasureEval ν) := by
-  have hH₁ : Measurable (fun q : (α × Measure ℂ) × Measure ℂ => H q.1.1 q.1.2 q.2) :=
-    hH.comp (f := fun q : (α × Measure ℂ) × Measure ℂ => (q.1.1, q.1.2, q.2)) (by fun_prop)
   obtain ⟨G₁, hG₁, hfac₁⟩ := gmc_measurable_factor_finiteEval_param
-    (α := α × Measure ℂ) (fun p ν => H p.1 p.2 ν) hH₁
-  have hH₂ : Measurable (fun q : (α × (Option (ℚ × ℚ) → ℝ≥0∞)) × Measure ℂ =>
-      G₁ ((q.1.1, q.2), q.1.2)) :=
-    hG₁.comp (f := fun q : (α × (Option (ℚ × ℚ) → ℝ≥0∞)) × Measure ℂ =>
-      ((q.1.1, q.2), q.1.2)) (by fun_prop)
+    (α := α × Measure ℂ) (fun p ν => H p.1 p.2 ν) (hH.comp (f := fun q : (α × Measure ℂ) × Measure ℂ => (q.1.1, q.1.2, q.2)) (by fun_prop))
   obtain ⟨G₂, hG₂, hfac₂⟩ := gmc_measurable_factor_finiteEval_param
-    (α := α × (Option (ℚ × ℚ) → ℝ≥0∞)) (fun p μ => G₁ ((p.1, μ), p.2)) hH₂
+    (α := α × (Option (ℚ × ℚ) → ℝ≥0∞)) (fun p μ => G₁ ((p.1, μ), p.2)) (hG₁.comp (f := fun q : (α × (Option (ℚ × ℚ) → ℝ≥0∞)) × Measure ℂ => ((q.1.1, q.2), q.1.2)) (by fun_prop))
   refine ⟨fun q => G₂ ((q.1, q.2.2), q.2.1),
     hG₂.comp (f := fun q : α × (Option (ℚ × ℚ) → ℝ≥0∞) × (Option (ℚ × ℚ) → ℝ≥0∞) =>
       ((q.1, q.2.2), q.2.1)) (by fun_prop), ?_⟩
   intro a μ ν
-  have h₁ : H a (μ : Measure ℂ) (ν : Measure ℂ) =
-      G₁ ((a, (μ : Measure ℂ)), gmcFiniteMeasureEval ν) := hfac₁ (a, (μ : Measure ℂ)) ν
-  have h₂ : G₁ ((a, (μ : Measure ℂ)), gmcFiniteMeasureEval ν) =
-      G₂ ((a, gmcFiniteMeasureEval ν), gmcFiniteMeasureEval μ) :=
-    hfac₂ (a, gmcFiniteMeasureEval ν) μ
-  rw [h₁, h₂]
+  rw [(hfac₁ (a, (μ : Measure ℂ)) ν), (hfac₂ (a, gmcFiniteMeasureEval ν) μ)]
 
 /-- The box coordinates of a fixed-radius circle cutoff are almost surely a measurable function
 of the test field. -/
 theorem regularizedGMC_boxEval_field_proxy
     {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ) :
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc) γ r :
     ∃ E : (TestFn → ℝ) → (Option (ℚ × ℚ) → ℝ≥0∞), Measurable E ∧
       ∀ᵐ ω ∂P, gmcBoxEval (regularizedGMC P Xc γ r ω) = E (fun f => X ω f) := by
   obtain ⟨Xr, hXr, hRaw⟩ := exists_raw_equatorGFF_circle_average_witness X hX
-  have hMeas := regularizedGMC_raw_measurable_of_joint P X hX Xr hXr γ r (hRaw r)
-  let eval : Ω → TestFn → ℝ := fun ω f => X ω f
-  have hComap : Measurable[(MeasurableSpace.pi).comap eval]
+  have hComap : Measurable[(MeasurableSpace.pi).comap (fun ω f => X ω f)]
       (fun ω => gmcBoxEval (regularizedGMC P Xr γ r ω)) :=
     @Measurable.comp Ω (Measure ℂ) (Option (ℚ × ℚ) → ℝ≥0∞)
-      (equatorGFFRawDistributionSigma X) _ _ gmcBoxEval _ measurable_gmcBoxEval hMeas
+      (equatorGFFRawDistributionSigma X) _ _ gmcBoxEval _ measurable_gmcBoxEval (regularizedGMC_raw_measurable_of_joint P X hX Xr hXr γ r (hRaw r))
   obtain ⟨E, hE, hfac⟩ := hComap.exists_eq_measurable_comp
   refine ⟨E, hE, ?_⟩
   filter_upwards [regularizedGMC_ae_eq_of_circleAverage P X hX Xc Xr hXc hXr γ r] with ω hω
   rw [hω]
   exact congrFun hfac ω
 
-/-- Under the Cameron–Martin shift the field proxy of the cutoff box coordinates computes the
-coordinates of the tilted cutoff chaos, which is moreover almost surely finite. -/
-theorem regularizedGMC_tilted_boxEval_field_proxy
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
-    (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L)
-    (E : (TestFn → ℝ) → (Option (ℚ × ℚ) → ℝ≥0∞)) (hE : Measurable E)
-    (hEae : ∀ᵐ ω ∂P, gmcBoxEval (regularizedGMC P Xc γ r ω) = E (fun f => X ω f)) :
-    ∀ᵐ ω ∂P,
-      gmcBoxEval ((regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
-          (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L)))) =
-        E (fun f => X ω f + gaussianCovariance P (fun ω' => X ω' f) L) ∧
-      (regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
-          (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L))) Set.univ ≠ ⊤ := by
-  classical
-  let _ : IsProbabilityMeasure P := hX.1
-  let S : Set ((TestFn → ℝ) × Measure ℂ) :=
-    {q | gmcBoxEval q.2 = E q.1} ∩ {q | q.2 Set.univ ≠ ⊤}
-  have hS : MeasurableSet S := by
-    refine (measurableSet_eq_fun (measurable_gmcBoxEval.comp measurable_snd)
-      (hE.comp measurable_fst)).inter ?_
-    exact (measurableSet_singleton ⊤).compl.preimage
-      ((Measure.measurable_coe MeasurableSet.univ).comp measurable_snd)
-  let H₀ : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := fun φ μ => Sᶜ.indicator 1 (φ, μ)
-  have hH₀ : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => H₀ q.1 q.2) :=
-    measurable_one.indicator hS.compl
-  have hTilt := equatorGFF_tilted_test_regularizedGMC_cutoff_lintegral
-    P X hX Xc hXc γ r L hL H₀ hH₀
-  have hLeftZero : (∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) *
-      H₀ (fun f => X ω f) (regularizedGMC P Xc γ r ω) ∂P) = 0 := by
-    rw [lintegral_eq_zero_iff']
-    · filter_upwards [hEae, regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hω hfin
-      have hmem : ((fun f => X ω f), regularizedGMC P Xc γ r ω) ∈ S :=
-        ⟨hω, measure_ne_top _ _⟩
-      simp [H₀, Set.indicator_of_notMem (Set.notMem_compl_iff.mpr hmem)]
-    · have hfield : Measurable (fun ω => fun f : TestFn => X ω f) :=
-        measurable_pi_iff.mpr (fun f => (hX.2 f).1)
-      have hden : AEMeasurable
-          (fun ω => ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2))) P :=
-        ((Real.measurable_exp.comp_aemeasurable
-          (hL.1.aestronglyMeasurable.aemeasurable.sub_const _))).ennreal_ofReal
-      exact hden.mul (hH₀.comp (hfield.prodMk
-        (regularizedGMC_measurable P X hX Xc hXc γ r))).aemeasurable
-  rw [hLeftZero] at hTilt
-  have hRightMeas : Measurable (fun ω => H₀
-      (fun f => X ω f + gaussianCovariance P (fun ω' => X ω' f) L)
-      ((regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
-        (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L))))) := by
-    have hshift : Measurable (fun ω => fun f : TestFn =>
-        X ω f + gaussianCovariance P (fun ω' => X ω' f) L) :=
-      measurable_pi_iff.mpr (fun f => (hX.2 f).1.add_const _)
-    have hcovCont : Continuous (fun x : ℂ =>
-        gaussianCovariance P (fun ω' => Xc ω' x r) L) :=
-      continuous_gaussianCovariance_circle_of_IsGaussianL2Limit P X hX Xc hXc L hL r
-    have hw : Measurable (fun x : ℂ => ENNReal.ofReal
-        (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L))) :=
-      ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
-        (hcovCont.measurable.const_mul γ))
-    exact hH₀.comp (hshift.prodMk ((measurable_measure_withDensity _ hw).comp
-      (regularizedGMC_measurable P X hX Xc hXc γ r)))
-  have hZero := (lintegral_eq_zero_iff hRightMeas).mp hTilt.symm
-  filter_upwards [hZero] with ω hω
-  have hmem : ((fun f => X ω f + gaussianCovariance P (fun ω' => X ω' f) L),
-      (regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
-        (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L)))) ∈ S := by
-    by_contra hnot
-    have hone : H₀ (fun f => X ω f + gaussianCovariance P (fun ω' => X ω' f) L)
-        ((regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
-          (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L)))) = 1 := by
-      simp [H₀, Set.indicator_of_mem (Set.mem_compl hnot)]
-    have h0 := hω
-    simp only [Pi.zero_apply] at h0
-    rw [h0] at hone
-    exact zero_ne_one hone
-  exact hmem
 
-/-- Weighting a finite measure by the exponential of a bounded continuous function keeps it
-finite. -/
-theorem isFiniteMeasure_withDensity_exp_bcf (μ : Measure ℂ) [IsFiniteMeasure μ]
-    (γ : ℝ) (c : BoundedContinuousFunction ℂ ℝ) :
-    IsFiniteMeasure (μ.withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) := by
-  apply isFiniteMeasure_withDensity
-  have hpoint : ∀ x, ENNReal.ofReal (Real.exp (γ * c x)) ≤
-      ENNReal.ofReal (Real.exp (|γ| * ‖c‖)) := by
-    intro x
-    apply ENNReal.ofReal_le_ofReal
-    apply Real.exp_le_exp.mpr
-    calc γ * c x ≤ |γ * c x| := le_abs_self _
-      _ = |γ| * |c x| := abs_mul _ _
-      _ ≤ |γ| * ‖c‖ := by
-        gcongr
-        exact (Real.norm_eq_abs (c x)).symm.le.trans (c.norm_coe_le_norm x)
-  have hbound : (∫⁻ x, ENNReal.ofReal (Real.exp (γ * c x)) ∂μ) ≤
-      ENNReal.ofReal (Real.exp (|γ| * ‖c‖)) * μ Set.univ :=
-    (lintegral_mono hpoint).trans (lintegral_const _).le
-  exact ne_of_lt (lt_of_le_of_lt hbound
-    (ENNReal.mul_lt_top ENNReal.ofReal_lt_top (measure_lt_top μ Set.univ)))
 
 /-- Cameron–Martin for joint functionals of the test coordinates, one cutoff chaos and the limit
 chaos: tilting by `L` multiplies the cutoff chaos by `exp (γ Cov(X_r(x), L))` and the limit chaos
@@ -244,7 +119,7 @@ theorem equatorGFF_GMC_tilt_cutoff
     (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L) (c : BoundedContinuousFunction ℂ ℝ)
     (hc : TendstoUniformly
       (fun (r : ℝ) (x : ℂ) => gaussianCovariance P (fun ω => Xc ω x r) L) c atTop)
-    (r : ℝ) (H : (TestFn → ℝ) → Measure ℂ → Measure ℂ → ℝ≥0∞)
+    r (H : (TestFn → ℝ) → Measure ℂ → Measure ℂ → ℝ≥0∞)
     (hH : Measurable (fun q : (TestFn → ℝ) × Measure ℂ × Measure ℂ =>
       H q.1 q.2.1 q.2.2)) :
     (∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) *
@@ -254,14 +129,84 @@ theorem equatorGFF_GMC_tilt_cutoff
           (γ * gaussianCovariance P (fun ω => Xc ω x r) L))))
         ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) ∂P := by
   classical
+  have isFiniteMeasure_withDensity_exp_bcf (μ : Measure ℂ) [IsFiniteMeasure μ] (γ : ℝ) (c : BoundedContinuousFunction ℂ ℝ) : IsFiniteMeasure (μ.withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) := by
+    apply isFiniteMeasure_withDensity
+    have hpoint : ∀ x, ENNReal.ofReal (Real.exp (γ * c x)) ≤
+        ENNReal.ofReal (Real.exp (|γ| * ‖c‖)) := by
+      intro x
+      apply ENNReal.ofReal_le_ofReal
+      apply Real.exp_le_exp.mpr
+      calc γ * c x ≤ |γ * c x| := le_abs_self _
+        _ = |γ| * |c x| := abs_mul _ _
+        _ ≤ |γ| * ‖c‖ := by
+          gcongr
+          exact (Real.norm_eq_abs (c x)).symm.le.trans (c.norm_coe_le_norm x)
+    exact ne_of_lt (lt_of_le_of_lt ((lintegral_mono hpoint).trans (lintegral_const _).le)
+      (ENNReal.mul_lt_top ENNReal.ofReal_lt_top (measure_lt_top μ Set.univ)))
+  have regularizedGMC_tilted_boxEval_field_proxy (E : (TestFn → ℝ) → (Option (ℚ × ℚ) → ℝ≥0∞)) (hE : Measurable E) (hEae : ∀ᵐ ω ∂P, gmcBoxEval (regularizedGMC P Xc γ r ω) = E (fun f => X ω f)) : ∀ᵐ ω ∂P, gmcBoxEval ((regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L)))) = E (fun f => X ω f + gaussianCovariance P (fun ω' => X ω' f) L) ∧ (regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L))) Set.univ ≠ ⊤ := by
+    classical
+    have measurable_measure_withDensity (w : ℂ → ℝ≥0∞) (hw : Measurable w) : Measurable (fun μ : Measure ℂ => μ.withDensity w) := by
+      refine Measure.measurable_of_measurable_coe _ (fun A hA => ?_)
+      rw [(show (fun μ : Measure ℂ => μ.withDensity w A) = fun μ => ∫⁻ x, A.indicator w x ∂μ by funext μ; rw [withDensity_apply _ hA, ← lintegral_indicator hA])]
+      exact Measure.measurable_lintegral (hw.indicator hA)
+    let _ : IsProbabilityMeasure P := hX.1
+    let S : Set ((TestFn → ℝ) × Measure ℂ) :=
+      {q | gmcBoxEval q.2 = E q.1} ∩ {q | q.2 Set.univ ≠ ⊤}
+    have hS : MeasurableSet S := by
+      refine (measurableSet_eq_fun (measurable_gmcBoxEval.comp measurable_snd)
+        (hE.comp measurable_fst)).inter ?_
+      exact (measurableSet_singleton ⊤).compl.preimage
+        ((Measure.measurable_coe MeasurableSet.univ).comp measurable_snd)
+    let H₀ : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := fun φ μ => Sᶜ.indicator 1 (φ, μ)
+    have hH₀ : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => H₀ q.1 q.2) :=
+      measurable_one.indicator hS.compl
+    have hTilt := equatorGFF_tilted_test_regularizedGMC_cutoff_lintegral
+      P X hX Xc hXc γ r L hL H₀ hH₀
+    have hLeftZero : (∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) *
+        H₀ (fun f => X ω f) (regularizedGMC P Xc γ r ω) ∂P) = 0 := by
+      rw [lintegral_eq_zero_iff']
+      · filter_upwards [hEae, regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hω hfin
+        have hmem : ((fun f => X ω f), regularizedGMC P Xc γ r ω) ∈ S :=
+          ⟨hω, measure_ne_top _ _⟩
+        simp [H₀, Set.indicator_of_notMem (Set.notMem_compl_iff.mpr hmem)]
+      · have hfield : Measurable (fun ω => fun f => X ω f) :=
+          measurable_pi_iff.mpr (fun f => (hX.2 f).1)
+        have hden : AEMeasurable
+            (fun ω => ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2))) P :=
+          ((Real.measurable_exp.comp_aemeasurable
+            (hL.1.aestronglyMeasurable.aemeasurable.sub_const _))).ennreal_ofReal
+        exact hden.mul (hH₀.comp (hfield.prodMk
+          (regularizedGMC_measurable P X hX Xc hXc γ r))).aemeasurable
+    rw [hLeftZero] at hTilt
+    have hRightMeas : Measurable (fun ω => H₀
+        (fun f => X ω f + gaussianCovariance P (fun ω' => X ω' f) L)
+        ((regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
+          (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L))))) := by
+      have hshift : Measurable (fun ω => fun f =>
+          X ω f + gaussianCovariance P (fun ω' => X ω' f) L) :=
+        measurable_pi_iff.mpr (fun f => (hX.2 f).1.add_const _)
+      have hcovCont := continuous_gaussianCovariance_circle_of_IsGaussianL2Limit P X hX Xc hXc L hL r
+      exact hH₀.comp (hshift.prodMk ((measurable_measure_withDensity _ (ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp (hcovCont.measurable.const_mul γ)))).comp
+        (regularizedGMC_measurable P X hX Xc hXc γ r)))
+    have hZero := (lintegral_eq_zero_iff hRightMeas).mp hTilt.symm
+    filter_upwards [hZero] with ω hω
+    have hmem : ((fun f => X ω f + gaussianCovariance P (fun ω' => X ω' f) L),
+        (regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
+          (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L)))) ∈ S := by
+      by_contra hnot
+      have hone : H₀ (fun f => X ω f + gaussianCovariance P (fun ω' => X ω' f) L)
+          ((regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
+            (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L)))) = 1 := by
+        simp [H₀, Set.indicator_of_mem (Set.mem_compl hnot)]
+      have h0 := hω
+      simp only [Pi.zero_apply] at h0
+      rw [h0] at hone
+      exact zero_ne_one hone
+    exact hmem
   obtain ⟨G, hG, hGfac⟩ := gmc_measurable_factor_two_finiteEval H hH
   obtain ⟨E, hE, hEae⟩ := regularizedGMC_boxEval_field_proxy P X hX Xc hXc γ r
   let H' : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := fun φ μ => G (φ, E φ, gmcBoxEval μ)
-  have hH' : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => H' q.1 q.2) :=
-    hG.comp (measurable_fst.prodMk ((hE.comp measurable_fst).prodMk
-      (measurable_gmcBoxEval.comp measurable_snd)))
-  have htilt := equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L hL c hc H' hH'
-  have hShift := regularizedGMC_tilted_boxEval_field_proxy P X hX Xc hXc γ r L hL E hE hEae
+  have hShift := regularizedGMC_tilted_boxEval_field_proxy E hE hEae
   have hMfin : ∀ ω, IsFiniteMeasure (M ω) := hM.1
   have hleft : ∀ᵐ ω ∂P,
       ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) *
@@ -315,7 +260,7 @@ theorem equatorGFF_GMC_tilt_cutoff
     _ = ∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) *
           H' (fun f => X ω f) (M ω) ∂P := lintegral_congr_ae hleft
     _ = ∫⁻ ω, H' (fun f => X ω f + gaussianCovariance P (fun ω => X ω f) L)
-          ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) ∂P := htilt
+          ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) ∂P := (equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L hL c hc H' (hG.comp (measurable_fst.prodMk ((hE.comp measurable_fst).prodMk (measurable_gmcBoxEval.comp measurable_snd)))))
     _ = _ := lintegral_congr_ae hright
 
 end DOZZ.Proofs

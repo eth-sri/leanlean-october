@@ -21,10 +21,10 @@ masses. Joint integrability ensures convergence in mean of the sampled masses. -
 theorem kahane_field_normalized_affine_max
     {ΩX ΩY S κ : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY]
     [MeasurableSpace S] [Nonempty S] [Fintype κ] [Nonempty κ]
-    (PX : Measure ΩX) (PY : Measure ΩY) (Φ : ΩX → S → ℝ) (Ψ : ΩY → S → ℝ)
+    (PX : Measure ΩX) (PY : Measure ΩY) Φ Ψ
     (hΦ : DOZZ.IsCenteredGaussianField PX Φ) (hΨ : DOZZ.IsCenteredGaussianField PY Ψ)
     (ν : FiniteMeasure S) (hν : ν ≠ 0) (h : S → ℝ≥0) (hh : Measurable h)
-    (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ : ℝ) (a b : κ → ℝ)
+    (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) γ (a b : κ → ℝ)
     (hcov : ∀ᵐ q ∂(ν : Measure S).prod ν,
       DOZZ.gaussianCovariance PX (fun ω => Φ ω q.1) (fun ω => Φ ω q.2) ≤
         DOZZ.gaussianCovariance PY (fun ω => Ψ ω q.1) (fun ω => Ψ ω q.2))
@@ -36,8 +36,8 @@ theorem kahane_field_normalized_affine_max
       ∫ ω, affineMax a b (∫ x, fieldWickDensity PY Ψ h γ ω x
         ∂(ν.normalize : Measure S)) ∂PY := by
   classical
-  have : IsProbabilityMeasure PX := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
-  have : IsProbabilityMeasure PY := (hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have : IsProbabilityMeasure PX := (hΦ.2 0 (fun i => Fin.elim0 i)).1
+  have : IsProbabilityMeasure PY := (hΨ.2 0 (fun i => Fin.elim0 i)).1
   let ρ : Measure S := ν.normalize
   let Q := Measure.infinitePi (fun _ : ℕ => ρ)
   let fX := fieldWickDensity PX Φ h γ
@@ -52,14 +52,11 @@ theorem kahane_field_normalized_affine_max
   have hfY := (fieldWickDensity_integrable_mean PY Ψ hΨ ν h hh hhb γ).1
   have hmX : Integrable mX PX := hfX.integral_prod_left
   have hmY : Integrable mY PY := hfY.integral_prod_left
-  have havgX (n : ℕ) : Integrable (avgX n) (PX.prod Q) :=
-    spatial_empirical_average_integrable PX ρ fX hfX n
-  have havgY (n : ℕ) : Integrable (avgY n) (PY.prod Q) :=
-    spatial_empirical_average_integrable PY ρ fY hfY n
+  have havgX (n : ℕ) := spatial_empirical_average_integrable PX ρ fX hfX n
+  have havgY (n : ℕ) := spatial_empirical_average_integrable PY ρ fY hfY n
   have hIX (n : ℕ) := affineMax_comp_integrable (PX.prod Q) (avgX n) (havgX n) a b
   have hIY (n : ℕ) := affineMax_comp_integrable (PY.prod Q) (avgY n) (havgY n) a b
-  have hsample := centeredGaussianField_covariance_order_samples PX PY Φ Ψ hΦ hΨ ν hν hcov hdiag
-  have hformulaX (n : ℕ) (ω : ΩX) (u : ℕ → S) :
+  have hformulaX (n : ℕ) ω (u : ℕ → S) :
       DOZZ.finiteChaosMass PX (fun ω (i : Fin n) => Φ ω (u i.val))
         (fun i => (n : ℝ)⁻¹ * (h (u i.val) : ℝ)) γ ω = avgX n (ω, u) := by
     dsimp [DOZZ.finiteChaosMass, avgX, fX, fieldWickDensity]
@@ -67,7 +64,7 @@ theorem kahane_field_normalized_affine_max
     apply Finset.sum_congr rfl
     intro i _
     ring
-  have hformulaY (n : ℕ) (ω : ΩY) (u : ℕ → S) :
+  have hformulaY (n : ℕ) ω (u : ℕ → S) :
       DOZZ.finiteChaosMass PY (fun ω (i : Fin n) => Ψ ω (u i.val))
         (fun i => (n : ℝ)⁻¹ * (h (u i.val) : ℝ)) γ ω = avgY n (ω, u) := by
     dsimp [DOZZ.finiteChaosMass, avgY, fY, fieldWickDensity]
@@ -75,36 +72,13 @@ theorem kahane_field_normalized_affine_max
     apply Finset.sum_congr rfl
     intro i _
     ring
-  have horder (n : ℕ) : (∫ p, affineMax a b (avgX n p) ∂(PX.prod Q)) ≤
+  have horder n : (∫ p, affineMax a b (avgX n p) ∂(PX.prod Q)) ≤
       ∫ p, affineMax a b (avgY n p) ∂(PY.prod Q) := by
     rw [integral_prod_symm _ (hIX n), integral_prod_symm _ (hIY n)]
     apply integral_mono_ae (hIX n).integral_prod_right (hIY n).integral_prod_right
-    filter_upwards [hsample n] with u hu
-    have hc := kahane_finite_affine_max PX PY
-      (fun ω (i : Fin n) => Φ ω (u i.val)) (fun ω (i : Fin n) => Ψ ω (u i.val))
-      (hΦ.2 n (fun i => u i.val)) (hΨ.2 n (fun i => u i.val))
-      (fun i => (n : ℝ)⁻¹ * (h (u i.val) : ℝ))
-      (fun i => mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg n)) (NNReal.coe_nonneg _)) γ a b hu
-    simpa only [hformulaX, hformulaY] using hc
-  have hL1X := spatial_empirical_average_L1 PX ρ fX
-    (fieldWickDensity_measurable PX Φ hΦ h hh γ) hfX
-    (fun ω x => mul_nonneg (NNReal.coe_nonneg _) (Real.exp_nonneg _))
-  have hL1Y := spatial_empirical_average_L1 PY ρ fY
-    (fieldWickDensity_measurable PY Ψ hΨ h hh γ) hfY
-    (fun ω x => mul_nonneg (NNReal.coe_nonneg _) (Real.exp_nonneg _))
-  have htX := affineMax_integral_tendsto_of_L1 (PX.prod Q) avgX (fun p => mX p.1)
-    havgX (hmX.comp_fst Q) hL1X a b
-  have htY := affineMax_integral_tendsto_of_L1 (PY.prod Q) avgY (fun p => mY p.1)
-    havgY (hmY.comp_fst Q) hL1Y a b
-  have hlimit := le_of_tendsto_of_tendsto htX htY (Eventually.of_forall horder)
-  have hprodX : (∫ p : ΩX × (ℕ → S), affineMax a b (mX p.1) ∂(PX.prod Q)) =
-      ∫ ω, affineMax a b (mX ω) ∂PX := by
-    rw [integral_prod _ ((affineMax_comp_integrable PX mX hmX a b).comp_fst Q)]
-    simp only [integral_const, probReal_univ, one_smul]
-  have hprodY : (∫ p : ΩY × (ℕ → S), affineMax a b (mY p.1) ∂(PY.prod Q)) =
-      ∫ ω, affineMax a b (mY ω) ∂PY := by
-    rw [integral_prod _ ((affineMax_comp_integrable PY mY hmY a b).comp_fst Q)]
-    simp only [integral_const, probReal_univ, one_smul]
-  rwa [hprodX, hprodY] at hlimit
+    filter_upwards [(centeredGaussianField_covariance_order_samples PX PY Φ Ψ hΦ hΨ ν hν hcov hdiag) n] with u hu
+    simpa only [hformulaX, hformulaY] using (kahane_finite_affine_max PX PY (fun ω (i : Fin n) => Φ ω (u i.val)) (fun ω (i : Fin n) => Ψ ω (u i.val)) (hΦ.2 n (fun i => u i.val)) (hΨ.2 n (fun i => u i.val)) (fun i => (n : ℝ)⁻¹ * (h (u i.val) : ℝ)) (fun i => mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg n)) (NNReal.coe_nonneg _)) γ a b hu)
+  have hlimit := le_of_tendsto_of_tendsto (affineMax_integral_tendsto_of_L1 (PX.prod Q) avgX (fun p => mX p.1) havgX (hmX.comp_fst Q) (spatial_empirical_average_L1 PX ρ fX (fieldWickDensity_measurable PX Φ hΦ h hh γ) hfX (fun ω x => mul_nonneg (NNReal.coe_nonneg _) (Real.exp_nonneg _))) a b) (affineMax_integral_tendsto_of_L1 (PY.prod Q) avgY (fun p => mY p.1) havgY (hmY.comp_fst Q) (spatial_empirical_average_L1 PY ρ fY (fieldWickDensity_measurable PY Ψ hΨ h hh γ) hfY (fun ω x => mul_nonneg (NNReal.coe_nonneg _) (Real.exp_nonneg _))) a b) (Eventually.of_forall horder)
+  rwa [(show (∫ p : ΩX × (ℕ → S), affineMax a b (mX p.1) ∂(PX.prod Q)) = ∫ ω, affineMax a b (mX ω) ∂PX by rw [integral_prod _ ((affineMax_comp_integrable PX mX hmX a b).comp_fst Q)]; simp only [integral_const, probReal_univ, one_smul]), (show (∫ p : ΩY × (ℕ → S), affineMax a b (mY p.1) ∂(PY.prod Q)) = ∫ ω, affineMax a b (mY ω) ∂PY by rw [integral_prod _ ((affineMax_comp_integrable PY mY hmY a b).comp_fst Q)]; simp only [integral_const, probReal_univ, one_smul])] at hlimit
 
 end DOZZ.Proofs

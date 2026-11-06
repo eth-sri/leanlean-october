@@ -33,9 +33,7 @@ theorem sumtail_real_sum_error
       P.real {ω | u < A ω ∧ v < B ω} ≤ D*u^(-p2+ε)*v^(-p3+ε)) :
     ∀ x : ℝ, 1 ≤ x → |P.real {ω | x < A ω+B ω}-(c2*x^(-p2)+c3*x^(-p3))| ≤
       ((1+2*H)*4^(T+1)+(2*C+D+2*((C+H*T)*2^(T+1))+2*D*2^T))*x^(-β+θ) := by
-  have hT : 0 ≤ T := hp2.le.trans hp2T
-  have hθ : 0 ≤ θ := hd.trans hdθ
-  have hCb : 0 ≤ 2*C+D+2*((C+H*T)*2^(T+1))+2*D*2^T := by positivity
+  have hT := hp2.le.trans hp2T
   have hCs : 0 ≤ (1+2*H)*4^(T+1) := by positivity
   intro x hx
   have hx0 : 0 < x := by linarith only [hx]
@@ -46,71 +44,41 @@ theorem sumtail_real_sum_error
       linarith only [hx4,this]
     have hxhalf : 1 ≤ x/2 := by linarith only [hx4]
     have hxsqrt := (sumtail_sqrt_shift_bounds x hx4).1
-    have he2x : |P.real {ω | x < A ω}-c2*x^(-p2)| ≤ C*x^(-β+θ) :=
-      (hone2 x hx).trans (mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow_of_exponent_le hx (by linarith only [hβe2,hdθ])) hC)
-    have he3x : |P.real {ω | x < B ω}-c3*x^(-p3)| ≤ C*x^(-β+θ) :=
-      (hone3 x hx).trans (mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow_of_exponent_le hx (by linarith only [hβe3,hdθ])) hC)
-    have hs2 := sumtail_shifted_one_error (fun t => P.real {ω | t < A ω}) T p2 e2 d θ β C H c2 x
-      hp2 hp2T he2 hd hdθ hC hH hc2 hx4 hβe2 hβs2 (hone2 _ hxt)
-    have hs3 := sumtail_shifted_one_error (fun t => P.real {ω | t < B ω}) T p3 e3 d θ β C H c3 x
-      hp3 hp3T he3 hd hdθ hC hH hc3 hx4 hβe3 hβs3 (hone3 _ hxt)
     have hjx : P.real {ω | x < A ω ∧ x < B ω} ≤ D*x^(-β+θ) := by
-      have hb := hjoint x x hx hx
       calc
-        _ ≤ D*(x^(-p2+ε)*x^(-p3+ε)) := by simpa only [mul_assoc] using hb
+        _ ≤ D*(x^(-p2+ε)*x^(-p3+ε)) := by simpa only [mul_assoc] using (hjoint x x hx hx)
         _ ≤ _ := mul_le_mul_of_nonneg_left
           (sumtail_joint_equal_power p2 p3 ε β θ x hp3.le hεθ hβj2 hx) hD
     have hεθ' : 3*ε/2 ≤ θ := by linarith only [hε,hεθ]
     have hj1 : P.real {ω | x/2 < A ω ∧ Real.sqrt x < B ω} ≤ D*2^T*x^(-β+θ) := by
-      have hb := hjoint (x/2) (Real.sqrt x) hxhalf hxsqrt
       calc
-        _ ≤ D*((x/2)^(-p2+ε)*(Real.sqrt x)^(-p3+ε)) := by simpa only [mul_assoc] using hb
+        _ ≤ D*((x/2)^(-p2+ε)*(Real.sqrt x)^(-p3+ε)) := by simpa only [mul_assoc] using (hjoint (x/2) (Real.sqrt x) hxhalf hxsqrt)
         _ ≤ D*(2^T*x^(-β+θ)) := mul_le_mul_of_nonneg_left
           (sumtail_joint_half_sqrt_power T p2 p3 ε β θ x hT hp2T hε hεθ' hβj2 hx4) hD
         _ = _ := by ring
     have hj2 : P.real {ω | Real.sqrt x < A ω ∧ x/2 < B ω} ≤ D*2^T*x^(-β+θ) := by
-      have hb := hjoint (Real.sqrt x) (x/2) hxsqrt hxhalf
       calc
         _ ≤ D*((x/2)^(-p3+ε)*(Real.sqrt x)^(-p2+ε)) := by
-          convert hb using 1
+          convert (hjoint (Real.sqrt x) (x/2) hxsqrt hxhalf) using 1
           ring
         _ ≤ D*(2^T*x^(-β+θ)) := mul_le_mul_of_nonneg_left
           (sumtail_joint_half_sqrt_power T p3 p2 ε β θ x hT hp3T hε hεθ' hβj3 hx4) hD
         _ = _ := by ring
-    have hlo := (two_mass_tail_sandwich P A B hB hA0 hB0 x (Real.sqrt x)).1
-    have hhi := two_mass_tail_half_threshold P A B x (Real.sqrt x)
-    have hlo2 := (abs_le.mp he2x).1
-    have hlo3 := (abs_le.mp he3x).1
-    have hhi2 := (abs_le.mp hs2).2
-    have hhi3 := (abs_le.mp hs3).2
     have herr : |P.real {ω | x < A ω+B ω}-(c2*x^(-p2)+c3*x^(-p3))| ≤
         (2*C+D+2*((C+H*T)*2^(T+1))+2*D*2^T)*x^(-β+θ) := by
       apply abs_le.mpr
-      constructor <;> nlinarith only [hlo,hhi,hlo2,hlo3,hhi2,hhi3,hjx,hj1,hj2,
+      constructor <;> nlinarith only [((two_mass_tail_sandwich P A B hB hA0 hB0 x (Real.sqrt x)).1),(two_mass_tail_half_threshold P A B x (Real.sqrt x)),((abs_le.mp ((hone2 x hx).trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hx (by linarith only [hβe2,hdθ])) hC) : |P.real {ω | x < A ω}-c2*x^(-p2)| ≤ C*x^(-β+θ))).1),((abs_le.mp ((hone3 x hx).trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hx (by linarith only [hβe3,hdθ])) hC) : |P.real {ω | x < B ω}-c3*x^(-p3)| ≤ C*x^(-β+θ))).1),((abs_le.mp (sumtail_shifted_one_error (fun t => P.real {ω | t < A ω}) T p2 e2 d θ β C H c2 x hp2 hp2T he2 hd hdθ hC hH hc2 hx4 hβe2 hβs2 (hone2 _ hxt))).2),((abs_le.mp (sumtail_shifted_one_error (fun t => P.real {ω | t < B ω}) T p3 e3 d θ β C H c3 x hp3 hp3T he3 hd hdθ hC hH hc3 hx4 hβe3 hβs3 (hone3 _ hxt))).2),hjx,hj1,hj2,
         mul_nonneg hCs hpow, mul_nonneg hC hpow, mul_nonneg hD hpow,
         mul_nonneg (show 0 ≤ (C+H*T)*2^(T+1) by positivity) hpow,
         mul_nonneg (show 0 ≤ D*2^T by positivity) hpow]
     exact herr.trans (mul_le_mul_of_nonneg_right (le_add_of_nonneg_left hCs) hpow)
   · have hβT : β ≤ T+1 := by linarith only [hβs2,hp2T]
-    have hsmall := sumtail_small_power_absorption (T+1) β θ x (by positivity) hβT hθ hx (le_of_not_ge hx4)
-    have hp2one : x^(-p2) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hx (by linarith only [hp2])
-    have hp3one : x^(-p3) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hx (by linarith only [hp3])
-    have hcoef2 : |c2*x^(-p2)| ≤ H := by
-      rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hx0.le _)]
-      exact (mul_le_mul_of_nonneg_right hc2 (Real.rpow_nonneg hx0.le _)).trans
-        (by simpa only [mul_one] using mul_le_mul_of_nonneg_left hp2one hH)
-    have hcoef3 : |c3*x^(-p3)| ≤ H := by
-      rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hx0.le _)]
-      exact (mul_le_mul_of_nonneg_right hc3 (Real.rpow_nonneg hx0.le _)).trans
-        (by simpa only [mul_one] using mul_le_mul_of_nonneg_left hp3one hH)
     calc
       _ ≤ |P.real {ω | x < A ω+B ω}|+|c2*x^(-p2)+c3*x^(-p3)| := abs_sub _ _
       _ ≤ 1+(H+H) := add_le_add
         (by rw [abs_of_nonneg measureReal_nonneg]; exact measureReal_le_one)
-        ((abs_add_le _ _).trans (add_le_add hcoef2 hcoef3))
-      _ ≤ ((1+2*H)*4^(T+1))*x^(-β+θ) := by nlinarith only [hsmall,hH]
-      _ ≤ _ := mul_le_mul_of_nonneg_right (le_add_of_nonneg_right hCb) hpow
+        ((abs_add_le _ _).trans (add_le_add (by rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hx0.le _)]; exact (mul_le_mul_of_nonneg_right hc2 (Real.rpow_nonneg hx0.le _)).trans (by simpa only [mul_one] using mul_le_mul_of_nonneg_left (Real.rpow_le_one_of_one_le_of_nonpos hx (by linarith only [hp2])) hH)) (by rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hx0.le _)]; exact (mul_le_mul_of_nonneg_right hc3 (Real.rpow_nonneg hx0.le _)).trans (by simpa only [mul_one] using mul_le_mul_of_nonneg_left (Real.rpow_le_one_of_one_le_of_nonpos hx (by linarith only [hp3])) hH))))
+      _ ≤ ((1+2*H)*4^(T+1))*x^(-β+θ) := by nlinarith only [(sumtail_small_power_absorption (T+1) β θ x (by positivity) hβT (hd.trans hdθ) hx (le_of_not_ge hx4)),hH]
+      _ ≤ _ := mul_le_mul_of_nonneg_right (le_add_of_nonneg_right (by positivity)) hpow
 
 end DOZZ.Proofs

@@ -29,7 +29,7 @@ theorem gaussianHilbertSpan_le_of_mem {Ω I J : Type*} [MeasurableSpace Ω]
 /-- Every actual exterior-pinned test is in the original circle-and-test Gaussian span. -/
 theorem exteriorPinnedTestL2_mem_original_gaussianHilbertSpan {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (R : ℝ) (hR : 0 < R) (f : TestFn) :
+    hX hc R (hR : 0 < R) f :
     exteriorPinnedTestL2 P X Xc hX hc R hR f ∈ gaussianHilbertSpan (gffStructureL2Family X Xc hX hc) := by
   let Z := gffStructureL2Family X Xc hX hc
   have he : exteriorPinnedTestL2 P X Xc hX hc R hR f =
@@ -53,13 +53,13 @@ theorem exteriorPinnedTestL2_mem_original_gaussianHilbertSpan {Ω : Type*} [Meas
 /-- The actual pointwise Poisson limit stays in the original circle-and-test Gaussian span. -/
 theorem poissonFamilyL2_mem_original_gaussianHilbertSpan {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
+    hX hc
+    c R ρ ε (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R hR ω
         (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
-    (z : ℂ) : poissonFamilyL2 P c ρ V hV z ∈ gaussianHilbertSpan (gffStructureL2Family X Xc hX hc) := by
+    z : poissonFamilyL2 P c ρ V hV z ∈ gaussianHilbertSpan (gffStructureL2Family X Xc hX hc) := by
   by_cases hz : z ∈ ball c ρ
   · have ht := tendsto_toLp_of_eLpNorm_sub
       (fun k => exteriorPinnedEvaluation_memLp X Xc hX hc R hR (canonicalPoissonCollarTest c z ρ ε hρ hε hz k))
@@ -73,8 +73,8 @@ theorem poissonFamilyL2_mem_original_gaussianHilbertSpan {Ω : Type*} [Measurabl
 /-- All single-disk harmonic and original test generators belong to the shared original span. -/
 theorem poissonTestFamilyL2_gaussianHilbertSpan_le_original {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
+    hX hc
+    c R ρ ε (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R hR ω
@@ -90,11 +90,11 @@ theorem poissonTestFamilyL2_gaussianHilbertSpan_le_original {Ω : Type*} [Measur
 /-- All completed disk variables share the original circle-and-test Gaussian span. -/
 theorem dirichletCompletedL2Map_mem_original_gaussianHilbertSpan {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
+    hX hc
+    c (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
+    hU
     (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
       covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
         Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
@@ -115,7 +115,7 @@ noncomputable def finiteMarkovTestL2Family {Ω : Type*} [MeasurableSpace Ω] {n 
     | some i => D i f
 
 /-- All finite Dirichlet blocks and their global complement retain joint Gaussianity in a shared span. -/
-theorem finiteMarkovTestL2Family_isGaussianProcess {Ω I : Type*} [MeasurableSpace Ω] {n : ℕ}
+theorem finiteMarkovTestL2Family_isGaussianProcess {Ω I : Type*} [MeasurableSpace Ω] {n}
     (P : Measure Ω) [IsProbabilityMeasure P] (Z : I → Lp ℝ 2 P)
     (hZ : IsGaussianProcess (fun i => ⇑(Z i)) P)
     (Y : TestFn → Lp ℝ 2 P) (D : Fin n → TestFn → Lp ℝ 2 P)
@@ -128,12 +128,12 @@ theorem finiteMarkovTestL2Family_isGaussianProcess {Ω I : Type*} [MeasurableSpa
   | some i => exact hD i p.2
 
 /-- Exact Green mixed covariance and zero cross-disk covariance make each block orthogonal to the complement. -/
-theorem finiteMarkovTestL2Family_covariance_complement_zero {Ω : Type*} [MeasurableSpace Ω] {n : ℕ}
+theorem finiteMarkovTestL2Family_covariance_complement_zero {Ω : Type*} [MeasurableSpace Ω] {n}
     (P : Measure Ω) [IsProbabilityMeasure P] (Y : TestFn → Lp ℝ 2 P)
     (D : Fin n → TestFn → Lp ℝ 2 P)
     (hself : ∀ i f g, covariance (D i f) (Y g) P = covariance (D i f) (D i g) P)
     (hcross : ∀ i j, i ≠ j → ∀ f g, covariance (D i f) (D j g) P = 0)
-    (i : Fin n) (f g : TestFn) :
+    i f g :
     covariance (D i f) (finiteMarkovTestL2Family P Y D none g) P = 0 := by
   classical
   change covariance (D i f) (⇑(Y g-∑ j, D j g)) P = 0
@@ -141,10 +141,7 @@ theorem finiteMarkovTestL2Family_covariance_complement_zero {Ω : Type*} [Measur
   have hsum : covariance (D i f) (⇑(∑ j, D j g)) P = ∑ j, covariance (D i f) (D j g) P := by
     rw [covariance_L2_eq]
     simp_rw [covariance_L2_eq]
-    have hm : (∫ ω, (∑ j, D j g) ω ∂P) = ∑ j, ∫ ω, D j g ω ∂P := by
-      rw [integral_congr_ae (Lp.coeFn_fun_finsetSum Finset.univ (fun j => D j g))]
-      exact integral_finsetSum Finset.univ (fun j _ => (Lp.memLp (D j g)).integrable (by norm_num))
-    rw [inner_sum,hm,Finset.sum_sub_distrib,Finset.mul_sum]
+    rw [inner_sum,(show (∫ ω, (∑ j, D j g) ω ∂P) = ∑ j, ∫ ω, D j g ω ∂P by rw [integral_congr_ae (Lp.coeFn_fun_finsetSum Finset.univ (fun j => D j g))]; exact integral_finsetSum Finset.univ (fun j _ => (Lp.memLp (D j g)).integrable (by norm_num))),Finset.sum_sub_distrib,Finset.mul_sum]
   rw [hsum,Finset.sum_eq_single i]
   · rw [hself,sub_self]
   · intro j hj hji
@@ -158,20 +155,17 @@ theorem covariance_L2_limit_right_eq_zero {Ω : Type*} [MeasurableSpace Ω]
     (hW : Tendsto W atTop (𝓝 V)) (hzero : ∀ k, covariance U (W k) P = 0) :
     covariance U V P = 0 := by
   have ht := tendsto_covariance_of_tendsto_L2 (U := fun _ : ℕ => U) tendsto_const_nhds hW
-  have he : (fun k => covariance U (W k) P) = fun _ : ℕ => (0 : ℝ) := funext hzero
-  rw [he] at ht
+  rw [(funext hzero)] at ht
   exact tendsto_nhds_unique ht tendsto_const_nhds
 
 /-- A collar about one center avoids the closed disk of a separated center. -/
-theorem tsupport_canonicalPoissonCollarTest_exterior_other (c d z : ℂ) (ρ ε δ : ℝ)
+theorem tsupport_canonicalPoissonCollarTest_exterior_other c d z ρ ε δ
     (hρ : 0 < ρ) (hε : 0 < ε) (hεδ : ε < δ)
-    (hsep : 2*ρ+δ ≤ dist c d) (hz : z ∈ ball d ρ) (k : ℕ) :
+    (hsep : 2*ρ+δ ≤ dist c d) (hz : z ∈ ball d ρ) k :
     tsupport (canonicalPoissonCollarTest d z ρ ε hρ hε hz k) ⊆ (closedBall c ρ)ᶜ := by
   intro w hw hc
-  have hann := tsupport_poissonCollarValue_annulus d z ρ (ε/((k : ℝ)+1)) hρ hz
-    (poissonCollarDensity ε hε k) (tsupport_poissonCollarDensity_subset ε hε k) hw
   have hd : dist w d < ρ+ε := by
-    simpa only [dist_eq_norm] using hann.2.trans_le (add_le_add_right (poissonCollarWidth_le ε hε k) ρ)
+    simpa only [dist_eq_norm] using (tsupport_poissonCollarValue_annulus d z ρ (ε/((k : ℝ)+1)) hρ hz (poissonCollarDensity ε hε k) (tsupport_poissonCollarDensity_subset ε hε k) hw).2.trans_le (add_le_add_right (poissonCollarWidth_le ε hε k) ρ)
   have hc' : dist w c ≤ ρ := hc
   have ht := dist_triangle c w d
   rw [dist_comm c w] at ht
@@ -179,10 +173,10 @@ theorem tsupport_canonicalPoissonCollarTest_exterior_other (c d z : ℂ) (ρ ε 
 
 /-- Vanishing on a dense family of interior restrictions makes every completed test orthogonal. -/
 theorem covariance_completed_disk_map_zero_of_interior {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
+    (P : Measure Ω) [IsProbabilityMeasure P] c ρ (hρ : 0 < ρ)
     (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P) (W : Lp ℝ 2 P)
     (hzero : ∀ g : TestFn, tsupport g ⊆ ball c ρ → covariance W (T (diskTestRestrictionL2 c ρ g)) P = 0)
-    (f : TestFn) : covariance W (T (diskTestRestrictionL2 c ρ f)) P = 0 := by
+    f : covariance W (T (diskTestRestrictionL2 c ρ f)) P = 0 := by
   obtain ⟨g,hg,hlim⟩ := exists_interior_test_restriction_approx c ρ hρ f
   exact covariance_L2_limit_right_eq_zero P W _ (fun k => T (diskTestRestrictionL2 c ρ (g k)))
     (T.continuous.tendsto _ |>.comp hlim) (fun k => hzero (g k) (hg k))
@@ -190,8 +184,8 @@ theorem covariance_completed_disk_map_zero_of_interior {Ω : Type*} [MeasurableS
 /-- A pointwise harmonic collar limit is orthogonal to any variable orthogonal to exterior tests. -/
 theorem covariance_poissonFamilyL2_zero_of_exterior_tests {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c d : ℂ) (R ρ ε δ : ℝ) (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
+    hX hc
+    c d R ρ ε δ (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
     (hεδ : ε < δ) (hsep : 2*ρ+δ ≤ dist c d)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball d ρ, MemLp (fun ω => V ω z) 2 P)
     (hlim : ∀ z (hz : z ∈ ball d ρ), Tendsto (fun k => eLpNorm
@@ -200,7 +194,7 @@ theorem covariance_poissonFamilyL2_zero_of_exterior_tests {Ω : Type*} [Measurab
     (W : Lp ℝ 2 P)
     (hzero : ∀ f : TestFn, tsupport f ⊆ (closedBall c ρ)ᶜ →
       covariance W (exteriorPinnedTestL2 P X Xc hX hc R hR f) P = 0)
-    (z : ℂ) : covariance W (poissonFamilyL2 P d ρ V hV z) P = 0 := by
+    z : covariance W (poissonFamilyL2 P d ρ V hV z) P = 0 := by
   let _ := hX.1
   by_cases hz : z ∈ ball d ρ
   · rw [poissonFamilyL2,dite_eq_left hz]
@@ -213,10 +207,7 @@ theorem covariance_poissonFamilyL2_zero_of_exterior_tests {Ω : Type*} [Measurab
       exact hzero _ (tsupport_canonicalPoissonCollarTest_exterior_other c d z ρ ε δ hρ hε hεδ hsep hz k)
   · simp only [poissonFamilyL2,dite_eq_right hz]
     rw [covariance_L2_eq,inner_zero_right]
-    have hm : (∫ ω, (0 : Lp ℝ 2 P) ω ∂P) = 0 := by
-      rw [integral_congr_ae (Lp.coeFn_zero ℝ 2 P)]
-      exact integral_zero Ω ℝ
-    rw [hm,mul_zero,sub_self]
+    rw [(show (∫ ω, (0 : Lp ℝ 2 P) ω ∂P) = 0 by rw [integral_congr_ae (Lp.coeFn_zero ℝ 2 P)]; exact integral_zero Ω ℝ),mul_zero,sub_self]
 
 /-- Orthogonality to every point of a harmonic family passes through compact test integration. -/
 theorem covariance_poissonTestIntegralL2_zero {Ω : Type*} [MeasurableSpace Ω]
@@ -261,30 +252,22 @@ theorem dirichletCompletedL2Map_separated_covariance_zero {Ω : Type*} [Measurab
       (dirichletCompletedL2Map P X Xc hX hc d R ρ (by linarith) W hW hUW (diskTestRestrictionL2 d ρ g)) P = 0 := by
   let _ := hX.1
   let T := dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU
-  let S := dirichletCompletedL2Map P X Xc hX hc d R ρ (by linarith) W hW hUW
   have hext : ∀ t : TestFn, tsupport t ⊆ (closedBall c ρ)ᶜ →
       covariance (T (diskTestRestrictionL2 c ρ f))
         (exteriorPinnedTestL2 P X Xc hX hc R (by linarith) t) P = 0 := by
     intro t ht
     exact dirichletCompletedL2Map_exterior_covariance_zero P X Xc hX hc c R ρ ε hR hρ hε hpin
       V hV hmean hU hcov hlim f t ht
-  apply covariance_completed_disk_map_zero_of_interior P d ρ hρ S (T (diskTestRestrictionL2 c ρ f)) _ g
+  apply covariance_completed_disk_map_zero_of_interior P d ρ hρ (dirichletCompletedL2Map P X Xc hX hc d R ρ (by linarith) W hW hUW) (T (diskTestRestrictionL2 c ρ f)) _ g
   intro t ht
   rw [dirichletCompletedL2Map_apply_interior P X Xc hX hc d R ρ ε hR hρ hε hpinD
     W hW hmeanW hUW hcovW hlimW t ht]
   rw [dirichletResidualL2,covariance_L2_sub_right]
-  have htsep : tsupport t ⊆ (closedBall c ρ)ᶜ := by
-    intro z hz
-    have hz' := ht hz
-    have h := interior_disk_subset_exterior_closed_disk d c ρ δ hδ (by simpa only [dist_comm] using hsep)
-    exact h hz'
-  rw [hext t htsep]
-  have hpoint := covariance_poissonFamilyL2_zero_of_exterior_tests P X Xc hX hc c d R ρ ε δ
-    (by linarith) hρ hε hεδ hsep W hW hlimW (T (diskTestRestrictionL2 c ρ f)) hext
-  rw [covariance_poissonTestIntegralL2_zero P d ρ W hW hmeanW hUW _ hpoint t ht,sub_self]
+  rw [hext t (show tsupport t ⊆ (closedBall c ρ)ᶜ by intro z hz; exact (interior_disk_subset_exterior_closed_disk d c ρ δ hδ (by simpa only [dist_comm] using hsep)) (ht hz))]
+  rw [covariance_poissonTestIntegralL2_zero P d ρ W hW hmeanW hUW _ (covariance_poissonFamilyL2_zero_of_exterior_tests P X Xc hX hc c d R ρ ε δ (by linarith) hρ hε hεδ hsep W hW hlimW (T (diskTestRestrictionL2 c ρ f)) hext) t ht,sub_self]
 
 /-- Coordinatewise versions of the finite Gaussian family retain joint Gaussianity. -/
-theorem finiteMarkovVersion_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω] {n : ℕ}
+theorem finiteMarkovVersion_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω] {n}
     (P : Measure Ω) (Y : TestFn → Lp ℝ 2 P) (D : Fin n → TestFn → Lp ℝ 2 P)
     (U : Option (Fin n) → TestFn → Ω → ℝ)
     (hG : IsGaussianProcess (fun p : (_j : Option (Fin n)) × TestFn =>
@@ -294,7 +277,7 @@ theorem finiteMarkovVersion_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω] 
   hG.congr (fun p => (hU p.1 p.2).symm)
 
 /-- Exact coordinatewise versions of the orthogonal blocks are mutually independent. -/
-theorem finiteMarkovVersion_iIndepFun {Ω : Type*} [MeasurableSpace Ω] {n : ℕ}
+theorem finiteMarkovVersion_iIndepFun {Ω : Type*} [MeasurableSpace Ω] {n}
     (P : Measure Ω) [IsProbabilityMeasure P] (Y : TestFn → Lp ℝ 2 P)
     (D : Fin n → TestFn → Lp ℝ 2 P) (U : Option (Fin n) → TestFn → Ω → ℝ)
     (hG : IsGaussianProcess (fun p : (_j : Option (Fin n)) × TestFn =>
@@ -320,15 +303,14 @@ theorem finiteMarkovVersion_iIndepFun {Ω : Type*} [MeasurableSpace Ω] {n : ℕ
     | some j => exact hcross i j (fun he => hjk (congrArg some he)) f g
 
 /-- The literal finite complementary distribution represents its finite random L² residual. -/
-theorem finiteMarkovComplement_apply_ae_eq {Ω : Type*} [MeasurableSpace Ω] {n : ℕ}
+theorem finiteMarkovComplement_apply_ae_eq {Ω : Type*} [MeasurableSpace Ω] {n}
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (R : ℝ) (hR : 0 < R)
+    hX hc R (hR : 0 < R)
     (D : Fin n → Ω → Distr) (T : Fin n → TestFn → Lp ℝ 2 P)
-    (hD : ∀ i (f : TestFn), (fun ω => D i ω f) =ᵐ[P] ⇑(T i f)) (f : TestFn) :
+    (hD : ∀ i f, (fun ω => D i ω f) =ᵐ[P] ⇑(T i f)) f :
     (fun ω => finiteMarkovComplement X Xc R hR D ω f) =ᵐ[P]
       ⇑(exteriorPinnedTestL2 P X Xc hX hc R hR f-∑ i, T i f) := by
-  have hDa : ∀ᵐ ω ∂P, ∀ i, D i ω f = T i f ω := ae_all_iff.mpr (fun i => hD i f)
-  filter_upwards [hDa,exteriorPinnedTestL2_ae_eq P X Xc hX hc R hR f,
+  filter_upwards [(ae_all_iff.mpr (fun i => hD i f)),exteriorPinnedTestL2_ae_eq P X Xc hX hc R hR f,
     Lp.coeFn_fun_finsetSum Finset.univ (fun i => T i f),
     Lp.coeFn_sub (exteriorPinnedTestL2 P X Xc hX hc R hR f) (∑ i, T i f)] with ω hd hy hs hsub
   rw [finiteMarkovComplement_apply,hsub,Pi.sub_apply,hs]
@@ -352,17 +334,17 @@ theorem diskGreenCovariance_eq_zero_of_exterior_union {n : ℕ} (c : Fin n → �
     (exterior_union_test_eqOn_zero c ρ g hg i)
 
 /-- Each coordinate block of the finite joint Gaussian process is itself Gaussian. -/
-theorem finiteMarkovVersion_block_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω] {n : ℕ}
+theorem finiteMarkovVersion_block_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω] {n}
     (P : Measure Ω) (Y : TestFn → Lp ℝ 2 P) (D : Fin n → TestFn → Lp ℝ 2 P)
     (U : Option (Fin n) → TestFn → Ω → ℝ)
     (hG : IsGaussianProcess (fun p : (_j : Option (Fin n)) × TestFn =>
       ⇑(finiteMarkovTestL2Family P Y D p.1 p.2)) P)
     (hU : ∀ j f, U j f =ᵐ[P] ⇑(finiteMarkovTestL2Family P Y D j f))
-    (j : Option (Fin n)) : IsGaussianProcess (U j) P :=
+    j : IsGaussianProcess (U j) P :=
   (finiteMarkovVersion_isGaussianProcess P Y D U hG hU).comp_right (fun f => ⟨j,f⟩)
 
 /-- A finite family of Dirichlet versions is independent of any orthogonal original test family. -/
-theorem finiteDirichletVersion_indep_pinned {Ω I J : Type*} [MeasurableSpace Ω] {n : ℕ}
+theorem finiteDirichletVersion_indep_pinned {Ω I J : Type*} [MeasurableSpace Ω] {n}
     (P : Measure Ω) [IsProbabilityMeasure P] (Z : I → Lp ℝ 2 P)
     (hZ : IsGaussianProcess (fun i => ⇑(Z i)) P)
     (D : Fin n → TestFn → Lp ℝ 2 P) (Y : J → Lp ℝ 2 P)

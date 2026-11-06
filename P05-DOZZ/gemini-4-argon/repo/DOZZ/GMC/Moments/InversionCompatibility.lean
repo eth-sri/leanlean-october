@@ -22,8 +22,8 @@ namespace DOZZ.Proofs
 any bounded annular chart. Every clause is uniform on compact subsets of that chart. -/
 theorem inversionCircle_compatible_of_coupled_limits
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+    X (hX : IsEquatorGFF P X)
+    Xc (hXc : IsCircleAverage P X Xc)
     (f : (ℂ × ℝ) → ℕ → TestFn)
     (hf : ∀ p n, tsupport (f p n : ℂ → ℝ) ⊆ inversionChart)
     (Z : Ω → ℂ → ℝ → ℝ)
@@ -33,7 +33,7 @@ theorem inversionCircle_compatible_of_coupled_limits
       X ω (inversionTest (f p n) (hf p n)) - Z ω p.1 p.2) 2 P) atTop (𝓝 0))
     (hcov : ∀ x y r s, gaussianCovariance P (fun ω => Z ω x r) (fun ω => Z ω y s) =
       circleKernel x r y s)
-    (U : Set ℂ) {m R : ℝ} (hm : 0 < m) (hR : 0 ≤ R)
+    U {m R} (hm : 0 < m) (hR : 0 ≤ R)
     (hU : ∀ x ∈ U, 2 * m ≤ ‖x‖ ∧ ‖x‖ ≤ R) :
     IsCompatibleAdmissibleRegularizations P U 1 (min (m / 2) 1)
       (fun ω ε x => Xc ω x⁻¹ (Real.log (1 / ε)))
@@ -42,13 +42,9 @@ theorem inversionCircle_compatible_of_coupled_limits
   let e := min (m / 2) 1
   have he1 : e ≤ 1 := min_le_right _ _
   have hem : e ≤ m / 2 := min_le_left _ _
-  have hexp {ε : ℝ} (hε : 0 < ε) : Real.exp (-Real.log (1 / ε)) = ε :=
-    exp_neg_log_one_div hε
-  have hlog {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) : 0 ≤ Real.log (1 / ε) :=
-    log_one_div_nonneg_of_le_one hε hε1
-  have hsrc x y r s : gaussianCovariance P (fun ω => Xc ω x⁻¹ r)
-      (fun ω => Xc ω y⁻¹ s) = circleKernel x⁻¹ r y⁻¹ s :=
-    isCircleAverage_covariance P X hX Xc hXc x⁻¹ y⁻¹ r s
+  have hexp {ε : ℝ} (hε : 0 < ε) := exp_neg_log_one_div hε
+  have hlog {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) := log_one_div_nonneg_of_le_one hε hε1
+  have hsrc x y r s := isCircleAverage_covariance P X hX Xc hXc x⁻¹ y⁻¹ r s
   have hsym x y r s : circleKernel x r y s = circleKernel y s x r := by
     unfold circleKernel
     rw [← isCircleAverage_covariance P X hX Xc hXc x y r s,
@@ -59,23 +55,12 @@ theorem inversionCircle_compatible_of_coupled_limits
       gaussianCovariance P (fun ω => Xc ω x⁻¹ (Real.log (1 / ε)))
         (fun ω => Z ω y (Real.log (1 / δ))) =
       circleAverage (fun u => innerPot x⁻¹ (Real.log (1 / ε)) u⁻¹) y δ := by
-    have hsmall : 2 * Real.exp (-Real.log (1 / δ)) < ‖y‖ := by
-      rw [hexp hδ]
-      have hd := hδe.trans hem
-      linarith only [hd, (hU y hy).1, hm]
-    have ht := inversionCircle_source_gaussianCovariance X hX Xc hXc y
-      (Real.log (1 / δ)) hsmall (fun ω => Z ω y (Real.log (1 / δ)))
-      (hmem _ _) (f (y, Real.log (1 / δ))) (hf _)
-      (hgap _) (hlim _) x⁻¹ (Real.log (1 / ε))
-    simpa only [hexp hδ] using ht
+    simpa only [hexp hδ] using (inversionCircle_source_gaussianCovariance X hX Xc hXc y (Real.log (1 / δ)) (by rw [hexp hδ]; linarith only [(hδe.trans hem), (hU y hy).1, hm]) (fun ω => Z ω y (Real.log (1 / δ))) (hmem _ _) (f (y, Real.log (1 / δ))) (hf _) (hgap _) (hlim _) x⁻¹ (Real.log (1 / ε)))
   let C := (2 * (|Real.log m| + Real.log (R + 1)) + 2) +
     (Real.log 3 + 2 * Real.log (1 + R))
   have hC : 0 ≤ C := by
-    have h1 := Real.log_nonneg (show 1 ≤ R + 1 by linarith only [hR])
-    have h2 := Real.log_nonneg (show 1 ≤ 1 + R by linarith only [hR])
-    have h3 := Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 3)
     dsimp [C]
-    linarith only [h1, h2, h3, abs_nonneg (Real.log m)]
+    linarith only [(Real.log_nonneg (show 1 ≤ R + 1 by linarith only [hR])), (Real.log_nonneg (show 1 ≤ 1 + R by linarith only [hR])), (Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 3)), abs_nonneg (Real.log m)]
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · intro n q _hq
     exact inversionCircle_source_jointly_gaussian X hX Xc hXc
@@ -98,9 +83,7 @@ theorem inversionCircle_compatible_of_coupled_limits
     refine ⟨C, hC, ?_⟩
     intro k _hk ε hε hεb x hx
     have hεe := hεb.trans (min_le_left _ _)
-    rw [hmix (Real.exp_pos _) hε hεe x x (hKU hx)]
-    have hlogk : Real.log (1 / Real.exp (-(k : ℝ))) = k := log_one_div_exp_neg_eq _
-    rw [hlogk]
+    rw [hmix (Real.exp_pos _) hε hεe x x (hKU hx), (log_one_div_exp_neg_eq _)]
     have ht := inversion_mixed_coarse_center_bound_on_annulus hm hR
       (hU x (hKU hx)).1 (hU x (hKU hx)).2 (Nat.cast_nonneg k)
       (hlog hε (hεe.trans he1))
@@ -112,8 +95,7 @@ theorem inversionCircle_compatible_of_coupled_limits
     obtain ⟨δ, hδ, hb⟩ := inversion_separated_kernel_uniform hm hR hd hη
     refine ⟨δ, hδ, ?_⟩
     intro ε δ' hε hεb hδ' hδ'b x hx y hy hdist
-    have hδ'e : δ' ≤ e := hδ'b.trans ((min_le_right _ _).trans (min_le_right _ _))
-    rw [hmix hε hδ' hδ'e x y (hKU hy), hsrc, hcov]
+    rw [hmix hε hδ' (hδ'b.trans ((min_le_right _ _).trans (min_le_right _ _))) x y (hKU hy), hsrc, hcov]
     have ht := hb (Real.log (1 / δ')) (Real.log (1 / ε))
       (by rw [hexp hδ']; exact hδ'b.trans (min_le_left _ _))
       (by rw [hexp hε]; exact hεb.trans (min_le_left _ _))
@@ -127,11 +109,7 @@ theorem inversionCircle_compatible_of_coupled_limits
     obtain ⟨δ, hδ, hb⟩ := inversion_mixed_fixed_coarse_uniform (k : ℝ) hm hη
     refine ⟨δ, hδ, ?_⟩
     intro ε hε hεb x hx y hy
-    have hεe : ε ≤ e := hεb.trans ((min_le_right _ _).trans (min_le_right _ _))
-    rw [DOZZ.Assembly.gaussianCovariance_comm P (fun ω => Z ω x (Real.log (1 / ε)))]
-    rw [hmix (Real.exp_pos _) hε hεe y x (hKU hx), hsrc]
-    have hlogk : Real.log (1 / Real.exp (-(k : ℝ))) = k := log_one_div_exp_neg_eq _
-    rw [hlogk]
+    rw [DOZZ.Assembly.gaussianCovariance_comm P (fun ω => Z ω x (Real.log (1 / ε))), hmix (Real.exp_pos _) hε (hεb.trans ((min_le_right _ _).trans (min_le_right _ _))) y x (hKU hx), hsrc, (log_one_div_exp_neg_eq _)]
     exact hb ε hε (hεb.trans (min_le_left _ _)) x (hU x (hKU hx)).1 y⁻¹
 
 end DOZZ.Proofs

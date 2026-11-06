@@ -36,19 +36,11 @@ theorem holomorphicPicardIterates_norm_le (c : ℂ) (r M : ℝ)
       simp [holomorphicPicardIterates]
   | succ n ih =>
       intro z hz
-      have hd : ‖z - c‖ < r := by simpa [dist_eq_norm] using (Metric.mem_ball.mp hz)
-      have hc : c ∈ Metric.ball c r := Metric.mem_ball_self (lt_of_le_of_lt (norm_nonneg _) hd)
       have hseg : MapsTo (AffineMap.lineMap c z) (Icc (0 : ℝ) 1) (Metric.ball c r) :=
-        (convex_ball c r).mapsTo_lineMap hc hz
+        (convex_ball c r).mapsTo_lineMap (Metric.mem_ball_self (lt_of_le_of_lt (norm_nonneg _) (by simpa [dist_eq_norm] using (Metric.mem_ball.mp hz)))) hz
       let integrand : ℂ → E := fun w => H w ((holomorphicPicardIterates c r H hH y n).1 w)
       have hintegrand : DifferentiableOn ℂ integrand (Metric.ball c r) :=
         hH.clm_apply (holomorphicPicardIterates c r H hH y n).2
-      have hterm : (holomorphicPicardIterates c r H hH y (n + 1)).1 z =
-          ∫ t in (0 : ℝ)..1,
-            (z - c) • integrand (AffineMap.lineMap c z t) := by
-        have hprimitive := normalizedDiskPrimitive_sub_center_eq_segmentIntegral
-          (y := (0 : E)) hintegrand hz
-        simpa [holomorphicPicardIterates, integrand] using hprimitive
       let d : ℝ := ‖z - c‖
       let C : ℝ := ‖y‖ * (M * d) ^ (n + 1) / (n.factorial : ℝ)
       have hpoint : ∀ t ∈ Icc (0 : ℝ) 1,
@@ -60,64 +52,45 @@ theorem holomorphicPicardIterates_norm_le (c : ℂ) (r M : ℝ)
           dsimp [w]
           rw [AffineMap.lineMap_apply_module']
           abel
-        have hnormDelta : ‖w - c‖ = t * d := by
-          rw [hdelta, norm_smul, Real.norm_eq_abs, abs_of_nonneg ht.1]
-        have hprev := ih w hw
         have hprev' : ‖(holomorphicPicardIterates c r H hH y n).1 w‖ ≤
             ‖y‖ * (M * (t * d)) ^ n / (n.factorial : ℝ) := by
-          simpa [hnormDelta] using hprev
-        have hOp := (H w).le_opNorm ((holomorphicPicardIterates c r H hH y n).1 w)
-        have hHnorm : ‖H w‖ ≤ M := hHbound w hw
-        have hpow : (M * (t * d)) ^ n = t ^ n * (M * d) ^ n := by
-          rw [show M * (t * d) = t * (M * d) by ring, mul_pow]
+          simpa [(show ‖w - c‖ = t * d by rw [hdelta, norm_smul, Real.norm_eq_abs, abs_of_nonneg ht.1])] using (ih w hw)
         dsimp [integrand, C, d]
         rw [norm_smul]
         calc
           ‖z - c‖ * ‖H w ((holomorphicPicardIterates c r H hH y n).1 w)‖ ≤
               ‖z - c‖ * (M * ‖(holomorphicPicardIterates c r H hH y n).1 w‖) :=
             mul_le_mul_of_nonneg_left
-              (hOp.trans (mul_le_mul_of_nonneg_right hHnorm (norm_nonneg _))) (norm_nonneg _)
+              (((H w).le_opNorm ((holomorphicPicardIterates c r H hH y n).1 w)).trans (mul_le_mul_of_nonneg_right (hHbound w hw) (norm_nonneg _))) (norm_nonneg _)
           _ ≤ ‖z - c‖ * (M *
               (‖y‖ * (M * (t * ‖z - c‖)) ^ n / (n.factorial : ℝ))) := by
             gcongr
           _ = ‖y‖ * (M * ‖z - c‖) ^ (n + 1) / (n.factorial : ℝ) * t ^ n := by
-            rw [hpow]
+            rw [(show (M * (t * d)) ^ n = t ^ n * (M * d) ^ n by rw [show M * (t * d) = t * (M * d) by ring, mul_pow])]
             ring
       have hsourceCont : ContinuousOn
           (fun t : ℝ => (z - c) • integrand (AffineMap.lineMap c z t)) (Icc 0 1) := by
         exact continuousOn_const.smul
           (hintegrand.continuousOn.comp AffineMap.lineMap_continuous.continuousOn hseg)
-      have hnormInt : IntervalIntegrable
-          (fun t : ℝ => ‖(z - c) • integrand (AffineMap.lineMap c z t)‖) volume 0 1 :=
-        hsourceCont.norm.intervalIntegrable_of_Icc zero_le_one
-      have hmajorCont : ContinuousOn (fun t : ℝ => C * t ^ n) (Icc 0 1) := by fun_prop
-      have hmajorInt : IntervalIntegrable (fun t : ℝ => C * t ^ n) volume 0 1 :=
-        hmajorCont.intervalIntegrable_of_Icc zero_le_one
-      have hmono := intervalIntegral.integral_mono_on
-        (hab := (by norm_num : (0 : ℝ) ≤ 1)) (hf := hnormInt) (hg := hmajorInt) hpoint
-      have hnorm := intervalIntegral.norm_integral_le_integral_norm
-        (μ := volume) (f := fun t : ℝ => (z - c) • integrand (AffineMap.lineMap c z t))
-        (by norm_num : (0 : ℝ) ≤ 1)
       have hintegral :
           ‖∫ t in (0 : ℝ)..1, (z - c) • integrand (AffineMap.lineMap c z t)‖ ≤
             C / (n + 1) := by
         calc
           _ ≤ ∫ t in (0 : ℝ)..1,
-                ‖(z - c) • integrand (AffineMap.lineMap c z t)‖ := hnorm
-          _ ≤ ∫ t in (0 : ℝ)..1, C * t ^ n := hmono
+                ‖(z - c) • integrand (AffineMap.lineMap c z t)‖ := (intervalIntegral.norm_integral_le_integral_norm (μ := volume) (f := fun t : ℝ => (z - c) • integrand (AffineMap.lineMap c z t)) (by norm_num : (0 : ℝ) ≤ 1))
+          _ ≤ ∫ t in (0 : ℝ)..1, C * t ^ n := (intervalIntegral.integral_mono_on (hab := (by norm_num : (0 : ℝ) ≤ 1)) (hf := (hsourceCont.norm.intervalIntegrable_of_Icc zero_le_one)) (hg := ((show ContinuousOn (fun t : ℝ => C * t ^ n) (Icc 0 1) by fun_prop).intervalIntegrable_of_Icc zero_le_one : IntervalIntegrable (fun t : ℝ => C * t ^ n) volume 0 1)) hpoint)
           _ = C / (n + 1) := by
                 rw [intervalIntegral.integral_const_mul, integral_pow]
                 norm_num
                 rfl
-      rw [hterm]
+      rw [(show (holomorphicPicardIterates c r H hH y (n + 1)).1 z = ∫ t in (0 : ℝ)..1, (z - c) • integrand (AffineMap.lineMap c z t) by simpa [holomorphicPicardIterates, integrand] using (normalizedDiskPrimitive_sub_center_eq_segmentIntegral (y := (0 : E)) hintegrand hz))]
       dsimp [C, d] at hintegral ⊢
-      have hn : (n.factorial : ℝ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
       calc
         ‖∫ t in (0 : ℝ)..1, (z - c) • integrand (AffineMap.lineMap c z t)‖ ≤
             ‖y‖ * (M * ‖z - c‖) ^ (n + 1) / (n.factorial : ℝ) / (n + 1) := hintegral
         _ = ‖y‖ * (M * ‖z - c‖) ^ (n + 1) / ((n + 1).factorial : ℝ) := by
           rw [Nat.factorial_succ, Nat.cast_mul]
-          field_simp [hn]
+          field_simp [(by exact_mod_cast Nat.factorial_ne_zero n)]
           push_cast
           ring
 

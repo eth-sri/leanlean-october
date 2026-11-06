@@ -18,16 +18,15 @@ namespace DOZZ.Proofs
 integrability assumption, including at an insertion singularity. -/
 theorem gmc_parameter_lintegral_aemeasurable
     {Ω V : Type*} [MeasurableSpace Ω] [MeasurableSpace V]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (θ : Ω → V) (hθ : AEMeasurable θ P)
     (F : V × ℂ → ℝ≥0∞) (hF : Measurable F) :
     AEMeasurable (fun ω => ∫⁻ x, F (θ ω, x) ∂M ω) P := by
   obtain ⟨N, hNm, hNf, hMN⟩ :=
     equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
-  let Nf : Ω → FiniteMeasure ℂ := fun ω => ⟨N ω, hNf ω⟩
-  have hNfm : Measurable Nf := Measurable.subtype_mk hNm
+  have hNfm : Measurable (fun ω => ⟨N ω, hNf ω⟩ : Ω → FiniteMeasure ℂ) := Measurable.subtype_mk hNm
   have hm := (measurable_lintegral_finiteMeasure_parameter hF).comp_aemeasurable
     (hθ.prodMk hNfm.aemeasurable)
   change AEMeasurable (fun ω => ∫⁻ x, F (θ ω, x) ∂N ω) P at hm
@@ -46,14 +45,12 @@ theorem gmc_parameter_integral_aemeasurable
     (F : V × ℂ → ℝ) (hF : Measurable F) (hF0 : ∀ v x, 0 ≤ F (v,x))
     (hFi : ∀ ω, Integrable (fun x => F (θ ω,x)) (M ω)) :
     AEMeasurable (fun ω => ∫ x, F (θ ω,x) ∂M ω) P := by
-  have hm := gmc_parameter_lintegral_aemeasurable P X hX γ hγ hγ2 M hM
-    θ hθ (fun p => ENNReal.ofReal (F p)) (ENNReal.measurable_ofReal.comp hF)
   have heq (ω : Ω) : (∫⁻ x, ENNReal.ofReal (F (θ ω,x)) ∂M ω).toReal =
       ∫ x, F (θ ω,x) ∂M ω := by
     rw [← ofReal_integral_eq_lintegral_ofReal (hFi ω)
       (ae_of_all _ fun x => hF0 _ x), ENNReal.toReal_ofReal
         (integral_nonneg (fun x => hF0 _ x))]
-  simpa only [heq] using hm.ennreal_toReal
+  simpa only [heq] using (gmc_parameter_lintegral_aemeasurable P X hX γ hγ hγ2 M hM θ hθ (fun p => ENNReal.ofReal (F p)) (ENNReal.measurable_ofReal.comp hF)).ennreal_toReal
 
 
 

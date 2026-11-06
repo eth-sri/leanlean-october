@@ -24,7 +24,7 @@ product of independent standard normal variables. The hypotheses give the sectio
 integrability needed by the one-dimensional lemma and the product integrability needed for
 Fubini. -/
 theorem gaussianReal_pi_coordinate_stein
-    {n : ℕ} (i : Fin (n + 1))
+    {n} i
     (g D : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ)
     (hg : ∀ y r, HasDerivAt
       (fun s => g ((MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => ℝ) i).symm
@@ -51,23 +51,6 @@ theorem gaussianReal_pi_coordinate_stein
   let μ := gaussianReal 0 1
   let ν := Measure.pi (fun _ : Fin n => gaussianReal 0 1)
   let mp := measurePreserving_piFinSuccAbove (fun _ : Fin (n + 1) => μ) i
-  have hleft' : ∫ p, p.1 * g (e.symm p) i ∂(μ.prod ν) =
-      ∫ y, ∫ r, r * g (e.symm (r, y)) i ∂μ ∂ν := by
-    exact integral_prod_symm _ hleft
-  have hright' : ∫ p, D (e.symm p) i ∂(μ.prod ν) =
-      ∫ y, ∫ r, D (e.symm (r, y)) i ∂μ ∂ν := by
-    exact integral_prod_symm _ hright
-  have hsections : ∀ y, (∫ r, r * g (e.symm (r, y)) i ∂μ) =
-      ∫ r, D (e.symm (r, y)) i ∂μ := by
-    intro y
-    have hstein := gaussianReal_standard_stein
-      (fun r => g (e.symm (r, y)) i)
-      (fun r => D (e.symm (r, y)) i)
-      (fun r => hg y r)
-      (by simpa [μ, e] using hgp y)
-      (by simpa [μ, e] using hDp y)
-      (by simpa [μ, e] using hprod y)
-    simpa [μ] using hstein
   calc
     ∫ x, x i * g x i ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1) =
         ∫ p, p.1 * g (e.symm p) i ∂(μ.prod ν) := by
@@ -80,11 +63,11 @@ theorem gaussianReal_pi_coordinate_stein
                   simp [e]
             _ = ∫ p, p.1 * g (e.symm p) i ∂(μ.prod ν) :=
                   mp.integral_comp' (fun p => p.1 * g (e.symm p) i)
-    _ = ∫ y, ∫ r, r * g (e.symm (r, y)) i ∂μ ∂ν := hleft'
+    _ = ∫ y, ∫ r, r * g (e.symm (r, y)) i ∂μ ∂ν := (by exact integral_prod_symm _ hleft)
     _ = ∫ y, ∫ r, D (e.symm (r, y)) i ∂μ ∂ν := by
           apply integral_congr_ae
-          exact ae_of_all _ hsections
-    _ = ∫ p, D (e.symm p) i ∂(μ.prod ν) := hright'.symm
+          exact ae_of_all _ (by intro y; simpa [μ] using (gaussianReal_standard_stein (fun r => g (e.symm (r, y)) i) (fun r => D (e.symm (r, y)) i) (fun r => hg y r) (by simpa [μ, e] using hgp y) (by simpa [μ, e] using hDp y) (by simpa [μ, e] using hprod y)))
+    _ = ∫ p, D (e.symm p) i ∂(μ.prod ν) := (show ∫ p, D (e.symm p) i ∂(μ.prod ν) = ∫ y, ∫ r, D (e.symm (r, y)) i ∂μ ∂ν by exact integral_prod_symm _ hright).symm
     _ = ∫ x, D x i ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1) := by
           calc
             ∫ p, D (e.symm p) i ∂(μ.prod ν) =
@@ -124,8 +107,7 @@ theorem gaussianLinearImage_pi_integration_by_parts
     fun x i => ∑ k, A i k * x k
   have hterm (k : Fin (n + 1)) :
       Integrable (fun x : Fin (n + 1) → ℝ => A i k *
-        (x k * G (fun r => ∑ l, A r l * x l))) μ := by
-    exact (hGint k).const_mul _
+        (x k * G (fun r => ∑ l, A r l * x l))) μ := (hGint k).const_mul _
   have hsumEq : (fun x : Fin (n + 1) → ℝ =>
       (∑ k, A i k * x k) * G (X x)) =
       fun x => ∑ k, A i k * (x k * G (X x)) := by
@@ -186,8 +168,8 @@ theorem gaussianLinearImage_pi_integration_by_parts
 of independent standard normals. The covariance is the row Gram matrix of the image matrix,
 including when that matrix is singular. -/
 theorem centeredJointlyGaussian_standardLinearRepresentation
-    {Ω : Type*} [MeasurableSpace Ω] {n : ℕ}
-    (P : Measure Ω) (Z : Ω → Fin (n + 1) → ℝ)
+    {Ω : Type*} [MeasurableSpace Ω] {n}
+    (P : Measure Ω) Z
     (hZ : DOZZ.IsCenteredJointlyGaussian P Z) :
     ∃ A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ,
       P.map Z = (Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1).map
@@ -196,9 +178,9 @@ theorem centeredJointlyGaussian_standardLinearRepresentation
         ∑ k, A i k * A j k := by
   classical
   obtain ⟨S, hS, hLaw, hEntry⟩ := represent P Z hZ
-  let A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ := CFC.sqrt S
+  let A := CFC.sqrt S
   let E := EuclideanSpace ℝ (Fin (n + 1))
-  let L : E →L[ℝ] E := toEuclideanCLM (𝕜 := ℝ) A
+  let L := toEuclideanCLM (𝕜 := ℝ) A
   let b := EuclideanSpace.basisFun (Fin (n + 1)) ℝ
   have hstd : stdGaussian E =
       (Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1).map
@@ -206,9 +188,8 @@ theorem centeredJointlyGaussian_standardLinearRepresentation
     rw [stdGaussian_eq_map_pi_orthonormalBasis b]
     congr 1
     funext x
-    have hb := b.sum_repr (WithLp.toLp 2 x)
     ext i
-    simpa [b, EuclideanSpace.basisFun_repr] using (congrArg (fun y : E => y i) hb.symm).symm
+    simpa [b, EuclideanSpace.basisFun_repr] using (congrArg (fun y : E => y i) (b.sum_repr (WithLp.toLp 2 x)).symm).symm
   have hrootmap : ((stdGaussian E).map L).map (WithLp.ofLp) =
       (Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1).map
         (fun x => Matrix.mulVec A x) := by
@@ -226,15 +207,6 @@ theorem centeredJointlyGaussian_standardLinearRepresentation
       _ = _ := by
             congr 1
   let Y : Ω → E := fun ω => WithLp.toLp 2 (Z ω)
-  have hmapY : P.map Y = multivariateGaussian 0 S := hLaw
-  have hZae : AEMeasurable Z P := by
-    apply AEMeasurable.of_eval
-    intro i
-    exact hZ.2.1 i
-  have hYae : AEMeasurable Y P := by
-    exact (WithLp.measurable_toLp 2 (Fin (n + 1) → ℝ)).aemeasurable.comp_aemeasurable hZae
-  have hOfLp : Measurable (WithLp.ofLp : E → Fin (n + 1) → ℝ) :=
-    WithLp.measurable_ofLp 2 (Fin (n + 1) → ℝ)
   have hmapZ : P.map Z =
       (Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1).map
         (fun x => Matrix.mulVec A x) := by
@@ -244,27 +216,20 @@ theorem centeredJointlyGaussian_standardLinearRepresentation
           P.map Z = P.map (WithLp.ofLp ∘ Y) := by
             congr 1
           _ = (P.map Y).map (WithLp.ofLp) :=
-            (AEMeasurable.map_map_of_aemeasurable hOfLp.aemeasurable hYae).symm
-      _ = (multivariateGaussian 0 S).map (WithLp.ofLp) := by rw [hmapY]
+            (AEMeasurable.map_map_of_aemeasurable (WithLp.measurable_ofLp 2 (Fin (n + 1) → ℝ)).aemeasurable (by exact (WithLp.measurable_toLp 2 (Fin (n + 1) → ℝ)).aemeasurable.comp_aemeasurable (by apply AEMeasurable.of_eval; intro i; exact hZ.2.1 i))).symm
+      _ = (multivariateGaussian 0 S).map (WithLp.ofLp) := by rw [hLaw]
       _ = ((stdGaussian E).map L).map (WithLp.ofLp) := by
         rw [multivariateGaussian]
         simp only [zero_add]
         rfl
       _ = _ := hrootmap
-  have hAself : IsSelfAdjoint A := by
-    dsimp [A]
-    exact (CFC.sqrt_nonneg S).isSelfAdjoint
-  have hAsq : A * A = S := by
-    dsimp [A]
-    exact CFC.sqrt_mul_sqrt_self S hS.nonneg
-  have hAsymm (i j : Fin (n + 1)) : A i j = A j i := by
-    have h := congrArg (fun M : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ => M i j) hAself
-    simpa using h.symm
+  have hAsymm i j : A i j = A j i := by
+    simpa using (congrArg (fun M : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ => M i j) (show IsSelfAdjoint A by dsimp [A]; exact (CFC.sqrt_nonneg S).isSelfAdjoint)).symm
   refine ⟨A, hmapZ, ?_⟩
   intro i j
   rw [← hEntry i j]
   calc
-    S i j = (A * A) i j := by rw [hAsq]
+    S i j = (A * A) i j := by rw [(show A * A = S by dsimp [A]; exact CFC.sqrt_mul_sqrt_self S hS.nonneg)]
     _ = ∑ k, A i k * A j k := by
       rw [Matrix.mul_apply]
       apply Finset.sum_congr rfl

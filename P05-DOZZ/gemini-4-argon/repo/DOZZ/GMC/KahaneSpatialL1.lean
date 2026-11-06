@@ -20,13 +20,10 @@ theorem spatial_sample_integrable
     {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
     (P : Measure Ω) [IsProbabilityMeasure P]
     (ν : Measure S) [IsProbabilityMeasure ν] (f : Ω → S → ℝ)
-    (hf : Integrable (fun p : Ω × S => f p.1 p.2) (P.prod ν)) (i : ℕ) :
+    (hf : Integrable (fun p : Ω × S => f p.1 p.2) (P.prod ν)) i :
     Integrable (fun p : Ω × (ℕ → S) => f p.1 (p.2 i))
       (P.prod (Measure.infinitePi (fun _ : ℕ => ν))) := by
-  have heval : MeasurePreserving (fun q : ℕ → S => q i)
-      (Measure.infinitePi (fun _ : ℕ => ν)) ν :=
-    ⟨measurable_pi_apply i, Measure.infinitePi_map_eval (fun _ : ℕ => ν) i⟩
-  exact ((MeasurePreserving.id P).prod heval).integrable_comp_of_integrable hf
+  exact ((MeasurePreserving.id P).prod ⟨measurable_pi_apply i, Measure.infinitePi_map_eval (fun _ : ℕ => ν) i⟩).integrable_comp_of_integrable hf
 
 /-- Every finite spatial sample average is integrable. -/
 theorem spatial_empirical_average_integrable
@@ -59,19 +56,14 @@ theorem spatial_empirical_average_L1
   let avg : ℕ → Ω × (ℕ → S) → ℝ :=
     fun n p => (n : ℝ)⁻¹ * ∑ i : Fin n, f p.1 (p.2 i.val)
   let g : Ω × (ℕ → S) → ℝ := fun p => ∫ x, f p.1 x ∂ν
-  have heval (i : ℕ) : MeasurePreserving (fun q : ℕ → S => q i) Q ν :=
+  have heval i : MeasurePreserving (fun q : ℕ → S => q i) Q ν :=
     ⟨measurable_pi_apply i, Measure.infinitePi_map_eval (fun _ : ℕ => ν) i⟩
-  have hmap (i : ℕ) : MeasurePreserving
-      (fun p : Ω × (ℕ → S) => (p.1, p.2 i)) μ (P.prod ν) :=
-    (MeasurePreserving.id P).prod (heval i)
-  have hterm (i : ℕ) : Integrable (fun p : Ω × (ℕ → S) => f p.1 (p.2 i)) μ :=
-    (hmap i).integrable_comp_of_integrable hf
-  have htermMean (i : ℕ) : (∫ p : Ω × (ℕ → S), f p.1 (p.2 i) ∂μ) =
+  have hmap (i : ℕ) := (MeasurePreserving.id P).prod (heval i)
+  have hterm (i : ℕ) := (hmap i).integrable_comp_of_integrable hf
+  have htermMean i : (∫ p : Ω × (ℕ → S), f p.1 (p.2 i) ∂μ) =
       ∫ p : Ω × S, f p.1 p.2 ∂(P.prod ν) := by
     rw [← (hmap i).map_eq] at hf ⊢
     exact (integral_map (hmap i).measurable.aemeasurable hf.aestronglyMeasurable).symm
-  have havg (n : ℕ) : Integrable (avg n) μ :=
-    (integrable_finsetSum Finset.univ (fun i _ => hterm i.val)).const_mul _
   have hg : Integrable g μ := by
     change Integrable (fun p : Ω × (ℕ → S) => (∫ x, f p.1 x ∂ν)) (P.prod Q)
     exact hf.integral_prod_left.comp_fst Q
@@ -86,8 +78,7 @@ theorem spatial_empirical_average_L1
     dsimp [avg]
     rw [integral_const_mul, integral_finsetSum _ (fun i _ => hterm i.val)]
     simp_rw [htermMean]
-    rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-    rw [← mul_assoc, inv_mul_cancel₀ (by exact_mod_cast hn.ne'), one_mul, hgmean]
+    rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, ← mul_assoc, inv_mul_cancel₀ (by exact_mod_cast hn.ne'), one_mul, hgmean]
   have hlim : ∀ᵐ p ∂μ, Tendsto (fun n => avg n p) atTop (𝓝 (g p)) := by
     apply (Measure.ae_prod_iff_ae_ae ?_).2
     · exact ae_empirical_average_tendsto P ν f hjoint hf.prod_right_ae
@@ -97,7 +88,7 @@ theorem spatial_empirical_average_L1
           hjoint.comp (measurable_fst.prodMk
             ((measurable_pi_apply i.val).comp measurable_snd)))
       · exact hjoint.stronglyMeasurable.integral_prod_right'.measurable.comp measurable_fst
-  exact nonneg_integral_abs_sub_tendsto_zero μ avg g havg hg
+  exact nonneg_integral_abs_sub_tendsto_zero μ avg g (fun n => (integrable_finsetSum Finset.univ (fun i _ => hterm i.val)).const_mul _) hg
     (fun n => ae_of_all _ fun p => mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg n))
       (Finset.sum_nonneg fun i _ => hnonneg _ _))
     (ae_of_all _ fun p => integral_nonneg fun x => hnonneg _ _) hlim hmean

@@ -50,8 +50,7 @@ theorem regularizedGMC_joint_circle_tilt
     simpa [L] using
       (circleAverage_sum_isGaussianL2Limit P X hX Xc hXc
         (fun _ : Fin 1 => γ) (fun _ => u) r)
-  have hcovCont : Continuous covCircle := by
-    exact continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
+  have hcovCont := continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
       P X hX Xc hXc L hL r
   have hVariance : gaussianVariance P L = γ ^ 2 * V u := by
     rw [gaussianVariance, gaussianCovariance]
@@ -78,32 +77,13 @@ theorem regularizedGMC_joint_circle_tilt
             rw [isCircleAverage_cross_covariance P X hX Xc hXc]
   obtain ⟨Z, hZcoord, hZae, hZmeas⟩ :=
     exists_measurable_continuousCircleProfile P X hX Xc hXc r
-  let Hroot : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := H
-  have hHroot : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => Hroot q.1 q.2) := hH
-  have hTransport := equatorGFF_tilted_test_continuousCircle_cutoff_lintegral
-    P X hX Xc hXc r 1 γ L hL Z hZmeas hZae hcovCont Hroot hHroot
-  have hProfileAE := continuousCircleCutoffMeasure_ae_eq_regularizedGMC
-    P X hX Xc hXc γ r Z hZmeas hZae
-  have hProfileShiftAE := continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity
-    P X hX Xc hXc γ r 1 Z hZmeas hZae covCircle hcovCont
-  have hWick : ∀ ω,
-      ENNReal.ofReal (Real.exp (1 * L ω - 1 ^ 2 / 2 * gaussianVariance P L)) = wick ω := by
-    intro ω
-    rw [hVariance]
-    simp [wick, L]
-    ring_nf
-  have hTiltMeasureEq : P.withDensity (fun ω => ENNReal.ofReal (Real.exp
-      (1 * L ω - 1 ^ 2 / 2 * gaussianVariance P L))) = P.withDensity wick := by
-    apply withDensity_congr_ae
-    exact ae_of_all P hWick
-  have hProfileUnderWick :=
-    (withDensity_absolutelyContinuous P wick).ae_le hProfileAE
+  let Hroot := H
   have hleftProfile :
       (∫⁻ ω, H (fun f => X ω f)
         (continuousCircleCutoffMeasure V γ (Z ω)) ∂P.withDensity wick) =
       ∫⁻ ω, H (fun f => X ω f) (regularizedGMC P Xc γ r ω) ∂P.withDensity wick := by
     apply lintegral_congr_ae
-    filter_upwards [hProfileUnderWick] with ω hω
+    filter_upwards [((withDensity_absolutelyContinuous P wick).ae_le (continuousCircleCutoffMeasure_ae_eq_regularizedGMC P X hX Xc hXc γ r Z hZmeas hZae))] with ω hω
     rw [hω]
   have hrightProfile :
       (∫⁻ ω, Hroot
@@ -114,7 +94,7 @@ theorem regularizedGMC_joint_circle_tilt
         ((regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
           (Real.exp (γ * covCircle x)))) ∂P := by
     apply lintegral_congr_ae
-    filter_upwards [hProfileShiftAE] with ω hω
+    filter_upwards [(continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity P X hX Xc hXc γ r 1 Z hZmeas hZae covCircle hcovCont)] with ω hω
     rw [hω]
     simp only [mul_one]
     have hfield (f : TestFn) : X ω f + 1 * gaussianCovariance P (fun ω' => X ω' f) L =
@@ -124,28 +104,13 @@ theorem regularizedGMC_joint_circle_tilt
     congr 1
     funext f
     exact hfield f
-  have htrans :
-      (∫⁻ ω, H (field ω)
-        (continuousCircleCutoffMeasure V γ (Z ω)) ∂P.withDensity
-          (fun ω => ENNReal.ofReal (Real.exp
-            (1 * L ω - 1 ^ 2 / 2 * gaussianVariance P L)))) =
-      ∫⁻ ω, Hroot
-        (fun f => X ω f + 1 * gaussianCovariance P (fun ω' => X ω' f) L)
-        (continuousCircleCutoffMeasure V γ
-        (continuousCircleProfileShift Z covCircle hcovCont 1 ω)) ∂P := by
-    simpa [V] using hTransport
   have hwickMeas : Measurable wick := by
     dsimp [wick]
-    have hxcu : Measurable (fun ω : Ω => Xc ω u r) :=
+    have : Measurable (fun ω : Ω => Xc ω u r) :=
       (hXc.1 r).comp (Measurable.prodMk measurable_id measurable_const)
     fun_prop
-  have hfieldMeas : Measurable field := by
-    rw [measurable_pi_iff]
-    exact fun f => (hX.2 f).1
-  have hregMeas : Measurable (fun ω => regularizedGMC P Xc γ r ω) :=
-    regularizedGMC_measurable P X hX Xc hXc γ r
   have hHrawMeas : Measurable (fun ω => H (field ω) (regularizedGMC P Xc γ r ω)) :=
-    hH.comp (Measurable.prodMk hfieldMeas hregMeas)
+    hH.comp (Measurable.prodMk (by rw [measurable_pi_iff]; exact fun f => (hX.2 f).1) (regularizedGMC_measurable P X hX Xc hXc γ r))
   calc
     _ = ∫⁻ ω, H (fun f => X ω f) (regularizedGMC P Xc γ r ω) ∂P.withDensity wick := by
           symm
@@ -159,11 +124,11 @@ theorem regularizedGMC_joint_circle_tilt
           (continuousCircleCutoffMeasure V γ (Z ω)) ∂P.withDensity
             (fun ω => ENNReal.ofReal (Real.exp
               (1 * L ω - 1 ^ 2 / 2 * gaussianVariance P L))) := by
-          rw [hTiltMeasureEq]
+          rw [(show P.withDensity (fun ω => ENNReal.ofReal (Real.exp (1 * L ω - 1 ^ 2 / 2 * gaussianVariance P L))) = P.withDensity wick by apply withDensity_congr_ae; exact ae_of_all P (by intro ω; rw [hVariance]; simp [wick, L]; ring_nf))]
     _ = ∫⁻ ω, Hroot
           (fun f => X ω f + 1 * gaussianCovariance P (fun ω' => X ω' f) L)
           (continuousCircleCutoffMeasure V γ
-            (continuousCircleProfileShift Z covCircle hcovCont 1 ω)) ∂P := htrans
+            (continuousCircleProfileShift Z covCircle hcovCont 1 ω)) ∂P := (by simpa [V] using (equatorGFF_tilted_test_continuousCircle_cutoff_lintegral P X hX Xc hXc r 1 γ L hL Z hZmeas hZae hcovCont Hroot hH))
     _ = ∫⁻ ω, H (fieldShift ω)
           ((regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
             (Real.exp (γ * covCircle x)))) ∂P := hrightProfile

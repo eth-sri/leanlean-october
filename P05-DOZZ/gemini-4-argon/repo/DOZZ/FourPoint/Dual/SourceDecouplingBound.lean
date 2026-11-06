@@ -35,12 +35,12 @@ noncomputable def dualCopiedSeparatedInverseMoment {Ω : Type*} [MeasurableSpace
 /-- The actual signed decoupling error is uniformly at most a constant times the relative
 radius. Finiteness of both expectations follows from the supplied GMC's fixed disk moments. -/
 theorem dual_source_decoupling_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun v : Ω × (ℂ × ℝ) => Xc v.1 v.2.1 v.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun v : ℂ × ℝ => Xc ω v.1 v.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ q : ℝ) (hq : 0 < q) :
+    γ (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    α₁ α₂ α₃ q (hq : 0 < q) :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, ‖z‖ ≤ 1 → ∀ s r : ℝ,
       0 < s → 0 < r → r ≤ 1 → s/r ≤ 1/2 →
       (3*γ^2/2*(q^2+q))*(s/r) ≤ 1 →
@@ -53,34 +53,20 @@ theorem dual_source_decoupling_bound
   obtain ⟨C₀, hC₀, hguard⟩ := dual_spatial_guard_inverse_uniform P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ q hq.le
   let d := 3*γ^2/2*(q^2+q)
-  have hd : 0 < d := by dsimp only [d]; positivity
   refine ⟨(2*Real.exp 1*C₀)*d, by positivity, ?_⟩
   intro z hz s r hs hr hr1 hsep ht1
   obtain ⟨N, hN, hi, hfin, heq, hcmp⟩ := dual_source_separated_regions_comparison
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM α₁ α₂ α₃ z hz s r hs hr hr1 hsep q hq
   refine ⟨N, hN, hi, hfin, heq, ?_⟩
-  have hD := (reflected_separated_region_geometry s r hs hr hr1 hsep).2.2.2.2.2.2.2.2
   have ha : dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z s r ≤ ENNReal.ofReal C₀ := by
     apply le_trans (lintegral_mono ?_) (hguard z hz)
     intro ω
-    have hb : (∫⁻ x in Metric.closedBall (3 : ℂ) (1/8),
-        ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω) ≤
-        (∫⁻ x in reflected_innerRegion s,
-          ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω)+
-        (∫⁻ x in reflected_outerRegion r,
-          ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω) :=
-      (lintegral_mono_set hD).trans (le_add_left le_rfl)
     dsimp only
     rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
-    exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hb hq.le)
-  have hex : γ^2*(3*(s/r))/2*(q^2+q) = d*(s/r) := by dsimp only [d]; ring
+    exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow ((lintegral_mono_set ((reflected_separated_region_geometry s r hs hr hr1 hsep).2.2.2.2.2.2.2.2)).trans (le_add_left le_rfl)) hq.le)
   dsimp only at hcmp
-  rw [hex] at hcmp
-  have hb := dual_lateral_comparison_real_bound
-    (dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z s r)
-    (dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ q z s r)
-    (d*(s/r)) C₀ (mul_nonneg hd.le (div_pos hs hr).le) ht1 hC₀.le ha hcmp.1 hcmp.2
-  convert hb using 1
+  rw [(show γ^2*(3*(s/r))/2*(q^2+q) = d*(s/r) by dsimp only [d]; ring)] at hcmp
+  convert (dual_lateral_comparison_real_bound (dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z s r) (dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ q z s r) (d*(s/r)) C₀ (mul_nonneg (show 0 < d by dsimp only [d]; positivity).le (div_pos hs hr).le) ht1 hC₀.le ha hcmp.1 hcmp.2) using 1
   ring
 
 end DOZZ.Proofs

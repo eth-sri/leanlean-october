@@ -27,111 +27,16 @@ private def gaussNegativeCrossingUpperSet : Set ℂ :=
 private def gaussNegativeCrossingLowerSet : Set ℂ :=
   gaussNegativeCrossingDisk ∩ {z : ℂ | z.im < 0}
 
-private theorem gaussNegativeCrossingUpperSet_isOpen :
-    IsOpen gaussNegativeCrossingUpperSet := by
-  exact gaussNegativeCrossingDisk_isOpen.inter (isOpen_Ioi.preimage Complex.continuous_im)
 
-private theorem gaussNegativeCrossingLowerSet_isOpen :
-    IsOpen gaussNegativeCrossingLowerSet := by
-  exact gaussNegativeCrossingDisk_isOpen.inter (isOpen_Iio.preimage Complex.continuous_im)
 
-private theorem gaussNegativeCrossingDisk_subset_regularPlane :
-    gaussNegativeCrossingDisk ⊆ gaussRegularPlane := by
-  intro z hz
-  change z ≠ 0 ∧ z ≠ 1
-  have hx := gaussNegativeCrossingDisk_real_bounds hz
-  constructor
-  · intro he
-    have hre : z.re = 0 := by rw [he]; simp
-    linarith
-  · intro he
-    have hre : z.re = 1 := by rw [he]; simp
-    linarith
 
-private theorem gaussNegativeCrossingSlitPlane_isOpen : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
-    (isOpen_Iio.preimage Complex.continuous_re)
 
-private theorem gaussNegativeCrossingPhase_star
-    (c : ℝ) :
-    star (Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)))) =
-      Complex.exp (-((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)))) := by
-  simp only [Complex.star_def]
-  rw [← Complex.exp_conj]
-  congr 1
-  simp only [map_mul, map_ofNat, Complex.conj_ofReal, Complex.conj_I, map_sub, map_one]
-  ring_nf
 
-private theorem gaussNegativeCrossingPhase_star_mul_self
-    (c : ℝ) :
-    star (Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)))) *
-      Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ))) = 1 := by
-  rw [gaussNegativeCrossingPhase_star]
-  rw [← Complex.exp_add]
-  rw [show -((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ))) +
-      (2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)) = 0 by ring,
-    Complex.exp_zero]
 
-private theorem gaussNegativeCrossingUpper_closure :
-    gaussNegativeCrossingCenter ∈ closure gaussNegativeCrossingUpperSet := by
-  apply mem_closure_iff_nhds.mpr
-  intro s hs
-  obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp hs
-  let r : ℝ := min (ε / 2) (1 / 8)
-  have hr : 0 < r := lt_min (by linarith) (by norm_num)
-  have hrε : r < ε := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-  have hrquarter : r < (1 / 4 : ℝ) :=
-    lt_of_le_of_lt (min_le_right _ _) (by norm_num)
-  let w : ℂ := gaussNegativeCrossingCenter + (r : ℂ) * Complex.I
-  have hwNear : w ∈ Metric.ball gaussNegativeCrossingCenter ε := by
-    rw [Metric.mem_ball, dist_eq_norm]
-    calc
-      ‖w - gaussNegativeCrossingCenter‖ = ‖(r : ℂ) * Complex.I‖ := by simp [w]
-      _ = r := by simp [Real.norm_eq_abs, abs_of_pos hr]
-      _ < ε := hrε
-  have hwDisk : w ∈ gaussNegativeCrossingDisk := by
-    change dist w gaussNegativeCrossingCenter < (1 / 4 : ℝ)
-    rw [dist_eq_norm]
-    calc
-      ‖w - gaussNegativeCrossingCenter‖ = ‖(r : ℂ) * Complex.I‖ := by simp [w]
-      _ = r := by simp [Real.norm_eq_abs, abs_of_pos hr]
-      _ < (1 / 4 : ℝ) := hrquarter
-  have hwUpper : 0 < w.im := by
-    simp [w, gaussNegativeCrossingCenter, Complex.add_im, hr]
-  exact ⟨w, hball hwNear, ⟨hwDisk, hwUpper⟩⟩
 
-private theorem gaussNegativeCrossingLower_closure :
-    gaussNegativeCrossingCenter ∈ closure
-      (gaussNegativeCrossingDisk ∩ {z : ℂ | z.im < 0}) := by
-  apply mem_closure_iff_nhds.mpr
-  intro s hs
-  obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp hs
-  let r : ℝ := min (ε / 2) (1 / 8)
-  have hr : 0 < r := lt_min (by linarith) (by norm_num)
-  have hrε : r < ε := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-  have hrquarter : r < (1 / 4 : ℝ) :=
-    lt_of_le_of_lt (min_le_right _ _) (by norm_num)
-  let w : ℂ := gaussNegativeCrossingCenter - (r : ℂ) * Complex.I
-  have hwNear : w ∈ Metric.ball gaussNegativeCrossingCenter ε := by
-    rw [Metric.mem_ball, dist_eq_norm]
-    calc
-      ‖w - gaussNegativeCrossingCenter‖ = ‖-((r : ℂ) * Complex.I)‖ := by simp [w]
-      _ = r := by simp [Real.norm_eq_abs, abs_of_pos hr]
-      _ < ε := hrε
-  have hwDisk : w ∈ gaussNegativeCrossingDisk := by
-    change dist w gaussNegativeCrossingCenter < (1 / 4 : ℝ)
-    rw [dist_eq_norm]
-    calc
-      ‖w - gaussNegativeCrossingCenter‖ = ‖-((r : ℂ) * Complex.I)‖ := by simp [w]
-      _ = r := by simp [Real.norm_eq_abs, abs_of_pos hr]
-      _ < (1 / 4 : ℝ) := hrquarter
-  have hwLower : w.im < 0 := by
-    simp [w, gaussNegativeCrossingCenter, Complex.sub_im, hr]
-  exact ⟨w, hball hwNear, ⟨hwDisk, hwLower⟩⟩
 
 private theorem crossing_functions_match_jets_of_eqOn
-    {S : Set ℂ} {z : ℂ} (hS : IsOpen S) (hz : z ∈ closure S)
+    {S} {z} (hS : IsOpen S) (hz : z ∈ closure S)
     {F G : ℂ → ℂ}
     (hF : ContDiffAt ℝ 2 F z) (hG : ContDiffAt ℝ 2 G z)
     (hFdiff : ∀ w ∈ S, DifferentiableAt ℝ F w)
@@ -139,30 +44,17 @@ private theorem crossing_functions_match_jets_of_eqOn
     (hEq : ∀ w ∈ S, F w = G w) :
     F z = G z ∧ wirtingerZ F z = wirtingerZ G z := by
   have hfreq := mem_closure_iff_frequently.mp hz
-  have hvalueFreq : ∃ᶠ w in 𝓝 z, F w = G w := hfreq.mono hEq
-  have hvalue := tendsto_nhds_unique_of_frequently_eq
-    hF.continuousAt.tendsto hG.continuousAt.tendsto hvalueFreq
-  have hFz : DifferentiableAt ℝ (fun w => wirtingerZ F w) z :=
-    differentiableAt_wirtingerZ_of_contDiffAt_two hF
-  have hGz : DifferentiableAt ℝ (fun w => wirtingerZ G w) z :=
-    differentiableAt_wirtingerZ_of_contDiffAt_two hG
-  have hderivFreq : ∃ᶠ w in 𝓝 z, wirtingerZ F w = wirtingerZ G w := by
-    exact hfreq.mono fun w hw => by
-      have hnear : F =ᶠ[𝓝 w] G := by
-        filter_upwards [hS.mem_nhds hw] with v hv
-        exact hEq v hv
-      exact wirtingerZ_congr_of_eventuallyEq (hFdiff w hw) (hGdiff w hw) hnear
-  have hderiv := tendsto_nhds_unique_of_frequently_eq
-    hFz.continuousAt.tendsto hGz.continuousAt.tendsto hderivFreq
-  exact ⟨hvalue, hderiv⟩
+  have hderivFreq := hfreq.mono fun w hw => by
+      exact wirtingerZ_congr_of_eventuallyEq (hFdiff w hw) (hGdiff w hw) (by filter_upwards [hS.mem_nhds hw] with v hv; exact hEq v hv)
+  exact ⟨(tendsto_nhds_unique_of_frequently_eq hF.continuousAt.tendsto hG.continuousAt.tendsto (hfreq.mono hEq)), (tendsto_nhds_unique_of_frequently_eq (differentiableAt_wirtingerZ_of_contDiffAt_two hF).continuousAt.tendsto (differentiableAt_wirtingerZ_of_contDiffAt_two hG).continuousAt.tendsto hderivFreq)⟩
 
 /-- The canonical Hermitian tensor of a real Gauss solution has no off-diagonal term. The
 negative-cut crossing compares its two local representatives at the seam, including their value
 and first `∂z` jet; a nonzero Wronskian then removes the off-diagonal entries. -/
 theorem realGaussSolution_canonical_hermitian_offDiagonal_zero
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
+    {H} (hH : IsGaussHypergeometricFamily H)
     (a b c : ℝ) (hc : ∀ n : ℤ, c ≠ (n : ℝ))
-    (T : ℂ → ℝ) (hT : IsRealGaussSolution a b c T) :
+    T (hT : IsRealGaussSolution a b c T) :
     ∃ α δ : ℝ, ∃ β : ℂ,
       (∀ z ∈ gaussCutPlane,
         (T z : ℂ) =
@@ -173,6 +65,78 @@ theorem realGaussSolution_canonical_hermitian_offDiagonal_zero
               star (star β * gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z +
                 (δ : ℂ) * gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z)) ∧
       β = 0 := by
+  have gaussNegativeCrossingLower_closure : gaussNegativeCrossingCenter ∈ closure (gaussNegativeCrossingDisk ∩ {z : ℂ | z.im < 0}) := by
+    apply mem_closure_iff_nhds.mpr
+    intro s hs
+    obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp hs
+    let r := min (ε / 2) (1 / 8)
+    have hr : 0 < r := lt_min (by linarith) (by norm_num)
+    let w := gaussNegativeCrossingCenter - (r : ℂ) * Complex.I
+    have hwNear : w ∈ Metric.ball gaussNegativeCrossingCenter ε := by
+      rw [Metric.mem_ball, dist_eq_norm]
+      calc
+        ‖w - gaussNegativeCrossingCenter‖ = ‖-((r : ℂ) * Complex.I)‖ := by simp [w]
+        _ = r := by simp [Real.norm_eq_abs, abs_of_pos hr]
+        _ < ε := (lt_of_le_of_lt (min_le_left _ _) (by linarith))
+    have hwDisk : w ∈ gaussNegativeCrossingDisk := by
+      change dist w gaussNegativeCrossingCenter < (1 / 4 : ℝ)
+      rw [dist_eq_norm]
+      calc
+        ‖w - gaussNegativeCrossingCenter‖ = ‖-((r : ℂ) * Complex.I)‖ := by simp [w]
+        _ = r := by simp [Real.norm_eq_abs, abs_of_pos hr]
+        _ < (1 / 4 : ℝ) := (lt_of_le_of_lt (min_le_right _ _) (by norm_num))
+    exact ⟨w, hball hwNear, ⟨hwDisk, (by simp [w, gaussNegativeCrossingCenter, Complex.sub_im, hr])⟩⟩
+  have gaussNegativeCrossingUpper_closure : gaussNegativeCrossingCenter ∈ closure gaussNegativeCrossingUpperSet := by
+    apply mem_closure_iff_nhds.mpr
+    intro s hs
+    obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp hs
+    let r := min (ε / 2) (1 / 8)
+    have hr : 0 < r := lt_min (by linarith) (by norm_num)
+    let w := gaussNegativeCrossingCenter + (r : ℂ) * Complex.I
+    have hwNear : w ∈ Metric.ball gaussNegativeCrossingCenter ε := by
+      rw [Metric.mem_ball, dist_eq_norm]
+      calc
+        ‖w - gaussNegativeCrossingCenter‖ = ‖(r : ℂ) * Complex.I‖ := by simp [w]
+        _ = r := by simp [Real.norm_eq_abs, abs_of_pos hr]
+        _ < ε := (lt_of_le_of_lt (min_le_left _ _) (by linarith))
+    have hwDisk : w ∈ gaussNegativeCrossingDisk := by
+      change dist w gaussNegativeCrossingCenter < (1 / 4 : ℝ)
+      rw [dist_eq_norm]
+      calc
+        ‖w - gaussNegativeCrossingCenter‖ = ‖(r : ℂ) * Complex.I‖ := by simp [w]
+        _ = r := by simp [Real.norm_eq_abs, abs_of_pos hr]
+        _ < (1 / 4 : ℝ) := (lt_of_le_of_lt (min_le_right _ _) (by norm_num))
+    exact ⟨w, hball hwNear, ⟨hwDisk, (by simp [w, gaussNegativeCrossingCenter, Complex.add_im, hr])⟩⟩
+  have gaussNegativeCrossingPhase_star_mul_self : star (Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)))) * Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ))) = 1 := by
+    have gaussNegativeCrossingPhase_star (c : ℝ) : star (Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)))) = Complex.exp (-((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)))) := by
+      simp only [Complex.star_def]
+      rw [← Complex.exp_conj]
+      congr 1
+      simp only [map_mul, map_ofNat, Complex.conj_ofReal, Complex.conj_I, map_sub, map_one]
+      ring_nf
+    rw [gaussNegativeCrossingPhase_star, ← Complex.exp_add]
+    rw [show -((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ))) +
+        (2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)) = 0 by ring,
+      Complex.exp_zero]
+  have gaussNegativeCrossingSlitPlane_isOpen : IsOpen gaussSlitPlane := by
+    change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 1})
+    exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
+      (isOpen_Iio.preimage Complex.continuous_re)
+  have gaussNegativeCrossingDisk_subset_regularPlane : gaussNegativeCrossingDisk ⊆ gaussRegularPlane := by
+    intro z hz
+    change z ≠ 0 ∧ z ≠ 1
+    have hx := gaussNegativeCrossingDisk_real_bounds hz
+    constructor
+    · intro he
+      have hre : z.re = 0 := by rw [he]; simp
+      linarith
+    · intro he
+      have hre : z.re = 1 := by rw [he]; simp
+      linarith
+  have gaussNegativeCrossingLowerSet_isOpen : IsOpen gaussNegativeCrossingLowerSet := by
+    exact gaussNegativeCrossingDisk_isOpen.inter (isOpen_Iio.preimage Complex.continuous_im)
+  have gaussNegativeCrossingUpperSet_isOpen : IsOpen gaussNegativeCrossingUpperSet := by
+    exact gaussNegativeCrossingDisk_isOpen.inter (isOpen_Ioi.preimage Complex.continuous_im)
   obtain ⟨α, δ, β, hrep⟩ :=
     realGaussSolution_canonical_hermitian_representation hH a b c hc T hT
   have hcC : ∀ n : ℤ, (c : ℂ) ≠ (n : ℂ) := by
@@ -183,15 +147,10 @@ theorem realGaussSolution_canonical_hermitian_offDiagonal_zero
     intro n hn
     apply hcC (-(n : ℤ))
     exact hn.trans (by simp)
-  have hchar := hH (a : ℂ) (b : ℂ) (c : ℂ) hcNat
-  have hFanalyticSlit : AnalyticOnNhd ℂ
-      (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussSlitPlane :=
-    hchar.1.analyticOnNhd gaussNegativeCrossingSlitPlane_isOpen
-  let f : ℂ → ℂ := gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)
-  let g : ℂ → ℂ := gaussNegativeCrossingSecond H (a : ℂ) (b : ℂ) (c : ℂ)
+  let f := gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)
+  let g := gaussNegativeCrossingSecond H (a : ℂ) (b : ℂ) (c : ℂ)
   let F : ℂ → ℂ := fun z => (T z : ℂ)
-  have hf : AnalyticOnNhd ℂ f gaussNegativeCrossingDisk := by
-    exact hFanalyticSlit.mono (by simpa [f] using gaussNegativeCrossingDisk_subset_gaussSlitPlane)
+  have hf : AnalyticOnNhd ℂ f gaussNegativeCrossingDisk := ((hH (a : ℂ) (b : ℂ) (c : ℂ) hcNat).1.analyticOnNhd gaussNegativeCrossingSlitPlane_isOpen).mono (by simpa [f] using gaussNegativeCrossingDisk_subset_gaussSlitPlane)
   have hg : AnalyticOnNhd ℂ g gaussNegativeCrossingDisk := by
     simpa [g] using gaussNegativeCrossingSecond_analyticOnNhd hH
       (a : ℂ) (b : ℂ) (c : ℂ) hcC
@@ -202,27 +161,26 @@ theorem realGaussSolution_canonical_hermitian_offDiagonal_zero
       (gaussRegularPlane_isOpen.mem_nhds hzReg)
     change ContDiffAt ℝ 2 (fun w => Complex.ofRealCLM (T w)) z
     exact Complex.ofRealCLM.contDiff.contDiffAt.comp z hTAt
-  let phase : ℂ :=
-    Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)))
+  let phase := Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - (c : ℂ)))
   have hphaseNe : phase ≠ 1 := by
     simpa [phase] using gaussZeroMonodromyPhase_ne_one c hc
   have hphaseUnit : star phase * phase = 1 := by
     dsimp [phase]
-    exact gaussNegativeCrossingPhase_star_mul_self c
+    exact gaussNegativeCrossingPhase_star_mul_self
   have hphase0 : phase ≠ 0 := Complex.exp_ne_zero _
-  have hphaseStar : star phase = phase⁻¹ := eq_inv_of_mul_eq_one_left hphaseUnit
+  have hphaseStar := eq_inv_of_mul_eq_one_left hphaseUnit
   have hphaseInvStar : star (phase⁻¹) = phase := by
     calc
       star (phase⁻¹) = (star phase)⁻¹ := by simp
       _ = (phase⁻¹)⁻¹ := by rw [hphaseStar]
       _ = phase := by simp
-  have hphaseInvUnit : phase⁻¹ * phase = 1 := inv_mul_cancel₀ hphase0
-  have hphaseMulInvUnit : phase * phase⁻¹ = 1 := mul_inv_cancel₀ hphase0
-  let Qup : ℂ → ℂ := hermitianQuadraticTensor f g
+  have hphaseInvUnit := inv_mul_cancel₀ hphase0
+  have hphaseMulInvUnit := mul_inv_cancel₀ hphase0
+  let Qup := hermitianQuadraticTensor f g
     (α : ℂ) (star β) β (δ : ℂ)
-  let Bdown : ℂ := star β * phase
-  let Cdown : ℂ := β * phase⁻¹
-  let Qdown : ℂ → ℂ := hermitianQuadraticTensor f g
+  let Bdown := star β * phase
+  let Cdown := β * phase⁻¹
+  let Qdown := hermitianQuadraticTensor f g
     (α : ℂ) Bdown Cdown (δ : ℂ)
   have hQupAt : ∀ z ∈ gaussNegativeCrossingDisk, ContDiffAt ℝ 2 Qup z := by
     intro z hz
@@ -338,11 +296,7 @@ theorem realGaussSolution_canonical_hermitian_offDiagonal_zero
         (δ : ℂ) * deriv g gaussNegativeCrossingCenter *
           star (g gaussNegativeCrossingCenter) at hderiv
     linear_combination hderiv
-  have hOffDiag := hermitianOffDiagonal_eq_zero_of_value_and_z_derivative
-    (f gaussNegativeCrossingCenter) (g gaussNegativeCrossingCenter)
-    (deriv f gaussNegativeCrossingCenter) (deriv g gaussNegativeCrossingCenter)
-    (Bdown - star β) (Cdown - β) hW hβHerm h₀ h₁
-  have hCzero : Cdown - β = 0 := hOffDiag.2
+  have hCzero := (hermitianOffDiagonal_eq_zero_of_value_and_z_derivative (f gaussNegativeCrossingCenter) (g gaussNegativeCrossingCenter) (deriv f gaussNegativeCrossingCenter) (deriv g gaussNegativeCrossingCenter) (Bdown - star β) (Cdown - β) hW hβHerm h₀ h₁).2
   have hphaseInvNe : phase⁻¹ ≠ 1 := by
     intro h
     apply hphaseNe

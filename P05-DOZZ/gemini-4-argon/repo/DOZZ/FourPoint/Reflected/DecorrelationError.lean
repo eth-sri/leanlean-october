@@ -36,11 +36,11 @@ noncomputable def reflected_copied_separatedMoment {Ω : Type*} [MeasurableSpace
 /-- A specified actual source carrier gives a uniform finite error bound. No copied moment
 bound is assumed: the copied moment's finiteness follows from the source comparison. -/
 theorem reflected_source_separated_moment_error
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) X
+    Xc (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    γ (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N)
     (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
     (hwhole : ∀ (f : ℂ → ℝ≥0∞), Measurable f →
@@ -90,15 +90,13 @@ theorem reflected_source_separated_moment_error
         rw [hω]
         exact ennreal_rpow_antitone_of_nonpos (le_add_left le_rfl) (neg_nonpos.mpr hq.le)
       _ ≤ _ := hCbound z ξ hz hr1
-  have hoFin : original ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top ho
+  have hoFin := ne_top_of_le_ne_top ENNReal.ofReal_ne_top ho
   have hm1 : 1 ≤ m := Real.one_le_exp (by
     exact mul_nonneg (div_nonneg (mul_nonneg (sq_nonneg γ)
       (mul_nonneg (by norm_num) (div_pos hs hr).le)) (by norm_num))
       (add_nonneg (sq_nonneg q) hq.le))
   obtain ⟨hcFin,herr⟩ := reflected_moment_comparison_error original copied m hm1 hoFin hb.1 hb.2
-  have hoReal : original.toReal ≤ C := by
-    simpa only [ENNReal.toReal_ofReal hC.le] using ENNReal.toReal_mono ENNReal.ofReal_ne_top ho
   refine ⟨hoFin,hcFin,herr.trans ?_⟩
-  exact mul_le_mul_of_nonneg_left hoReal (mul_nonneg (sub_nonneg.mpr hm1) (zero_le_one.trans hm1))
+  exact mul_le_mul_of_nonneg_left (by simpa only [ENNReal.toReal_ofReal hC.le] using ENNReal.toReal_mono ENNReal.ofReal_ne_top ho) (mul_nonneg (sub_nonneg.mpr hm1) (zero_le_one.trans hm1))
 
 end DOZZ.Proofs

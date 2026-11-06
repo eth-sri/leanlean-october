@@ -16,7 +16,7 @@ open scoped ENNReal
 namespace DOZZ.Proofs
 
 theorem localized_mass_comparison
-    (μ : Measure ℂ) (z : ℂ) (δ : ℝ)
+    (μ : Measure ℂ) z δ
     (χ : ℂ → ℝ) (hχ : ∀ x, 0 ≤ χ x ∧ χ x ≤ 1)
     (hχzero : ∀ x ∉ Metric.ball z 1, χ x = 0)
     (hχone : ∀ x ∈ Metric.ball z δ, χ x = 1)
@@ -51,7 +51,7 @@ theorem localized_mass_comparison
       exact zero_le
 
 theorem copied_mass_comparison
-    (μ : Measure ℂ) (δ ρ : ℝ) (hδρ : δ ≤ ρ) (hρ1 : ρ ≤ 1)
+    (μ : Measure ℂ) δ ρ (hδρ : δ ≤ ρ) (hρ1 : ρ ≤ 1)
     (χ : ℂ → ℝ) (hχ : ∀ x, 0 ≤ χ x ∧ χ x ≤ 1)
     (hχzero : ∀ x ∉ Metric.ball (0 : ℂ) ρ, χ x = 0)
     (hχone : ∀ x ∈ Metric.ball (0 : ℂ) δ, χ x = 1)
@@ -66,14 +66,13 @@ theorem copied_mass_comparison
   have hb := (Metric.isOpen_ball (x := (0 : ℂ)) (ε := (1 : ℝ))).measurableSet
   have hρm := (Metric.isOpen_ball (x := (0 : ℂ)) (ε := ρ)).measurableSet
   have hd := hb.diff ((Metric.isOpen_ball (x := (0 : ℂ)) (ε := δ)).measurableSet)
-  have hsub : Metric.ball (0 : ℂ) ρ ⊆ Metric.ball 0 1 := Metric.ball_subset_ball hρ1
   constructor
   · rw [← lintegral_indicator hb,← lintegral_indicator hρm,← lintegral_add_left (hv.indicator hb)]
     apply lintegral_mono
     intro x
     dsimp only
     by_cases hx : x ∈ Metric.ball (0 : ℂ) ρ
-    · rw [indicator_of_mem hx,indicator_of_mem (hsub hx)]
+    · rw [indicator_of_mem hx,indicator_of_mem ((Metric.ball_subset_ball hρ1) hx)]
       exact (mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).2)).trans (huv x hx).1
     · rw [hχzero x hx,ENNReal.ofReal_zero,zero_mul]
       exact zero_le

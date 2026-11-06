@@ -13,7 +13,7 @@ public import DOZZ.Correlations.Tails.OffCenterWickCopy
 namespace DOZZ.Proofs
 
 /-- A global exponential increment bound, valid without a smallness restriction. -/
-theorem exp_sub_one_bound (t : ℝ) :
+theorem exp_sub_one_bound t :
     |Real.exp t - 1| ≤ |t| * Real.exp |t| := by
   by_cases ht : 0 ≤ t
   · rw [abs_of_nonneg ht, abs_of_nonneg (sub_nonneg.mpr (Real.one_le_exp ht))]
@@ -22,7 +22,7 @@ theorem exp_sub_one_bound (t : ℝ) :
     nlinarith
   · have ht' : t < 0 := lt_of_not_ge ht
     rw [abs_of_neg ht', abs_of_nonpos (sub_nonpos.mpr (Real.exp_le_one_iff.mpr ht'.le))]
-    have h := Real.add_one_le_exp t
+    have := Real.add_one_le_exp t
     have he : 1 ≤ Real.exp (-t) := Real.one_le_exp (by linarith)
     nlinarith
 
@@ -31,13 +31,11 @@ noncomputable def pinCorrectionEnvelope (z : ℂ) (γ N Nbar : ℝ) : ℝ :=
   |γ| / (2 * Real.log ‖z‖) * |Nbar - N| + γ ^ 2
 
 /-- The correction exponent has a uniform linear bound on the unit insertion disk. -/
-theorem pin_correction_exponent_bound (z x : ℂ) (γ N Nbar : ℝ)
+theorem pin_correction_exponent_bound z x (γ N Nbar : ℝ)
     (hz : 2 ≤ ‖z‖) (hx : ‖x‖ ≤ 1) :
     |γ * localPinCoefficient z x * (Nbar - N) -
       γ ^ 2 * (Real.log ‖z + x‖ - Real.log ‖z‖)| ≤
       pinCorrectionEnvelope z γ N Nbar * ‖x‖ := by
-  have hc := local_pin_coefficient_bound z x hz hx
-  have hp := offCenter_pin_potential_bound z x hz hx
   calc
     _ ≤ |γ * localPinCoefficient z x * (Nbar - N)| +
         |γ ^ 2 * (Real.log ‖z + x‖ - Real.log ‖z‖)| := abs_sub _ _
@@ -46,9 +44,9 @@ theorem pin_correction_exponent_bound (z x : ℂ) (γ N Nbar : ℝ)
       rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg (sq_nonneg γ)]
     _ ≤ |γ| * (‖x‖ / (2 * Real.log ‖z‖)) * |Nbar - N| + γ ^ 2 * ‖x‖ := by
       exact add_le_add
-        (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hc (abs_nonneg γ))
+        (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (local_pin_coefficient_bound z x hz hx) (abs_nonneg γ))
           (abs_nonneg _))
-        (mul_le_mul_of_nonneg_left hp (sq_nonneg γ))
+        (mul_le_mul_of_nonneg_left (offCenter_pin_potential_bound z x hz hx) (sq_nonneg γ))
     _ = _ := by unfold pinCorrectionEnvelope; ring
 
 end DOZZ.Proofs

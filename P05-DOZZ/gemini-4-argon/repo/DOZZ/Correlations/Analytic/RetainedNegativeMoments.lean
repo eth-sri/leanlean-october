@@ -17,8 +17,8 @@ namespace DOZZ.Proofs
 /-- A sufficiently large retained region contains the fixed exterior disk used for negative
 moments. This inclusion is uniform in the charge vector. -/
 theorem exterior_ball_subset_retainedRegion
-    {N : ℕ} (z : Fin N → ℂ) (R : ℝ) (hR : 1 ≤ R)
-    (hz : ∀ i, 2 * ‖z i‖ ≤ R) (r : ℝ) (hr : 0 ≤ r) (hout : R + 2 ≤ Real.exp r) :
+    {N} (z : Fin N → ℂ) R (hR : 1 ≤ R)
+    (hz : ∀ i, 2 * ‖z i‖ ≤ R) r (hr : 0 ≤ r) (hout : R + 2 ≤ Real.exp r) :
     Metric.ball (((R + 1 : ℝ)) : ℂ) (1 / 8) ⊆ retainedRegion z r := by
   intro x hx
   rw [Metric.mem_ball, dist_eq_norm] at hx
@@ -36,8 +36,8 @@ theorem exterior_ball_subset_retainedRegion
 /-- The fixed-disk lower bound persists after restricting to a retained region containing that
 disk. This applies to every charge vector, without a first-moment condition. -/
 theorem retained_coulomb_mass_ge_exterior_ball
-    {N : ℕ} (μ : Measure ℂ) (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ)
-    (O : Set ℂ) (R : ℝ) (hR : 1 ≤ R) (hz : ∀ i, 2 * ‖z i‖ ≤ R)
+    {N} (μ : Measure ℂ) γ (α : Fin N → ℝ) (z : Fin N → ℂ) αinf
+    O R (hR : 1 ≤ R) (hz : ∀ i, 2 * ‖z i‖ ≤ R)
     (hO : Metric.ball (((R + 1 : ℝ)) : ℂ) (1 / 8) ⊆ O) :
     ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
         ENNReal.ofReal ((R + 2) ^ (-|γ * αinf|)) *
@@ -51,11 +51,11 @@ theorem retained_coulomb_mass_ge_exterior_ball
 /-- All nonpositive real moments of a retained weighted mass are finite as soon as one fixed
 exterior disk is retained. -/
 theorem retained_coulomb_mass_nonpos_moment_finite
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) (O : Set ℂ)
-    (R : ℝ) (hR : 1 ≤ R) (hz : ∀ i, 2 * ‖z i‖ ≤ R)
+    {Ω : Type*} [MeasurableSpace Ω] {N}
+    (P : Measure Ω) X (hX : IsEquatorGFF P X)
+    γ (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    (α : Fin N → ℝ) (z : Fin N → ℂ) αinf O
+    R (hR : 1 ≤ R) (hz : ∀ i, 2 * ‖z i‖ ≤ R)
     (hO : Metric.ball (((R + 1 : ℝ)) : ℂ) (1 / 8) ⊆ O) (p : ℝ) (hp : p ≤ 0) :
     (∫⁻ ω, (∫⁻ x in O, coulombWeight γ α z αinf x ∂M ω) ^ p ∂P) < ⊤ := by
   let c := ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
@@ -65,18 +65,13 @@ theorem retained_coulomb_mass_nonpos_moment_finite
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'
   have hct : c ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
-  have hm := gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM B
-    Metric.isOpen_ball.measurableSet
-  have hi : (∫⁻ ω, M ω B ^ p ∂P) < ⊤ :=
-    gmc_ball_moment_lt_top_any_center P X hX γ hγ hγ2 M hM _ (1 / 8)
-      (by norm_num) le_rfl p (lt_of_le_of_lt hp (by positivity))
   calc
     _ ≤ ∫⁻ ω, (c * M ω B) ^ p ∂P := lintegral_mono (fun ω =>
       ennreal_rpow_antitone_of_nonpos
         (retained_coulomb_mass_ge_exterior_ball (M ω) γ α z αinf O R hR hz hO) hp)
     _ = c ^ p * (∫⁻ ω, M ω B ^ p ∂P) := by
       simp_rw [ennreal_mul_rpow_of_ne_zero_ne_top _ _ hc0 hct p]
-      exact lintegral_const_mul'' _ (hm.pow_const p)
-    _ < ⊤ := ENNReal.mul_lt_top (ENNReal.rpow_ne_top_of_ne_zero hc0 hct).lt_top hi
+      exact lintegral_const_mul'' _ ((gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM B Metric.isOpen_ball.measurableSet).pow_const p)
+    _ < ⊤ := ENNReal.mul_lt_top (ENNReal.rpow_ne_top_of_ne_zero hc0 hct).lt_top (gmc_ball_moment_lt_top_any_center P X hX γ hγ hγ2 M hM _ (1 / 8) (by norm_num) le_rfl p (lt_of_le_of_lt hp (by positivity)))
 
 end DOZZ.Proofs

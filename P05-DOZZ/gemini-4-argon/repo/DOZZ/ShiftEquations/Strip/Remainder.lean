@@ -15,7 +15,7 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- Extended-real version of the fixed-order positive/inverse moment error bound. -/
-theorem lastone_ennreal_add_rpow_le (a b : ℝ≥0∞) (p q : ℝ)
+theorem lastone_ennreal_add_rpow_le (a b : ℝ≥0∞) p q
     (ha0 : a ≠ 0) (haT : a ≠ ⊤) (hbT : b ≠ ⊤)
     (hp : 0 < p) (hpq : p ≤ q) (hq1 : q ≤ 1) :
     (a + b) ^ p ≤ a ^ p + ENNReal.ofReal (p / q) *
@@ -25,12 +25,9 @@ theorem lastone_ennreal_add_rpow_le (a b : ℝ≥0∞) (p q : ℝ)
   have hBp : b ^ (2 * q) ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg (by positivity) hbT
   have hAi : a ^ (-2 * q) ≠ ⊤ := ENNReal.rpow_ne_top_of_ne_zero ha0 haT
   have h2B : (2 : ℝ≥0∞) * b ^ (2 * q) ≠ ⊤ := ENNReal.mul_ne_top (by norm_num) hBp
-  have hK : 1 + 2 * b ^ (2 * q) + a ^ (-2 * q) ≠ ⊤ :=
-    ENNReal.add_ne_top.mpr ⟨ENNReal.add_ne_top.mpr ⟨ENNReal.one_ne_top, h2B⟩, hAi⟩
   have hE : ENNReal.ofReal (p / q) * (1 + 2 * b ^ (2 * q) + a ^ (-2 * q)) ≠ ⊤ :=
-    ENNReal.mul_ne_top ENNReal.ofReal_ne_top hK
-  have hsum := ENNReal.add_ne_top.mpr ⟨haT, hbT⟩
-  apply (ENNReal.toReal_le_toReal (ENNReal.rpow_ne_top_of_nonneg hp.le hsum)
+    ENNReal.mul_ne_top ENNReal.ofReal_ne_top (ENNReal.add_ne_top.mpr ⟨ENNReal.add_ne_top.mpr ⟨ENNReal.one_ne_top, h2B⟩, hAi⟩)
+  apply (ENNReal.toReal_le_toReal (ENNReal.rpow_ne_top_of_nonneg hp.le (ENNReal.add_ne_top.mpr ⟨haT, hbT⟩))
     (ENNReal.add_ne_top.mpr ⟨hAp, hE⟩)).mp
   rw [← ENNReal.toReal_rpow, ENNReal.toReal_add haT hbT,
     ENNReal.toReal_add hAp hE, ENNReal.toReal_mul,
@@ -93,13 +90,10 @@ theorem lastone_addition_smallPower_limit
           (add_le_add (add_le_add le_rfl (mul_le_mul' le_rfl hbi)) hai))
     have hEt : ENNReal.ofReal (e i / q) * K ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top hK
     have hRt := ENNReal.add_ne_top.mpr ⟨hmi.ne, hEt⟩
-    have hSt := ne_top_of_le_ne_top hRt hupp
-    have hlow := ENNReal.toReal_mono hSt (lintegral_mono fun ω =>
-      ENNReal.rpow_le_rpow (le_add_right le_rfl) hpi.le)
     have huppR := ENNReal.toReal_mono hRt hupp
     rw [ENNReal.toReal_add hmi.ne hEt, ENNReal.toReal_mul,
       ENNReal.toReal_ofReal (div_pos hpi hq).le] at huppR
-    exact ⟨hlow, huppR⟩
+    exact ⟨(ENNReal.toReal_mono (ne_top_of_le_ne_top hRt hupp) (lintegral_mono fun ω => ENNReal.rpow_le_rpow (le_add_right le_rfl) hpi.le)), huppR⟩
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le' hlim
     (h := fun i => (∫⁻ ω, A i ω ^ e i ∂P).toReal + e i / q * K.toReal)
   · simpa using hlim.add ((he.div_const q).mul_const K.toReal)

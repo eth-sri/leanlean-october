@@ -27,14 +27,9 @@ theorem exists_everywhere_finite_measure_version
       Measurable N ∧ (∀ ω, IsFiniteMeasure (N ω)) ∧ ∀ᵐ ω ∂P, N ω = M ω := by
   classical
   let good : Set Ω := {ω | M ω Set.univ < ∞}
-  have hEval : Measurable (fun ω => M ω Set.univ) :=
-    (Measure.measurable_coe MeasurableSet.univ).comp hM
-  have hgood : MeasurableSet good := by
-    dsimp [good]
-    measurability
+  have := (Measure.measurable_coe MeasurableSet.univ).comp hM
   let N : Ω → Measure ℂ := fun ω => if ω ∈ good then M ω else 0
-  have hN : Measurable N := Measurable.ite hgood hM measurable_const
-  refine ⟨N, hN, ?_, ?_⟩
+  refine ⟨N, (Measurable.ite (by dsimp [good]; measurability) hM measurable_const), ?_, ?_⟩
   · intro ω
     by_cases hω : ω ∈ good
     · have hmass : M ω Set.univ < ∞ := by simpa [good] using hω
@@ -42,8 +37,7 @@ theorem exists_everywhere_finite_measure_version
     · have hzero : IsFiniteMeasure (0 : Measure ℂ) := ⟨by simp⟩
       simpa [N, hω] using hzero
   · filter_upwards [hfinite] with ω hω
-    have hmass : M ω Set.univ < ∞ := hω.measure_univ_lt_top
-    simp [N, good, hmass]
+    simp [N, good, hω.measure_univ_lt_top]
 
 /-- Compact-test convergence in measure is unchanged when the limiting random measure is modified
 on a null set. -/

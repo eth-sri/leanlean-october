@@ -30,8 +30,7 @@ theorem measurable_markedMeasure_family
       fun ω => ∫⁻ u, S.indicator (fun _ => (1 : ℝ≥0∞)) (u, q ω) ∂M ω := by
     funext ω
     rw [Measure.map_apply (hmap ω) hS]
-    have hi := lintegral_indicator_const_comp (μ := M ω) (f := fun u : U => (u, q ω)) (hmap ω) hS 1
-    simpa only [one_mul] using hi.symm
+    simpa only [one_mul] using (lintegral_indicator_const_comp (μ := M ω) (f := fun u : U => (u, q ω)) (hmap ω) hS 1).symm
   rw [heq]
   apply measurable_lintegral_finite_family M hM hfinite
     (fun p : Ω × U => S.indicator (fun _ => (1 : ℝ≥0∞)) (p.2, q p.1))
@@ -49,7 +48,7 @@ theorem isFiniteMeasure_bind_markedMeasure
   rw [Measure.bind_apply MeasurableSet.univ
     (measurable_markedMeasure_family M hM hfinite q hq).aemeasurable]
   have heq (ω : Ω) : Measure.map (fun u => (u, q ω)) (M ω) Set.univ = M ω Set.univ := by
-    rw [Measure.map_apply (show Measurable (fun u : U => (u, q ω)) from
+    rw [Measure.map_apply (show Measurable (fun u => (u, q ω)) from
       measurable_id.prodMk measurable_const) MeasurableSet.univ,
       Set.preimage_univ]
   simpa only [heq] using hmean
@@ -69,7 +68,7 @@ theorem bind_markedMeasure_apply_prod
     ← lintegral_indicator (hD.preimage hq)]
   apply lintegral_congr
   intro ω
-  rw [Measure.map_apply (show Measurable (fun u : U => (u, q ω)) from
+  rw [Measure.map_apply (show Measurable (fun u => (u, q ω)) from
       measurable_id.prodMk measurable_const) (hA.prod hD)]
   by_cases hω : q ω ∈ D
   · rw [Set.indicator_of_mem (show ω ∈ q ⁻¹' D from hω)]
@@ -77,9 +76,6 @@ theorem bind_markedMeasure_apply_prod
     ext u
     simp only [Set.mem_preimage, Set.mem_prod, hω, and_true]
   · rw [Set.indicator_of_notMem (show ω ∉ q ⁻¹' D from hω)]
-    have he : (fun u => (u, q ω)) ⁻¹' (A ×ˢ D) = ∅ := by
-      ext u
-      simp only [Set.mem_preimage, Set.mem_prod, hω, and_false, Set.mem_empty_iff_false]
-    rw [he, measure_empty]
+    rw [(show (fun u => (u, q ω)) ⁻¹' (A ×ˢ D) = ∅ by ext u; simp only [Set.mem_preimage, Set.mem_prod, hω, and_false, Set.mem_empty_iff_false]), measure_empty]
 
 end DOZZ.Proofs

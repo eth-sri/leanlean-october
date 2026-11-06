@@ -43,23 +43,15 @@ theorem analyticAt_of_meromorphicAt_of_tendsto_ofReal {f : ℂ → ℂ} {x₀ : 
     (hf : MeromorphicAt f (x₀ : ℂ))
     (h : Tendsto (fun x : ℝ => f (x : ℂ)) (𝓝[≠] x₀) (𝓝 (f x₀))) : AnalyticAt ℂ f (x₀ : ℂ) := by
   have hreal := tendsto_ofReal_nhdsNE_slice x₀
-  have hord : 0 ≤ meromorphicOrderAt f (x₀ : ℂ) := by
-    by_contra hneg
-    have hcob := (tendsto_cobounded_of_meromorphicOrderAt_neg (not_le.mp hneg)).comp hreal
-    exact not_tendsto_atTop_of_tendsto_nhds h.norm (tendsto_norm_atTop_iff_cobounded.mpr hcob)
-  obtain ⟨g, hg, hfg⟩ := hf.meromorphicOrderAt_nonneg_iff.mp hord
-  have hfg' : ∀ᶠ x : ℝ in 𝓝[≠] x₀, f x = g x := hreal.eventually hfg
-  have hglim : Tendsto (fun x : ℝ => g (x : ℂ)) (𝓝[≠] x₀) (𝓝 (g x₀)) :=
-    ((hg.continuousAt.tendsto.comp Complex.continuous_ofReal.continuousAt.tendsto).mono_left
-      nhdsWithin_le_nhds)
-  have heq : f x₀ = g x₀ := tendsto_nhds_unique (h.congr' hfg') hglim
-  exact hg.congr (eventuallyEq_nhds_of_eventuallyEq_nhdsNE hfg.symm heq.symm)
+  obtain ⟨g, hg, hfg⟩ := hf.meromorphicOrderAt_nonneg_iff.mp (by by_contra hneg; exact not_tendsto_atTop_of_tendsto_nhds h.norm (tendsto_norm_atTop_iff_cobounded.mpr ((tendsto_cobounded_of_meromorphicOrderAt_neg (not_le.mp hneg)).comp hreal)))
+  have hfg' := hreal.eventually hfg
+  exact hg.congr (eventuallyEq_nhds_of_eventuallyEq_nhdsNE hfg.symm (tendsto_nhds_unique (h.congr' hfg') (((hg.continuousAt.tendsto.comp Complex.continuous_ofReal.continuousAt.tendsto).mono_left nhdsWithin_le_nhds) : Tendsto (fun x : ℝ => g (x : ℂ)) (𝓝[≠] x₀) (𝓝 (g x₀)))).symm)
 
 /-- **The zero-mode limit**: `η C(a, b + η, c) → 2` when `a + b + c = 2Q` and all charges are
 below `Q`. -/
 theorem tendsto_mul_structureConstant_chargeZero {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) {a b c : ℝ} (hsum : a + b + c = 2 * Q γ)
+    X (M : Ω → Measure ℂ) {γ μ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
+    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) {a b c} (hsum : a + b + c = 2 * Q γ)
     (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ) :
     Tendsto (fun η : ℝ => η * structureConstant P M γ μ a (b + η) c) (𝓝[>] 0) (𝓝 2) := by
   have : IsProbabilityMeasure P := hX.1
@@ -75,51 +67,34 @@ theorem tendsto_mul_structureConstant_chargeZero {Ω : Type*} [MeasurableSpace �
   have hγ0 : sExp γ a b c = 0 := by
     have := hs 0
     rwa [add_zero, zero_div] at this
-  have hval : unitVolumeStructureConstant P M γ a b c = 2 / γ :=
-    unitVolumeStructureConstant_zeroMode P M hγ0
-  have hcurve : Continuous fun η : ℝ => complexifyNCharges ![a, b + η, c] := by
+  have hcurve : Continuous fun η => complexifyNCharges ![a, b + η, c] := by
     unfold complexifyNCharges
     refine continuous_pi fun i => ?_
     fin_cases i <;> simp <;> fun_prop
-  have hmem0 : complexifyNCharges ![a, b + 0, c] ∈ V₃ := by
-    rw [add_zero]
-    exact hV₃mem ![a, b, c] hES0
-  have hfc : ContinuousAt (fun η : ℝ => f₃ (complexifyNCharges ![a, b + η, c])) 0 :=
-    ContinuousAt.comp (f := fun η : ℝ => complexifyNCharges ![a, b + η, c]) (x := 0)
-      ((hf₃.differentiableAt (hV₃.mem_nhds hmem0)).continuousAt) hcurve.continuousAt
-  have hES : ∀ᶠ η in 𝓝 (0 : ℝ), ExtendedSeiberg3 γ a (b + η) c :=
-    eventually_extendedSeiberg3 (f₁ := fun _ => a) (f₂ := fun η => b + η) (f₃ := fun _ => c)
-      continuousAt_const (by fun_prop) continuousAt_const (by simpa using hES0)
-  have hCbar : Tendsto (fun η : ℝ => unitVolumeStructureConstant P M γ a (b + η) c) (𝓝 0)
+  have hCbar : Tendsto (fun η => unitVolumeStructureConstant P M γ a (b + η) c) (𝓝 0)
       (𝓝 (2 / γ)) := by
-    have h1 : Tendsto (fun η : ℝ => (f₃ (complexifyNCharges ![a, b + η, c])).re) (𝓝 0)
+    have h1 : Tendsto (fun η => (f₃ (complexifyNCharges ![a, b + η, c])).re) (𝓝 0)
         (𝓝 ((f₃ (complexifyNCharges ![a, b + 0, c])).re)) :=
-      (Complex.continuous_re.continuousAt.tendsto).comp hfc
+      (Complex.continuous_re.continuousAt.tendsto).comp (ContinuousAt.comp (f := fun η => complexifyNCharges ![a, b + η, c]) (x := 0) ((hf₃.differentiableAt (hV₃.mem_nhds (by rw [add_zero]; exact hV₃mem ![a, b, c] hES0))).continuousAt) hcurve.continuousAt)
     rw [add_zero, hf₃eq ![a, b, c] hES0] at h1
     simp only [Complex.ofReal_re] at h1
-    rw [← hval]
+    rw [← (unitVolumeStructureConstant_zeroMode P M hγ0)]
     refine h1.congr' ?_
-    filter_upwards [hES] with η hη
+    filter_upwards [(eventually_extendedSeiberg3 (f₁ := fun _ => a) (f₂ := fun η => b + η) (f₃ := fun _ => c) continuousAt_const (by fun_prop) continuousAt_const (by simpa using hES0))] with η hη
     rw [hf₃eq ![a, b + η, c] hη, Complex.ofReal_re]
     rfl
   -- the Gamma and power factors
-  have hΓ : Tendsto (fun η : ℝ => Real.Gamma (η / γ + 1)) (𝓝 0) (𝓝 1) := by
+  have hΓ : Tendsto (fun η => Real.Gamma (η / γ + 1)) (𝓝 0) (𝓝 1) := by
     have hc : ContinuousAt Real.Gamma 1 :=
       (Real.differentiableAt_Gamma (fun m => by
-        have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
         intro h
         linarith)).continuousAt
     have h := hc.tendsto.comp (show Tendsto (fun η : ℝ => η / γ + 1) (𝓝 0) (𝓝 1) by
-      have : Continuous fun η : ℝ => η / γ + 1 := by fun_prop
-      simpa using this.tendsto 0)
+      simpa using (show Continuous fun η => η / γ + 1 by fun_prop).tendsto 0)
     rwa [Real.Gamma_one] at h
-  have hpow : Tendsto (fun η : ℝ => μ ^ (-(η / γ))) (𝓝 0) (𝓝 1) := by
-    have : Continuous fun η : ℝ => μ ^ (-(η / γ)) :=
-      continuous_const.rpow (by fun_prop) fun _ => Or.inl hμ.ne'
-    simpa using this.tendsto 0
-  have hlim : Tendsto (fun η : ℝ => γ * Real.Gamma (η / γ + 1) * μ ^ (-(η / γ)) *
+  have hlim : Tendsto (fun η => γ * Real.Gamma (η / γ + 1) * μ ^ (-(η / γ)) *
       unitVolumeStructureConstant P M γ a (b + η) c) (𝓝 0) (𝓝 (γ * 1 * 1 * (2 / γ))) :=
-    ((tendsto_const_nhds.mul hΓ).mul hpow).mul hCbar
+    ((tendsto_const_nhds.mul hΓ).mul (by simpa using (continuous_const.rpow (by fun_prop) fun _ => Or.inl hμ.ne' : Continuous fun η => μ ^ (-(η / γ))).tendsto 0)).mul hCbar
   rw [show γ * 1 * 1 * (2 / γ) = 2 by field_simp] at hlim
   refine (hlim.mono_left nhdsWithin_le_nhds).congr' ?_
   filter_upwards [self_mem_nhdsWithin] with η (hη : 0 < η)
@@ -144,7 +119,7 @@ theorem tendsto_mul_reflection_pole {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     Tendsto (fun η : ℝ => (η : ℂ) * R ((γ / 2 + η : ℝ) : ℂ)) (𝓝[>] 0)
       (𝓝 (2 * (μ * Real.pi : ℂ) * R γ /
         ((γ : ℂ) * (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) ^ 2 / 4))))) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hγc := Complex.ofReal_ne_zero.mpr hγ.ne'
   -- the shift at `z = γ + η`
   have hev : ∀ᶠ η : ℝ in 𝓝[≠] 0, R (((γ + η : ℝ) : ℂ) - γ / 2) = -(μ * Real.pi : ℂ) *
       R ((γ + η : ℝ) : ℂ) / (lFun (-((γ : ℂ) ^ 2) / 4) *
@@ -200,7 +175,7 @@ theorem tendsto_mul_reflection_pole {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
       exact div_ne_zero (mul_ne_zero hγc (Complex.ofReal_ne_zero.mpr hη.ne')) two_ne_zero
     have hv1 : v - 1 ≠ 0 := by
       intro h
-      have hre : (γ * η / 2 : ℝ) = 1 := by
+      have : (γ * η / 2 : ℝ) = 1 := by
         have : v = 1 := sub_eq_zero.mp h
         rw [hv] at this
         exact_mod_cast this
@@ -210,17 +185,11 @@ theorem tendsto_mul_reflection_pole {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
         linarith
       linarith
     -- `Γ(v + 1) = v (v - 1) Γ(v - 1)`
-    have hrec : Complex.Gamma (v + 1) = v * ((v - 1) * Complex.Gamma (v - 1)) := by
-      rw [Complex.Gamma_add_one v hv0, show v = (v - 1) + 1 by ring, Complex.Gamma_add_one _ hv1]
-      ring_nf
     have hl : (lFun (2 - v))⁻¹ = Complex.Gamma (v - 1) / Complex.Gamma (2 - v) := by
       unfold lFun
       rw [inv_div, show 1 - (2 - v) = v - 1 by ring]
     rw [hl]
-    have hG : Complex.Gamma (v - 1) = Complex.Gamma (v + 1) / (v * (v - 1)) := by
-      rw [hrec]
-      field_simp
-    rw [hG]
+    rw [(show Complex.Gamma (v - 1) = Complex.Gamma (v + 1) / (v * (v - 1)) by rw [(show Complex.Gamma (v + 1) = v * ((v - 1) * Complex.Gamma (v - 1)) by rw [Complex.Gamma_add_one v hv0, show v = (v - 1) + 1 by ring, Complex.Gamma_add_one _ hv1]; ring_nf)]; field_simp)]
     have hη' : (η : ℂ) = 2 / (γ : ℂ) * v := by
       rw [hv]
       field_simp
@@ -235,7 +204,7 @@ theorem tendsto_mul_reflection_pole {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
   have hL : Tendsto (fun η : ℝ => (lFun ((γ : ℂ) ^ 2 / 4 + (γ : ℂ) * η / 2))⁻¹) (𝓝 0)
       (𝓝 (lFun ((γ : ℂ) ^ 2 / 4))⁻¹) := by
     have ha : AnalyticAt ℂ (fun s : ℂ => (lFun ((γ : ℂ) ^ 2 / 4 + (γ : ℂ) * s / 2))⁻¹) 0 := by
-      refine analyticAt_inv_lFun_comp (f := fun s : ℂ => (γ : ℂ) ^ 2 / 4 + (γ : ℂ) * s / 2)
+      refine analyticAt_inv_lFun_comp (f := fun s => (γ : ℂ) ^ 2 / 4 + (γ : ℂ) * s / 2)
         (by fun_prop) ?_
       have h := analyticAt_Gamma_ofReal_pos (show (0 : ℝ) < 1 - γ ^ 2 / 4 by nlinarith)
       convert h using 1
@@ -283,10 +252,9 @@ theorem tendsto_dualLC_div {γ θ : ℝ} (hγ : 0 < γ) (hθ₁ : 0 < θ) :
   have hA₂ : Tendsto (fun η : ℝ => lFun (1 + 4 / (γ : ℂ) ^ 2 - 2 * η / γ)) (𝓝 0)
       (𝓝 (lFun (1 + 4 / (γ : ℂ) ^ 2))) := by
     have ha : AnalyticAt ℂ (fun s : ℂ => lFun (1 + 4 / (γ : ℂ) ^ 2 - 2 * s / γ)) 0 := by
-      refine analyticAt_lFun_comp (f := fun s : ℂ => 1 + 4 / (γ : ℂ) ^ 2 - 2 * s / γ)
+      refine analyticAt_lFun_comp (f := fun s => 1 + 4 / (γ : ℂ) ^ 2 - 2 * s / γ)
         (by fun_prop) ?_
-      have h := analyticAt_Gamma_ofReal_pos (show (0 : ℝ) < 1 + 4 / γ ^ 2 by positivity)
-      convert h using 1
+      convert (analyticAt_Gamma_ofReal_pos (show (0 : ℝ) < 1 + 4 / γ ^ 2 by positivity)) using 1
       push_cast
       ring
     have h0 := Complex.continuous_ofReal.tendsto (0 : ℝ)
@@ -297,9 +265,8 @@ theorem tendsto_dualLC_div {γ θ : ℝ} (hγ : 0 < γ) (hθ₁ : 0 < θ) :
   have hA₃ : Tendsto (fun η : ℝ => (lFun (1 - (2 * θ + η) / γ))⁻¹) (𝓝 0)
       (𝓝 (lFun (1 - 2 * θ / γ))⁻¹) := by
     have ha : AnalyticAt ℂ (fun s : ℂ => (lFun (1 - (2 * θ + s) / γ))⁻¹) 0 := by
-      refine analyticAt_inv_lFun_comp (f := fun s : ℂ => 1 - (2 * θ + s) / γ) (by fun_prop) ?_
-      have h := analyticAt_Gamma_ofReal_pos (show (0 : ℝ) < 2 * θ / γ by positivity)
-      convert h using 1
+      refine analyticAt_inv_lFun_comp (f := fun s => 1 - (2 * θ + s) / γ) (by fun_prop) ?_
+      convert (analyticAt_Gamma_ofReal_pos (show (0 : ℝ) < 2 * θ / γ by positivity)) using 1
       push_cast
       ring
     have h0 := Complex.continuous_ofReal.tendsto (0 : ℝ)
@@ -308,14 +275,12 @@ theorem tendsto_dualLC_div {γ θ : ℝ} (hγ : 0 < γ) (hθ₁ : 0 < θ) :
     simp only [add_zero] at h
     exact h
   have hB : Tendsto (fun η : ℝ => Complex.Gamma (1 + η / γ)) (𝓝 0) (𝓝 1) := by
-    have hc : Continuous fun η : ℝ => (1 : ℂ) + η / γ := by fun_prop
-    have h0 := hc.tendsto 0
+    have h0 := (show Continuous fun η : ℝ => (1 : ℂ) + η / γ by fun_prop).tendsto 0
     simp only [Complex.ofReal_zero, zero_div, add_zero] at h0
     have h := hG1.tendsto.comp h0
     rwa [Complex.Gamma_one] at h
   have hC : Tendsto (fun η : ℝ => (Complex.Gamma (1 - η / γ))⁻¹) (𝓝 0) (𝓝 1) := by
-    have hc : Continuous fun η : ℝ => (1 : ℂ) - η / γ := by fun_prop
-    have h0 := hc.tendsto 0
+    have h0 := (show Continuous fun η : ℝ => (1 : ℂ) - η / γ by fun_prop).tendsto 0
     simp only [Complex.ofReal_zero, zero_div, sub_zero] at h0
     have h := (hG1.tendsto.comp h0).inv₀ (by rw [Complex.Gamma_one]; exact one_ne_zero)
     rwa [Complex.Gamma_one, inv_one] at h
@@ -350,17 +315,11 @@ theorem tendsto_dualLC_div {γ θ : ℝ} (hγ : 0 < γ) (hθ₁ : 0 < θ) :
     push_cast
     field_simp
     ring
-  have hl₄ : (lFun (-u))⁻¹ = Complex.Gamma (1 + u) * (Complex.Gamma (-u))⁻¹ := by
-    unfold lFun
-    rw [inv_div, div_eq_mul_inv, show (1 : ℂ) - -u = 1 + u by ring]
-  have hΓu : (Complex.Gamma (-u))⁻¹ = -u * (Complex.Gamma (1 - u))⁻¹ := by
-    rw [show (1 : ℂ) - u = -u + 1 by ring, Complex.Gamma_add_one _ (neg_ne_zero.mpr hu0), mul_inv,
-      ← mul_assoc, mul_inv_cancel₀ (neg_ne_zero.mpr hu0), one_mul]
   unfold dualLC
   rw [h₂, h₃, h₄]
   simp only [div_eq_mul_inv, mul_inv]
-  rw [hl₄, hΓu, hu]
-  have hηc : (η : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hη.ne'
+  rw [(show (lFun (-u))⁻¹ = Complex.Gamma (1 + u) * (Complex.Gamma (-u))⁻¹ by unfold lFun; rw [inv_div, div_eq_mul_inv, show (1 : ℂ) - -u = 1 + u by ring]), (show (Complex.Gamma (-u))⁻¹ = -u * (Complex.Gamma (1 - u))⁻¹ by rw [show (1 : ℂ) - u = -u + 1 by ring, Complex.Gamma_add_one _ (neg_ne_zero.mpr hu0), mul_inv, ← mul_assoc, mul_inv_cancel₀ (neg_ne_zero.mpr hu0), one_mul]), hu]
+  have := Complex.ofReal_ne_zero.mpr hη.ne'
   field_simp
 
 end DOZZ.Proofs

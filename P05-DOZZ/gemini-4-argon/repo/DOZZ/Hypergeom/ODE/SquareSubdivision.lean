@@ -26,47 +26,23 @@ theorem exists_square_grid_subdivision {Γ : ℝ × ℝ → ℂ}
         ∀ t ∈ Icc ((j : ℝ) / (N : ℝ)) (((j + 1 : ℕ) : ℝ) / (N : ℝ)),
           dist (Γ (s, t))
             (Γ ((i : ℝ) / (N : ℝ), (j : ℝ) / (N : ℝ))) < ε := by
-  have hcompact : IsCompact (Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1) :=
-    isCompact_Icc.prod isCompact_Icc
-  have hu := hcompact.uniformContinuousOn_of_continuous hΓ
+  have hu := (isCompact_Icc.prod isCompact_Icc).uniformContinuousOn_of_continuous hΓ
   rw [Metric.uniformContinuousOn_iff] at hu
   obtain ⟨δ, hδ, hclose⟩ := hu ε hε
   obtain ⟨n, hn⟩ := exists_nat_one_div_lt hδ
   let N := n + 1
-  have hNnat : 0 < N := Nat.succ_pos n
-  have hN : (0 : ℝ) < (N : ℝ) := by exact_mod_cast hNnat
+  have hNnat := Nat.succ_pos n
   have hgap : 1 / (N : ℝ) < δ := by simpa [N] using hn
   have hcoord (i : ℕ) (hi : i ≤ N) : (i : ℝ) / (N : ℝ) ∈ Icc (0 : ℝ) 1 := by
     constructor
     · positivity
-    · apply (div_le_one hN).2
+    · apply (div_le_one (by exact_mod_cast hNnat)).2
       exact_mod_cast hi
   refine ⟨N, hNnat, ?_⟩
   intro i hi j hj s hs t ht
-  have hiNext : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-  have hjNext : j + 1 ≤ N := Nat.succ_le_iff.mpr hj
   have hleft := hcoord i (Nat.le_of_lt hi)
-  have hright := hcoord (i + 1) hiNext
   have hbottom := hcoord j (Nat.le_of_lt hj)
-  have htop := hcoord (j + 1) hjNext
-  have hs01 : s ∈ Icc (0 : ℝ) 1 := ⟨le_trans hleft.1 hs.1, le_trans hs.2 hright.2⟩
-  have ht01 : t ∈ Icc (0 : ℝ) 1 := ⟨le_trans hbottom.1 ht.1, le_trans ht.2 htop.2⟩
-  have hsDist : dist s ((i : ℝ) / (N : ℝ)) ≤ 1 / (N : ℝ) := by
-    have hlen : (((i + 1 : ℕ) : ℝ) / (N : ℝ)) - (i : ℝ) / (N : ℝ) =
-        1 / (N : ℝ) := by rw [Nat.cast_add, Nat.cast_one]; ring
-    rw [Real.dist_eq, abs_le]
-    constructor <;> linarith [hs.1, hs.2, hlen]
-  have htDist : dist t ((j : ℝ) / (N : ℝ)) ≤ 1 / (N : ℝ) := by
-    have hlen : (((j + 1 : ℕ) : ℝ) / (N : ℝ)) - (j : ℝ) / (N : ℝ) =
-        1 / (N : ℝ) := by rw [Nat.cast_add, Nat.cast_one]; ring
-    rw [Real.dist_eq, abs_le]
-    constructor <;> linarith [ht.1, ht.2, hlen]
-  have hprod : dist (s, t)
-      ((i : ℝ) / (N : ℝ), (j : ℝ) / (N : ℝ)) < δ := by
-    rw [Prod.dist_eq]
-    exact max_lt (hsDist.trans_lt hgap) (htDist.trans_lt hgap)
-  have hbase := hclose (s, t) ⟨hs01, ht01⟩
-    ((i : ℝ) / (N : ℝ), (j : ℝ) / (N : ℝ)) ⟨hleft, hbottom⟩ hprod
-  exact hbase
+  exact hclose (s, t) ⟨(⟨le_trans hleft.1 hs.1, le_trans hs.2 (hcoord (i + 1) (Nat.succ_le_iff.mpr hi)).2⟩ : s ∈ Icc (0 : ℝ) 1), ⟨le_trans hbottom.1 ht.1, le_trans ht.2 (hcoord (j + 1) (Nat.succ_le_iff.mpr hj)).2⟩⟩
+    ((i : ℝ) / (N : ℝ), (j : ℝ) / (N : ℝ)) ⟨hleft, hbottom⟩ (by rw [Prod.dist_eq]; exact max_lt ((show dist s ((i : ℝ) / (N : ℝ)) ≤ 1 / (N : ℝ) by rw [Real.dist_eq, abs_le]; constructor <;> linarith [hs.1, hs.2, (show (((i + 1 : ℕ) : ℝ) / (N : ℝ)) - (i : ℝ) / (N : ℝ) = 1 / (N : ℝ) by rw [Nat.cast_add, Nat.cast_one]; ring)]).trans_lt hgap) ((show dist t ((j : ℝ) / (N : ℝ)) ≤ 1 / (N : ℝ) by rw [Real.dist_eq, abs_le]; constructor <;> linarith [ht.1, ht.2, (show (((j + 1 : ℕ) : ℝ) / (N : ℝ)) - (j : ℝ) / (N : ℝ) = 1 / (N : ℝ) by rw [Nat.cast_add, Nat.cast_one]; ring)]).trans_lt hgap))
 
 end DOZZ.Proofs

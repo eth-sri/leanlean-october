@@ -34,14 +34,10 @@ theorem dual_copied_joint_law_finite
     (hV : AEMeasurable V (P.prod P)) (J : Λ → ℝ≥0∞) (hJ : AEMeasurable J R)
     (hLaw : (P.prod P).map (fun ω => (Y ω.1,V ω)) = (P.map Y).prod (R.map J))
     (hfinite : ∀ᵐ ω ∂R, J ω ≠ ⊤) : ∀ᵐ ω ∂P.prod P, V ω ≠ ⊤ := by
-  have hs := hY.comp_fst.prodMk hV
-  have hr := hY.comp_fst.prodMk hJ.comp_snd
   have hset : MeasurableSet {v : ζ × ℝ≥0∞ | v.2 ≠ ⊤} :=
     (measurable_snd (measurableSet_singleton ⊤)).compl
-  have he : ∀ᵐ ω : Ω × Λ ∂P.prod R, (Y ω.1,J ω.2).2 ≠ ⊤ :=
-    measurePreserving_snd.quasiMeasurePreserving.ae hfinite
-  have hm := (ae_map_iff hr hset).mpr he
+  have hm := (ae_map_iff (hY.comp_fst.prodMk hJ.comp_snd) hset).mpr (measurePreserving_snd.quasiMeasurePreserving.ae hfinite)
   rw [dual_independent_copy_map_law P R Y J hY hJ, ← hLaw] at hm
-  exact (ae_map_iff hs hset).mp hm
+  exact (ae_map_iff (hY.comp_fst.prodMk hV) hset).mp hm
 
 end DOZZ.Proofs

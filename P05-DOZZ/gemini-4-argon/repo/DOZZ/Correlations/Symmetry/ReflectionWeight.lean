@@ -12,22 +12,20 @@ open scoped ENNReal
 namespace DOZZ.Proofs
 
 /-- The canonical density picks up precisely the charge times the pinning change. -/
-theorem rho_reflection_density (γ α₁ α₂ α₃ : ℝ) (x : ℂ) :
+theorem rho_reflection_density (γ α₁ α₂ α₃ : ℝ) x :
     normPlus (1 - x) ^ (γ * (α₁ + α₂ + α₃)) /
       (‖1 - x‖ ^ (γ * α₁) * ‖(1 - x) - 1‖ ^ (γ * α₂)) =
     Real.exp (γ * (α₁ + α₂ + α₃) * symmetryReflectionPotential x) *
       (normPlus x ^ (γ * (α₂ + α₁ + α₃)) /
         (‖x‖ ^ (γ * α₂) * ‖x - 1‖ ^ (γ * α₁))) := by
-  have hn (y : ℂ) : 0 < normPlus y := lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖y‖)
-  have he (t : ℝ) : normPlus (1 - x) ^ t =
+  have hn y : 0 < normPlus y := lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖y‖)
+  have he t : normPlus (1 - x) ^ t =
       Real.exp (t * symmetryReflectionPotential x) * normPlus x ^ t := by
     rw [Real.rpow_def_of_pos (hn (1 - x)), Real.rpow_def_of_pos (hn x), ← Real.exp_add]
     congr 1
     unfold symmetryReflectionPotential
     ring
-  rw [norm_sub_rev (1 : ℂ) x, show (1 - x) - 1 = -x by ring, norm_neg, he]
-  have hs : α₂ + α₁ + α₃ = α₁ + α₂ + α₃ := by ring
-  rw [hs]
+  rw [norm_sub_rev (1 : ℂ) x, show (1 - x) - 1 = -x by ring, norm_neg, he, (show α₂ + α₁ + α₃ = α₁ + α₂ + α₃ by ring)]
   ring
 
 /-- The Wick and reference-density correction has exponent twice gamma Q. -/
