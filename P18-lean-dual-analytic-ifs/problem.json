@@ -1,0 +1,115 @@
+{
+  "problem_idx": 18,
+  "id": "PALOMAR-2026-10-11-000004-v2",
+  "title": "Exponential separation of analytic self-conformal sets on the real line: Lean formalisation",
+  "abstract": "Lean 4 formalisation of exponential separation for analytic iterated function systems on the real line. Strong exponential separation holds on an open and dense subset in the C2 topology and follows from an explicit criterion involving dual projections. The development characterises conjugacy to self-similar systems and proves dimension consequences conditional on cited results of Rapaport and Bowen, including a drop in the L^q dimensions of the natural measure of a concrete three-map example.",
+  "authors": [
+    "Balázs Bárány",
+    "István Kolossváry",
+    "Sascha Troscheit"
+  ],
+  "repository": "sascha2718/lean-dual-analytic-ifs",
+  "repository_url": "https://github.com/sascha2718/lean-dual-analytic-ifs",
+  "commit": "0155d92226966a90fa219bbcb9d44d2ed89d84d2",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc2",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "M",
+  "baseline_tokens": 146557,
+  "lean_files": 43,
+  "protected_theorem_names": [
+    "Challenge.audit_sesc_open_dense",
+    "Challenge.audit_sesc_of_dualProj",
+    "Challenge.audit_example_criterion",
+    "Challenge.audit_example_sesc",
+    "Challenge.audit_conj_similarity",
+    "Challenge.audit_conj_iff",
+    "Challenge.audit_subconj_iff",
+    "Challenge.audit_dim_of_esc",
+    "Challenge.audit_dim_open_dense",
+    "Challenge.audit_example_dim",
+    "Challenge.audit_example_localDim",
+    "Challenge.audit_example_lq"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.DS",
+    "math.CA",
+    "math.MG"
+  ],
+  "msc2020": [
+    "28A80",
+    "37C45"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "On exponential separation of analytic self-conformal sets on the real line",
+      "authors": [
+        "Balázs Bárány",
+        "István Kolossváry",
+        "Sascha Troscheit"
+      ],
+      "type": "paper",
+      "identifier": "arXiv:2509.07888v3",
+      "location": "arXiv:2509.07888v3",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "Dimension of self-conformal measures associated to an exponentially separated analytic IFS on R",
+      "authors": [
+        "Ariel Rapaport"
+      ],
+      "type": "preprint",
+      "identifier": "arXiv:2412.16753v2",
+      "location": "arXiv:2412.16753v2, 10 January 2025, Theorem 1.2 and Corollary 1.3",
+      "relationship": "background"
+    },
+    {
+      "title": "Equilibrium states and the ergodic theory of Anosov diffeomorphisms",
+      "authors": [
+        "Rufus Bowen"
+      ],
+      "type": "book",
+      "identifier": null,
+      "location": "Lecture Notes in Mathematics 470, Springer, 1975, Theorem 1.4",
+      "relationship": "background"
+    },
+    {
+      "title": "Dimension theory of iterated function systems",
+      "authors": [
+        "De-Jun Feng",
+        "Huyi Hu"
+      ],
+      "type": "paper",
+      "identifier": null,
+      "location": "Comm. Pure Appl. Math. 62 (2009), no. 11, 1435–1500, Theorem 2.8",
+      "relationship": "background"
+    },
+    {
+      "title": "On Furstenberg's intersection conjecture, self-similar measures, and the L^q norms of convolutions",
+      "authors": [
+        "Pablo Shmerkin"
+      ],
+      "type": "paper",
+      "identifier": null,
+      "location": "Ann. of Math. 189 (2019), no. 2, 319–391, Lemma 1.7; DOI 10.4007/annals.2019.189.2.1",
+      "relationship": "background"
+    }
+  ],
+  "dependency_graph_nodes": 959,
+  "dependency_graph_edges": 6777,
+  "project_path": "repos/PALOMAR-2026-10-11-000004-v2/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-11-000004-v2/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-11-000004-v2/LICENSE"
+}
