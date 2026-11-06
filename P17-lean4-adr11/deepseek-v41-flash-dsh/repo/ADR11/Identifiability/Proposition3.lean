@@ -52,35 +52,7 @@ theorem fourTaxa_recovery (hX : Fintype.card X = 4) (σ : SpeciesTree X) (hσ : 
 children of the root have two taxa each, or one and three taxa, and then the child with three
 taxa has a child with two. -/
 theorem f1_exists_split_of_isBinary (hX : Fintype.card X = 4) (σ : SpeciesTree X)
-    (hσ : σ.IsBinary) : ∃ A ∈ unroot σ.clusters, #A = 2 := by
-  -- a cluster with two taxa is a side of a split
-  suffices h : ∃ A ∈ σ.clusters, #A = 2 by
-    obtain ⟨A, hA, hA2⟩ := h
-    refine ⟨A, classify_mem_unroot.2 (Or.inl ⟨hA, fun hu => ?_⟩), hA2⟩
-    rw [hu, card_univ, hX] at hA2
-    omega
-  -- the two children of a cluster with `n ≥ 2` taxa have `n` taxa together, at least one each
-  have hsplit : ∀ D ∈ σ.clusters, 2 ≤ #D → ∃ B ∈ σ.clusters, ∃ C ∈ σ.clusters,
-      #B + #C = #D ∧ 1 ≤ #B ∧ 1 ≤ #C := by
-    intro D hD hD2
-    obtain ⟨B, hB, C, hC, hBC, hBCD⟩ := hσ D hD hD2
-    exact ⟨B, hB, C, hC, by rw [← card_union_of_disjoint hBC, hBCD],
-      (σ.nonempty_of_mem B hB).card_pos, (σ.nonempty_of_mem C hC).card_pos⟩
-  -- a cluster with three taxa has a child with two
-  have h3 : ∀ D ∈ σ.clusters, #D = 3 → ∃ A ∈ σ.clusters, #A = 2 := by
-    intro D hD hD3
-    obtain ⟨B, hB, C, hC, hBC, hB1, hC1⟩ := hsplit D hD (by omega)
-    rcases (by omega : #B = 2 ∨ #C = 2) with h | h
-    · exact ⟨B, hB, h⟩
-    · exact ⟨C, hC, h⟩
-  obtain ⟨B, hB, C, hC, hBC, hB1, hC1⟩ :=
-    hsplit univ σ.univ_mem (by rw [card_univ, hX]; omega)
-  rw [card_univ, hX] at hBC
-  rcases (by omega : #B = 2 ∨ #B = 3 ∨ #C = 3) with h | h | h
-  · exact ⟨B, hB, h⟩
-  · exact h3 B hB h
-  · exact h3 C hC h
-
+    (hσ : σ.IsBinary) : ∃ A ∈ unroot σ.clusters, #A = 2 := four_exists_split_of_isBinary hX σ hσ
 /-- On four taxa, the unrooted topology of a species tree with the nontrivial split `A | Aᶜ`
 (`#A = 2`) consists of this split and the trivial splits. -/
 theorem f1_mem_unroot_iff_of_split (hX : Fintype.card X = 4) (σ : SpeciesTree X)
@@ -108,7 +80,7 @@ unrooted gene tree distribution (`fourTaxa_sameDistribution`, here with `x = 1`,
 `z = 1/2`), namely the binary trees `(((a,b),c),d)` and `(((a,b),d),c)`, have different rooted
 topologies. -/
 theorem f1_exists_sameUnrootedDist_not_sameRooted_four :
-    ∃ σ σ' : SpeciesTree (Fin 4), σ.IsBinary ∧ σ'.IsBinary ∧
+    ∃ σ σ' : ST4, σ.IsBinary ∧ σ'.IsBinary ∧
       σ.unrootedDist id = σ'.unrootedDist id ∧ ¬ σ.SameRootedMetricTree σ' := by
   let σ₁ := SpeciesTree.ofLengths (X := Fin 4) (hierarchyOf {{0, 1}, {0, 1, 2}}) (fun _ => 1)
     (by decide) (by decide) (by decide) (by decide) (fun _ _ _ _ => one_pos)
@@ -120,39 +92,39 @@ theorem f1_exists_sameUnrootedDist_not_sameRooted_four :
     (by decide) (by decide) (by decide) (by decide) (fun _ _ _ _ => one_pos)
   let σ₅ := SpeciesTree.ofLengths (X := Fin 4) (hierarchyOf {{0, 1}, {2, 3}}) (fun _ => 1 / 2)
     (by decide) (by decide) (by decide) (by decide) (fun _ _ _ _ => by norm_num)
-  have h01 : ¬ #({0, 1} : Finset (Fin 4)) ≤ 1 := by decide
-  have h23 : ¬ #({2, 3} : Finset (Fin 4)) ≤ 1 := by decide
+  have h01 : ¬ #({0, 1} : FinFam 4) ≤ 1 := by decide
+  have h23 : ¬ #({2, 3} : FinFam 4) ≤ 1 := by decide
   have e₁ : σ₁.length {0, 1} = 1 := by
-    show (if #({0, 1} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1) = 1
+    show (if #({0, 1} : FinFam 4) ≤ 1 then (1 : ℝ) else 1) = 1
     rw [ite_eq_right h01]
   have e₂ : σ₂.length {0, 1} = 1 := by
-    show (if #({0, 1} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1) = 1
+    show (if #({0, 1} : FinFam 4) ≤ 1 then (1 : ℝ) else 1) = 1
     rw [ite_eq_right h01]
   have e₃ : σ₃.length {2, 3} = 1 := by
-    show (if #({2, 3} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1) = 1
+    show (if #({2, 3} : FinFam 4) ≤ 1 then (1 : ℝ) else 1) = 1
     rw [ite_eq_right h23]
   have e₄ : σ₄.length {2, 3} = 1 := by
-    show (if #({2, 3} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1) = 1
+    show (if #({2, 3} : FinFam 4) ≤ 1 then (1 : ℝ) else 1) = 1
     rw [ite_eq_right h23]
   have e₅ : σ₅.length {0, 1} + σ₅.length {2, 3} = 1 := by
-    show (if #({0, 1} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1 / 2) +
-      (if #({2, 3} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1 / 2) = 1
+    show (if #({0, 1} : FinFam 4) ≤ 1 then (1 : ℝ) else 1 / 2) +
+      (if #({2, 3} : FinFam 4) ≤ 1 then (1 : ℝ) else 1 / 2) = 1
     rw [ite_eq_right h01, ite_eq_right h23]
     norm_num
   -- the five trees of Section 4.1 have the same distribution
   have key := fourTaxa_sameDistribution σ₁ σ₂ σ₃ σ₄ σ₅ rfl rfl rfl rfl rfl
     (e₂.trans e₁.symm) (e₃.trans e₁.symm) (e₄.trans e₁.symm) (e₅.trans e₁.symm)
-  have hb₁ : ∀ A ∈ (hierarchyOf {{0, 1}, {0, 1, 2}} : Finset (Finset (Fin 4))), 2 ≤ #A →
-      ∃ B ∈ (hierarchyOf {{0, 1}, {0, 1, 2}} : Finset (Finset (Fin 4))),
-        ∃ C ∈ (hierarchyOf {{0, 1}, {0, 1, 2}} : Finset (Finset (Fin 4))),
+  have hb₁ : ∀ A ∈ (hierarchyOf {{0, 1}, {0, 1, 2}} : Fam4), 2 ≤ #A →
+      ∃ B ∈ (hierarchyOf {{0, 1}, {0, 1, 2}} : Fam4),
+        ∃ C ∈ (hierarchyOf {{0, 1}, {0, 1, 2}} : Fam4),
           Disjoint B C ∧ B ∪ C = A := by
     decide
-  have hb₂ : ∀ A ∈ (hierarchyOf {{0, 1}, {0, 1, 3}} : Finset (Finset (Fin 4))), 2 ≤ #A →
-      ∃ B ∈ (hierarchyOf {{0, 1}, {0, 1, 3}} : Finset (Finset (Fin 4))),
-        ∃ C ∈ (hierarchyOf {{0, 1}, {0, 1, 3}} : Finset (Finset (Fin 4))),
+  have hb₂ : ∀ A ∈ (hierarchyOf {{0, 1}, {0, 1, 3}} : Fam4), 2 ≤ #A →
+      ∃ B ∈ (hierarchyOf {{0, 1}, {0, 1, 3}} : Fam4),
+        ∃ C ∈ (hierarchyOf {{0, 1}, {0, 1, 3}} : Fam4),
           Disjoint B C ∧ B ∪ C = A := by
     decide
-  have hne : (hierarchyOf {{0, 1}, {0, 1, 2}} : Finset (Finset (Fin 4))) ≠
+  have hne : (hierarchyOf {{0, 1}, {0, 1, 2}} : Fam4) ≠
       hierarchyOf {{0, 1}, {0, 1, 3}} := by
     decide
   exact ⟨σ₁, σ₂, hb₁, hb₂, key.1.symm, fun hs => hne hs.1⟩

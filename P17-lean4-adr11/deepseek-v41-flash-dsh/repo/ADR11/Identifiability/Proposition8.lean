@@ -83,7 +83,7 @@ theorem proposition7 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X) (hσ : �
 /-- **Equation (7)** (proof of Proposition 8, balanced case): for `(((a,b):x,c):y,(d,e):z)`,
 `XYZ = 6u₅ + 9u₇`, `XY³Z = 15u₇`, hence `y = (1/2) log((2u₅ + 3u₇)/(5u₇))`, and the argument of
 the logarithm is greater than `1`. -/
-theorem equation7 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
+theorem equation7 (σ : ST5) (hσ : σ.clusters = balanced5) :
     exp (-σ.length {0, 1}) * exp (-σ.length {0, 1, 2}) * exp (-σ.length {3, 4}) =
         6 * u σ 5 + 9 * u σ 7 ∧
       exp (-σ.length {0, 1}) * exp (-σ.length {0, 1, 2}) ^ 3 * exp (-σ.length {3, 4}) =
@@ -113,7 +113,7 @@ theorem equation7 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
 `((((a,b):x,c):y,d):z,e)`, `XY³ = 3(-u₂ + u₃ + 5u₇)`, `XY³Z⁶ = 15(u₂ - u₃ + u₇)`, hence
 `z = (1/6) log((-u₂ + u₃ + 5u₇)/(5u₂ - 5u₃ + 5u₇))`, and the argument of the logarithm is greater
 than `1`. -/
-theorem equation8 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) :
+theorem equation8 (σ : ST5) (hσ : σ.clusters = caterpillar5) :
     exp (-σ.length {0, 1}) * exp (-σ.length {0, 1, 2}) ^ 3 =
         3 * (-u σ 2 + u σ 3 + 5 * u σ 7) ∧
       exp (-σ.length {0, 1}) * exp (-σ.length {0, 1, 2}) ^ 3 *
@@ -144,7 +144,7 @@ theorem equation8 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) 
 /-- **Equation (9)** (proof of Proposition 8, pseudocaterpillar case): for
 `(((a,b):x,(d,e):y):z,c)`, `XY = 12u₅ + 3u₈`, `XYZ⁶ = 30u₅ - 15u₈`, hence
 `z = (1/6) log((4u₅ + u₈)/(10u₅ - 5u₈))`, and the argument of the logarithm is greater than `1`. -/
-theorem equation9 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpillar5) :
+theorem equation9 (σ : ST5) (hσ : σ.clusters = pseudocaterpillar5) :
     exp (-σ.length {0, 1}) * exp (-σ.length {3, 4}) = 12 * u σ 5 + 3 * u σ 8 ∧
       exp (-σ.length {0, 1}) * exp (-σ.length {3, 4}) * exp (-σ.length {0, 1, 3, 4}) ^ 6 =
         30 * u σ 5 - 15 * u σ 8 ∧
@@ -170,9 +170,9 @@ theorem equation9 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpil
 
 /-- Proof of Proposition 8: the edge above a cluster `A` whose complement `B` is not a cluster (an
 edge not at the root) has the length of the split `A | B` of `λ⁻`. -/
-theorem p78_length_eq_of_not_root {H : Finset (Finset (Fin 5))} {τ τ' : SpeciesTree (Fin 5)}
+theorem p78_length_eq_of_not_root {H : Fam5} {τ τ' : ST5}
     (hτ : τ.clusters = H) (hτ' : τ'.clusters = H) (hU : τ.SameUnrootedMetricTree τ')
-    {A B : Finset (Fin 5)}
+    {A B : FinFam 5}
     (hAB : Aᶜ = B ∧ A ∈ H ∧ A ≠ univ ∧ B ∉ H ∧ 2 ≤ #A ∧ 2 ≤ #B) :
     τ.length A = τ'.length A := by
   obtain ⟨hAB, hA, hAu, hB, h2, h2c⟩ := hAB
@@ -182,9 +182,9 @@ theorem p78_length_eq_of_not_root {H : Finset (Finset (Fin 5))} {τ τ' : Specie
 
 /-- Proof of Proposition 8: the two edges at the root, above `A` and above `B = Aᶜ`, form the edge
 `A | B` of `λ⁻`, so the length of one of them determines the other. -/
-theorem p78_length_eq_of_sibling {H : Finset (Finset (Fin 5))} {τ τ' : SpeciesTree (Fin 5)}
+theorem p78_length_eq_of_sibling {H : Fam5} {τ τ' : ST5}
     (hτ : τ.clusters = H) (hτ' : τ'.clusters = H) (hU : τ.SameUnrootedMetricTree τ')
-    {A B : Finset (Fin 5)}
+    {A B : FinFam 5}
     (hAB : Aᶜ = B ∧ A ∈ H ∧ A ≠ univ ∧ B ∈ H ∧ B ≠ univ ∧ 2 ≤ #A ∧ 2 ≤ #B)
     (hl : τ.length B = τ'.length B) : τ.length A = τ'.length A := by
   obtain ⟨hAB, hA, hAu, hB, hBu, h2, h2c⟩ := hAB

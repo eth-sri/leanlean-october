@@ -40,7 +40,6 @@ variable {X : Type*} [Fintype X] [DecidableEq X]
 theorem proposition11_proposition8 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
     (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' :=
   appC_sameRootedMetricTree hX σ σ' h
-
 /-- **Proposition 11** (`prop:nonbinary`), Theorem 9 for nonbinary species trees, `|X| = 4`. -/
 theorem proposition11_theorem9_four (hX : Fintype.card X = 4) (σ σ' : SpeciesTree X) :
     σ.unrootedDist id = σ'.unrootedDist id ↔ σ.SameUnrootedMetricTree σ' :=

@@ -26,18 +26,20 @@ entered by the forest `F`, produces a gene tree with unrooted topology `T`.
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset
 
 variable {L : Type*} [Fintype L] [DecidableEq L]
 
 /-- The probability that the population above the root, entered by the forest `F`, produces a
 gene tree with unrooted topology `T`. -/
-noncomputable def unrootedOutcome (F T : Finset (Finset L)) : ℝ :=
+noncomputable def unrootedOutcome (F T : Fam L) : ℝ :=
   ∑ G, if unroot G = T then kingmanAbsorption F G else 0
 
 /-- The sides of the splits of `unroot G`: the clusters of `G` other than `univ`, and their
 complements. -/
-theorem absorb_mem_unroot {G : Finset (Finset L)} {A : Finset L} :
+theorem absorb_mem_unroot {G : Fam L} {A : Finset L} :
     A ∈ unroot G ↔ (A ∈ G ∧ A ≠ univ) ∨ (Aᶜ ∈ G ∧ Aᶜ ≠ univ) := by
   unfold unroot
   simp only [mem_union, mem_erase, mem_image]
@@ -52,12 +54,12 @@ theorem absorb_mem_unroot {G : Finset (Finset L)} {A : Finset L} :
     · exact Or.inr ⟨Aᶜ, ⟨h2, h1⟩, compl_compl A⟩
 
 /-- Adding the root cluster `univ` does not change the unrooted tree. -/
-theorem absorb_unroot_insert_univ (F : Finset (Finset L)) : unroot (insert univ F) = unroot F := by
+theorem absorb_unroot_insert_univ (F : Fam L) : unroot (insert univ F) = unroot F := by
   unfold unroot
   rw [erase_insert_eq_erase]
 
 /-- Adding a cluster that is already a side of a split does not change the unrooted tree. -/
-theorem absorb_unroot_insert_of_mem {F : Finset (Finset L)} {D : Finset L} (hD : D ∈ unroot F) :
+theorem absorb_unroot_insert_of_mem {F : Fam L} {D : Finset L} (hD : D ∈ unroot F) :
     unroot (insert D F) = unroot F := by
   rw [absorb_mem_unroot] at hD
   ext A
@@ -77,14 +79,13 @@ theorem absorb_unroot_insert_of_mem {F : Finset (Finset L)} {D : Finset L} (hD :
     · exact Or.inl ⟨Or.inr h, hne⟩
     · exact Or.inr ⟨Or.inr h, hne⟩
 
-omit [Fintype L] in
 /-- The lineages of the forest consisting of the clusters `A` and `B`. -/
 private theorem absorb_lineages_pair (A B : Finset L) : lineages {A, B} = A ∪ B := by
   simp [lineages]
 
 /-- In a forest with exactly two roots covering all lineages, the only merge completes it by
 adding the cluster `univ`. -/
-theorem absorb_merges_of_card_roots_eq_two {F G : Finset (Finset L)}
+theorem absorb_merges_of_card_roots_eq_two {F G : Fam L}
     (hcov : lineages F = univ) (h₂ : #(roots F) = 2) (hG : G ∈ merges F) :
     G = insert univ F := by
   obtain ⟨A, hA, B, hB, hAB, rfl⟩ := mem_merges.1 hG
@@ -101,7 +102,7 @@ theorem absorb_merges_of_card_roots_eq_two {F G : Finset (Finset L)}
 
 /-- In a forest with exactly three roots covering all lineages, the union of two roots is the
 complement of the third, hence already a side of a split of the forest. -/
-theorem absorb_union_mem_unroot {F : Finset (Finset L)} (hF : IsForest F)
+theorem absorb_union_mem_unroot {F : Fam L} (hF : IsForest F)
     (hcov : lineages F = univ) (h₃ : #(roots F) = 3) {A B : Finset L} (hA : A ∈ roots F)
     (hB : B ∈ roots F) (hAB : A ≠ B) : A ∪ B ∈ unroot F := by
   have hcard : #(((roots F).erase A).erase B) = 1 := by
@@ -147,9 +148,9 @@ theorem absorb_union_mem_unroot {F : Finset (Finset L)} (hF : IsForest F)
 
 /-- From a forest with at most three roots covering all lineages, every gene tree produced above
 the root has the unrooted topology of the forest. -/
-theorem absorb_unroot_eq_of_kingmanAbsorption_ne_zero {F : Finset (Finset L)} (hF : IsForest F)
+theorem absorb_unroot_eq_of_kingmanAbsorption_ne_zero {F : Fam L} (hF : IsForest F)
     (hcov : lineages F = univ) (h₁ : 1 ≤ #(roots F)) (h₃ : #(roots F) ≤ 3)
-    {G : Finset (Finset L)} (hG : kingmanAbsorption F G ≠ 0) : unroot G = unroot F := by
+    {G : Fam L} (hG : kingmanAbsorption F G ≠ 0) : unroot G = unroot F := by
   rw [kingmanAbsorption_apply hF, ite_eq_right (by omega)] at hG
   split_ifs at hG with hG1
   swap
@@ -174,9 +175,9 @@ theorem absorb_unroot_eq_of_kingmanAbsorption_ne_zero {F : Finset (Finset L)} (h
       exact absorb_unroot_insert_of_mem (absorb_union_mem_unroot hF hcov h hA hB hAB)
     · exact absurd rfl hne
 
-theorem unrootedOutcome_of_card_roots_le_three {F : Finset (Finset L)} (hF : IsForest F)
+theorem unrootedOutcome_of_card_roots_le_three {F : Fam L} (hF : IsForest F)
     (hcov : lineages F = univ) (h₁ : 1 ≤ #(roots F)) (h₃ : #(roots F) ≤ 3)
-    (T : Finset (Finset L)) :
+    (T : Fam L) :
     unrootedOutcome F T = if unroot F = T then 1 else 0 := by
   unfold unrootedOutcome
   have h : ∀ G, (if unroot G = T then kingmanAbsorption F G else 0) =
@@ -190,8 +191,8 @@ theorem unrootedOutcome_of_card_roots_le_three {F : Finset (Finset L)} (hF : IsF
   · exact kingmanAbsorption_sum hF
   · simp
 
-theorem unrootedOutcome_first_step {F : Finset (Finset L)} (hF : IsForest F)
-    (hk : 2 ≤ #(roots F)) (T : Finset (Finset L)) :
+theorem unrootedOutcome_first_step {F : Fam L} (hF : IsForest F)
+    (hk : 2 ≤ #(roots F)) (T : Fam L) :
     unrootedOutcome F T =
       (((#(roots F)).choose 2 : ℕ) : ℝ)⁻¹ * ∑ F' ∈ merges F, unrootedOutcome F' T := by
   unfold unrootedOutcome

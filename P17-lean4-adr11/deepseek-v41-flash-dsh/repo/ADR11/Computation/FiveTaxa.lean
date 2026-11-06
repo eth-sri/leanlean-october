@@ -34,6 +34,18 @@ namespace ADR11.Computation
 
 open Finset Real
 
+abbrev k37z6 : Mono := [(3, 1), (7, 3), (15, 6)]
+abbrev k3x6 : Mono := [(3, 1), (24, 1), (27, 6)]
+abbrev k37c : Mono := [(3, 1), (7, 3), (24, 1)]
+abbrev k37b : Mono := [(3, 1), (7, 1), (24, 1)]
+abbrev k7c : Mono := [(7, 1), (24, 1)]
+abbrev k37 : Mono := [(3, 1), (7, 3)]
+abbrev k37a : Mono := [(3, 1), (7, 1)]
+abbrev k3c : Mono := [(3, 1), (24, 1)]
+abbrev k3 : Mono := [(3, 1)]
+abbrev k7 : Mono := [(7, 1)]
+abbrev k24 : Mono := [(24, 1)]
+
 /-! ### The fifteen unrooted 5-taxon gene trees -/
 
 /-- The codes of the unrooted 5-taxon tree with the nontrivial splits `B | Bᶜ` and `C | Cᶜ`,
@@ -48,38 +60,38 @@ def T5code : ℕ → List ℕ
   | 13 => t5Code 6 7 | 14 => t5Code 10 11 | 15 => t5Code 18 19
   | _ => []
 
-theorem decF_T5code : ∀ i ∈ Icc 1 15, decF 5 (T5code i) = T5 i := by decide +kernel
+theorem decF_T5code : ∀ i ∈ F15, decF 5 (T5code i) = T5 i := by decide
 
-theorem valid_T5code : ∀ i ∈ Icc 1 15, Valid 5 (T5code i) := by decide +kernel
+theorem valid_T5code : ∀ i ∈ F15, Valid 5 (T5code i) := by decide
 
-theorem T5code_sameSet : ∀ i ∈ Icc 1 15, ∀ j ∈ Icc 1 15,
-    sameSet (T5code i) (T5code j) = true → i = j := by decide +kernel
+theorem T5code_sameSet : ∀ i ∈ F15, ∀ j ∈ F15,
+    sameSet (T5code i) (T5code j) = true → i = j := by decide
 
 /-- The fifteen unrooted gene trees `T_i` are distinct. -/
-theorem T5_inj {i j : ℕ} (hi : i ∈ Icc 1 15) (hj : j ∈ Icc 1 15) (h : T5 i = T5 j) : i = j := by
+theorem T5_inj {i j : ℕ} (hi : i ∈ F15) (hj : j ∈ F15) (h : T5 i = T5 j) : i = j := by
   rw [← decF_T5code i hi, ← decF_T5code j hj,
     decF_eq_iff_sameSet (valid_T5code i hi) (valid_T5code j hj)] at h
   exact T5code_sameSet i hi j hj h
 
 /-- The certificate targets for the fifteen gene trees `T_i`, `P i` giving `u σ i`. -/
-def T5targets (P : ℕ → List (ℚ × List (ℕ × ℕ))) : List (List ℕ × List (ℚ × List (ℕ × ℕ))) :=
+def T5targets (P : ℕ → Poly) : List (List ℕ × Poly) :=
   (List.range' 1 15).map fun i => (T5code i, P i)
 
 /-- One certificate gives the fifteen unrooted gene tree probabilities of a 5-taxon species tree:
 `u σ i = evalPoly σ.length (P i)` for `1 ≤ i ≤ 15`. The certificate also checks that no other
 unrooted gene tree is produced. -/
-theorem u_eq_evalPoly_of_certAllB (σ : SpeciesTree (Fin 5)) {H : Finset (Finset (Fin 5))}
+theorem u_eq_evalPoly_of_certAllB (σ : ST5) {H : Fam5}
     (hσ : σ.clusters = H) (T : PTree) (hwf : T.wfB 5 H = true) (htop : T.code = 31)
-    (P : ℕ → List (ℚ × List (ℕ × ℕ)))
-    (hc : certAllB 5 (T.unrootedL 5 5 id) (T5targets P) = true) {i : ℕ} (hi : i ∈ Icc 1 15) :
+    (P : ℕ → Poly)
+    (hc : certAllB 5 (T.unrootedL 5 5 id) (T5targets P) = true) {i : ℕ} (hi : i ∈ F15) :
     u σ i = evalPoly σ.length (P i) := by
-  have hmem : ∀ j ∈ List.range' 1 15, j ∈ Icc 1 15 := by
+  have hmem : ∀ j ∈ List.range' 1 15, j ∈ F15 := by
     intro j hj
     rw [List.mem_range'_1] at hj
     rw [mem_Icc]
     omega
   rw [u, unrootedDist_eq_sum_targets σ hσ T hwf htop hc, T5targets, List.map_map]
-  rw [show ((fun t : List ℕ × List (ℚ × List (ℕ × ℕ)) =>
+  rw [show ((fun t : List ℕ × Poly =>
       if decF 5 t.1 = T5 i then evalPoly σ.length t.2 else 0) ∘ fun j => (T5code j, P j)) =
       fun j => if decF 5 (T5code j) = T5 i then evalPoly σ.length (P j) else 0 from rfl]
   have hterm : ∀ j ∈ List.range' 1 15,
@@ -96,15 +108,15 @@ theorem u_eq_evalPoly_of_certAllB (σ : SpeciesTree (Fin 5)) {H : Finset (Finset
 
 /-! ### Codes of the clusters -/
 
-theorem decC_5_3 : decC 5 3 = {0, 1} := by decide +kernel
+theorem decC_5_3 : decC 5 3 = {0, 1} := by decide
 
-theorem decC_5_7 : decC 5 7 = {0, 1, 2} := by decide +kernel
+theorem decC_5_7 : decC 5 7 = {0, 1, 2} := by decide
 
-theorem decC_5_15 : decC 5 15 = {0, 1, 2, 3} := by decide +kernel
+theorem decC_5_15 : decC 5 15 = {0, 1, 2, 3} := by decide
 
-theorem decC_5_24 : decC 5 24 = {3, 4} := by decide +kernel
+theorem decC_5_24 : decC 5 24 = {3, 4} := by decide
 
-theorem decC_5_27 : decC 5 27 = {0, 1, 3, 4} := by decide +kernel
+theorem decC_5_27 : decC 5 27 = {0, 1, 3, 4} := by decide
 
 /-! ### Tree shapes -/
 
@@ -116,50 +128,50 @@ def bal5Shape : PTree :=
 def pseudo5Shape : PTree :=
   .node 31 [.node 27 [.node 3 [.leaf 0, .leaf 1], .node 24 [.leaf 3, .leaf 4]], .leaf 2]
 
-theorem bal5Shape_wfB : bal5Shape.wfB 5 balanced5 = true := by decide +kernel
+theorem bal5Shape_wfB : bal5Shape.wfB 5 balanced5 = true := by decide
 
-theorem pseudo5Shape_wfB : pseudo5Shape.wfB 5 pseudocaterpillar5 = true := by decide +kernel
+theorem pseudo5Shape_wfB : pseudo5Shape.wfB 5 pseudocaterpillar5 = true := by decide
 
 /-! ### The three binary shapes -/
 
 /-- `u₁, …, u₁₅` for the balanced tree, with `X = e^{-x}` (code `3`), `Y = e^{-y}` (code `7`),
 `Z = e^{-z}` (code `24`): equation (11). -/
-def bal5Poly : ℕ → List (ℚ × List (ℕ × ℕ))
-  | 1 => [(1, []), (-2/3, [(3, 1)]), (-2/3, [(7, 1), (24, 1)]), (1/3, [(3, 1), (7, 1), (24, 1)]),
-      (1/15, [(3, 1), (7, 3), (24, 1)])]
-  | 2 | 3 => [(1/3, [(7, 1), (24, 1)]), (-1/6, [(3, 1), (7, 1), (24, 1)]),
-      (-1/10, [(3, 1), (7, 3), (24, 1)])]
-  | 4 | 13 => [(1/3, [(3, 1)]), (-1/3, [(3, 1), (7, 1), (24, 1)]),
-      (1/15, [(3, 1), (7, 3), (24, 1)])]
-  | 5 | 6 | 9 | 12 => [(1/6, [(3, 1), (7, 1), (24, 1)]), (-1/10, [(3, 1), (7, 3), (24, 1)])]
-  | _ => [(1/15, [(3, 1), (7, 3), (24, 1)])]
+def bal5Poly : ℕ → Poly
+  | 1 => [(1, []), (-2/3, k3), (-2/3, k7c), (1/3, k37b),
+      (1/15, k37c)]
+  | 2 | 3 => [(1/3, k7c), (-1/6, k37b),
+      (-1/10, k37c)]
+  | 4 | 13 => [(1/3, k3), (-1/3, k37b),
+      (1/15, k37c)]
+  | 5 | 6 | 9 | 12 => [(1/6, k37b), (-1/10, k37c)]
+  | _ => [(1/15, k37c)]
 
 /-- `u₁, …, u₁₅` for the caterpillar, with `X = e^{-x}` (code `3`), `Y = e^{-y}` (code `7`),
 `Z = e^{-z}` (code `15`): equation (12). -/
-def cat5Poly : ℕ → List (ℚ × List (ℕ × ℕ))
-  | 1 => [(1, []), (-2/3, [(3, 1)]), (-2/3, [(7, 1)]), (1/3, [(3, 1), (7, 1)]),
-      (1/18, [(3, 1), (7, 3)]), (1/90, [(3, 1), (7, 3), (15, 6)])]
-  | 2 => [(1/3, [(7, 1)]), (-1/6, [(3, 1), (7, 1)]), (-1/9, [(3, 1), (7, 3)]),
-      (1/90, [(3, 1), (7, 3), (15, 6)])]
-  | 3 => [(1/3, [(7, 1)]), (-1/6, [(3, 1), (7, 1)]), (-1/18, [(3, 1), (7, 3)]),
-      (-2/45, [(3, 1), (7, 3), (15, 6)])]
-  | 4 | 13 => [(1/3, [(3, 1)]), (-1/3, [(3, 1), (7, 1)]), (1/18, [(3, 1), (7, 3)]),
-      (1/90, [(3, 1), (7, 3), (15, 6)])]
-  | 5 | 12 => [(1/6, [(3, 1), (7, 1)]), (-1/9, [(3, 1), (7, 3)]),
-      (1/90, [(3, 1), (7, 3), (15, 6)])]
-  | 6 | 9 => [(1/6, [(3, 1), (7, 1)]), (-1/18, [(3, 1), (7, 3)]),
-      (-2/45, [(3, 1), (7, 3), (15, 6)])]
-  | _ => [(1/18, [(3, 1), (7, 3)]), (1/90, [(3, 1), (7, 3), (15, 6)])]
+def cat5Poly : ℕ → Poly
+  | 1 => [(1, []), (-2/3, k3), (-2/3, k7), (1/3, k37a),
+      (1/18, k37), (1/90, k37z6)]
+  | 2 => [(1/3, k7), (-1/6, k37a), (-1/9, k37),
+      (1/90, k37z6)]
+  | 3 => [(1/3, k7), (-1/6, k37a), (-1/18, k37),
+      (-2/45, k37z6)]
+  | 4 | 13 => [(1/3, k3), (-1/3, k37a), (1/18, k37),
+      (1/90, k37z6)]
+  | 5 | 12 => [(1/6, k37a), (-1/9, k37),
+      (1/90, k37z6)]
+  | 6 | 9 => [(1/6, k37a), (-1/18, k37),
+      (-2/45, k37z6)]
+  | _ => [(1/18, k37), (1/90, k37z6)]
 
 /-- `u₁, …, u₁₅` for the pseudocaterpillar, with `X = e^{-x}` (code `3`), `Y = e^{-y}`
 (code `24`), `Z = e^{-z}` (code `27`): equation (13). -/
-def pseudo5Poly : ℕ → List (ℚ × List (ℕ × ℕ))
-  | 1 => [(1, []), (-2/3, [(3, 1)]), (-2/3, [(24, 1)]), (4/9, [(3, 1), (24, 1)]),
-      (-2/45, [(3, 1), (24, 1), (27, 6)])]
-  | 2 | 3 => [(1/3, [(24, 1)]), (-5/18, [(3, 1), (24, 1)]), (1/90, [(3, 1), (24, 1), (27, 6)])]
-  | 4 | 13 => [(1/3, [(3, 1)]), (-5/18, [(3, 1), (24, 1)]), (1/90, [(3, 1), (24, 1), (27, 6)])]
-  | 8 | 11 => [(1/9, [(3, 1), (24, 1)]), (-2/45, [(3, 1), (24, 1), (27, 6)])]
-  | _ => [(1/18, [(3, 1), (24, 1)]), (1/90, [(3, 1), (24, 1), (27, 6)])]
+def pseudo5Poly : ℕ → Poly
+  | 1 => [(1, []), (-2/3, k3), (-2/3, k24), (4/9, k3c),
+      (-2/45, k3x6)]
+  | 2 | 3 => [(1/3, k24), (-5/18, k3c), (1/90, k3x6)]
+  | 4 | 13 => [(1/3, k3), (-5/18, k3c), (1/90, k3x6)]
+  | 8 | 11 => [(1/9, k3c), (-2/45, k3x6)]
+  | _ => [(1/18, k3c), (1/90, k3x6)]
 
 theorem bal5_cert : certAllB 5 (bal5Shape.unrootedL 5 5 id) (T5targets bal5Poly) = true := by
   decide +kernel
@@ -172,18 +184,18 @@ theorem pseudo5_cert :
   decide +kernel
 
 /-- The unrooted gene tree probabilities of the balanced species tree (equation (11)). -/
-theorem u_bal5 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) {i : ℕ}
-    (hi : i ∈ Icc 1 15) : u σ i = evalPoly σ.length (bal5Poly i) :=
+theorem u_bal5 (σ : ST5) (hσ : σ.clusters = balanced5) {i : ℕ}
+    (hi : i ∈ F15) : u σ i = evalPoly σ.length (bal5Poly i) :=
   u_eq_evalPoly_of_certAllB σ hσ bal5Shape bal5Shape_wfB rfl bal5Poly bal5_cert hi
 
 /-- The unrooted gene tree probabilities of the caterpillar species tree (equation (12)). -/
-theorem u_cat5 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) {i : ℕ}
-    (hi : i ∈ Icc 1 15) : u σ i = evalPoly σ.length (cat5Poly i) :=
+theorem u_cat5 (σ : ST5) (hσ : σ.clusters = caterpillar5) {i : ℕ}
+    (hi : i ∈ F15) : u σ i = evalPoly σ.length (cat5Poly i) :=
   u_eq_evalPoly_of_certAllB σ hσ cat5Shape cat5Shape_wfB rfl cat5Poly cat5_cert hi
 
 /-- The unrooted gene tree probabilities of the pseudocaterpillar species tree (equation (13)). -/
-theorem u_pseudo5 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpillar5) {i : ℕ}
-    (hi : i ∈ Icc 1 15) : u σ i = evalPoly σ.length (pseudo5Poly i) :=
+theorem u_pseudo5 (σ : ST5) (hσ : σ.clusters = pseudocaterpillar5) {i : ℕ}
+    (hi : i ∈ F15) : u σ i = evalPoly σ.length (pseudo5Poly i) :=
   u_eq_evalPoly_of_certAllB σ hσ pseudo5Shape pseudo5Shape_wfB rfl pseudo5Poly pseudo5_cert hi
 
 /-! ### The nine nonbinary shapes (Table 7) -/

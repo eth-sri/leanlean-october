@@ -68,44 +68,44 @@ def p78_flipIdx : ℕ → ℕ
   | 2 => 4 | 4 => 2 | 3 => 13 | 13 => 3 | 5 => 7 | 7 => 5 | 6 => 14 | 14 => 6 | 9 => 15
   | 15 => 9 | 10 => 12 | 12 => 10 | i => i
 
-theorem p78_swapIdx_spec : ∀ i ∈ Icc 1 15, p78_swapIdx i ∈ Icc 1 15 ∧
+theorem p78_swapIdx_spec : ∀ i ∈ F15, p78_swapIdx i ∈ F15 ∧
     relabelFamily p78_swap (T5 i) = T5 (p78_swapIdx i) := by
-  decide +kernel
-
-theorem p78_swapIdx_surj : ∀ j ∈ Icc 1 15, ∃ i ∈ Icc 1 15, p78_swapIdx i = j := by
   decide
 
-theorem p78_flipIdx_spec : ∀ i ∈ Icc 1 15, p78_flipIdx i ∈ Icc 1 15 ∧
-    relabelFamily p78_flip (T5 i) = T5 (p78_flipIdx i) := by
-  decide +kernel
+theorem p78_swapIdx_surj : ∀ j ∈ F15, ∃ i ∈ F15, p78_swapIdx i = j := by
+  decide
 
-theorem p78_flipIdx_surj : ∀ j ∈ Icc 1 15, ∃ i ∈ Icc 1 15, p78_flipIdx i = j := by
+theorem p78_flipIdx_spec : ∀ i ∈ F15, p78_flipIdx i ∈ F15 ∧
+    relabelFamily p78_flip (T5 i) = T5 (p78_flipIdx i) := by
+  decide
+
+theorem p78_flipIdx_surj : ∀ j ∈ F15, ∃ i ∈ F15, p78_flipIdx i = j := by
   decide
 
 /-- `d ↔ e` maps `((((a,b),c),d),e)` to `((((a,b),c),e),d)`. -/
 theorem p78_swap_cat0 :
     relabelFamily p78_swap caterpillar5 = hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 4}} := by
-  decide +kernel
+  decide
 
 /-- `a ↔ e, b ↔ d` maps `((((a,b),c),d),e)` to `((((d,e),c),b),a)`. -/
 theorem p78_flip_cat0 :
     relabelFamily p78_flip caterpillar5 = hierarchyOf {{3, 4}, {2, 3, 4}, {1, 2, 3, 4}} := by
-  decide +kernel
+  decide
 
 /-- `a ↔ e, b ↔ d` maps `((((a,b),c),e),d)` to `((((d,e),c),a),b)`. -/
 theorem p78_flip_cat1 : relabelFamily p78_flip (hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 4}}) =
     hierarchyOf {{3, 4}, {2, 3, 4}, {0, 2, 3, 4}} := by
-  decide +kernel
+  decide
 
 /-- `a ↔ e, b ↔ d` maps `(((a,b),c),(d,e))` to `((a,b),(c,(d,e)))`. -/
 theorem p78_flip_bal0 :
     relabelFamily p78_flip balanced5 = hierarchyOf {{0, 1}, {3, 4}, {2, 3, 4}} := by
-  decide +kernel
+  decide
 
 /-- Relabelling back: if `τ` is the relabelling by `π` of a tree with clusters `H`, then `τ`
 relabelled by `π⁻¹` has the clusters `H`. -/
-theorem p78_relabel_symm_clusters {τ : SpeciesTree (Fin 5)} {π : Fin 5 ≃ Fin 5}
-    {H : Finset (Finset (Fin 5))} (hτ : τ.clusters = relabelFamily π H) :
+theorem p78_relabel_symm_clusters {τ : ST5} {π : Fin 5 ≃ Fin 5}
+    {H : Fam5} (hτ : τ.clusters = relabelFamily π H) :
     (τ.relabel π.symm).clusters = H := by
   rw [SpeciesTree.relabel_clusters, hτ, relabelFamily_symm]
 
@@ -113,17 +113,17 @@ theorem p78_relabel_symm_clusters {τ : SpeciesTree (Fin 5)} {π : Fin 5 ≃ Fin
 
 /-- The caterpillar rootings of `U5 2`: `((((a,b),c),d),e)`, `((((a,b),c),e),d)` (2-clade
 `{a,b}`), `((((d,e),c),b),a)` and `((((d,e),c),a),b)` (2-clade `{d,e}`). -/
-def p78_caterpillars : Finset (Finset (Finset (Fin 5))) :=
+def p78_caterpillars : Fam (FinFam 5) :=
   {hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 3}}, hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 4}},
    hierarchyOf {{3, 4}, {2, 3, 4}, {1, 2, 3, 4}}, hierarchyOf {{3, 4}, {2, 3, 4}, {0, 2, 3, 4}}}
 
 /-- The balanced rootings of `U5 2`: `(((a,b),c),(d,e))` and `((a,b),(c,(d,e)))`. -/
-def p78_balanced : Finset (Finset (Finset (Fin 5))) :=
+def p78_balanced : Fam (FinFam 5) :=
   {hierarchyOf {{0, 1}, {0, 1, 2}, {3, 4}}, hierarchyOf {{0, 1}, {3, 4}, {2, 3, 4}}}
 
 /-- A binary rooting of `ab|cde, abc|de` is a caterpillar, a balanced tree, or the
 pseudocaterpillar `(((a,b),(d,e)),c)`. -/
-theorem p78_shapes {H : Finset (Finset (Fin 5))} (hH : H ∈ binaryRootings5) :
+theorem p78_shapes {H : Fam5} (hH : H ∈ binaryRootings5) :
     H ∈ p78_caterpillars ∨ H ∈ p78_balanced ∨ H = pseudocaterpillar5 := by
   simp only [binaryRootings5, mem_insert, mem_singleton] at hH
   rcases hH with rfl | rfl | rfl | rfl | rfl | rfl | rfl
@@ -137,7 +137,7 @@ theorem p78_shapes {H : Finset (Finset (Fin 5))} (hH : H ∈ binaryRootings5) :
 
 /-! ### The classes of the seven rootings -/
 
-variable {τ : SpeciesTree (Fin 5)}
+variable {τ : ST5}
 
 /-- Section 4.2.2: on the caterpillar `((((a,b),c),d),e)` the least probable class is
 `{T₇, T₈, T₁₀, T₁₁, T₁₄, T₁₅}` and the class of the second smallest probability is
@@ -147,7 +147,7 @@ theorem p78_classes_cat0 (hτ : τ.clusters = caterpillar5) :
   obtain ⟨h1, h2⟩ := caterpillar_extremeClasses τ hτ
   have hL : cls_leastClass τ = {7, 8, 10, 11, 14, 15} := h1
   refine ⟨hL, ?_⟩
-  rw [cls_secondClass_eq_filter (m := 7) (by rw [hL]; decide)]
+  rw [cls_secondClass_eq_filter (m := 7) (by drw hL)]
   exact h2
 
 /-- The classes of `((((a,b),c),e),d)`, by permuting the labels `d ↔ e` in
@@ -185,7 +185,7 @@ theorem p78_classes_bal0 (hτ : τ.clusters = balanced5) :
   obtain ⟨h1, h2, -⟩ := balanced_extremeClasses τ hτ
   have hL : cls_leastClass τ = {7, 8, 10, 11, 14, 15} := h1
   refine ⟨hL, ?_⟩
-  rw [cls_secondClass_eq_filter (m := 7) (by rw [hL]; decide)]
+  rw [cls_secondClass_eq_filter (m := 7) (by drw hL)]
   exact h2
 
 /-- The classes of `((a,b),(c,(d,e)))`, by permuting the labels `a ↔ e, b ↔ d` in
@@ -242,11 +242,11 @@ theorem p78_mem_leastClass_seven_iff (hτ : τ.clusters ∈ p78_balanced) :
   · rw [(p78_classes_bal0 h).1]
     exact ⟨fun _ => h, fun _ => by decide⟩
   · rw [(p78_classes_bal1 h).1, h]
-    exact ⟨fun h7 => absurd h7 (by decide), fun h' => absurd h' (by decide +kernel)⟩
+    exact ⟨fun h7 => absurd h7 (by decide), fun h' => absurd h' (by decide)⟩
 
 /-- The balanced case of Proposition 7: the least probable class tells the two balanced rootings
 apart, by `T₇`. -/
-theorem p78_balanced_eq {τ τ' : SpeciesTree (Fin 5)} (hb : τ.clusters ∈ p78_balanced)
+theorem p78_balanced_eq {τ τ' : ST5} (hb : τ.clusters ∈ p78_balanced)
     (hb' : τ'.clusters ∈ p78_balanced) (hL : cls_leastClass τ = cls_leastClass τ') :
     τ.clusters = τ'.clusters := by
   have h7 := (p78_mem_leastClass_seven_iff hb).symm.trans
@@ -254,8 +254,8 @@ theorem p78_balanced_eq {τ τ' : SpeciesTree (Fin 5)} (hb : τ.clusters ∈ p78
   simp only [p78_balanced, mem_insert, mem_singleton] at hb hb'
   rcases hb with h | h <;> rcases hb' with h' | h'
   · rw [h, h']
-  · exact absurd (h7.1 h) (by rw [h']; decide +kernel)
-  · exact absurd (h7.2 h') (by rw [h]; decide +kernel)
+  · exact absurd (h7.1 h) (by drw h')
+  · exact absurd (h7.2 h') (by drw h)
   · rw [h, h']
 
 /-! ### Proof of Proposition 7: the caterpillar case -/
@@ -286,30 +286,30 @@ theorem p78_sign_cat0 (hτ : τ.clusters = caterpillar5) : u τ 2 < u τ 3 :=
 theorem p78_sign_cat1 (hτ : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 4}}) :
     u τ 3 < u τ 2 := by
   have hρ := p78_sign_cat0 (p78_relabel_symm_clusters (hτ.trans p78_swap_cat0.symm))
-  rwa [cls_u_relabel_symm τ p78_swap (i := 2) (j := 3) (by decide +kernel),
-    cls_u_relabel_symm τ p78_swap (i := 3) (j := 2) (by decide +kernel)]
+  rwa [cls_u_relabel_symm τ p78_swap (i := 2) (j := 3) (by decide),
+    cls_u_relabel_symm τ p78_swap (i := 3) (j := 2) (by decide)]
 
 /-- `ℙ(T₁₃) > ℙ(T₄)` on `((((d,e),c),b),a)`: permuting the labels `a ↔ e, b ↔ d` maps `T₂` to
 `T₄` and `T₃` to `T₁₃`. -/
 theorem p78_sign_cat2 (hτ : τ.clusters = hierarchyOf {{3, 4}, {2, 3, 4}, {1, 2, 3, 4}}) :
     u τ 4 < u τ 13 := by
   have hρ := p78_sign_cat0 (p78_relabel_symm_clusters (hτ.trans p78_flip_cat0.symm))
-  rwa [cls_u_relabel_symm τ p78_flip (i := 2) (j := 4) (by decide +kernel),
-    cls_u_relabel_symm τ p78_flip (i := 3) (j := 13) (by decide +kernel)]
+  rwa [cls_u_relabel_symm τ p78_flip (i := 2) (j := 4) (by decide),
+    cls_u_relabel_symm τ p78_flip (i := 3) (j := 13) (by decide)]
 
 /-- `ℙ(T₄) > ℙ(T₁₃)` on `((((d,e),c),a),b)`, by permuting the labels `a ↔ e, b ↔ d` in
 `p78_sign_cat1`. -/
 theorem p78_sign_cat3 (hτ : τ.clusters = hierarchyOf {{3, 4}, {2, 3, 4}, {0, 2, 3, 4}}) :
     u τ 13 < u τ 4 := by
   have hρ := p78_sign_cat1 (p78_relabel_symm_clusters (hτ.trans p78_flip_cat1.symm))
-  rwa [cls_u_relabel_symm τ p78_flip (i := 2) (j := 4) (by decide +kernel),
-    cls_u_relabel_symm τ p78_flip (i := 3) (j := 13) (by decide +kernel)]
+  rwa [cls_u_relabel_symm τ p78_flip (i := 2) (j := 4) (by decide),
+    cls_u_relabel_symm τ p78_flip (i := 3) (j := 13) (by decide)]
 
 /-- The caterpillar case of Proposition 7: the taxa in cherries with `c` in the trees of the
 second class give the 2-clade; with 2-clade `{a,b}`, the tree is `((((a,b),c),d),e)` if
 `ℙ(T₃) > ℙ(T₂)` and `((((a,b),c),e),d)` if `ℙ(T₂) > ℙ(T₃)`, and with 2-clade `{d,e}` the same
 holds after permuting the labels `a ↔ e, b ↔ d`. -/
-theorem p78_caterpillar_eq {τ τ' : SpeciesTree (Fin 5)} (hc : τ.clusters ∈ p78_caterpillars)
+theorem p78_caterpillar_eq {τ τ' : ST5} (hc : τ.clusters ∈ p78_caterpillars)
     (hc' : τ'.clusters ∈ p78_caterpillars) (hS : cls_secondClass τ = cls_secondClass τ')
     (hu : ∀ i, u τ i = u τ' i) : τ.clusters = τ'.clusters := by
   rcases p78_twoClade hc with ⟨hP, h | h⟩ | ⟨hP, h | h⟩ <;>
@@ -333,7 +333,7 @@ theorem p78_exists_relabel_rep {X : Type*} [Fintype X] [DecidableEq X] (hX : Fin
       (σ.relabel e).clusters = pseudocaterpillar5 := by
   obtain ⟨e, he⟩ := exists_equiv_unroot_eq_U5_two_of_isBinary hX σ hσ
   have hR := mem_binaryRootings5 _ ((σ.isBinary_relabel_iff e.symm).2 hσ) he
-  have key : ∀ (π : Fin 5 ≃ Fin 5) (H : Finset (Finset (Fin 5))),
+  have key : ∀ (π : Fin 5 ≃ Fin 5) (H : Fam5),
       (σ.relabel e.symm).clusters = relabelFamily π H →
         (σ.relabel (e.symm.trans π.symm)).clusters = H := by
     intro π H h

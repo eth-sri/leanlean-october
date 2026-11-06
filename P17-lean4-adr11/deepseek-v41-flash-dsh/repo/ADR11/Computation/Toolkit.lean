@@ -14,19 +14,19 @@ species trees. To compute the probability of a gene tree under a concrete specie
    cluster (`{0, 1} ↦ 3`, `{0, 1, 2} ↦ 7`, the root `univ ↦ 2 ^ n - 1`, a leaf `{x} ↦ 2 ^ x`,
    see `PTree.leaf`) and `cs` its children, in any order;
 2. give the target gene tree by a list of codes `g` (rooted: the codes of its clusters; unrooted:
-   `unrootL n` of the codes of any rooted version), with `decF n g = G` (by `decide +kernel`);
+   `unrootL n` of the codes of any rooted version), with `decF n g = G` (by `decide`);
 3. give the expected probability as a polynomial `P`: a list of pairs (rational coefficient,
    monomial), a monomial being a list of pairs (code of a cluster `A`, exponent `e`) standing for
    `∏ (e^{-len A})^e`; the factors of a monomial must be listed in the order of a post-order
    traversal of the tree shape (children before parents, in the order of the lists `cs`), and
    factors with exponent `0` omitted (`normKey`);
 4. apply `rootedDist_eq_evalPoly` or `unrootedDist_eq_evalPoly`, proving the well-formedness
-   `T.wfB n H = true` and the certificate `certB … = true` by `decide +kernel`; or, for the whole
+   `T.wfB n H = true` and the certificate `certB … = true` by `decide`; or, for the whole
    distribution at once, `rootedDist_eq_sum_targets` / `unrootedDist_eq_sum_targets` with
    `certAllB`, which also checks that every gene tree produced is one of the listed targets (so
    that all other gene trees have probability `0`);
 5. evaluate `evalPoly` with `simp only [evalPoly_cons, evalPoly_nil, monoVal_cons, monoVal_nil]`,
-   rewrite the codes `decC n a` into clusters (`decide +kernel`), `push_cast` and `ring`.
+   rewrite the codes `decC n a` into clusters (`decide`), `push_cast` and `ring`.
 
 A wrong polynomial makes the certificate evaluate to `false` (and `decide` fail). On `Fin 5` the
 full computation of the unrooted distribution of a species tree takes at most a few seconds in
@@ -75,9 +75,9 @@ theorem decF_eq_iff_sameSet {n : ℕ} {a b : List ℕ} (ha : Valid n a) (hb : Va
   simp [sameSet, List.all_eq_true]
 
 /-- The monomial without its trivial factors. -/
-def normKey (k : List (ℕ × ℕ)) : List (ℕ × ℕ) := k.filter (·.2 != 0)
+def normKey (k : Mono) : Mono := k.filter (·.2 != 0)
 
-theorem monoVal_normKey {n : ℕ} (len : Finset (Fin n) → ℝ) (k : List (ℕ × ℕ)) :
+theorem monoVal_normKey {n : ℕ} (len : FinFam n → ℝ) (k : Mono) :
     monoVal len (normKey k) = monoVal len k := by
   induction k with
   | nil => rfl
@@ -87,26 +87,26 @@ theorem monoVal_normKey {n : ℕ} (len : Finset (Fin n) → ℝ) (k : List (ℕ 
     · simp [normKey, h] at ih ⊢; rw [ih]
 
 /-- The total coefficient of the monomial `k` in a list of (coefficient, monomial). -/
-def coefSum (P : List (ℚ × List (ℕ × ℕ))) (k : List (ℕ × ℕ)) : ℚ :=
+def coefSum (P : Poly) (k : Mono) : ℚ :=
   ((P.filter fun p => decide (p.2 = k)).map (·.1)).sum
 
 /-- Whether two lists of (coefficient, monomial) define the same polynomial. -/
-def polyEqB (P Q : List (ℚ × List (ℕ × ℕ))) : Bool :=
+def polyEqB (P Q : Poly) : Bool :=
   (P.map (·.2) ++ Q.map (·.2)).all fun k => decide (coefSum P k = coefSum Q k)
 
 /-- The value of a polynomial given as a list of (coefficient, monomial). -/
-noncomputable def evalPoly {n : ℕ} (len : Finset (Fin n) → ℝ) (P : List (ℚ × List (ℕ × ℕ))) :
+noncomputable def evalPoly {n : ℕ} (len : FinFam n → ℝ) (P : Poly) :
     ℝ :=
   (P.map fun p => (p.1 : ℝ) * monoVal len p.2).sum
 
-@[simp] theorem evalPoly_nil {n : ℕ} (len : Finset (Fin n) → ℝ) : evalPoly len [] = 0 := rfl
+@[simp] theorem evalPoly_nil {n : ℕ} (len : FinFam n → ℝ) : evalPoly len [] = 0 := rfl
 
-@[simp] theorem evalPoly_cons {n : ℕ} (len : Finset (Fin n) → ℝ) (p : ℚ × List (ℕ × ℕ))
-    (P : List (ℚ × List (ℕ × ℕ))) :
+@[simp] theorem evalPoly_cons {n : ℕ} (len : FinFam n → ℝ) (p : Term)
+    (P : Poly) :
     evalPoly len (p :: P) = (p.1 : ℝ) * monoVal len p.2 + evalPoly len P := rfl
 
-theorem evalPoly_eq_sum_coefSum {n : ℕ} (len : Finset (Fin n) → ℝ) (P : List (ℚ × List (ℕ × ℕ)))
-    (S : Finset (List (ℕ × ℕ))) (hS : ∀ p ∈ P, p.2 ∈ S) :
+theorem evalPoly_eq_sum_coefSum {n : ℕ} (len : FinFam n → ℝ) (P : Poly)
+    (S : Finset (Mono)) (hS : ∀ p ∈ P, p.2 ∈ S) :
     evalPoly len P = ∑ k ∈ S, (coefSum P k : ℝ) * monoVal len k := by
   induction P with
   | nil => simp [evalPoly, coefSum]
@@ -120,8 +120,8 @@ theorem evalPoly_eq_sum_coefSum {n : ℕ} (len : Finset (Fin n) → ℝ) (P : Li
     simp only [apply_ite (fun x : ℚ => (x : ℝ)), Rat.cast_zero, ite_mul, zero_mul,
       Finset.sum_ite_eq, hS p List.mem_cons_self, ite_true]
 
-theorem evalPoly_eq_of_polyEqB {n : ℕ} (len : Finset (Fin n) → ℝ)
-    {P Q : List (ℚ × List (ℕ × ℕ))} (h : polyEqB P Q = true) :
+theorem evalPoly_eq_of_polyEqB {n : ℕ} (len : FinFam n → ℝ)
+    {P Q : Poly} (h : polyEqB P Q = true) :
     evalPoly len P = evalPoly len Q := by
   simp only [polyEqB, List.all_eq_true, decide_eq_true_eq] at h
   let S := (P.map (·.2) ++ Q.map (·.2)).toFinset
@@ -132,10 +132,10 @@ theorem evalPoly_eq_of_polyEqB {n : ℕ} (len : Finset (Fin n) → ℝ)
   rw [h k (List.mem_toFinset.1 hk)]
 
 /-- The (coefficient, monomial) pairs of the terms whose family has the codes `u`. -/
-def collect (M : List CTerm) (u : List ℕ) : List (ℚ × List (ℕ × ℕ)) :=
+def collect (M : List CTerm) (u : List ℕ) : Poly :=
   (M.filter fun τ => sameSet τ.forest u).map fun τ => (τ.coef, normKey τ.key)
 
-theorem sum_eq_evalPoly_collect {m n : ℕ} (len : Finset (Fin n) → ℝ) (M : List CTerm)
+theorem sum_eq_evalPoly_collect {m n : ℕ} (len : FinFam n → ℝ) (M : List CTerm)
     (u : List ℕ) (hM : ∀ τ ∈ M, Valid m τ.forest) (hu : Valid m u) :
     (M.map fun τ => if decF m τ.forest = decF m u then τ.val len else 0).sum =
       evalPoly len (collect M u) := by
@@ -153,7 +153,7 @@ theorem sum_eq_evalPoly_collect {m n : ℕ} (len : Finset (Fin n) → ℝ) (M : 
 
 /-- Checks that the computation `R` succeeded with valid codes, and that the probability of the
 family with codes `u` is the polynomial `P`. -/
-def certB (m : ℕ) (R : Option (List CTerm)) (u : List ℕ) (P : List (ℚ × List (ℕ × ℕ))) : Bool :=
+def certB (m : ℕ) (R : Option (List CTerm)) (u : List ℕ) (P : Poly) : Bool :=
   match R with
   | some M => decide (Valid m u) && M.all (fun τ => decide (Valid m τ.forest)) &&
       polyEqB (collect M u) P
@@ -162,15 +162,15 @@ def certB (m : ℕ) (R : Option (List CTerm)) (u : List ℕ) (P : List (ℚ × L
 /-- Checks that the computation `R` succeeded with valid codes, that every family produced is one
 of the targets (exactly one), and that the probability of each target is the given polynomial. -/
 def certAllB (m : ℕ) (R : Option (List CTerm))
-    (targets : List (List ℕ × List (ℚ × List (ℕ × ℕ)))) : Bool :=
+    (targets : List (List ℕ × Poly)) : Bool :=
   match R with
   | some M => M.all (fun τ => decide (Valid m τ.forest) &&
         (targets.filter fun t => sameSet τ.forest t.1).length == 1) &&
       targets.all (fun t => decide (Valid m t.1) && polyEqB (collect M t.1) t.2)
   | none => false
 
-theorem eq_sum_targets_of_certAllB {m n : ℕ} (len : Finset (Fin n) → ℝ) {R : Option (List CTerm)}
-    {targets : List (List ℕ × List (ℚ × List (ℕ × ℕ)))} (h : certAllB m R targets = true) :
+theorem eq_sum_targets_of_certAllB {m n : ℕ} (len : FinFam n → ℝ) {R : Option (List CTerm)}
+    {targets : List (List ℕ × Poly)} (h : certAllB m R targets = true) :
     ∃ M, R = some M ∧ ∀ U : Finset (Finset (Fin m)),
       (M.map fun τ => if decF m τ.forest = U then τ.val len else 0).sum =
         (targets.map fun t => if decF m t.1 = U then evalPoly len t.2 else 0).sum := by
@@ -187,7 +187,7 @@ theorem eq_sum_targets_of_certAllB {m n : ℕ} (len : Finset (Fin n) → ℝ) {R
       intro τ hτ
       obtain ⟨hv, h1⟩ := hM τ hτ
       obtain ⟨t₀, ht₀⟩ := List.length_eq_one_iff.1 h1
-      have hsplit : ∀ l : List (List ℕ × List (ℚ × List (ℕ × ℕ))),
+      have hsplit : ∀ l : List (List ℕ × Poly),
           (l.filter fun t => sameSet τ.forest t.1) = [t₀] →
           (∀ t ∈ l, Valid m t.1) →
           (l.map fun t => if decF m t.1 = U then
@@ -221,8 +221,8 @@ theorem eq_sum_targets_of_certAllB {m n : ℕ} (len : Finset (Fin n) → ℝ) {R
       exact (hsplit targets ht₀ (fun t h => (ht t h).1)).symm
     rw [List.map_congr_left key]
     -- swap the two sums
-    have hswap : ∀ (A : List CTerm) (B : List (List ℕ × List (ℚ × List (ℕ × ℕ))))
-        (f : CTerm → (List ℕ × List (ℚ × List (ℕ × ℕ))) → ℝ),
+    have hswap : ∀ (A : List CTerm) (B : List (List ℕ × Poly))
+        (f : CTerm → (List ℕ × Poly) → ℝ),
         (A.map fun a => (B.map fun b => f a b).sum).sum =
           (B.map fun b => (A.map fun a => f a b).sum).sum := by
       intro A B f
@@ -253,9 +253,9 @@ theorem eq_sum_targets_of_certAllB {m n : ℕ} (len : Finset (Fin n) → ℝ) {R
 /-! ### Gene tree distributions of species trees -/
 
 theorem unrootedDist_eq_sum_targets {n : ℕ} (σ : SpeciesTree (Fin n))
-    {H : Finset (Finset (Fin n))} (hσ : σ.clusters = H) (T : PTree) (hwf : T.wfB n H = true)
-    (htop : T.code = 2 ^ n - 1) {targets : List (List ℕ × List (ℚ × List (ℕ × ℕ)))}
-    (hc : certAllB n (T.unrootedL n n id) targets = true) (U : Finset (Finset (Fin n))) :
+    {H : FamN n} (hσ : σ.clusters = H) (T : PTree) (hwf : T.wfB n H = true)
+    (htop : T.code = 2 ^ n - 1) {targets : List (List ℕ × Poly)}
+    (hc : certAllB n (T.unrootedL n n id) targets = true) (U : FamN n) :
     σ.unrootedDist id U =
       (targets.map fun t => if decF n t.1 = U then evalPoly σ.length t.2 else 0).sum := by
   obtain ⟨M, hM, hval⟩ := eq_sum_targets_of_certAllB σ.length hc
@@ -277,13 +277,13 @@ theorem eq_ite_of_sum_targets₃ {α : Type*} {a b c : α} (hab : a ≠ b) (hac 
 
 /-- The whole unrooted gene tree distribution, when only three gene trees have positive
 probability. -/
-theorem unrootedDist_eq_ite₃ {n : ℕ} (σ : SpeciesTree (Fin n)) {H : Finset (Finset (Fin n))}
+theorem unrootedDist_eq_ite₃ {n : ℕ} (σ : SpeciesTree (Fin n)) {H : FamN n}
     (hσ : σ.clusters = H) (T : PTree) (hwf : T.wfB n H = true) (htop : T.code = 2 ^ n - 1)
-    {t₁ t₂ t₃ : List ℕ} {P₁ P₂ P₃ : List (ℚ × List (ℕ × ℕ))}
+    {t₁ t₂ t₃ : List ℕ} {P₁ P₂ P₃ : Poly}
     (hc : certAllB n (T.unrootedL n n id) [(t₁, P₁), (t₂, P₂), (t₃, P₃)] = true)
-    {U₁ U₂ U₃ : Finset (Finset (Fin n))} (h₁ : decF n t₁ = U₁) (h₂ : decF n t₂ = U₂)
+    {U₁ U₂ U₃ : FamN n} (h₁ : decF n t₁ = U₁) (h₂ : decF n t₂ = U₂)
     (h₃ : decF n t₃ = U₃) (h₁₂ : U₁ ≠ U₂) (h₁₃ : U₁ ≠ U₃) (h₂₃ : U₂ ≠ U₃)
-    (U : Finset (Finset (Fin n))) :
+    (U : FamN n) :
     σ.unrootedDist id U =
       if U = U₁ then evalPoly σ.length P₁ else if U = U₂ then evalPoly σ.length P₂
       else if U = U₃ then evalPoly σ.length P₃ else 0 := by

@@ -42,12 +42,14 @@ results here assume `H` is a hierarchy (`IsHierarchy H`) and the lengths are non
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset
 
 variable {X : Type*} [Fintype X] [DecidableEq X] {L : Type*} [Fintype L] [DecidableEq L]
 
 /-- A hierarchy of clusters on `X`. -/
-def IsHierarchy (H : Finset (Finset X)) : Prop :=
+def IsHierarchy (H : Fam X) : Prop :=
   univ ∈ H ∧ (∀ x : X, {x} ∈ H) ∧ (∀ A ∈ H, A.Nonempty) ∧
     ∀ A ∈ H, ∀ B ∈ H, A ⊆ B ∨ B ⊆ A ∨ Disjoint A B
 
@@ -57,22 +59,22 @@ theorem SpeciesTree.isHierarchy (σ : SpeciesTree X) : IsHierarchy σ.clusters :
 /-- The distribution of the forest entering the population above `A`: the union of the
 independent forests leaving the populations of the children of `A`, together with the singletons
 of the lineages sampled at `A`. -/
-noncomputable def enteringDist (H : Finset (Finset X)) (len : Finset X → ℝ) (s : L → X)
-    (A : Finset X) (F : Finset (Finset L)) : ℝ :=
-  ∑ f : childClusters H A → Finset (Finset L),
+noncomputable def enteringDist (H : Fam X) (len : Len X) (s : L → X)
+    (A : Finset X) (F : Fam L) : ℝ :=
+  ∑ f : childClusters H A → Fam L,
     if univ.sup f ∪ sampledForest s A = F then ∏ B : childClusters H A, forestDist H len s B (f B)
     else 0
 
 /-- The distribution of unrooted gene trees for raw data `H`, `len`. -/
-noncomputable def unrootedDistOf (H : Finset (Finset X)) (len : Finset X → ℝ) (s : L → X)
-    (T : Finset (Finset L)) : ℝ :=
+noncomputable def unrootedDistOf (H : Fam X) (len : Len X) (s : L → X)
+    (T : Fam L) : ℝ :=
   ∑ G, if unroot G = T then forestDist H len s univ G else 0
 
 theorem SpeciesTree.unrootedDist_eq_unrootedDistOf (σ : SpeciesTree X) (s : L → X) :
     σ.unrootedDist s = unrootedDistOf σ.clusters σ.length s := rfl
 
-theorem forestDist_eq_sum_entering (H : Finset (Finset X)) (len : Finset X → ℝ) (s : L → X)
-    (A : Finset X) (G : Finset (Finset L)) :
+theorem forestDist_eq_sum_entering (H : Fam X) (len : Len X) (s : L → X)
+    (A : Finset X) (G : Fam L) :
     forestDist H len s A G = ∑ F, enteringDist H len s A F * populationKernel len A F G := by
   rw [forestDist]
   unfold enteringDist
@@ -83,8 +85,8 @@ theorem forestDist_eq_sum_entering (H : Finset (Finset X)) (len : Finset X → �
   rw [Finset.sum_ite_eq]
   simp
 
-theorem forestDist_of_childClusters_eq_empty {H : Finset (Finset X)} {len : Finset X → ℝ}
-    {s : L → X} {A : Finset X} (h : childClusters H A = ∅) (G : Finset (Finset L)) :
+theorem forestDist_of_childClusters_eq_empty {H : Fam X} {len : Len X}
+    {s : L → X} {A : Finset X} (h : childClusters H A = ∅) (G : Fam L) :
     forestDist H len s A G = populationKernel len A (sampledForest s A) G := by
   rw [forestDist]
   have : IsEmpty (childClusters H A) := by rw [h]; infer_instance
@@ -113,9 +115,9 @@ private lemma msc_sum_pi_pair {ι α β : Type*} [DecidableEq ι] [Fintype α] [
   rw [← e.symm.sum_comp, Fintype.sum_prod_type]
   rfl
 
-theorem forestDist_of_childClusters_eq_pair {H : Finset (Finset X)} {len : Finset X → ℝ}
+theorem forestDist_of_childClusters_eq_pair {H : Fam X} {len : Len X}
     {s : L → X} {A B C : Finset X} (h : childClusters H A = {B, C}) (hBC : B ≠ C)
-    (G : Finset (Finset L)) :
+    (G : Fam L) :
     forestDist H len s A G =
       ∑ F₁, ∑ F₂, forestDist H len s B F₁ * forestDist H len s C F₂ *
         populationKernel len A (F₁ ∪ F₂ ∪ sampledForest s A) G := by
@@ -130,13 +132,13 @@ theorem forestDist_of_childClusters_eq_pair {H : Finset (Finset X)} {len : Finse
       sup_insert, sup_singleton]
     simp [hBC.symm]
 
-theorem mem_childClusters {H : Finset (Finset X)} {A B : Finset X} :
+theorem mem_childClusters {H : Fam X} {A B : Finset X} :
     B ∈ childClusters H A ↔ B ∈ H ∧ B ⊂ A ∧ ∀ C ∈ H, B ⊂ C → ¬ C ⊂ A :=
   mem_filter
 
 /-- In a hierarchy, the children of a cluster with at least two elements partition it, and a
 singleton has no children. -/
-theorem IsHierarchy.childClusters_singleton {H : Finset (Finset X)} (hH : IsHierarchy H) (x : X) :
+theorem IsHierarchy.childClusters_singleton {H : Fam X} (hH : IsHierarchy H) (x : X) :
     childClusters H {x} = ∅ := by
   unfold childClusters
   rw [Finset.filter_eq_empty_iff]
@@ -146,7 +148,7 @@ theorem IsHierarchy.childClusters_singleton {H : Finset (Finset X)} (hH : IsHier
   exact Finset.not_nonempty_empty (hH.2.2.1 _ hB)
 
 /-- Two distinct children of a cluster of a hierarchy are disjoint. -/
-theorem IsHierarchy.disjoint_of_mem_childClusters {H : Finset (Finset X)} (hH : IsHierarchy H)
+theorem IsHierarchy.disjoint_of_mem_childClusters {H : Fam X} (hH : IsHierarchy H)
     {A B C : Finset X} (hB : B ∈ childClusters H A) (hC : C ∈ childClusters H A) (hBC : B ≠ C) :
     Disjoint B C := by
   rw [mem_childClusters] at hB hC
@@ -155,12 +157,10 @@ theorem IsHierarchy.disjoint_of_mem_childClusters {H : Finset (Finset X)} (hH : 
   · exact absurd hB.2.1 (hC.2.2 B hB.1 (lt_of_le_of_ne h hBC.symm))
   · exact h
 
-omit [Fintype X] in
 theorem mem_sampledForest {s : L → X} {A : Finset X} {C : Finset L} :
     C ∈ sampledForest s A ↔ ∃ l, s l ∈ A ∧ {l} = C := by
   simp [sampledForest]
 
-omit [Fintype X] in
 theorem singleton_mem_sampledForest {s : L → X} {A : Finset X} {l : L} :
     {l} ∈ sampledForest s A ↔ s l ∈ A := by
   rw [mem_sampledForest]
@@ -170,7 +170,6 @@ theorem singleton_mem_sampledForest {s : L → X} {A : Finset X} {l : L} :
     exact h ▸ hl'
   · exact fun h => ⟨l, h, rfl⟩
 
-omit [Fintype L] in
 private lemma msc_singleton_laminar {C D : Finset L} {l : L} (hC : C = {l}) :
     C ⊆ D ∨ D ⊆ C ∨ Disjoint C D := by
   subst hC
@@ -181,8 +180,8 @@ private lemma msc_singleton_laminar {C D : Finset L} {l : L} (hC : C = {l}) :
 /-- The forest entering the population above a cluster `A` of a hierarchy, when the forests
 leaving the children are forests on the lineages sampled from the children, is a forest on the
 lineages sampled from `A`, containing their singletons. -/
-theorem IsHierarchy.isForest_entering {H : Finset (Finset X)} (hH : IsHierarchy H) {s : L → X}
-    {A : Finset X} (f : childClusters H A → Finset (Finset L))
+theorem IsHierarchy.isForest_entering {H : Fam X} (hH : IsHierarchy H) {s : L → X}
+    {A : Finset X} (f : childClusters H A → Fam L)
     (hf : ∀ B, IsForest (f B) ∧ lineages (f B) = univ.filter (fun l => s l ∈ (B : Finset X))) :
     IsForest (univ.sup f ∪ sampledForest s A) ∧
       sampledForest s A ⊆ univ.sup f ∪ sampledForest s A ∧
@@ -233,7 +232,7 @@ theorem IsHierarchy.isForest_entering {H : Finset (Finset X)} (hH : IsHierarchy 
       exact ⟨{l}, mem_union_right _ (singleton_mem_sampledForest.2 h), mem_singleton_self l⟩
 
 /-- The population kernels only add clusters to a forest and keep its lineages. -/
-theorem populationKernel_support {len : Finset X → ℝ} {A : Finset X} {F G : Finset (Finset L)}
+theorem populationKernel_support {len : Len X} {A : Finset X} {F G : Fam L}
     (hF : IsForest F) (h : populationKernel len A F G ≠ 0) :
     IsForest G ∧ F ⊆ G ∧ lineages G = lineages F := by
   unfold populationKernel at h
@@ -250,15 +249,15 @@ theorem populationKernel_support {len : Finset X → ℝ} {A : Finset X} {F G : 
     obtain ⟨h1, h2, h3, -⟩ := jumpMatrix_pow_support hF (right_ne_zero_of_mul h)
     exact ⟨h1, h2, h3⟩
 
-theorem populationKernel_nonneg {len : Finset X → ℝ} {A : Finset X} (hlen : A ≠ univ → 0 ≤ len A)
-    {F : Finset (Finset L)} (hF : IsForest F) (G : Finset (Finset L)) :
+theorem populationKernel_nonneg {len : Len X} {A : Finset X} (hlen : A ≠ univ → 0 ≤ len A)
+    {F : Fam L} (hF : IsForest F) (G : Fam L) :
     0 ≤ populationKernel len A F G := by
   unfold populationKernel
   split_ifs with hA
   · exact kingmanAbsorption_nonneg hF G
   · exact kingmanTransition_nonneg (hlen hA) F G
 
-theorem populationKernel_sum (len : Finset X → ℝ) (A : Finset X) {F : Finset (Finset L)}
+theorem populationKernel_sum (len : Len X) (A : Finset X) {F : Fam L}
     (hF : IsForest F) : ∑ G, populationKernel len A F G = 1 := by
   unfold populationKernel
   split_ifs with hA
@@ -267,8 +266,8 @@ theorem populationKernel_sum (len : Finset X → ℝ) (A : Finset X) {F : Finset
 
 /-- The forest leaving the population above a cluster `A` of a hierarchy is a forest on exactly
 the lineages sampled from `A`, containing the singletons of all of them. -/
-theorem forestDist_support {H : Finset (Finset X)} (hH : IsHierarchy H) (len : Finset X → ℝ)
-    (s : L → X) {A : Finset X} (hA : A ∈ H) {G : Finset (Finset L)}
+theorem forestDist_support {H : Fam X} (hH : IsHierarchy H) (len : Len X)
+    (s : L → X) {A : Finset X} (hA : A ∈ H) {G : Fam L}
     (hG : forestDist H len s A G ≠ 0) :
     IsForest G ∧ sampledForest s A ⊆ G ∧ lineages G = univ.filter (fun l => s l ∈ A) := by
   induction A using Finset.strongInduction generalizing G with
@@ -288,9 +287,9 @@ theorem forestDist_support {H : Finset (Finset X)} (hH : IsHierarchy H) (len : F
 
 /-- Nonnegativity, assuming only that the lengths of the edges below the root are nonnegative
 (the length at `univ` is irrelevant). -/
-theorem forestDist_nonneg_of_ne_univ {H : Finset (Finset X)} (hH : IsHierarchy H)
-    {len : Finset X → ℝ} (hlen : ∀ A ∈ H, A ≠ univ → 0 ≤ len A) (s : L → X) {A : Finset X}
-    (hA : A ∈ H) (G : Finset (Finset L)) : 0 ≤ forestDist H len s A G := by
+theorem forestDist_nonneg_of_ne_univ {H : Fam X} (hH : IsHierarchy H)
+    {len : Len X} (hlen : ∀ A ∈ H, A ≠ univ → 0 ≤ len A) (s : L → X) {A : Finset X}
+    (hA : A ∈ H) (G : Fam L) : 0 ≤ forestDist H len s A G := by
   induction A using Finset.strongInduction generalizing G with
   | H A ih =>
   rw [forestDist]
@@ -307,18 +306,18 @@ theorem forestDist_nonneg_of_ne_univ {H : Finset (Finset X)} (hH : IsHierarchy H
         exact ⟨h1, h3⟩
       exact populationKernel_nonneg (hlen A hA) (hH.isForest_entering f hfB).1 G
 
-theorem forestDist_sum {H : Finset (Finset X)} (hH : IsHierarchy H) (len : Finset X → ℝ)
+theorem forestDist_sum {H : Fam X} (hH : IsHierarchy H) (len : Len X)
     (s : L → X) {A : Finset X} (hA : A ∈ H) : ∑ G, forestDist H len s A G = 1 := by
   induction A using Finset.strongInduction with
   | H A ih =>
-  have hunf : ∀ G, forestDist H len s A G = ∑ f : childClusters H A → Finset (Finset L),
+  have hunf : ∀ G, forestDist H len s A G = ∑ f : childClusters H A → Fam L,
       (∏ B : childClusters H A, forestDist H len s B (f B)) *
         populationKernel len A (univ.sup f ∪ sampledForest s A) G := fun G => by
     rw [forestDist]
   simp_rw [hunf]
   rw [Finset.sum_comm]
   simp_rw [← Finset.mul_sum]
-  have hterm : ∀ f : childClusters H A → Finset (Finset L),
+  have hterm : ∀ f : childClusters H A → Fam L,
       (∏ B : childClusters H A, forestDist H len s B (f B)) *
         ∑ G, populationKernel len A (univ.sup f ∪ sampledForest s A) G =
       ∏ B : childClusters H A, forestDist H len s B (f B) := by
@@ -333,7 +332,7 @@ theorem forestDist_sum {H : Finset (Finset X)} (hH : IsHierarchy H) (len : Finse
         exact ⟨h1, h3⟩
       rw [populationKernel_sum len A (hH.isForest_entering f hfB).1, mul_one]
   simp_rw [hterm]
-  rw [← Fintype.prod_sum (fun (B : childClusters H A) (F : Finset (Finset L)) =>
+  rw [← Fintype.prod_sum (fun (B : childClusters H A) (F : Fam L) =>
     forestDist H len s B F)]
   exact Finset.prod_eq_one fun B _ =>
     ih B (mem_childClusters.1 B.2).2.1 (mem_childClusters.1 B.2).1
@@ -342,8 +341,8 @@ theorem forestDist_sum {H : Finset (Finset X)} (hH : IsHierarchy H) (len : Finse
 
 /-- The forest entering the population above a cluster `A` of a hierarchy is a forest on exactly
 the lineages sampled from `A`, containing the singletons of all of them. -/
-theorem enteringDist_support {H : Finset (Finset X)} (hH : IsHierarchy H) (len : Finset X → ℝ)
-    (s : L → X) {A : Finset X} {F : Finset (Finset L)} (hF : enteringDist H len s A F ≠ 0) :
+theorem enteringDist_support {H : Fam X} (hH : IsHierarchy H) (len : Len X)
+    (s : L → X) {A : Finset X} {F : Fam L} (hF : enteringDist H len s A F ≠ 0) :
     IsForest F ∧ sampledForest s A ⊆ F ∧ lineages F = univ.filter (fun l => s l ∈ A) := by
   unfold enteringDist at hF
   obtain ⟨f, -, hf⟩ := Finset.exists_ne_zero_of_sum_ne_zero hF
@@ -358,8 +357,8 @@ theorem enteringDist_support {H : Finset (Finset X)} (hH : IsHierarchy H) (len :
 
 /-- The forest leaving the population above the root is a forest on all the lineages with at
 most one root (a single rooted gene tree, when some lineage is sampled). -/
-theorem forestDist_univ_support {H : Finset (Finset X)} (hH : IsHierarchy H)
-    (len : Finset X → ℝ) (s : L → X) {G : Finset (Finset L)}
+theorem forestDist_univ_support {H : Fam X} (hH : IsHierarchy H)
+    (len : Len X) (s : L → X) {G : Fam L}
     (hG : forestDist H len s univ G ≠ 0) :
     IsForest G ∧ sampledForest s univ ⊆ G ∧ lineages G = univ ∧ #(roots G) ≤ 1 := by
   obtain ⟨h1, h2, h3⟩ := forestDist_support hH len s hH.1 hG
@@ -379,7 +378,7 @@ theorem forestDist_univ_support {H : Finset (Finset X)} (hH : IsHierarchy H)
 /-! ### The children of a cluster of a hierarchy -/
 
 /-- Every element of a cluster `A` with at least two elements lies in a child of `A`. -/
-theorem IsHierarchy.exists_mem_childClusters {H : Finset (Finset X)} (hH : IsHierarchy H)
+theorem IsHierarchy.exists_mem_childClusters {H : Fam X} (hH : IsHierarchy H)
     {A : Finset X} (hA : 2 ≤ #A) {x : X} (hx : x ∈ A) : ∃ B ∈ childClusters H A, x ∈ B := by
   have hxA : ({x} : Finset X) ⊂ A := by
     refine (singleton_subset_iff.2 hx).ssubset_of_ne ?_
@@ -393,7 +392,7 @@ theorem IsHierarchy.exists_mem_childClusters {H : Finset (Finset X)} (hH : IsHie
   exact absurd (card_lt_card hBC) (not_lt.2 this)
 
 /-- A cluster with at least two elements has at least two children. -/
-theorem IsHierarchy.two_le_card_childClusters {H : Finset (Finset X)} (hH : IsHierarchy H)
+theorem IsHierarchy.two_le_card_childClusters {H : Fam X} (hH : IsHierarchy H)
     {A : Finset X} (hA : 2 ≤ #A) : 2 ≤ #(childClusters H A) := by
   by_contra hlt
   have hle : #(childClusters H A) ≤ 1 := by omega
@@ -408,8 +407,8 @@ theorem IsHierarchy.two_le_card_childClusters {H : Finset (Finset X)} (hH : IsHi
 /-- A characterization of the children: a family `T ⊆ H` of at least two pairwise disjoint
 clusters covering `A`, such that every cluster of `H` strictly inside `A` lies inside one of
 them, is the family of children of `A`. -/
-theorem IsHierarchy.childClusters_eq {H : Finset (Finset X)} (hH : IsHierarchy H)
-    {A : Finset X} {T : Finset (Finset X)} (hT : T ⊆ H)
+theorem IsHierarchy.childClusters_eq {H : Fam X} (hH : IsHierarchy H)
+    {A : Finset X} {T : Fam X} (hT : T ⊆ H)
     (hdisj : (T : Set (Finset X)).PairwiseDisjoint id) (hsup : T.sup id = A) (h2 : 2 ≤ #T)
     (hcov : ∀ E ∈ H, E ⊂ A → ∃ B ∈ T, E ⊆ B) : childClusters H A = T := by
   have hsubA : ∀ B ∈ T, B ⊆ A := fun B hB => hsup ▸ le_sup (f := id) hB
@@ -442,7 +441,7 @@ theorem IsHierarchy.childClusters_eq {H : Finset (Finset X)} (hH : IsHierarchy H
     exact absurd (hBC.trans_le hCB') (lt_irrefl _)
 
 /-- Two disjoint clusters whose union is `A` are the children of `A`. -/
-theorem IsHierarchy.childClusters_eq_pair {H : Finset (Finset X)} (hH : IsHierarchy H)
+theorem IsHierarchy.childClusters_eq_pair {H : Fam X} (hH : IsHierarchy H)
     {A B C : Finset X} (hB : B ∈ H) (hC : C ∈ H) (hBC : Disjoint B C) (hA : B ∪ C = A) :
     childClusters H A = {B, C} := by
   obtain ⟨b, hb⟩ := hH.2.2.1 B hB
@@ -491,9 +490,9 @@ theorem IsHierarchy.childClusters_eq_pair {H : Finset (Finset X)} (hH : IsHierar
 
 /-- At a leaf `{x}` from which at most one lineage is sampled, the forest leaving the population
 is the sampled forest, whatever the length of the pendant edge. -/
-theorem forestDist_singleton_of_card_le_one {H : Finset (Finset X)} (hH : IsHierarchy H)
-    (len : Finset X → ℝ) {s : L → X} {x : X} (hx : #(univ.filter fun l => s l = x) ≤ 1)
-    (G : Finset (Finset L)) :
+theorem forestDist_singleton_of_card_le_one {H : Fam X} (hH : IsHierarchy H)
+    (len : Len X) {s : L → X} {x : X} (hx : #(univ.filter fun l => s l = x) ≤ 1)
+    (G : Fam L) :
     forestDist H len s {x} G = if G = sampledForest s {x} then 1 else 0 := by
   rw [forestDist_of_childClusters_eq_empty (hH.childClusters_singleton x)]
   have hF := isForest_sampledForest s ({x} : Finset X)
@@ -515,8 +514,8 @@ theorem forestDist_singleton_of_card_le_one {H : Finset (Finset X)} (hH : IsHier
 
 /-- With one lineage per taxon, the forest leaving the population above a leaf `{x}` is the
 single lineage `{x}`. -/
-theorem forestDist_id_singleton {H : Finset (Finset X)} (hH : IsHierarchy H)
-    (len : Finset X → ℝ) (x : X) (G : Finset (Finset X)) :
+theorem forestDist_id_singleton {H : Fam X} (hH : IsHierarchy H)
+    (len : Len X) (x : X) (G : Fam X) :
     forestDist H len id {x} G = if G = {{x}} then 1 else 0 := by
   have hS : sampledForest (id : X → X) {x} = {{x}} := by
     ext C
@@ -526,9 +525,9 @@ theorem forestDist_id_singleton {H : Finset (Finset X)} (hH : IsHierarchy H)
 /-! ### Dependence on the lengths -/
 
 /-- `forestDist` depends on the lengths only through the edges below the root. -/
-theorem forestDist_congr_len {H : Finset (Finset X)} {len len' : Finset X → ℝ}
+theorem forestDist_congr_len {H : Fam X} {len len' : Len X}
     (hlen : ∀ A ∈ H, A ≠ univ → len A = len' A) (s : L → X) {A : Finset X} (hA : A ∈ H)
-    (G : Finset (Finset L)) : forestDist H len s A G = forestDist H len' s A G := by
+    (G : Fam L) : forestDist H len s A G = forestDist H len' s A G := by
   induction A using Finset.strongInduction generalizing G with
   | H A ih =>
   rw [forestDist.eq_1 H len, forestDist.eq_1 H len']
@@ -545,8 +544,8 @@ theorem forestDist_congr_len {H : Finset (Finset X)} {len len' : Finset X → �
 
 /-! ### Species trees: probability distributions -/
 
-theorem unrootedDistOf_nonneg {H : Finset (Finset X)} (hH : IsHierarchy H) {len : Finset X → ℝ}
-    (hlen : ∀ A ∈ H, A ≠ univ → 0 ≤ len A) (s : L → X) (T : Finset (Finset L)) :
+theorem unrootedDistOf_nonneg {H : Fam X} (hH : IsHierarchy H) {len : Len X}
+    (hlen : ∀ A ∈ H, A ≠ univ → 0 ≤ len A) (s : L → X) (T : Fam L) :
     0 ≤ unrootedDistOf H len s T := by
   unfold unrootedDistOf
   refine Finset.sum_nonneg fun G _ => ?_
@@ -554,7 +553,7 @@ theorem unrootedDistOf_nonneg {H : Finset (Finset X)} (hH : IsHierarchy H) {len 
   · exact forestDist_nonneg_of_ne_univ hH hlen s hH.1 G
   · exact le_rfl
 
-theorem unrootedDistOf_sum {H : Finset (Finset X)} (hH : IsHierarchy H) (len : Finset X → ℝ)
+theorem unrootedDistOf_sum {H : Fam X} (hH : IsHierarchy H) (len : Len X)
     (s : L → X) : ∑ T, unrootedDistOf H len s T = 1 := by
   unfold unrootedDistOf
   rw [Finset.sum_comm]

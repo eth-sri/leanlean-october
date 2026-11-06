@@ -17,75 +17,66 @@ edge), and the new pendant edges get length `1`.
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset
 
 variable {X : Type*} [Fintype X] [DecidableEq X] {L : Type*} [Fintype L] [DecidableEq L]
 
 /-- The clusters of the extended species tree. -/
-def extendClusters (H : Finset (Finset X)) (s : L → X) : Finset (Finset L) :=
+def extendClusters (H : Fam X) (s : L → X) : Fam L :=
   H.image (fun A => univ.filter fun l => s l ∈ A) ∪ univ.image fun l => {l}
 
 /-! ### Preimages of clusters under the sampling map -/
 
-omit [Fintype X] in
-private lemma multi_mem_extendClusters {H : Finset (Finset X)} (s : L → X) {A : Finset X}
+private lemma multi_mem_extendClusters {H : Fam X} (s : L → X) {A : Finset X}
     (hA : A ∈ H) : (univ.filter fun l => s l ∈ A) ∈ extendClusters H s :=
   mem_union_left _ (mem_image_of_mem _ hA)
 
-omit [DecidableEq L] in
 private lemma multi_pre_univ (s : L → X) :
     (univ.filter fun l => s l ∈ (univ : Finset X)) = univ :=
   filter_true_of_mem fun _ _ => mem_univ _
 
-omit [Fintype X] [DecidableEq L] in
 private lemma multi_pre_singleton (s : L → X) (x : X) :
     (univ.filter fun l => s l ∈ ({x} : Finset X)) = univ.filter fun l => s l = x := by
   simp only [mem_singleton]
 
-omit [Fintype X] [DecidableEq L] in
 private lemma multi_pre_mono (s : L → X) {A B : Finset X} (h : A ⊆ B) :
     (univ.filter fun l => s l ∈ A) ⊆ univ.filter fun l => s l ∈ B :=
   fun l hl => mem_filter.2 ⟨mem_univ l, h (mem_filter.1 hl).2⟩
 
-omit [Fintype X] [DecidableEq L] in
 private lemma multi_pre_subset_pre {s : L → X} (hs : Function.Surjective s) {A B : Finset X} :
     (univ.filter fun l => s l ∈ A) ⊆ (univ.filter fun l => s l ∈ B) ↔ A ⊆ B := by
   refine ⟨fun h x hx => ?_, multi_pre_mono s⟩
   obtain ⟨l, rfl⟩ := hs x
   exact (mem_filter.1 (h (mem_filter.2 ⟨mem_univ l, hx⟩))).2
 
-omit [Fintype X] [DecidableEq L] in
 private lemma multi_pre_inj {s : L → X} (hs : Function.Surjective s) {A B : Finset X} :
     (univ.filter fun l => s l ∈ A) = (univ.filter fun l => s l ∈ B) ↔ A = B := by
   refine ⟨fun h => subset_antisymm ?_ ?_, fun h => h ▸ rfl⟩
   · exact (multi_pre_subset_pre hs).1 h.le
   · exact (multi_pre_subset_pre hs).1 h.ge
 
-omit [Fintype X] [DecidableEq L] in
 private lemma multi_pre_ssubset_pre {s : L → X} (hs : Function.Surjective s) {A B : Finset X} :
     (univ.filter fun l => s l ∈ A) ⊂ (univ.filter fun l => s l ∈ B) ↔ A ⊂ B := by
   rw [ssubset_iff_subset_ne, ssubset_iff_subset_ne, multi_pre_subset_pre hs, Ne, Ne,
     multi_pre_inj hs]
 
-omit [DecidableEq L] in
 private lemma multi_pre_ne_univ {s : L → X} (hs : Function.Surjective s) {A : Finset X}
     (hA : A ≠ univ) : (univ.filter fun l => s l ∈ A) ≠ univ :=
   fun h => hA ((multi_pre_inj hs).1 (h.trans (multi_pre_univ s).symm))
 
-omit [Fintype X] [DecidableEq L] in
 private lemma multi_pre_disjoint (s : L → X) {A B : Finset X} (h : Disjoint A B) :
     Disjoint (univ.filter fun l => s l ∈ A) (univ.filter fun l => s l ∈ B) :=
   disjoint_left.2 fun _ hlA hlB =>
     disjoint_left.1 h (mem_filter.1 hlA).2 (mem_filter.1 hlB).2
 
-omit [Fintype X] [DecidableEq L] in
 private lemma multi_pre_nonempty {s : L → X} (hs : Function.Surjective s) {A : Finset X}
     (hA : A.Nonempty) : (univ.filter fun l => s l ∈ A).Nonempty := by
   obtain ⟨x, hx⟩ := hA
   obtain ⟨l, rfl⟩ := hs x
   exact ⟨l, mem_filter.2 ⟨mem_univ l, hx⟩⟩
 
-omit [Fintype X] [DecidableEq L] in
 private lemma multi_card_le_card_pre {s : L → X} (hs : Function.Surjective s) (A : Finset X) :
     #A ≤ #(univ.filter fun l => s l ∈ A) := by
   refine (card_le_card (t := (univ.filter fun l => s l ∈ A).image s) fun x hx => ?_).trans
@@ -93,7 +84,6 @@ private lemma multi_card_le_card_pre {s : L → X} (hs : Function.Surjective s) 
   obtain ⟨l, rfl⟩ := hs x
   exact mem_image_of_mem s (mem_filter.2 ⟨mem_univ l, hx⟩)
 
-omit [Fintype X] [DecidableEq L] in
 /-- A set of taxa whose preimage is a singleton `{l}` is the singleton `{s l}`. -/
 private lemma multi_eq_singleton_of_pre_eq {s : L → X} (hs : Function.Surjective s)
     {A : Finset X} {l : L} (h : {l} = univ.filter fun l => s l ∈ A) : A = {s l} := by
@@ -110,7 +100,6 @@ private lemma multi_eq_singleton_of_pre_eq {s : L → X} (hs : Function.Surjecti
       exact mem_singleton_self l
     exact (mem_filter.1 hl).2
 
-omit [Fintype X] in
 private lemma multi_sampledForest_pre (s : L → X) (A : Finset X) :
     sampledForest s A = sampledForest id (univ.filter fun l => s l ∈ A) := by
   unfold sampledForest
@@ -138,7 +127,6 @@ theorem SpeciesTree.extend_nonempty_of_mem (σ : SpeciesTree X) {s : L → X}
   · obtain ⟨l, -, rfl⟩ := mem_image.1 hB
     exact singleton_nonempty l
 
-omit [Fintype L] in
 private lemma multi_singleton_laminar (l : L) (C : Finset L) :
     {l} ⊆ C ∨ C ⊆ {l} ∨ Disjoint {l} C := by
   by_cases h : l ∈ C
@@ -264,7 +252,7 @@ private lemma multi_sum_pi_equiv {ι κ α : Type*} [Fintype α] [DecidableEq ι
 multispecies coalescent below `s⁻¹(A)` in the extended species tree, with one lineage per leaf. -/
 private lemma multi_forestDist_extend (σ : SpeciesTree X) {s : L → X}
     (hs : Function.Surjective s) (h2 : ∀ x, #(univ.filter fun l => s l = x) ≤ 2) {A : Finset X}
-    (hA : A ∈ σ.clusters) (G : Finset (Finset L)) :
+    (hA : A ∈ σ.clusters) (G : Fam L) :
     forestDist σ.clusters σ.length s A G =
       forestDist (extendClusters σ.clusters s) (σ.extendLength s) id
         (univ.filter fun l => s l ∈ A) G := by
@@ -342,7 +330,7 @@ private lemma multi_forestDist_extend (σ : SpeciesTree X) {s : L → X}
 the extended species tree. -/
 theorem SpeciesTree.rootedDist_extend (σ : SpeciesTree X) {s : L → X}
     (hs : Function.Surjective s) (h2 : ∀ x, #(univ.filter fun l => s l = x) ≤ 2)
-    (G : Finset (Finset L)) :
+    (G : Fam L) :
     σ.rootedDist s G = (σ.extend s hs).rootedDist id G := by
   unfold SpeciesTree.rootedDist
   rw [multi_forestDist_extend σ hs h2 σ.univ_mem G, multi_pre_univ]

@@ -36,8 +36,8 @@ open Finset
 /-! ### Kingman's coalescent over a finite time, along the jump chain -/
 
 theorem kingmanTransition_eq_sum_range {L : Type*} [Fintype L] [DecidableEq L]
-    {F : Finset (Finset L)} (hF : IsForest F) (hk : 1 ≤ #(roots F)) (t : ℝ)
-    (G : Finset (Finset L)) :
+    {F : Fam L} (hF : IsForest F) (hk : 1 ≤ #(roots F)) (t : ℝ)
+    (G : Fam L) :
     kingmanTransition t F G =
       ∑ j ∈ range #(roots F), deathProb #(roots F) (#(roots F) - j) t * (jumpMatrix ^ j) F G := by
   rw [kingmanTransition_apply hF]
@@ -104,25 +104,25 @@ theorem deathProb_eq_gPoly {k j : ℕ} (hk2 : 2 ≤ k) (hk4 : k ≤ 4) (hj1 : 1 
 list of pairs (code of `A`, `e`), and a family of clusters given by codes. -/
 structure CTerm where
   coef : ℚ
-  key : List (ℕ × ℕ)
+  key : Mono
   forest : List ℕ
 
 /-- The value of a monomial: `∏ (e^{-len A})^e` over the pairs (code of `A`, `e`). -/
-noncomputable def monoVal {n : ℕ} (len : Finset (Fin n) → ℝ) (k : List (ℕ × ℕ)) : ℝ :=
+noncomputable def monoVal {n : ℕ} (len : FinFam n → ℝ) (k : Mono) : ℝ :=
   (k.map fun ae => Real.exp (-len (decC n ae.1)) ^ ae.2).prod
 
 /-- The weight of a term. -/
-noncomputable def CTerm.val {n : ℕ} (len : Finset (Fin n) → ℝ) (τ : CTerm) : ℝ :=
+noncomputable def CTerm.val {n : ℕ} (len : FinFam n → ℝ) (τ : CTerm) : ℝ :=
   τ.coef * monoVal len τ.key
 
-@[simp] theorem monoVal_nil {n : ℕ} (len : Finset (Fin n) → ℝ) : monoVal len [] = 1 := rfl
+@[simp] theorem monoVal_nil {n : ℕ} (len : FinFam n → ℝ) : monoVal len [] = 1 := rfl
 
-@[simp] theorem monoVal_cons {n : ℕ} (len : Finset (Fin n) → ℝ) (ae : ℕ × ℕ)
-    (k : List (ℕ × ℕ)) :
+@[simp] theorem monoVal_cons {n : ℕ} (len : FinFam n → ℝ) (ae : ℕ × ℕ)
+    (k : Mono) :
     monoVal len (ae :: k) = Real.exp (-len (decC n ae.1)) ^ ae.2 * monoVal len k := by
   simp [monoVal]
 
-theorem monoVal_append {n : ℕ} (len : Finset (Fin n) → ℝ) (k₁ k₂ : List (ℕ × ℕ)) :
+theorem monoVal_append {n : ℕ} (len : FinFam n → ℝ) (k₁ k₂ : Mono) :
     monoVal len (k₁ ++ k₂) = monoVal len k₁ * monoVal len k₂ := by
   simp [monoVal, List.prod_append]
 
@@ -144,7 +144,7 @@ on `m` bits). -/
 def kernelL (m a : ℕ) (τ : CTerm) : Option (List CTerm) :=
   if checkF m τ.forest then kernelK a (rootsL τ.forest).length τ else none
 
-theorem kernelL_spec {m n a : ℕ} (len : Finset (Fin n) → ℝ) {τ : CTerm} {K : List CTerm}
+theorem kernelL_spec {m n a : ℕ} (len : FinFam n → ℝ) {τ : CTerm} {K : List CTerm}
     (h : kernelL m a τ = some K) (G : Finset (Finset (Fin m))) :
     τ.val len * kingmanTransition (len (decC n a)) (decF m τ.forest) G =
       (K.map fun τ' => if decF m τ'.forest = G then τ'.val len else 0).sum := by
@@ -181,7 +181,7 @@ theorem kernelL_spec {m n a : ℕ} (len : Finset (Fin n) → ℝ) {τ : CTerm} {
 /-! ### The population above the root -/
 
 theorem kingmanAbsorption_of_card_roots_le_one {L : Type*} [Fintype L] [DecidableEq L]
-    {F : Finset (Finset L)} (hF : IsForest F) (hk : #(roots F) ≤ 1) (G : Finset (Finset L)) :
+    {F : Fam L} (hF : IsForest F) (hk : #(roots F) ≤ 1) (G : Fam L) :
     kingmanAbsorption F G = if G = F then 1 else 0 := by
   rw [kingmanAbsorption_apply hF]
   by_cases h0 : #(roots F) = 0
@@ -342,9 +342,9 @@ theorem sum_pi_eq_iterSum {ι β : Type*} [DecidableEq ι] [Fintype β] [Decidab
       rw [mul_assoc, union_assoc, union_left_comm]
 
 theorem forestDist_eq_iterSum {X L : Type*} [Fintype X] [DecidableEq X] [Fintype L]
-    [DecidableEq L] {H : Finset (Finset X)} {len : Finset X → ℝ} {s : L → X} {A : Finset X}
+    [DecidableEq L] {H : Fam X} {len : Len X} {s : L → X} {A : Finset X}
     {l : List (Finset X)} (hC : childClusters H A = l.toFinset) (hl : l.Nodup)
-    (G : Finset (Finset L)) :
+    (G : Fam L) :
     forestDist H len s A G =
       iterSum (forestDist H len s) l (sampledForest s A) (fun F => populationKernel len A F G) := by
   rw [forestDist]
@@ -396,7 +396,7 @@ end PTree
 is kept. -/
 def CTerm.mul (τ τ' : CTerm) : CTerm := ⟨τ.coef * τ'.coef, τ.key ++ τ'.key, τ'.forest⟩
 
-theorem CTerm.val_mul {n : ℕ} (len : Finset (Fin n) → ℝ) (τ τ' : CTerm) :
+theorem CTerm.val_mul {n : ℕ} (len : FinFam n → ℝ) (τ τ' : CTerm) :
     (τ.mul τ').val len = τ.val len * τ'.val len := by
   simp only [CTerm.val, CTerm.mul, monoVal_append]; push_cast; ring
 
@@ -424,13 +424,13 @@ mutual
 /-- A tree shape is well formed for the clusters `H` (taxa coded on `n` bits) if at every node the
 children in `H` of the cluster are exactly the clusters of the children, without repetition, and
 the children are proper clusters. -/
-def PTree.wfB (H : Finset (Finset (Fin n))) : PTree → Bool
+def PTree.wfB (H : FamN n) : PTree → Bool
   | .node a cs =>
     decide (childClusters H (decC n a) = (cs.map fun c => decC n c.code).toFinset) &&
       decide (cs.map fun c => decC n c.code).Nodup &&
       cs.all (fun c => decide (c.code < 2 ^ n) && c.code != 2 ^ n - 1) && PTree.wfListB H cs
 /-- `PTree.wfB` for a list of trees. -/
-def PTree.wfListB (H : Finset (Finset (Fin n))) : List PTree → Bool
+def PTree.wfListB (H : FamN n) : List PTree → Bool
   | [] => true
   | c :: cs => PTree.wfB H c && PTree.wfListB H cs
 end
@@ -451,7 +451,7 @@ def PTree.unrootedL (T : PTree) : Option (List CTerm) :=
       (List.map fun q => ⟨τ.coef * q.1, τ.key, q.2⟩)) E
   | none => none
 
-variable {m n s} (H : Finset (Finset (Fin n))) (len : Finset (Fin n) → ℝ)
+variable {m n s} (H : FamN n) (len : FinFam n → ℝ)
 
 theorem wfB_node {a : ℕ} {cs : List PTree} (h : (PTree.node a cs).wfB n H = true) :
     childClusters H (decC n a) = (cs.map fun c => decC n c.code).toFinset ∧

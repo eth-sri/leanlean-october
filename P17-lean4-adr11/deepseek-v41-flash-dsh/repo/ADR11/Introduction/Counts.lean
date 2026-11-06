@@ -44,7 +44,7 @@ section General
 variable {L : Type*} [Fintype L] [DecidableEq L]
 
 /-- The sides of the splits of the unrooted tree of a hierarchy are nonempty proper subsets. -/
-theorem counts_nonempty_of_mem_unroot {G : Finset (Finset L)} (hG : IsHierarchy G)
+theorem counts_nonempty_of_mem_unroot {G : Fam L} (hG : IsHierarchy G)
     {A : Finset L} (hA : A ∈ unroot G) : A.Nonempty ∧ A ≠ univ := by
   rcases mem_unroot.1 hA with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · exact ⟨hG.2.2.1 A h1, h2⟩
@@ -55,15 +55,15 @@ theorem counts_nonempty_of_mem_unroot {G : Finset (Finset L)} (hG : IsHierarchy 
 
 /-- The rooting of an unrooted tree `T` on the edge of the split `A | Aᶜ`: the root, together
 with the sides of splits contained in `A` or in `Aᶜ`. -/
-def counts_reroot (T : Finset (Finset L)) (A : Finset L) : Finset (Finset L) :=
+def counts_reroot (T : Fam L) (A : Finset L) : Fam L :=
   insert univ (T.filter fun C => C ⊆ A ∨ C ⊆ Aᶜ)
 
-theorem counts_mem_reroot {T : Finset (Finset L)} {A C : Finset L} :
+theorem counts_mem_reroot {T : Fam L} {A C : Finset L} :
     C ∈ counts_reroot T A ↔ C = univ ∨ (C ∈ T ∧ (C ⊆ A ∨ C ⊆ Aᶜ)) := by
   rw [counts_reroot, mem_insert, mem_filter]
 
 /-- In a hierarchy, a side of a split contained in a cluster `A ≠ univ` is a cluster. -/
-theorem counts_mem_of_mem_unroot_of_subset {G : Finset (Finset L)} (hG : IsHierarchy G)
+theorem counts_mem_of_mem_unroot_of_subset {G : Fam L} (hG : IsHierarchy G)
     {A C : Finset L} (hA : A ∈ G) (hAu : A ≠ univ) (hC : C ∈ unroot G) (hCA : C ⊆ A) :
     C ∈ G := by
   rcases mem_unroot.1 hC with ⟨h, -⟩ | ⟨h, hu⟩
@@ -85,7 +85,7 @@ theorem counts_mem_of_mem_unroot_of_subset {G : Finset (Finset L)} (hG : IsHiera
 
 /-- A hierarchy with two complementary clusters `A`, `Aᶜ` is the rooting of its unrooted tree on
 the edge of the split `A | Aᶜ`. -/
-theorem counts_reroot_unroot {G : Finset (Finset L)} (hG : IsHierarchy G) {A : Finset L}
+theorem counts_reroot_unroot {G : Fam L} (hG : IsHierarchy G) {A : Finset L}
     (hA : A ∈ G) (hAu : A ≠ univ) (hAc : Aᶜ ∈ G) : counts_reroot (unroot G) A = G := by
   have hAne := hG.2.2.1 A hA
   have hAcu : Aᶜ ≠ univ := (compl_ne_univ_iff_nonempty A).2 hAne

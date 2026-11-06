@@ -33,34 +33,34 @@ code of `A`. -/
 def quartetCode (a : ℕ) : List ℕ := unrootL 4 [1, 2, 4, 8, a, 15]
 
 theorem decF_quartetCode_3 : decF 4 (quartetCode 3) = treeOfClusters {{0, 1}} := by
-  decide +kernel
+  decide
 
 theorem decF_quartetCode_5 : decF 4 (quartetCode 5) = treeOfClusters {{0, 2}} := by
-  decide +kernel
+  decide
 
 theorem decF_quartetCode_9 : decF 4 (quartetCode 9) = treeOfClusters {{0, 3}} := by
-  decide +kernel
+  decide
 
 theorem quartet_ne_01_02 :
-    (treeOfClusters {{0, 1}} : Finset (Finset (Fin 4))) ≠ treeOfClusters {{0, 2}} := by
-  decide +kernel
+    (treeOfClusters {{0, 1}} : Fam4) ≠ treeOfClusters {{0, 2}} := by
+  decide
 
 theorem quartet_ne_01_03 :
-    (treeOfClusters {{0, 1}} : Finset (Finset (Fin 4))) ≠ treeOfClusters {{0, 3}} := by
-  decide +kernel
+    (treeOfClusters {{0, 1}} : Fam4) ≠ treeOfClusters {{0, 3}} := by
+  decide
 
 theorem quartet_ne_02_03 :
-    (treeOfClusters {{0, 2}} : Finset (Finset (Fin 4))) ≠ treeOfClusters {{0, 3}} := by
-  decide +kernel
+    (treeOfClusters {{0, 2}} : Fam4) ≠ treeOfClusters {{0, 3}} := by
+  decide
 
 /-- An unrooted gene tree distribution on `Fin 4` computed by the engine, as a function of the
 gene tree. -/
-theorem unrootedDist_eq_quartets (σ : SpeciesTree (Fin 4)) {H : Finset (Finset (Fin 4))}
+theorem unrootedDist_eq_quartets (σ : ST4) {H : Fam4}
     (hσ : σ.clusters = H) (T : PTree) (hwf : T.wfB 4 H = true) (htop : T.code = 15)
-    {P₁ P₂ P₃ : List (ℚ × List (ℕ × ℕ))}
+    {P₁ P₂ P₃ : Poly}
     (hc : certAllB 4 (T.unrootedL 4 4 id)
       [(quartetCode 3, P₁), (quartetCode 5, P₂), (quartetCode 9, P₃)] = true)
-    (U : Finset (Finset (Fin 4))) :
+    (U : Fam4) :
     σ.unrootedDist id U =
       if U = treeOfClusters {{0, 1}} then evalPoly σ.length P₁
       else if U = treeOfClusters {{0, 2}} then evalPoly σ.length P₂
@@ -69,8 +69,8 @@ theorem unrootedDist_eq_quartets (σ : SpeciesTree (Fin 4)) {H : Finset (Finset 
     decF_quartetCode_9 quartet_ne_01_02 quartet_ne_01_03 quartet_ne_02_03 U
 
 /-- The balanced species tree `((a,b):x,(c,d):y)`. -/
-theorem unrootedDist_bal4 (σ : SpeciesTree (Fin 4)) (hσ : σ.clusters = balanced4)
-    (U : Finset (Finset (Fin 4))) :
+theorem unrootedDist_bal4 (σ : ST4) (hσ : σ.clusters = balanced4)
+    (U : Fam4) :
     σ.unrootedDist id U =
       if U = treeOfClusters {{0, 1}} then
         1 - 2 / 3 * exp (-(σ.length {0, 1} + σ.length {2, 3}))
@@ -80,75 +80,75 @@ theorem unrootedDist_bal4 (σ : SpeciesTree (Fin 4)) (hσ : σ.clusters = balanc
         1 / 3 * exp (-(σ.length {0, 1} + σ.length {2, 3}))
       else 0 := by
   rw [unrootedDist_eq_quartets σ hσ (.node 15 [.node 3 [.leaf 0, .leaf 1], .node 12 [.leaf 2, .leaf 3]])
-    (by decide +kernel) rfl (P₁ := [(1, []), (-2 / 3, [(3, 1), (12, 1)])])
+    (by decide) rfl (P₁ := [(1, []), (-2 / 3, [(3, 1), (12, 1)])])
     (P₂ := [(1 / 3, [(3, 1), (12, 1)])]) (P₃ := [(1 / 3, [(3, 1), (12, 1)])]) (by decide +kernel)]
-  have h3 : decC 4 3 = {0, 1} := by decide +kernel
-  have h12 : decC 4 12 = {2, 3} := by decide +kernel
+  have h3 : decC 4 3 = {0, 1} := by decide
+  have h12 : decC 4 12 = {2, 3} := by decide
   simp only [evalPoly_cons, evalPoly_nil, monoVal_cons, monoVal_nil, h3, h12, neg_add,
     Real.exp_add]
   push_cast
   split_ifs <;> ring
 
 /-- The caterpillar species tree `(((a,b):x,c):y,d)`. -/
-theorem unrootedDist_cat4_0123 (σ : SpeciesTree (Fin 4)) (hσ : σ.clusters = caterpillar4)
-    (U : Finset (Finset (Fin 4))) :
+theorem unrootedDist_cat4_0123 (σ : ST4) (hσ : σ.clusters = caterpillar4)
+    (U : Fam4) :
     σ.unrootedDist id U =
       if U = treeOfClusters {{0, 1}} then 1 - 2 / 3 * exp (-σ.length {0, 1})
       else if U = treeOfClusters {{0, 2}} then 1 / 3 * exp (-σ.length {0, 1})
       else if U = treeOfClusters {{0, 3}} then 1 / 3 * exp (-σ.length {0, 1})
       else 0 := by
   rw [unrootedDist_eq_quartets σ hσ (.node 15 [.node 7 [.node 3 [.leaf 0, .leaf 1], .leaf 2], .leaf 3])
-    (by decide +kernel) rfl (P₁ := [(1, []), (-2 / 3, [(3, 1)])]) (P₂ := [(1 / 3, [(3, 1)])])
+    (by decide) rfl (P₁ := [(1, []), (-2 / 3, [(3, 1)])]) (P₂ := [(1 / 3, [(3, 1)])])
     (P₃ := [(1 / 3, [(3, 1)])]) (by decide +kernel)]
-  have h3 : decC 4 3 = {0, 1} := by decide +kernel
+  have h3 : decC 4 3 = {0, 1} := by decide
   simp only [evalPoly_cons, evalPoly_nil, monoVal_cons, monoVal_nil, h3]
   push_cast
   split_ifs <;> ring
 
 /-- The caterpillar species tree `(((a,b):x,d):y,c)`. -/
-theorem unrootedDist_cat4_0132 (σ : SpeciesTree (Fin 4))
-    (hσ : σ.clusters = hierarchyOf {{0, 1}, {0, 1, 3}}) (U : Finset (Finset (Fin 4))) :
+theorem unrootedDist_cat4_0132 (σ : ST4)
+    (hσ : σ.clusters = hierarchyOf {{0, 1}, {0, 1, 3}}) (U : Fam4) :
     σ.unrootedDist id U =
       if U = treeOfClusters {{0, 1}} then 1 - 2 / 3 * exp (-σ.length {0, 1})
       else if U = treeOfClusters {{0, 2}} then 1 / 3 * exp (-σ.length {0, 1})
       else if U = treeOfClusters {{0, 3}} then 1 / 3 * exp (-σ.length {0, 1})
       else 0 := by
   rw [unrootedDist_eq_quartets σ hσ (.node 15 [.node 11 [.node 3 [.leaf 0, .leaf 1], .leaf 3], .leaf 2])
-    (by decide +kernel) rfl (P₁ := [(1, []), (-2 / 3, [(3, 1)])]) (P₂ := [(1 / 3, [(3, 1)])])
+    (by decide) rfl (P₁ := [(1, []), (-2 / 3, [(3, 1)])]) (P₂ := [(1 / 3, [(3, 1)])])
     (P₃ := [(1 / 3, [(3, 1)])]) (by decide +kernel)]
-  have h3 : decC 4 3 = {0, 1} := by decide +kernel
+  have h3 : decC 4 3 = {0, 1} := by decide
   simp only [evalPoly_cons, evalPoly_nil, monoVal_cons, monoVal_nil, h3]
   push_cast
   split_ifs <;> ring
 
 /-- The caterpillar species tree `(((c,d):x,a):y,b)`. -/
-theorem unrootedDist_cat4_2301 (σ : SpeciesTree (Fin 4))
-    (hσ : σ.clusters = hierarchyOf {{2, 3}, {0, 2, 3}}) (U : Finset (Finset (Fin 4))) :
+theorem unrootedDist_cat4_2301 (σ : ST4)
+    (hσ : σ.clusters = hierarchyOf {{2, 3}, {0, 2, 3}}) (U : Fam4) :
     σ.unrootedDist id U =
       if U = treeOfClusters {{0, 1}} then 1 - 2 / 3 * exp (-σ.length {2, 3})
       else if U = treeOfClusters {{0, 2}} then 1 / 3 * exp (-σ.length {2, 3})
       else if U = treeOfClusters {{0, 3}} then 1 / 3 * exp (-σ.length {2, 3})
       else 0 := by
   rw [unrootedDist_eq_quartets σ hσ (.node 15 [.node 13 [.node 12 [.leaf 2, .leaf 3], .leaf 0], .leaf 1])
-    (by decide +kernel) rfl (P₁ := [(1, []), (-2 / 3, [(12, 1)])]) (P₂ := [(1 / 3, [(12, 1)])])
+    (by decide) rfl (P₁ := [(1, []), (-2 / 3, [(12, 1)])]) (P₂ := [(1 / 3, [(12, 1)])])
     (P₃ := [(1 / 3, [(12, 1)])]) (by decide +kernel)]
-  have h12 : decC 4 12 = {2, 3} := by decide +kernel
+  have h12 : decC 4 12 = {2, 3} := by decide
   simp only [evalPoly_cons, evalPoly_nil, monoVal_cons, monoVal_nil, h12]
   push_cast
   split_ifs <;> ring
 
 /-- The caterpillar species tree `(((c,d):x,b):y,a)`. -/
-theorem unrootedDist_cat4_2310 (σ : SpeciesTree (Fin 4))
-    (hσ : σ.clusters = hierarchyOf {{2, 3}, {1, 2, 3}}) (U : Finset (Finset (Fin 4))) :
+theorem unrootedDist_cat4_2310 (σ : ST4)
+    (hσ : σ.clusters = hierarchyOf {{2, 3}, {1, 2, 3}}) (U : Fam4) :
     σ.unrootedDist id U =
       if U = treeOfClusters {{0, 1}} then 1 - 2 / 3 * exp (-σ.length {2, 3})
       else if U = treeOfClusters {{0, 2}} then 1 / 3 * exp (-σ.length {2, 3})
       else if U = treeOfClusters {{0, 3}} then 1 / 3 * exp (-σ.length {2, 3})
       else 0 := by
   rw [unrootedDist_eq_quartets σ hσ (.node 15 [.node 14 [.node 12 [.leaf 2, .leaf 3], .leaf 1], .leaf 0])
-    (by decide +kernel) rfl (P₁ := [(1, []), (-2 / 3, [(12, 1)])]) (P₂ := [(1 / 3, [(12, 1)])])
+    (by decide) rfl (P₁ := [(1, []), (-2 / 3, [(12, 1)])]) (P₂ := [(1 / 3, [(12, 1)])])
     (P₃ := [(1 / 3, [(12, 1)])]) (by decide +kernel)]
-  have h12 : decC 4 12 = {2, 3} := by decide +kernel
+  have h12 : decC 4 12 = {2, 3} := by decide
   simp only [evalPoly_cons, evalPoly_nil, monoVal_cons, monoVal_nil, h12]
   push_cast
   split_ifs <;> ring

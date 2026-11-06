@@ -24,6 +24,6 @@ open Finset Real
 def cat5Shape : PTree :=
   .node 31 [.node 15 [.node 7 [.node 3 [.leaf 0, .leaf 1], .leaf 2], .leaf 3], .leaf 4]
 
-theorem cat5Shape_wfB : cat5Shape.wfB 5 caterpillar5 = true := by decide +kernel
+theorem cat5Shape_wfB : cat5Shape.wfB 5 caterpillar5 = true := by decide
 
 end ADR11.Computation

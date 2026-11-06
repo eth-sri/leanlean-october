@@ -27,7 +27,7 @@ open Finset Real
 
 /-- **Equation (13)** (Appendix B.3): the unrooted gene tree distribution of the pseudocaterpillar
 species tree `(((a,b):x,(d,e):y):z,c)`. -/
-theorem equation13 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpillar5) :
+theorem equation13 (σ : ST5) (hσ : σ.clusters = pseudocaterpillar5) :
     let X := exp (-σ.length {0, 1})
     let Y := exp (-σ.length {3, 4})
     let Z := exp (-σ.length {0, 1, 3, 4})
@@ -37,7 +37,7 @@ theorem equation13 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpi
     u σ 5 = 1 / 18 * X * Y + 1 / 90 * X * Y * Z ^ 6 ∧ u σ 6 = u σ 5 ∧ u σ 7 = u σ 5 ∧
       u σ 9 = u σ 5 ∧ u σ 10 = u σ 5 ∧ u σ 12 = u σ 5 ∧ u σ 14 = u σ 5 ∧ u σ 15 = u σ 5 ∧
     u σ 8 = 1 / 9 * X * Y - 2 / 45 * X * Y * Z ^ 6 ∧ u σ 11 = u σ 8 := by
-  have h (i : ℕ) (hi : i ∈ Icc 1 15) :
+  have h (i : ℕ) (hi : i ∈ F15) :
       u σ i = Computation.evalPoly σ.length (Computation.pseudo5Poly i) :=
     Computation.u_pseudo5 σ hσ hi
   dsimp only
@@ -53,7 +53,7 @@ theorem equation13 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpi
 /-! ### Helpers: the formulas (13) on the classes, and pseudocaterpillars with given `X, Y, Z` -/
 
 /-- For a pseudocaterpillar species tree, `X, Y, Z ∈ (0, 1)`. -/
-theorem tables_pse_bounds (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpillar5) :
+theorem tables_pse_bounds (σ : ST5) (hσ : σ.clusters = pseudocaterpillar5) :
     0 < exp (-σ.length {0, 1}) ∧ exp (-σ.length {0, 1}) < 1 ∧
     0 < exp (-σ.length {3, 4}) ∧ exp (-σ.length {3, 4}) < 1 ∧
     0 < exp (-σ.length {0, 1, 3, 4}) ∧ exp (-σ.length {0, 1, 3, 4}) < 1 := by
@@ -63,7 +63,7 @@ theorem tables_pse_bounds (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudo
     exp_pos _, h _ (by decide) (by decide)⟩
 
 /-- Equation (13) on the names of the classes, with `X, Y, Z ∈ (0, 1)`. -/
-private theorem tables_pse_formulas (σ : SpeciesTree (Fin 5))
+private theorem tables_pse_formulas (σ : ST5)
     (hσ : σ.clusters = pseudocaterpillar5) :
     ∃ X Y Z : ℝ, 0 < X ∧ X < 1 ∧ 0 < Y ∧ Y < 1 ∧ 0 < Z ∧ Z < 1 ∧
       u σ 1 = 1 - 2 / 3 * X - 2 / 3 * Y + 4 / 9 * X * Y - 2 / 45 * X * Y * Z ^ 6 ∧
@@ -85,7 +85,7 @@ def pseudocaterpillarClass : ℕ → ℕ
 
 /-- **Inequalities (6)**: for all branch lengths, `u₁ > u₂ > u₅`, `u₁ > u₄ > u₅` and
 `u₁ > u₈ > u₅`. -/
-theorem equation6 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpillar5) :
+theorem equation6 (σ : ST5) (hσ : σ.clusters = pseudocaterpillar5) :
     u σ 1 > u σ 2 ∧ u σ 1 > u σ 4 ∧ u σ 1 > u σ 8 ∧ u σ 2 > u σ 5 ∧ u σ 4 > u σ 5 ∧
       u σ 8 > u σ 5 := by
   obtain ⟨X, Y, Z, hX, hX1, hY, hY1, hZ, hZ1, h1, h2, h4, h5, h8⟩ := tables_pse_formulas σ hσ
@@ -106,12 +106,12 @@ theorem equation6 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpil
 
 open scoped Classical in
 /-- Section 4.2.3: the 8-element class always has the strictly smallest probability. -/
-theorem pseudocaterpillar_minClass (σ : SpeciesTree (Fin 5))
+theorem pseudocaterpillar_minClass (σ : ST5)
     (hσ : σ.clusters = pseudocaterpillar5) :
-    {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u σ i ≤ u σ j} = {5, 6, 7, 9, 10, 12, 14, 15} := by
+    {i ∈ F15 | ∀ j ∈ F15, u σ i ≤ u σ j} = {5, 6, 7, 9, 10, 12, 14, 15} := by
   obtain ⟨h12, h14, h18, h25, h45, h85⟩ := equation6 σ hσ
   obtain ⟨-, -, e3, -, e13, -, e6, e7, e9, e10, e12, e14, e15, -, e11⟩ := equation13 σ hσ
-  have K : ∀ j ∈ Icc 1 15, u σ 5 ≤ u σ j := by
+  have K : ∀ j ∈ F15, u σ 5 ≤ u σ j := by
     intro j hj
     obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
     interval_cases j <;> linarith

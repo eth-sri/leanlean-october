@@ -28,7 +28,7 @@ open Finset Real
 
 /-- **Equation (12)** (Appendix B.2): the unrooted gene tree distribution of the rooted caterpillar
 species tree `((((a,b):x,c):y,d):z,e)`. -/
-theorem equation12 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) :
+theorem equation12 (σ : ST5) (hσ : σ.clusters = caterpillar5) :
     let X := exp (-σ.length {0, 1})
     let Y := exp (-σ.length {0, 1, 2})
     let Z := exp (-σ.length {0, 1, 2, 3})
@@ -42,7 +42,7 @@ theorem equation12 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5)
     u σ 6 = 1 / 6 * X * Y - 1 / 18 * X * Y ^ 3 - 2 / 45 * X * Y ^ 3 * Z ^ 6 ∧ u σ 9 = u σ 6 ∧
     u σ 7 = 1 / 18 * X * Y ^ 3 + 1 / 90 * X * Y ^ 3 * Z ^ 6 ∧ u σ 8 = u σ 7 ∧
       u σ 10 = u σ 7 ∧ u σ 11 = u σ 7 ∧ u σ 14 = u σ 7 ∧ u σ 15 = u σ 7 := by
-  have h (i : ℕ) (hi : i ∈ Icc 1 15) :
+  have h (i : ℕ) (hi : i ∈ F15) :
       u σ i = Computation.evalPoly σ.length (Computation.cat5Poly i) :=
     Computation.u_cat5 σ hσ hi
   dsimp only
@@ -58,7 +58,7 @@ theorem equation12 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5)
 /-! ### Helpers: the formulas (12) on the classes, and caterpillars with given `X, Y, Z` -/
 
 /-- For a caterpillar species tree, `X, Y, Z ∈ (0, 1)`. -/
-theorem tables_cat_bounds (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) :
+theorem tables_cat_bounds (σ : ST5) (hσ : σ.clusters = caterpillar5) :
     0 < exp (-σ.length {0, 1}) ∧ exp (-σ.length {0, 1}) < 1 ∧
     0 < exp (-σ.length {0, 1, 2}) ∧ exp (-σ.length {0, 1, 2}) < 1 ∧
     0 < exp (-σ.length {0, 1, 2, 3}) ∧ exp (-σ.length {0, 1, 2, 3}) < 1 := by
@@ -68,7 +68,7 @@ theorem tables_cat_bounds (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterp
     exp_pos _, h _ (by decide) (by decide)⟩
 
 /-- Equation (12) on the names of the classes, with `X, Y, Z ∈ (0, 1)`. -/
-private theorem tables_cat_formulas (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) :
+private theorem tables_cat_formulas (σ : ST5) (hσ : σ.clusters = caterpillar5) :
     ∃ X Y Z : ℝ, 0 < X ∧ X < 1 ∧ 0 < Y ∧ Y < 1 ∧ 0 < Z ∧ Z < 1 ∧
       u σ 1 = 1 - 2 / 3 * X - 2 / 3 * Y + 1 / 3 * X * Y + 1 / 18 * X * Y ^ 3 +
         1 / 90 * X * Y ^ 3 * Z ^ 6 ∧
@@ -92,7 +92,7 @@ def caterpillarClass : ℕ → ℕ
 
 /-- **Inequalities (5)**: for all branch lengths, `u₁ > u₂ > u₅`, `u₁ > u₄ > u₅`, `u₃ > u₂`,
 `u₃ > u₆ > u₅` and `u₅ > u₇`. -/
-theorem equation5 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) :
+theorem equation5 (σ : ST5) (hσ : σ.clusters = caterpillar5) :
     u σ 1 > u σ 2 ∧ u σ 1 > u σ 4 ∧ u σ 2 > u σ 5 ∧ u σ 4 > u σ 5 ∧ u σ 5 > u σ 7 ∧
       u σ 3 > u σ 2 ∧ u σ 3 > u σ 6 ∧ u σ 6 > u σ 5 := by
   obtain ⟨X, Y, Z, hX, hX1, hY, hY1, hZ, hZ1, h1, h2, h3, h4, h5, h6, h7⟩ :=
@@ -123,17 +123,17 @@ theorem equation5 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) 
 open scoped Classical in
 /-- From the inequalities (5): the 6-element class always has the strictly smallest probability
 and the class `{T₅, T₁₂}` the next smallest (used in the proof of Proposition 7). -/
-theorem caterpillar_extremeClasses (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) :
-    {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u σ i ≤ u σ j} = {7, 8, 10, 11, 14, 15} ∧
-    {i ∈ Icc 1 15 | u σ 7 < u σ i ∧ ∀ j ∈ Icc 1 15, u σ 7 < u σ j → u σ i ≤ u σ j} =
+theorem caterpillar_extremeClasses (σ : ST5) (hσ : σ.clusters = caterpillar5) :
+    {i ∈ F15 | ∀ j ∈ F15, u σ i ≤ u σ j} = {7, 8, 10, 11, 14, 15} ∧
+    {i ∈ F15 | u σ 7 < u σ i ∧ ∀ j ∈ F15, u σ 7 < u σ j → u σ i ≤ u σ j} =
       {5, 12} := by
   obtain ⟨h12, h14, h25, h45, h57, h32, h36, h65⟩ := equation5 σ hσ
   obtain ⟨-, -, -, -, e13, -, e12, -, e9, -, e8, e10, e11, e14, e15⟩ := equation12 σ hσ
-  have K1 : ∀ j ∈ Icc 1 15, u σ 7 ≤ u σ j := by
+  have K1 : ∀ j ∈ F15, u σ 7 ≤ u σ j := by
     intro j hj
     obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
     interval_cases j <;> linarith
-  have K2 : ∀ j ∈ Icc 1 15, u σ 7 < u σ j → u σ 5 ≤ u σ j := by
+  have K2 : ∀ j ∈ F15, u σ 7 < u σ j → u σ 5 ≤ u σ j := by
     intro j hj hj7
     obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
     interval_cases j <;> linarith

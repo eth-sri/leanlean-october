@@ -36,7 +36,7 @@ variable {X : Type*} [Fintype X] [DecidableEq X]
 /-! ### Section 5 on `Fin 4`, with permuted labels -/
 
 /-- A species tree whose clusters satisfy the binary condition is binary. -/
-private theorem n4_isBinary_of_clusters {τ : SpeciesTree (Fin 4)} {H : Finset (Finset (Fin 4))}
+private theorem n4_isBinary_of_clusters {τ : ST4} {H : Fam4}
     (hc : τ.clusters = H)
     (hH : ∀ A ∈ H, 2 ≤ #A → ∃ B ∈ H, ∃ C ∈ H, Disjoint B C ∧ B ∪ C = A) : τ.IsBinary := by
   intro A hA h2
@@ -44,8 +44,8 @@ private theorem n4_isBinary_of_clusters {τ : SpeciesTree (Fin 4)} {H : Finset (
   exact hH A hA h2
 
 /-- The unrooted length of `{0, 1}` when `C` is the only cluster among `{0, 1}` and `{2, 3}`. -/
-private theorem n4_unrootedLength (τ : SpeciesTree (Fin 4)) {C : Finset (Fin 4)}
-    (hS : τ.clusters.filter (fun D => D ≠ univ ∧ (D = {0, 1} ∨ D = ({0, 1} : Finset (Fin 4))ᶜ)) =
+private theorem n4_unrootedLength (τ : ST4) {C : FinFam 4}
+    (hS : τ.clusters.filter (fun D => D ≠ univ ∧ (D = {0, 1} ∨ D = ({0, 1} : FinFam 4)ᶜ)) =
       {C}) :
     τ.unrootedLength {0, 1} = τ.length C := by
   unfold SpeciesTree.unrootedLength
@@ -53,8 +53,8 @@ private theorem n4_unrootedLength (τ : SpeciesTree (Fin 4)) {C : Finset (Fin 4)
 
 /-- Permuting labels (l.319): the probability of `T` under `τ` is that of the relabelled tree
 under the relabelled species tree. -/
-private theorem n4_dist_relabel (τ : SpeciesTree (Fin 4)) (g : Fin 4 ≃ Fin 4)
-    {T T' : Finset (Finset (Fin 4))} (h : relabelFamily g T = T') :
+private theorem n4_dist_relabel (τ : ST4) (g : Fin 4 ≃ Fin 4)
+    {T T' : Fam4} (h : relabelFamily g T = T') :
     τ.unrootedDist id T = (τ.relabel g).unrootedDist id T' := by
   rw [← h, SpeciesTree.unrootedDist_relabel]
 
@@ -65,7 +65,7 @@ private def n4_perm : Fin 4 ≃ Fin 4 := (Equiv.swap 0 2).trans (Equiv.swap 1 3)
 `U4 1 = AB|CD` is `((a,b):t,c,d)` or `((c,d):t,a,b)`. The first is the limit `y → 0` of the
 caterpillar `(((a,b):t,c):y,d)` (`lim_fourTaxa_quartets`); the second is the first with the labels
 permuted by `(a c)(b d)`. -/
-private theorem n4_U4_one (τ : SpeciesTree (Fin 4)) (hτ : ¬ τ.IsBinary)
+private theorem n4_U4_one (τ : ST4) (hτ : ¬ τ.IsBinary)
     (h : unroot τ.clusters = U4 1) :
     τ.unrootedDist id (treeOfClusters {{0, 1}}) = 1 - 2 / 3 * exp (-τ.unrootedLength {0, 1}) ∧
     τ.unrootedDist id (treeOfClusters {{0, 2}}) = 1 / 3 * exp (-τ.unrootedLength {0, 1}) ∧
@@ -80,35 +80,35 @@ private theorem n4_U4_one (τ : SpeciesTree (Fin 4)) (hτ : ¬ τ.IsBinary)
   · exact absurd (n4_isBinary_of_clusters hc (by decide)) hτ
   · exact absurd (n4_isBinary_of_clusters hc (by decide)) hτ
   · -- `((a,b):t,c,d)`: the limit `y → 0` of `(((a,b):t,c):y,d)`
-    obtain ⟨h1, h2, h3⟩ := lim_fourTaxa_quartets τ (by rw [hc]; decide)
-    have h01 : ({0, 1} : Finset (Fin 4)) ∈ τ.clusters := by rw [hc]; decide
+    obtain ⟨h1, h2, h3⟩ := lim_fourTaxa_quartets τ (by drw hc)
+    have h01 : ({0, 1} : FinFam 4) ∈ τ.clusters := by rw [hc]; decide
     rw [ite_eq_left h01] at h1 h2 h3
-    rw [n4_unrootedLength τ (C := {0, 1}) (by rw [hc]; decide)]
+    rw [n4_unrootedLength τ (C := {0, 1}) (by drw hc)]
     exact ⟨h1, h2, h3⟩
   · -- `((c,d):t,a,b)`: the same with the labels permuted by `(a c)(b d)`
     have hc' : (τ.relabel n4_perm).clusters = hierarchyOf {{0, 1}} := by
       rw [SpeciesTree.relabel_clusters, hc]
       decide
-    obtain ⟨h1, h2, h3⟩ := lim_fourTaxa_quartets (τ.relabel n4_perm) (by rw [hc']; decide)
-    have h01 : ({0, 1} : Finset (Fin 4)) ∈ (τ.relabel n4_perm).clusters := by rw [hc']; decide
+    obtain ⟨h1, h2, h3⟩ := lim_fourTaxa_quartets (τ.relabel n4_perm) (by drw hc')
+    have h01 : ({0, 1} : FinFam 4) ∈ (τ.relabel n4_perm).clusters := by rw [hc']; decide
     have hl : (τ.relabel n4_perm).length {0, 1} = τ.length {2, 3} := by
       rw [SpeciesTree.relabel_length,
-        show ({0, 1} : Finset (Fin 4)).map n4_perm.symm.toEmbedding = {2, 3} by decide]
+        show ({0, 1} : FinFam 4).map n4_perm.symm.toEmbedding = {2, 3} by decide]
     rw [ite_eq_left h01, hl] at h1 h2 h3
-    rw [n4_unrootedLength τ (C := {2, 3}) (by rw [hc]; decide),
+    rw [n4_unrootedLength τ (C := {2, 3}) (by drw hc),
       n4_dist_relabel τ n4_perm (T' := treeOfClusters {{0, 1}})
-        (by decide : relabelFamily n4_perm (treeOfClusters {{0, 1}}) = treeOfClusters {{0, 1}}),
+        (by decide),
       n4_dist_relabel τ n4_perm (T' := treeOfClusters {{0, 2}})
-        (by decide : relabelFamily n4_perm (treeOfClusters {{0, 2}}) = treeOfClusters {{0, 2}}),
+        (by decide),
       n4_dist_relabel τ n4_perm (T' := treeOfClusters {{0, 3}})
-        (by decide : relabelFamily n4_perm (treeOfClusters {{0, 3}}) = treeOfClusters {{0, 3}})]
+        (by decide)]
     exact ⟨h1, h2, h3⟩
 
 /-- **Section 5 on `Fin 4`, no internal edge.** The species trees `(a,b,c,d)` and `((a,b,c):y,d)`
 are limits of the caterpillar `(((a,b):x,c):y,d)` as `x → 0` (and `y → 0`), so the three quartet
 trees have probability `1/3` (`lim_fourTaxa_quartets` with `x = 0`). -/
-private theorem n4_third (τ : SpeciesTree (Fin 4)) (hsub : τ.clusters ⊆ caterpillar4)
-    (h01 : ({0, 1} : Finset (Fin 4)) ∉ τ.clusters) :
+private theorem n4_third (τ : ST4) (hsub : τ.clusters ⊆ caterpillar4)
+    (h01 : ({0, 1} : FinFam 4) ∉ τ.clusters) :
     τ.unrootedDist id (treeOfClusters {{0, 1}}) = 1 / 3 ∧
     τ.unrootedDist id (treeOfClusters {{0, 2}}) = 1 / 3 ∧
     τ.unrootedDist id (treeOfClusters {{0, 3}}) = 1 / 3 := by
@@ -122,7 +122,7 @@ private theorem n4_third (τ : SpeciesTree (Fin 4)) (hsub : τ.clusters ⊆ cate
 
 /-- **Section 5 on `Fin 4`, the star.** The rootings of the star `U4 0` are `(a,b,c,d)` and the four
 trees `((x,y,z):t,w)`: with permuted labels, `(a,b,c,d)` or `((a,b,c):t,d)` (`n4_third`). -/
-private theorem n4_U4_zero (τ : SpeciesTree (Fin 4)) (h : unroot τ.clusters = U4 0) :
+private theorem n4_U4_zero (τ : ST4) (h : unroot τ.clusters = U4 0) :
     τ.unrootedDist id (treeOfClusters {{0, 1}}) = 1 / 3 ∧
     τ.unrootedDist id (treeOfClusters {{0, 2}}) = 1 / 3 ∧
     τ.unrootedDist id (treeOfClusters {{0, 3}}) = 1 / 3 := by
@@ -130,50 +130,41 @@ private theorem n4_U4_zero (τ : SpeciesTree (Fin 4)) (h : unroot τ.clusters = 
   simp only [rootings4, mem_insert, mem_singleton] at hm
   rcases hm with hc | hc | hc | hc | hc
   · -- `(a,b,c,d)`
-    exact n4_third τ (by rw [hc]; decide) (by rw [hc]; decide)
+    exact n4_third τ (by drw hc) (by drw hc)
   · -- `((a,b,c):t,d)`
-    exact n4_third τ (by rw [hc]; decide) (by rw [hc]; decide)
+    exact n4_third τ (by drw hc) (by drw hc)
   · -- `((a,b,d):t,c)`: the labels permuted by `(c d)`
     obtain ⟨h1, h2, h3⟩ := n4_third (τ.relabel (Equiv.swap 2 3))
       (by rw [SpeciesTree.relabel_clusters, hc]; decide)
       (by rw [SpeciesTree.relabel_clusters, hc]; decide)
     rw [n4_dist_relabel τ (Equiv.swap 2 3) (T' := treeOfClusters {{0, 1}})
-        (by decide : relabelFamily (Equiv.swap (2 : Fin 4) 3) (treeOfClusters {{0, 1}}) =
-          treeOfClusters {{0, 1}}),
+        (by decide),
       n4_dist_relabel τ (Equiv.swap 2 3) (T' := treeOfClusters {{0, 3}})
-        (by decide : relabelFamily (Equiv.swap (2 : Fin 4) 3) (treeOfClusters {{0, 2}}) =
-          treeOfClusters {{0, 3}}),
+        (by decide),
       n4_dist_relabel τ (Equiv.swap 2 3) (T' := treeOfClusters {{0, 2}})
-        (by decide : relabelFamily (Equiv.swap (2 : Fin 4) 3) (treeOfClusters {{0, 3}}) =
-          treeOfClusters {{0, 2}})]
+        (by decide)]
     exact ⟨h1, h3, h2⟩
   · -- `((a,c,d):t,b)`: the labels permuted by `(b d)`
     obtain ⟨h1, h2, h3⟩ := n4_third (τ.relabel (Equiv.swap 1 3))
       (by rw [SpeciesTree.relabel_clusters, hc]; decide)
       (by rw [SpeciesTree.relabel_clusters, hc]; decide)
     rw [n4_dist_relabel τ (Equiv.swap 1 3) (T' := treeOfClusters {{0, 3}})
-        (by decide : relabelFamily (Equiv.swap (1 : Fin 4) 3) (treeOfClusters {{0, 1}}) =
-          treeOfClusters {{0, 3}}),
+        (by decide),
       n4_dist_relabel τ (Equiv.swap 1 3) (T' := treeOfClusters {{0, 2}})
-        (by decide : relabelFamily (Equiv.swap (1 : Fin 4) 3) (treeOfClusters {{0, 2}}) =
-          treeOfClusters {{0, 2}}),
+        (by decide),
       n4_dist_relabel τ (Equiv.swap 1 3) (T' := treeOfClusters {{0, 1}})
-        (by decide : relabelFamily (Equiv.swap (1 : Fin 4) 3) (treeOfClusters {{0, 3}}) =
-          treeOfClusters {{0, 1}})]
+        (by decide)]
     exact ⟨h3, h2, h1⟩
   · -- `((b,c,d):t,a)`: the labels permuted by `(a d)`
     obtain ⟨h1, h2, h3⟩ := n4_third (τ.relabel (Equiv.swap 0 3))
       (by rw [SpeciesTree.relabel_clusters, hc]; decide)
       (by rw [SpeciesTree.relabel_clusters, hc]; decide)
     rw [n4_dist_relabel τ (Equiv.swap 0 3) (T' := treeOfClusters {{0, 2}})
-        (by decide : relabelFamily (Equiv.swap (0 : Fin 4) 3) (treeOfClusters {{0, 1}}) =
-          treeOfClusters {{0, 2}}),
+        (by decide),
       n4_dist_relabel τ (Equiv.swap 0 3) (T' := treeOfClusters {{0, 1}})
-        (by decide : relabelFamily (Equiv.swap (0 : Fin 4) 3) (treeOfClusters {{0, 2}}) =
-          treeOfClusters {{0, 1}}),
+        (by decide),
       n4_dist_relabel τ (Equiv.swap 0 3) (T' := treeOfClusters {{0, 3}})
-        (by decide : relabelFamily (Equiv.swap (0 : Fin 4) 3) (treeOfClusters {{0, 3}}) =
-          treeOfClusters {{0, 3}})]
+        (by decide)]
     exact ⟨h2, h1, h3⟩
 
 /-! ### Any species tree on four taxa -/

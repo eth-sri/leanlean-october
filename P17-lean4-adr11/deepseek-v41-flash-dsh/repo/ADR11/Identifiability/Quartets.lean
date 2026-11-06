@@ -24,28 +24,17 @@ Bandelt–Dress and Semple–Steel (Theorem 6.3.5), which `mem_unroot_iff_quarte
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
 /-- Membership in `unroot`: a non-root cluster or the complement of one. -/
-private theorem quart_mem_unroot {G : Finset (Finset X)} {A : Finset X} :
-    A ∈ unroot G ↔ (A ∈ G ∧ A ≠ univ) ∨ (Aᶜ ∈ G ∧ Aᶜ ≠ univ) := by
-  unfold unroot
-  rw [mem_union, mem_erase, mem_image]
-  constructor
-  · rintro (⟨h1, h2⟩ | ⟨B, hB, rfl⟩)
-    · exact Or.inl ⟨h2, h1⟩
-    · rw [mem_erase] at hB
-      right
-      rw [compl_compl]
-      exact ⟨hB.2, hB.1⟩
-  · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
-    · exact Or.inl ⟨h2, h1⟩
-    · exact Or.inr ⟨Aᶜ, mem_erase.2 ⟨h2, h1⟩, compl_compl A⟩
-
+private theorem quart_mem_unroot {G : Fam X} {A : Finset X} :
+    A ∈ unroot G ↔ (A ∈ G ∧ A ≠ univ) ∨ (Aᶜ ∈ G ∧ Aᶜ ≠ univ) := mem_unroot
 /-- `unroot` is closed under complements. -/
-private theorem quart_compl_mem_unroot {G : Finset (Finset X)} {A : Finset X}
+private theorem quart_compl_mem_unroot {G : Fam X} {A : Finset X}
     (h : A ∈ unroot G) : Aᶜ ∈ unroot G := by
   rw [quart_mem_unroot] at h ⊢
   rw [compl_compl]
@@ -61,7 +50,6 @@ private theorem quart_nonempty_of_mem_unroot (σ : SpeciesTree X) {A : Finset X}
     exact h2 compl_empty
 
 
-omit [Fintype X] in
 /-- Two sets with the same trace on `S` contain the same taxa of `S`. -/
 private theorem quart_mem_iff_of_subtype_eq {S A C : Finset X}
     (h : C.subtype (· ∈ S) = A.subtype (· ∈ S)) {x : X} (hx : x ∈ S) : x ∈ C ↔ x ∈ A := by
@@ -85,7 +73,6 @@ private theorem quart_unrootedLength_compl (τ : SpeciesTree X) (A : Finset X) :
   simp only [mem_filter]
   tauto
 
-omit [Fintype X] in
 /-- Four distinct taxa form a set of four taxa. -/
 private theorem quart_card_quartet {a a' b b' : X} (haa : a ≠ a') (hab : a ≠ b) (hab' : a ≠ b')
     (ha'b : a' ≠ b) (ha'b' : a' ≠ b') (hbb : b ≠ b') : #({a, a', b, b'} : Finset X) = 4 := by

@@ -84,8 +84,8 @@ theorem tendsto_deathProb (k j : ℕ) (hk : 1 ≤ k) :
   exact (absorb_tendsto_exp m (by have := (Finset.mem_Icc.1 hm).1; omega)).mul_const _
 
 /-- The limit of `exp(tQ)(F, G)`, computed from the factorization. -/
-private theorem absorb_tendsto {F : Finset (Finset L)} (hF : IsForest F)
-    (G : Finset (Finset L)) :
+private theorem absorb_tendsto {F : Fam L} (hF : IsForest F)
+    (G : Fam L) :
     Tendsto (fun t => kingmanTransition t F G) atTop
       (𝓝 (if #(roots F) = 0 then (if G = F then 1 else 0)
         else if #(roots G) = 1 then (jumpMatrix ^ (#(roots F) - 1)) F G else 0)) := by
@@ -107,23 +107,23 @@ private theorem absorb_tendsto {F : Finset (Finset L)} (hF : IsForest F)
       simpa using hl
     · simpa using hl
 
-theorem tendsto_kingmanTransition {F : Finset (Finset L)} (hF : IsForest F)
-    (G : Finset (Finset L)) :
+theorem tendsto_kingmanTransition {F : Fam L} (hF : IsForest F)
+    (G : Fam L) :
     Tendsto (fun t => kingmanTransition t F G) atTop (𝓝 (kingmanAbsorption F G)) := by
   have h := absorb_tendsto hF G
   have e : kingmanAbsorption F G = _ := h.limUnder_eq
   rw [e]
   exact h
 
-theorem kingmanAbsorption_apply {F : Finset (Finset L)} (hF : IsForest F)
-    (G : Finset (Finset L)) :
+theorem kingmanAbsorption_apply {F : Fam L} (hF : IsForest F)
+    (G : Fam L) :
     kingmanAbsorption F G =
       if #(roots F) = 0 then (if G = F then 1 else 0)
       else if #(roots G) = 1 then (jumpMatrix ^ (#(roots F) - 1)) F G else 0 :=
   (absorb_tendsto hF G).limUnder_eq
 
-theorem kingmanAbsorption_nonneg {F : Finset (Finset L)} (hF : IsForest F)
-    (G : Finset (Finset L)) : 0 ≤ kingmanAbsorption F G := by
+theorem kingmanAbsorption_nonneg {F : Fam L} (hF : IsForest F)
+    (G : Fam L) : 0 ≤ kingmanAbsorption F G := by
   rw [kingmanAbsorption_apply hF]
   split_ifs
   · exact zero_le_one
@@ -131,7 +131,7 @@ theorem kingmanAbsorption_nonneg {F : Finset (Finset L)} (hF : IsForest F)
   · exact jumpMatrix_pow_nonneg _ _ _
   · exact le_rfl
 
-theorem kingmanAbsorption_sum {F : Finset (Finset L)} (hF : IsForest F) :
+theorem kingmanAbsorption_sum {F : Fam L} (hF : IsForest F) :
     ∑ G, kingmanAbsorption F G = 1 := by
   have h1 : Tendsto (fun t => ∑ G, kingmanTransition t F G) atTop
       (𝓝 (∑ G, kingmanAbsorption F G)) :=
@@ -142,8 +142,8 @@ theorem kingmanAbsorption_sum {F : Finset (Finset L)} (hF : IsForest F) :
   exact tendsto_nhds_unique h1 tendsto_const_nhds
 
 /-- First-step analysis in the population above the root. -/
-theorem kingmanAbsorption_first_step {F : Finset (Finset L)} (hF : IsForest F)
-    (hk : 2 ≤ #(roots F)) (G : Finset (Finset L)) :
+theorem kingmanAbsorption_first_step {F : Fam L} (hF : IsForest F)
+    (hk : 2 ≤ #(roots F)) (G : Fam L) :
     kingmanAbsorption F G =
       (((#(roots F)).choose 2 : ℕ) : ℝ)⁻¹ * ∑ F' ∈ merges F, kingmanAbsorption F' G := by
   rw [kingmanAbsorption_apply hF, ite_eq_right (by omega)]
@@ -158,8 +158,8 @@ theorem kingmanAbsorption_first_step {F : Finset (Finset L)} (hF : IsForest F)
   · rw [show #(roots F) - 1 = (#(roots F) - 2) + 1 by omega, jumpMatrix_pow_succ_apply hk]
   · simp
 
-theorem kingmanTransition_mul_kingmanAbsorption {F : Finset (Finset L)} (hF : IsForest F)
-    (t : ℝ) (G : Finset (Finset L)) :
+theorem kingmanTransition_mul_kingmanAbsorption {F : Fam L} (hF : IsForest F)
+    (t : ℝ) (G : Fam L) :
     ∑ F', kingmanTransition t F F' * kingmanAbsorption F' G = kingmanAbsorption F G := by
   have hlim : Tendsto (fun s => kingmanTransition (t + s) F G) atTop
       (𝓝 (kingmanAbsorption F G)) :=

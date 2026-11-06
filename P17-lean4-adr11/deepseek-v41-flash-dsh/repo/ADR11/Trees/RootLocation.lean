@@ -43,6 +43,8 @@ of the root meet.
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
@@ -55,13 +57,13 @@ theorem rl_compl_nonempty {A : Finset X} (hAu : A ≠ univ) : Aᶜ.Nonempty := b
   exact ⟨x, mem_compl.2 hx⟩
 
 /-- Two complementary clusters `A`, `Aᶜ` of a hierarchy are the children of its root. -/
-theorem rl_childClusters_univ_eq_pair {H : Finset (Finset X)} (hH : IsHierarchy H)
+theorem rl_childClusters_univ_eq_pair {H : Fam X} (hH : IsHierarchy H)
     {A : Finset X} (hA : A ∈ H) (hAc : Aᶜ ∈ H) : childClusters H univ = {A, Aᶜ} :=
   hH.childClusters_eq_pair hA hAc disjoint_compl_right (union_compl A)
 
 /-- A hierarchy has at most one pair of complementary clusters: if `A`, `Aᶜ`, `B`, `Bᶜ` are
 clusters, then `B = A` or `B = Aᶜ` (both pairs are the children of the root). -/
-theorem rl_eq_or_eq_compl {H : Finset (Finset X)} (hH : IsHierarchy H) {A B : Finset X}
+theorem rl_eq_or_eq_compl {H : Fam X} (hH : IsHierarchy H) {A B : Finset X}
     (hA : A ∈ H) (hAc : Aᶜ ∈ H) (hB : B ∈ H) (hBc : Bᶜ ∈ H) : B = A ∨ B = Aᶜ := by
   have hmem : B ∈ childClusters H univ := by
     rw [rl_childClusters_univ_eq_pair hH hB hBc]
@@ -86,19 +88,19 @@ theorem rl_exists_compl_mem {σ : SpeciesTree X} (hσ : σ.IsBinary) (hX : 2 ≤
   exact ⟨B, hB, hCB ▸ hC⟩
 
 /-- Every taxon lies in a child of the root (on at least two taxa). -/
-theorem rl_exists_mem_childClusters_univ {H : Finset (Finset X)} (hH : IsHierarchy H)
+theorem rl_exists_mem_childClusters_univ {H : Fam X} (hH : IsHierarchy H)
     (hX : 2 ≤ Fintype.card X) (x : X) : ∃ R ∈ childClusters H univ, x ∈ R :=
   hH.exists_mem_childClusters (by rwa [card_univ]) (mem_univ x)
 
 /-- Two children of the root with a common taxon are equal. -/
-theorem rl_eq_of_mem_childClusters {H : Finset (Finset X)} (hH : IsHierarchy H)
+theorem rl_eq_of_mem_childClusters {H : Fam X} (hH : IsHierarchy H)
     {R R' : Finset X} (hR : R ∈ childClusters H univ) (hR' : R' ∈ childClusters H univ) {x : X}
     (hx : x ∈ R) (hx' : x ∈ R') : R = R' := by
   by_contra hne
   exact disjoint_left.1 (hH.disjoint_of_mem_childClusters hR hR' hne) hx hx'
 
 /-- A child of the root is a cluster other than the root. -/
-theorem rl_ne_univ_of_mem_childClusters {H : Finset (Finset X)} {R : Finset X}
+theorem rl_ne_univ_of_mem_childClusters {H : Fam X} {R : Finset X}
     (hR : R ∈ childClusters H univ) : R ≠ univ :=
   ssubset_univ_iff.1 (mem_childClusters.1 hR).2.1
 
@@ -106,7 +108,7 @@ theorem rl_ne_univ_of_mem_childClusters {H : Finset (Finset X)} {R : Finset X}
 
 /-- The clusters of a hierarchy other than the root are the sides of the splits of its unrooted
 tree that are contained in a child of the root. -/
-theorem rl_mem_iff {H : Finset (Finset X)} (hH : IsHierarchy H) {C : Finset X} :
+theorem rl_mem_iff {H : Fam X} (hH : IsHierarchy H) {C : Finset X} :
     C ∈ H ↔ C = univ ∨ (C ∈ unroot H ∧ ∃ R ∈ childClusters H univ, C ⊆ R) := by
   constructor
   · intro hC
@@ -121,7 +123,7 @@ theorem rl_mem_iff {H : Finset (Finset X)} (hH : IsHierarchy H) {C : Finset X} :
 
 /-- A hierarchy is determined by its unrooted tree and the children of its root: it is the
 rooting of its unrooted tree at the location of the root. -/
-theorem rl_eq_of_unroot_eq {H H' : Finset (Finset X)} (hH : IsHierarchy H)
+theorem rl_eq_of_unroot_eq {H H' : Fam X} (hH : IsHierarchy H)
     (hH' : IsHierarchy H') (hU : unroot H = unroot H')
     (hR : childClusters H univ = childClusters H' univ) : H = H' := by
   ext C
@@ -129,7 +131,6 @@ theorem rl_eq_of_unroot_eq {H H' : Finset (Finset X)} (hH : IsHierarchy H)
 
 /-! ### The root of an induced subtree -/
 
-omit [Fintype X] in
 /-- Two sets with the same trace on `S` contain the same taxa of `S`. -/
 theorem rl_mem_iff_of_subtype_eq {S A B : Finset X}
     (h : A.subtype (· ∈ S) = B.subtype (· ∈ S)) {x : X} (hx : x ∈ S) : x ∈ A ↔ x ∈ B := by
@@ -202,7 +203,6 @@ theorem rl_mem_childClusters_restrict_iff (σ : SpeciesTree X) {S : Finset X} (h
 
 /-! ### Sets of five taxa -/
 
-omit [DecidableEq X] in
 /-- A set of at most five taxa is contained in a set of exactly five taxa. -/
 theorem rl_exists_five (hX : 5 ≤ Fintype.card X) {T : Finset X} (hT : #T ≤ 5) :
     ∃ S, T ⊆ S ∧ #S = 5 := by
@@ -252,7 +252,7 @@ theorem rl_unrootedLength_eq_length (σ : SpeciesTree X) {A : Finset X} (hA : A 
 /-- Taxa witnessing an edge at the root: a child `B` of the root contains a nonempty set `W` of at
 most two taxa such that, if `B` has at least two taxa, then `W` has two taxa (from different
 children of `B`) and `B` is the only cluster other than the root that contains `W`. -/
-theorem rl_exists_witness {H : Finset (Finset X)} (hH : IsHierarchy H) {B : Finset X}
+theorem rl_exists_witness {H : Fam X} (hH : IsHierarchy H) {B : Finset X}
     (hB : B ∈ childClusters H univ) :
     ∃ W ⊆ B, W.Nonempty ∧ #W ≤ 2 ∧
       (2 ≤ #B → 2 ≤ #W ∧ ∀ C ∈ H, C ≠ univ → W ⊆ C → C = B) := by

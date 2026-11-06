@@ -32,10 +32,10 @@ open Finset
 /-! ### Bitmask codes of clusters -/
 
 /-- The cluster on `Fin n` with bitmask `c`: the `i < n` such that bit `i` of `c` is set. -/
-def decC (n c : ℕ) : Finset (Fin n) := univ.filter fun i => c.testBit i
+def decC (n c : ℕ) : FinFam n := univ.filter fun i => c.testBit i
 
 /-- The family of clusters with the bitmasks in the list `l`. -/
-def decF (n : ℕ) (l : List ℕ) : Finset (Finset (Fin n)) := (l.map (decC n)).toFinset
+def decF (n : ℕ) (l : List ℕ) : FamN n := (l.map (decC n)).toFinset
 
 /-- All codes in `l` are bitmasks of subsets of `Fin n`. -/
 def Valid (n : ℕ) (l : List ℕ) : Prop := ∀ c ∈ l, c < 2 ^ n
@@ -139,7 +139,7 @@ theorem xor_full_lt {n a : ℕ} (ha : a < 2 ^ n) : (2 ^ n - 1) ^^^ a < 2 ^ n :=
 
 /-! ### Families of codes -/
 
-theorem mem_decF {n : ℕ} {l : List ℕ} {A : Finset (Fin n)} :
+theorem mem_decF {n : ℕ} {l : List ℕ} {A : FinFam n} :
     A ∈ decF n l ↔ ∃ c ∈ l, decC n c = A := by
   simp [decF]
 
@@ -226,7 +226,7 @@ theorem card_roots_decF {n : ℕ} {F : List ℕ} (hv : Valid n F) (hnd : F.Nodup
   rw [← decF_rootsL hv, card_decF (valid_rootsL hv) (nodup_rootsL hnd)]
 
 /-- The unordered pairs of distinct entries of a list. -/
-def pairsL : List ℕ → List (ℕ × ℕ)
+def pairsL : List ℕ → Mono
   | [] => []
   | a :: l => l.map (fun b => (a, b)) ++ pairsL l
 
@@ -312,7 +312,7 @@ theorem merges_decF {n : ℕ} {F : List ℕ} (hv : Valid n F) (hnd : F.Nodup) :
     exact ⟨decC n a, decC n b, ⟨⟨ha, hb⟩, hne⟩, (decF_merge n F a b).symm⟩
 
 theorem sum_merges_decF {n : ℕ} {F : List ℕ} (hv : Valid n F) (hnd : F.Nodup)
-    (hF : IsForest (decF n F)) {M : Type*} [AddCommMonoid M] (g : Finset (Finset (Fin n)) → M) :
+    (hF : IsForest (decF n F)) {M : Type*} [AddCommMonoid M] (g : FamN n → M) :
     ∑ F' ∈ merges (decF n F), g F' =
       ((pairsL (rootsL F)).map fun p => g (decF n ((p.1 ||| p.2) :: F))).sum := by
   have hcard := hF.card_merges
@@ -364,7 +364,7 @@ def jumpL : ℕ → List ℕ → List (ℚ × List ℕ)
         ((((rootsL F).length.choose 2 : ℕ) : ℚ)⁻¹ * q.1, q.2)
 
 theorem jumpMatrix_pow_decF {n : ℕ} : ∀ (j : ℕ) (F : List ℕ), Valid n F → F.Nodup →
-    IsForest (decF n F) → ∀ G : Finset (Finset (Fin n)),
+    IsForest (decF n F) → ∀ G : FamN n,
     (jumpMatrix ^ j) (decF n F) G = ((jumpL j F).map fun q => if decF n q.2 = G then (q.1 : ℝ) else 0).sum
   | 0, F, _, _, _, G => by
     rcases eq_or_ne (decF n F) G with h | h

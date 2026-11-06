@@ -33,6 +33,8 @@ of Section 5.
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset Real
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
@@ -44,14 +46,13 @@ private lemma four_map_compl {Y : Type*} [Fintype Y] [DecidableEq Y] (e : X ≃ 
   ext y
   simp [Finset.mem_map_equiv]
 
-omit [Fintype X] [DecidableEq X] in
 private lemma four_relabelFamily_singleton {Y : Type*} [DecidableEq Y] (e : X ≃ Y)
     (A : Finset X) : relabelFamily e {A} = {A.map e.toEmbedding} :=
   image_singleton _ _
 
 /-- Relabelling the taxa of the unrooted tree with the nontrivial splits `A | Aᶜ`, `A ∈ C`. -/
 private lemma four_relabelFamily_treeOfClusters {Y : Type*} [Fintype Y] [DecidableEq Y]
-    (e : X ≃ Y) (C : Finset (Finset X)) :
+    (e : X ≃ Y) (C : Fam X) :
     relabelFamily e (treeOfClusters C) = treeOfClusters (relabelFamily e C) := by
   unfold treeOfClusters
   rw [← unroot_relabelFamily]
@@ -82,32 +83,32 @@ private lemma four_mem_unroot_relabel (e : Fin 4 ≃ X) (σ : SpeciesTree X) (B 
 /-! ### Finite computations on `Fin 4` -/
 
 private lemma four_U4_one_card_two :
-    ∀ B : Finset (Fin 4), B ∈ U4 1 → #B = 2 → B = {0, 1} ∨ B = {2, 3} := by
+    ∀ B : FinFam 4, B ∈ U4 1 → #B = 2 → B = {0, 1} ∨ B = {2, 3} := by
   decide
 
-private lemma four_U4_zero_card_two : ∀ B : Finset (Fin 4), B ∈ U4 0 → #B ≠ 2 := by
+private lemma four_U4_zero_card_two : ∀ B : FinFam 4, B ∈ U4 0 → #B ≠ 2 := by
   decide
 
-private lemma four_mem_U4_one : ({0, 1} : Finset (Fin 4)) ∈ U4 1 := by
+private lemma four_mem_U4_one : ({0, 1} : FinFam 4) ∈ U4 1 := by
   decide
 
-private lemma four_compl_01 : ({0, 1} : Finset (Fin 4))ᶜ = {2, 3} := by
+private lemma four_compl_01 : ({0, 1} : FinFam 4)ᶜ = {2, 3} := by
   decide
 
-private lemma four_compl_23 : ({2, 3} : Finset (Fin 4))ᶜ = {0, 1} := by
+private lemma four_compl_23 : ({2, 3} : FinFam 4)ᶜ = {0, 1} := by
   decide
 
 private lemma four_treeOfClusters_23 :
-    treeOfClusters {({2, 3} : Finset (Fin 4))} = treeOfClusters {{0, 1}} := by
+    treeOfClusters {({2, 3} : FinFam 4)} = treeOfClusters {{0, 1}} := by
   decide
 
 /-- The three quartet trees on `Fin 4`. -/
-private lemma four_treeOfClusters_cases : ∀ B : Finset (Fin 4), #B = 2 →
+private lemma four_treeOfClusters_cases : ∀ B : FinFam 4, #B = 2 →
     treeOfClusters {B} = treeOfClusters {{0, 1}} ∨ treeOfClusters {B} = treeOfClusters {{0, 2}} ∨
       treeOfClusters {B} = treeOfClusters {{0, 3}} := by
   decide
 
-private lemma four_treeOfClusters_cases' : ∀ B : Finset (Fin 4), #B = 2 → B ≠ {0, 1} →
+private lemma four_treeOfClusters_cases' : ∀ B : FinFam 4, #B = 2 → B ≠ {0, 1} →
     B ≠ {2, 3} →
       treeOfClusters {B} = treeOfClusters {{0, 2}} ∨
         treeOfClusters {B} = treeOfClusters {{0, 3}} := by
@@ -115,15 +116,15 @@ private lemma four_treeOfClusters_cases' : ∀ B : Finset (Fin 4), #B = 2 → B 
 
 /-- The unrooted length of `A` as the sum of the lengths of the clusters among `A`, `Aᶜ`. -/
 private lemma four_unrootedLength_eq_sum (τ : SpeciesTree X) (A : Finset X)
-    {S : Finset (Finset X)}
+    {S : Fam X}
     (hS : τ.clusters.filter (fun C => C ≠ univ ∧ (C = A ∨ C = Aᶜ)) = S) :
     τ.unrootedLength A = ∑ C ∈ S, τ.length C := by
   unfold SpeciesTree.unrootedLength
   rw [hS]
 
 /-- A species tree whose clusters do not satisfy the binary condition is not binary. -/
-private lemma four_not_isBinary_of_clusters {τ : SpeciesTree (Fin 4)}
-    {H : Finset (Finset (Fin 4))} (hc : τ.clusters = H)
+private lemma four_not_isBinary_of_clusters {τ : ST4}
+    {H : Fam4} (hc : τ.clusters = H)
     (hH : ¬ ∀ A ∈ H, 2 ≤ #A → ∃ B ∈ H, ∃ C ∈ H, Disjoint B C ∧ B ∪ C = A) : ¬ τ.IsBinary := by
   intro hb
   refine hH fun A hA h2 => ?_
@@ -133,7 +134,7 @@ private lemma four_not_isBinary_of_clusters {τ : SpeciesTree (Fin 4)}
 /-- Section 4.1's formulas for the binary rootings of `U4 1 = AB|CD` (the four caterpillars and the
 balanced tree), with internal edge length `t = τ.unrootedLength {0, 1}` (the length of the edge
 above `{0, 1}` or `{2, 3}`, or their sum for the balanced rooting). -/
-private lemma four_unrootedDist_U4_one (τ : SpeciesTree (Fin 4)) (hτ : τ.IsBinary)
+private lemma four_unrootedDist_U4_one (τ : ST4) (hτ : τ.IsBinary)
     (h : unroot τ.clusters = U4 1) :
     τ.unrootedDist id (treeOfClusters {{0, 1}}) = 1 - 2 / 3 * exp (-τ.unrootedLength {0, 1}) ∧
     τ.unrootedDist id (treeOfClusters {{0, 2}}) = 1 / 3 * exp (-τ.unrootedLength {0, 1}) ∧
@@ -142,19 +143,19 @@ private lemma four_unrootedDist_U4_one (τ : SpeciesTree (Fin 4)) (hτ : τ.IsBi
   simp only [rootings4, mem_insert, mem_singleton] at hm
   rcases hm with hc | hc | hc | hc | hc | hc | hc
   · obtain ⟨h1, h2, h3⟩ := rootingDist4_1_0 τ hc
-    rw [four_unrootedLength_eq_sum τ {0, 1} (S := {{0, 1}}) (by rw [hc]; decide), sum_singleton]
+    rw [four_unrootedLength_eq_sum τ {0, 1} (S := {{0, 1}}) (by drw hc), sum_singleton]
     exact ⟨by rw [h1]; ring, h2, h3⟩
   · obtain ⟨h1, h2, h3⟩ := rootingDist4_1_1 τ hc
-    rw [four_unrootedLength_eq_sum τ {0, 1} (S := {{0, 1}}) (by rw [hc]; decide), sum_singleton]
+    rw [four_unrootedLength_eq_sum τ {0, 1} (S := {{0, 1}}) (by drw hc), sum_singleton]
     exact ⟨by rw [h1]; ring, h2, h3⟩
   · obtain ⟨h1, h2, h3⟩ := rootingDist4_1_2 τ hc
-    rw [four_unrootedLength_eq_sum τ {0, 1} (S := {{2, 3}}) (by rw [hc]; decide), sum_singleton]
+    rw [four_unrootedLength_eq_sum τ {0, 1} (S := {{2, 3}}) (by drw hc), sum_singleton]
     exact ⟨by rw [h1]; ring, h2, h3⟩
   · obtain ⟨h1, h2, h3⟩ := rootingDist4_1_3 τ hc
-    rw [four_unrootedLength_eq_sum τ {0, 1} (S := {{2, 3}}) (by rw [hc]; decide), sum_singleton]
+    rw [four_unrootedLength_eq_sum τ {0, 1} (S := {{2, 3}}) (by drw hc), sum_singleton]
     exact ⟨by rw [h1]; ring, h2, h3⟩
   · obtain ⟨h1, h2, h3⟩ := rootingDist4_1_4 τ hc
-    rw [four_unrootedLength_eq_sum τ {0, 1} (S := {{0, 1}, {2, 3}}) (by rw [hc]; decide),
+    rw [four_unrootedLength_eq_sum τ {0, 1} (S := {{0, 1}, {2, 3}}) (by drw hc),
       sum_pair (by decide), neg_add, exp_add]
     exact ⟨by rw [h1]; ring, by rw [h2]; ring, by rw [h3]; ring⟩
   -- the rootings `((a,b),c,d)` and `((c,d),a,b)` are not binary
@@ -177,10 +178,10 @@ theorem four_unrootedLength_pos (σ : SpeciesTree X) {A : Finset X}
 /-- On four taxa, only the three quartet trees `treeOfClusters {B}` (`#B = 2`) have positive
 probability. -/
 theorem four_unrootedDist_eq_zero (hX : Fintype.card X = 4) (σ : SpeciesTree X)
-    (T : Finset (Finset X)) (hT : ∀ B : Finset X, #B = 2 → T ≠ treeOfClusters {B}) :
+    (T : Fam X) (hT : ∀ B : Finset X, #B = 2 → T ≠ treeOfClusters {B}) :
     σ.unrootedDist id T = 0 := by
   let e : Fin 4 ≃ X := (Fintype.equivFinOfCardEq hX).symm
-  have key : ∀ C : Finset (Fin 4), #C = 2 → relabelFamily e.symm T ≠ treeOfClusters {C} := by
+  have key : ∀ C : FinFam 4, #C = 2 → relabelFamily e.symm T ≠ treeOfClusters {C} := by
     intro C hC hTC
     refine hT (C.map e.toEmbedding) (by rw [card_map, hC]) ?_
     have := congrArg (relabelFamily e.symm.symm) hTC
@@ -289,11 +290,11 @@ theorem four_unrootedDist_of_star_of_U4 (hX : Fintype.card X = 4) (σ : SpeciesT
     · rw [h, h2]
     · rw [h, h3]
   · exfalso
-    have h01 : ({0, 1} : Finset (Fin 4)) ∈ relabelFamily e.symm (unroot σ.clusters) := by
+    have h01 : ({0, 1} : FinFam 4) ∈ relabelFamily e.symm (unroot σ.clusters) := by
       rw [← unroot_relabelFamily, ← SpeciesTree.relabel_clusters, he]
       exact four_mem_U4_one
     rw [mem_relabelFamily] at h01
-    exact hσ _ h01 (by rw [card_map]; decide)
+    exact hσ _ h01 (by drw card_map)
 
 /-! ### Binary species trees on four taxa (Section 4.1) -/
 
@@ -316,7 +317,7 @@ theorem four_unrootedDist_of_ne_of_isBinary (hX : Fintype.card X = 4) (σ : Spec
 
 /-- A binary species tree on four taxa has a nontrivial split: after relabelling, its unrooted
 topology is not the star `U4 0`, none of whose rootings is binary. -/
-private lemma four_exists_split_of_isBinary (hX : Fintype.card X = 4) (σ : SpeciesTree X)
+lemma four_exists_split_of_isBinary (hX : Fintype.card X = 4) (σ : SpeciesTree X)
     (hσ : σ.IsBinary) : ∃ A ∈ unroot σ.clusters, #A = 2 := by
   obtain ⟨e, k, hk, he⟩ := exists_equiv_unroot_eq_U4 hX σ
   have hb := (SpeciesTree.isBinary_relabel_iff σ e.symm).2 hσ
@@ -326,7 +327,7 @@ private lemma four_exists_split_of_isBinary (hX : Fintype.card X = 4) (σ : Spec
     have hm := mem_rootings4 _ 0 (by decide) he
     simp only [rootings4, mem_insert, mem_singleton] at hm
     rcases hm with hc | hc | hc | hc | hc <;> exact four_not_isBinary_of_clusters hc (by decide) hb
-  · refine ⟨({0, 1} : Finset (Fin 4)).map e.toEmbedding, ?_, by rw [card_map]; decide⟩
+  · refine ⟨({0, 1} : FinFam 4).map e.toEmbedding, ?_, by rw [card_map]; decide⟩
     rw [four_mem_unroot_relabel e σ, Finset.map_map,
       Function.Embedding.equiv_toEmbedding_trans_symm_toEmbedding,
       Finset.map_refl, he]

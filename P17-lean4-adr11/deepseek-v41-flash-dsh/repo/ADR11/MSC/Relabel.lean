@@ -29,15 +29,16 @@ tree relabels its gene tree distributions.
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset
 
 variable {X : Type*} [Fintype X] [DecidableEq X] {Y : Type*} [Fintype Y] [DecidableEq Y]
 
 /-- The image of a family of clusters under a bijection. -/
-def relabelFamily (e : X ≃ Y) (F : Finset (Finset X)) : Finset (Finset Y) :=
+def relabelFamily (e : X ≃ Y) (F : Fam X) : Fam Y :=
   F.image fun A => A.map e.toEmbedding
 
-omit [Fintype X] [DecidableEq X] [Fintype Y] [DecidableEq Y] in
 private lemma msc_map_symm_map (e : X ≃ Y) (A : Finset X) :
     (A.map e.toEmbedding).map e.symm.toEmbedding = A := by
   ext x
@@ -48,23 +49,19 @@ private lemma msc_map_compl (e : X ≃ Y) (A : Finset X) :
   ext y
   simp [Finset.mem_map_equiv]
 
-omit [Fintype X] [DecidableEq X] [Fintype Y] [DecidableEq Y] in
 private lemma msc_map_map_symm (e : X ≃ Y) (B : Finset Y) :
     (B.map e.symm.toEmbedding).map e.toEmbedding = B := by
   ext x
   simp
 
-omit [DecidableEq X] [DecidableEq Y] in
 private lemma msc_map_eq_univ_iff (e : X ≃ Y) (A : Finset X) :
     A.map e.toEmbedding = univ ↔ A = univ := by
   rw [← Finset.map_univ_equiv e, Finset.map_inj]
 
-omit [Fintype X] [DecidableEq X] [Fintype Y] in
 theorem relabelFamily_injective (e : X ≃ Y) : Function.Injective (relabelFamily e) :=
   Finset.image_injective (Finset.map_injective e.toEmbedding)
 
-omit [Fintype X] [Fintype Y] in
-theorem relabelFamily_symm (e : X ≃ Y) (F : Finset (Finset X)) :
+theorem relabelFamily_symm (e : X ≃ Y) (F : Fam X) :
     relabelFamily e.symm (relabelFamily e F) = F := by
   unfold relabelFamily
   rw [image_image]
@@ -73,7 +70,7 @@ theorem relabelFamily_symm (e : X ≃ Y) (F : Finset (Finset X)) :
   funext A
   exact msc_map_symm_map e A
 
-theorem unroot_relabelFamily (e : X ≃ Y) (F : Finset (Finset X)) :
+theorem unroot_relabelFamily (e : X ≃ Y) (F : Fam X) :
     unroot (relabelFamily e F) = relabelFamily e (unroot F) := by
   have herase : (relabelFamily e F).erase univ = relabelFamily e (F.erase univ) := by
     unfold relabelFamily
@@ -87,18 +84,16 @@ theorem unroot_relabelFamily (e : X ≃ Y) (F : Finset (Finset X)) :
   exact msc_map_compl e A
 
 /-- Relabelling families of clusters along `e`, as an equivalence. -/
-def relabelFamilyEquiv (e : X ≃ Y) : Finset (Finset X) ≃ Finset (Finset Y) where
+def relabelFamilyEquiv (e : X ≃ Y) : Fam X ≃ Fam Y where
   toFun := relabelFamily e
   invFun := relabelFamily e.symm
   left_inv := relabelFamily_symm e
   right_inv := fun F => by simpa using relabelFamily_symm e.symm F
 
-omit [Fintype X] [Fintype Y] in
-@[simp] theorem relabelFamilyEquiv_apply (e : X ≃ Y) (F : Finset (Finset X)) :
+@[simp] theorem relabelFamilyEquiv_apply (e : X ≃ Y) (F : Fam X) :
     relabelFamilyEquiv e F = relabelFamily e F := rfl
 
-omit [Fintype X] [DecidableEq X] [Fintype Y] in
-theorem mem_relabelFamily {e : X ≃ Y} {F : Finset (Finset X)} {B : Finset Y} :
+theorem mem_relabelFamily {e : X ≃ Y} {F : Fam X} {B : Finset Y} :
     B ∈ relabelFamily e F ↔ B.map e.symm.toEmbedding ∈ F := by
   unfold relabelFamily
   rw [mem_image]
@@ -110,13 +105,11 @@ theorem mem_relabelFamily {e : X ≃ Y} {F : Finset (Finset X)} {B : Finset Y} :
     ext y
     simp [Finset.mem_map_equiv]
 
-omit [Fintype X] [DecidableEq X] [Fintype Y] in
-theorem map_mem_relabelFamily {e : X ≃ Y} {F : Finset (Finset X)} {A : Finset X} :
+theorem map_mem_relabelFamily {e : X ≃ Y} {F : Fam X} {A : Finset X} :
     A.map e.toEmbedding ∈ relabelFamily e F ↔ A ∈ F := by
   rw [mem_relabelFamily, msc_map_symm_map]
 
-omit [Fintype X] [Fintype Y] in
-theorem relabelFamily_union (e : X ≃ Y) (F G : Finset (Finset X)) :
+theorem relabelFamily_union (e : X ≃ Y) (F G : Fam X) :
     relabelFamily e (F ∪ G) = relabelFamily e F ∪ relabelFamily e G :=
   image_union _ _
 
@@ -124,8 +117,7 @@ section Kernels
 
 variable {L : Type*} [Fintype L] [DecidableEq L] {M : Type*} [Fintype M] [DecidableEq M]
 
-omit [Fintype X] [DecidableEq X] [Fintype Y] [DecidableEq Y] in
-theorem roots_relabelFamily (e : L ≃ M) (F : Finset (Finset L)) :
+theorem roots_relabelFamily (e : L ≃ M) (F : Fam L) :
     roots (relabelFamily e F) = relabelFamily e (roots F) := by
   unfold roots relabelFamily
   rw [filter_image]
@@ -140,13 +132,12 @@ theorem roots_relabelFamily (e : L ≃ M) (F : Finset (Finset L)) :
 
 omit [Fintype X] [DecidableEq X] [Fintype Y] [DecidableEq Y] [Fintype L] [DecidableEq L]
   [Fintype M] in
-theorem card_relabelFamily (e : L ≃ M) (F : Finset (Finset L)) :
+theorem card_relabelFamily (e : L ≃ M) (F : Fam L) :
     #(relabelFamily e F) = #F :=
   card_image_of_injective _ (Finset.map_injective e.toEmbedding)
 
-omit [Fintype X] [DecidableEq X] [Fintype Y] [DecidableEq Y] in
 /-- The generator of Kingman's coalescent is invariant under relabelling the lineages. -/
-theorem kingmanGenerator_relabelFamily (e : L ≃ M) (F G : Finset (Finset L)) :
+theorem kingmanGenerator_relabelFamily (e : L ≃ M) (F G : Fam L) :
     kingmanGenerator (relabelFamily e F) (relabelFamily e G) = kingmanGenerator F G := by
   unfold kingmanGenerator
   rw [roots_relabelFamily, card_relabelFamily]
@@ -201,9 +192,8 @@ private lemma msc_exp_submatrix {m n : Type*} [Fintype m] [DecidableEq m] [Finty
   rw [Matrix.submatrix_smul, hpow]
   rfl
 
-omit [Fintype X] [DecidableEq X] [Fintype Y] [DecidableEq Y] in
 /-- Kingman's coalescent is invariant under relabelling the lineages. -/
-theorem kingmanTransition_relabelFamily (e : L ≃ M) (t : ℝ) (F G : Finset (Finset L)) :
+theorem kingmanTransition_relabelFamily (e : L ≃ M) (t : ℝ) (F G : Fam L) :
     kingmanTransition t (relabelFamily e F) (relabelFamily e G) = kingmanTransition t F G := by
   have hQ : (kingmanGenerator (L := M)).submatrix (relabelFamilyEquiv e) (relabelFamilyEquiv e) =
       kingmanGenerator (L := L) := by
@@ -218,8 +208,7 @@ theorem kingmanTransition_relabelFamily (e : L ≃ M) (t : ℝ) (F G : Finset (F
   rw [← hQ, hs, msc_exp_submatrix]
   rfl
 
-omit [Fintype X] [DecidableEq X] [Fintype Y] [DecidableEq Y] in
-theorem kingmanAbsorption_relabelFamily (e : L ≃ M) (F G : Finset (Finset L)) :
+theorem kingmanAbsorption_relabelFamily (e : L ≃ M) (F G : Fam L) :
     kingmanAbsorption (relabelFamily e F) (relabelFamily e G) = kingmanAbsorption F G := by
   unfold kingmanAbsorption
   simp_rw [kingmanTransition_relabelFamily]
@@ -230,7 +219,7 @@ section Naturality
 
 variable {L : Type*} [Fintype L] [DecidableEq L] {M : Type*} [Fintype M] [DecidableEq M]
 
-theorem childClusters_relabelFamily (e : X ≃ Y) (H : Finset (Finset X)) (A : Finset X) :
+theorem childClusters_relabelFamily (e : X ≃ Y) (H : Fam X) (A : Finset X) :
     childClusters (relabelFamily e H) (A.map e.toEmbedding) =
       relabelFamily e (childClusters H A) := by
   unfold childClusters relabelFamily
@@ -239,7 +228,6 @@ theorem childClusters_relabelFamily (e : X ≃ Y) (H : Finset (Finset X)) (A : F
   refine filter_congr fun B _ => ?_
   simp only [Finset.map_ssubset_map, Finset.forall_mem_image]
 
-omit [Fintype X] [Fintype Y] in
 theorem sampledForest_relabel (e : X ≃ Y) (eL : L ≃ M) {s : L → X} {s' : M → Y}
     (hs : ∀ l, s' (eL l) = e (s l)) (A : Finset X) :
     sampledForest s' (A.map e.toEmbedding) = relabelFamily eL (sampledForest s A) := by
@@ -259,9 +247,8 @@ theorem sampledForest_relabel (e : X ≃ Y) (eL : L ≃ M) {s : L → X} {s' : M
     · rw [← msc_map_map_symm eL C, ← hC]
       simp
 
-omit [Fintype X] [DecidableEq X] [Fintype Y] [DecidableEq Y] [Fintype L] [Fintype M] in
 private lemma msc_relabelFamily_sup {ι : Type*} [Fintype ι] (eL : L ≃ M)
-    (f : ι → Finset (Finset L)) :
+    (f : ι → Fam L) :
     relabelFamily eL (univ.sup f) = univ.sup (fun i => relabelFamily eL (f i)) :=
   Finset.apply_sup_eq_sup_comp (relabelFamily eL) (fun F G => image_union F G) (image_empty _)
 
@@ -272,8 +259,8 @@ private lemma msc_sup_univ_equiv {ι κ α : Type*} [Fintype ι] [Fintype κ] [S
   rfl
 
 theorem populationKernel_relabel (e : X ≃ Y) (eL : L ≃ M)
-    {len : Finset X → ℝ} {len' : Finset Y → ℝ} (hlen : ∀ A, len' (A.map e.toEmbedding) = len A)
-    (A : Finset X) (F G : Finset (Finset L)) :
+    {len : Len X} {len' : Finset Y → ℝ} (hlen : ∀ A, len' (A.map e.toEmbedding) = len A)
+    (A : Finset X) (F G : Fam L) :
     populationKernel len' (A.map e.toEmbedding) (relabelFamily eL F) (relabelFamily eL G) =
       populationKernel len A F G := by
   unfold populationKernel
@@ -286,10 +273,10 @@ theorem populationKernel_relabel (e : X ≃ Y) (eL : L ≃ M)
 /-- **Naturality of the multispecies coalescent.** Relabelling the taxa along `e` and the
 lineages along `eL` (compatibly with the sampling maps) relabels the distribution of the forest
 leaving each population. -/
-theorem forestDist_relabel (e : X ≃ Y) (eL : L ≃ M) (H : Finset (Finset X))
-    {len : Finset X → ℝ} {len' : Finset Y → ℝ} (hlen : ∀ A, len' (A.map e.toEmbedding) = len A)
+theorem forestDist_relabel (e : X ≃ Y) (eL : L ≃ M) (H : Fam X)
+    {len : Len X} {len' : Finset Y → ℝ} (hlen : ∀ A, len' (A.map e.toEmbedding) = len A)
     {s : L → X} {s' : M → Y} (hs : ∀ l, s' (eL l) = e (s l)) (A : Finset X)
-    (G : Finset (Finset L)) :
+    (G : Fam L) :
     forestDist (relabelFamily e H) len' s' (A.map e.toEmbedding) (relabelFamily eL G) =
       forestDist H len s A G := by
   induction A using Finset.strongInduction generalizing G with
@@ -318,8 +305,7 @@ theorem forestDist_relabel (e : X ≃ Y) (eL : L ≃ M) (H : Finset (Finset X))
     rw [hsup, sampledForest_relabel e eL hs, ← relabelFamily_union]
     exact populationKernel_relabel e eL hlen A _ G
 
-omit [Fintype X] in
-theorem relabelFamily_refl (F : Finset (Finset X)) : relabelFamily (Equiv.refl X) F = F := by
+theorem relabelFamily_refl (F : Fam X) : relabelFamily (Equiv.refl X) F = F := by
   unfold relabelFamily
   conv_rhs => rw [← image_id (s := F)]
   congr 1
@@ -333,19 +319,16 @@ theorem SpeciesTree.relabel_univ_mem (σ : SpeciesTree X) (e : X ≃ Y) :
     (univ : Finset Y) ∈ relabelFamily e σ.clusters :=
   mem_image.2 ⟨univ, σ.univ_mem, Finset.map_univ_equiv e⟩
 
-omit [Fintype Y] in
 theorem SpeciesTree.relabel_singleton_mem (σ : SpeciesTree X) (e : X ≃ Y) (y : Y) :
     {y} ∈ relabelFamily e σ.clusters :=
   mem_image.2 ⟨{e.symm y}, σ.singleton_mem _, by simp⟩
 
-omit [Fintype Y] in
 theorem SpeciesTree.relabel_nonempty_of_mem (σ : SpeciesTree X) (e : X ≃ Y) :
     ∀ B ∈ relabelFamily e σ.clusters, B.Nonempty := by
   intro B hB
   obtain ⟨A, hA, rfl⟩ := mem_image.1 hB
   exact Finset.map_nonempty.2 (σ.nonempty_of_mem A hA)
 
-omit [Fintype Y] in
 theorem SpeciesTree.relabel_laminar (σ : SpeciesTree X) (e : X ≃ Y) :
     ∀ B ∈ relabelFamily e σ.clusters, ∀ C ∈ relabelFamily e σ.clusters,
       B ⊆ C ∨ C ⊆ B ∨ Disjoint B C := by
@@ -414,7 +397,7 @@ theorem SpeciesTree.isBinary_relabel_iff (σ : SpeciesTree X) (e : X ≃ Y) :
   have := msc_isBinary_relabel e.symm h
   rwa [SpeciesTree.relabel_relabel_symm] at this
 
-theorem SpeciesTree.rootedDist_relabel (σ : SpeciesTree X) (e : X ≃ Y) (G : Finset (Finset X)) :
+theorem SpeciesTree.rootedDist_relabel (σ : SpeciesTree X) (e : X ≃ Y) (G : Fam X) :
     (σ.relabel e).rootedDist id (relabelFamily e G) = σ.rootedDist id G := by
   unfold SpeciesTree.rootedDist
   have := forestDist_relabel e e σ.clusters (len := σ.length) (len' := (σ.relabel e).length)
@@ -422,7 +405,7 @@ theorem SpeciesTree.rootedDist_relabel (σ : SpeciesTree X) (e : X ≃ Y) (G : F
   rwa [Finset.map_univ_equiv] at this
 
 theorem SpeciesTree.unrootedDist_relabel (σ : SpeciesTree X) (e : X ≃ Y)
-    (T : Finset (Finset X)) :
+    (T : Fam X) :
     (σ.relabel e).unrootedDist id (relabelFamily e T) = σ.unrootedDist id T := by
   unfold SpeciesTree.unrootedDist
   rw [← (relabelFamilyEquiv e).sum_comp]

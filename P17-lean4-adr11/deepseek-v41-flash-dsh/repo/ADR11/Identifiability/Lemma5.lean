@@ -24,11 +24,12 @@ every induced subtree.
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
-omit [Fintype X] in
 private theorem lemma5_exists_iff (S A : Finset X) :
     (∃ l : S, (Function.Embedding.subtype (· ∈ S)) l ∈ A) ↔ (A ∩ S).Nonempty := by
   simp only [Function.Embedding.coe_subtype]
@@ -39,7 +40,6 @@ private theorem lemma5_exists_iff (S A : Finset X) :
     rw [mem_inter] at hx
     exact ⟨⟨x, hx.2⟩, hx.1⟩
 
-omit [Fintype X] in
 private theorem lemma5_trace (S A : Finset X) :
     (univ.filter fun l : S => (Function.Embedding.subtype (· ∈ S)) l ∈ A) =
       A.subtype (· ∈ S) := by
@@ -48,7 +48,7 @@ private theorem lemma5_trace (S A : Finset X) :
   exact and_iff_right (mem_univ l)
 
 /-- Restricting an unrooted tree along the inclusion `S ↪ X` is the induced unrooted tree. -/
-private theorem lemma5_restrictUnrooted_subtype (S : Finset X) (T : Finset (Finset X)) :
+private theorem lemma5_restrictUnrooted_subtype (S : Finset X) (T : Fam X) :
     restrictUnrooted (Function.Embedding.subtype (· ∈ S)) T = restrictSplits S T := by
   unfold restrictUnrooted restrictSplits
   have h : ∀ A : Finset X, (∃ l : S, (Function.Embedding.subtype (· ∈ S)) l ∉ A) ↔
@@ -61,7 +61,7 @@ private theorem lemma5_restrictUnrooted_subtype (S : Finset X) (T : Finset (Fins
 
 /-- **Lemma 5** (`lem:margin`). If `S ⊆ X` and `T' ∈ 𝒯_S`, then
 `ℙ_{σ⁺(S)}(T') = ∑_{T ∈ 𝒯_X, T(S) = T'} ℙ_{σ⁺}(T)`. -/
-theorem lemma5 (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty) (T' : Finset (Finset S)) :
+theorem lemma5 (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty) (T' : Fam S) :
     (σ.restrict S hS).unrootedDist id T' =
       ∑ T, if restrictSplits S T = T' then σ.unrootedDist id T else 0 := by
   have h1 : (σ.restrict S hS).unrootedDist id T' =

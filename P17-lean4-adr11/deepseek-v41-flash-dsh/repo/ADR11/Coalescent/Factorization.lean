@@ -43,6 +43,8 @@ uses uniformization: `tQ = tP - tc · 1` with `P = Q + c · 1` entrywise nonnega
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset Real
 
 variable {L : Type*} [Fintype L] [DecidableEq L]
@@ -50,7 +52,7 @@ variable {L : Type*} [Fintype L] [DecidableEq L]
 /-- The jump chain of Kingman's coalescent on forests: from a forest with `k ≥ 2` roots, each of
 its `k.choose 2` merges has probability `1 / (k choose 2)`; a forest with at most one root stays
 put. -/
-noncomputable def jumpMatrix : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ :=
+noncomputable def jumpMatrix : Matrix (Fam L) (Fam L) ℝ :=
   fun F G =>
     if #(roots F) ≤ 1 then (if G = F then 1 else 0)
     else if G ∈ merges F then (((#(roots F)).choose 2 : ℕ) : ℝ)⁻¹ else 0
@@ -66,40 +68,39 @@ def deathPow : ℕ → ℕ → ℕ → ℝ
 noncomputable def deathProb (k j : ℕ) (t : ℝ) : ℝ :=
   ∑' m : ℕ, t ^ m / (m.factorial : ℝ) * deathPow m k j
 
-theorem jumpMatrix_apply_of_isForest {F : Finset (Finset L)}
-    (hk : 2 ≤ #(roots F)) (G : Finset (Finset L)) :
+theorem jumpMatrix_apply_of_isForest {F : Fam L}
+    (hk : 2 ≤ #(roots F)) (G : Fam L) :
     jumpMatrix F G = if G ∈ merges F then (((#(roots F)).choose 2 : ℕ) : ℝ)⁻¹ else 0 := by
   have hk' : ¬ #(roots F) ≤ 1 := by omega
   simp only [jumpMatrix, ite_eq_right hk']
 
 /-! ### The jump chain -/
 
-private theorem fact_jumpMatrix_apply_of_le_one {F : Finset (Finset L)} (hk : #(roots F) ≤ 1)
-    (G : Finset (Finset L)) : jumpMatrix F G = if G = F then 1 else 0 := by
+private theorem fact_jumpMatrix_apply_of_le_one {F : Fam L} (hk : #(roots F) ≤ 1)
+    (G : Fam L) : jumpMatrix F G = if G = F then 1 else 0 := by
   simp only [jumpMatrix, ite_eq_left hk]
 
-private theorem fact_jumpMatrix_nonneg (F G : Finset (Finset L)) : 0 ≤ jumpMatrix F G := by
+private theorem fact_jumpMatrix_nonneg (F G : Fam L) : 0 ≤ jumpMatrix F G := by
   simp only [jumpMatrix]
   split_ifs <;> positivity
 
-omit [Fintype L] in
-private theorem fact_one_apply (F G : Finset (Finset L)) :
-    (1 : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ) F G = if G = F then 1 else 0 := by
+private theorem fact_one_apply (F G : Fam L) :
+    (1 : Matrix (Fam L) (Fam L) ℝ) F G = if G = F then 1 else 0 := by
   by_cases h : G = F
   · subst h; simp
   · rw [Matrix.one_apply_ne (Ne.symm h), ite_eq_right h]
 
 /-- First-step analysis of the jump chain. -/
-theorem jumpMatrix_pow_succ_apply {F : Finset (Finset L)} (hk : 2 ≤ #(roots F))
-    (n : ℕ) (G : Finset (Finset L)) :
+theorem jumpMatrix_pow_succ_apply {F : Fam L} (hk : 2 ≤ #(roots F))
+    (n : ℕ) (G : Fam L) :
     (jumpMatrix ^ (n + 1)) F G =
       (((#(roots F)).choose 2 : ℕ) : ℝ)⁻¹ * ∑ F' ∈ merges F, (jumpMatrix ^ n) F' G := by
   rw [pow_succ', Matrix.mul_apply]
   simp_rw [jumpMatrix_apply_of_isForest hk, ite_mul, zero_mul]
   rw [Finset.sum_ite_mem, Finset.univ_inter, Finset.mul_sum]
 
-theorem jumpMatrix_pow_of_card_roots_le_one {F : Finset (Finset L)} (hk : #(roots F) ≤ 1)
-    (n : ℕ) (G : Finset (Finset L)) :
+theorem jumpMatrix_pow_of_card_roots_le_one {F : Fam L} (hk : #(roots F) ≤ 1)
+    (n : ℕ) (G : Fam L) :
     (jumpMatrix ^ n) F G = if G = F then 1 else 0 := by
   induction n with
   | zero => rw [pow_zero, fact_one_apply]
@@ -108,7 +109,7 @@ theorem jumpMatrix_pow_of_card_roots_le_one {F : Finset (Finset L)} (hk : #(root
     simp_rw [fact_jumpMatrix_apply_of_le_one hk, ite_mul, one_mul, zero_mul]
     rw [Finset.sum_ite_eq', ite_eq_left (Finset.mem_univ F), ih]
 
-theorem jumpMatrix_pow_nonneg (n : ℕ) (F G : Finset (Finset L)) : 0 ≤ (jumpMatrix ^ n) F G := by
+theorem jumpMatrix_pow_nonneg (n : ℕ) (F G : Fam L) : 0 ≤ (jumpMatrix ^ n) F G := by
   induction n generalizing F with
   | zero => rw [pow_zero, fact_one_apply]; split_ifs <;> norm_num
   | succ n ih =>
@@ -117,7 +118,7 @@ theorem jumpMatrix_pow_nonneg (n : ℕ) (F G : Finset (Finset L)) : 0 ≤ (jumpM
 
 /-- The jump chain only adds clusters, keeps the lineages, and removes one root per step until
 one root is left. -/
-theorem jumpMatrix_pow_support {F G : Finset (Finset L)} (hF : IsForest F) {n : ℕ}
+theorem jumpMatrix_pow_support {F G : Fam L} (hF : IsForest F) {n : ℕ}
     (h : (jumpMatrix ^ n) F G ≠ 0) :
     IsForest G ∧ F ⊆ G ∧ lineages G = lineages F ∧
       #(roots G) = if n < #(roots F) then #(roots F) - n else min (#(roots F)) 1 := by
@@ -242,8 +243,8 @@ private theorem fact_hasSum_exp_apply {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 /-- The powers of the generator at a forest factor through the number of roots and the jump
 chain. -/
-theorem kingmanGenerator_pow_apply {F : Finset (Finset L)} (hF : IsForest F) (m : ℕ)
-    (G : Finset (Finset L)) :
+theorem kingmanGenerator_pow_apply {F : Fam L} (hF : IsForest F) (m : ℕ)
+    (G : Fam L) :
     (kingmanGenerator ^ m) F G =
       deathPow m (#(roots F)) (#(roots G)) * (jumpMatrix ^ (#(roots F) - #(roots G))) F G := by
   induction m generalizing F with
@@ -286,8 +287,8 @@ theorem kingmanGenerator_pow_apply {F : Finset (Finset L)} (hF : IsForest F) (m 
 
 /-- **Factorization.** For a forest `F` with `k` roots and `G` with `j` roots,
 `exp(tQ)(F, G) = g_kj(t) · J^{k-j}(F, G)`. -/
-theorem kingmanTransition_apply {F : Finset (Finset L)} (hF : IsForest F) (t : ℝ)
-    (G : Finset (Finset L)) :
+theorem kingmanTransition_apply {F : Fam L} (hF : IsForest F) (t : ℝ)
+    (G : Fam L) :
     kingmanTransition t F G =
       deathProb (#(roots F)) (#(roots G)) t * (jumpMatrix ^ (#(roots F) - #(roots G))) F G := by
   have h1 := fact_hasSum_exp_apply (t • kingmanGenerator (L := L)) F G
@@ -310,8 +311,8 @@ theorem kingmanTransition_add (s t : ℝ) :
   exact Matrix.exp_add_of_commute _ _ (((Commute.refl _).smul_left s).smul_right t)
 
 /-- A forest with at most one root does not change. -/
-theorem kingmanTransition_of_card_roots_le_one {F : Finset (Finset L)} (hF : IsForest F)
-    (hk : #(roots F) ≤ 1) (t : ℝ) (G : Finset (Finset L)) :
+theorem kingmanTransition_of_card_roots_le_one {F : Fam L} (hF : IsForest F)
+    (hk : #(roots F) ≤ 1) (t : ℝ) (G : Fam L) :
     kingmanTransition t F G = if G = F then 1 else 0 := by
   rw [kingmanTransition_apply hF]
   by_cases hG : G = F
@@ -321,12 +322,12 @@ theorem kingmanTransition_of_card_roots_le_one {F : Finset (Finset L)} (hF : IsF
     simp
   · rw [jumpMatrix_pow_of_card_roots_le_one hk, ite_eq_right hG, mul_zero]
 
-theorem kingmanTransition_nonneg {t : ℝ} (ht : 0 ≤ t) (F G : Finset (Finset L)) :
+theorem kingmanTransition_nonneg {t : ℝ} (ht : 0 ≤ t) (F G : Fam L) :
     0 ≤ kingmanTransition t F G := by
   -- uniformization: `tQ = tP - tc · 1` with `P = Q + c · 1` entrywise nonnegative
   set Q := kingmanGenerator (L := L) with hQ
-  set c : ℝ := ∑ F : Finset (Finset L), (((#(roots F)).choose 2 : ℕ) : ℝ)
-  set P : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ := Q + c • 1 with hPdef
+  set c : ℝ := ∑ F : Fam L, (((#(roots F)).choose 2 : ℕ) : ℝ)
+  set P : Matrix (Fam L) (Fam L) ℝ := Q + c • 1 with hPdef
   have hP : ∀ F G, 0 ≤ P F G := by
     intro F G
     rw [hPdef, Matrix.add_apply, Matrix.smul_apply, fact_one_apply, smul_eq_mul, hQ]
@@ -336,7 +337,7 @@ theorem kingmanTransition_nonneg {t : ℝ} (ht : 0 ≤ t) (F G : Finset (Finset 
       simp only [ite_true, mul_one]
       have : (((#(roots G)).choose 2 : ℕ) : ℝ) ≤ c :=
         Finset.single_le_sum
-          (f := fun F : Finset (Finset L) => (((#(roots F)).choose 2 : ℕ) : ℝ))
+          (f := fun F : Fam L => (((#(roots F)).choose 2 : ℕ) : ℝ))
           (fun F _ => by positivity) (Finset.mem_univ G)
       linarith
     · simp only [ite_eq_right h, mul_zero, add_zero]
@@ -354,11 +355,11 @@ theorem kingmanTransition_nonneg {t : ℝ} (ht : 0 ≤ t) (F G : Finset (Finset 
     refine (fact_hasSum_exp_apply (t • P) F G).nonneg fun n => ?_
     rw [smul_pow, Matrix.smul_apply, smul_eq_mul]
     exact mul_nonneg (by positivity) (mul_nonneg (pow_nonneg ht n) (hPn n F G))
-  have hscal : ∀ (r : ℝ) (F G : Finset (Finset L)), 0 ≤
-      NormedSpace.exp (r • (1 : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ)) F G := by
+  have hscal : ∀ (r : ℝ) (F G : Fam L), 0 ≤
+      NormedSpace.exp (r • (1 : Matrix (Fam L) (Fam L) ℝ)) F G := by
     intro r F G
     have h := fact_hasSum_exp_apply
-      (r • (1 : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ)) F G
+      (r • (1 : Matrix (Fam L) (Fam L) ℝ)) F G
     simp_rw [smul_pow, one_pow, Matrix.smul_apply, fact_one_apply, smul_eq_mul] at h
     by_cases hGF : G = F
     · simp only [ite_eq_left hGF, mul_one] at h
@@ -370,7 +371,7 @@ theorem kingmanTransition_nonneg {t : ℝ} (ht : 0 ≤ t) (F G : Finset (Finset 
     · simp only [ite_eq_right hGF, mul_zero] at h
       rw [h.unique hasSum_zero]
   have hsplit : t • Q =
-      t • P + (-(t * c)) • (1 : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ) := by
+      t • P + (-(t * c)) • (1 : Matrix (Fam L) (Fam L) ℝ) := by
     rw [hPdef, smul_add, smul_smul, add_assoc, ← add_smul]
     simp
   show 0 ≤ NormedSpace.exp (t • Q) F G
@@ -378,7 +379,7 @@ theorem kingmanTransition_nonneg {t : ℝ} (ht : 0 ≤ t) (F G : Finset (Finset 
   exact Finset.sum_nonneg fun F' _ => mul_nonneg (hexpP F F') (hscal _ F' G)
 
 /-- The rows of the powers of the generator at a forest sum to `0` (except for the identity). -/
-private theorem fact_sum_kingmanGenerator_pow {F : Finset (Finset L)} (hF : IsForest F) (n : ℕ) :
+private theorem fact_sum_kingmanGenerator_pow {F : Fam L} (hF : IsForest F) (n : ℕ) :
     ∑ G, (kingmanGenerator ^ n) F G = if n = 0 then 1 else 0 := by
   induction n generalizing F with
   | zero => simp [fact_one_apply]
@@ -391,7 +392,7 @@ private theorem fact_sum_kingmanGenerator_pow {F : Finset (Finset L)} (hF : IsFo
       Finset.sum_const, hF.card_merges, nsmul_eq_mul, ite_eq_right (Nat.succ_ne_zero n)]
     ring
 
-theorem kingmanTransition_sum {F : Finset (Finset L)} (hF : IsForest F) (t : ℝ) :
+theorem kingmanTransition_sum {F : Fam L} (hF : IsForest F) (t : ℝ) :
     ∑ G, kingmanTransition t F G = 1 := by
   have h := hasSum_sum (s := univ) fun G _ =>
     fact_hasSum_exp_apply (t • kingmanGenerator (L := L)) F G

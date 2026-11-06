@@ -43,23 +43,10 @@ open Finset
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
 /-- Membership in `unroot`: a non-root cluster or the complement of one. -/
-private theorem steel_mem_unroot {G : Finset (Finset X)} {A : Finset X} :
-    A ∈ unroot G ↔ (A ∈ G ∧ A ≠ univ) ∨ (Aᶜ ∈ G ∧ Aᶜ ≠ univ) := by
-  unfold unroot
-  rw [mem_union, mem_erase, mem_image]
-  constructor
-  · rintro (⟨h1, h2⟩ | ⟨B, hB, rfl⟩)
-    · exact Or.inl ⟨h2, h1⟩
-    · rw [mem_erase] at hB
-      right
-      rw [compl_compl]
-      exact ⟨hB.2, hB.1⟩
-  · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
-    · exact Or.inl ⟨h2, h1⟩
-    · exact Or.inr ⟨Aᶜ, mem_erase.2 ⟨h2, h1⟩, compl_compl A⟩
-
+private theorem steel_mem_unroot {G : Fam X} {A : Finset X} :
+    A ∈ unroot G ↔ (A ∈ G ∧ A ≠ univ) ∨ (Aᶜ ∈ G ∧ Aᶜ ≠ univ) := mem_unroot
 /-- `unroot` is closed under complements. -/
-private theorem steel_compl_mem_unroot {G : Finset (Finset X)} {A : Finset X}
+private theorem steel_compl_mem_unroot {G : Fam X} {A : Finset X}
     (h : A ∈ unroot G) : Aᶜ ∈ unroot G := by
   rw [steel_mem_unroot] at h ⊢
   rw [compl_compl]

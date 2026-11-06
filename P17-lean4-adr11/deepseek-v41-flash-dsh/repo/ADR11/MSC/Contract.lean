@@ -43,6 +43,8 @@ opened locally as in `ADR11.Coalescent.Factorization`.
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset
 
 /-! ### Sums over the functions on a family of clusters -/
@@ -53,12 +55,12 @@ variable {ι : Type*} [DecidableEq ι] {L : Type*} [Fintype L] [DecidableEq L]
 
 /-- The expectation of `w` of the union of independent random forests, one for each index `B` in
 `T`, with distribution `φ B`. -/
-private noncomputable def contract_sum (T : Finset ι) (φ : ι → Finset (Finset L) → ℝ)
-    (w : Finset (Finset L) → ℝ) : ℝ :=
-  ∑ f : T → Finset (Finset L), (∏ B : T, φ B (f B)) * w (univ.sup f)
+private noncomputable def contract_sum (T : Finset ι) (φ : ι → Fam L → ℝ)
+    (w : Fam L → ℝ) : ℝ :=
+  ∑ f : T → Fam L, (∏ B : T, φ B (f B)) * w (univ.sup f)
 
-private theorem contract_sum_congr {T : Finset ι} {φ φ' : ι → Finset (Finset L) → ℝ}
-    {w w' : Finset (Finset L) → ℝ} (hφ : ∀ B ∈ T, φ B = φ' B) (hw : ∀ F, w F = w' F) :
+private theorem contract_sum_congr {T : Finset ι} {φ φ' : ι → Fam L → ℝ}
+    {w w' : Fam L → ℝ} (hφ : ∀ B ∈ T, φ B = φ' B) (hw : ∀ F, w F = w' F) :
     contract_sum T φ w = contract_sum T φ' w' := by
   unfold contract_sum
   refine Finset.sum_congr rfl fun f _ => ?_
@@ -66,24 +68,24 @@ private theorem contract_sum_congr {T : Finset ι} {φ φ' : ι → Finset (Fins
   congr 1
   exact Finset.prod_congr rfl fun B _ => by rw [hφ B B.2]
 
-private theorem contract_sum_mul (T : Finset ι) (φ : ι → Finset (Finset L) → ℝ)
-    (w : Finset (Finset L) → ℝ) (c : ℝ) :
+private theorem contract_sum_mul (T : Finset ι) (φ : ι → Fam L → ℝ)
+    (w : Fam L → ℝ) (c : ℝ) :
     contract_sum T φ w * c = contract_sum T φ (fun F => w F * c) := by
   unfold contract_sum
   rw [Finset.sum_mul]
   simp_rw [mul_assoc]
 
 private theorem contract_sum_sum {κ : Type*} (S : Finset κ) (T : Finset ι)
-    (φ : ι → Finset (Finset L) → ℝ) (w : κ → Finset (Finset L) → ℝ) :
+    (φ : ι → Fam L → ℝ) (w : κ → Fam L → ℝ) :
     ∑ k ∈ S, contract_sum T φ (w k) = contract_sum T φ (fun F => ∑ k ∈ S, w k F) := by
   unfold contract_sum
   rw [Finset.sum_comm]
   simp_rw [Finset.mul_sum]
 
-private theorem contract_sum_singleton (D : ι) (φ : ι → Finset (Finset L) → ℝ)
-    (w : Finset (Finset L) → ℝ) : contract_sum {D} φ w = ∑ x, φ D x * w x := by
+private theorem contract_sum_singleton (D : ι) (φ : ι → Fam L → ℝ)
+    (w : Fam L → ℝ) : contract_sum {D} φ w = ∑ x, φ D x * w x := by
   unfold contract_sum
-  let e : Finset (Finset L) ≃ (({D} : Finset ι) → Finset (Finset L)) :=
+  let e : Fam L ≃ (({D} : Finset ι) → Fam L) :=
     { toFun := fun x _ => x
       invFun := fun f => f ⟨D, mem_singleton_self D⟩
       left_inv := fun x => rfl
@@ -102,16 +104,16 @@ private theorem contract_sum_singleton (D : ι) (φ : ι → Finset (Finset L) �
 
 /-- A sum over the functions on a disjoint union is an iterated sum. -/
 private theorem contract_sum_union {T₁ T₂ : Finset ι} (h : Disjoint T₁ T₂)
-    (φ : ι → Finset (Finset L) → ℝ) (w : Finset (Finset L) → ℝ) :
+    (φ : ι → Fam L → ℝ) (w : Fam L → ℝ) :
     contract_sum (T₁ ∪ T₂) φ w =
       contract_sum T₁ φ (fun F₁ => contract_sum T₂ φ (fun F₂ => w (F₁ ∪ F₂))) := by
   unfold contract_sum
-  rw [← (Equiv.piFinsetUnion (fun _ : ι => Finset (Finset L)) h).sum_comp,
+  rw [← (Equiv.piFinsetUnion (fun _ : ι => Fam L) h).sum_comp,
     Fintype.sum_prod_type]
   refine Finset.sum_congr rfl fun f₁ _ => ?_
   rw [Finset.mul_sum]
   refine Finset.sum_congr rfl fun f₂ _ => ?_
-  set g := Equiv.piFinsetUnion (fun _ : ι => Finset (Finset L)) h (f₁, f₂) with hg
+  set g := Equiv.piFinsetUnion (fun _ : ι => Fam L) h (f₁, f₂) with hg
   have hl : ∀ (B : ι) (hB : B ∈ T₁), g ⟨B, mem_union_left _ hB⟩ = f₁ ⟨B, hB⟩ :=
     fun B hB => Equiv.piFinsetUnion_left _ h hB _
   have hr : ∀ (B : ι) (hB : B ∈ T₂), g ⟨B, mem_union_right _ hB⟩ = f₂ ⟨B, hB⟩ :=
@@ -146,7 +148,7 @@ variable {X : Type*} [Fintype X] [DecidableEq X] {L : Type*} [Fintype L] [Decida
 /-! ### Children after removing a cluster -/
 
 /-- Removing a cluster `D` that is not a child of `A` does not change the children of `A`. -/
-theorem childClusters_erase_of_notMem {H : Finset (Finset X)} {A D : Finset X}
+theorem childClusters_erase_of_notMem {H : Fam X} {A D : Finset X}
     (hD : D ∉ childClusters H A) : childClusters (H.erase D) A = childClusters H A := by
   ext E
   rw [mem_childClusters, mem_childClusters]
@@ -168,7 +170,7 @@ theorem childClusters_erase_of_notMem {H : Finset (Finset X)} {A D : Finset X}
 
 /-- If `D` is a child of `A` in a hierarchy, removing `D` makes the children of `D` children of
 `A`. -/
-theorem IsHierarchy.childClusters_erase_of_mem {H : Finset (Finset X)} (hH : IsHierarchy H)
+theorem IsHierarchy.childClusters_erase_of_mem {H : Fam X} (hH : IsHierarchy H)
     {A D : Finset X} (hD : D ∈ childClusters H A) :
     childClusters (H.erase D) A = childClusters H D ∪ (childClusters H A).erase D := by
   obtain ⟨hDH, hDA, hDmax⟩ := mem_childClusters.1 hD
@@ -197,13 +199,12 @@ theorem IsHierarchy.childClusters_erase_of_mem {H : Finset (Finset X)} (hH : IsH
     · exact ⟨mem_erase.2 ⟨hED, hEH⟩, hEA, fun C hC => hmax C (mem_of_mem_erase hC)⟩
 
 /-- Removing a cluster other than `univ` and the singletons from a hierarchy gives a hierarchy. -/
-theorem IsHierarchy.erase {H : Finset (Finset X)} (hH : IsHierarchy H) {D : Finset X}
+theorem IsHierarchy.erase {H : Fam X} (hH : IsHierarchy H) {D : Finset X}
     (hDu : D ≠ univ) (hDx : ∀ x, D ≠ {x}) : IsHierarchy (H.erase D) :=
   ⟨mem_erase.2 ⟨hDu.symm, hH.1⟩, fun x => mem_erase.2 ⟨(hDx x).symm, hH.2.1 x⟩,
     fun A hA => hH.2.2.1 A (mem_of_mem_erase hA),
     fun A hA B hB => hH.2.2.2 A (mem_of_mem_erase hA) B (mem_of_mem_erase hB)⟩
 
-omit [Fintype X] in
 /-- The sampled forest is monotone in the cluster. -/
 theorem sampledForest_mono (s : L → X) {A B : Finset X} (h : A ⊆ B) :
     sampledForest s A ⊆ sampledForest s B := by
@@ -213,8 +214,8 @@ theorem sampledForest_mono (s : L → X) {A B : Finset X} (h : A ⊆ B) :
 
 /-! ### Contraction of an edge of length zero -/
 
-private theorem contract_forestDist_eq (H : Finset (Finset X)) (len : Finset X → ℝ) (s : L → X)
-    (A : Finset X) (G : Finset (Finset L)) :
+private theorem contract_forestDist_eq (H : Fam X) (len : Len X) (s : L → X)
+    (A : Finset X) (G : Fam L) :
     forestDist H len s A G = contract_sum (childClusters H A) (forestDist H len s)
       (fun F => populationKernel len A (F ∪ sampledForest s A) G) := by
   rw [forestDist]
@@ -225,9 +226,9 @@ edge has length `0` does not change the multispecies coalescent: the population 
 union of the forests leaving the children of `D` pass unchanged into the population above the
 parent of `D`. (If `D` is a singleton, `H.erase D` is no longer a hierarchy, but the identity still
 holds.) -/
-theorem forestDist_erase_of_len_eq_zero {H : Finset (Finset X)} (hH : IsHierarchy H)
-    {len : Finset X → ℝ} {D : Finset X} (hDu : D ≠ univ) (hlen : len D = 0) (s : L → X)
-    (A : Finset X) (G : Finset (Finset L)) :
+theorem forestDist_erase_of_len_eq_zero {H : Fam X} (hH : IsHierarchy H)
+    {len : Len X} {D : Finset X} (hDu : D ≠ univ) (hlen : len D = 0) (s : L → X)
+    (A : Finset X) (G : Fam L) :
     forestDist (H.erase D) len s A G = forestDist H len s A G := by
   induction A using Finset.strongInduction generalizing G with
   | H A ih =>
@@ -251,7 +252,7 @@ theorem forestDist_erase_of_len_eq_zero {H : Finset (Finset X)} (hH : IsHierarch
       intro x
       rw [contract_forestDist_eq]
       exact contract_sum_congr (fun _ _ => rfl) fun F => hK _ x
-    have hw : ∀ F F₂ : Finset (Finset L),
+    have hw : ∀ F F₂ : Fam L,
         populationKernel len A (F ∪ sampledForest s D ∪ F₂ ∪ sampledForest s A) G =
           populationKernel len A (F ∪ F₂ ∪ sampledForest s A) G := by
       intro F F₂
@@ -293,9 +294,9 @@ theorem forestDist_erase_of_len_eq_zero {H : Finset (Finset X)} (hH : IsHierarch
 
 /-- A hierarchy `H` refining a hierarchy `H₀`, with lengths `0` on the edges above the clusters of
 `H` that are not clusters of `H₀`, gives the same multispecies coalescent as `H₀`. -/
-theorem forestDist_eq_of_subset_of_len_eq_zero {H₀ H : Finset (Finset X)} (hH₀ : IsHierarchy H₀)
-    (hH : IsHierarchy H) (hsub : H₀ ⊆ H) {len : Finset X → ℝ}
-    (hlen : ∀ D ∈ H, D ∉ H₀ → len D = 0) (s : L → X) (A : Finset X) (G : Finset (Finset L)) :
+theorem forestDist_eq_of_subset_of_len_eq_zero {H₀ H : Fam X} (hH₀ : IsHierarchy H₀)
+    (hH : IsHierarchy H) (hsub : H₀ ⊆ H) {len : Len X}
+    (hlen : ∀ D ∈ H, D ∉ H₀ → len D = 0) (s : L → X) (A : Finset X) (G : Fam L) :
     forestDist H len s A G = forestDist H₀ len s A G := by
   obtain ⟨n, hn⟩ : ∃ n, #(H \ H₀) = n := ⟨_, rfl⟩
   induction n generalizing H with
@@ -316,28 +317,28 @@ theorem forestDist_eq_of_subset_of_len_eq_zero {H₀ H : Finset (Finset X)} (hH�
 /-- A species tree `σ` and a hierarchy `H` refining its hierarchy (for example a binary resolution
 of `σ`), with the lengths of `σ` on its edges and lengths `0` on the added edges, give the same
 multispecies coalescent. -/
-theorem SpeciesTree.forestDist_eq_of_subset (σ : SpeciesTree X) {H : Finset (Finset X)}
-    (hH : IsHierarchy H) (hsub : σ.clusters ⊆ H) {len : Finset X → ℝ}
+theorem SpeciesTree.forestDist_eq_of_subset (σ : SpeciesTree X) {H : Fam X}
+    (hH : IsHierarchy H) (hsub : σ.clusters ⊆ H) {len : Len X}
     (hσ : ∀ A ∈ σ.clusters, A ≠ univ → len A = σ.length A)
     (hlen : ∀ D ∈ H, D ∉ σ.clusters → len D = 0) (s : L → X) {A : Finset X}
-    (hA : A ∈ σ.clusters) (G : Finset (Finset L)) :
+    (hA : A ∈ σ.clusters) (G : Fam L) :
     forestDist H len s A G = forestDist σ.clusters σ.length s A G := by
   rw [forestDist_eq_of_subset_of_len_eq_zero σ.isHierarchy hH hsub hlen s A G]
   exact forestDist_congr_len hσ s hA G
 
 /-- The rooted gene tree distributions in `SpeciesTree.forestDist_eq_of_subset`. -/
-theorem SpeciesTree.rootedDist_eq_of_subset (σ : SpeciesTree X) {H : Finset (Finset X)}
-    (hH : IsHierarchy H) (hsub : σ.clusters ⊆ H) {len : Finset X → ℝ}
+theorem SpeciesTree.rootedDist_eq_of_subset (σ : SpeciesTree X) {H : Fam X}
+    (hH : IsHierarchy H) (hsub : σ.clusters ⊆ H) {len : Len X}
     (hσ : ∀ A ∈ σ.clusters, A ≠ univ → len A = σ.length A)
-    (hlen : ∀ D ∈ H, D ∉ σ.clusters → len D = 0) (s : L → X) (G : Finset (Finset L)) :
+    (hlen : ∀ D ∈ H, D ∉ σ.clusters → len D = 0) (s : L → X) (G : Fam L) :
     forestDist H len s univ G = σ.rootedDist s G :=
   σ.forestDist_eq_of_subset hH hsub hσ hlen s σ.univ_mem G
 
 /-- The unrooted gene tree distributions in `SpeciesTree.forestDist_eq_of_subset`. -/
-theorem SpeciesTree.unrootedDist_eq_of_subset (σ : SpeciesTree X) {H : Finset (Finset X)}
-    (hH : IsHierarchy H) (hsub : σ.clusters ⊆ H) {len : Finset X → ℝ}
+theorem SpeciesTree.unrootedDist_eq_of_subset (σ : SpeciesTree X) {H : Fam X}
+    (hH : IsHierarchy H) (hsub : σ.clusters ⊆ H) {len : Len X}
     (hσ : ∀ A ∈ σ.clusters, A ≠ univ → len A = σ.length A)
-    (hlen : ∀ D ∈ H, D ∉ σ.clusters → len D = 0) (s : L → X) (T : Finset (Finset L)) :
+    (hlen : ∀ D ∈ H, D ∉ σ.clusters → len D = 0) (s : L → X) (T : Fam L) :
     unrootedDistOf H len s T = σ.unrootedDist s T := by
   unfold unrootedDistOf SpeciesTree.unrootedDist
   simp_rw [σ.rootedDist_eq_of_subset hH hsub hσ hlen s]
@@ -346,7 +347,7 @@ theorem SpeciesTree.unrootedDist_eq_of_subset (σ : SpeciesTree X) {H : Finset (
 
 set_option backward.isDefEq.respectTransparency false in
 /-- The transition probabilities of Kingman's coalescent are continuous in time. -/
-theorem continuous_kingmanTransition_apply (F G : Finset (Finset L)) :
+theorem continuous_kingmanTransition_apply (F G : Fam L) :
     Continuous fun t : ℝ => kingmanTransition t F G := by
   open scoped Matrix.Norms.Operator in
   have h : Continuous fun t : ℝ => NormedSpace.exp (t • (kingmanGenerator (L := L))) :=
@@ -354,13 +355,13 @@ theorem continuous_kingmanTransition_apply (F G : Finset (Finset L)) :
   exact (continuous_apply G).comp ((continuous_apply F).comp h)
 
 /-- The multispecies coalescent depends continuously on the edge lengths. -/
-theorem continuous_forestDist (H : Finset (Finset X)) {len : ℝ → Finset X → ℝ}
+theorem continuous_forestDist (H : Fam X) {len : ℝ → Len X}
     (hlen : ∀ A, Continuous fun ε => len ε A) (s : L → X) (A : Finset X)
-    (G : Finset (Finset L)) : Continuous fun ε => forestDist H (len ε) s A G := by
+    (G : Fam L) : Continuous fun ε => forestDist H (len ε) s A G := by
   induction A using Finset.strongInduction generalizing G with
   | H A ih =>
   have h : (fun ε => forestDist H (len ε) s A G) = fun ε =>
-      ∑ f : childClusters H A → Finset (Finset L),
+      ∑ f : childClusters H A → Fam L,
         (∏ B : childClusters H A, forestDist H (len ε) s B (f B)) *
           populationKernel (len ε) A (univ.sup f ∪ sampledForest s A) G := by
     funext ε
@@ -375,8 +376,8 @@ theorem continuous_forestDist (H : Finset (Finset X)) {len : ℝ → Finset X �
       exact (continuous_kingmanTransition_apply _ G).comp (hlen A)
 
 /-- The unrooted gene tree distribution depends continuously on the edge lengths. -/
-theorem continuous_unrootedDistOf (H : Finset (Finset X)) {len : ℝ → Finset X → ℝ}
-    (hlen : ∀ A, Continuous fun ε => len ε A) (s : L → X) (T : Finset (Finset L)) :
+theorem continuous_unrootedDistOf (H : Fam X) {len : ℝ → Len X}
+    (hlen : ∀ A, Continuous fun ε => len ε A) (s : L → X) (T : Fam L) :
     Continuous fun ε => unrootedDistOf H (len ε) s T := by
   unfold unrootedDistOf
   exact continuous_finsetSum _ fun G _ =>
@@ -386,8 +387,8 @@ theorem continuous_unrootedDistOf (H : Finset (Finset X)) {len : ℝ → Finset 
 /-- **Section 5, limits.** The unrooted gene tree distribution of a hierarchy `H` refining the
 hierarchy of a species tree `σ`, with the lengths of `σ` on its edges and the length `ε` on the
 added edges, tends to that of `σ` as `ε → 0`. -/
-theorem SpeciesTree.tendsto_unrootedDistOf (σ : SpeciesTree X) {H : Finset (Finset X)}
-    (hH : IsHierarchy H) (hsub : σ.clusters ⊆ H) (s : L → X) (T : Finset (Finset L)) :
+theorem SpeciesTree.tendsto_unrootedDistOf (σ : SpeciesTree X) {H : Fam X}
+    (hH : IsHierarchy H) (hsub : σ.clusters ⊆ H) (s : L → X) (T : Fam L) :
     Filter.Tendsto
       (fun ε : ℝ => unrootedDistOf H (fun A => if A ∈ σ.clusters then σ.length A else ε) s T)
       (nhds 0) (nhds (σ.unrootedDist s T)) := by

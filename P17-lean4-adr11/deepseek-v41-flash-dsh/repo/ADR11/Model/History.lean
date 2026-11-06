@@ -44,19 +44,6 @@ section HistorySum
 
 variable {X : Type*}
 
-/-- `φ`, a function of the edge lengths, is a sum over finitely many coalescent histories `h` of
-`c(h) ∏_{b ∈ D} g_{i(h,b) j(h,b)}(len b)`, with rational `c(h) > 0` and
-`1 ≤ j(h,b) ≤ i(h,b) ≤ #b`. -/
-def model_IsHistorySum (D : Finset (Finset X)) (φ : (Finset X → ℝ) → ℝ) : Prop :=
-  ∃ (ι : Type) (_ : Fintype ι) (c : ι → ℚ) (i j : ι → Finset X → ℕ),
-    (∀ h, 0 < c h) ∧ (∀ h, ∀ b ∈ D, 1 ≤ j h b ∧ j h b ≤ i h b ∧ i h b ≤ #b) ∧
-    ∀ len, φ len = ∑ h : ι, (c h : ℝ) * ∏ b ∈ D, deathProb (i h b) (j h b) (len b)
-
-theorem model_IsHistorySum.congr {D : Finset (Finset X)} {φ ψ : (Finset X → ℝ) → ℝ}
-    (h : model_IsHistorySum D φ) (e : ∀ len, ψ len = φ len) : model_IsHistorySum D ψ := by
-  obtain ⟨ι, _, c, i, j, hc, hij, hφ⟩ := h
-  exact ⟨ι, inferInstance, c, i, j, hc, hij, fun len => (e len).trans (hφ len)⟩
-
 end HistorySum
 
 /-! ### The history decomposition -/
@@ -78,10 +65,10 @@ section Binary
 variable {X : Type*} [Fintype X] [DecidableEq X] {L : Type*} [Fintype L] [DecidableEq L]
 
 /-- Every cluster with at least two elements is the union of two disjoint clusters. -/
-def model_IsBinaryForest (F : Finset (Finset L)) : Prop :=
+def model_IsBinaryForest (F : Fam L) : Prop :=
   ∀ A ∈ F, 2 ≤ #A → ∃ B ∈ F, ∃ C ∈ F, Disjoint B C ∧ B ∪ C = A
 
-theorem model_isBinaryForest_merge {F G : Finset (Finset L)} (hF : IsForest F)
+theorem model_isBinaryForest_merge {F G : Fam L} (hF : IsForest F)
     (hb : model_IsBinaryForest F) (hG : G ∈ merges F) : model_IsBinaryForest G := by
   obtain ⟨A, hA, B, hB, hAB, rfl⟩ := mem_merges.1 hG
   intro C hC hC2
@@ -91,7 +78,7 @@ theorem model_isBinaryForest_merge {F G : Finset (Finset L)} (hF : IsForest F)
   · obtain ⟨D, hD, E, hE, hDE, hDEC⟩ := hb C hC hC2
     exact ⟨D, mem_insert_of_mem hD, E, mem_insert_of_mem hE, hDE, hDEC⟩
 
-theorem model_isBinaryForest_of_jumpMatrix_pow {F G : Finset (Finset L)} (hF : IsForest F)
+theorem model_isBinaryForest_of_jumpMatrix_pow {F G : Fam L} (hF : IsForest F)
     (hb : model_IsBinaryForest F) {n : ℕ} (h : (jumpMatrix ^ n) F G ≠ 0) :
     model_IsBinaryForest G := by
   induction n generalizing F with
@@ -116,8 +103,8 @@ theorem model_isBinaryForest_of_jumpMatrix_pow {F G : Finset (Finset L)} (hF : I
         exact hJ (by rw [jumpMatrix_apply_of_isForest (by omega), ite_eq_right hne])
       exact ih (hF.of_mem_merges hmem).1 (model_isBinaryForest_merge hF hb hmem) hJn
 
-theorem model_isBinaryForest_of_populationKernel {len : Finset X → ℝ} {A : Finset X}
-    {F G : Finset (Finset L)} (hF : IsForest F) (hb : model_IsBinaryForest F)
+theorem model_isBinaryForest_of_populationKernel {len : Len X} {A : Finset X}
+    {F G : Fam L} (hF : IsForest F) (hb : model_IsBinaryForest F)
     (h : populationKernel len A F G ≠ 0) : model_IsBinaryForest G := by
   unfold populationKernel at h
   split_ifs at h with hA
@@ -130,8 +117,8 @@ theorem model_isBinaryForest_of_populationKernel {len : Finset X → ℝ} {A : F
   · rw [kingmanTransition_apply hF] at h
     exact model_isBinaryForest_of_jumpMatrix_pow hF hb (right_ne_zero_of_mul h)
 
-theorem model_isBinaryForest_of_forestDist {H : Finset (Finset X)} (hH : IsHierarchy H)
-    (len : Finset X → ℝ) (s : L → X) {A : Finset X} (hA : A ∈ H) {G : Finset (Finset L)}
+theorem model_isBinaryForest_of_forestDist {H : Fam X} (hH : IsHierarchy H)
+    (len : Len X) (s : L → X) {A : Finset X} (hA : A ∈ H) {G : Fam L}
     (hG : forestDist H len s A G ≠ 0) : model_IsBinaryForest G := by
   induction A using Finset.strongInduction generalizing G with
   | H A ih =>
@@ -162,7 +149,7 @@ theorem model_isBinaryForest_of_forestDist {H : Finset (Finset X)} (hH : IsHiera
 binary hierarchy on the lineages. (With no lineage at all, the only gene tree is the empty forest,
 which is not a hierarchy.) -/
 theorem model_rootedDist_support [Nonempty L] (σ : SpeciesTree X) (s : L → X)
-    {G : Finset (Finset L)} (hG : σ.rootedDist s G ≠ 0) :
+    {G : Fam L} (hG : σ.rootedDist s G ≠ 0) :
     IsHierarchy G ∧ ∀ A ∈ G, 2 ≤ #A → ∃ B ∈ G, ∃ C ∈ G, Disjoint B C ∧ B ∪ C = A := by
   obtain ⟨h1, h2, h3, -⟩ := forestDist_univ_support σ.isHierarchy σ.length s hG
   have hsing : ∀ l : L, {l} ∈ G := fun l => h2 (singleton_mem_sampledForest.2 (mem_univ _))

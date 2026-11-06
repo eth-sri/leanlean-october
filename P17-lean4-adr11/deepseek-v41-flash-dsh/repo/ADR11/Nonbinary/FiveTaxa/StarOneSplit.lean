@@ -40,20 +40,20 @@ open Finset Real
 
 /-- The taxa `y` that appear in a cherry with a taxon `d ∈ D`, `y ≠ d`, in exactly three of the
 gene trees `T_i`, `i ∈ S`. -/
-def ac1_threeCherries (D : Finset (Fin 5)) (S : Finset ℕ) : Finset (Fin 5) :=
+def ac1_threeCherries (D : FinFam 5) (S : Finset ℕ) : FinFam 5 :=
   univ.filter fun y => ∃ d ∈ D, y ≠ d ∧
-    #(S.filter fun i => ({d, y} : Finset (Fin 5)) ∈ cls_cherries (T5 i)) = 3
+    #(S.filter fun i => ({d, y} : FinFam 5) ∈ cls_cherries (T5 i)) = 3
 
 /-- The gene trees outside the least probable class and the class with the second smallest
 probability. For `P₉` these are the six most probable gene trees, the union of the two most
 probable classes (which may coincide). -/
-noncomputable def ac1_topSix (τ : SpeciesTree (Fin 5)) : Finset ℕ :=
-  Icc 1 15 \ (cls_leastClass τ ∪ cls_secondClass τ)
+noncomputable def ac1_topSix (τ : ST5) : Finset ℕ :=
+  F15 \ (cls_leastClass τ ∪ cls_secondClass τ)
 
 /-- The transformed length `Z = e^{-z}` of the edge `z` of `P₈ = ((a,b):z,(c,d,e):y)`, solved from
 its equations of Table 7 in this labelling (`u₄ = YZ/6 - Y³Z/10` and `u₅ = Y³Z/15`, where
 `Y = e^{-y}`): `YZ = 6u₄ + 9u₅` and `Y³Z = 15u₅`, so `Z² = (6u₄ + 9u₅)³/(15u₅)`. -/
-noncomputable def ac1_solveZ (τ : SpeciesTree (Fin 5)) : ℝ :=
+noncomputable def ac1_solveZ (τ : ST5) : ℝ :=
   √((6 * u τ 4 + 9 * u τ 5) ^ 3 / (15 * u τ 5))
 
 /-- The five taxa. -/
@@ -65,7 +65,7 @@ theorem ac1_fin5 (x : Fin 5) : x = 0 ∨ x = 1 ∨ x = 2 ∨ x = 3 ∨ x = 4 := 
 /-- Appendix C, the labelling of `P₃`: for the rooting of the star `U5 0` with outgroup `x` (of
 shape `P₃`), the class with the second smallest probability is the 3-element class, and `x` is the
 taxon that appears in no cherry of its gene trees. -/
-theorem ac1_P3_outgroup (τ : SpeciesTree (Fin 5)) (x : Fin 5)
+theorem ac1_P3_outgroup (τ : ST5) (x : Fin 5)
     (h : τ.clusters = hierarchyOf {univ.erase x}) :
     #(cls_secondClass τ) = 3 ∧ sh_noCherry (cls_secondClass τ) = {x} := by
   rcases ac1_fin5 x with rfl | rfl | rfl | rfl | rfl
@@ -79,8 +79,8 @@ theorem ac1_P3_outgroup (τ : SpeciesTree (Fin 5)) (x : Fin 5)
 `x ∈ {c, d, e}` (of shape `P₇`; its resolved cherry `{a, b}` is the side with two taxa of the
 split of `U5 1`), there is one most probable gene tree, and `x` is the taxon that appears in none of
 its cherries. -/
-theorem ac1_P7_outgroup (τ : SpeciesTree (Fin 5)) (x : Fin 5)
-    (hx : x ∈ ({2, 3, 4} : Finset (Fin 5))) (h : τ.clusters = hierarchyOf {{0, 1}, univ.erase x}) :
+theorem ac1_P7_outgroup (τ : ST5) (x : Fin 5)
+    (hx : x ∈ ({2, 3, 4} : FinFam 5)) (h : τ.clusters = hierarchyOf {{0, 1}, univ.erase x}) :
     #(cls_mostProbable τ) = 1 ∧ sh_noCherry (cls_mostProbable τ) = {x} := by
   simp only [mem_insert, mem_singleton] at hx
   rcases hx with rfl | rfl | rfl
@@ -92,7 +92,7 @@ theorem ac1_P7_outgroup (τ : SpeciesTree (Fin 5)) (x : Fin 5)
 clusters `{2, 3, 4}` (the polytomy) and `{2, 3, 4} ∪ {d}` and the outgroup `o`, where
 `{d, o} = {0, 1}`, the non-outgroup taxon `d` that is not descended from the polytomy is the taxon
 that appears in no cherry of the gene trees of the class with the second smallest probability. -/
-theorem ac1_P9_distinguished (τ : SpeciesTree (Fin 5)) (d o : Fin 5)
+theorem ac1_P9_distinguished (τ : ST5) (d o : Fin 5)
     (hdo : d = 1 ∧ o = 0 ∨ d = 0 ∧ o = 1)
     (h : τ.clusters = hierarchyOf {univ \ {d, o}, univ.erase o}) :
     sh_noCherry (cls_secondClass τ) = {d} := by
@@ -103,7 +103,7 @@ theorem ac1_P9_distinguished (τ : SpeciesTree (Fin 5)) (d o : Fin 5)
 /-- Appendix C, the labelling of `P₉`, second step: with `d` as in `ac1_P9_distinguished`, the
 outgroup `o` is the taxon that appears in a cherry with `d` in three of the six most probable
 gene trees (the union of the two most probable classes). -/
-theorem ac1_P9_outgroup (τ : SpeciesTree (Fin 5)) (d o : Fin 5)
+theorem ac1_P9_outgroup (τ : ST5) (d o : Fin 5)
     (hdo : d = 1 ∧ o = 0 ∨ d = 0 ∧ o = 1)
     (h : τ.clusters = hierarchyOf {univ \ {d, o}, univ.erase o}) :
     #(ac1_topSix τ) = 6 ∧ ac1_threeCherries {d} (ac1_topSix τ) = {o} := by
@@ -118,14 +118,14 @@ theorem ac1_P9_outgroup (τ : SpeciesTree (Fin 5)) (d o : Fin 5)
 /-- Appendix C, `P₄` versus `P₈`: `P₈ = ((a,b):z,(c,d,e):y)` degenerates to `P₄ = ((c,d,e):y,a,b)`
 as `z → 0` (`Z → 1`). Solving the equations of Table 7 for `P₈` for `Z` (`ac1_solveZ`) gives
 `Z = e^{-z} < 1` if the species tree is `P₈`, and `Z = 1` if it is `P₄`. -/
-theorem ac1_P4_P8_rule (τ : SpeciesTree (Fin 5)) :
+theorem ac1_P4_P8_rule (τ : ST5) :
     (τ.clusters = hierarchyOf {{0, 1}, {2, 3, 4}} →
       ac1_solveZ τ = exp (-τ.length {0, 1}) ∧ ac1_solveZ τ < 1) ∧
     (τ.clusters = hierarchyOf {{2, 3, 4}} → ac1_solveZ τ = 1) := by
   refine ⟨fun h => ?_, fun h => ?_⟩
   · obtain ⟨-, -, -, h4, h5, -⟩ := rootingDist5_1_2 τ h
-    obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
-    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
+    obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1}) (by drw h) (by decide)
+    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by drw h) (by decide)
     have key : (6 * u τ 4 + 9 * u τ 5) ^ 3 / (15 * u τ 5) = exp (-τ.length {0, 1}) ^ 2 := by
       rw [h4, h5]
       have := z0.ne'
@@ -136,7 +136,7 @@ theorem ac1_P4_P8_rule (τ : SpeciesTree (Fin 5)) :
       rw [ac1_solveZ, key, Real.sqrt_sq z0.le]
     exact ⟨e, e ▸ z1⟩
   · obtain ⟨-, -, -, h4, h5, -⟩ := rootingDist5_1_1 τ h
-    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
+    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by drw h) (by decide)
     have key : (6 * u τ 4 + 9 * u τ 5) ^ 3 / (15 * u τ 5) = 1 := by
       rw [h4, h5]
       have := y0.ne'
@@ -149,8 +149,8 @@ theorem ac1_P4_P8_rule (τ : SpeciesTree (Fin 5)) :
 /-- Appendix C, the labelling for the rootings of the star `U5 0`, once the shape group `g` is
 known: for `P₁` "there is nothing to do"; for `P₃` "the taxon that appears in no cherry in the gene
 trees in the 3-element class is the one that is an outgroup to all the others". -/
-noncomputable def ac1_topologyZero (g : sh_Group) (τ : SpeciesTree (Fin 5)) :
-    Finset (Finset (Fin 5)) :=
+noncomputable def ac1_topologyZero (g : sh_Group) (τ : ST5) :
+    Fam5 :=
   match g with
   | .p1 => hierarchyOf ∅
   | .p3 => hierarchyOf {univ \ sh_noCherry (cls_secondClass τ)}
@@ -164,8 +164,8 @@ the outgroup is determined by not appearing in a cherry in the most probable gen
 the non-outgroup taxon `d` not descended from the polytomy is the taxon in no cherry of the gene
 trees of the class with the second smallest probability, and the outgroup is the taxon in a cherry
 with `d` in three of the six most probable gene trees. -/
-noncomputable def ac1_topologyOne (g : sh_Group) (τ : SpeciesTree (Fin 5)) :
-    Finset (Finset (Fin 5)) :=
+noncomputable def ac1_topologyOne (g : sh_Group) (τ : ST5) :
+    Fam5 :=
   match g with
   | .p2 => hierarchyOf {{0, 1}}
   | .p7 => hierarchyOf {{0, 1}, univ \ sh_noCherry (cls_mostProbable τ)}
@@ -176,13 +176,13 @@ noncomputable def ac1_topologyOne (g : sh_Group) (τ : SpeciesTree (Fin 5)) :
   | _ => ∅
 
 /-- The topology read off the gene tree classes depends only on the distribution. -/
-theorem ac1_topologyZero_congr (g : sh_Group) {τ τ' : SpeciesTree (Fin 5)}
+theorem ac1_topologyZero_congr (g : sh_Group) {τ τ' : ST5}
     (h : τ.unrootedDist id = τ'.unrootedDist id) :
     ac1_topologyZero g τ = ac1_topologyZero g τ' := by
   cases g <;> simp only [ac1_topologyZero, cls_secondClass_congr h]
 
 /-- The topology read off the gene tree classes depends only on the distribution. -/
-theorem ac1_topologyOne_congr (g : sh_Group) {τ τ' : SpeciesTree (Fin 5)}
+theorem ac1_topologyOne_congr (g : sh_Group) {τ τ' : ST5}
     (h : τ.unrootedDist id = τ'.unrootedDist id) : ac1_topologyOne g τ = ac1_topologyOne g τ' := by
   have hZ : ac1_solveZ τ = ac1_solveZ τ' := by
     rw [ac1_solveZ, ac1_solveZ, cls_u_congr h 4, cls_u_congr h 5]
@@ -191,14 +191,14 @@ theorem ac1_topologyOne_congr (g : sh_Group) {τ τ' : SpeciesTree (Fin 5)}
 
 /-- Appendix C for the rootings of the star `U5 0`: given its shape group (`P₁` or `P₃`), the
 labelling rule of `P₃` (`ac1_P3_outgroup`) gives the rooted topology of the species tree. -/
-theorem ac1_topologyZero_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 0) :
+theorem ac1_topologyZero_eq (τ : ST5) (hk : unroot τ.clusters = U5 0) :
     ac1_topologyZero (sh_groupOf τ.clusters) τ = τ.clusters := by
   -- a rooting of shape `P₃`, with outgroup `x`
   have P3 : ∀ x : Fin 5, τ.clusters = hierarchyOf {univ.erase x} →
       ac1_topologyZero (sh_groupOf τ.clusters) τ = τ.clusters := fun x hx => by
     have hg : sh_groupOf τ.clusters = .p3 := by
       rw [hx]
-      rcases ac1_fin5 x with rfl | rfl | rfl | rfl | rfl <;> decide +kernel
+      rcases ac1_fin5 x with rfl | rfl | rfl | rfl | rfl <;> decide
     rw [hg]
     simp only [ac1_topologyZero]
     rw [(ac1_P3_outgroup τ x hx).2, hx, sdiff_singleton_eq_erase]
@@ -206,7 +206,7 @@ theorem ac1_topologyZero_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters 
   simp only [rootings5, mem_insert, mem_singleton] at hR
   rcases hR with h | h | h | h | h | h
   · -- `P₁`
-    have hg : sh_groupOf τ.clusters = .p1 := by rw [h]; decide +kernel
+    have hg : sh_groupOf τ.clusters = .p1 := by rw [h]; decide
     rw [hg, h]
     simp only [ac1_topologyZero]
   · exact P3 0 (h.trans (by decide))
@@ -219,16 +219,16 @@ theorem ac1_topologyZero_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters 
 `P₉`), the labelling rules of `P₇` and `P₉` (`ac1_P7_outgroup`, `ac1_P9_distinguished`,
 `ac1_P9_outgroup`) and `P₄` versus `P₈` (`ac1_P4_P8_rule`) give the rooted topology of the species
 tree. -/
-theorem ac1_topologyOne_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 1) :
+theorem ac1_topologyOne_eq (τ : ST5) (hk : unroot τ.clusters = U5 1) :
     ac1_topologyOne (sh_groupOf τ.clusters) τ = τ.clusters := by
   -- a rooting of shape `P₇`, with outgroup `x`
-  have P7 : ∀ x ∈ ({2, 3, 4} : Finset (Fin 5)),
+  have P7 : ∀ x ∈ ({2, 3, 4} : FinFam 5),
       τ.clusters = hierarchyOf {{0, 1}, univ.erase x} →
         ac1_topologyOne (sh_groupOf τ.clusters) τ = τ.clusters := fun x hx h => by
     have hg : sh_groupOf τ.clusters = .p7 := by
       rw [h]
       simp only [mem_insert, mem_singleton] at hx
-      rcases hx with rfl | rfl | rfl <;> decide +kernel
+      rcases hx with rfl | rfl | rfl <;> decide
     rw [hg]
     simp only [ac1_topologyOne]
     rw [(ac1_P7_outgroup τ x hx h).2, h, sdiff_singleton_eq_erase]
@@ -238,7 +238,7 @@ theorem ac1_topologyOne_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters =
         ac1_topologyOne (sh_groupOf τ.clusters) τ = τ.clusters := fun d o hdo h => by
     have hg : sh_groupOf τ.clusters = .p9 := by
       rw [h]
-      rcases hdo with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> decide +kernel
+      rcases hdo with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> decide
     rw [hg]
     simp only [ac1_topologyOne]
     rw [ac1_P9_distinguished τ d o hdo h, (ac1_P9_outgroup τ d o hdo h).2, h,
@@ -247,17 +247,17 @@ theorem ac1_topologyOne_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters =
   simp only [rootings5, mem_insert, mem_singleton] at hR
   rcases hR with h | h | h | h | h | h | h | h
   · -- `P₂`
-    have hg : sh_groupOf τ.clusters = .p2 := by rw [h]; decide +kernel
+    have hg : sh_groupOf τ.clusters = .p2 := by rw [h]; decide
     rw [hg, h]
     simp only [ac1_topologyOne]
   · -- `P₄`: `Z = 1`
-    have hg : sh_groupOf τ.clusters = .p48 := by rw [h]; decide +kernel
+    have hg : sh_groupOf τ.clusters = .p48 := by rw [h]; decide
     have hZ : ¬ ac1_solveZ τ < 1 := by rw [(ac1_P4_P8_rule τ).2 h]; exact lt_irrefl 1
     rw [hg]
     simp only [ac1_topologyOne]
     rw [ite_eq_right hZ, h]
   · -- `P₈`: `Z < 1`
-    have hg : sh_groupOf τ.clusters = .p48 := by rw [h]; decide +kernel
+    have hg : sh_groupOf τ.clusters = .p48 := by rw [h]; decide
     rw [hg]
     simp only [ac1_topologyOne]
     rw [ite_eq_left ((ac1_P4_P8_rule τ).1 h).2, h]
@@ -272,7 +272,7 @@ theorem ac1_topologyOne_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters =
 /-- Two species trees with the hierarchy `hierarchyOf {C}` have the same rooted metric tree if they
 give the same probability `u_i = A Z^n + B` (`Z = e^{-ℓ(C)}`, `A ≠ 0`, `n ≠ 0`): `Z` is solved
 from it. -/
-theorem ac1_solve_one {τ τ' : SpeciesTree (Fin 5)} {C : Finset (Fin 5)} {i n : ℕ} {A B : ℝ}
+theorem ac1_solve_one {τ τ' : ST5} {C : FinFam 5} {i n : ℕ} {A B : ℝ}
     (h : τ.clusters = hierarchyOf {C}) (h' : τ'.clusters = hierarchyOf {C}) (hn : n ≠ 0)
     (hA : A ≠ 0) (hu : u τ i = u τ' i) (f : u τ i = A * exp (-τ.length C) ^ n + B)
     (f' : u τ' i = A * exp (-τ'.length C) ^ n + B) : τ.SameRootedMetricTree τ' :=
@@ -281,7 +281,7 @@ theorem ac1_solve_one {τ τ' : SpeciesTree (Fin 5)} {C : Finset (Fin 5)} {i n :
     exact five_length_eq hn hA (hu.symm.trans f) f'
 
 /-- `P₃ = ((b,c,d,e):z,a)`: `u₁ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
-theorem ac1_lengths_0_1 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_0_1 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{1, 2, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{1, 2, 3, 4}}) :
     τ.SameRootedMetricTree τ' := by
   obtain ⟨f, -⟩ := rootingDist5_0_1 τ h
@@ -289,7 +289,7 @@ theorem ac1_lengths_0_1 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
 
 /-- `P₃ = ((a,c,d,e):z,b)`: `u₁ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
-theorem ac1_lengths_0_2 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_0_2 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 2, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{0, 2, 3, 4}}) :
     τ.SameRootedMetricTree τ' := by
   obtain ⟨f, -⟩ := rootingDist5_0_2 τ h
@@ -297,7 +297,7 @@ theorem ac1_lengths_0_2 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
 
 /-- `P₃ = ((a,b,d,e):z,c)`: `u₂ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
-theorem ac1_lengths_0_3 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_0_3 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{0, 1, 3, 4}}) :
     τ.SameRootedMetricTree τ' := by
   obtain ⟨-, f, -⟩ := rootingDist5_0_3 τ h
@@ -305,7 +305,7 @@ theorem ac1_lengths_0_3 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 2) f f'
 
 /-- `P₃ = ((a,b,c,e):z,d)`: `u₁ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
-theorem ac1_lengths_0_4 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_0_4 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1, 2, 4}}) (h' : τ'.clusters = hierarchyOf {{0, 1, 2, 4}}) :
     τ.SameRootedMetricTree τ' := by
   obtain ⟨f, -⟩ := rootingDist5_0_4 τ h
@@ -313,7 +313,7 @@ theorem ac1_lengths_0_4 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
 
 /-- `P₃ = ((a,b,c,d):z,e)`: `u₁ = 1/18 + Z⁶/90` (Table 7) gives `Z`. -/
-theorem ac1_lengths_0_5 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_0_5 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1, 2, 3}}) (h' : τ'.clusters = hierarchyOf {{0, 1, 2, 3}}) :
     τ.SameRootedMetricTree τ' := by
   obtain ⟨f, -⟩ := rootingDist5_0_5 τ h
@@ -321,7 +321,7 @@ theorem ac1_lengths_0_5 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
   exact ac1_solve_one h h' (by norm_num) (by norm_num) (hu 1) f f'
 
 /-- `P₂ = ((a,b):z,c,d,e)`: `u₄ = Z/15` (Table 7) gives `Z`. -/
-theorem ac1_lengths_1_0 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_1_0 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1}}) (h' : τ'.clusters = hierarchyOf {{0, 1}}) :
     τ.SameRootedMetricTree τ' := by
   obtain ⟨-, -, -, f, -⟩ := rootingDist5_1_0 τ h
@@ -330,7 +330,7 @@ theorem ac1_lengths_1_0 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
     (by rw [f]; ring) (by rw [f']; ring)
 
 /-- `P₄ = ((c,d,e):y,a,b)`: `u₅ = Y³/15` (Table 7) gives `Y`. -/
-theorem ac1_lengths_1_1 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_1_1 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{2, 3, 4}}) (h' : τ'.clusters = hierarchyOf {{2, 3, 4}}) :
     τ.SameRootedMetricTree τ' := by
   obtain ⟨-, -, -, -, f, -⟩ := rootingDist5_1_1 τ h
@@ -340,7 +340,7 @@ theorem ac1_lengths_1_1 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
 
 /-- `P₈ = ((a,b):z,(c,d,e):y)`: `Z` is the solution `ac1_solveZ` of its equations (Table 7), and
 then `u₅ = Y³Z/15` gives `Y`. -/
-theorem ac1_lengths_1_2 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_1_2 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1}, {2, 3, 4}})
     (h' : τ'.clusters = hierarchyOf {{0, 1}, {2, 3, 4}}) : τ.SameRootedMetricTree τ' := by
   have hz : τ.length {0, 1} = τ'.length {0, 1} := by
@@ -358,7 +358,7 @@ theorem ac1_lengths_1_2 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
 
 /-- `P₉ = (((c,d,e):y,b):z,a)`: `u₁ - u₅ = (1 - Y)/3` (Table 7) gives `Y`, and then
 `u₅ = Y³/18 + Y³Z⁶/90` gives `Z`. -/
-theorem ac1_lengths_1_3 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_1_3 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{2, 3, 4}, {1, 2, 3, 4}})
     (h' : τ'.clusters = hierarchyOf {{2, 3, 4}, {1, 2, 3, 4}}) : τ.SameRootedMetricTree τ' := by
   obtain ⟨f1, -, -, -, f5, -⟩ := rootingDist5_1_3 τ h
@@ -376,7 +376,7 @@ theorem ac1_lengths_1_3 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
 
 /-- `P₉ = (((c,d,e):y,a):z,b)`: `u₁ - u₅ = (1 - Y)/3` (Table 7) gives `Y`, and then
 `u₅ = Y³/18 + Y³Z⁶/90` gives `Z`. -/
-theorem ac1_lengths_1_4 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_1_4 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{2, 3, 4}, {0, 2, 3, 4}})
     (h' : τ'.clusters = hierarchyOf {{2, 3, 4}, {0, 2, 3, 4}}) : τ.SameRootedMetricTree τ' := by
   obtain ⟨f1, -, -, -, f5, -⟩ := rootingDist5_1_4 τ h
@@ -394,7 +394,7 @@ theorem ac1_lengths_1_4 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
 
 /-- `P₇ = (((a,b):x,d,e):z,c)`: `u₈ + 4u₄ = X/3` (Table 7) gives `X`, and then
 `u₄ = X/18 + XZ⁶/90` gives `Z`. -/
-theorem ac1_lengths_1_5 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_1_5 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 3, 4}})
     (h' : τ'.clusters = hierarchyOf {{0, 1}, {0, 1, 3, 4}}) : τ.SameRootedMetricTree τ' := by
   obtain ⟨-, -, -, f4, -, -, -, f8, -⟩ := rootingDist5_1_5 τ h
@@ -412,7 +412,7 @@ theorem ac1_lengths_1_5 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
 
 /-- `P₇ = (((a,b):x,c,e):z,d)`: `u₅ + 4u₄ = X/3` (Table 7) gives `X`, and then
 `u₄ = X/18 + XZ⁶/90` gives `Z`. -/
-theorem ac1_lengths_1_6 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_1_6 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 4}})
     (h' : τ'.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 4}}) : τ.SameRootedMetricTree τ' := by
   obtain ⟨-, -, -, f4, f5, -⟩ := rootingDist5_1_6 τ h
@@ -430,7 +430,7 @@ theorem ac1_lengths_1_6 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
 
 /-- `P₇ = (((a,b):x,c,d):z,e)`: `u₆ + 4u₄ = X/3` (Table 7) gives `X`, and then
 `u₄ = X/18 + XZ⁶/90` gives `Z`. -/
-theorem ac1_lengths_1_7 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u τ' i)
+theorem ac1_lengths_1_7 {τ τ' : ST5} (hu : ∀ i, u τ i = u τ' i)
     (h : τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 3}})
     (h' : τ'.clusters = hierarchyOf {{0, 1}, {0, 1, 2, 3}}) : τ.SameRootedMetricTree τ' := by
   obtain ⟨-, -, -, f4, -, f6, -⟩ := rootingDist5_1_7 τ h
@@ -454,7 +454,7 @@ trees with unrooted tree `U5 0`, the same shape group (read off the gene tree cl
 labelling is read off the gene tree classes by the rule for the shape group
 (`ac1_topologyZero_eq`: for `P₃`, the outgroup is the taxon in no cherry of the gene trees of the
 3-element class), and the branch length is solved from Table 7. -/
-theorem ac1_rootings_zero (τ τ' : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 0)
+theorem ac1_rootings_zero (τ τ' : ST5) (hk : unroot τ.clusters = U5 0)
     (hk' : unroot τ'.clusters = U5 0) (hg : sh_groupOf τ.clusters = sh_groupOf τ'.clusters)
     (h : τ.unrootedDist id = τ'.unrootedDist id) : τ.SameRootedMetricTree τ' := by
   -- the labelling, read off the classes of gene trees by the rule for the shape group
@@ -479,7 +479,7 @@ tree. The labelling is read off the gene tree classes by the rules for the shape
 (`ac1_topologyOne_eq`: for `P₇` and `P₉` by the cherries of the most probable gene tree, of the
 class with the second smallest probability and of the six most probable gene trees, and `P₄`
 versus `P₈` by `Z = 1` versus `Z < 1`), and the branch lengths are solved from Table 7. -/
-theorem ac1_rootings_one (τ τ' : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 1)
+theorem ac1_rootings_one (τ τ' : ST5) (hk : unroot τ.clusters = U5 1)
     (hk' : unroot τ'.clusters = U5 1) (hg : sh_groupOf τ.clusters = sh_groupOf τ'.clusters)
     (h : τ.unrootedDist id = τ'.unrootedDist id) : τ.SameRootedMetricTree τ' := by
   -- the labelling, read off the classes of gene trees by the rules for the shape group

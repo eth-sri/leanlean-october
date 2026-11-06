@@ -40,8 +40,8 @@ variable {X : Type*} [Fintype X] [DecidableEq X]
 
 /-- Section 5: the gene tree probabilities of a nonbinary species tree are the limits of those of a
 binary resolution `H` of it as the lengths of the added edges tend to `0`. -/
-theorem section5_limit (σ : SpeciesTree X) {H : Finset (Finset X)} (hH : IsHierarchy H)
-    (hsub : σ.clusters ⊆ H) (T : Finset (Finset X)) :
+theorem section5_limit (σ : SpeciesTree X) {H : Fam X} (hH : IsHierarchy H)
+    (hsub : σ.clusters ⊆ H) (T : Fam X) :
     Filter.Tendsto
       (fun ε : ℝ => unrootedDistOf H (fun A => if A ∈ σ.clusters then σ.length A else ε) id T)
       (nhdsWithin 0 (Set.Ioi 0)) (nhds (σ.unrootedDist id T)) :=
@@ -50,7 +50,7 @@ theorem section5_limit (σ : SpeciesTree X) {H : Finset (Finset X)} (hH : IsHier
 
 /-- For `ε > 0`, the species tree with the clusters of a hierarchy `H`, the lengths of `σ` on the
 clusters of `σ` and the length `ε` on the other clusters. -/
-theorem lim_exists_resolution (σ : SpeciesTree X) {H : Finset (Finset X)} (hH : IsHierarchy H)
+theorem lim_exists_resolution (σ : SpeciesTree X) {H : Fam X} (hH : IsHierarchy H)
     {ε : ℝ} (hε : 0 < ε) :
     ∃ τ : SpeciesTree X, τ.clusters = H ∧
       τ.length = fun A => if A ∈ σ.clusters then σ.length A else ε :=
@@ -71,8 +71,8 @@ theorem lim_continuous_length (σ : SpeciesTree X) (A : Finset X) :
 
 /-- **The formulas for a binary resolution, with the added lengths set to `0`**, for unrooted gene
 trees: as `lim_rootedDist_eq`, with `section5_limit`. -/
-theorem lim_unrootedDist_eq (σ : SpeciesTree X) {H : Finset (Finset X)} (hH : IsHierarchy H)
-    (hsub : σ.clusters ⊆ H) (T : Finset (Finset X)) (φ : (Finset X → ℝ) → ℝ)
+theorem lim_unrootedDist_eq (σ : SpeciesTree X) {H : Fam X} (hH : IsHierarchy H)
+    (hsub : σ.clusters ⊆ H) (T : Fam X) (φ : (Len X) → ℝ)
     (hφ : ∀ τ : SpeciesTree X, τ.clusters = H → τ.unrootedDist id T = φ τ.length)
     (hcont : ContinuousAt (fun ε : ℝ => φ fun A => if A ∈ σ.clusters then σ.length A else ε) 0) :
     σ.unrootedDist id T = φ fun A => if A ∈ σ.clusters then σ.length A else 0 := by
@@ -94,17 +94,17 @@ theorem lim_unrootedDist_eq (σ : SpeciesTree X) {H : Finset (Finset X)} (hH : I
 `x → 0`, or both. So their quartet probabilities are those of Section 4.1 for the caterpillar,
 `1 - (2/3) e^{-x}`, `(1/3) e^{-x}`, `(1/3) e^{-x}`, which do not depend on `y`, with `x = 0` when
 the edge above `{a, b}` is contracted. -/
-theorem lim_fourTaxa_quartets (σ : SpeciesTree (Fin 4)) (hσ : σ.clusters ⊆ caterpillar4) :
+theorem lim_fourTaxa_quartets (σ : ST4) (hσ : σ.clusters ⊆ caterpillar4) :
     σ.unrootedDist id (treeOfClusters {{0, 1}}) =
-        1 - 2 / 3 * exp (-if ({0, 1} : Finset (Fin 4)) ∈ σ.clusters then σ.length {0, 1} else 0) ∧
+        1 - 2 / 3 * exp (-if ({0, 1} : FinFam 4) ∈ σ.clusters then σ.length {0, 1} else 0) ∧
       σ.unrootedDist id (treeOfClusters {{0, 2}}) =
-        1 / 3 * exp (-if ({0, 1} : Finset (Fin 4)) ∈ σ.clusters then σ.length {0, 1} else 0) ∧
+        1 / 3 * exp (-if ({0, 1} : FinFam 4) ∈ σ.clusters then σ.length {0, 1} else 0) ∧
       σ.unrootedDist id (treeOfClusters {{0, 3}}) =
-        1 / 3 * exp (-if ({0, 1} : Finset (Fin 4)) ∈ σ.clusters then σ.length {0, 1} else 0) := by
+        1 / 3 * exp (-if ({0, 1} : FinFam 4) ∈ σ.clusters then σ.length {0, 1} else 0) := by
   have hH : IsHierarchy caterpillar4 := ⟨by decide, by decide, by decide, by decide⟩
   -- `e^{-x}` is continuous in the length `x`
   have hc : Continuous fun ε : ℝ =>
-      exp (-if ({0, 1} : Finset (Fin 4)) ∈ σ.clusters then σ.length {0, 1} else ε) :=
+      exp (-if ({0, 1} : FinFam 4) ∈ σ.clusters then σ.length {0, 1} else ε) :=
     (lim_continuous_length σ {0, 1}).neg.rexp
   exact ⟨lim_unrootedDist_eq σ hH hσ _ (fun ℓ => 1 - 2 / 3 * exp (-ℓ {0, 1}))
       (fun τ hτ => (fourTaxa_caterpillar τ hτ).1)

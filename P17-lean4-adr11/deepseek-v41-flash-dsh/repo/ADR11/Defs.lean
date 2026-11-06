@@ -18,7 +18,7 @@ the markers `BEGIN SHARED DEFINITIONS` and `END SHARED DEFINITIONS` is copied ve
   and `s = id`.
 * A *cluster* is a `Finset`. A rooted tree on a finite set is identified with its set of clusters
   (the sets of leaves below its nodes); a rooted *forest* of gene lineages is likewise a
-  `Finset (Finset L)`, the set of clusters of its trees. Its *roots* are its maximal clusters.
+  `Fam L`, the set of clusters of its trees. Its *roots* are its maximal clusters.
 * A rooted species tree on `X` is a hierarchy on `X` (a set of nonempty clusters containing `X`
   and every singleton, any two of which are nested or disjoint), together with a length, in
   coalescent units, on the edge above each non-root cluster. Lengths are strictly positive.
@@ -163,3 +163,59 @@ end MultispeciesCoalescent
 
 end ADR11
 -- END SHARED DEFINITIONS
+
+namespace ADR11
+
+/-- A family of clusters on `X`: a gene tree, a gene forest, or the set of clusters of a rooted
+tree (the set of sides of the splits of an unrooted tree). -/
+abbrev Fam (X : Type*) := Finset (Finset X)
+
+end ADR11
+
+namespace ADR11
+
+/-- The subsets of `Fin n`, the taxa on `n` labels. -/
+abbrev FinFam (n : ℕ) := Finset (Fin n)
+
+/-- A rooted species tree on five taxa. -/
+abbrev ST5 := SpeciesTree (Fin 5)
+
+/-- A rooted species tree on four taxa. -/
+abbrev ST4 := SpeciesTree (Fin 4)
+
+end ADR11
+
+namespace ADR11
+
+/-- A monomial of the engine's polynomials: pairs (code of a cluster, exponent). -/
+abbrev Mono := List (ℕ × ℕ)
+
+/-- A term of the engine's polynomials: a rational coefficient and a monomial. -/
+abbrev Term := ℚ × Mono
+
+/-- A polynomial in the engine's form: a list of (coefficient, monomial) terms. -/
+abbrev Poly := List Term
+
+/-- A family of subsets of `Fin 5`, e.g. all the clusters of a tree on five taxa. -/
+abbrev Fam5 := Finset (Finset (Fin 5))
+
+/-- A family of subsets of `Fin 4`. -/
+abbrev Fam4 := Finset (Finset (Fin 4))
+
+/-- Rewrites by `h` and closes the goal by computation. -/
+macro "drw " h:term : tactic => `(tactic| (rw [$h:term]; decide))
+
+end ADR11
+
+namespace ADR11
+
+/-- The fifteen unrooted gene trees on five taxa. -/
+abbrev F15 : Finset ℕ := Finset.Icc 1 15
+
+/-- The subsets of `Fin n` again, for use as a family of clusters. -/
+abbrev FamN (n : ℕ) := Finset (Finset (Fin n))
+
+/-- A function on the clusters of a tree: the edge lengths. -/
+abbrev Len (X : Type*) := Finset X → ℝ
+
+end ADR11

@@ -1,5 +1,6 @@
 module
 
+public import ADR11.Coalescent.Factorization
 public import ADR11.MSC.Basic
 
 /-!
@@ -38,6 +39,8 @@ The paper's Lemma 5 is "clear from the structure of the coalescent model". It co
 
 @[expose] public section
 
+set_option linter.unusedSectionVars false
+
 namespace ADR11
 
 open Finset
@@ -47,49 +50,42 @@ variable {L : Type*} [Fintype L] [DecidableEq L] {L' : Type*} [Fintype L'] [Deci
 
 /-- The restriction of a forest on `L` to the lineages `L'`, along an embedding `e : L' ↪ L`: the
 nonempty traces of its clusters. -/
-def restrictForest (e : L' ↪ L) (F : Finset (Finset L)) : Finset (Finset L') :=
+def restrictForest (e : L' ↪ L) (F : Fam L) : Fam L' :=
   (F.filter fun A => ∃ l, e l ∈ A).image fun A => univ.filter fun l => e l ∈ A
 
 /-! ### Restricting forests -/
 
-omit [Fintype L] in
-private theorem marg_mem_restrictForest (e : L' ↪ L) {F : Finset (Finset L)} {D : Finset L'} :
+private theorem marg_mem_restrictForest (e : L' ↪ L) {F : Fam L} {D : Finset L'} :
     D ∈ restrictForest e F ↔ ∃ A ∈ F, (∃ l, e l ∈ A) ∧ (univ.filter fun l => e l ∈ A) = D := by
   unfold restrictForest
   simp only [mem_image, mem_filter, and_assoc]
 
-omit [Fintype L] in
-private theorem marg_tr_mem_restrictForest (e : L' ↪ L) {F : Finset (Finset L)} {A : Finset L}
+private theorem marg_tr_mem_restrictForest (e : L' ↪ L) {F : Fam L} {A : Finset L}
     (hA : A ∈ F) (hmeet : ∃ l, e l ∈ A) :
     (univ.filter fun l => e l ∈ A) ∈ restrictForest e F :=
   (marg_mem_restrictForest e).2 ⟨A, hA, hmeet, rfl⟩
 
-omit [Fintype L] [DecidableEq L'] in
 private theorem marg_tr_mono (e : L' ↪ L) {A B : Finset L} (h : A ⊆ B) :
     (univ.filter fun l => e l ∈ A) ⊆ univ.filter fun l => e l ∈ B :=
   fun l hl => mem_filter.2 ⟨mem_univ l, h (mem_filter.1 hl).2⟩
 
-omit [Fintype L] [DecidableEq L'] in
 private theorem marg_tr_disjoint (e : L' ↪ L) {A B : Finset L} (h : Disjoint A B) :
     Disjoint (univ.filter fun l => e l ∈ A) (univ.filter fun l => e l ∈ B) :=
   disjoint_left.2 fun _ hlA hlB => disjoint_left.1 h (mem_filter.1 hlA).2 (mem_filter.1 hlB).2
 
-omit [Fintype L] in
 private theorem marg_tr_union (e : L' ↪ L) (A B : Finset L) :
     (univ.filter fun l => e l ∈ A ∪ B) =
       (univ.filter fun l => e l ∈ A) ∪ univ.filter fun l => e l ∈ B := by
   ext l
   simp
 
-omit [Fintype L] [DecidableEq L'] in
 private theorem marg_tr_eq_empty (e : L' ↪ L) {A : Finset L} (h : ¬ ∃ l, e l ∈ A) :
     (univ.filter fun l => e l ∈ A) = ∅ := by
   ext l
   simp only [mem_filter, mem_univ, true_and, notMem_empty, iff_false]
   exact fun hl => h ⟨l, hl⟩
 
-omit [Fintype L] in
-theorem IsForest.restrictForest {F : Finset (Finset L)} (hF : IsForest F) (e : L' ↪ L) :
+theorem IsForest.restrictForest {F : Fam L} (hF : IsForest F) (e : L' ↪ L) :
     IsForest (restrictForest e F) := by
   refine ⟨fun D hD => ?_, fun D hD D' hD' => ?_⟩
   · obtain ⟨A, -, ⟨l, hl⟩, rfl⟩ := (marg_mem_restrictForest e).1 hD
@@ -101,8 +97,7 @@ theorem IsForest.restrictForest {F : Finset (Finset L)} (hF : IsForest F) (e : L
     · exact Or.inr (Or.inl (marg_tr_mono e h))
     · exact Or.inr (Or.inr (marg_tr_disjoint e h))
 
-omit [Fintype L] in
-private theorem marg_restrictForest_insert (e : L' ↪ L) (C : Finset L) (F : Finset (Finset L)) :
+private theorem marg_restrictForest_insert (e : L' ↪ L) (C : Finset L) (F : Fam L) :
     restrictForest e (insert C F) =
       if ∃ l, e l ∈ C then insert (univ.filter fun l => e l ∈ C) (restrictForest e F)
       else restrictForest e F := by
@@ -110,16 +105,14 @@ private theorem marg_restrictForest_insert (e : L' ↪ L) (C : Finset L) (F : Fi
   rw [filter_insert]
   split_ifs <;> simp [image_insert]
 
-omit [Fintype L'] [DecidableEq L'] in
 /-- Two roots of a forest whose traces share a lineage are equal. -/
-private theorem marg_eq_of_tr {F : Finset (Finset L)} (hF : IsForest F) (e : L' ↪ L)
+private theorem marg_eq_of_tr {F : Fam L} (hF : IsForest F) (e : L' ↪ L)
     {A B : Finset L} (hA : A ∈ roots F) (hB : B ∈ roots F) {l : L'} (hlA : e l ∈ A)
     (hlB : e l ∈ B) : A = B :=
   hF.eq_of_mem_roots_of_mem hA hB hlA hlB
 
-omit [DecidableEq L'] in
 /-- The trace is injective on the roots meeting the range of `e`. -/
-private theorem marg_tr_inj {F : Finset (Finset L)} (hF : IsForest F) (e : L' ↪ L)
+private theorem marg_tr_inj {F : Fam L} (hF : IsForest F) (e : L' ↪ L)
     {A B : Finset L} (hA : A ∈ roots F) (hB : B ∈ roots F) (hmeet : ∃ l, e l ∈ A)
     (h : (univ.filter fun l => e l ∈ A) = univ.filter fun l => e l ∈ B) : A = B := by
   obtain ⟨l, hl⟩ := hmeet
@@ -127,7 +120,7 @@ private theorem marg_tr_inj {F : Finset (Finset L)} (hF : IsForest F) (e : L' �
   exact marg_eq_of_tr hF e hA hB hl (mem_filter.1 hlB).2
 
 /-- The roots of the restriction of a forest are the traces of its roots meeting the range. -/
-private theorem marg_mem_roots_restrictForest {F : Finset (Finset L)} (hF : IsForest F)
+private theorem marg_mem_roots_restrictForest {F : Fam L} (hF : IsForest F)
     (e : L' ↪ L) {D : Finset L'} :
     D ∈ roots (restrictForest e F) ↔
       ∃ A ∈ roots F, (∃ l, e l ∈ A) ∧ (univ.filter fun l => e l ∈ A) = D := by
@@ -152,7 +145,7 @@ private theorem marg_mem_roots_restrictForest {F : Finset (Finset L)} (hF : IsFo
 
 /-- The restriction of a merge: merging two roots that both meet the range of `e` merges their
 traces; otherwise the restriction does not change. -/
-private theorem marg_restrictForest_merge {F : Finset (Finset L)} (e : L' ↪ L)
+private theorem marg_restrictForest_merge {F : Fam L} (e : L' ↪ L)
     {A B : Finset L} (hA : A ∈ roots F) (hB : B ∈ roots F) :
     restrictForest e (insert (A ∪ B) F) =
       if (∃ l, e l ∈ A) ∧ (∃ l, e l ∈ B) then
@@ -178,8 +171,8 @@ private theorem marg_restrictForest_merge {F : Finset (Finset L)} (e : L' ↪ L)
 
 /-- The merges of `F` whose restriction differs from the restriction of `F`: the merges of two
 roots that both meet the range of `e`. -/
-private theorem marg_mem_merges_ne {F : Finset (Finset L)} (hF : IsForest F) (e : L' ↪ L)
-    {H : Finset (Finset L)} :
+private theorem marg_mem_merges_ne {F : Fam L} (hF : IsForest F) (e : L' ↪ L)
+    {H : Fam L} :
     (H ∈ merges F ∧ restrictForest e H ≠ restrictForest e F) ↔
       ∃ A ∈ roots F, ∃ B ∈ roots F, A ≠ B ∧ (∃ l, e l ∈ A) ∧ (∃ l, e l ∈ B) ∧
         H = insert (A ∪ B) F := by
@@ -204,8 +197,8 @@ private theorem marg_mem_merges_ne {F : Finset (Finset L)} (hF : IsForest F) (e 
 /-- The key count behind lumpability: summing a function of the restriction over the merges of
 `F` gives the sum over the merges of the restriction, plus the merges that do not change the
 restriction. -/
-private theorem marg_sum_merges {F : Finset (Finset L)} (hF : IsForest F) (e : L' ↪ L)
-    (u : Finset (Finset L') → ℝ) :
+private theorem marg_sum_merges {F : Fam L} (hF : IsForest F) (e : L' ↪ L)
+    (u : Fam L' → ℝ) :
     -((#(roots F)).choose 2 : ℝ) * u (restrictForest e F) +
         ∑ H ∈ merges F, u (restrictForest e H) =
       -((#(roots (restrictForest e F))).choose 2 : ℝ) * u (restrictForest e F) +
@@ -236,7 +229,7 @@ private theorem marg_sum_merges {F : Finset (Finset L)} (hF : IsForest F) (e : L
         ⟨A, hA, B, hB, hAB, hAm, hBm, rfl⟩), ?_⟩
       rw [marg_restrictForest_merge e hA hB, ite_eq_left ⟨hAm, hBm⟩]
   -- and is injective on `M₂`
-  have hinj : Set.InjOn (restrictForest e) (M₂ : Set (Finset (Finset L))) := by
+  have hinj : Set.InjOn (restrictForest e) (M₂ : Set (Fam L)) := by
     intro H₁ hH₁ H₂ hH₂ h12
     obtain ⟨A₁, hA₁, B₁, hB₁, hAB₁, hA₁m, hB₁m, rfl⟩ :=
       (marg_mem_merges_ne hF e).1 (mem_filter.1 (mem_coe.1 hH₁))
@@ -292,8 +285,8 @@ private theorem marg_sum_merges {F : Finset (Finset L)} (hF : IsForest F) (e : L
   ring
 
 /-- Intertwining of the generators: `Q M = M Q'` on the rows of forests, tested against `w`. -/
-private theorem marg_sum_kingmanGenerator {F : Finset (Finset L)} (hF : IsForest F)
-    (e : L' ↪ L) (w : Finset (Finset L') → ℝ) :
+private theorem marg_sum_kingmanGenerator {F : Fam L} (hF : IsForest F)
+    (e : L' ↪ L) (w : Fam L' → ℝ) :
     ∑ G, kingmanGenerator F G * w (restrictForest e G) =
       ∑ G', kingmanGenerator (restrictForest e F) G' * w G' := by
   rw [hF.sum_kingmanGenerator_mul (fun G => w (restrictForest e G)),
@@ -301,7 +294,7 @@ private theorem marg_sum_kingmanGenerator {F : Finset (Finset L)} (hF : IsForest
   exact marg_sum_merges hF e w
 
 /-- The generator is supported on the forest itself and its merges. -/
-private theorem marg_kingmanGenerator_ne_zero {F G : Finset (Finset L)} (hF : IsForest F)
+private theorem marg_kingmanGenerator_ne_zero {F G : Fam L} (hF : IsForest F)
     (h : kingmanGenerator F G ≠ 0) : IsForest G := by
   rw [kingmanGenerator_apply_of_isForest] at h
   split_ifs at h with h1 h2
@@ -309,8 +302,8 @@ private theorem marg_kingmanGenerator_ne_zero {F G : Finset (Finset L)} (hF : Is
   · exact (hF.of_mem_merges h2).1
   · exact absurd rfl h
 
-private theorem marg_sum_kingmanGenerator_pow (e : L' ↪ L) (n : ℕ) {F : Finset (Finset L)}
-    (hF : IsForest F) (w : Finset (Finset L') → ℝ) :
+private theorem marg_sum_kingmanGenerator_pow (e : L' ↪ L) (n : ℕ) {F : Fam L}
+    (hF : IsForest F) (w : Fam L' → ℝ) :
     ∑ G, (kingmanGenerator ^ n) F G * w (restrictForest e G) =
       ∑ G', (kingmanGenerator ^ n) (restrictForest e F) G' * w G' := by
   induction n generalizing F w with
@@ -318,9 +311,9 @@ private theorem marg_sum_kingmanGenerator_pow (e : L' ↪ L) (n : ℕ) {F : Fins
     simp only [pow_zero, Matrix.one_apply, ite_mul, one_mul, zero_mul, sum_ite_eq, mem_univ,
       ite_true]
   | succ n ih =>
-    set u : Finset (Finset L') → ℝ := fun H' => ∑ G', (kingmanGenerator ^ n) H' G' * w G'
+    set u : Fam L' → ℝ := fun H' => ∑ G', (kingmanGenerator ^ n) H' G' * w G'
       with hu
-    have hstep : ∀ H : Finset (Finset L), kingmanGenerator F H *
+    have hstep : ∀ H : Fam L, kingmanGenerator F H *
         ∑ G, (kingmanGenerator ^ n) H G * w (restrictForest e G) =
           kingmanGenerator F H * u (restrictForest e H) := by
       intro H
@@ -347,12 +340,10 @@ private theorem marg_hasSum_exp_apply {ι : Type*} [Fintype ι] [DecidableEq ι]
     HasSum (fun n : ℕ => ((n.factorial : ℝ))⁻¹ * (A ^ n) i j) (NormedSpace.exp A i j) := by
   open scoped Matrix.Norms.Operator in
   have h := NormedSpace.exp_series_hasSum_exp' (𝕂 := ℝ) A
-  have h2 := Pi.hasSum.mp (Pi.hasSum.mp h i) j
-  simpa using h2
-
+  simpa using Pi.hasSum.mp (Pi.hasSum.mp h i) j
 /-- Lumpability of Kingman's coalescent, tested against a function `w` of the restriction. -/
-private theorem marg_sum_kingmanTransition {F : Finset (Finset L)} (hF : IsForest F)
-    (e : L' ↪ L) (t : ℝ) (w : Finset (Finset L') → ℝ) :
+private theorem marg_sum_kingmanTransition {F : Fam L} (hF : IsForest F)
+    (e : L' ↪ L) (t : ℝ) (w : Fam L' → ℝ) :
     ∑ G, kingmanTransition t F G * w (restrictForest e G) =
       ∑ G', kingmanTransition t (restrictForest e F) G' * w G' := by
   have h1 : HasSum (fun n : ℕ => ∑ G, ((n.factorial : ℝ))⁻¹ *
@@ -370,16 +361,16 @@ private theorem marg_sum_kingmanTransition {F : Finset (Finset L)} (hF : IsFores
   rw [marg_sum_kingmanGenerator_pow e n hF w]
 
 /-- Consistency of Kingman's coalescent (lumpability). -/
-theorem kingmanTransition_lump {F : Finset (Finset L)} (hF : IsForest F) (e : L' ↪ L) (t : ℝ)
-    (G' : Finset (Finset L')) :
+theorem kingmanTransition_lump {F : Fam L} (hF : IsForest F) (e : L' ↪ L) (t : ℝ)
+    (G' : Fam L') :
     ∑ G, (if restrictForest e G = G' then kingmanTransition t F G else 0) =
       kingmanTransition t (restrictForest e F) G' := by
   have h := marg_sum_kingmanTransition hF e t fun G'' => if G'' = G' then 1 else 0
   simp only [mul_ite, mul_one, mul_zero, sum_ite_eq', mem_univ, ite_true] at h
   exact h
 
-theorem kingmanAbsorption_lump {F : Finset (Finset L)} (hF : IsForest F) (e : L' ↪ L)
-    (G' : Finset (Finset L')) :
+theorem kingmanAbsorption_lump {F : Fam L} (hF : IsForest F) (e : L' ↪ L)
+    (G' : Fam L') :
     ∑ G, (if restrictForest e G = G' then kingmanAbsorption F G else 0) =
       kingmanAbsorption (restrictForest e F) G' := by
   have h1 : Filter.Tendsto
@@ -396,20 +387,17 @@ theorem kingmanAbsorption_lump {F : Finset (Finset L)} (hF : IsForest F) (e : L'
 
 /-! ### Dropping lineages -/
 
-omit [Fintype L] in
-private theorem marg_restrictForest_union (e : L' ↪ L) (F₁ F₂ : Finset (Finset L)) :
+private theorem marg_restrictForest_union (e : L' ↪ L) (F₁ F₂ : Fam L) :
     restrictForest e (F₁ ∪ F₂) = restrictForest e F₁ ∪ restrictForest e F₂ := by
   unfold restrictForest
   rw [filter_union, image_union]
 
-omit [Fintype L] in
 private theorem marg_restrictForest_empty (e : L' ↪ L) :
-    restrictForest e (∅ : Finset (Finset L)) = ∅ := by
+    restrictForest e (∅ : Fam L) = ∅ := by
   simp [restrictForest]
 
-omit [Fintype L] in
 private theorem marg_restrictForest_sup {ι : Type*} (e : L' ↪ L) (T : Finset ι)
-    (f : ι → Finset (Finset L)) :
+    (f : ι → Fam L) :
     restrictForest e (T.sup f) = T.sup fun i => restrictForest e (f i) := by
   classical
   induction T using Finset.induction_on with
@@ -417,7 +405,6 @@ private theorem marg_restrictForest_sup {ι : Type*} (e : L' ↪ L) (T : Finset 
   | insert i T hi ih => rw [sup_insert, sup_insert, sup_eq_union, sup_eq_union,
       marg_restrictForest_union, ih]
 
-omit [Fintype X] in
 private theorem marg_restrictForest_sampledForest (e : L' ↪ L) (s : L → X) (A : Finset X) :
     restrictForest e (sampledForest s A) = sampledForest (s ∘ e) A := by
   ext D
@@ -454,17 +441,17 @@ private theorem marg_sum_ite_comp {α β γ : Type*} [Fintype α] [Fintype β] [
 
 /-- The pushforward of a product is the product of the pushforwards. -/
 private theorem marg_prod_pushforward {ι : Type*} [Fintype ι] [DecidableEq ι] (e : L' ↪ L)
-    (φ : ι → Finset (Finset L) → ℝ) (f' : ι → Finset (Finset L')) :
+    (φ : ι → Fam L → ℝ) (f' : ι → Fam L') :
     ∏ i, (∑ F, if restrictForest e F = f' i then φ i F else 0) =
-      ∑ f : ι → Finset (Finset L),
+      ∑ f : ι → Fam L,
         if (fun i => restrictForest e (f i)) = f' then ∏ i, φ i (f i) else 0 := by
   rw [Fintype.prod_sum]
   refine sum_congr rfl fun f _ => ?_
   rw [prod_ite_zero]
   simp [funext_iff]
 
-private theorem marg_populationKernel_lump (len : Finset X → ℝ) (A : Finset X)
-    {F : Finset (Finset L)} (hF : IsForest F) (e : L' ↪ L) (G' : Finset (Finset L')) :
+private theorem marg_populationKernel_lump (len : Len X) (A : Finset X)
+    {F : Fam L} (hF : IsForest F) (e : L' ↪ L) (G' : Fam L') :
     ∑ G, (if restrictForest e G = G' then populationKernel len A F G else 0) =
       populationKernel len A (restrictForest e F) G' := by
   unfold populationKernel
@@ -473,35 +460,35 @@ private theorem marg_populationKernel_lump (len : Finset X → ℝ) (A : Finset 
   · exact kingmanTransition_lump hF e _ G'
 
 /-- Dropping lineages, for the forest entering a population. -/
-private theorem marg_enteringDist_comp_embedding {H : Finset (Finset X)} (len : Finset X → ℝ)
+private theorem marg_enteringDist_comp_embedding {H : Fam X} (len : Len X)
     (s : L → X) (e : L' ↪ L) {A : Finset X}
-    (ih : ∀ B ∈ childClusters H A, ∀ G' : Finset (Finset L'), forestDist H len (s ∘ e) B G' =
+    (ih : ∀ B ∈ childClusters H A, ∀ G' : Fam L', forestDist H len (s ∘ e) B G' =
       ∑ G, if restrictForest e G = G' then forestDist H len s B G else 0)
-    (F' : Finset (Finset L')) :
+    (F' : Fam L') :
     enteringDist H len (s ∘ e) A F' =
       ∑ F, if restrictForest e F = F' then enteringDist H len s A F else 0 := by
   unfold enteringDist
-  rw [marg_sum_ite_comp (fun f : childClusters H A → Finset (Finset L) =>
+  rw [marg_sum_ite_comp (fun f : childClusters H A → Fam L =>
       univ.sup f ∪ sampledForest s A) (restrictForest e)]
-  have hP : ∀ f' : childClusters H A → Finset (Finset L'),
+  have hP : ∀ f' : childClusters H A → Fam L',
       ∏ B : childClusters H A, forestDist H len (s ∘ e) B (f' B) =
-        ∑ f : childClusters H A → Finset (Finset L),
+        ∑ f : childClusters H A → Fam L,
           if (fun B => restrictForest e (f B)) = f' then
             ∏ B : childClusters H A, forestDist H len s B (f B) else 0 := by
     intro f'
     rw [← marg_prod_pushforward e (fun B : childClusters H A => forestDist H len s B)]
     exact prod_congr rfl fun B _ => ih B B.2 (f' B)
   simp_rw [hP]
-  rw [marg_sum_ite_comp (fun f : childClusters H A → Finset (Finset L) =>
+  rw [marg_sum_ite_comp (fun f : childClusters H A → Fam L =>
       fun B => restrictForest e (f B)) (fun f' => univ.sup f' ∪ sampledForest (s ∘ e) A)]
   refine sum_congr rfl fun f _ => ?_
   rw [marg_restrictForest_union, marg_restrictForest_sup, marg_restrictForest_sampledForest]
 
 /-- Dropping lineages: the multispecies coalescent of the lineages `L'` (sampled through
 `s ∘ e`) is the restriction of the multispecies coalescent of the lineages `L`. -/
-theorem forestDist_comp_embedding {H : Finset (Finset X)} (hH : IsHierarchy H)
-    (len : Finset X → ℝ) (s : L → X) (e : L' ↪ L) {A : Finset X} (hA : A ∈ H)
-    (G' : Finset (Finset L')) :
+theorem forestDist_comp_embedding {H : Fam X} (hH : IsHierarchy H)
+    (len : Len X) (s : L → X) (e : L' ↪ L) {A : Finset X} (hA : A ∈ H)
+    (G' : Fam L') :
     forestDist H len (s ∘ e) A G' =
       ∑ G, if restrictForest e G = G' then forestDist H len s A G else 0 := by
   induction A using Finset.strongInduction generalizing G' with
@@ -536,7 +523,7 @@ theorem forestDist_comp_embedding {H : Finset (Finset X)} (hH : IsHierarchy H)
         split_ifs <;> simp
 
 theorem SpeciesTree.rootedDist_comp_embedding (σ : SpeciesTree X) (s : L → X) (e : L' ↪ L)
-    (G' : Finset (Finset L')) :
+    (G' : Fam L') :
     σ.rootedDist (s ∘ e) G' = ∑ G, if restrictForest e G = G' then σ.rootedDist s G else 0 :=
   forestDist_comp_embedding σ.isHierarchy σ.length s e σ.univ_mem G'
 
@@ -550,11 +537,11 @@ private theorem marg_sum_pi_reindex {ι ι' : Type*} [DecidableEq ι] [Decidable
     (hmaps : ∀ i ∈ T, P i → τ i ∈ T')
     (hinj : ∀ i ∈ T, ∀ j ∈ T, P i → P j → τ i = τ j → i = j)
     (hsurj : ∀ i' ∈ T', ∃ i ∈ T, P i ∧ τ i = i')
-    (φ : ι → Finset (Finset L) → ℝ) (ψ : ι' → Finset (Finset L) → ℝ)
+    (φ : ι → Fam L → ℝ) (ψ : ι' → Fam L → ℝ)
     (h0 : ∀ i ∈ T, ¬ P i → ∀ F, φ i F = if F = ∅ then 1 else 0)
-    (h1 : ∀ i ∈ T, P i → φ i = ψ (τ i)) (c F : Finset (Finset L)) :
-    (∑ f : T → Finset (Finset L), if univ.sup f ∪ c = F then ∏ i : T, φ i (f i) else 0) =
-      ∑ g : T' → Finset (Finset L), if univ.sup g ∪ c = F then ∏ i : T', ψ i (g i) else 0 := by
+    (h1 : ∀ i ∈ T, P i → φ i = ψ (τ i)) (c F : Fam L) :
+    (∑ f : T → Fam L, if univ.sup f ∪ c = F then ∏ i : T, φ i (f i) else 0) =
+      ∑ g : T' → Fam L, if univ.sup g ∪ c = F then ∏ i : T', ψ i (g i) else 0 := by
   choose j hjT hjP hjτ using hsurj
   -- `j` inverts `τ`
   have hji : ∀ (i : T) (hP : P i), (⟨j (τ i) (hmaps i i.2 hP), hjT _ _⟩ : T) = i :=
@@ -562,9 +549,9 @@ private theorem marg_sum_pi_reindex {ι ι' : Type*} [DecidableEq ι] [Decidable
   have hij : ∀ i' : T', (⟨τ (j i'.1 i'.2), hmaps _ (hjT _ _) (hjP _ _)⟩ : T') = i' :=
     fun i' => Subtype.ext (hjτ _ _)
   -- the functions vanishing outside `P`
-  have hsub : (∑ f : T → Finset (Finset L),
+  have hsub : (∑ f : T → Fam L,
       if univ.sup f ∪ c = F then ∏ i : T, φ i (f i) else 0) =
-      ∑ f ∈ (univ : Finset (T → Finset (Finset L))).filter
+      ∑ f ∈ (univ : Finset (T → Fam L)).filter
         (fun f => ∀ i : T, ¬ P i → f i = ∅),
         if univ.sup f ∪ c = F then ∏ i : T, φ i (f i) else 0 := by
     refine (sum_subset (filter_subset _ _) fun f _ hf => ?_).symm
@@ -614,9 +601,8 @@ private theorem marg_sum_pi_reindex {ι ι' : Type*} [DecidableEq ι] [Decidable
     dsimp only
     rw [hsup, hprod]
 
-omit [DecidableEq X] in
 /-- Two clusters of a hierarchy sharing an element are nested. -/
-private theorem marg_nested {H : Finset (Finset X)} (hH : IsHierarchy H) {A B : Finset X}
+private theorem marg_nested {H : Fam X} (hH : IsHierarchy H) {A B : Finset X}
     (hA : A ∈ H) (hB : B ∈ H) {x : X} (hxA : x ∈ A) (hxB : x ∈ B) : A ⊆ B ∨ B ⊆ A := by
   rcases hH.2.2.2 A hA B hB with h | h | h
   · exact Or.inl h
@@ -624,7 +610,7 @@ private theorem marg_nested {H : Finset (Finset X)} (hH : IsHierarchy H) {A B : 
   · exact absurd hxB (Finset.disjoint_left.1 h hxA)
 
 /-- A cluster strictly inside a cluster `A` of a hierarchy lies inside a child of `A`. -/
-private theorem marg_subset_child {H : Finset (Finset X)} (hH : IsHierarchy H) {A E : Finset X}
+private theorem marg_subset_child {H : Fam X} (hH : IsHierarchy H) {A E : Finset X}
     (hE : E ∈ H) (hEA : E ⊂ A) : ∃ B ∈ childClusters H A, E ⊆ B := by
   obtain ⟨x, hx⟩ := hH.2.2.1 E hE
   obtain ⟨y, hyA, hyE⟩ := exists_of_ssubset hEA
@@ -637,7 +623,6 @@ private theorem marg_subset_child {H : Finset (Finset X)} (hH : IsHierarchy H) {
     · rw [h']
     · exact absurd hEA ((mem_childClusters.1 hB).2.2 E hE h')
 
-omit [Fintype X] in
 private theorem marg_subtype_nonempty {S A : Finset X} :
     (A.subtype (· ∈ S)).Nonempty ↔ (A ∩ S).Nonempty := by
   constructor
@@ -647,8 +632,7 @@ private theorem marg_subtype_nonempty {S A : Finset X} :
     rw [mem_inter] at hx
     exact ⟨⟨x, hx.2⟩, mem_subtype.2 hx.1⟩
 
-omit [Fintype X] in
-private theorem marg_mem_restrictClusters {S : Finset X} {H : Finset (Finset X)}
+private theorem marg_mem_restrictClusters {S : Finset X} {H : Fam X}
     {D : Finset S} :
     D ∈ restrictClusters S H ↔ ∃ A ∈ H, (A ∩ S).Nonempty ∧ A.subtype (· ∈ S) = D := by
   unfold restrictClusters
@@ -656,7 +640,7 @@ private theorem marg_mem_restrictClusters {S : Finset X} {H : Finset (Finset X)}
 
 /-- The trace of a child of `A` meeting `S`, with a trace different from that of `A`, is a child
 of the trace of `A` in the induced tree. -/
-private theorem marg_subtype_mem_childClusters {H : Finset (Finset X)} (hH : IsHierarchy H)
+private theorem marg_subtype_mem_childClusters {H : Fam X} (hH : IsHierarchy H)
     {S A B : Finset X} (hA : A ∈ H) (hB : B ∈ childClusters H A) (hBS : (B ∩ S).Nonempty)
     (hne : B.subtype (· ∈ S) ≠ A.subtype (· ∈ S)) :
     B.subtype (· ∈ S) ∈ childClusters (restrictClusters S H) (A.subtype (· ∈ S)) := by
@@ -681,7 +665,7 @@ private theorem marg_subtype_mem_childClusters {H : Finset (Finset X)} (hH : IsH
   · exact not_subset_of_ssubset hE'A (subtype_mono hAE)
 
 /-- Two children of a cluster meeting `S` with the same trace are equal. -/
-private theorem marg_eq_of_subtype_eq {H : Finset (Finset X)} (hH : IsHierarchy H)
+private theorem marg_eq_of_subtype_eq {H : Fam X} (hH : IsHierarchy H)
     {S A B₁ B₂ : Finset X} (hB₁ : B₁ ∈ childClusters H A) (hB₂ : B₂ ∈ childClusters H A)
     (hB₁S : (B₁ ∩ S).Nonempty) (h : B₁.subtype (· ∈ S) = B₂.subtype (· ∈ S)) : B₁ = B₂ := by
   by_contra hne
@@ -692,7 +676,7 @@ private theorem marg_eq_of_subtype_eq {H : Finset (Finset X)} (hH : IsHierarchy 
 
 /-- If no child of `A` has the trace of `A`, every child of the trace of `A` in the induced tree
 is the trace of a child of `A`. -/
-private theorem marg_exists_child {H : Finset (Finset X)} (hH : IsHierarchy H) {S A : Finset X}
+private theorem marg_exists_child {H : Fam X} (hH : IsHierarchy H) {S A : Finset X}
     (hH' : IsHierarchy (restrictClusters S H)) (hA : A ∈ H)
     (hbot : ∀ B ∈ childClusters H A, B.subtype (· ∈ S) ≠ A.subtype (· ∈ S))
     {D : Finset S} (hD : D ∈ childClusters (restrictClusters S H) (A.subtype (· ∈ S))) :
@@ -713,7 +697,7 @@ private theorem marg_exists_child {H : Finset (Finset X)} (hH : IsHierarchy H) {
 
 /-- A child `B` of `A` whose trace differs from that of `A` is the largest cluster with its
 trace. -/
-private theorem marg_filter_top {H : Finset (Finset X)} (hH : IsHierarchy H) {S A B : Finset X}
+private theorem marg_filter_top {H : Fam X} (hH : IsHierarchy H) {S A B : Finset X}
     (hA : A ∈ H) (hB : B ∈ childClusters H A) (hBS : (B ∩ S).Nonempty)
     (hne : B.subtype (· ∈ S) ≠ A.subtype (· ∈ S)) :
     H.filter (fun A' => A' ≠ univ ∧ A'.subtype (· ∈ S) = B.subtype (· ∈ S)) =
@@ -745,7 +729,7 @@ private theorem marg_filter_top {H : Finset (Finset X)} (hH : IsHierarchy H) {S 
     exact not_subset_of_ssubset hBA (hA'B.trans' (subset_univ A))
 
 /-- Along a chain of clusters with the same trace, the lengths add up. -/
-private theorem marg_filter_chain {H : Finset (Finset X)} (hH : IsHierarchy H) {S A B₀ : Finset X}
+private theorem marg_filter_chain {H : Fam X} (hH : IsHierarchy H) {S A B₀ : Finset X}
     (hB₀ : B₀ ∈ childClusters H A) (htr : B₀.subtype (· ∈ S) = A.subtype (· ∈ S))
     (hAS : (A ∩ S).Nonempty) (hA : A ∈ H) :
     H.filter (fun A' => A' ⊆ A ∧ A'.subtype (· ∈ S) = A.subtype (· ∈ S)) =
@@ -773,7 +757,7 @@ private theorem marg_filter_chain {H : Finset (Finset X)} (hH : IsHierarchy H) {
     · exact ⟨hA'H, hA'B₀.trans hB₀A.subset, htr'.trans htr⟩
 
 /-- At the bottom of a chain of clusters with the same trace, only the cluster itself counts. -/
-private theorem marg_filter_bot {H : Finset (Finset X)} (hH : IsHierarchy H) {S A : Finset X}
+private theorem marg_filter_bot {H : Fam X} (hH : IsHierarchy H) {S A : Finset X}
     (hA : A ∈ H) (hbot : ∀ B ∈ childClusters H A, B.subtype (· ∈ S) ≠ A.subtype (· ∈ S)) :
     H.filter (fun A' => A' ⊆ A ∧ A'.subtype (· ∈ S) = A.subtype (· ∈ S)) = {A} := by
   ext A'
@@ -789,10 +773,10 @@ private theorem marg_filter_bot {H : Finset (Finset X)} (hH : IsHierarchy H) {S 
     exact ⟨hA, subset_rfl, rfl⟩
 
 /-- A population from which no lineage is sampled produces the empty forest. -/
-private theorem marg_forestDist_eq_empty {H : Finset (Finset X)} (hH : IsHierarchy H)
-    (len : Finset X → ℝ) {s : L → X} {B : Finset X} (hB : B ∈ H) (hs : ∀ l, s l ∉ B)
-    (G : Finset (Finset L)) : forestDist H len s B G = if G = ∅ then 1 else 0 := by
-  have hz : ∀ G : Finset (Finset L), G ≠ ∅ → forestDist H len s B G = 0 := by
+private theorem marg_forestDist_eq_empty {H : Fam X} (hH : IsHierarchy H)
+    (len : Len X) {s : L → X} {B : Finset X} (hB : B ∈ H) (hs : ∀ l, s l ∉ B)
+    (G : Fam L) : forestDist H len s B G = if G = ∅ then 1 else 0 := by
+  have hz : ∀ G : Fam L, G ≠ ∅ → forestDist H len s B G = 0 := by
     intro G hG
     by_contra h
     obtain ⟨hGf, -, hlin⟩ := forestDist_support hH len s hB h
@@ -811,10 +795,10 @@ private theorem marg_forestDist_eq_empty {H : Finset (Finset X)} (hH : IsHierarc
 
 /-- At a cluster `A` with a child `B₀` with the same trace, the forest entering `A` is the forest
 leaving `B₀`. -/
-private theorem marg_enteringDist_chain {H : Finset (Finset X)} (hH : IsHierarchy H)
-    (len : Finset X → ℝ) {S : Finset X} {s : L → X} (hs : ∀ l, s l ∈ S) {A B₀ : Finset X}
+private theorem marg_enteringDist_chain {H : Fam X} (hH : IsHierarchy H)
+    (len : Len X) {S : Finset X} {s : L → X} (hs : ∀ l, s l ∈ S) {A B₀ : Finset X}
     (hB₀ : B₀ ∈ childClusters H A) (htr : B₀.subtype (· ∈ S) = A.subtype (· ∈ S))
-    (F : Finset (Finset L)) : enteringDist H len s A F = forestDist H len s B₀ F := by
+    (F : Fam L) : enteringDist H len s A F = forestDist H len s B₀ F := by
   have hB₀A := (mem_childClusters.1 hB₀).2.1
   -- the other children receive no lineage
   have hother : ∀ B ∈ childClusters H A, B ≠ B₀ → ∀ l, s l ∉ B := by
@@ -833,25 +817,25 @@ private theorem marg_enteringDist_chain {H : Finset (Finset X)} (hH : IsHierarch
     rw [← htr, mem_subtype] at h1
     exact h1
   unfold enteringDist
-  rw [marg_sum_pi_reindex (T' := ({B₀} : Finset (Finset X))) (fun B => B = B₀) id
+  rw [marg_sum_pi_reindex (T' := ({B₀} : Fam X)) (fun B => B = B₀) id
     (fun B _ h => h ▸ mem_singleton_self _) (fun B _ B' _ h h' _ => h.trans h'.symm)
     (fun i' hi' => ⟨B₀, hB₀, rfl, (mem_singleton.1 hi').symm⟩)
     (fun B => forestDist H len s B) (fun B => forestDist H len s B)
     (fun B hB hne F => marg_forestDist_eq_empty hH len (mem_childClusters.1 hB).1
       (hother B hB hne) F) (fun _ _ _ => rfl)]
-  let eqv : (({B₀} : Finset (Finset X)) → Finset (Finset L)) ≃ Finset (Finset L) :=
+  let eqv : (({B₀} : Fam X) → Fam L) ≃ Fam L :=
     { toFun := fun g => g ⟨B₀, mem_singleton_self _⟩
       invFun := fun F₀ _ => F₀
       left_inv := fun g => funext fun i => congr_arg g (Subtype.ext (mem_singleton.1 i.2).symm)
       right_inv := fun F₀ => rfl }
   rw [← eqv.symm.sum_comp, hSF]
-  have hterm : ∀ F₀ : Finset (Finset L),
+  have hterm : ∀ F₀ : Fam L,
       (if univ.sup (eqv.symm F₀) ∪ sampledForest s B₀ = F then
-        ∏ i : ({B₀} : Finset (Finset X)), forestDist H len s i (eqv.symm F₀ i) else 0) =
+        ∏ i : ({B₀} : Fam X), forestDist H len s i (eqv.symm F₀ i) else 0) =
       if F₀ = F then forestDist H len s B₀ F₀ else 0 := by
     intro F₀
     have h1 : univ.sup (eqv.symm F₀) = F₀ := sup_const univ_nonempty F₀
-    have h2 : ∏ i : ({B₀} : Finset (Finset X)), forestDist H len s i (eqv.symm F₀ i) =
+    have h2 : ∏ i : ({B₀} : Fam X), forestDist H len s i (eqv.symm F₀ i) =
         forestDist H len s B₀ F₀ :=
       (prod_coe_sort {B₀} (fun B => forestDist H len s B F₀)).trans (prod_singleton _ _)
     rw [h1, h2]
@@ -872,7 +856,7 @@ private theorem marg_enteringDist_restrict (σ : SpeciesTree X) {S : Finset X} (
             (B.subtype (· ∈ S)) F *
           kingmanTransition (∑ A' ∈ σ.clusters with A' ⊆ B ∧
             A'.subtype (· ∈ S) = B.subtype (· ∈ S), σ.length A') F G)
-    (F : Finset (Finset L)) :
+    (F : Fam L) :
     enteringDist σ.clusters σ.length (fun l => (s l : X)) A F =
       enteringDist (σ.restrict S hS).clusters (σ.restrict S hS).length s
         (A.subtype (· ∈ S)) F := by
@@ -915,7 +899,7 @@ entering the trace of `A` in the induced tree, evolved for the lengths of the cl
 with the same trace. -/
 private theorem marg_prune (σ : SpeciesTree X) {S : Finset X} (hS : S.Nonempty) (s : L → S)
     {A : Finset X} (hA : A ∈ σ.clusters) (hAS : (A ∩ S).Nonempty) (hAu : A ≠ univ)
-    (G : Finset (Finset L)) :
+    (G : Fam L) :
     forestDist σ.clusters σ.length (fun l => (s l : X)) A G =
       ∑ F, enteringDist (σ.restrict S hS).clusters (σ.restrict S hS).length s
           (A.subtype (· ∈ S)) F *
@@ -976,7 +960,7 @@ private theorem marg_prune (σ : SpeciesTree X) {S : Finset X} (hS : S.Nonempty)
 /-- Pruning the species tree: if all lineages are sampled from taxa in `S`, the multispecies
 coalescent on `σ` is the multispecies coalescent on the induced species tree `σ(S)`. -/
 theorem SpeciesTree.rootedDist_restrict (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty)
-    (s : L → S) (G : Finset (Finset L)) :
+    (s : L → S) (G : Fam L) :
     (σ.restrict S hS).rootedDist s G = σ.rootedDist (fun l => (s l : X)) G := by
   have hH := σ.isHierarchy
   have hH' := (σ.restrict S hS).isHierarchy
@@ -1042,7 +1026,7 @@ theorem SpeciesTree.rootedDist_restrict (σ : SpeciesTree X) (S : Finset X) (hS 
 /-- The restriction of an unrooted tree (given by the sides of its splits, as in `ADR11.unroot`)
 to the lineages `L'`, along an embedding `e : L' ↪ L`: the splits whose two sides both meet the
 range of `e`, restricted to `L'`. -/
-def restrictUnrooted (e : L' ↪ L) (T : Finset (Finset L)) : Finset (Finset L') :=
+def restrictUnrooted (e : L' ↪ L) (T : Fam L) : Fam L' :=
   (T.filter fun A => (∃ l, e l ∈ A) ∧ ∃ l, e l ∉ A).image fun A => univ.filter fun l => e l ∈ A
 
 private theorem marg_tr_compl (e : L' ↪ L) (A : Finset L) :
@@ -1050,7 +1034,6 @@ private theorem marg_tr_compl (e : L' ↪ L) (A : Finset L) :
   ext l
   simp
 
-omit [Fintype L] [DecidableEq L'] in
 private theorem marg_tr_ne_univ (e : L' ↪ L) {A : Finset L} :
     (univ.filter fun l => e l ∈ A) ≠ univ ↔ ∃ l, e l ∉ A := by
   constructor
@@ -1065,7 +1048,7 @@ private theorem marg_tr_ne_univ (e : L' ↪ L) {A : Finset L} :
     exact hl (mem_filter.1 hl').2
 
 /-- Unrooting commutes with restricting to a subset of the lineages, for any family of clusters. -/
-private theorem marg_unroot_restrictForest (e : L' ↪ L) (G : Finset (Finset L)) :
+private theorem marg_unroot_restrictForest (e : L' ↪ L) (G : Fam L) :
     unroot (restrictForest e G) = restrictUnrooted e (unroot G) := by
   ext D
   rw [absorb_mem_unroot]
@@ -1105,7 +1088,7 @@ private theorem marg_unroot_restrictForest (e : L' ↪ L) (G : Finset (Finset L)
 
 /-- Dropping lineages, for unrooted gene trees. -/
 theorem SpeciesTree.unrootedDist_comp_embedding (σ : SpeciesTree X) (s : L → X) (e : L' ↪ L)
-    (T' : Finset (Finset L')) :
+    (T' : Fam L') :
     σ.unrootedDist (s ∘ e) T' =
       ∑ T, if restrictUnrooted e T = T' then σ.unrootedDist s T else 0 := by
   unfold SpeciesTree.unrootedDist

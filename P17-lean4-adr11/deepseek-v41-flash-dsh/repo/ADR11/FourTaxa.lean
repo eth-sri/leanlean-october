@@ -31,7 +31,7 @@ variable {X : Type*} [Fintype X] [DecidableEq X]
 
 /-- Section 4.1: for the balanced species tree `((a,b):x,(c,d):y)`,
 `ℙ(T_{AB|CD}) = 1 - (2/3) e^{-(x+y)}` and `ℙ(T_{AC|BD}) = ℙ(T_{AD|BC}) = (1/3) e^{-(x+y)}`. -/
-theorem fourTaxa_balanced (σ : SpeciesTree (Fin 4)) (hσ : σ.clusters = balanced4) :
+theorem fourTaxa_balanced (σ : ST4) (hσ : σ.clusters = balanced4) :
     σ.unrootedDist id (treeOfClusters {{0, 1}}) =
         1 - 2 / 3 * exp (-(σ.length {0, 1} + σ.length {2, 3})) ∧
     σ.unrootedDist id (treeOfClusters {{0, 2}}) =
@@ -47,7 +47,7 @@ theorem fourTaxa_balanced (σ : SpeciesTree (Fin 4)) (hσ : σ.clusters = balanc
 
 /-- Section 4.1: for the rooted caterpillar species tree `(((a,b):x,c):y,d)`,
 `ℙ(T_{AB|CD}) = 1 - (2/3) e^{-x}` and `ℙ(T_{AC|BD}) = ℙ(T_{AD|BC}) = (1/3) e^{-x}`. -/
-theorem fourTaxa_caterpillar (σ : SpeciesTree (Fin 4)) (hσ : σ.clusters = caterpillar4) :
+theorem fourTaxa_caterpillar (σ : ST4) (hσ : σ.clusters = caterpillar4) :
     σ.unrootedDist id (treeOfClusters {{0, 1}}) = 1 - 2 / 3 * exp (-σ.length {0, 1}) ∧
     σ.unrootedDist id (treeOfClusters {{0, 2}}) = 1 / 3 * exp (-σ.length {0, 1}) ∧
     σ.unrootedDist id (treeOfClusters {{0, 3}}) = 1 / 3 * exp (-σ.length {0, 1}) := by
@@ -62,7 +62,7 @@ theorem fourTaxa_caterpillar (σ : SpeciesTree (Fin 4)) (hσ : σ.clusters = cat
 `(((a,b):x,c):y₁,d)`, `(((a,b):x,d):y₂,c)`, `(((c,d):x,a):y₃,b)`, `(((c,d):x,b):y₄,a)` and
 `((a,b):z,(c,d):x-z)` produce the same unrooted gene tree distribution. The trees are given by
 their clusters and the lengths of their internal edges. -/
-theorem fourTaxa_sameDistribution (σ₁ σ₂ σ₃ σ₄ σ₅ : SpeciesTree (Fin 4))
+theorem fourTaxa_sameDistribution (σ₁ σ₂ σ₃ σ₄ σ₅ : ST4)
     (h₁ : σ₁.clusters = hierarchyOf {{0, 1}, {0, 1, 2}})
     (h₂ : σ₂.clusters = hierarchyOf {{0, 1}, {0, 1, 3}})
     (h₃ : σ₃.clusters = hierarchyOf {{2, 3}, {0, 2, 3}})

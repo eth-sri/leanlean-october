@@ -26,7 +26,7 @@ open Finset Real
 
 /-- **Equation (11)** (Appendix B.1): the unrooted gene tree distribution of the balanced species
 tree `(((a,b):x,c):y,(d,e):z)`. -/
-theorem equation11 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
+theorem equation11 (σ : ST5) (hσ : σ.clusters = balanced5) :
     let X := exp (-σ.length {0, 1})
     let Y := exp (-σ.length {0, 1, 2})
     let Z := exp (-σ.length {3, 4})
@@ -37,7 +37,7 @@ theorem equation11 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
       u σ 12 = u σ 5 ∧
     u σ 7 = 1 / 15 * X * Y ^ 3 * Z ∧ u σ 8 = u σ 7 ∧ u σ 10 = u σ 7 ∧ u σ 11 = u σ 7 ∧
       u σ 14 = u σ 7 ∧ u σ 15 = u σ 7 := by
-  have h (i : ℕ) (hi : i ∈ Icc 1 15) :
+  have h (i : ℕ) (hi : i ∈ F15) :
       u σ i = Computation.evalPoly σ.length (Computation.bal5Poly i) :=
     Computation.u_bal5 σ hσ hi
   dsimp only
@@ -53,7 +53,7 @@ theorem equation11 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
 /-! ### Helpers: the formulas (11) on the classes, and balanced trees with given `X, Y, Z` -/
 
 /-- For a balanced species tree, `X, Y, Z ∈ (0, 1)`. -/
-theorem tables_bal_bounds (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
+theorem tables_bal_bounds (σ : ST5) (hσ : σ.clusters = balanced5) :
     0 < exp (-σ.length {0, 1}) ∧ exp (-σ.length {0, 1}) < 1 ∧
     0 < exp (-σ.length {0, 1, 2}) ∧ exp (-σ.length {0, 1, 2}) < 1 ∧
     0 < exp (-σ.length {3, 4}) ∧ exp (-σ.length {3, 4}) < 1 := by
@@ -63,7 +63,7 @@ theorem tables_bal_bounds (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanc
     exp_pos _, h _ (by decide) (by decide)⟩
 
 /-- Equation (11) on the names of the classes, with `X, Y, Z ∈ (0, 1)`. -/
-private theorem tables_bal_formulas (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
+private theorem tables_bal_formulas (σ : ST5) (hσ : σ.clusters = balanced5) :
     ∃ X Y Z : ℝ, 0 < X ∧ X < 1 ∧ 0 < Y ∧ Y < 1 ∧ 0 < Z ∧ Z < 1 ∧
       u σ 1 = 1 - 2 / 3 * X - 2 / 3 * Y * Z + 1 / 3 * X * Y * Z + 1 / 15 * X * Y ^ 3 * Z ∧
       u σ 2 = 1 / 3 * Y * Z - 1 / 6 * X * Y * Z - 1 / 10 * X * Y ^ 3 * Z ∧
@@ -83,7 +83,7 @@ def balancedClass : ℕ → ℕ
   | 8 => 7 | 10 => 7 | 11 => 7 | 14 => 7 | 15 => 7 | i => i
 
 /-- **Inequalities (4)**: for all branch lengths, `u₁ > u₂ > u₅`, `u₁ > u₄ > u₅` and `u₅ > u₇`. -/
-theorem equation4 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
+theorem equation4 (σ : ST5) (hσ : σ.clusters = balanced5) :
     u σ 1 > u σ 2 ∧ u σ 1 > u σ 4 ∧ u σ 2 > u σ 5 ∧ u σ 4 > u σ 5 ∧ u σ 5 > u σ 7 := by
   obtain ⟨X, Y, Z, hX, hX1, hY, hY1, hZ, hZ1, h1, h2, h4, h5, h7⟩ := tables_bal_formulas σ hσ
   rw [h1, h2, h4, h5, h7]
@@ -111,22 +111,22 @@ open scoped Classical in
 /-- Section 4.2.1: the 6-element class always has the strictly smallest probability, the
 4-element class the next smallest, and the class of the largest probability is the singleton
 `{T₁}`. -/
-theorem balanced_extremeClasses (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
-    {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u σ i ≤ u σ j} = {7, 8, 10, 11, 14, 15} ∧
-    {i ∈ Icc 1 15 | u σ 7 < u σ i ∧ ∀ j ∈ Icc 1 15, u σ 7 < u σ j → u σ i ≤ u σ j} =
+theorem balanced_extremeClasses (σ : ST5) (hσ : σ.clusters = balanced5) :
+    {i ∈ F15 | ∀ j ∈ F15, u σ i ≤ u σ j} = {7, 8, 10, 11, 14, 15} ∧
+    {i ∈ F15 | u σ 7 < u σ i ∧ ∀ j ∈ F15, u σ 7 < u σ j → u σ i ≤ u σ j} =
       {5, 6, 9, 12} ∧
-    {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u σ j ≤ u σ i} = {1} := by
+    {i ∈ F15 | ∀ j ∈ F15, u σ j ≤ u σ i} = {1} := by
   obtain ⟨h12, h14, h25, h45, h57⟩ := equation4 σ hσ
   obtain ⟨-, -, e3, -, e13, -, e6, e9, e12, -, e8, e10, e11, e14, e15⟩ := equation11 σ hσ
-  have K1 : ∀ j ∈ Icc 1 15, u σ 7 ≤ u σ j := by
+  have K1 : ∀ j ∈ F15, u σ 7 ≤ u σ j := by
     intro j hj
     obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
     interval_cases j <;> linarith
-  have K2 : ∀ j ∈ Icc 1 15, u σ 7 < u σ j → u σ 5 ≤ u σ j := by
+  have K2 : ∀ j ∈ F15, u σ 7 < u σ j → u σ 5 ≤ u σ j := by
     intro j hj hj7
     obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
     interval_cases j <;> linarith
-  have K3 : ∀ j ∈ Icc 1 15, u σ j ≤ u σ 1 := by
+  have K3 : ∀ j ∈ F15, u σ j ≤ u σ 1 := by
     intro j hj
     obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
     interval_cases j <;> linarith

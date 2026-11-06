@@ -29,12 +29,12 @@ open Finset
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
 /-- The unrooted tree with the nontrivial splits `A | Aᶜ`, `A ∈ C` (and all trivial splits). -/
-def treeOfClusters (C : Finset (Finset X)) : Finset (Finset X) :=
+def treeOfClusters (C : Fam X) : Fam X :=
   unroot (insert univ (C ∪ univ.image fun x => {x}))
 
 /-- The hierarchy with the given nontrivial clusters `C`, together with `univ` and the
 singletons. -/
-def hierarchyOf (C : Finset (Finset X)) : Finset (Finset X) :=
+def hierarchyOf (C : Fam X) : Fam X :=
   insert univ (C ∪ univ.image fun x => {x})
 
 /-! ### Three taxa -/
@@ -42,27 +42,27 @@ def hierarchyOf (C : Finset (Finset X)) : Finset (Finset X) :=
 /-! ### Four taxa -/
 
 /-- The balanced species tree `((a,b),(c,d))` (Fig. 2a). -/
-def balanced4 : Finset (Finset (Fin 4)) := hierarchyOf {{0, 1}, {2, 3}}
+def balanced4 : Fam4 := hierarchyOf {{0, 1}, {2, 3}}
 
 /-- The rooted caterpillar species tree `(((a,b),c),d)` (Fig. 2b). -/
-def caterpillar4 : Finset (Finset (Fin 4)) := hierarchyOf {{0, 1}, {0, 1, 2}}
+def caterpillar4 : Fam4 := hierarchyOf {{0, 1}, {0, 1, 2}}
 
 /-! ### Five taxa -/
 
 /-- The balanced species tree `(((a,b),c),(d,e))` (Fig. 2c). -/
-def balanced5 : Finset (Finset (Fin 5)) := hierarchyOf {{0, 1}, {0, 1, 2}, {3, 4}}
+def balanced5 : Fam5 := hierarchyOf {{0, 1}, {0, 1, 2}, {3, 4}}
 
 /-- The rooted caterpillar species tree `((((a,b),c),d),e)` (Fig. 2d). -/
-def caterpillar5 : Finset (Finset (Fin 5)) := hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 3}}
+def caterpillar5 : Fam5 := hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 3}}
 
 /-- The pseudocaterpillar species tree `(((a,b),(d,e)),c)` (Fig. 2e). -/
-def pseudocaterpillar5 : Finset (Finset (Fin 5)) := hierarchyOf {{0, 1}, {3, 4}, {0, 1, 3, 4}}
+def pseudocaterpillar5 : Fam5 := hierarchyOf {{0, 1}, {3, 4}, {0, 1, 3, 4}}
 
 /-- The nine nonbinary rooted 5-taxon shapes of Table 6, with the labellings given there:
 `P₁ = (a,b,c,d,e)`, `P₂ = (a,b,c,(d,e))`, `P₃ = ((a,b,c,d),e)`, `P₄ = ((a,b,c),d,e)`,
 `P₅ = ((a,b),(d,e),c)`, `P₆ = (((a,b),c),d,e)`, `P₇ = (((a,b),d,e),c)`, `P₈ = ((a,b,c),(d,e))`,
 `P₉ = (((a,b,c),d),e)`. -/
-def polytomy5 : ℕ → Finset (Finset (Fin 5))
+def polytomy5 : ℕ → Fam5
   | 1 => hierarchyOf ∅
   | 2 => hierarchyOf {{3, 4}}
   | 3 => hierarchyOf {{0, 1, 2, 3}}
@@ -76,7 +76,7 @@ def polytomy5 : ℕ → Finset (Finset (Fin 5))
 
 /-- The paper's unrooted 5-taxon gene trees `T₁, …, T₁₅` (Table 5), each given by one side of
 each of its two nontrivial splits. For instance `T₁` has the splits `AB|CDE` and `ABC|DE`. -/
-def T5 : ℕ → Finset (Finset (Fin 5))
+def T5 : ℕ → Fam5
   | 1 => treeOfClusters {{0, 1}, {0, 1, 2}}
   | 2 => treeOfClusters {{0, 1}, {0, 1, 3}}
   | 3 => treeOfClusters {{0, 1}, {0, 1, 4}}
@@ -96,14 +96,14 @@ def T5 : ℕ → Finset (Finset (Fin 5))
 
 /-- `u σ i = ℙ_σ(T_i)`, the probability of the unrooted gene tree `T_i` under the multispecies
 coalescent on a 5-taxon species tree `σ`, with one lineage per taxon. -/
-noncomputable def u (σ : SpeciesTree (Fin 5)) (i : ℕ) : ℝ :=
+noncomputable def u (σ : ST5) (i : ℕ) : ℝ :=
   σ.unrootedDist id (T5 i)
 
 /-! ### Species trees with given internal edge lengths -/
 
 /-- A species tree with the clusters `H` and the internal edge lengths `len` (pendant edges get
 length `1`). -/
-noncomputable def SpeciesTree.ofLengths (H : Finset (Finset X)) (len : Finset X → ℝ)
+noncomputable def SpeciesTree.ofLengths (H : Fam X) (len : Len X)
     (h₁ : univ ∈ H) (h₂ : ∀ x : X, {x} ∈ H) (h₃ : ∀ A ∈ H, A.Nonempty)
     (h₄ : ∀ A ∈ H, ∀ B ∈ H, A ⊆ B ∨ B ⊆ A ∨ Disjoint A B)
     (h₅ : ∀ A ∈ H, A ≠ univ → 2 ≤ #A → 0 < len A) : SpeciesTree X where

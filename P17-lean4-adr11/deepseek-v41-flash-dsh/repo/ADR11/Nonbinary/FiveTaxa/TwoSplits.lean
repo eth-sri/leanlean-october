@@ -57,18 +57,18 @@ def ac2_flip : Equiv.Perm (Fin 5) := ⟨![3, 4, 2, 0, 1], ![3, 4, 2, 0, 1], by d
 (`ac2_flip_idx`). -/
 def ac2_idxFlip (i : ℕ) : ℕ := [0, 1, 13, 4, 3, 15, 10, 9, 8, 7, 6, 11, 14, 2, 12, 5].getD i 0
 
-theorem ac2_flip_idx : ∀ i ∈ Icc 1 15, ac2_idxFlip i ∈ Icc 1 15 ∧
+theorem ac2_flip_idx : ∀ i ∈ F15, ac2_idxFlip i ∈ F15 ∧
     relabelFamily ac2_flip (T5 i) = T5 (ac2_idxFlip i) := by
-  decide +kernel
+  decide
 
-theorem ac2_flip_surj : ∀ j ∈ Icc 1 15, ∃ i ∈ Icc 1 15, ac2_idxFlip i = j := by
+theorem ac2_flip_surj : ∀ j ∈ F15, ∃ i ∈ F15, ac2_idxFlip i = j := by
   decide
 
 /-! ### The least probable class of `P₆` -/
 
 /-- The least probable class of `P₆ = (((a,b),c),d,e)` is `{T₇, T₈, T₁₀, T₁₁, T₁₄, T₁₅}`
 (Table 7, with the inequalities of Table 6). -/
-theorem ac2_P6_leastClass (τ : SpeciesTree (Fin 5)) (h : τ.clusters = polytomy5 6) :
+theorem ac2_P6_leastClass (τ : ST5) (h : τ.clusters = polytomy5 6) :
     cls_leastClass τ = {7, 8, 10, 11, 14, 15} := by
   obtain ⟨h12, h14, h25, h45, h57⟩ := (table6 τ).2.2.2.2.1 h
   obtain ⟨-, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15⟩ :=
@@ -91,31 +91,31 @@ theorem ac2_P6_leastClass (τ : SpeciesTree (Fin 5)) (h : τ.clusters = polytomy
 
 /-- The rootings of `U5 2` with the shape of the balanced tree or of `P₆`: `(((a,b),c),(d,e))`,
 `((a,b),(c,(d,e)))`, `(((a,b),c),d,e)`, `(a,b,(c,(d,e)))`. -/
-abbrev ac2_balancedP6 : Finset (Finset (Finset (Fin 5))) :=
+abbrev ac2_balancedP6 : Fam (FinFam 5) :=
   {hierarchyOf {{0, 1}, {0, 1, 2}, {3, 4}}, hierarchyOf {{0, 1}, {3, 4}, {2, 3, 4}},
     hierarchyOf {{0, 1}, {0, 1, 2}}, hierarchyOf {{3, 4}, {2, 3, 4}}}
 
 /-- The rootings of `U5 2` with a polytomy: `P₅ = ((a,b),(d,e),c)`, and `(((a,b),c),d,e)`,
 `(a,b,(c,(d,e)))` of shape `P₆`. -/
-abbrev ac2_polytomies : Finset (Finset (Finset (Fin 5))) :=
+abbrev ac2_polytomies : Fam (FinFam 5) :=
   {hierarchyOf {{0, 1}, {3, 4}}, hierarchyOf {{0, 1}, {0, 1, 2}}, hierarchyOf {{3, 4}, {2, 3, 4}}}
 
 /-- Among the rootings of `U5 2`, `P₅ = ((a,b),(d,e),c)` is the only one in the shape group of
 `P₅`: once the shape is known, "the labeling on the unrooted tree determines that on the rooted
 one". -/
-theorem ac2_group_p5 {τ : SpeciesTree (Fin 5)} (hR : τ.clusters ∈ rootings5 2)
+theorem ac2_group_p5 {τ : ST5} (hR : τ.clusters ∈ rootings5 2)
     (hg : sh_groupOf τ.clusters = .p5) : τ.clusters = hierarchyOf {{0, 1}, {3, 4}} := by
   simp only [rootings5, mem_insert, mem_singleton] at hR
   rcases hR with h | h | h | h | h | h | h | h | h | h <;> rw [h] at hg ⊢ <;>
-    first | rfl | exact absurd hg (by decide +kernel)
+    first | rfl | exact absurd hg (by decide)
 
 /-- Among the rootings of `U5 2`, those in the shape group of the balanced tree and `P₆` are the two
 balanced trees and the two rootings of shape `P₆`. -/
-theorem ac2_group_balP6 {τ : SpeciesTree (Fin 5)} (hR : τ.clusters ∈ rootings5 2)
+theorem ac2_group_balP6 {τ : ST5} (hR : τ.clusters ∈ rootings5 2)
     (hg : sh_groupOf τ.clusters = .balP6) : τ.clusters ∈ ac2_balancedP6 := by
   simp only [rootings5, mem_insert, mem_singleton] at hR
   rcases hR with h | h | h | h | h | h | h | h | h | h <;> rw [h] at hg ⊢ <;>
-    first | decide +kernel | exact absurd hg (by decide +kernel)
+    first | decide | exact absurd hg (by decide)
 
 /-! ### The labelling of the balanced trees and `P₆`: `T₇` -/
 
@@ -124,7 +124,7 @@ balanced tree in the proof of Proposition 7": from the splits, a balanced specie
 `(((a,b),c),(d,e))` or `((a,b),(c,(d,e)))`, and one of shape `P₆` is `(((a,b),c),d,e)` or
 `(a,b,(c,(d,e)))`; the gene tree `T₇` (splits `AD|BCE`, `ABD|CE`) falls into the least probable
 class for the first tree of each pair but not for the second. -/
-theorem ac2_T7_rule (τ : SpeciesTree (Fin 5)) :
+theorem ac2_T7_rule (τ : ST5) :
     (τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2}, {3, 4}} → 7 ∈ cls_leastClass τ) ∧
     (τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2}} → 7 ∈ cls_leastClass τ) ∧
     (τ.clusters = hierarchyOf {{0, 1}, {3, 4}, {2, 3, 4}} → 7 ∉ cls_leastClass τ) ∧
@@ -139,7 +139,7 @@ theorem ac2_T7_rule (τ : SpeciesTree (Fin 5)) :
     obtain ⟨hL, -, -⟩ := sh_classes_idx ac2_flip_idx ac2_flip_surj τ
     have h0 : (τ.relabel ac2_flip).clusters = balanced5 := by
       rw [SpeciesTree.relabel_clusters, h]
-      decide +kernel
+      decide
     have hc : cls_leastClass (τ.relabel ac2_flip) = {7, 8, 10, 11, 14, 15} :=
       (balanced_extremeClasses _ h0).1
     have h9 : ac2_idxFlip 7 ∈ cls_leastClass (τ.relabel ac2_flip) := by
@@ -151,7 +151,7 @@ theorem ac2_T7_rule (τ : SpeciesTree (Fin 5)) :
     obtain ⟨hL, -, -⟩ := sh_classes_idx ac2_flip_idx ac2_flip_surj τ
     have h0 : (τ.relabel ac2_flip).clusters = polytomy5 6 := by
       rw [SpeciesTree.relabel_clusters, h]
-      decide +kernel
+      decide
     have h9 : ac2_idxFlip 7 ∈ cls_leastClass (τ.relabel ac2_flip) := by
       rw [hL]
       exact mem_image_of_mem _ h7
@@ -190,7 +190,7 @@ tree, the species tree is the balanced tree if `Z < 1` and is `P₆` if `Z = 1`"
 formulas of Table 7 are those of the balanced tree with `Z = 1`. Likewise for
 `((a,b):z,(c,(d,e):x):y)` and `(a,b,(c,(d,e):x):y)`, with the labels `a ↔ d`, `b ↔ e` permuted
 (`T₂, T₅, T₇` become `T₁₃, T₁₅, T₉`). -/
-theorem ac2_balanced_P6_rule (τ : SpeciesTree (Fin 5)) :
+theorem ac2_balanced_P6_rule (τ : ST5) :
     (τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2}, {3, 4}} →
       ac2_solveZ (u τ 2) (u τ 5) (u τ 7) = exp (-τ.length {3, 4}) ∧ exp (-τ.length {3, 4}) < 1) ∧
     (τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2}} → ac2_solveZ (u τ 2) (u τ 5) (u τ 7) = 1) ∧
@@ -200,29 +200,29 @@ theorem ac2_balanced_P6_rule (τ : SpeciesTree (Fin 5)) :
     (τ.clusters = hierarchyOf {{3, 4}, {2, 3, 4}} → ac2_solveZ (u τ 13) (u τ 15) (u τ 9) = 1) := by
   refine ⟨fun h => ?_, fun h => ?_, fun h => ?_, fun h => ?_⟩
   · obtain ⟨-, e2, -, -, e5, -, e7, -⟩ := rootingDist5_2_5 τ h
-    obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
-    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {0, 1, 2}) (by rw [h]; decide) (by decide)
-    obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {3, 4}) (by rw [h]; decide) (by decide)
+    obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {0, 1}) (by drw h) (by decide)
+    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {0, 1, 2}) (by drw h) (by decide)
+    obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {3, 4}) (by drw h) (by decide)
     exact ⟨ac2_solveZ_eq x0 y0 z0 (by rw [e2]; ring) (by rw [e5]; ring) (by rw [e7]; ring), z1⟩
   · obtain ⟨-, e2, -, -, e5, -, e7, -⟩ := rootingDist5_2_8 τ h
-    obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
-    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {0, 1, 2}) (by rw [h]; decide) (by decide)
+    obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {0, 1}) (by drw h) (by decide)
+    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {0, 1, 2}) (by drw h) (by decide)
     exact ac2_solveZ_eq x0 y0 one_pos (by rw [e2]; ring) (by rw [e5]; ring) (by rw [e7]; ring)
   · obtain ⟨-, -, -, -, -, -, -, -, e9, -, -, -, e13, -, e15⟩ := rootingDist5_2_6 τ h
-    obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
-    obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {3, 4}) (by rw [h]; decide) (by decide)
-    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
+    obtain ⟨z0, z1⟩ := five_exp_bounds τ (A := {0, 1}) (by drw h) (by decide)
+    obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {3, 4}) (by drw h) (by decide)
+    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by drw h) (by decide)
     exact ⟨ac2_solveZ_eq x0 y0 z0 (by rw [e13]; ring) (by rw [e15]; ring) (by rw [e9]; ring), z1⟩
   · obtain ⟨-, -, -, -, -, -, -, -, e9, -, -, -, e13, -, e15⟩ := rootingDist5_2_9 τ h
-    obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {3, 4}) (by rw [h]; decide) (by decide)
-    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
+    obtain ⟨x0, -⟩ := five_exp_bounds τ (A := {3, 4}) (by drw h) (by decide)
+    obtain ⟨y0, -⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by drw h) (by decide)
     exact ac2_solveZ_eq x0 y0 one_pos (by rw [e13]; ring) (by rw [e15]; ring) (by rw [e9]; ring)
 
 /-! ### The lengths of `P₅` and `P₆`, from Table 7 -/
 
 /-- Appendix C, the lengths of `P₅ = ((a,b):x,(d,e):y,c)`, solved from the formulas of Table 7:
 `X = 3u₄ + 12u₅` and `Y = 3u₂ + 12u₅`. -/
-theorem ac2_P5_lengths (τ : SpeciesTree (Fin 5)) (h : τ.clusters = hierarchyOf {{0, 1}, {3, 4}}) :
+theorem ac2_P5_lengths (τ : ST5) (h : τ.clusters = hierarchyOf {{0, 1}, {3, 4}}) :
     τ.length {0, 1} = -log (3 * u τ 4 + 12 * u τ 5) ∧
       τ.length {3, 4} = -log (3 * u τ 2 + 12 * u τ 5) := by
   obtain ⟨-, e2, -, e4, e5, -⟩ := rootingDist5_2_7 τ h
@@ -235,7 +235,7 @@ theorem ac2_P5_lengths (τ : SpeciesTree (Fin 5)) (h : τ.clusters = hierarchyOf
 /-- Appendix C, the lengths of `P₆ = (((a,b):x,c):y,d,e)`, solved from the formulas of Table 7:
 `X = 3u₄ + 6u₅ + 6u₇` and `Y = 3u₂ + 3u₅ + 9u₇`; likewise for `(a,b,(c,(d,e):x):y)`, with the
 labels `a ↔ d`, `b ↔ e` permuted. -/
-theorem ac2_P6_lengths (τ : SpeciesTree (Fin 5)) :
+theorem ac2_P6_lengths (τ : ST5) :
     (τ.clusters = hierarchyOf {{0, 1}, {0, 1, 2}} →
       τ.length {0, 1} = -log (3 * u τ 4 + 6 * u τ 5 + 6 * u τ 7) ∧
         τ.length {0, 1, 2} = -log (3 * u τ 2 + 3 * u τ 5 + 9 * u τ 7)) ∧
@@ -258,7 +258,7 @@ theorem ac2_P6_lengths (τ : SpeciesTree (Fin 5)) :
 
 /-- Two copies of `P₅ = ((a,b),(d,e),c)` with the same distribution have the same lengths
 (`ac2_P5_lengths`). -/
-theorem ac2_P5_same {τ τ' : SpeciesTree (Fin 5)} (h : τ.unrootedDist id = τ'.unrootedDist id)
+theorem ac2_P5_same {τ τ' : ST5} (h : τ.unrootedDist id = τ'.unrootedDist id)
     (hτ : τ.clusters = hierarchyOf {{0, 1}, {3, 4}})
     (hτ' : τ'.clusters = hierarchyOf {{0, 1}, {3, 4}}) : τ.SameRootedMetricTree τ' := by
   obtain ⟨l1, l2⟩ := ac2_P5_lengths τ hτ
@@ -270,8 +270,8 @@ theorem ac2_P5_same {τ τ' : SpeciesTree (Fin 5)} (h : τ.unrootedDist id = τ'
 
 /-- Two copies of `P₆ = (((a,b),c),d,e)`, or of `(a,b,(c,(d,e)))`, with the same distribution have
 the same lengths (`ac2_P6_lengths`). -/
-theorem ac2_P6_same {τ τ' : SpeciesTree (Fin 5)} (h : τ.unrootedDist id = τ'.unrootedDist id)
-    {H : Finset (Finset (Fin 5))}
+theorem ac2_P6_same {τ τ' : ST5} (h : τ.unrootedDist id = τ'.unrootedDist id)
+    {H : Fam5}
     (hH : H = hierarchyOf {{0, 1}, {0, 1, 2}} ∨ H = hierarchyOf {{3, 4}, {2, 3, 4}})
     (hτ : τ.clusters = H) (hτ' : τ'.clusters = H) : τ.SameRootedMetricTree τ' := by
   rcases hH with rfl | rfl
@@ -298,18 +298,18 @@ set_option synthInstance.maxSize 1000 in
 /-- The seven binary rootings of `U5 2` are binary hierarchies. -/
 theorem ac2_binaryRootings_isBinary : ∀ H ∈ binaryRootings5, ∀ A ∈ H, 2 ≤ #A →
     ∃ B ∈ H, ∃ C ∈ H, Disjoint B C ∧ B ∪ C = A := by
-  decide +kernel
+  decide
 
 set_option synthInstance.maxSize 1000 in
 /-- The rootings of `U5 2` other than `P₅` and the two `P₆` are the binary ones. -/
 theorem ac2_rootings5_two_cases :
     ∀ H ∈ rootings5 2, H ∉ ac2_polytomies → H ∈ binaryRootings5 := by
-  decide +kernel
+  decide
 
 end Binary
 
 /-- The rootings of `U5 2` other than `P₅` and the two `P₆` are binary. -/
-theorem ac2_isBinary {τ : SpeciesTree (Fin 5)} (hR : τ.clusters ∈ rootings5 2)
+theorem ac2_isBinary {τ : ST5} (hR : τ.clusters ∈ rootings5 2)
     (hn : τ.clusters ∉ ac2_polytomies) : τ.IsBinary :=
   ac2_binaryRootings_isBinary _ (ac2_rootings5_two_cases _ hR hn)
 
@@ -318,7 +318,7 @@ theorem ac2_isBinary {τ : SpeciesTree (Fin 5)} (hR : τ.clusters ∈ rootings5 
 unrooted tree (`ac2_group_p5`). For `P₆`, `τ'` is a balanced tree or of shape `P₆`
 (`ac2_group_balP6`); the labelling is given by `T₇` (`ac2_T7_rule`), and the balanced tree is told
 apart from `P₆` by `Z < 1` versus `Z = 1` (`ac2_balanced_P6_rule`). The lengths: Table 7. -/
-theorem ac2_rootings_two_polytomy (τ τ' : SpeciesTree (Fin 5)) (hn : τ.clusters ∈ ac2_polytomies)
+theorem ac2_rootings_two_polytomy (τ τ' : ST5) (hn : τ.clusters ∈ ac2_polytomies)
     (hR' : τ'.clusters ∈ rootings5 2) (hg : sh_groupOf τ.clusters = sh_groupOf τ'.clusters)
     (h : τ.unrootedDist id = τ'.unrootedDist id) : τ.SameRootedMetricTree τ' := by
   have hC := cls_leastClass_congr h
@@ -328,12 +328,12 @@ theorem ac2_rootings_two_polytomy (τ τ' : SpeciesTree (Fin 5)) (hn : τ.cluste
   · -- `P₅`: the labelling is that of the unrooted tree
     have g5 : sh_groupOf τ'.clusters = .p5 := by
       rw [← hg, hτ]
-      decide +kernel
+      decide
     exact ac2_P5_same h hτ (ac2_group_p5 hR' g5)
   · -- `P₆ = (((a,b),c),d,e)`: `τ'` is a balanced tree or of shape `P₆`
     have hs : τ'.clusters ∈ ac2_balancedP6 := ac2_group_balP6 hR' (by
       rw [← hg, hτ]
-      decide +kernel)
+      decide)
     -- the labelling: `T₇ ∈ 𝒞`
     have h7 : 7 ∈ cls_leastClass τ' := by rw [← hC]; exact (ac2_T7_rule τ).2.1 hτ
     simp only [ac2_balancedP6, mem_insert, mem_singleton] at hs
@@ -351,7 +351,7 @@ theorem ac2_rootings_two_polytomy (τ τ' : SpeciesTree (Fin 5)) (hn : τ.cluste
   · -- `P₆ = (a,b,(c,(d,e)))`: `τ'` is a balanced tree or of shape `P₆`
     have hs : τ'.clusters ∈ ac2_balancedP6 := ac2_group_balP6 hR' (by
       rw [← hg, hτ]
-      decide +kernel)
+      decide)
     -- the labelling: `T₇ ∉ 𝒞`
     have h7 : 7 ∉ cls_leastClass τ' := by rw [← hC]; exact (ac2_T7_rule τ).2.2.2 hτ
     simp only [ac2_balancedP6, mem_insert, mem_singleton] at hs
@@ -372,7 +372,7 @@ theorem ac2_rootings_two_polytomy (τ τ' : SpeciesTree (Fin 5)) (hn : τ.cluste
 the gene tree classes, `sh_group_eq`) and the same unrooted gene tree distribution, have the same
 rooted metric tree. If both are binary, the labelling and the lengths are given by Proposition 8;
 if one of them has a polytomy (`P₅` or `P₆`), by `ac2_rootings_two_polytomy`. -/
-theorem ac2_rootings_two (τ τ' : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 2)
+theorem ac2_rootings_two (τ τ' : ST5) (hk : unroot τ.clusters = U5 2)
     (hk' : unroot τ'.clusters = U5 2) (hg : sh_groupOf τ.clusters = sh_groupOf τ'.clusters)
     (h : τ.unrootedDist id = τ'.unrootedDist id) : τ.SameRootedMetricTree τ' := by
   have hR := classify_mem_rootings5 τ 2 (by simp) hk

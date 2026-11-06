@@ -41,75 +41,75 @@ open Finset
 open scoped Classical in
 /-- The least probable class: the indices `i ∈ [1, 15]` of the gene trees `T_i` of least
 probability. -/
-noncomputable def cls_leastClass (τ : SpeciesTree (Fin 5)) : Finset ℕ :=
-  {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u τ i ≤ u τ j}
+noncomputable def cls_leastClass (τ : ST5) : Finset ℕ :=
+  {i ∈ F15 | ∀ j ∈ F15, u τ i ≤ u τ j}
 
 open scoped Classical in
 /-- The class with the second smallest probability: the indices outside the least probable class
 whose probability is least among them. -/
-noncomputable def cls_secondClass (τ : SpeciesTree (Fin 5)) : Finset ℕ :=
-  {i ∈ Icc 1 15 | i ∉ cls_leastClass τ ∧ ∀ j ∈ Icc 1 15, j ∉ cls_leastClass τ → u τ i ≤ u τ j}
+noncomputable def cls_secondClass (τ : ST5) : Finset ℕ :=
+  {i ∈ F15 | i ∉ cls_leastClass τ ∧ ∀ j ∈ F15, j ∉ cls_leastClass τ → u τ i ≤ u τ j}
 
 open scoped Classical in
 /-- The most probable gene trees: the indices `i ∈ [1, 15]` of greatest probability. -/
-noncomputable def cls_mostProbable (τ : SpeciesTree (Fin 5)) : Finset ℕ :=
-  {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u τ j ≤ u τ i}
+noncomputable def cls_mostProbable (τ : ST5) : Finset ℕ :=
+  {i ∈ F15 | ∀ j ∈ F15, u τ j ≤ u τ i}
 
-theorem cls_u_congr {τ τ' : SpeciesTree (Fin 5)}
+theorem cls_u_congr {τ τ' : ST5}
     (h : τ.unrootedDist id = τ'.unrootedDist id) (i : ℕ) : u τ i = u τ' i := by
   unfold u
   rw [h]
 
-theorem cls_leastClass_congr {τ τ' : SpeciesTree (Fin 5)}
+theorem cls_leastClass_congr {τ τ' : ST5}
     (h : τ.unrootedDist id = τ'.unrootedDist id) : cls_leastClass τ = cls_leastClass τ' := by
   ext i
   simp only [cls_leastClass, mem_filter, cls_u_congr h]
 
-theorem cls_secondClass_congr {τ τ' : SpeciesTree (Fin 5)}
+theorem cls_secondClass_congr {τ τ' : ST5}
     (h : τ.unrootedDist id = τ'.unrootedDist id) : cls_secondClass τ = cls_secondClass τ' := by
   ext i
   simp only [cls_secondClass, mem_filter, cls_leastClass_congr h, cls_u_congr h]
 
-theorem cls_mostProbable_congr {τ τ' : SpeciesTree (Fin 5)}
+theorem cls_mostProbable_congr {τ τ' : ST5}
     (h : τ.unrootedDist id = τ'.unrootedDist id) : cls_mostProbable τ = cls_mostProbable τ' := by
   ext i
   simp only [cls_mostProbable, mem_filter, cls_u_congr h]
 
 /-- Relabelling the taxa permutes the gene tree probabilities: if `π` maps `T_i` to `T_j`, then
 `T_j` has the same probability under the relabelled species tree as `T_i` under `τ`. -/
-theorem cls_u_relabel (τ : SpeciesTree (Fin 5)) (π : Fin 5 ≃ Fin 5) {i j : ℕ}
+theorem cls_u_relabel (τ : ST5) (π : Fin 5 ≃ Fin 5) {i j : ℕ}
     (h : relabelFamily π (T5 i) = T5 j) : u (τ.relabel π) j = u τ i := by
   unfold u
   rw [← h, SpeciesTree.unrootedDist_relabel]
 
 /-- The cherries of an unrooted tree on five taxa: the sides of its splits with two taxa. -/
-def cls_cherries (T : Finset (Finset (Fin 5))) : Finset (Finset (Fin 5)) :=
+def cls_cherries (T : Fam5) : Fam5 :=
   T.filter fun A => #A = 2
 
 /-- The taxa that form a cherry with `c` in some gene tree `T_i`, `i ∈ S`. -/
-def cls_partners (c : Fin 5) (S : Finset ℕ) : Finset (Fin 5) :=
-  univ.filter fun x => x ≠ c ∧ ∃ i ∈ S, ({c, x} : Finset (Fin 5)) ∈ cls_cherries (T5 i)
+def cls_partners (c : Fin 5) (S : Finset ℕ) : FinFam 5 :=
+  univ.filter fun x => x ≠ c ∧ ∃ i ∈ S, ({c, x} : FinFam 5) ∈ cls_cherries (T5 i)
 
 /-! ### Membership in the classes -/
 
-theorem cls_mem_leastClass {τ : SpeciesTree (Fin 5)} {i : ℕ} :
-    i ∈ cls_leastClass τ ↔ i ∈ Icc 1 15 ∧ ∀ j ∈ Icc 1 15, u τ i ≤ u τ j := by
+theorem cls_mem_leastClass {τ : ST5} {i : ℕ} :
+    i ∈ cls_leastClass τ ↔ i ∈ F15 ∧ ∀ j ∈ F15, u τ i ≤ u τ j := by
   simp only [cls_leastClass, mem_filter]
 
-theorem cls_mem_secondClass {τ : SpeciesTree (Fin 5)} {i : ℕ} :
-    i ∈ cls_secondClass τ ↔ i ∈ Icc 1 15 ∧ i ∉ cls_leastClass τ ∧
-      ∀ j ∈ Icc 1 15, j ∉ cls_leastClass τ → u τ i ≤ u τ j := by
+theorem cls_mem_secondClass {τ : ST5} {i : ℕ} :
+    i ∈ cls_secondClass τ ↔ i ∈ F15 ∧ i ∉ cls_leastClass τ ∧
+      ∀ j ∈ F15, j ∉ cls_leastClass τ → u τ i ≤ u τ j := by
   simp only [cls_secondClass, mem_filter]
 
-theorem cls_mem_mostProbable {τ : SpeciesTree (Fin 5)} {i : ℕ} :
-    i ∈ cls_mostProbable τ ↔ i ∈ Icc 1 15 ∧ ∀ j ∈ Icc 1 15, u τ j ≤ u τ i := by
+theorem cls_mem_mostProbable {τ : ST5} {i : ℕ} :
+    i ∈ cls_mostProbable τ ↔ i ∈ F15 ∧ ∀ j ∈ F15, u τ j ≤ u τ i := by
   simp only [cls_mostProbable, mem_filter]
 
 /-! ### Relabelling the taxa permutes the classes -/
 
 /-- Relabelling back: if `π` maps `T_i` to `T_j`, then `T_j` has the same probability under `τ`
 as `T_i` under `τ` relabelled by `π⁻¹`. -/
-theorem cls_u_relabel_symm (τ : SpeciesTree (Fin 5)) (π : Fin 5 ≃ Fin 5) {i j : ℕ}
+theorem cls_u_relabel_symm (τ : ST5) (π : Fin 5 ≃ Fin 5) {i j : ℕ}
     (h : relabelFamily π (T5 i) = T5 j) : u τ j = u (τ.relabel π.symm) i := by
   have := cls_u_relabel (τ.relabel π.symm) π h
   rwa [show (τ.relabel π.symm).relabel π = τ by simpa using τ.relabel_relabel_symm π.symm]
@@ -120,16 +120,16 @@ section IndexMap
 /-! In this section `π` maps each gene tree `T_i` (`i ∈ [1, 15]`) to `T_{p i}`, and every `T_j` is
 such an image. -/
 
-variable (τ : SpeciesTree (Fin 5)) (π : Fin 5 ≃ Fin 5) {p : ℕ → ℕ}
-  (hp : ∀ i ∈ Icc 1 15, p i ∈ Icc 1 15 ∧ relabelFamily π (T5 i) = T5 (p i))
-  (hs : ∀ j ∈ Icc 1 15, ∃ i ∈ Icc 1 15, p i = j)
+variable (τ : ST5) (π : Fin 5 ≃ Fin 5) {p : ℕ → ℕ}
+  (hp : ∀ i ∈ F15, p i ∈ F15 ∧ relabelFamily π (T5 i) = T5 (p i))
+  (hs : ∀ j ∈ F15, ∃ i ∈ F15, p i = j)
 
 include hp hs in
 /-- `T_{p i}` is in the least probable class of `τ` iff `T_i` is in that of `τ` relabelled by
 `π⁻¹`. -/
-theorem cls_mem_leastClass_relabel_iff {i : ℕ} (hi : i ∈ Icc 1 15) :
+theorem cls_mem_leastClass_relabel_iff {i : ℕ} (hi : i ∈ F15) :
     p i ∈ cls_leastClass τ ↔ i ∈ cls_leastClass (τ.relabel π.symm) := by
-  have hu : ∀ k ∈ Icc 1 15, u τ (p k) = u (τ.relabel π.symm) k := fun k hk =>
+  have hu : ∀ k ∈ F15, u τ (p k) = u (τ.relabel π.symm) k := fun k hk =>
     cls_u_relabel_symm τ π (hp k hk).2
   rw [cls_mem_leastClass, cls_mem_leastClass]
   constructor
@@ -161,9 +161,9 @@ include hp hs in
 relabelled by `π⁻¹`. -/
 theorem cls_secondClass_relabel :
     cls_secondClass τ = (cls_secondClass (τ.relabel π.symm)).image p := by
-  have hu : ∀ k ∈ Icc 1 15, u τ (p k) = u (τ.relabel π.symm) k := fun k hk =>
+  have hu : ∀ k ∈ F15, u τ (p k) = u (τ.relabel π.symm) k := fun k hk =>
     cls_u_relabel_symm τ π (hp k hk).2
-  have hL : ∀ i ∈ Icc 1 15,
+  have hL : ∀ i ∈ F15,
       (p i ∈ cls_leastClass τ ↔ i ∈ cls_leastClass (τ.relabel π.symm)) := fun i hi =>
     cls_mem_leastClass_relabel_iff τ π hp hs hi
   ext j
@@ -186,7 +186,7 @@ include hp hs in
 `π⁻¹`. -/
 theorem cls_mostProbable_relabel :
     cls_mostProbable τ = (cls_mostProbable (τ.relabel π.symm)).image p := by
-  have hu : ∀ k ∈ Icc 1 15, u τ (p k) = u (τ.relabel π.symm) k := fun k hk =>
+  have hu : ∀ k ∈ F15, u τ (p k) = u (τ.relabel π.symm) k := fun k hk =>
     cls_u_relabel_symm τ π (hp k hk).2
   ext j
   rw [mem_image]
@@ -208,8 +208,8 @@ end IndexMap
 /-! ### The least probable class and the next one -/
 
 /-- Outside the least probable class, the probability exceeds that of any member `m` of it. -/
-theorem cls_not_mem_leastClass_iff {τ : SpeciesTree (Fin 5)} {m i : ℕ}
-    (hm : m ∈ cls_leastClass τ) (hi : i ∈ Icc 1 15) :
+theorem cls_not_mem_leastClass_iff {τ : ST5} {m i : ℕ}
+    (hm : m ∈ cls_leastClass τ) (hi : i ∈ F15) :
     i ∉ cls_leastClass τ ↔ u τ m < u τ i := by
   rw [cls_mem_leastClass] at hm ⊢
   constructor
@@ -222,10 +222,10 @@ theorem cls_not_mem_leastClass_iff {τ : SpeciesTree (Fin 5)} {m i : ℕ}
 open scoped Classical in
 /-- The class of the second smallest probability: the trees of least probability among those
 more probable than a member `m` of the least probable class. -/
-theorem cls_secondClass_eq_filter {τ : SpeciesTree (Fin 5)} {m : ℕ}
+theorem cls_secondClass_eq_filter {τ : ST5} {m : ℕ}
     (hm : m ∈ cls_leastClass τ) :
     cls_secondClass τ =
-      {i ∈ Icc 1 15 | u τ m < u τ i ∧ ∀ j ∈ Icc 1 15, u τ m < u τ j → u τ i ≤ u τ j} := by
+      {i ∈ F15 | u τ m < u τ i ∧ ∀ j ∈ F15, u τ m < u τ j → u τ i ≤ u τ j} := by
   ext i
   simp only [cls_mem_secondClass, mem_filter]
   constructor

@@ -76,7 +76,7 @@ theorem five_length_eq {x y A B v : ℝ} {n : ℕ} (hn : n ≠ 0) (hA : A ≠ 0)
   linarith
 
 /-- A member of `hierarchyOf C` with at least two elements, other than `univ`, lies in `C`. -/
-theorem five_mem_of_mem_hierarchyOf {C : Finset (Finset X)} {A : Finset X}
+theorem five_mem_of_mem_hierarchyOf {C : Fam X} {A : Finset X}
     (hA : A ∈ hierarchyOf C) (h2 : 2 ≤ #A) (hu : A ≠ univ) : A ∈ C := by
   unfold hierarchyOf at hA
   rcases mem_insert.1 hA with rfl | hA
@@ -88,7 +88,7 @@ theorem five_mem_of_mem_hierarchyOf {C : Finset (Finset X)} {A : Finset X}
 
 /-- Two species trees with the same hierarchy `hierarchyOf C` and the same lengths above the
 clusters of `C` have the same rooted metric tree. -/
-theorem five_sameRootedMetricTree_of_lengths {τ τ' : SpeciesTree X} {C : Finset (Finset X)}
+theorem five_sameRootedMetricTree_of_lengths {τ τ' : SpeciesTree X} {C : Fam X}
     (h : τ.clusters = hierarchyOf C) (h' : τ'.clusters = hierarchyOf C)
     (hl : ∀ A ∈ C, τ.length A = τ'.length A) : τ.SameRootedMetricTree τ' :=
   ⟨h.trans h'.symm, fun A hA h2 hu => hl A (five_mem_of_mem_hierarchyOf (h ▸ hA) h2 hu)⟩

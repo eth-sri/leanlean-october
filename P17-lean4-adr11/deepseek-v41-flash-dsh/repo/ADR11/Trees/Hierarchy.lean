@@ -49,6 +49,8 @@ public import ADR11.MSC.Basic
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
@@ -57,9 +59,8 @@ variable {X : Type*} [Fintype X] [DecidableEq X]
 
 namespace IsHierarchy
 
-variable {H : Finset (Finset X)}
+variable {H : Fam X}
 
-omit [DecidableEq X] in
 /-- Two clusters of a hierarchy with a common element are nested. -/
 theorem subset_or_subset_of_mem (hH : IsHierarchy H) {A B : Finset X} (hA : A ∈ H) (hB : B ∈ H)
     {x : X} (hxA : x ∈ A) (hxB : x ∈ B) : A ⊆ B ∨ B ⊆ A := by
@@ -68,7 +69,6 @@ theorem subset_or_subset_of_mem (hH : IsHierarchy H) {A B : Finset X} (hA : A �
   · exact Or.inr h
   · exact absurd hxB (disjoint_left.1 h hxA)
 
-omit [DecidableEq X] in
 /-- Two clusters of a hierarchy that are not disjoint are nested. -/
 theorem subset_or_subset_of_not_disjoint (hH : IsHierarchy H) {A B : Finset X} (hA : A ∈ H)
     (hB : B ∈ H) (hAB : ¬ Disjoint A B) : A ⊆ B ∨ B ⊆ A := by
@@ -102,21 +102,21 @@ end IsHierarchy
 /-- The smallest cluster of `H` containing `T`: the intersection of the clusters of `H` that
 contain `T`. For a hierarchy `H` and a nonempty `T` it is a cluster of `H` (`IsHierarchy.lca_mem`),
 the cluster of the most recent common ancestor of the taxa in `T`. -/
-def lca (H : Finset (Finset X)) (T : Finset X) : Finset X :=
+def lca (H : Fam X) (T : Finset X) : Finset X :=
   (H.filter (T ⊆ ·)).inf id
 
 /-- A set is contained in the smallest cluster containing it. -/
-theorem subset_lca (H : Finset (Finset X)) (T : Finset X) : T ⊆ lca H T :=
+theorem subset_lca (H : Fam X) (T : Finset X) : T ⊆ lca H T :=
   Finset.le_inf fun _ hC => (mem_filter.1 hC).2
 
 /-- The smallest cluster containing `T` is contained in every cluster containing `T`. -/
-theorem lca_subset {H : Finset (Finset X)} {T C : Finset X} (hC : C ∈ H) (hTC : T ⊆ C) :
+theorem lca_subset {H : Fam X} {T C : Finset X} (hC : C ∈ H) (hTC : T ⊆ C) :
     lca H T ⊆ C :=
   Finset.inf_le (f := id) (mem_filter.2 ⟨hC, hTC⟩)
 
 namespace IsHierarchy
 
-variable {H : Finset (Finset X)}
+variable {H : Fam X}
 
 /-- In a hierarchy, the smallest cluster containing a nonempty set is a cluster. -/
 theorem lca_mem (hH : IsHierarchy H) {T : Finset X} (hT : T.Nonempty) : lca H T ∈ H := by
@@ -141,7 +141,7 @@ end IsHierarchy
 
 namespace IsHierarchy
 
-variable {H : Finset (Finset X)}
+variable {H : Fam X}
 
 /-- A cluster strictly contained in `A` that meets a child `B` of `A` is contained in `B`. -/
 theorem subset_of_mem_childClusters (hH : IsHierarchy H) {A B C : Finset X}
@@ -202,7 +202,7 @@ end IsHierarchy
 
 namespace IsHierarchy
 
-variable {H : Finset (Finset X)}
+variable {H : Fam X}
 
 end IsHierarchy
 
@@ -220,9 +220,8 @@ namespace SpeciesTree
 
 end SpeciesTree
 
-omit [Fintype X] in
 /-- The clusters of the induced tree on `S` are the nonempty traces on `S` of the clusters. -/
-theorem mem_restrictClusters {S : Finset X} {H : Finset (Finset X)} {C : Finset S} :
+theorem mem_restrictClusters {S : Finset X} {H : Fam X} {C : Finset S} :
     C ∈ restrictClusters S H ↔ ∃ A ∈ H, (A ∩ S).Nonempty ∧ A.subtype (· ∈ S) = C := by
   unfold restrictClusters
   rw [mem_image]
@@ -230,14 +229,13 @@ theorem mem_restrictClusters {S : Finset X} {H : Finset (Finset X)} {C : Finset 
 
 /-- The splits of the induced unrooted tree on `S` are the traces of the splits whose two sides
 both meet `S`. -/
-theorem mem_restrictSplits {S : Finset X} {T : Finset (Finset X)} {C : Finset S} :
+theorem mem_restrictSplits {S : Finset X} {T : Fam X} {C : Finset S} :
     C ∈ restrictSplits S T ↔
       ∃ A ∈ T, (A ∩ S).Nonempty ∧ (Aᶜ ∩ S).Nonempty ∧ A.subtype (· ∈ S) = C := by
   unfold restrictSplits
   rw [mem_image]
   simp only [mem_filter, and_assoc]
 
-omit [Fintype X] in
 /-- The trace of `A` on `S` is nonempty if and only if `A` meets `S`. -/
 theorem subtype_nonempty_iff {S A : Finset X} :
     (A.subtype (· ∈ S)).Nonempty ↔ (A ∩ S).Nonempty := by
@@ -259,20 +257,18 @@ theorem subtype_ne_univ_iff {S A : Finset X} :
   rw [← subtype_nonempty_iff, subtype_compl, Ne, ← compl_eq_empty_iff,
     ← not_nonempty_iff_eq_empty, not_not]
 
-omit [Fintype X] in
 /-- Mapping the trace of `A` on `S` (a set of elements of `S`) back to `X` gives `A ∩ S`. -/
 theorem map_subtype_eq_inter (S A : Finset X) :
     (A.subtype (· ∈ S)).map (Function.Embedding.subtype _) = A ∩ S := by
   rw [subtype_map, filter_mem_eq_inter]
 
-omit [Fintype X] in
 /-- The trace of a cluster meeting `S` is a cluster of the induced tree on `S`. -/
-theorem subtype_mem_restrictClusters {S : Finset X} {H : Finset (Finset X)} {A : Finset X}
+theorem subtype_mem_restrictClusters {S : Finset X} {H : Fam X} {A : Finset X}
     (hA : A ∈ H) (hAS : (A ∩ S).Nonempty) : A.subtype (· ∈ S) ∈ restrictClusters S H :=
   mem_restrictClusters.2 ⟨A, hA, hAS, rfl⟩
 
 /-- A cluster `C` of the induced tree on `S` is the trace of the smallest cluster containing it. -/
-theorem subtype_lca_eq {S : Finset X} {H : Finset (Finset X)} {C : Finset S}
+theorem subtype_lca_eq {S : Finset X} {H : Fam X} {C : Finset S}
     (hC : C ∈ restrictClusters S H) :
     (lca H (C.map (Function.Embedding.subtype _))).subtype (· ∈ S) = C := by
   obtain ⟨A, hA, -, rfl⟩ := mem_restrictClusters.1 hC
@@ -310,20 +306,10 @@ variable {L : Type*} [Fintype L] [DecidableEq L]
 
 /-- The sides of the splits of the unrooted tree of `G`: the non-root clusters of `G` and their
 complements. -/
-theorem mem_unroot {G : Finset (Finset L)} {A : Finset L} :
-    A ∈ unroot G ↔ (A ∈ G ∧ A ≠ univ) ∨ (Aᶜ ∈ G ∧ Aᶜ ≠ univ) := by
-  unfold unroot
-  simp only [mem_union, mem_erase, mem_image]
-  constructor
-  · rintro (⟨h1, h2⟩ | ⟨B, ⟨hB1, hB2⟩, rfl⟩)
-    · exact Or.inl ⟨h2, h1⟩
-    · exact Or.inr ⟨by rwa [compl_compl], by rwa [compl_compl]⟩
-  · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
-    · exact Or.inl ⟨h2, h1⟩
-    · exact Or.inr ⟨Aᶜ, ⟨h2, h1⟩, compl_compl A⟩
-
+theorem mem_unroot {G : Fam L} {A : Finset L} :
+    A ∈ unroot G ↔ (A ∈ G ∧ A ≠ univ) ∨ (Aᶜ ∈ G ∧ Aᶜ ≠ univ) := absorb_mem_unroot
 /-- The unrooted tree of `G` is closed under complements. -/
-theorem compl_mem_unroot {G : Finset (Finset L)} {A : Finset L} :
+theorem compl_mem_unroot {G : Fam L} {A : Finset L} :
     Aᶜ ∈ unroot G ↔ A ∈ unroot G := by
   rw [mem_unroot, mem_unroot, compl_compl, or_comm]
 
@@ -333,7 +319,7 @@ end Unroot
 
 /-- Rooted triples determine the clusters of a hierarchy: if for all `a, a' ∈ A` and `b ∉ A` some
 cluster of `H` contains `a` and `a'` but not `b`, then `A` is a cluster of `H`. -/
-theorem IsHierarchy.mem_of_triples {H : Finset (Finset X)} (hH : IsHierarchy H) {A : Finset X}
+theorem IsHierarchy.mem_of_triples {H : Fam X} (hH : IsHierarchy H) {A : Finset X}
     (hA : A.Nonempty) (h : ∀ a ∈ A, ∀ a' ∈ A, ∀ b ∉ A, ∃ C ∈ H, a ∈ C ∧ a' ∈ C ∧ b ∉ C) :
     A ∈ H := by
   obtain ⟨a, ha⟩ := hA
@@ -502,12 +488,12 @@ theorem restrict_unrootedLength (σ : SpeciesTree X) (S : Finset X) (hS : S.None
         rcases hA3 with h | h <;> rw [h] <;> assumption
       · rcases hA3 with h | h <;> rw [h] <;> assumption
   -- the sum on the right side is `2 * M`: each cluster `A` is counted once as `A` and once as `Aᶜ`
-  set f : Finset X → ℝ := fun B => if B ∈ σ.clusters ∧ B ≠ univ then σ.length B else 0 with hf
+  set f : Len X := fun B => if B ∈ σ.clusters ∧ B ≠ univ then σ.length B else 0 with hf
   have key1 : ∀ A, σ.unrootedLength A = f A + f Aᶜ := by
     intro A
     unfold unrootedLength
     rw [show σ.clusters.filter (fun B => B ≠ univ ∧ (B = A ∨ B = Aᶜ)) =
-        ({A, Aᶜ} : Finset (Finset X)).filter (fun B => B ∈ σ.clusters ∧ B ≠ univ) by
+        ({A, Aᶜ} : Fam X).filter (fun B => B ∈ σ.clusters ∧ B ≠ univ) by
       ext B
       simp only [mem_filter, mem_insert, mem_singleton]
       tauto]

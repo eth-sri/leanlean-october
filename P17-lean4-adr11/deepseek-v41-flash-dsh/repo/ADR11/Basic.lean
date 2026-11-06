@@ -28,12 +28,12 @@ open Finset
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
 /-- The clusters of `H` that meet `S`, restricted to `S`, as clusters on the subtype `S`. -/
-def restrictClusters (S : Finset X) (H : Finset (Finset X)) : Finset (Finset S) :=
+def restrictClusters (S : Finset X) (H : Fam X) : Fam S :=
   (H.filter fun A => (A ∩ S).Nonempty).image fun A => A.subtype (· ∈ S)
 
 /-- The induced unrooted tree `T(S)` of an unrooted tree `T` (given by the sides of its splits):
 the splits of `T` whose two sides both meet `S`, restricted to `S`. -/
-def restrictSplits (S : Finset X) (T : Finset (Finset X)) : Finset (Finset S) :=
+def restrictSplits (S : Finset X) (T : Fam X) : Fam S :=
   (T.filter fun A => (A ∩ S).Nonempty ∧ (Aᶜ ∩ S).Nonempty).image fun A => A.subtype (· ∈ S)
 
 namespace SpeciesTree

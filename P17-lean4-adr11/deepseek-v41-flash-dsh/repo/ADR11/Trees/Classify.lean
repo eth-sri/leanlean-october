@@ -27,24 +27,26 @@ unrooted trees, and the rootings of each standard unrooted tree are listed expli
 
 namespace ADR11
 
+set_option linter.unusedSectionVars false
+
 open Finset
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
 /-- The unrooted trees on `Fin 4`: `U4 1` has the split `AB|CD`, `U4 0` is the star. -/
-def U4 : ℕ → Finset (Finset (Fin 4))
+def U4 : ℕ → Fam4
   | 1 => treeOfClusters {{0, 1}}
   | _ => treeOfClusters ∅
 
 /-- The unrooted trees on `Fin 5`: `U5 2` has the splits `AB|CDE` and `ABC|DE`, `U5 1` the split
 `AB|CDE`, and `U5 0` is the star. -/
-def U5 : ℕ → Finset (Finset (Fin 5))
+def U5 : ℕ → Fam5
   | 2 => treeOfClusters {{0, 1}, {3, 4}}
   | 1 => treeOfClusters {{0, 1}}
   | _ => treeOfClusters ∅
 
 /-- The hierarchies on `Fin 4` with unrooted tree `U4 k`. -/
-def rootings4 : ℕ → Finset (Finset (Finset (Fin 4)))
+def rootings4 : ℕ → Finset (Fam4)
   | 1 => {hierarchyOf {{0, 1}, {0, 1, 2}}, hierarchyOf {{0, 1}, {0, 1, 3}},
           hierarchyOf {{2, 3}, {0, 2, 3}}, hierarchyOf {{2, 3}, {1, 2, 3}},
           hierarchyOf {{0, 1}, {2, 3}}, hierarchyOf {{0, 1}}, hierarchyOf {{2, 3}}}
@@ -52,7 +54,7 @@ def rootings4 : ℕ → Finset (Finset (Finset (Fin 4)))
           hierarchyOf {{0, 2, 3}}, hierarchyOf {{1, 2, 3}}}
 
 /-- The hierarchies on `Fin 5` with unrooted tree `U5 k`. -/
-def rootings5 : ℕ → Finset (Finset (Finset (Fin 5)))
+def rootings5 : ℕ → Fam (FinFam 5)
   | 2 => {hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 3}}, hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 4}},
           hierarchyOf {{3, 4}, {2, 3, 4}, {1, 2, 3, 4}}, hierarchyOf {{3, 4}, {2, 3, 4}, {0, 2, 3, 4}},
           hierarchyOf {{0, 1}, {3, 4}, {0, 1, 3, 4}}, hierarchyOf {{0, 1}, {0, 1, 2}, {3, 4}},
@@ -68,7 +70,7 @@ def rootings5 : ℕ → Finset (Finset (Finset (Fin 5)))
 
 /-- The seven binary rootings of `U5 2` (roots on the pendant edges of `e`, `d`, `a`, `b`, `c`,
 and on the internal edges `ABC|DE` and `AB|CDE`). -/
-def binaryRootings5 : Finset (Finset (Finset (Fin 5))) :=
+def binaryRootings5 : Fam (FinFam 5) :=
   {hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 3}}, hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 4}},
    hierarchyOf {{3, 4}, {2, 3, 4}, {1, 2, 3, 4}}, hierarchyOf {{3, 4}, {2, 3, 4}, {0, 2, 3, 4}},
    hierarchyOf {{0, 1}, {3, 4}, {0, 1, 3, 4}}, hierarchyOf {{0, 1}, {0, 1, 2}, {3, 4}},
@@ -76,25 +78,14 @@ def binaryRootings5 : Finset (Finset (Finset (Fin 5))) :=
 
 /-! ### Unrooting and relabelling -/
 
-theorem classify_mem_unroot {G : Finset (Finset X)} {A : Finset X} :
-    A ∈ unroot G ↔ (A ∈ G ∧ A ≠ univ) ∨ (Aᶜ ∈ G ∧ Aᶜ ≠ univ) := by
-  unfold unroot
-  simp only [mem_union, mem_erase, mem_image]
-  constructor
-  · rintro (⟨h1, h2⟩ | ⟨B, ⟨h1, h2⟩, rfl⟩)
-    · exact Or.inl ⟨h2, h1⟩
-    · exact Or.inr ⟨by simpa using h2, by simpa using h1⟩
-  · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
-    · exact Or.inl ⟨h2, h1⟩
-    · exact Or.inr ⟨Aᶜ, ⟨h2, h1⟩, compl_compl A⟩
-
-theorem classify_compl_mem_unroot {G : Finset (Finset X)} {A : Finset X} :
+theorem classify_mem_unroot {G : Fam X} {A : Finset X} :
+    A ∈ unroot G ↔ (A ∈ G ∧ A ≠ univ) ∨ (Aᶜ ∈ G ∧ Aᶜ ≠ univ) := absorb_mem_unroot
+theorem classify_compl_mem_unroot {G : Fam X} {A : Finset X} :
     Aᶜ ∈ unroot G ↔ A ∈ unroot G := by
   rw [classify_mem_unroot, classify_mem_unroot, compl_compl, or_comm]
 
-omit [Fintype X] [DecidableEq X] in
 theorem classify_mem_relabelFamily {Y : Type*} [DecidableEq Y] {e : X ≃ Y}
-    {F : Finset (Finset X)} {B : Finset Y} :
+    {F : Fam X} {B : Finset Y} :
     B ∈ relabelFamily e F ↔ B.map e.symm.toEmbedding ∈ F := by
   unfold relabelFamily
   rw [mem_image]
@@ -108,9 +99,8 @@ theorem classify_mem_relabelFamily {Y : Type*} [DecidableEq Y] {e : X ≃ Y}
     ext y
     simp [mem_map_equiv]
 
-omit [Fintype X] [DecidableEq X] in
 theorem classify_relabelFamily_trans {Y Z : Type*} [DecidableEq Y] [DecidableEq Z] (e : X ≃ Y)
-    (f : Y ≃ Z) (F : Finset (Finset X)) :
+    (f : Y ≃ Z) (F : Fam X) :
     relabelFamily f (relabelFamily e F) = relabelFamily (e.trans f) F := by
   unfold relabelFamily
   rw [image_image]
@@ -169,8 +159,8 @@ theorem classify_mem_unroot_iff (hX : Fintype.card X = 4 ∨ Fintype.card X = 5)
 /-- Transport of the unrooted tree along a relabelling, given the sides with two taxa. -/
 theorem classify_unroot_relabel_eq {Y : Type*} [Fintype Y] [DecidableEq Y] {n : ℕ}
     (hX : Fintype.card X = n) (hn : n = 4 ∨ n = 5) (σ : SpeciesTree X) (e : Y ≃ X)
-    (U T : Finset (Finset Y))
-    (hU : ∀ A ∈ (univ : Finset (Finset Y)), A ∈ U ↔ #A = 1 ∨ #A = n - 1 ∨ A ∈ T ∨ Aᶜ ∈ T)
+    (U T : Fam Y)
+    (hU : ∀ A ∈ (univ : Fam Y), A ∈ U ↔ #A = 1 ∨ #A = n - 1 ∨ A ∈ T ∨ Aᶜ ∈ T)
     (hP : (unroot σ.clusters).filter (fun B => #B = 2) = relabelFamily e T) :
     unroot (σ.relabel e.symm).clusters = U := by
   show unroot (relabelFamily e.symm σ.clusters) = U
@@ -261,7 +251,6 @@ theorem classify_eq_or_eq_compl_of_card_two (hX : Fintype.card X = 4) (σ : Spec
     · have := key _ _ (disjoint_compl_left_iff.1 h) (by omega)
       exact h2 (by rw [← this, compl_compl])
 
-omit [DecidableEq X] in
 theorem classify_exists_equiv {n : ℕ} (hX : Fintype.card X = n) (f : Fin n → X)
     (hf : Function.Injective f) : ∃ e : Fin n ≃ X, ∀ i, e i = f i :=
   ⟨Equiv.ofBijective f ((Fintype.bijective_iff_injective_and_card f).2 ⟨hf, by simp [hX]⟩),
@@ -270,7 +259,7 @@ theorem classify_exists_equiv {n : ℕ} (hX : Fintype.card X = n) (f : Fin n →
 /-! ### Hierarchies with prescribed splits -/
 
 /-- A hierarchy consists of the root, the singletons and its other clusters. -/
-theorem classify_eq_hierarchyOf {H : Finset (Finset X)} (hH : IsHierarchy H) :
+theorem classify_eq_hierarchyOf {H : Fam X} (hH : IsHierarchy H) :
     H = hierarchyOf (H.filter fun A => 2 ≤ #A ∧ A ≠ univ) := by
   ext A
   simp only [hierarchyOf, mem_insert, mem_union, mem_image, mem_univ, true_and, mem_filter]
@@ -291,8 +280,8 @@ theorem classify_eq_hierarchyOf {H : Finset (Finset X)} (hH : IsHierarchy H) :
 /-- Reduction of the classification of the rootings of an unrooted tree `U` to a finite check:
 the clusters of a rooting other than the root and the singletons are among the candidates `C`,
 and they contain a side of each split listed in `S`. -/
-theorem classify_mem_of_forall {τ : SpeciesTree X} {U C S : Finset (Finset X)}
-    {R : Finset (Finset (Finset X))}
+theorem classify_mem_of_forall {τ : SpeciesTree X} {U C S : Fam X}
+    {R : Fam (Finset X)}
     (hdec : ∀ N ∈ C.powerset, (∀ A ∈ N, ∀ B ∈ N, A ⊆ B ∨ B ⊆ A ∨ Disjoint A B) →
       (∀ A ∈ S, A ∈ N ∨ Aᶜ ∈ N) → hierarchyOf N ∈ R)
     (hC : ∀ A ∈ U, 2 ≤ #A → A ∈ C) (hS : ∀ A ∈ S, A ∈ U ∧ 2 ≤ #A ∧ 2 ≤ #Aᶜ)
@@ -316,7 +305,7 @@ theorem classify_mem_of_forall {τ : SpeciesTree X} {U C S : Finset (Finset X)}
 
 The `Fintype` instances deciding unbounded quantifiers are switched off, so that the bounded
 quantifiers below are decided by running through the given finsets (otherwise instance search
-may decide `∀ N ∈ s, p N` by enumerating all of `Finset (Finset (Fin 5))`, which happens
+may decide `∀ N ∈ s, p N` by enumerating all of `Fam5`, which happens
 silently when the instance through `Finset.decidableDforallFinset` exceeds
 `synthInstance.maxSize`; this size limit is raised locally for the larger checks). -/
 
@@ -324,122 +313,122 @@ section Decide
 
 attribute [-instance] Fintype.decidableForallFintype Fintype.decidableExistsFintype
 
-theorem classify_U5_two : ∀ A ∈ (univ : Finset (Finset (Fin 5))), A ∈ U5 2 ↔
-    #A = 1 ∨ #A = 5 - 1 ∨ A ∈ ({{0, 1}, {3, 4}} : Finset (Finset (Fin 5))) ∨
-      Aᶜ ∈ ({{0, 1}, {3, 4}} : Finset (Finset (Fin 5))) := by
-  decide +kernel
+theorem classify_U5_two : ∀ A ∈ (univ : Fam5), A ∈ U5 2 ↔
+    #A = 1 ∨ #A = 5 - 1 ∨ A ∈ ({{0, 1}, {3, 4}} : Fam5) ∨
+      Aᶜ ∈ ({{0, 1}, {3, 4}} : Fam5) := by
+  decide
 
-theorem classify_U5_one : ∀ A ∈ (univ : Finset (Finset (Fin 5))), A ∈ U5 1 ↔
-    #A = 1 ∨ #A = 5 - 1 ∨ A ∈ ({{0, 1}} : Finset (Finset (Fin 5))) ∨
-      Aᶜ ∈ ({{0, 1}} : Finset (Finset (Fin 5))) := by
-  decide +kernel
+theorem classify_U5_one : ∀ A ∈ (univ : Fam5), A ∈ U5 1 ↔
+    #A = 1 ∨ #A = 5 - 1 ∨ A ∈ ({{0, 1}} : Fam5) ∨
+      Aᶜ ∈ ({{0, 1}} : Fam5) := by
+  decide
 
-theorem classify_U5_zero : ∀ A ∈ (univ : Finset (Finset (Fin 5))), A ∈ U5 0 ↔
-    #A = 1 ∨ #A = 5 - 1 ∨ A ∈ (∅ : Finset (Finset (Fin 5))) ∨
-      Aᶜ ∈ (∅ : Finset (Finset (Fin 5))) := by
-  decide +kernel
+theorem classify_U5_zero : ∀ A ∈ (univ : Fam5), A ∈ U5 0 ↔
+    #A = 1 ∨ #A = 5 - 1 ∨ A ∈ (∅ : Fam5) ∨
+      Aᶜ ∈ (∅ : Fam5) := by
+  decide
 
-theorem classify_U4_one : ∀ A ∈ (univ : Finset (Finset (Fin 4))), A ∈ U4 1 ↔
-    #A = 1 ∨ #A = 4 - 1 ∨ A ∈ ({{0, 1}, {2, 3}} : Finset (Finset (Fin 4))) ∨
-      Aᶜ ∈ ({{0, 1}, {2, 3}} : Finset (Finset (Fin 4))) := by
-  decide +kernel
+theorem classify_U4_one : ∀ A ∈ (univ : Fam4), A ∈ U4 1 ↔
+    #A = 1 ∨ #A = 4 - 1 ∨ A ∈ ({{0, 1}, {2, 3}} : Fam4) ∨
+      Aᶜ ∈ ({{0, 1}, {2, 3}} : Fam4) := by
+  decide
 
-theorem classify_U4_zero : ∀ A ∈ (univ : Finset (Finset (Fin 4))), A ∈ U4 0 ↔
-    #A = 1 ∨ #A = 4 - 1 ∨ A ∈ (∅ : Finset (Finset (Fin 4))) ∨
-      Aᶜ ∈ (∅ : Finset (Finset (Fin 4))) := by
-  decide +kernel
+theorem classify_U4_zero : ∀ A ∈ (univ : Fam4), A ∈ U4 0 ↔
+    #A = 1 ∨ #A = 4 - 1 ∨ A ∈ (∅ : Fam4) ∨
+      Aᶜ ∈ (∅ : Fam4) := by
+  decide
 
 set_option synthInstance.maxSize 1000 in
 theorem classify_rootings5_two :
     ∀ N ∈ ({{0, 1}, {3, 4}, {2, 3, 4}, {0, 1, 2}, {1, 2, 3, 4}, {0, 2, 3, 4}, {0, 1, 3, 4},
-      {0, 1, 2, 4}, {0, 1, 2, 3}} : Finset (Finset (Fin 5))).powerset,
+      {0, 1, 2, 4}, {0, 1, 2, 3}} : Fam5).powerset,
     (∀ A ∈ N, ∀ B ∈ N, A ⊆ B ∨ B ⊆ A ∨ Disjoint A B) →
-    (∀ A ∈ ({{0, 1}, {3, 4}} : Finset (Finset (Fin 5))), A ∈ N ∨ Aᶜ ∈ N) →
+    (∀ A ∈ ({{0, 1}, {3, 4}} : Fam5), A ∈ N ∨ Aᶜ ∈ N) →
       hierarchyOf N ∈ rootings5 2 := by
   decide +kernel
 
 theorem classify_cands5_two : ∀ A ∈ U5 2, 2 ≤ #A → A ∈ ({{0, 1}, {3, 4}, {2, 3, 4}, {0, 1, 2},
     {1, 2, 3, 4}, {0, 2, 3, 4}, {0, 1, 3, 4}, {0, 1, 2, 4}, {0, 1, 2, 3}} :
-      Finset (Finset (Fin 5))) := by
-  decide +kernel
+      Fam5) := by
+  decide
 
-theorem classify_splits5_two : ∀ A ∈ ({{0, 1}, {3, 4}} : Finset (Finset (Fin 5))),
+theorem classify_splits5_two : ∀ A ∈ ({{0, 1}, {3, 4}} : Fam5),
     A ∈ U5 2 ∧ 2 ≤ #A ∧ 2 ≤ #Aᶜ := by
-  decide +kernel
+  decide
 
 set_option synthInstance.maxSize 1000 in
 theorem classify_rootings5_one :
     ∀ N ∈ ({{0, 1}, {2, 3, 4}, {1, 2, 3, 4}, {0, 2, 3, 4}, {0, 1, 3, 4}, {0, 1, 2, 4},
-      {0, 1, 2, 3}} : Finset (Finset (Fin 5))).powerset,
+      {0, 1, 2, 3}} : Fam5).powerset,
     (∀ A ∈ N, ∀ B ∈ N, A ⊆ B ∨ B ⊆ A ∨ Disjoint A B) →
-    (∀ A ∈ ({{0, 1}} : Finset (Finset (Fin 5))), A ∈ N ∨ Aᶜ ∈ N) →
+    (∀ A ∈ ({{0, 1}} : Fam5), A ∈ N ∨ Aᶜ ∈ N) →
       hierarchyOf N ∈ rootings5 1 := by
   decide +kernel
 
 theorem classify_cands5_one : ∀ A ∈ U5 1, 2 ≤ #A → A ∈ ({{0, 1}, {2, 3, 4}, {1, 2, 3, 4},
-    {0, 2, 3, 4}, {0, 1, 3, 4}, {0, 1, 2, 4}, {0, 1, 2, 3}} : Finset (Finset (Fin 5))) := by
-  decide +kernel
+    {0, 2, 3, 4}, {0, 1, 3, 4}, {0, 1, 2, 4}, {0, 1, 2, 3}} : Fam5) := by
+  decide
 
-theorem classify_splits5_one : ∀ A ∈ ({{0, 1}} : Finset (Finset (Fin 5))),
+theorem classify_splits5_one : ∀ A ∈ ({{0, 1}} : Fam5),
     A ∈ U5 1 ∧ 2 ≤ #A ∧ 2 ≤ #Aᶜ := by
-  decide +kernel
+  decide
 
 set_option synthInstance.maxSize 1000 in
 theorem classify_rootings5_zero :
     ∀ N ∈ ({{1, 2, 3, 4}, {0, 2, 3, 4}, {0, 1, 3, 4}, {0, 1, 2, 4}, {0, 1, 2, 3}} :
-      Finset (Finset (Fin 5))).powerset,
+      Fam5).powerset,
     (∀ A ∈ N, ∀ B ∈ N, A ⊆ B ∨ B ⊆ A ∨ Disjoint A B) →
-    (∀ A ∈ (∅ : Finset (Finset (Fin 5))), A ∈ N ∨ Aᶜ ∈ N) →
+    (∀ A ∈ (∅ : Fam5), A ∈ N ∨ Aᶜ ∈ N) →
       hierarchyOf N ∈ rootings5 0 := by
-  decide +kernel
+  decide
 
 theorem classify_cands5_zero : ∀ A ∈ U5 0, 2 ≤ #A → A ∈ ({{1, 2, 3, 4}, {0, 2, 3, 4},
-    {0, 1, 3, 4}, {0, 1, 2, 4}, {0, 1, 2, 3}} : Finset (Finset (Fin 5))) := by
-  decide +kernel
+    {0, 1, 3, 4}, {0, 1, 2, 4}, {0, 1, 2, 3}} : Fam5) := by
+  decide
 
 set_option synthInstance.maxSize 1000 in
 theorem classify_rootings4_one :
     ∀ N ∈ ({{0, 1}, {2, 3}, {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} :
-      Finset (Finset (Fin 4))).powerset,
+      Fam4).powerset,
     (∀ A ∈ N, ∀ B ∈ N, A ⊆ B ∨ B ⊆ A ∨ Disjoint A B) →
-    (∀ A ∈ ({{0, 1}} : Finset (Finset (Fin 4))), A ∈ N ∨ Aᶜ ∈ N) →
+    (∀ A ∈ ({{0, 1}} : Fam4), A ∈ N ∨ Aᶜ ∈ N) →
       hierarchyOf N ∈ rootings4 1 := by
-  decide +kernel
+  decide
 
 theorem classify_cands4_one : ∀ A ∈ U4 1, 2 ≤ #A → A ∈ ({{0, 1}, {2, 3}, {1, 2, 3}, {0, 2, 3},
-    {0, 1, 3}, {0, 1, 2}} : Finset (Finset (Fin 4))) := by
-  decide +kernel
+    {0, 1, 3}, {0, 1, 2}} : Fam4) := by
+  decide
 
-theorem classify_splits4_one : ∀ A ∈ ({{0, 1}} : Finset (Finset (Fin 4))),
+theorem classify_splits4_one : ∀ A ∈ ({{0, 1}} : Fam4),
     A ∈ U4 1 ∧ 2 ≤ #A ∧ 2 ≤ #Aᶜ := by
-  decide +kernel
+  decide
 
 set_option synthInstance.maxSize 1000 in
 theorem classify_rootings4_zero :
-    ∀ N ∈ ({{1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} : Finset (Finset (Fin 4))).powerset,
+    ∀ N ∈ ({{1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}} : Fam4).powerset,
     (∀ A ∈ N, ∀ B ∈ N, A ⊆ B ∨ B ⊆ A ∨ Disjoint A B) →
-    (∀ A ∈ (∅ : Finset (Finset (Fin 4))), A ∈ N ∨ Aᶜ ∈ N) →
+    (∀ A ∈ (∅ : Fam4), A ∈ N ∨ Aᶜ ∈ N) →
       hierarchyOf N ∈ rootings4 0 := by
-  decide +kernel
+  decide
 
 theorem classify_cands4_zero : ∀ A ∈ U4 0, 2 ≤ #A → A ∈ ({{1, 2, 3}, {0, 2, 3}, {0, 1, 3},
-    {0, 1, 2}} : Finset (Finset (Fin 4))) := by
-  decide +kernel
+    {0, 1, 2}} : Fam4) := by
+  decide
 
 set_option synthInstance.maxSize 1000 in
 theorem classify_binary_of_mem_rootings5_two : ∀ H ∈ rootings5 2,
     (∀ A ∈ H, 2 ≤ #A → ∃ B ∈ H, ∃ C ∈ H, Disjoint B C ∧ B ∪ C = A) → H ∈ binaryRootings5 := by
-  decide +kernel
+  decide
 
 set_option synthInstance.maxSize 1000 in
 theorem classify_not_binary_of_mem_rootings5_one : ∀ H ∈ rootings5 1,
     ¬ ∀ A ∈ H, 2 ≤ #A → ∃ B ∈ H, ∃ C ∈ H, Disjoint B C ∧ B ∪ C = A := by
-  decide +kernel
+  decide
 
 set_option synthInstance.maxSize 1000 in
 theorem classify_not_binary_of_mem_rootings5_zero : ∀ H ∈ rootings5 0,
     ¬ ∀ A ∈ H, 2 ≤ #A → ∃ B ∈ H, ∃ C ∈ H, Disjoint B C ∧ B ∪ C = A := by
-  decide +kernel
+  decide
 
 end Decide
 
@@ -530,7 +519,7 @@ theorem exists_equiv_unroot_eq_U5 (hX : Fintype.card X = 5) (σ : SpeciesTree X)
     rw [← hPdef, hP]
     simp [relabelFamily, he]
 
-theorem classify_mem_rootings5 (τ : SpeciesTree (Fin 5)) (k : ℕ)
+theorem classify_mem_rootings5 (τ : ST5) (k : ℕ)
     (hk : k ∈ ({0, 1, 2} : Finset ℕ)) (h : unroot τ.clusters = U5 k) :
     τ.clusters ∈ rootings5 k := by
   simp only [mem_insert, mem_singleton] at hk
@@ -553,14 +542,14 @@ theorem exists_equiv_unroot_eq_U5_two_of_isBinary (hX : Fintype.card X = 5) (σ 
   · exact absurd hb (classify_not_binary_of_mem_rootings5_one _ hmem)
   · exact h
 
-theorem mem_rootings4 (τ : SpeciesTree (Fin 4)) (k : ℕ) (hk : k ∈ ({0, 1} : Finset ℕ))
+theorem mem_rootings4 (τ : ST4) (k : ℕ) (hk : k ∈ ({0, 1} : Finset ℕ))
     (h : unroot τ.clusters = U4 k) : τ.clusters ∈ rootings4 k := by
   simp only [mem_insert, mem_singleton] at hk
   rcases hk with rfl | rfl
   · exact classify_mem_of_forall classify_rootings4_zero classify_cands4_zero (by simp) h
   · exact classify_mem_of_forall classify_rootings4_one classify_cands4_one classify_splits4_one h
 
-theorem mem_binaryRootings5 (τ : SpeciesTree (Fin 5)) (hτ : τ.IsBinary)
+theorem mem_binaryRootings5 (τ : ST5) (hτ : τ.IsBinary)
     (h : unroot τ.clusters = U5 2) : τ.clusters ∈ binaryRootings5 :=
   classify_binary_of_mem_rootings5_two _ (classify_mem_rootings5 τ 2 (by simp) h) hτ
 

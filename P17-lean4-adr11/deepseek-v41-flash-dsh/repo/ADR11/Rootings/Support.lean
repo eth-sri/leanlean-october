@@ -35,7 +35,7 @@ open Finset _root_.ADR11.Computation
 /-! ### Codes -/
 
 /-- Every cluster on `Fin n` has a code. -/
-theorem root_exists_code {n : ℕ} (A : Finset (Fin n)) : ∃ c, c < 2 ^ n ∧ decC n c = A := by
+theorem root_exists_code {n : ℕ} (A : FinFam n) : ∃ c, c < 2 ^ n ∧ decC n c = A := by
   induction A using Finset.induction_on with
   | empty => exact ⟨0, Nat.two_pow_pos n, by ext i; simp [mem_decC]⟩
   | insert a A _ ih =>
@@ -109,12 +109,12 @@ def root_binEnum : ℕ → ℕ → List (List ℕ)
         (root_binEnum k (b ^^^ c)).map fun h₂ => b :: (h₁ ++ h₂)
 
 /-- `F` is a binary hierarchy on the cluster `B`. -/
-def root_BinOn {n : ℕ} (F : Finset (Finset (Fin n))) (B : Finset (Fin n)) : Prop :=
+def root_BinOn {n : ℕ} (F : FamN n) (B : FinFam n) : Prop :=
   B ∈ F ∧ (∀ A ∈ F, A ⊆ B) ∧ (∀ A ∈ F, A.Nonempty) ∧
     (∀ A ∈ F, ∀ A' ∈ F, A ⊆ A' ∨ A' ⊆ A ∨ Disjoint A A') ∧
     ∀ A ∈ F, 2 ≤ #A → ∃ C ∈ F, ∃ D ∈ F, Disjoint C D ∧ C ∪ D = A
 
-theorem root_BinOn.eq_singleton {n : ℕ} {F : Finset (Finset (Fin n))} {B : Finset (Fin n)}
+theorem root_BinOn.eq_singleton {n : ℕ} {F : FamN n} {B : FinFam n}
     (hF : root_BinOn F B) (hB : #B ≤ 1) : F = {B} := by
   obtain ⟨hBF, hsub, hne, -, -⟩ := hF
   ext A
@@ -126,7 +126,7 @@ theorem root_BinOn.eq_singleton {n : ℕ} {F : Finset (Finset (Fin n))} {B : Fin
   · rintro rfl
     exact hBF
 
-theorem root_BinOn.restrict {n : ℕ} {F : Finset (Finset (Fin n))} {B C : Finset (Fin n)}
+theorem root_BinOn.restrict {n : ℕ} {F : FamN n} {B C : FinFam n}
     (hF : root_BinOn F B) (hC : C ∈ F) : root_BinOn (F.filter (· ⊆ C)) C := by
   obtain ⟨-, -, hne, hlam, hbin⟩ := hF
   refine ⟨mem_filter.2 ⟨hC, subset_rfl⟩, fun A hA => (mem_filter.1 hA).2,
@@ -140,11 +140,11 @@ theorem root_BinOn.restrict {n : ℕ} {F : Finset (Finset (Fin n))} {B C : Finse
 
 /-- A binary hierarchy on `B = C ∪ D` (a split of `B` into clusters) consists of `B` and the
 clusters below `C` and below `D`. -/
-theorem root_BinOn.decomp {n : ℕ} {F : Finset (Finset (Fin n))} {B C D : Finset (Fin n)}
+theorem root_BinOn.decomp {n : ℕ} {F : FamN n} {B C D : FinFam n}
     (hF : root_BinOn F B) (hC : C ∈ F) (hD : D ∈ F) (hCD : Disjoint C D) (hB : C ∪ D = B) :
     F = insert B (F.filter (· ⊆ C) ∪ F.filter (· ⊆ D)) := by
   obtain ⟨hBF, hsub, hne, hlam, -⟩ := hF
-  have hside : ∀ A ∈ F, ∀ {E E' : Finset (Fin n)}, E ∪ E' = B → Disjoint A E → A ⊆ E' := by
+  have hside : ∀ A ∈ F, ∀ {E E' : FinFam n}, E ∪ E' = B → Disjoint A E → A ⊆ E' := by
     intro A hA E E' hEE' hAE x hx
     have hxB := hsub A hA hx
     rw [← hEE'] at hxB
@@ -194,7 +194,7 @@ theorem root_mem_splits {b c : ℕ} (hcb : c < b) (hsub : c &&& b = c) (hc0 : c 
 the family of clusters of one of the code lists `root_binEnum k b`, when `k + 1` is at least the
 number of elements of the cluster. -/
 theorem root_binEnum_complete {n : ℕ} (k : ℕ) : ∀ b : ℕ, b < 2 ^ n → #(decC n b) ≤ k + 1 →
-    ∀ F : Finset (Finset (Fin n)), root_BinOn F (decC n b) →
+    ∀ F : FamN n, root_BinOn F (decC n b) →
       ∃ l ∈ root_binEnum k b, decF n l = F := by
   induction k with
   | zero =>
@@ -266,11 +266,11 @@ theorem root_binEnum_complete {n : ℕ} (k : ℕ) : ∀ b : ℕ, b < 2 ^ n → #
 /-! ### The support of the rooted gene tree distribution -/
 
 theorem root_binOn_univ_of_rootedDist {n : ℕ} [Nonempty (Fin n)] (σ : SpeciesTree (Fin n))
-    {G : Finset (Finset (Fin n))} (hG : σ.rootedDist id G ≠ 0) : root_BinOn G univ := by
+    {G : FamN n} (hG : σ.rootedDist id G ≠ 0) : root_BinOn G univ := by
   obtain ⟨⟨hu, -, hne, hlam⟩, hbin⟩ := model_rootedDist_support σ id hG
   exact ⟨hu, fun A _ => subset_univ A, hne, hlam, hbin⟩
 
-theorem root_binEnum_complete_univ {n : ℕ} {G : Finset (Finset (Fin n))}
+theorem root_binEnum_complete_univ {n : ℕ} {G : FamN n}
     (hG : root_BinOn G univ) : ∃ l ∈ root_binEnum (n - 1) (2 ^ n - 1), decF n l = G := by
   apply root_binEnum_complete (n - 1) (2 ^ n - 1) (full_lt n)
   · rw [decC_full, card_univ, Fintype.card_fin]
@@ -281,7 +281,7 @@ theorem root_binEnum_complete_univ {n : ℕ} {G : Finset (Finset (Fin n))}
 /-- A rooted gene tree with positive probability (one lineage per taxon) is one of the trees
 `root_binEnum (n - 1) (2 ^ n - 1)`. -/
 theorem root_rootedDist_support {n : ℕ} [Nonempty (Fin n)] (σ : SpeciesTree (Fin n))
-    {G : Finset (Finset (Fin n))} (hG : σ.rootedDist id G ≠ 0) :
+    {G : FamN n} (hG : σ.rootedDist id G ≠ 0) :
     ∃ l ∈ root_binEnum (n - 1) (2 ^ n - 1), decF n l = G :=
   root_binEnum_complete_univ (root_binOn_univ_of_rootedDist σ hG)
 
@@ -311,23 +311,23 @@ def root_T5code : ℕ → List ℕ
   | 15 => unrootL 5 (root_hier5 18 19)
   | _ => []
 
-theorem root_decF_T5code_1 : decF 5 (root_T5code 1) = T5 1 := by decide +kernel
-theorem root_decF_T5code_2 : decF 5 (root_T5code 2) = T5 2 := by decide +kernel
-theorem root_decF_T5code_3 : decF 5 (root_T5code 3) = T5 3 := by decide +kernel
-theorem root_decF_T5code_4 : decF 5 (root_T5code 4) = T5 4 := by decide +kernel
-theorem root_decF_T5code_5 : decF 5 (root_T5code 5) = T5 5 := by decide +kernel
-theorem root_decF_T5code_6 : decF 5 (root_T5code 6) = T5 6 := by decide +kernel
-theorem root_decF_T5code_7 : decF 5 (root_T5code 7) = T5 7 := by decide +kernel
-theorem root_decF_T5code_8 : decF 5 (root_T5code 8) = T5 8 := by decide +kernel
-theorem root_decF_T5code_9 : decF 5 (root_T5code 9) = T5 9 := by decide +kernel
-theorem root_decF_T5code_10 : decF 5 (root_T5code 10) = T5 10 := by decide +kernel
-theorem root_decF_T5code_11 : decF 5 (root_T5code 11) = T5 11 := by decide +kernel
-theorem root_decF_T5code_12 : decF 5 (root_T5code 12) = T5 12 := by decide +kernel
-theorem root_decF_T5code_13 : decF 5 (root_T5code 13) = T5 13 := by decide +kernel
-theorem root_decF_T5code_14 : decF 5 (root_T5code 14) = T5 14 := by decide +kernel
-theorem root_decF_T5code_15 : decF 5 (root_T5code 15) = T5 15 := by decide +kernel
+theorem root_decF_T5code_1 : decF 5 (root_T5code 1) = T5 1 := by decide
+theorem root_decF_T5code_2 : decF 5 (root_T5code 2) = T5 2 := by decide
+theorem root_decF_T5code_3 : decF 5 (root_T5code 3) = T5 3 := by decide
+theorem root_decF_T5code_4 : decF 5 (root_T5code 4) = T5 4 := by decide
+theorem root_decF_T5code_5 : decF 5 (root_T5code 5) = T5 5 := by decide
+theorem root_decF_T5code_6 : decF 5 (root_T5code 6) = T5 6 := by decide
+theorem root_decF_T5code_7 : decF 5 (root_T5code 7) = T5 7 := by decide
+theorem root_decF_T5code_8 : decF 5 (root_T5code 8) = T5 8 := by decide
+theorem root_decF_T5code_9 : decF 5 (root_T5code 9) = T5 9 := by decide
+theorem root_decF_T5code_10 : decF 5 (root_T5code 10) = T5 10 := by decide
+theorem root_decF_T5code_11 : decF 5 (root_T5code 11) = T5 11 := by decide
+theorem root_decF_T5code_12 : decF 5 (root_T5code 12) = T5 12 := by decide
+theorem root_decF_T5code_13 : decF 5 (root_T5code 13) = T5 13 := by decide
+theorem root_decF_T5code_14 : decF 5 (root_T5code 14) = T5 14 := by decide
+theorem root_decF_T5code_15 : decF 5 (root_T5code 15) = T5 15 := by decide
 
-theorem root_decF_T5code {i : ℕ} (hi : i ∈ Icc 1 15) : decF 5 (root_T5code i) = T5 i := by
+theorem root_decF_T5code {i : ℕ} (hi : i ∈ F15) : decF 5 (root_T5code i) = T5 i := by
   rw [mem_Icc] at hi
   obtain ⟨h1, h15⟩ := hi
   interval_cases i
@@ -340,11 +340,11 @@ theorem root_decF_T5code {i : ℕ} (hi : i ∈ Icc 1 15) : decF 5 (root_T5code i
 def root_Q4code (a : ℕ) : List ℕ := unrootL 4 [a, 1, 2, 4, 8, 15]
 
 theorem root_decF_Q4code_3 : decF 4 (root_Q4code 3) = treeOfClusters {{0, 1}} := by
-  decide +kernel
+  decide
 theorem root_decF_Q4code_5 : decF 4 (root_Q4code 5) = treeOfClusters {{0, 2}} := by
-  decide +kernel
+  decide
 theorem root_decF_Q4code_9 : decF 4 (root_Q4code 9) = treeOfClusters {{0, 3}} := by
-  decide +kernel
+  decide
 
 /-! ### The support of the unrooted gene tree distributions on four and five taxa -/
 
@@ -354,9 +354,9 @@ def root_checkQ4 : Bool :=
     [3, 5, 9].any fun a => decide (Valid 4 (root_Q4code a)) &&
       root_famMask (unrootL 4 l) == root_famMask (root_Q4code a)
 
-theorem root_checkQ4_eq : root_checkQ4 = true := by decide +kernel
+theorem root_checkQ4_eq : root_checkQ4 = true := by decide
 
-theorem root_unrootedDist_eq_zero_four (τ : SpeciesTree (Fin 4)) (T : Finset (Finset (Fin 4)))
+theorem root_unrootedDist_eq_zero_four (τ : ST4) (T : Fam4)
     (hT : T ≠ treeOfClusters {{0, 1}} ∧ T ≠ treeOfClusters {{0, 2}} ∧
       T ≠ treeOfClusters {{0, 3}}) :
     τ.unrootedDist id T = 0 := by
