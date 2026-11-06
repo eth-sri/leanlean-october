@@ -46,14 +46,6 @@ private theorem scaled_transport (M N : SectorMatrix)
   · change N * A * M = N
     rw [Matrix.mul_assoc, hAM, Matrix.mul_one]
 
-private theorem frame_as_projector (r : Fin 3 → Albert) (hr : Frame r) :
-    r = projectorFrame (encoder r) := by
-  funext i
-  fin_cases i
-  · exact (frame_projector_first r hr).symm
-  · exact (frame_projector_middle r hr).symm
-  · exact (frame_projector_last r hr).symm
-
 private theorem native_sector_ext (x y : Albert)
     (hH : sectorComplexMatrix x = sectorComplexMatrix y)
     (hM : hiddenMatrix x = hiddenMatrix y) : x = y := by

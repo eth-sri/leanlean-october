@@ -127,11 +127,10 @@ private theorem curvature_eval_const_hasFDerivAt
     {f : X → Y →L[ℝ] Z} {f' : X →L[ℝ] Y →L[ℝ] Z} {x : X}
     (hf : HasFDerivAt f f' x) (u : Y) :
     HasFDerivAt (fun y => f y u) (f'.flip u) x := by
-  have h := hf.clm_apply (hasFDerivAt_const u x)
-  apply h.congr_fderiv
-  ext w
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply,
-    ContinuousLinearMap.zero_apply, map_zero, zero_add]
+  simpa only [ContinuousLinearMap.flip_apply, ContinuousLinearMap.add_apply,
+    ContinuousLinearMap.comp_apply, ContinuousLinearMap.comp_zero,
+    ContinuousLinearMap.zero_apply, map_zero, zero_add] using
+    hf.clm_apply (hasFDerivAt_const u x)
 
 variable [FiniteDimensional ℝ E]
 variable (hpos : ∀ u : E, u ≠ 0 → 0 < logHessianForm P e u u)

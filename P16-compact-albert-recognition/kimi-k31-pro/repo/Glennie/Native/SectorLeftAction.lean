@@ -152,5 +152,24 @@ theorem compactAutomorphism_projectorFrame (g : CompactAutomorphism) (x : Albert
       (1 / 2 : ℝ) • (jordan (g.equiv x) (g.equiv x) + g.equiv x)
     rw [map_smul, map_add, g.map_jordan]
 
+theorem frame_as_projector (p : Fin 3 → Albert) (hp : Frame p) :
+    p = projectorFrame (encoder p) := by
+  funext i
+  fin_cases i
+  · exact (frame_projector_first p hp).symm
+  · exact (frame_projector_middle p hp).symm
+  · exact (frame_projector_last p hp).symm
+
+theorem frame_eq_of_encoder_eq (q s : Fin 3 → Albert) (hq : Frame q) (hs : Frame s)
+    (m : CompactAutomorphism) (hEnc : m.equiv (encoder q) = encoder s) (i : Fin 3) :
+    m.equiv (q i) = s i := by
+  calc
+    m.equiv (q i) = m.equiv (projectorFrame (encoder q) i) :=
+      congrArg (fun x : Albert => m.equiv x) (congrFun (frame_as_projector q hq) i)
+    _ = projectorFrame (m.equiv (encoder q)) i :=
+      compactAutomorphism_projectorFrame m (encoder q) i
+    _ = projectorFrame (encoder s) i := by rw [hEnc]
+    _ = s i := congrFun (frame_as_projector s hs).symm i
+
 end
 end Glennie

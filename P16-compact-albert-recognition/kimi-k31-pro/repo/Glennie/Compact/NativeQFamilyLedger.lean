@@ -235,39 +235,19 @@ private theorem moment3_last_zero (T : Triple) (r s : Fin 3) :
 
 private theorem qPair_xy_eq_of_q26_eq (T S : Triple) (h : q26 T = q26 S)
     (a b : Fin 2) : qPair T 0 1 a b = qPair S 0 1 a b := by
-  fin_cases a <;> fin_cases b
-  · simpa [q26] using congrFun h (6 : Fin 26)
-  · simpa [q26] using congrFun h (7 : Fin 26)
-  · simpa [q26] using congrFun h (8 : Fin 26)
-  · simpa [q26] using congrFun h (9 : Fin 26)
+  fin_cases a <;> fin_cases b <;> simp_all [q26]
 
 private theorem qPair_yz_eq_of_q26_eq (T S : Triple) (h : q26 T = q26 S)
     (a b : Fin 2) : qPair T 1 2 a b = qPair S 1 2 a b := by
-  fin_cases a <;> fin_cases b
-  · simpa [q26] using congrFun h (10 : Fin 26)
-  · simpa [q26] using congrFun h (11 : Fin 26)
-  · simpa [q26] using congrFun h (12 : Fin 26)
-  · simpa [q26] using congrFun h (13 : Fin 26)
+  fin_cases a <;> fin_cases b <;> simp_all [q26]
 
 private theorem qPair_zx_eq_of_q26_eq (T S : Triple) (h : q26 T = q26 S)
     (a b : Fin 2) : qPair T 2 0 a b = qPair S 2 0 a b := by
-  fin_cases a <;> fin_cases b
-  · simpa [q26] using congrFun h (14 : Fin 26)
-  · simpa [q26] using congrFun h (15 : Fin 26)
-  · simpa [q26] using congrFun h (16 : Fin 26)
-  · simpa [q26] using congrFun h (17 : Fin 26)
+  fin_cases a <;> fin_cases b <;> simp_all [q26]
 
 private theorem qTriple_eq_of_q26_eq (T S : Triple) (h : q26 T = q26 S)
     (a b c : Fin 2) : qTriple T a b c = qTriple S a b c := by
-  fin_cases a <;> fin_cases b <;> fin_cases c
-  · simpa [q26] using congrFun h (18 : Fin 26)
-  · simpa [q26] using congrFun h (19 : Fin 26)
-  · simpa [q26] using congrFun h (20 : Fin 26)
-  · simpa [q26] using congrFun h (21 : Fin 26)
-  · simpa [q26] using congrFun h (22 : Fin 26)
-  · simpa [q26] using congrFun h (23 : Fin 26)
-  · simpa [q26] using congrFun h (24 : Fin 26)
-  · simpa [q26] using congrFun h (25 : Fin 26)
+  fin_cases a <;> fin_cases b <;> fin_cases c <;> simp_all [q26]
 
 private theorem moment3_eq_of_q26_eq (T S : Triple)
     (hT : ∀ a, Frame (T a)) (hS : ∀ a, Frame (S a))
@@ -313,14 +293,8 @@ private theorem weighted1_ext (f g : Fin 3 → ℝ)
   have h1 := h 1
   have h2 := h 2
   norm_num [weighted1, momentWeight, encoderWeight, Fin.sum_univ_three] at h0 h1 h2
-  have hf0 : f 0 = g 0 := by linarith
-  have hf1 : f 1 = g 1 := by linarith
-  have hf2 : f 2 = g 2 := by linarith
   funext i
-  fin_cases i
-  · simpa using hf0
-  · simpa using hf1
-  · simpa using hf2
+  fin_cases i <;> dsimp <;> linarith
 
 private def weighted3 (C : Fin 3 → Fin 3 → Fin 3 → ℝ)
     (r s t : Fin 3) : ℝ :=

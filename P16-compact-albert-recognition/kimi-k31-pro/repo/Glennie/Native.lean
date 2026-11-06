@@ -79,7 +79,7 @@ theorem octConj_mul (x y : Octonion) :
     octConj (octMul x y) = octMul (octConj y) (octConj x) := by
   apply Prod.ext <;> apply Quaternion.ext <;>
     simp [octConj, octMul, Quaternion.re_mul, Quaternion.imI_mul,
-      Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
+      Quaternion.imJ_mul, Quaternion.imK_mul]
 
 theorem octMul_add_left (x y z : Octonion) :
     octMul (x+y) z = octMul x z + octMul y z := by
@@ -264,7 +264,7 @@ def UniformLedger (p q r : Fin 3 → Albert) : Prop :=
 @[simp] theorem trace_smul (r : ℝ) (x : Albert) : trace (r • x) = r * trace x := by
   simp [trace]; ring
 @[simp] theorem trace_traceless (x : Albert) : trace (traceless x) = 0 := by
-  simp [traceless] <;> ring
+  simp [traceless]
 
 theorem toMatrix_hermitian (x : Albert) (i j : Fin 3) :
     octConj (toMatrix x i j) = toMatrix x j i := by

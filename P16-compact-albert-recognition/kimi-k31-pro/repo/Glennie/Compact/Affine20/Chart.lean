@@ -190,57 +190,6 @@ theorem decode20_R (v : Fin 20 → ℝ) : (decode20 v).2.2.2 = decR v := rfl
 
 /-! Coordinate values of the chart (rfl on a variable ledger). -/
 
-theorem encode20_apply_0 (L : Ledger54) : encode20 L 0 = L.2.1 0 0 - 1 / 3 := rfl
-
-theorem encode20_apply_1 (L : Ledger54) : encode20 L 1 = L.2.1 0 1 - 1 / 3 := rfl
-
-theorem encode20_apply_2 (L : Ledger54) : encode20 L 2 = L.2.1 1 0 - 1 / 3 := rfl
-
-theorem encode20_apply_3 (L : Ledger54) : encode20 L 3 = L.2.1 1 1 - 1 / 3 := rfl
-
-theorem encode20_apply_4 (L : Ledger54) : encode20 L 4 = L.2.2.1 0 0 - 1 / 3 := rfl
-
-theorem encode20_apply_5 (L : Ledger54) : encode20 L 5 = L.2.2.1 0 1 - 1 / 3 := rfl
-
-theorem encode20_apply_6 (L : Ledger54) : encode20 L 6 = L.2.2.1 1 0 - 1 / 3 := rfl
-
-theorem encode20_apply_7 (L : Ledger54) : encode20 L 7 = L.2.2.1 1 1 - 1 / 3 := rfl
-
-theorem encode20_apply_8 (L : Ledger54) : encode20 L 8 = L.2.2.2 0 0 - 1 / 3 := rfl
-
-theorem encode20_apply_9 (L : Ledger54) : encode20 L 9 = L.2.2.2 0 1 - 1 / 3 := rfl
-
-theorem encode20_apply_10 (L : Ledger54) : encode20 L 10 = L.2.2.2 1 0 - 1 / 3 := rfl
-
-theorem encode20_apply_11 (L : Ledger54) : encode20 L 11 = L.2.2.2 1 1 - 1 / 3 := rfl
-
-theorem encode20_apply_12 (L : Ledger54) : encode20 L 12 = centred L 0 0 0 := rfl
-
-theorem encode20_apply_13 (L : Ledger54) : encode20 L 13 = centred L 0 0 1 := rfl
-
-theorem encode20_apply_14 (L : Ledger54) : encode20 L 14 = centred L 0 1 0 := rfl
-
-theorem encode20_apply_15 (L : Ledger54) : encode20 L 15 = centred L 0 1 1 := rfl
-
-theorem encode20_apply_16 (L : Ledger54) : encode20 L 16 = centred L 1 0 0 := rfl
-
-theorem encode20_apply_17 (L : Ledger54) : encode20 L 17 = centred L 1 0 1 := rfl
-
-theorem encode20_apply_18 (L : Ledger54) : encode20 L 18 = centred L 1 1 0 := rfl
-
-theorem encode20_apply_19 (L : Ledger54) : encode20 L 19 = centred L 1 1 1 := rfl
-
-/-- Fin 20 has exactly the elements 0, …, 19 (kernel-checked Boolean list check). -/
-theorem fin20_cases (n : Fin 20) :
-    n = 0 ∨ n = 1 ∨ n = 2 ∨ n = 3 ∨ n = 4 ∨ n = 5 ∨ n = 6 ∨ n = 7 ∨ n = 8 ∨ n = 9 ∨
-      n = 10 ∨ n = 11 ∨ n = 12 ∨ n = 13 ∨ n = 14 ∨ n = 15 ∨ n = 16 ∨ n = 17 ∨ n = 18 ∨
-        n = 19 := by
-  have hb : (List.finRange 20).all (fun n => decide (n = 0 ∨ n = 1 ∨ n = 2 ∨ n = 3 ∨ n = 4 ∨
-      n = 5 ∨ n = 6 ∨ n = 7 ∨ n = 8 ∨ n = 9 ∨ n = 10 ∨ n = 11 ∨ n = 12 ∨ n = 13 ∨ n = 14 ∨
-        n = 15 ∨ n = 16 ∨ n = 17 ∨ n = 18 ∨ n = 19)) = true := by
-    decide +kernel
-  exact of_decide_eq_true (List.all_eq_true.mp hb n (List.mem_finRange n))
-
 theorem decP_encode (L : Ledger54) (h : InDomain L) (i j : Fin 3) :
     decP (encode20 L) i j = L.2.1 i j := by
   have hr : ∀ i, (L.2.1 i 0 - 1 / 3) + (L.2.1 i 1 - 1 / 3) + (L.2.1 i 2 - 1 / 3) = 0 := by
@@ -357,16 +306,10 @@ variable-level rfl lemmas and the Prod/Pi pointwise lemmas (`simp only`), and cl
 theorem encode20_affine : AffineComb encode20 := by
   intro x y t
   funext n
-  rcases fin20_cases n with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-    simp only [encode20_apply_0, encode20_apply_1, encode20_apply_2, encode20_apply_3,
-      encode20_apply_4, encode20_apply_5, encode20_apply_6, encode20_apply_7, encode20_apply_8,
-      encode20_apply_9, encode20_apply_10, encode20_apply_11, encode20_apply_12,
-      encode20_apply_13, encode20_apply_14, encode20_apply_15, encode20_apply_16,
-      encode20_apply_17, encode20_apply_18, encode20_apply_19, centred, Prod.fst_add,
-      Prod.snd_add, Prod.fst_sub, Prod.snd_sub, Prod.smul_fst, Prod.smul_snd, Pi.add_apply,
-      Pi.sub_apply, Pi.smul_apply, smul_eq_mul] <;>
-    ring
+  fin_cases n <;>
+    simp [encode20, centred, Prod.fst_add, Prod.snd_add, Prod.fst_sub, Prod.snd_sub,
+      Prod.smul_fst, Prod.smul_snd, Pi.add_apply, Pi.sub_apply, Pi.smul_apply,
+      smul_eq_mul] <;> ring
 
 theorem decode20_affine : AffineComb decode20 := by
   intro x y t

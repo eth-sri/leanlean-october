@@ -13,6 +13,7 @@ Theorems/Witness.lean pattern. -/
 module
 
 public import Glennie.Compact.NativeDictionaryLiteral
+public import Glennie.Compact.InnerDerivation
 public import Glennie.Theorems.ProjectorFrame
 public import Glennie.Theorems.Frames
 public import Glennie.Theorems.FrameEquality
@@ -243,6 +244,77 @@ theorem uniform_pair_blocks (p q r : Fin 3 → Albert) (hp : Frame p) (hq : Fram
     uniformLedger_pair_overlap q r p hp (uniformLedger_cyclic p q r hu) i j,
     uniformLedger_pair_overlap r p q hq
       (uniformLedger_cyclic q r p (uniformLedger_cyclic p q r hu)) i j⟩
+
+/-- Coordinate literals shared by the raw Jacobian-column computations. -/
+theorem flatFrameP_literal (i : Fin 3) :
+    flatFrameP i = ![diagonalAlbert 0 0 1, diagonalAlbert 0 1 0, diagonalAlbert 1 0 0] i := by
+  fin_cases i <;> ext <;>
+    norm_num [flatFrameP, projectorFrame, flatXN, diagonalAlbert,
+      jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
+      octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj, octScalar,
+      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
+
+theorem flatFrameQ_literal (j : Fin 3) :
+    flatFrameQ j =
+      ![(⟨1 / 3, 1 / 3, 1 / 3,
+          ((⟨-flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨1 / 6, flatScale / 2, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨-flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0)⟩ : Albert),
+        ⟨1 / 3, 1 / 3, 1 / 3,
+          ((⟨0, 1 / 3, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨-1 / 3, 0, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨0, 1 / 3, 0, 0⟩ : Quaternion ℝ), 0)⟩,
+        ⟨1 / 3, 1 / 3, 1 / 3,
+          ((⟨flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨1 / 6, -flatScale / 2, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0)⟩] j := by
+  fin_cases j <;> ext <;>
+    simp [flatFrameQ, projectorFrame, flatY1, octI, quatI, octScalar,
+      jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
+      octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj,
+      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul] <;>
+    ring_nf <;> norm_num [flatScale_sq]
+
+theorem flatFrameR_literal (k : Fin 3) :
+    flatFrameR k =
+      ![(⟨1 / 3, 1 / 3, 1 / 3,
+          (0, (⟨0, 0, -flatScale / 2, 1 / 6⟩ : Quaternion ℝ)),
+          (0, (⟨flatScale / 2, 1 / 6, 0, 0⟩ : Quaternion ℝ)),
+          ((⟨0, 0, -1 / 6, flatScale / 2⟩ : Quaternion ℝ), 0)⟩ : Albert),
+        ⟨1 / 3, 1 / 3, 1 / 3,
+          (0, (⟨0, 0, 0, -1 / 3⟩ : Quaternion ℝ)),
+          (0, (⟨0, -1 / 3, 0, 0⟩ : Quaternion ℝ)),
+          ((⟨0, 0, 1 / 3, 0⟩ : Quaternion ℝ), 0)⟩,
+        ⟨1 / 3, 1 / 3, 1 / 3,
+          (0, (⟨0, 0, flatScale / 2, 1 / 6⟩ : Quaternion ℝ)),
+          (0, (⟨-flatScale / 2, 1 / 6, 0, 0⟩ : Quaternion ℝ)),
+          ((⟨0, 0, -1 / 6, -flatScale / 2⟩ : Quaternion ℝ), 0)⟩] k := by
+  fin_cases k <;> ext <;>
+    simp [flatFrameR, projectorFrame, witnessZ, octJL, octL, octK, quatJ, quatK,
+      jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
+      octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj,
+      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul] <;>
+    ring_nf <;> norm_num [flatScale_sq]
+
+theorem flatScale_eq_sqrt3_div_three : flatScale = Real.sqrt 3 / 3 := by
+  have hsq : Real.sqrt (3 : ℝ) ^ 2 = 3 := Real.sq_sqrt (by norm_num)
+  have hn : Real.sqrt (3 : ℝ) ≠ 0 := by
+    intro h
+    rw [h] at hsq
+    norm_num at hsq
+  dsimp [flatScale]
+  apply (div_eq_div_iff hn (by norm_num : (3 : ℝ) ≠ 0)).2
+  nlinarith [hsq]
+
+/-- Shared coordinate normalization for the raw Jacobian direction formulas. -/
+macro "flat_coordinate_norm" : tactic => `(tactic|
+  (norm_num [Glennie.Compact.innerDer, diagonalAlbert, complexAlbert, complexOct,
+    archivalHiddenBasis, hiddenAlbert, hiddenOct,
+    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
+    octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj, octScalar,
+    Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul] <;>
+  simp -failIfUnchanged only [← Quaternion.coe_inv, Quaternion.re_coe, Quaternion.imI_coe,
+    Quaternion.imJ_coe, Quaternion.imK_coe] <;> norm_num))
 
 end
 end Glennie.Compact.FlatBase

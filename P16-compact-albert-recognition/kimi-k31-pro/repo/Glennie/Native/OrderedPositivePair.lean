@@ -116,14 +116,6 @@ private theorem ordered_diagonal (x : Albert) (hx : IsDiagonal x)
     rw [hrep, swap02_diagonal, hC, h.1, h.2.1, h.2.2]
     rfl
 
-private theorem frame_as_projector (p : Fin 3 → Albert) (hp : Frame p) :
-    p = projectorFrame (encoder p) := by
-  funext i
-  fin_cases i
-  · exact (frame_projector_first p hp).symm
-  · exact (frame_projector_middle p hp).symm
-  · exact (frame_projector_last p hp).symm
-
 /-- A genuine native frame is carried to the ORIGINAL ordered first frame.
 The six encoder orders are realized by carrier automorphisms, not outcome relabels. -/
 theorem native_ordered_frame (p : Fin 3 → Albert) (hp : Frame p) :
@@ -148,7 +140,7 @@ theorem native_ordered_frame (p : Fin 3 → Albert) (hp : Frame p) :
   rw [frame_as_projector p hp, compactAutomorphism_projectorFrame, hg]
   rfl
 
-private theorem relatedTriple_flatXN (t : OctRelatedTriple) :
+theorem relatedTriple_flatXN (t : OctRelatedTriple) :
     t.compactAutomorphism.equiv flatXN = flatXN := by
   change (⟨flatXN.d0, flatXN.d1, flatXN.d2,
     t.A flatXN.o01, t.C flatXN.o02, t.B flatXN.o12⟩ : Albert) = flatXN

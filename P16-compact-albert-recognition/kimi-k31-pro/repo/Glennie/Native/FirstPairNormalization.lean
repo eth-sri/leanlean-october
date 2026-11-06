@@ -28,26 +28,6 @@ set_option maxHeartbeats 2000000
 
 /-! ## Frames are their own projector frames -/
 
-private theorem frame_as_projector (p : Fin 3 → Albert) (hp : Frame p) :
-    p = projectorFrame (encoder p) := by
-  funext i
-  fin_cases i
-  · exact (frame_projector_first p hp).symm
-  · exact (frame_projector_middle p hp).symm
-  · exact (frame_projector_last p hp).symm
-
-/-- Matching encoders force all three same-index atom equalities. -/
-private theorem frame_eq_of_encoder_eq (q s : Fin 3 → Albert) (hq : Frame q) (hs : Frame s)
-    (m : CompactAutomorphism) (hEnc : m.equiv (encoder q) = encoder s) (i : Fin 3) :
-    m.equiv (q i) = s i := by
-  calc
-    m.equiv (q i) = m.equiv (projectorFrame (encoder q) i) :=
-        congrArg (fun x : Albert => m.equiv x) (congrFun (frame_as_projector q hq) i)
-    _ = projectorFrame (m.equiv (encoder q)) i :=
-        compactAutomorphism_projectorFrame m (encoder q) i
-    _ = projectorFrame (encoder s) i := by rw [hEnc]
-    _ = s i := congrFun (frame_as_projector s hs).symm i
-
 /-! ## Scalar slots -/
 
 private theorem complexPart_octScalar (a : ℝ) : complexPart (octScalar a) = (a : ℂ) := rfl
@@ -217,12 +197,6 @@ private theorem neg_octI_re : octRe (-octI) = 0 := by
 private theorem neg_octI_normSq : octNormSq (-octI) = 1 := by
   rw [neg_octI_eq]
   norm_num [octNormSq, Quaternion.normSq_def']
-
-private theorem relatedTriple_flatXN (t : OctRelatedTriple) :
-    t.compactAutomorphism.equiv flatXN = flatXN := by
-  change (⟨flatXN.d0, flatXN.d1, flatXN.d2,
-    t.A flatXN.o01, t.C flatXN.o02, t.B flatXN.o12⟩ : Albert) = flatXN
-  simp [flatXN, map_zero]
 
 private theorem relatedTriple_fixes_flatFrameP (t : OctRelatedTriple) (i : Fin 3) :
     t.compactAutomorphism.equiv (flatFrameP i) = flatFrameP i :=

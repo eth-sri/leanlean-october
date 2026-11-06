@@ -132,23 +132,14 @@ The lemmas use `linarith`, `linear_combination`, `calc` or a single `nlinarith` 
 at most four hypotheses, and are called with explicit arguments. -/
 
 theorem nonneg_sq_eq_of_sq_eq (a a' : ℝ) (ha : 0 ≤ a) (ha' : 0 ≤ a')
-    (h : a ^ 2 = a' ^ 2) : a = a' := by
-  have hprod : (a - a') * (a + a') = 0 := by linear_combination h
-  rcases mul_eq_zero.mp hprod with h1 | h2
-  · linarith
-  · linarith
+    (h : a ^ 2 = a' ^ 2) : a = a' := (sq_eq_sq₀ ha ha').mp h
 
 theorem half_lt_of_sq (a : ℝ) (ha : 0 ≤ a) (h : 1 / 4 < a ^ 2) : 1 / 2 < a := by
   nlinarith [sq_nonneg (a - 1 / 2), sq_nonneg (a + 1 / 2)]
 
 theorem ne_zero_of_sq_eq_of_ne_zero (x x' : ℝ) (h : x ^ 2 = x' ^ 2) (hx : x ≠ 0) : x' ≠ 0 := by
-  intro hz
-  have hxx : x * x = 0 := by
-    have hx2 : x ^ 2 = 0 := by rw [h, hz]; ring
-    nlinarith [hx2]
-  rcases mul_eq_zero.mp hxx with h1 | h1
-  · exact hx h1
-  · exact hx h1
+  rintro rfl
+  simp_all
 
 /-- The one genuinely nonlinear step, isolated so that `nlinarith` sees four hypotheses and no
 `Albert`. Everything else in this section is linear or `calc`. -/
@@ -168,21 +159,15 @@ theorem abs_prod_nonneg_lt (x y bx by' : ℝ) (hx : |x| < bx) (hy0 : 0 ≤ y) (h
 
 /-- Equal squares survive a common factor. -/
 theorem mul_sq_eq_of_sq_eq (K X Y : ℝ) (h : X ^ 2 = Y ^ 2) :
-    (K * X) ^ 2 = (K * Y) ^ 2 := by
-  calc (K * X) ^ 2 = K ^ 2 * X ^ 2 := by ring
-    _ = K ^ 2 * Y ^ 2 := by rw [h]
-    _ = (K * Y) ^ 2 := by ring
+    (K * X) ^ 2 = (K * Y) ^ 2 := by simp only [mul_pow, h]
 
 /-- Equal norms and equal real parts give equal squared imaginary parts. Squaring the
 real-part equality is not a linear step. -/
 theorem im_sq_eq_of_normSq_eq (z w : ℂ) (hn : Complex.normSq z = Complex.normSq w)
     (hr : z.re = w.re) : z.im ^ 2 = w.im ^ 2 := by
-  rw [Complex.normSq_apply, Complex.normSq_apply] at hn
-  have hrr : z.re * z.re = w.re * w.re := by rw [hr]
-  have h : z.im * z.im = w.im * w.im := by linarith
-  calc z.im ^ 2 = z.im * z.im := by ring
-    _ = w.im * w.im := h
-    _ = w.im ^ 2 := by ring
+  simp only [Complex.normSq_apply] at hn
+  rw [hr] at hn
+  nlinarith
 
 /-- A homogeneous 2x2 real system with nonzero determinant has only the zero solution.
 `linear_combination` eliminates each unknown exactly. -/
@@ -191,13 +176,7 @@ theorem two_by_two (A B C D X Y : ℝ)
     (hdet : A * D - B * C ≠ 0) : X = 0 ∧ Y = 0 := by
   have hX : (A * D - B * C) * X = 0 := by linear_combination D * h1 - B * h2
   have hY : (A * D - B * C) * Y = 0 := by linear_combination A * h2 - C * h1
-  refine ⟨?_, ?_⟩
-  · rcases mul_eq_zero.mp hX with h | h
-    · exact absurd h hdet
-    · exact h
-  · rcases mul_eq_zero.mp hY with h | h
-    · exact absurd h hdet
-    · exact h
+  exact ⟨(mul_eq_zero.mp hX).resolve_left hdet, (mul_eq_zero.mp hY).resolve_left hdet⟩
 
 /-- `MatrixDetEstimate.determinant_gram_real` (`:21`) with `columnGram` unfolded.
 `columnGram` lives in the sub-namespace `Glennie.MatrixDetEstimate`. -/
@@ -311,25 +290,6 @@ theorem octNormSq_zero : octNormSq (0 : Octonion) = 0 := by
 (`:32`, `:41`) and again in `FixedPairNormalization` (`:51`). They contain no values, survive
 perturbation untouched. -/
 
-theorem frame_as_projector (p : Fin 3 → Albert) (hp : Frame p) :
-    p = projectorFrame (encoder p) := by
-  funext i
-  fin_cases i
-  · exact (frame_projector_first p hp).symm
-  · exact (frame_projector_middle p hp).symm
-  · exact (frame_projector_last p hp).symm
-
-theorem frame_eq_of_encoder_eq (q s : Fin 3 → Albert) (hq : Frame q) (hs : Frame s)
-    (m : CompactAutomorphism) (hEnc : m.equiv (encoder q) = encoder s) (i : Fin 3) :
-    m.equiv (q i) = s i := by
-  calc
-    m.equiv (q i) = m.equiv (projectorFrame (encoder q) i) :=
-        congrArg (fun x : Albert => m.equiv x) (congrFun (frame_as_projector q hq) i)
-    _ = projectorFrame (m.equiv (encoder q)) i :=
-        compactAutomorphism_projectorFrame m (encoder q) i
-    _ = projectorFrame (encoder s) i := by rw [hEnc]
-    _ = s i := congrFun (frame_as_projector s hs).symm i
-
 /-! ## 3. The exact diagonal probes of the normalised first frame
 
 This replaces `diagonal_frame_uniform_coordinates` (`Theorems/DiagonalFrames.lean`), the ONE
@@ -343,25 +303,8 @@ Note the index reversal, the easiest thing in the file to get wrong:
 `flatFrameP 0` probes `d2` and `flatFrameP 2` probes `d0`. -/
 
 theorem jordan_flatXN : jordan flatXN flatXN = diagonalAlbert 1 0 1 := by
-  apply Albert.ext
-  · show (jordan flatXN flatXN).d0 = (1 : ℝ)
-    rw [jordan_d0]
-    simp [flatXN, octNormSq_zero]
-  · show (jordan flatXN flatXN).d1 = (0 : ℝ)
-    rw [jordan_d1]
-    simp [flatXN, octNormSq_zero]
-  · show (jordan flatXN flatXN).d2 = (1 : ℝ)
-    rw [jordan_d2]
-    simp [flatXN, octNormSq_zero]
-  · show (jordan flatXN flatXN).o01 = 0
-    rw [jordan_o01]
-    simp [flatXN, octConj_zero, octMul_zero_left, octMul_zero_right]
-  · show (jordan flatXN flatXN).o02 = 0
-    rw [jordan_o02]
-    simp [flatXN, octConj_zero, octMul_zero_left, octMul_zero_right]
-  · show (jordan flatXN flatXN).o12 = 0
-    rw [jordan_o12]
-    simp [flatXN, octConj_zero, octMul_zero_left, octMul_zero_right]
+  ext <;> simp [jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
+    flatXN, diagonalAlbert, octConj_zero, octMul_zero_right, octNormSq_zero]
 
 theorem inner_diagonalAlbert (a b c : ℝ) (x : Albert) :
     inner (diagonalAlbert a b c) x = a * x.d0 + b * x.d1 + c * x.d2 := by
@@ -454,9 +397,7 @@ theorem fe_complex_square_o01 (d e f : ℝ) (u v w : ℂ) :
   all_goals
     simp [jordan_o01, complexAlbert, complexOct, complexPart, octMul, octConj,
       Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im,
-      Complex.star_def, Complex.conj_re, Complex.conj_im,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul,
-      smul_eq_mul]
+      Complex.conj_re, Complex.conj_im, smul_eq_mul]
   all_goals ring
 
 theorem fe_complex_square_o02 (d e f : ℝ) (u v w : ℂ) :
@@ -464,11 +405,8 @@ theorem fe_complex_square_o02 (d e f : ℝ) (u v w : ℂ) :
       v * (d + f) + u * w := by
   apply Complex.ext
   all_goals
-    simp [jordan_o02, complexAlbert, complexOct, complexPart, octMul, octConj,
-      Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im,
-      Complex.star_def, Complex.conj_re, Complex.conj_im,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul,
-      smul_eq_mul]
+    simp [jordan_o02, complexAlbert, complexOct, complexPart, octMul,
+      Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im, smul_eq_mul]
   all_goals ring
 
 theorem fe_complex_square_o12 (d e f : ℝ) (u v w : ℂ) :
@@ -478,9 +416,7 @@ theorem fe_complex_square_o12 (d e f : ℝ) (u v w : ℂ) :
   all_goals
     simp [jordan_o12, complexAlbert, complexOct, complexPart, octMul, octConj,
       Complex.mul_re, Complex.mul_im, Complex.add_re, Complex.add_im,
-      Complex.star_def, Complex.conj_re, Complex.conj_im,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul,
-      smul_eq_mul]
+      Complex.conj_re, Complex.conj_im, smul_eq_mul]
   all_goals ring
 
 /-! ### 5a. The three slot readers of `complexAlbert`
@@ -491,16 +427,13 @@ iota-reduces to `complexOct u`, and `complexPart (complexOct u) = ⟨u.re, u.im�
 not lean on structure eta. -/
 
 theorem complexPart_complexAlbert_o01 (a b c : ℝ) (u v w : ℂ) :
-    complexPart (complexAlbert a b c u v w).o01 = u := by
-  apply Complex.ext <;> rfl
+    complexPart (complexAlbert a b c u v w).o01 = u := rfl
 
 theorem complexPart_complexAlbert_o02 (a b c : ℝ) (u v w : ℂ) :
-    complexPart (complexAlbert a b c u v w).o02 = v := by
-  apply Complex.ext <;> rfl
+    complexPart (complexAlbert a b c u v w).o02 = v := rfl
 
 theorem complexPart_complexAlbert_o12 (a b c : ℝ) (u v w : ℂ) :
-    complexPart (complexAlbert a b c u v w).o12 = w := by
-  apply Complex.ext <;> rfl
+    complexPart (complexAlbert a b c u v w).o12 = w := rfl
 
 /-! ### 5b. Octonion bookkeeping inside the standard complex line -/
 
@@ -516,17 +449,9 @@ required the real part to VANISH -- true on the flat fibre, false nearby, which 
 point at which step 5 of that proof breaks. -/
 theorem octInComplex_ext (x x' : Octonion) (hx : OctInComplex x) (hx' : OctInComplex x')
     (h : complexPart x = complexPart x') : x = x' := by
-  obtain ⟨hj, hk, hz⟩ := hx
-  obtain ⟨hj', hk', hz'⟩ := hx'
-  have hre : x.1.re = x'.1.re := congrArg Complex.re h
-  have him : x.1.imI = x'.1.imI := congrArg Complex.im h
-  apply Prod.ext
-  · apply Quaternion.ext
-    · exact hre
-    · exact him
-    · rw [hj, hj']
-    · rw [hk, hk']
-  · rw [hz, hz']
+  rcases hx with ⟨hj, hk, hz⟩
+  rcases hx' with ⟨hj', hk', hz'⟩
+  apply Prod.ext <;> apply Quaternion.ext <;> simp_all [complexPart, Complex.ext_iff]
 
 theorem octInComplex_zero : OctInComplex (0 : Octonion) := ⟨rfl, rfl, rfl⟩
 
@@ -556,18 +481,10 @@ theorem octDot_inComplex (x x' : Octonion) (hx : OctInComplex x) (hx' : OctInCom
 
 /-- `real_real_conj_re` of `FirstPairNormalization.lean`, which is `private` there. -/
 theorem real_real_conj_re (a b : ℝ) (z : ℂ) :
-    ((a : ℂ) * (b : ℂ) * star z).re = a * b * z.re := by
-  have hs : (star z).re = z.re := rfl
-  have hi : (star z).im = -z.im := rfl
-  simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, hs, hi]
-  ring
+    ((a : ℂ) * (b : ℂ) * star z).re = a * b * z.re := by simp [Complex.mul_re]
 
 theorem real_real_conj_im (a b : ℝ) (z : ℂ) :
-    ((a : ℂ) * (b : ℂ) * star z).im = -(a * b * z.im) := by
-  have hs : (star z).re = z.re := rfl
-  have hi : (star z).im = -z.im := rfl
-  simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, hs, hi]
-  ring
+    ((a : ℂ) * (b : ℂ) * star z).im = -(a * b * z.im) := by simp [Complex.mul_im]
 
 /-! ## 6. The slot data of a complex-sector frame encoder, with symbols for the numerals
 
@@ -685,12 +602,6 @@ on a GENERAL complex slot `rho + sigma*octI`, not just on `sigma*octI`; that is 
 where the whole of `DiagonalOctTriple` is needed. `octConj` is NOT used: octonion conjugation is
 an anti-automorphism and can never be a sign corrector. -/
 
-theorem relatedTriple_flatXN (t : OctRelatedTriple) :
-    t.compactAutomorphism.equiv flatXN = flatXN := by
-  change (⟨flatXN.d0, flatXN.d1, flatXN.d2,
-    t.A flatXN.o01, t.C flatXN.o02, t.B flatXN.o12⟩ : Albert) = flatXN
-  simp [flatXN, map_zero]
-
 theorem relatedTriple_fixes_flatFrameP (t : OctRelatedTriple) (i : Fin 3) :
     t.compactAutomorphism.equiv (flatFrameP i) = flatFrameP i :=
   frame_eq_of_encoder_eq flatFrameP flatFrameP flatFrameP_frame flatFrameP_frame
@@ -722,8 +633,7 @@ theorem octInComplex_conj_slot (k : OctRelatedTriple) (hk : DiagonalOctTriple k)
   · simp [octScalar, octI, quatI]
   · simp [octScalar, octI, quatI]
   · apply Complex.ext <;>
-      simp [complexPart, octScalar, octI, quatI, Complex.star_def, Complex.conj_re,
-        Complex.conj_im]
+      simp [complexPart, octScalar, octI, quatI, Complex.conj_re, Complex.conj_im]
 
 theorem neg_octI_re : octRe (-octI) = 0 := by
   have h : -octI = ((⟨0, -1, 0, 0⟩ : Quaternion ℝ), (0 : Quaternion ℝ)) := by
@@ -1279,7 +1189,7 @@ theorem gram_eq_of_sector_data (z z' : Albert)
         (sectorColumnGram M 2 2).re = sectorFrobeniusSq M := by
     intro M
     simp [sectorColumnGram, sectorFrobeniusSq, Matrix.mul_apply, Matrix.conjTranspose_apply,
-      Fin.sum_univ_three, Complex.normSq_apply, Complex.mul_re, Complex.star_def,
+      Fin.sum_univ_three, Complex.normSq_apply, Complex.mul_re,
       Complex.conj_re, Complex.conj_im]
     ring
   have hFro : sectorFrobeniusSq (hiddenMatrix z) = sectorFrobeniusSq (hiddenMatrix z') := by

@@ -100,12 +100,8 @@ theorem sourceTriple_frames_iff (A : E ≃ₗ[ℝ] Albert) (hunit : A e = 1)
       A (intrinsicProduct P e (rawBilinearForm_nondegenerate P e he hp) x y) =
         jordan (A x) (A y)) (T : SourceTriple E) :
     (∀ a, SourceFrame P e he hp (T a)) ↔
-      (∀ a, Frame (mapTriple A T a)) := by
-  constructor
-  · intro h a
-    exact (sourceFrame_iff P e he hp A hunit hmetric hproduct (T a)).mp (h a)
-  · intro h a
-    exact (sourceFrame_iff P e he hp A hunit hmetric hproduct (T a)).mpr (h a)
+      (∀ a, Frame (mapTriple A T a)) :=
+  forall_congr' fun a => sourceFrame_iff P e he hp A hunit hmetric hproduct (T a)
 
 /-- The fixed frame encoder uses slot 2 minus slot 0. -/
 def sourceEncoder (p : Fin 3 → E) : E := p 2 - p 0
@@ -241,50 +237,6 @@ def sourceQ26 (T : SourceTriple E) : Fin 26 → ℝ := ![
   sourceQTriple P e he hp T 1 0 0, sourceQTriple P e he hp T 1 0 1,
   sourceQTriple P e he hp T 1 1 0, sourceQTriple P e he hp T 1 1 1]
 
-theorem sourceQSingle_eq (A : E ≃ₗ[ℝ] Albert) (hunit : A e = 1)
-    (hmetric : ∀ x y : E,
-      logHessianForm P e x y = trace (jordan (A x) (A y)) / 3)
-    (hproduct : ∀ x y : E,
-      A (intrinsicProduct P e (rawBilinearForm_nondegenerate P e he hp) x y) =
-        jordan (A x) (A y)) (T : SourceTriple E) (v : Fin 3) (s : Fin 2) :
-    sourceQSingle P e he hp T v s =
-      Glennie.Compact.NativeQFamilyLedger.qSingle (mapTriple A T) v s := by
-  rw [sourceQSingle, sourceInner_eq P e he hp A hunit hmetric hproduct,
-    sourceFramePower_map P e he hp A hproduct,
-    sourceFramePower_map P e he hp A hproduct]
-  rfl
-
-theorem sourceQPair_eq (A : E ≃ₗ[ℝ] Albert) (hunit : A e = 1)
-    (hmetric : ∀ x y : E,
-      logHessianForm P e x y = trace (jordan (A x) (A y)) / 3)
-    (hproduct : ∀ x y : E,
-      A (intrinsicProduct P e (rawBilinearForm_nondegenerate P e he hp) x y) =
-        jordan (A x) (A y)) (T : SourceTriple E)
-    (v w : Fin 3) (s t : Fin 2) :
-    sourceQPair P e he hp T v w s t =
-      Glennie.Compact.NativeQFamilyLedger.qPair (mapTriple A T) v w s t := by
-  rw [sourceQPair, sourceInner_eq P e he hp A hunit hmetric hproduct,
-    sourceFramePower_map P e he hp A hproduct,
-    sourceFramePower_map P e he hp A hproduct]
-  rfl
-
-theorem sourceQTriple_eq (A : E ≃ₗ[ℝ] Albert) (hunit : A e = 1)
-    (hmetric : ∀ x y : E,
-      logHessianForm P e x y = trace (jordan (A x) (A y)) / 3)
-    (hproduct : ∀ x y : E,
-      A (intrinsicProduct P e (rawBilinearForm_nondegenerate P e he hp) x y) =
-        jordan (A x) (A y)) (T : SourceTriple E)
-    (s t u : Fin 2) :
-    sourceQTriple P e he hp T s t u =
-      Glennie.Compact.NativeQFamilyLedger.qTriple (mapTriple A T) s t u := by
-  rw [sourceQTriple, sourceTrace_eq P e A hunit hmetric,
-    sourceProduct_map P e he hp A hproduct,
-    sourceProduct_map P e he hp A hproduct,
-    sourceFramePower_map P e he hp A hproduct,
-    sourceFramePower_map P e he hp A hproduct,
-    sourceFramePower_map P e he hp A hproduct]
-  rfl
-
 theorem sourceQ26_eq (A : E ≃ₗ[ℝ] Albert) (hunit : A e = 1)
     (hmetric : ∀ x y : E,
       logHessianForm P e x y = trace (jordan (A x) (A y)) / 3)
@@ -294,11 +246,15 @@ theorem sourceQ26_eq (A : E ≃ₗ[ℝ] Albert) (hunit : A e = 1)
     sourceQ26 P e he hp T = Glennie.Compact.NativeQFamilyLedger.q26 (mapTriple A T) := by
   funext i
   fin_cases i <;>
-    simp only [sourceQ26, Glennie.Compact.NativeQFamilyLedger.q26,
-      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
-      sourceQSingle_eq P e he hp A hunit hmetric hproduct,
-      sourceQPair_eq P e he hp A hunit hmetric hproduct,
-      sourceQTriple_eq P e he hp A hunit hmetric hproduct]
+    simp [sourceQ26, Glennie.Compact.NativeQFamilyLedger.q26,
+      sourceQSingle, sourceQPair, sourceQTriple,
+      sourceInner_eq P e he hp A hunit hmetric hproduct,
+      sourceFramePower_map P e he hp A hproduct,
+      sourceTrace_eq P e A hunit hmetric,
+      sourceProduct_map P e he hp A hproduct,
+      Glennie.Compact.NativeQFamilyLedger.qSingle,
+      Glennie.Compact.NativeQFamilyLedger.qPair,
+      Glennie.Compact.NativeQFamilyLedger.qTriple] <;> rfl
 
 /-- Q26 and the full ledger have identical equality data on actual source frames. -/
 theorem sourceQ26_eq_iff_ledger54_eq (A : E ≃ₗ[ℝ] Albert) (hunit : A e = 1)
@@ -396,37 +352,6 @@ theorem sourceScore_eq_twoPhi (A : E ≃ₗ[ℝ] Albert) (hunit : A e = 1)
     sourcePhi_eq P e he hp A hunit hmetric hproduct]
   simp only [Glennie.Compact.Sections.phiOf, sourceEncoder_map]
   rfl
-
-/-- Any two recognizing maps differ by a native product-and-trace automorphism. -/
-def nativeTransition (A B : E ≃ₗ[ℝ] Albert)
-    (hAu : A e = 1) (hBu : B e = 1)
-    (hAm : ∀ x y : E,
-      logHessianForm P e x y = trace (jordan (A x) (A y)) / 3)
-    (hBm : ∀ x y : E,
-      logHessianForm P e x y = trace (jordan (B x) (B y)) / 3)
-    (hAp : ∀ x y : E,
-      A (intrinsicProduct P e (rawBilinearForm_nondegenerate P e he hp) x y) =
-        jordan (A x) (A y))
-    (hBp : ∀ x y : E,
-      B (intrinsicProduct P e (rawBilinearForm_nondegenerate P e he hp) x y) =
-        jordan (B x) (B y)) : CompactAutomorphism where
-  equiv := A.symm.trans B
-  map_jordan := by
-    intro x y
-    have hpre : A.symm (jordan x y) =
-        sourceProduct P e he hp (A.symm x) (A.symm y) := by
-      apply A.injective
-      simp only [A.apply_symm_apply, sourceProduct_map P e he hp A hAp]
-    change B (A.symm (jordan x y)) =
-      jordan (B (A.symm x)) (B (A.symm y))
-    rw [hpre, sourceProduct_map P e he hp B hBp]
-  map_trace := by
-    intro x
-    change trace (B (A.symm x)) = trace x
-    calc
-      trace (B (A.symm x)) = sourceTrace P e (A.symm x) :=
-        (sourceTrace_eq P e B hBu hBm _).symm
-      _ = trace x := by rw [sourceTrace_eq P e A hAu hAm, A.apply_symm_apply]
 
 /-- The complete source product-and-trace automorphism group. -/
 structure SourceAutomorphism where

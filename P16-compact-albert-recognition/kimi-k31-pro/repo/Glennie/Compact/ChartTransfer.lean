@@ -120,16 +120,9 @@ theorem decode20_inDomain (v : Fin 20 → ℝ) : InDomain (decode20 v) where
 theorem encode20_decode20 (v : Fin 20 → ℝ) : encode20 (decode20 v) = v := by
   funext n
   have hD := decode20_inDomain v
-  rcases fin20_cases n with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-      rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-    simp only [encode20_apply_0, encode20_apply_1, encode20_apply_2, encode20_apply_3,
-      encode20_apply_4, encode20_apply_5, encode20_apply_6, encode20_apply_7, encode20_apply_8,
-      encode20_apply_9, encode20_apply_10, encode20_apply_11, encode20_apply_12,
-      encode20_apply_13, encode20_apply_14, encode20_apply_15, encode20_apply_16,
-      encode20_apply_17, encode20_apply_18, encode20_apply_19, centred, decode20_C, decode20_P,
-      decode20_Q, decode20_R, decC, decP, decQ, decR, lift8, lift4, ext3_zero, ext3_one,
-      ext3_two] <;>
-    ring
+  fin_cases n <;>
+    simp [encode20, centred, decode20_C, decode20_P, decode20_Q, decode20_R,
+      decC, decP, decQ, decR, lift8, lift4, ext3_zero, ext3_one, ext3_two] <;> ring
 
 /-! ## The twenty selected C rows -/
 
@@ -143,27 +136,6 @@ def rowsOf (v : Fin 20 → ℝ) : Fin 20 → ℝ := cRow (decode20 v)
 
 theorem rowsOf_apply (v : Fin 20 → ℝ) (r : Fin 20) :
     rowsOf v r = decC v (rowIndex r).1 (rowIndex r).2.1 (rowIndex r).2.2 := rfl
-
-theorem rowsOf_apply_0 (v : Fin 20 → ℝ) : rowsOf v 0 = decC v 0 0 0 := rfl
-theorem rowsOf_apply_1 (v : Fin 20 → ℝ) : rowsOf v 1 = decC v 0 0 1 := rfl
-theorem rowsOf_apply_2 (v : Fin 20 → ℝ) : rowsOf v 2 = decC v 0 0 2 := rfl
-theorem rowsOf_apply_3 (v : Fin 20 → ℝ) : rowsOf v 3 = decC v 0 1 0 := rfl
-theorem rowsOf_apply_4 (v : Fin 20 → ℝ) : rowsOf v 4 = decC v 0 1 1 := rfl
-theorem rowsOf_apply_5 (v : Fin 20 → ℝ) : rowsOf v 5 = decC v 0 1 2 := rfl
-theorem rowsOf_apply_6 (v : Fin 20 → ℝ) : rowsOf v 6 = decC v 0 2 0 := rfl
-theorem rowsOf_apply_7 (v : Fin 20 → ℝ) : rowsOf v 7 = decC v 0 2 1 := rfl
-theorem rowsOf_apply_8 (v : Fin 20 → ℝ) : rowsOf v 8 = decC v 1 0 0 := rfl
-theorem rowsOf_apply_9 (v : Fin 20 → ℝ) : rowsOf v 9 = decC v 1 0 1 := rfl
-theorem rowsOf_apply_10 (v : Fin 20 → ℝ) : rowsOf v 10 = decC v 1 0 2 := rfl
-theorem rowsOf_apply_11 (v : Fin 20 → ℝ) : rowsOf v 11 = decC v 1 1 0 := rfl
-theorem rowsOf_apply_12 (v : Fin 20 → ℝ) : rowsOf v 12 = decC v 1 1 1 := rfl
-theorem rowsOf_apply_13 (v : Fin 20 → ℝ) : rowsOf v 13 = decC v 1 1 2 := rfl
-theorem rowsOf_apply_14 (v : Fin 20 → ℝ) : rowsOf v 14 = decC v 1 2 0 := rfl
-theorem rowsOf_apply_15 (v : Fin 20 → ℝ) : rowsOf v 15 = decC v 1 2 1 := rfl
-theorem rowsOf_apply_16 (v : Fin 20 → ℝ) : rowsOf v 16 = decC v 2 0 0 := rfl
-theorem rowsOf_apply_17 (v : Fin 20 → ℝ) : rowsOf v 17 = decC v 2 0 1 := rfl
-theorem rowsOf_apply_18 (v : Fin 20 → ℝ) : rowsOf v 18 = decC v 2 1 0 := rfl
-theorem rowsOf_apply_19 (v : Fin 20 → ℝ) : rowsOf v 19 = decC v 2 1 1 := rfl
 
 /-- On the genuine domain the two readings agree, by the `Affine20.decC_encode`
 (Chart.lean). -/
@@ -218,77 +190,6 @@ def chartVec (c : Fin 20 → ℝ) : Fin 20 → ℝ :=
     c 11 - ((c 11 + c 12 + c 13) + (c 3 + c 11 + c 18) + (c 8 + c 11 + c 14)) / 3 + 2 / 9,
     c 12 - ((c 11 + c 12 + c 13) + (c 4 + c 12 + c 19) + (c 9 + c 12 + c 15)) / 3 + 2 / 9]
 
-theorem chartVec_apply_0 (c : Fin 20 → ℝ) : chartVec c 0 = c 0 + c 1 + c 2 - 1 / 3 := rfl
-theorem chartVec_apply_1 (c : Fin 20 → ℝ) : chartVec c 1 = c 3 + c 4 + c 5 - 1 / 3 := rfl
-theorem chartVec_apply_2 (c : Fin 20 → ℝ) : chartVec c 2 = c 8 + c 9 + c 10 - 1 / 3 := rfl
-theorem chartVec_apply_3 (c : Fin 20 → ℝ) : chartVec c 3 = c 11 + c 12 + c 13 - 1 / 3 := rfl
-theorem chartVec_apply_4 (c : Fin 20 → ℝ) : chartVec c 4 = c 0 + c 8 + c 16 - 1 / 3 := rfl
-theorem chartVec_apply_5 (c : Fin 20 → ℝ) : chartVec c 5 = c 1 + c 9 + c 17 - 1 / 3 := rfl
-theorem chartVec_apply_6 (c : Fin 20 → ℝ) : chartVec c 6 = c 3 + c 11 + c 18 - 1 / 3 := rfl
-theorem chartVec_apply_7 (c : Fin 20 → ℝ) : chartVec c 7 = c 4 + c 12 + c 19 - 1 / 3 := rfl
-theorem chartVec_apply_8 (c : Fin 20 → ℝ) : chartVec c 8 = c 0 + c 3 + c 6 - 1 / 3 := rfl
-theorem chartVec_apply_9 (c : Fin 20 → ℝ) : chartVec c 9 = c 8 + c 11 + c 14 - 1 / 3 := rfl
-theorem chartVec_apply_10 (c : Fin 20 → ℝ) : chartVec c 10 = c 1 + c 4 + c 7 - 1 / 3 := rfl
-theorem chartVec_apply_11 (c : Fin 20 → ℝ) : chartVec c 11 = c 9 + c 12 + c 15 - 1 / 3 := rfl
-
-theorem chartVec_apply_12 (c : Fin 20 → ℝ) :
-    chartVec c 12 =
-      c 0 - ((c 0 + c 1 + c 2) + (c 0 + c 8 + c 16) + (c 0 + c 3 + c 6)) / 3 + 2 / 9 := rfl
-theorem chartVec_apply_13 (c : Fin 20 → ℝ) :
-    chartVec c 13 =
-      c 1 - ((c 0 + c 1 + c 2) + (c 1 + c 9 + c 17) + (c 1 + c 4 + c 7)) / 3 + 2 / 9 := rfl
-theorem chartVec_apply_14 (c : Fin 20 → ℝ) :
-    chartVec c 14 =
-      c 3 - ((c 3 + c 4 + c 5) + (c 3 + c 11 + c 18) + (c 0 + c 3 + c 6)) / 3 + 2 / 9 := rfl
-theorem chartVec_apply_15 (c : Fin 20 → ℝ) :
-    chartVec c 15 =
-      c 4 - ((c 3 + c 4 + c 5) + (c 4 + c 12 + c 19) + (c 1 + c 4 + c 7)) / 3 + 2 / 9 := rfl
-theorem chartVec_apply_16 (c : Fin 20 → ℝ) :
-    chartVec c 16 =
-      c 8 - ((c 8 + c 9 + c 10) + (c 0 + c 8 + c 16) + (c 8 + c 11 + c 14)) / 3 + 2 / 9 := rfl
-theorem chartVec_apply_17 (c : Fin 20 → ℝ) :
-    chartVec c 17 =
-      c 9 - ((c 8 + c 9 + c 10) + (c 1 + c 9 + c 17) + (c 9 + c 12 + c 15)) / 3 + 2 / 9 := rfl
-theorem chartVec_apply_18 (c : Fin 20 → ℝ) :
-    chartVec c 18 =
-      c 11 - ((c 11 + c 12 + c 13) + (c 3 + c 11 + c 18) + (c 8 + c 11 + c 14)) / 3 + 2 / 9 := rfl
-theorem chartVec_apply_19 (c : Fin 20 → ℝ) :
-    chartVec c 19 =
-      c 12 - ((c 11 + c 12 + c 13) + (c 4 + c 12 + c 19) + (c 9 + c 12 + c 15)) / 3 + 2 / 9 := rfl
-
-/-! ### The margin sums of a decoded ledger, in `rowsOf` coordinates
-
-Each of these is one field of `decode20_inDomain` read through the `rowsOf` apply lemmas. They
-are what keeps `chartVec_rowsOf` down to twenty one-line goals: no `decC` is ever expanded in a
-goal that mentions more than four chart coordinates. -/
-
-theorem rowsOf_P (v : Fin 20 → ℝ) (i j : Fin 3) (r0 r1 r2 : Fin 20)
-    (h0 : rowsOf v r0 = decC v i j 0) (h1 : rowsOf v r1 = decC v i j 1)
-    (h2 : rowsOf v r2 = decC v i j 2) :
-    rowsOf v r0 + rowsOf v r1 + rowsOf v r2 = decP v i j := by
-  rw [h0, h1, h2]
-  have h := (decode20_inDomain v).C_k i j
-  rw [decode20_C, decode20_P] at h
-  exact h
-
-theorem rowsOf_Q (v : Fin 20 → ℝ) (j k : Fin 3) (r0 r1 r2 : Fin 20)
-    (h0 : rowsOf v r0 = decC v 0 j k) (h1 : rowsOf v r1 = decC v 1 j k)
-    (h2 : rowsOf v r2 = decC v 2 j k) :
-    rowsOf v r0 + rowsOf v r1 + rowsOf v r2 = decQ v j k := by
-  rw [h0, h1, h2]
-  have h := (decode20_inDomain v).C_i j k
-  rw [decode20_C, decode20_Q] at h
-  exact h
-
-theorem rowsOf_R (v : Fin 20 → ℝ) (k i : Fin 3) (r0 r1 r2 : Fin 20)
-    (h0 : rowsOf v r0 = decC v i 0 k) (h1 : rowsOf v r1 = decC v i 1 k)
-    (h2 : rowsOf v r2 = decC v i 2 k) :
-    rowsOf v r0 + rowsOf v r1 + rowsOf v r2 = decR v k i := by
-  rw [h0, h1, h2]
-  have h := (decode20_inDomain v).C_j k i
-  rw [decode20_C, decode20_R] at h
-  exact h
-
 /-- **The arithmetic heart.** `chartVec` inverts `rowsOf` on all of `Fin 20 → ℝ`.
 
 PROOF SKETCH, twenty goals, each one line after the rewrites.
@@ -307,112 +208,11 @@ PROOF SKETCH, twenty goals, each one line after the rewrites.
 No step unfolds a `Ledger54` structure, and no goal carries more than nine chart coordinates. -/
 theorem chartVec_rowsOf (v : Fin 20 → ℝ) : chartVec (rowsOf v) = v := by
   funext m
-  rcases fin20_cases m with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
-  · rw [chartVec_apply_0, rowsOf_P v 0 0 0 1 2 (rowsOf_apply_0 v) (rowsOf_apply_1 v)
-      (rowsOf_apply_2 v), decP]
-    simp only [lift4, ext3_zero]
-    ring
-  · rw [chartVec_apply_1, rowsOf_P v 0 1 3 4 5 (rowsOf_apply_3 v) (rowsOf_apply_4 v)
-      (rowsOf_apply_5 v), decP]
-    simp only [lift4, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_2, rowsOf_P v 1 0 8 9 10 (rowsOf_apply_8 v) (rowsOf_apply_9 v)
-      (rowsOf_apply_10 v), decP]
-    simp only [lift4, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_3, rowsOf_P v 1 1 11 12 13 (rowsOf_apply_11 v) (rowsOf_apply_12 v)
-      (rowsOf_apply_13 v), decP]
-    simp only [lift4, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_4, rowsOf_Q v 0 0 0 8 16 (rowsOf_apply_0 v) (rowsOf_apply_8 v)
-      (rowsOf_apply_16 v), decQ]
-    simp only [lift4, ext3_zero]
-    ring
-  · rw [chartVec_apply_5, rowsOf_Q v 0 1 1 9 17 (rowsOf_apply_1 v) (rowsOf_apply_9 v)
-      (rowsOf_apply_17 v), decQ]
-    simp only [lift4, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_6, rowsOf_Q v 1 0 3 11 18 (rowsOf_apply_3 v) (rowsOf_apply_11 v)
-      (rowsOf_apply_18 v), decQ]
-    simp only [lift4, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_7, rowsOf_Q v 1 1 4 12 19 (rowsOf_apply_4 v) (rowsOf_apply_12 v)
-      (rowsOf_apply_19 v), decQ]
-    simp only [lift4, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_8, rowsOf_R v 0 0 0 3 6 (rowsOf_apply_0 v) (rowsOf_apply_3 v)
-      (rowsOf_apply_6 v), decR]
-    simp only [lift4, ext3_zero]
-    ring
-  · rw [chartVec_apply_9, rowsOf_R v 0 1 8 11 14 (rowsOf_apply_8 v) (rowsOf_apply_11 v)
-      (rowsOf_apply_14 v), decR]
-    simp only [lift4, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_10, rowsOf_R v 1 0 1 4 7 (rowsOf_apply_1 v) (rowsOf_apply_4 v)
-      (rowsOf_apply_7 v), decR]
-    simp only [lift4, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_11, rowsOf_R v 1 1 9 12 15 (rowsOf_apply_9 v) (rowsOf_apply_12 v)
-      (rowsOf_apply_15 v), decR]
-    simp only [lift4, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_12,
-      rowsOf_P v 0 0 0 1 2 (rowsOf_apply_0 v) (rowsOf_apply_1 v) (rowsOf_apply_2 v),
-      rowsOf_Q v 0 0 0 8 16 (rowsOf_apply_0 v) (rowsOf_apply_8 v) (rowsOf_apply_16 v),
-      rowsOf_R v 0 0 0 3 6 (rowsOf_apply_0 v) (rowsOf_apply_3 v) (rowsOf_apply_6 v),
-      rowsOf_apply_0, decC]
-    simp only [lift8, ext3_zero]
-    ring
-  · rw [chartVec_apply_13,
-      rowsOf_P v 0 0 0 1 2 (rowsOf_apply_0 v) (rowsOf_apply_1 v) (rowsOf_apply_2 v),
-      rowsOf_Q v 0 1 1 9 17 (rowsOf_apply_1 v) (rowsOf_apply_9 v) (rowsOf_apply_17 v),
-      rowsOf_R v 1 0 1 4 7 (rowsOf_apply_1 v) (rowsOf_apply_4 v) (rowsOf_apply_7 v),
-      rowsOf_apply_1, decC]
-    simp only [lift8, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_14,
-      rowsOf_P v 0 1 3 4 5 (rowsOf_apply_3 v) (rowsOf_apply_4 v) (rowsOf_apply_5 v),
-      rowsOf_Q v 1 0 3 11 18 (rowsOf_apply_3 v) (rowsOf_apply_11 v) (rowsOf_apply_18 v),
-      rowsOf_R v 0 0 0 3 6 (rowsOf_apply_0 v) (rowsOf_apply_3 v) (rowsOf_apply_6 v),
-      rowsOf_apply_3, decC]
-    simp only [lift8, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_15,
-      rowsOf_P v 0 1 3 4 5 (rowsOf_apply_3 v) (rowsOf_apply_4 v) (rowsOf_apply_5 v),
-      rowsOf_Q v 1 1 4 12 19 (rowsOf_apply_4 v) (rowsOf_apply_12 v) (rowsOf_apply_19 v),
-      rowsOf_R v 1 0 1 4 7 (rowsOf_apply_1 v) (rowsOf_apply_4 v) (rowsOf_apply_7 v),
-      rowsOf_apply_4, decC]
-    simp only [lift8, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_16,
-      rowsOf_P v 1 0 8 9 10 (rowsOf_apply_8 v) (rowsOf_apply_9 v) (rowsOf_apply_10 v),
-      rowsOf_Q v 0 0 0 8 16 (rowsOf_apply_0 v) (rowsOf_apply_8 v) (rowsOf_apply_16 v),
-      rowsOf_R v 0 1 8 11 14 (rowsOf_apply_8 v) (rowsOf_apply_11 v) (rowsOf_apply_14 v),
-      rowsOf_apply_8, decC]
-    simp only [lift8, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_17,
-      rowsOf_P v 1 0 8 9 10 (rowsOf_apply_8 v) (rowsOf_apply_9 v) (rowsOf_apply_10 v),
-      rowsOf_Q v 0 1 1 9 17 (rowsOf_apply_1 v) (rowsOf_apply_9 v) (rowsOf_apply_17 v),
-      rowsOf_R v 1 1 9 12 15 (rowsOf_apply_9 v) (rowsOf_apply_12 v) (rowsOf_apply_15 v),
-      rowsOf_apply_9, decC]
-    simp only [lift8, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_18,
-      rowsOf_P v 1 1 11 12 13 (rowsOf_apply_11 v) (rowsOf_apply_12 v) (rowsOf_apply_13 v),
-      rowsOf_Q v 1 0 3 11 18 (rowsOf_apply_3 v) (rowsOf_apply_11 v) (rowsOf_apply_18 v),
-      rowsOf_R v 0 1 8 11 14 (rowsOf_apply_8 v) (rowsOf_apply_11 v) (rowsOf_apply_14 v),
-      rowsOf_apply_11, decC]
-    simp only [lift8, ext3_zero, ext3_one]
-    ring
-  · rw [chartVec_apply_19,
-      rowsOf_P v 1 1 11 12 13 (rowsOf_apply_11 v) (rowsOf_apply_12 v) (rowsOf_apply_13 v),
-      rowsOf_Q v 1 1 4 12 19 (rowsOf_apply_4 v) (rowsOf_apply_12 v) (rowsOf_apply_19 v),
-      rowsOf_R v 1 1 9 12 15 (rowsOf_apply_9 v) (rowsOf_apply_12 v) (rowsOf_apply_15 v),
-      rowsOf_apply_12, decC]
-    simp only [lift8, ext3_zero, ext3_one]
-    ring
+  fin_cases m <;>
+    simp [chartVec, rowsOf, cRow, rowIndex,
+      (decode20_inDomain v).C_k, (decode20_inDomain v).C_i, (decode20_inDomain v).C_j,
+      decode20_C, decode20_P, decode20_Q, decode20_R,
+      decP, decQ, decR, decC, lift4, lift8, ext3_zero, ext3_one, ext3_two] <;> ring
 
 /-! ## The bridge to the flowed family
 

@@ -43,8 +43,6 @@ def inverseMatrix : Matrix (Fin 27) (Fin 27) ℝ := ![
 ![0, 0, 0, 0, 0, 0, (-4/3), 0, (-2/3), 0, 0, 0, 0, (2/3), 0, 0, 0, 0, (2/3), 0, 0, 0, 0, 0, (2/3), (4/3), 0]
 ]
 
-
-
 set_option maxHeartbeats 2000000 in
 theorem left_row0 (j : Fin 27) :
     (inverseMatrix * coordinateMatrix) 0 j = (1 : Matrix (Fin 27) (Fin 27) ℝ) 0 j := by
