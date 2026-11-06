@@ -3,11 +3,10 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.IntegerLinearForms
-public import CCDN.Algebra.ProjectiveSection
-public import CCDN.Height.ProjectiveZeroLocus
+import CCDN.Algebra.IntegerLinearForms
+import CCDN.Algebra.ProjectiveSection
+import CCDN.Height.ProjectiveZeroLocus
 import CCDN.Algebra.ProjectiveFiniteFibers
 import CCDN.Determinant.PolynomialMapDeterminant
 import CCDN.Projection.BoundedLinearProjection
@@ -15,12 +14,13 @@ import CCDN.Projection.BoundedLinearProjection
 /-! Height and cardinality transport through an integer linear
 projection with uniformly bounded affine fibers. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial Matrix
 
-private def integerProjectiveLinearImage {m n : ℕ}
+variable {m n : ℕ}
+
+def integerProjectiveLinearImage
     (P : Matrix (Fin (m + 1)) (Fin (n + 1)) ℤ) (x : ProjectivePoint n) :
     ProjectivePoint m :=
   if h : (P.map (Int.castRingHom ℚ)) *ᵥ x.rep ≠ 0 then
@@ -37,7 +37,7 @@ zero locus of `I` has at most `M` points, then the projective rational points of
 on the zero locus of `I` number at most `M` times those of height at most `(n + 1) * H * B` on the
 projective hypersurface `f = 0`. -/
 theorem projective_integer_linear_count_transfer
-    {m n : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ))
+    (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ))
     (P : Matrix (Fin (m + 1)) (Fin (n + 1)) ℤ)
     (f : MvPolynomial (Fin (m + 1)) ℚ) (hf : f.IsHomogeneous f.totalDegree)
     (hrelation : aeval (fun i => integerLinearForm (P i)) f ∈ I)
@@ -54,7 +54,7 @@ theorem projective_integer_linear_count_transfer
   let π := integerProjectiveLinearImage P
   let s := projectivePoints (projectiveIdealZeroLocus I) B
   let t := projectivePoints (projectiveZeroLocus f) ((n + 1 : ℕ) * H * B)
-  have hLapply (x : Fin (n + 1) → ℚ) (i) :
+  have hLapply (x : Fin (n + 1) → ℚ) i :
       L x i = eval x (integerLinearForm (P i)) := by
     simp only [L, Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct, Matrix.map_apply,
       Int.coe_castRingHom, eval_linearForm]
@@ -82,9 +82,9 @@ theorem projective_integer_linear_count_transfer
     · rw [mem_projectiveZeroLocus_mk hf]
       have hz := projectiveIdealZeroLocus_rep hxI _ hrelation
       rw [eval_polynomial_coordinate_map] at hz
-      have hev : L x.rep = fun i => eval x.rep (integerLinearForm (P i)) :=
+      have hev :=
         funext (hLapply x.rep)
-      rwa [hev]
+      grind
   have hfib (y : ProjectivePoint m) :
       (s.filter (fun x => π x = y)).card ≤ M := by
     let u := s.filter (fun x => π x = y)
@@ -102,5 +102,3 @@ theorem projective_integer_linear_count_transfer
     _ = M * (s.image π).card := by simp [Nat.mul_comm]
     _ ≤ M * t.card := Nat.mul_le_mul_left M (Finset.card_le_card himage)
 
-end
-end CCDN

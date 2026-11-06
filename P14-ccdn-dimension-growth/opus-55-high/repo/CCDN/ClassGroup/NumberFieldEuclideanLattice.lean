@@ -3,11 +3,10 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.Algebra.Module.ZLattice.Covolume
-public import Mathlib.NumberTheory.NumberField.CanonicalEmbedding.Basic
-public import Mathlib.NumberTheory.NumberField.Discriminant.Defs
+import Mathlib.Algebra.Module.ZLattice.Covolume
+import Mathlib.NumberTheory.NumberField.CanonicalEmbedding.Basic
+import Mathlib.NumberTheory.NumberField.Discriminant.Defs
 import Mathlib.NumberTheory.NumberField.Discriminant.Basic
 
 /-! The ring-of-integers lattice in the Euclidean mixed embedding.
@@ -15,7 +14,6 @@ The real and imaginary coordinates are unweighted; the covolume is
 `2^(-r₂) √|D|`. All norm comparisons below have constants depending only
 on the degree. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open NumberField NumberField.InfinitePlace MeasureTheory
@@ -30,7 +28,6 @@ def euclideanNumberFieldEmbedding : K →+* mixedEmbedding.euclidean.mixedSpace 
   map_one' := by rw [map_one]; rfl
   map_add' x y := by simp
   map_mul' x y := by
-    change (mixedEmbedding.euclidean.toMixed K).symm (mixedEmbedding K (x * y)) = _
     rw [map_mul]
     rfl
 
@@ -39,7 +36,7 @@ of `x`. -/
 @[simp] lemma toMixed_euclideanNumberFieldEmbedding (x : K) :
     mixedEmbedding.euclidean.toMixed K (euclideanNumberFieldEmbedding K x) =
       mixedEmbedding K x :=
-  (mixedEmbedding.euclidean.toMixed K).apply_symm_apply _
+  by aesop
 
 /-- The Euclidean mixed embedding of a number field is injective. -/
 lemma euclideanNumberFieldEmbedding_injective :
@@ -60,7 +57,7 @@ def euclideanNumberFieldLinearMap :
 /-- The Euclidean embedding of an algebraic integer lies in the Euclidean integer lattice. -/
 lemma euclideanNumberFieldEmbedding_mem_integerLattice (x : 𝓞 K) :
     euclideanNumberFieldEmbedding K (x : K) ∈ mixedEmbedding.euclidean.integerLattice K := by
-  change mixedEmbedding.euclidean.toMixed K (euclideanNumberFieldEmbedding K (x : K)) ∈
+  change mixedEmbedding.euclidean.toMixed K (euclideanNumberFieldEmbedding K x) ∈
     mixedEmbedding.integerLattice K
   rw [toMixed_euclideanNumberFieldEmbedding]
   exact ⟨x, rfl⟩
@@ -74,13 +71,12 @@ lemma mem_euclidean_integerLattice_iff
   constructor
   · rintro ⟨z, hz⟩
     refine ⟨z, (mixedEmbedding.euclidean.toMixed K).injective ?_⟩
-    rw [toMixed_euclideanNumberFieldEmbedding]
-    exact hz
+    simp_all
   · rintro ⟨z, rfl⟩
-    exact euclideanNumberFieldEmbedding_mem_integerLattice K z
+    tauto
 
 open Classical in
-private lemma infinitePlace_le_euclidean_norm (w : InfinitePlace K) (x : K) :
+lemma infinitePlace_le_euclidean_norm (w : InfinitePlace K) (x : K) :
     w x ≤ ‖euclideanNumberFieldEmbedding K x‖ := by
   rw [← mixedEmbedding.normAtPlace_apply w x,
     ← toMixed_euclideanNumberFieldEmbedding]
@@ -93,7 +89,7 @@ private lemma infinitePlace_le_euclidean_norm (w : InfinitePlace K) (x : K) :
       (WithLp.norm_snd_le _ (euclideanNumberFieldEmbedding K x))
 
 open Classical in
-private lemma euclideanNumberFieldEmbedding_norm_sq (x : K) :
+lemma euclideanNumberFieldEmbedding_norm_sq (x : K) :
     ‖euclideanNumberFieldEmbedding K x‖ ^ 2 =
       (∑ w : {w : InfinitePlace K // IsReal w}, (w.val x) ^ 2) +
       (∑ w : {w : InfinitePlace K // IsComplex w}, (w.val x) ^ 2) := by
@@ -117,7 +113,7 @@ lemma one_le_euclidean_norm_integer {x : 𝓞 K} (hx : x ≠ 0) :
   obtain ⟨w⟩ := (inferInstance : Nonempty (InfinitePlace K))
   have hw := InfinitePlace.one_le_of_lt_one (w := w) hx
     (fun _ _ ↦ (infinitePlace_le_euclidean_norm K _ (x : K)).trans_lt h)
-  exact (hw.trans (infinitePlace_le_euclidean_norm K w (x : K))).not_gt h
+  exact (hw.trans (infinitePlace_le_euclidean_norm K w x)).not_gt h
 
 open Classical in
 /-- Every nonzero vector of the Euclidean integer lattice has norm at least `1`. -/
@@ -151,14 +147,13 @@ lemma euclideanNumberFieldEmbedding_norm_le {B : ℝ} (hB : 0 ≤ B)
     exact_mod_cast card_add_two_mul_card_eq_rank K
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) hB)).mp
   rw [mul_pow, Real.sq_sqrt (Nat.cast_nonneg _), euclideanNumberFieldEmbedding_norm_sq]
-  nlinarith [congrArg (fun r : ℝ ↦ r * B ^ 2) hrank,
-    mul_nonneg (Nat.cast_nonneg (nrComplexPlaces K) (α := ℝ)) (sq_nonneg B)]
+  nlinarith
 
 open Classical in
 /-- The Euclidean embedding of `1` has norm at most `√[K : ℚ]`. -/
 lemma euclideanNumberFieldEmbedding_one_norm_le :
     ‖euclideanNumberFieldEmbedding K 1‖ ≤ Real.sqrt (Module.finrank ℚ K) := by
-  simpa using euclideanNumberFieldEmbedding_norm_le K (B := 1) zero_le_one 1
+  simpa using euclideanNumberFieldEmbedding_norm_le K zero_le_one 1
     (fun w ↦ by simp)
 
 open Classical in
@@ -181,7 +176,7 @@ lemma euclideanNumberFieldEmbedding_norm_mul_le (x y : K) :
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _))).mp
   rw [mul_pow, euclideanNumberFieldEmbedding_norm_sq K (x * y),
     euclideanNumberFieldEmbedding_norm_sq K x]
-  nlinarith only [hreal, hcomplex]
+  nlinarith
 
 open Classical in
 /-- The Euclidean integer lattice has covolume `2 ^ (-r₂) * √|discr K|`, where `r₂` is the number of
@@ -194,9 +189,7 @@ lemma euclidean_integerLattice_covolume :
       (mixedEmbedding.euclidean.volumePreserving_toMixed K),
     ZLattice.covolume_eq_measure_fundamentalDomain (mixedEmbedding.integerLattice K) volume
       (mixedEmbedding.fundamentalDomain_integerLattice K)]
-  simp only [Measure.real, mixedEmbedding.volume_fundamentalDomain_latticeBasis,
+  simp [Measure.real, mixedEmbedding.volume_fundamentalDomain_latticeBasis,
     ENNReal.toReal_mul, ENNReal.toReal_pow, ENNReal.toReal_inv, ENNReal.toReal_ofNat,
     ENNReal.coe_toReal, Real.coe_sqrt, coe_nnnorm, Int.norm_eq_abs]
 
-end
-end CCDN

@@ -3,13 +3,12 @@ Copyright (c) 2026 Ralf Stephan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ralf Stephan
 -/
-module
 
-public import Mathlib.Algebra.Module.ZLattice.Basic
-public import Mathlib.LinearAlgebra.Basis.Fin
-public import Mathlib.LinearAlgebra.Dimension.Localization
-public import Mathlib.LinearAlgebra.Dimension.RankNullity
-public import Mathlib.LinearAlgebra.FreeModule.PID
+import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.LinearAlgebra.Basis.Fin
+import Mathlib.LinearAlgebra.Dimension.Localization
+import Mathlib.LinearAlgebra.Dimension.RankNullity
+import Mathlib.LinearAlgebra.FreeModule.PID
 
 /-!
 # A lattice basis adapted to a flag
@@ -79,8 +78,6 @@ applied to the family of Lemma 1, the family realizing the successive minima.
 This is infrastructure for Layers 4.2 and 4.6 of the `ArithmeticHeights` roadmap.
 -/
 
-public section
-
 open Module Set Submodule
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -97,7 +94,7 @@ theorem discreteTopology_of_le {L N : Submodule ℤ E} [DiscreteTopology L] (h :
     DiscreteTopology N := by
   refine DiscreteTopology.of_continuous_injective (f := fun x : N ↦ (⟨(x : E), h x.2⟩ : L))
     (continuous_subtype_val.subtype_mk _) fun x y hxy ↦ ?_
-  have hxy' : (x : E) = (y : E) := congrArg (fun z : L ↦ (z : E)) hxy
+  have hxy' := congrArg (fun z : L ↦ (z : E)) hxy
   exact Subtype.ext hxy'
 
 /-- The `ℤ`-rank of a submodule of a discrete lattice is the `ℝ`-dimension of its span. This is
@@ -113,13 +110,7 @@ theorem finrank_int_eq_finrank_real [FiniteDimensional ℝ E] {L N : Submodule �
 
 /-! ### The flag of an independent family -/
 
-/-- The part of a lattice `L` inside the `ℝ`-span of the first `j` members of a family `v`: the
-`j`-th step of the flag along which an adapted basis is built. -/
-@[expose] def flagPart {n : ℕ} (L : Submodule ℤ E) (v : Fin n → E) (j : ℕ) : Submodule ℤ E :=
-  L ⊓ (span ℝ (v '' {i : Fin n | (i : ℕ) < j})).restrictScalars ℤ
-
 /-! ### The induction step -/
 
 /-! ### The adapted basis -/
 
-end ZLattice

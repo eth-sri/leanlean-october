@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.Algebra.Group.Subgroup.Ker
-public import Mathlib.SetTheory.Cardinal.Finite
+import Mathlib.Algebra.Group.Subgroup.Ker
+import Mathlib.SetTheory.Cardinal.Finite
 import Mathlib.GroupTheory.Index
 
 /-!
@@ -25,14 +24,15 @@ The `n`-torsion subgroup of a commutative group `G` is `(powMonoidHom n : G →*
   number of cosets.
 -/
 
-@[expose] public section
-
 namespace MonoidHom
 
 variable {G H : Type*} [CommGroup G] [CommGroup H]
 
+section
+variable (φ : G →* H)
+
 /-- Power torsion maps functorially under a group homomorphism. -/
-def powMonoidHomKerMap (φ : G →* H) (n : ℕ) :
+def powMonoidHomKerMap (n : ℕ) :
     (powMonoidHom n : G →* G).ker →* (powMonoidHom n : H →* H).ker where
   toFun x := ⟨φ x, by
     change (φ x.val) ^ n = 1
@@ -42,7 +42,7 @@ def powMonoidHomKerMap (φ : G →* H) (n : ℕ) :
 
 /-- A surjective homomorphism does not increase the number of `n`-torsion elements. -/
 theorem card_powMonoidHom_ker_le_of_surjective [Finite G] [Finite H]
-    (φ : G →* H) (hφ : Function.Surjective φ) (n : ℕ) :
+    (hφ : Function.Surjective φ) (n : ℕ) :
     Nat.card (powMonoidHom n : H →* H).ker ≤
       Nat.card (powMonoidHom n : G →* G).ker := by
   have hpow : (powMonoidHom n : G →* G).range ≤
@@ -53,12 +53,12 @@ theorem card_powMonoidHom_ker_le_of_surjective [Finite G] [Finite H]
     (powMonoidHom n : G →* G).range (powMonoidHom n : H →* H).range φ
     (QuotientGroup.mk_surjective.comp hφ) hpow
   have hc := Nat.card_le_card_of_surjective _ hq
-  simpa only [← Subgroup.index_eq_card, Subgroup.index_range] using hc
+  simpa [← Subgroup.index_eq_card, Subgroup.index_range] using hc
 
 /-- The torsion of the middle group is bounded by the torsion of a
 homomorphism's kernel and the torsion of its target. -/
 theorem card_powMonoidHom_ker_le_mul [Finite G] [Finite H]
-    (φ : G →* H) (n : ℕ) :
+    (n : ℕ) :
     Nat.card (powMonoidHom n : G →* G).ker ≤
       Nat.card (powMonoidHom n : φ.ker →* φ.ker).ker *
         Nat.card (powMonoidHom n : H →* H).ker := by
@@ -66,20 +66,17 @@ theorem card_powMonoidHom_ker_le_mul [Finite G] [Finite H]
   let j : ψ.ker → (powMonoidHom n : φ.ker →* φ.ker).ker :=
     fun x ↦ ⟨⟨x.val.val, by
       have hx := congrArg Subtype.val x.property
-      exact hx⟩, by
-        apply Subtype.ext
-        exact x.val.property⟩
-  have hj : Function.Injective j := by
+      exact hx⟩, by aesop⟩
+  have hk := Nat.card_le_card_of_injective j (by
     intro x y h
-    apply Subtype.ext
-    apply Subtype.ext
-    exact congrArg (fun z : (powMonoidHom n : φ.ker →* φ.ker).ker ↦ z.val.val) h
-  have hk := Nat.card_le_card_of_injective j hj
+    grind)
   have hr := Subgroup.card_le_card_group ψ.range
   calc
     Nat.card (powMonoidHom n : G →* G).ker = Nat.card ψ.ker * Nat.card ψ.range :=
       (Subgroup.card_ker_mul_card_range ψ).symm
     _ ≤ _ := Nat.mul_le_mul hk hr
+
+end
 
 /-- A subgroup covered by finitely many cosets of the image of `φ` has `m`-torsion bounded by the
 `m`-torsion of the source times the number of cosets. -/
@@ -101,38 +98,31 @@ theorem card_powMonoidHom_ker_le_of_coset_cover
     refine ⟨i, ?_⟩
     rw [← hx]
     change π x.val = _
-    rw [he, map_mul, hφ, one_mul]
+    grind
   choose i hi using hex
   have hinj : Function.Injective i := by
     intro x y h
-    apply Subtype.ext
-    rw [hi x, hi y, h]
+    grind
   have hrange : Nat.card ψ.range ≤ Fintype.card ι := by
-    simpa only [Nat.card_eq_fintype_card] using Nat.card_le_card_of_injective i hinj
+    simpa using Nat.card_le_card_of_injective i hinj
   let j : δ.ker →* φ.range :=
-    { toFun := fun x ↦ ⟨x.val.val, by
-        have hh := congrArg Subtype.val x.property
-        change QuotientGroup.mk x.val.val = 1 at hh
-        exact (QuotientGroup.eq_one_iff _).mp hh⟩
+    { toFun := fun x ↦ ⟨x.val.val, by aesop⟩
       map_one' := Subtype.ext rfl
       map_mul' := fun _ _ ↦ Subtype.ext rfl }
   have hj : Function.Injective j := by
     intro x y h
     apply Subtype.ext
     apply Subtype.ext
-    exact congrArg (fun z : φ.range ↦ z.val) h
+    exact congrArg (fun z ↦ z.val) h
   have hjtor : Function.Injective (powMonoidHomKerMap j m) := by
     intro x y h
     apply Subtype.ext
     apply hj
     exact congrArg Subtype.val h
-  have hker :
-      Nat.card (powMonoidHom m : δ.ker →* δ.ker).ker ≤
-        Nat.card (powMonoidHom m : A →* A).ker :=
+  have hker :=
     (Nat.card_le_card_of_injective _ hjtor).trans
       (card_powMonoidHom_ker_le_of_surjective φ.rangeRestrict φ.rangeRestrict_surjective m)
   have hr : Nat.card (powMonoidHom m : ψ.range →* ψ.range).ker ≤ Fintype.card ι :=
     (Subgroup.card_le_card_group _).trans hrange
   exact (card_powMonoidHom_ker_le_mul δ m).trans (Nat.mul_le_mul hker hr)
 
-end MonoidHom

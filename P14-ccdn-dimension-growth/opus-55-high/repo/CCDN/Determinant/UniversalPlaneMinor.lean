@@ -3,11 +3,10 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.AuxiliaryPolynomial.HypersurfacePositioning
-public import CCDN.Determinant.GenericPlaneSmoothness
-public import CCDN.Noether.UniversalPlane
+import CCDN.AuxiliaryPolynomial.HypersurfacePositioning
+import CCDN.Determinant.GenericPlaneSmoothness
+import CCDN.Noether.UniversalPlane
 import CCDN.Determinant.ClosedFormIntegerMinor
 import CCDN.Noether.ClosedFormScaling
 import CCDN.Noether.ShearNormalization
@@ -16,7 +15,6 @@ import CCDN.Noether.ShearNormalization
 family of all affine planes. Its nonzero minor therefore proves that a
 universal parameter polynomial is nonzero. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
@@ -26,8 +24,10 @@ def genericTransverseDirection (K F σ : Type*) [Field K] [Field F]
     [Algebra (MvPolynomial σ K) F] : Option σ → F :=
   fun i => Option.elim i 0 (fun j => algebraMap (MvPolynomial σ K) F (X j))
 
-private lemma genericPlaneMap_affineCoordinates {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
+section
+variable {K F σ : Type*} [Field K] [Field F] [Algebra K F] [Algebra (MvPolynomial σ K) F]
+
+lemma genericPlaneMap_affineCoordinates
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
     genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb f) =
       MvPolynomial.map (planeParameterEval (algebraMap K F)
@@ -44,7 +44,7 @@ private lemma genericPlaneMap_affineCoordinates {K F σ : Type*} [Field K] [Fiel
       change genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb (C r)) = _
       rw [show hypersurfaceAffineCoordinates a b hb (C r) = C r from
         (hypersurfaceAffineCoordinates a b hb).commutes r]
-      simp [genericPlaneMap]
+      simp
     · intro i
       change genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb (X i)) = _
       rw [hypersurfaceAffineCoordinates_X]
@@ -53,8 +53,6 @@ private lemma genericPlaneMap_affineCoordinates {K F σ : Type*} [Field K] [Fiel
 
 /-- Monic normalization changes the specialized equation only by a scalar. -/
 lemma normalized_genericPlane_universal_specialization
-    {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
     [IsScalarTower K (MvPolynomial σ K) F]
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
     bivariateMap (algebraMap (MvPolynomial σ K) F)
@@ -69,6 +67,8 @@ lemma normalized_genericPlane_universal_specialization
   congr 1
   simp [genericPlaneMap, bivariatePolynomialEquiv_C]
 
+end
+
 /-- Every irreducible positive-degree hypersurface over an algebraically closed
 field of characteristic zero or >2*d^2 has a nonzero minor in the UNIVERSAL affine-plane
 parameter ring, not merely in a family through a fixed line. -/
@@ -78,20 +78,16 @@ theorem exists_universalPlane_minor
     (hpos : 0 < f.totalDegree) (hchar : CharZeroOrGT K (2 * f.totalDegree ^ 2)) :
     (closedFormCoefficientMatrix f.totalDegree (universalPlanePolynomial f)).HasNonzeroMinor
       (2 * f.totalDegree ^ 2 - 1) := by
-  obtain ⟨a, b, hb, _, rows, cols, hdet⟩ :=
+  obtain ⟨a, b, hb, rows, cols, hdet⟩ :=
     exists_positioned_genericPlane_minor f hf hpos hchar
   let R := MvPolynomial σ K
   let F := FractionRing R
   let φ : R →+* F := algebraMap R F
-  have hne : φ (((closedFormCoefficientMatrix f.totalDegree
-      (genericPlanePolynomial (normalizedHypersurfaceCoordinates a b hb f))).submatrix
-        rows cols).det) ≠ 0 :=
+  have hne :=
     (map_ne_zero_iff _ (IsFractionRing.injective R F)).mpr hdet
   rw [closedForm_minor_map, normalized_genericPlane_universal_specialization,
     closedForm_minor_smul, ← closedForm_minor_map] at hne
   refine ⟨rows, cols, ?_⟩
   intro he
-  exact hne (by rw [he, map_zero, mul_zero])
+  exact hne (by simp_all)
 
-end
-end CCDN

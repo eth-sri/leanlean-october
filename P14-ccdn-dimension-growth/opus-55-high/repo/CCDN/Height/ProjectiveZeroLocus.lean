@@ -3,26 +3,26 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Height.ProjectivePrimitive
-public import Mathlib.RingTheory.MvPolynomial.Homogeneous
+import CCDN.Height.ProjectivePrimitive
+import Mathlib.RingTheory.MvPolynomial.Homogeneous
 
 /-! Homogeneous zero loci on rational projective space and their integer
 representatives. Membership is independent of the representative. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
+
+section
+variable {K σ : Type*} {d : ℕ}
 
 /-- Evaluating a homogeneous polynomial of degree `d` at `a • v` multiplies its value at `v` by
 `a ^ d`. -/
-lemma homogeneous_eval_smul {K σ : Type*} [CommSemiring K]
-    {f : MvPolynomial σ K} {d : ℕ} (hf : f.IsHomogeneous d)
+lemma homogeneous_eval_smul [CommSemiring K]
+    {f : MvPolynomial σ K} (hf : f.IsHomogeneous d)
     (a : K) (v : σ → K) :
     eval (a • v) f = a ^ d * eval v f := by
-  classical
   conv_lhs => rw [f.as_sum]
   conv_rhs => rw [f.as_sum]
   simp only [map_sum, eval_monomial, Finset.mul_sum]
@@ -31,7 +31,7 @@ lemma homogeneous_eval_smul {K σ : Type*} [CommSemiring K]
   have hd : m.degree = d := by
     rw [Finsupp.degree_eq_weight_one]
     exact hf (mem_support_iff.mp hm)
-  simp only [Pi.smul_apply, smul_eq_mul, mul_pow, Finsupp.prod, Finset.prod_mul_distrib,
+  simp [Pi.smul_apply, smul_eq_mul, mul_pow, Finsupp.prod, Finset.prod_mul_distrib,
     Finset.prod_pow_eq_pow_sum]
   change f.coeff m * (a ^ m.degree * _) = _
   rw [hd]
@@ -39,16 +39,21 @@ lemma homogeneous_eval_smul {K σ : Type*} [CommSemiring K]
 
 /-- Over a field, a homogeneous polynomial vanishes at `a • v`, for `a ≠ 0`, exactly when it
 vanishes at `v`. -/
-lemma homogeneous_eval_zero_iff_smul {K σ : Type*} [Field K]
-    {f : MvPolynomial σ K} {d : ℕ} (hf : f.IsHomogeneous d)
+lemma homogeneous_eval_zero_iff_smul [Field K]
+    {f : MvPolynomial σ K} (hf : f.IsHomogeneous d)
     {a : K} (ha : a ≠ 0) (v : σ → K) :
     eval (a • v) f = 0 ↔ eval v f = 0 := by
   rw [homogeneous_eval_smul hf, mul_eq_zero]
   simp [pow_ne_zero _ ha]
 
+end
+
+section
+variable {K : Type*} [Field K]
+
 /-- A homogeneous polynomial vanishes at one nonzero vector exactly when it vanishes at any other
 nonzero vector spanning the same projective point. -/
-lemma homogeneous_eval_zero_iff_projective_eq {K : Type*} [Field K] {n d : ℕ}
+lemma homogeneous_eval_zero_iff_projective_eq {n d : ℕ}
     {f : MvPolynomial (Fin (n + 1)) K} (hf : f.IsHomogeneous d)
     {v w : Fin (n + 1) → K} (hv : v ≠ 0) (hw : w ≠ 0)
     (he : Projectivization.mk K v hv = Projectivization.mk K w hw) :
@@ -59,13 +64,13 @@ lemma homogeneous_eval_zero_iff_projective_eq {K : Type*} [Field K] {n d : ℕ}
 
 /-- The projective points whose chosen representative is a zero of `f`; for homogeneous `f`
 this is the projective zero locus of `f`, independent of the representative. -/
-def projectiveZeroLocus {K : Type*} [Field K] {n : ℕ} (f : MvPolynomial (Fin (n + 1)) K) :
+def projectiveZeroLocus {n : ℕ} (f : MvPolynomial (Fin (n + 1)) K) :
     Set (Projectivization K (Fin (n + 1) → K)) :=
   {x | eval x.rep f = 0}
 
 /-- For homogeneous `f`, the projective point spanned by a nonzero vector `v` lies in the
 projective zero locus of `f` exactly when `f` vanishes at `v`. -/
-lemma mem_projectiveZeroLocus_mk {K : Type*} [Field K] {n d : ℕ}
+lemma mem_projectiveZeroLocus_mk {n d : ℕ}
     {f : MvPolynomial (Fin (n + 1)) K} (hf : f.IsHomogeneous d)
     (v : Fin (n + 1) → K) (hv : v ≠ 0) :
     Projectivization.mk K v hv ∈ projectiveZeroLocus f ↔ eval v f = 0 := by
@@ -73,9 +78,13 @@ lemma mem_projectiveZeroLocus_mk {K : Type*} [Field K] {n d : ℕ}
     (Projectivization.mk K v hv).rep_nonzero hv
     (Projectivization.mk K v hv).mk_rep
 
+end
+
+variable {n d : ℕ}
+
 /-- For homogeneous rational `f`, a rational projective point lies in the zero locus of `f` exactly
 when `f` vanishes at its primitive integer representative. -/
-lemma mem_projectiveZeroLocus_primitive {n d : ℕ}
+lemma mem_projectiveZeroLocus_primitive
     {f : MvPolynomial (Fin (n + 1)) ℚ} (hf : f.IsHomogeneous d)
     (x : ProjectivePoint n) :
     x ∈ projectiveZeroLocus f ↔ eval (rationalPoint (primitiveProjectiveRep x)) f = 0 := by
@@ -87,7 +96,7 @@ lemma mem_projectiveZeroLocus_primitive {n d : ℕ}
 /-- For a homogeneous integer polynomial `f`, a rational projective point lies in the projective
 zero locus of `f` (viewed over `ℚ`) exactly when `f` vanishes at the point's primitive integer
 representative. -/
-lemma mem_integer_projectiveZeroLocus {n d : ℕ}
+lemma mem_integer_projectiveZeroLocus
     {f : MvPolynomial (Fin (n + 1)) ℤ} (hf : f.IsHomogeneous d)
     (x : ProjectivePoint n) :
     x ∈ projectiveZeroLocus (map (Int.castRingHom ℚ) f) ↔
@@ -100,7 +109,7 @@ lemma mem_integer_projectiveZeroLocus {n d : ℕ}
 
 /-- Reduce a projective count to a finite family of bounded primitive
 integer vectors representing distinct projective points. -/
-theorem projective_zero_count_le_of_family_bound {n d : ℕ}
+theorem projective_zero_count_le_of_family_bound
     (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d)
     (B R : ℝ)
     (hbound : ∀ (t : ℕ) (z : Fin t → IntPoint (n + 1))
@@ -111,7 +120,6 @@ theorem projective_zero_count_le_of_family_bound {n d : ℕ}
       (∀ i, eval (z i) f = 0) →
       (∀ i, InBox (z i) B) → (t : ℝ) ≤ R) :
     (projectiveCount (projectiveZeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤ R := by
-  classical
   let S := projectivePoints (projectiveZeroLocus (map (Int.castRingHom ℚ) f)) B
   let e := (Fintype.equivFin S).symm
   let z : Fin (Fintype.card S) → IntPoint (n + 1) :=
@@ -129,7 +137,5 @@ theorem projective_zero_count_le_of_family_bound {n d : ℕ}
   have hbox (i j) : |(z i j : ℝ)| ≤ B :=
     (primitiveProjectiveRep_bound _ j).trans (mem_projectivePoints.mp (e i).property).1
   have h := hbound _ z hz hinj hprim hzero hbox
-  simpa only [Fintype.card_coe, S, projectiveCount] using h
+  simpa [Fintype.card_coe, S, projectiveCount] using h
 
-end
-end CCDN

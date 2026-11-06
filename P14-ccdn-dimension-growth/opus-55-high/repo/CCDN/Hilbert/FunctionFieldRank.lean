@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Hilbert.FilteredIntersection
-public import Mathlib.RingTheory.Algebraic.Defs
+import CCDN.Hilbert.FilteredIntersection
+import Mathlib.RingTheory.Algebraic.Defs
 import Mathlib.Algebra.Polynomial.Basis
 import Mathlib.LinearAlgebra.Dimension.Finite
 import Mathlib.LinearAlgebra.FreeModule.StrongRankCondition
@@ -16,9 +15,8 @@ import Mathlib.RingTheory.Algebraic.Basic
 coordinate. Independent functions over the parameter field produce independent
 blocks over the constant field, whose filtered growth bounds their number. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 
 /-- In a tower `K → R → F`, the products `u k • v i` of a family `v` independent over `R` and a
 family `u` independent over `K` are independent over `K`. -/
@@ -31,7 +29,7 @@ lemma tower_smul_independent {K R F ι κ : Type*} [Field K] [Field R] [Field F]
   rw [Fintype.linearIndependent_iff]
   intro c hc t
   have he : ∑ i, (∑ k, c (i, k) • u k) • v i = 0 := by
-    simpa only [Fintype.sum_prod_type, Finset.sum_smul, smul_assoc] using hc
+    simpa [Fintype.sum_prod_type, Finset.sum_smul, smul_assoc] using hc
   have hz := Fintype.linearIndependent_iff.mp hv _ he t.1
   exact Fintype.linearIndependent_iff.mp hu (fun k => c (t.1, k)) hz t.2
 
@@ -43,7 +41,7 @@ lemma transcendental_powers_independent {K R : Type*} [Field K] [CommRing R] [Al
     (Polynomial.aeval u).toLinearMap
     (LinearMap.ker_eq_bot.mpr (transcendental_iff_injective.mp hu))
   have hh := hb.comp (fun i : Fin N => i.val) Fin.val_injective
-  simpa only [Function.comp_def, Polynomial.coe_basisMonomials, AlgHom.toLinearMap_apply,
+  simpa [Function.comp_def, Polynomial.coe_basisMonomials, AlgHom.toLinearMap_apply,
     Polynomial.aeval_monomial, map_one, one_mul] using hh
 
 /-- A finite family of polynomial classes independent over a parameter field
@@ -60,7 +58,6 @@ theorem polynomial_parameter_rank_le {K R F σ ι : Type*} [Field K] [Field R] [
     (h : ι → MvPolynomial σ K)
     (hi : LinearIndependent R (fun i => φ ((Ideal.Quotient.mk I) (h i)))) :
     Fintype.card ι ≤ d := by
-  classical
   let D := Finset.univ.sup (fun i => (h i).totalDegree)
   have hlow (N : ℕ) : Fintype.card ι * (N + 1) ≤
       Module.finrank K (filteredCoordinateSpace I (D + N)) := by
@@ -69,37 +66,31 @@ theorem polynomial_parameter_rank_le {K R F σ ι : Type*} [Field K] [Field R] [
         apply Submodule.mem_map.mpr
         refine ⟨_, ?_, rfl⟩
         rw [MvPolynomial.mem_restrictTotalDegree]
-        have hh : (h t.1).totalDegree ≤ D :=
+        have hh :=
           Finset.le_sup (f := fun i => (h i).totalDegree) (Finset.mem_univ t.1)
         have hp := MvPolynomial.totalDegree_pow l t.2.val
         have hh' := MvPolynomial.totalDegree_mul (h t.1) (l ^ t.2.val)
-        have hm := Nat.mul_le_mul_left t.2.val hl
         nlinarith [t.2.isLt]⟩
     have hli : LinearIndependent K (fun t => φ (v t).val) := by
       have hprod := tower_smul_independent _ hi (fun k : Fin (N + 1) => u ^ k.val)
         (transcendental_powers_independent u hu (N + 1))
       convert hprod using 1
-      funext t
-      simp only [v, map_mul, map_pow, he, Algebra.smul_def]
-      rw [mul_comm]
+      simp [v, map_mul, map_pow, he, Algebra.smul_def]
+      grind
     have hv : LinearIndependent K v :=
       LinearIndependent.of_comp (φ.toLinearMap.comp (filteredCoordinateSpace I (D + N)).subtype) hli
-    simpa only [Fintype.card_prod, Fintype.card_fin] using hv.fintype_card_le_finrank
+    simpa using hv.fintype_card_le_finrank
   obtain ⟨N₀, c, hN₀⟩ := hdegree
   by_contra hbad
   have hcard : d + 1 ≤ Fintype.card ι := by omega
   let N := d * D + c.natAbs + N₀ + 1
-  have hn0 : N₀ ≤ D + N := by dsimp [N]; omega
-  have heq := hN₀ (D + N) hn0
+  have heq := hN₀ (D + N) (by grind)
   push_cast at heq
-  have hlo : (Fintype.card ι : ℤ) * (N + 1) ≤ (d : ℤ) * (D + N) + c := by
+  have hlo : (Fintype.card ι : ℤ) * (N + 1) ≤ d * (D + N) + c := by
     rw [← heq]
     exact_mod_cast hlow N
-  have hmul : ((d : ℤ) + 1) * (N + 1) ≤ (Fintype.card ι : ℤ) * (N + 1) := by
-    exact_mod_cast Nat.mul_le_mul_right (N + 1) hcard
+  have hmul : ((d : ℤ) + 1) * (N + 1) ≤ (Fintype.card ι : ℤ) * (N + 1) := by nlinarith
   have habs : c ≤ (c.natAbs : ℤ) := Int.le_natAbs
-  have hNeq : (N : ℤ) = d * D + c.natAbs + N₀ + 1 := by simp [N]
+  have hNeq : (N : ℤ) = d * D + c.natAbs + N₀ + 1 := by grind
   nlinarith
 
-end
-end CCDN

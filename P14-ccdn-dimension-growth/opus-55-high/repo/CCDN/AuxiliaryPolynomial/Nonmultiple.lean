@@ -3,9 +3,8 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Height.ProjectiveZeroLocus
+import CCDN.Height.ProjectiveZeroLocus
 
 /-!
 # Auxiliary nonmultiples
@@ -24,8 +23,6 @@ points are given.
 
 The degree bound on `g`, which differs from statement to statement, is kept separate.
 -/
-
-@[expose] public section
 
 namespace CCDN
 
@@ -56,8 +53,11 @@ structure IsPointAuxiliary {σ R ι : Type*} [CommRing R] (f g : MvPolynomial σ
   /-- The auxiliary form is not a multiple of `f`. -/
   not_dvd : ¬ f ∣ g
 
+section
+variable {σ R ι : Type*} [CommRing R] {M : ℕ}
+
 /-- Unbundled form of `CCDN.IsPointAuxiliary`. -/
-theorem isPointAuxiliary_iff {σ R ι : Type*} [CommRing R] {f g : MvPolynomial σ R} {M : ℕ}
+theorem isPointAuxiliary_iff {f g : MvPolynomial σ R}
     {z : ι → σ → R} : IsPointAuxiliary f g M z ↔
       g ≠ 0 ∧ g.IsHomogeneous M ∧ (∀ i, eval (z i) g = 0) ∧ ¬ f ∣ g :=
   ⟨fun h => ⟨h.1, h.2, h.3, h.4⟩, fun h => ⟨h.1, h.2.1, h.2.2.1, h.2.2.2⟩⟩
@@ -65,13 +65,15 @@ theorem isPointAuxiliary_iff {σ R ι : Type*} [CommRing R] {f g : MvPolynomial 
 /-- If there is no auxiliary form of degree `M` through the points `z`, then every form of
 degree `M` vanishing at all of them is a multiple of `f`. This is the hypothesis under which the
 determinant method bounds the number of points. -/
-theorem dvd_of_not_exists_isPointAuxiliary {σ R ι : Type*} [CommRing R]
-    {f : MvPolynomial σ R} {M : ℕ} {z : ι → σ → R} (h : ¬ ∃ g, IsPointAuxiliary f g M z)
+theorem dvd_of_not_exists_isPointAuxiliary
+    {f : MvPolynomial σ R} {z : ι → σ → R} (h : ¬ ∃ g, IsPointAuxiliary f g M z)
     (g : MvPolynomial σ R) (hg : g.IsHomogeneous M) (hz : ∀ i, eval (z i) g = 0) : f ∣ g := by
   by_cases hg0 : g = 0
-  · simp [hg0]
+  · simp_all
   · by_contra hnd
     exact h ⟨g, hg0, hg, hz, hnd⟩
+
+end
 
 /-- `g` is a projective auxiliary form of degree `M` for the integral form `f` at height `B`:
 a nonzero form of degree `M`, not a multiple of `f`, whose rational projective zero locus
@@ -90,4 +92,3 @@ structure IsProjectiveAuxiliary {n : ℕ} (f g : MvPolynomial (Fin (n + 1)) ℤ)
   /-- The auxiliary form is not a multiple of `f`. -/
   not_dvd : ¬ f ∣ g
 
-end CCDN

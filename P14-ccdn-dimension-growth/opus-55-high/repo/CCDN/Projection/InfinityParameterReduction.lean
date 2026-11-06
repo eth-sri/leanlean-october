@@ -3,37 +3,38 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.RadialHomogeneousMap
-public import Mathlib.RingTheory.Nullstellensatz
+import CCDN.Algebra.RadialHomogeneousMap
+import Mathlib.RingTheory.Nullstellensatz
 import CCDN.ForMathlib.MvPolynomial
 
 /-! Vanishing only at the origin on the infinity section supplies balanced
 coordinate-power reductions. The Nullstellensatz is used on the kernel
 of the map to the infinity quotient, over any algebraically closed extension. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
+section
+variable {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K))
+
 /-- The map from the polynomial ring to the coordinate ring of the section at infinity of the
 projective closure of `I`: a polynomial `f` goes to the class of its radial scaling `∑ n, f_n t ^ n`
 in the homogeneous coordinate algebra modulo the infinity ideal. -/
-def infinityCoordinateMap {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K)) :
+def infinityCoordinateMap :
     MvPolynomial σ K →ₐ[K] projectiveCoordinateAlgebra I ⧸ projectiveInfinityIdeal I :=
   (Ideal.Quotient.mkₐ K (projectiveInfinityIdeal I)).comp (quotientRadialMap I)
 
 /-- The homogeneous ideal of the section at infinity of the projective closure of `I`, defined as
 the kernel of `infinityCoordinateMap I`. -/
-def leadingInfinityIdeal {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K)) :
+def leadingInfinityIdeal :
     Ideal (MvPolynomial σ K) := RingHom.ker (infinityCoordinateMap I)
 
 /-- If `f` lies in the ideal at infinity of `I`, then modulo `I` each homogeneous component of `f`
 of degree `n + 1` lies in the filtration piece of degree at most `n`. -/
-lemma leadingInfinityIdeal_component_mem {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (f : MvPolynomial σ K) (hf : f ∈ leadingInfinityIdeal I)
+lemma leadingInfinityIdeal_component_mem
+    (f : MvPolynomial σ K) (hf : f ∈ leadingInfinityIdeal I)
     (n : ℕ) :
     (Ideal.Quotient.mk I) (homogeneousComponent (n + 1) f) ∈ filteredCoordinateSpace I n := by
   have hm : quotientRadialMap I f ∈ projectiveInfinityIdeal I := by
@@ -53,8 +54,8 @@ lemma leadingInfinityIdeal_component_mem {K σ : Type*} [Field K]
 
 /-- A coordinate-power certificate at infinity gives a balanced reduction in
 the original affine quotient. -/
-private theorem power_reduction_of_infinity_certificate {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (l : MvPolynomial σ K) (hl : l.IsHomogeneous 1)
+theorem power_reduction_of_infinity_certificate
+    (l : MvPolynomial σ K) (hl : l.IsHomogeneous 1)
     (j : σ) (N : ℕ) (hN : 0 < N)
     (hpow : X j ^ N ∈ leadingInfinityIdeal I ⊔ Ideal.span {l}) :
     ∃ r s : MvPolynomial σ K, r.totalDegree ≤ N - 1 ∧ s.totalDegree ≤ N - 1 ∧
@@ -65,9 +66,7 @@ private theorem power_reduction_of_infinity_certificate {K σ : Type*} [Field K]
   | succ n =>
     obtain ⟨g, hg, t, ht, he⟩ := Submodule.mem_sup.mp hpow
     obtain ⟨s, hs⟩ := Ideal.mem_span_singleton.mp ht
-    have hrel : X j ^ (n + 1) - l * s ∈ leadingInfinityIdeal I := by
-      rw [← he, hs]
-      simpa only [add_sub_cancel_right] using hg
+    have hrel : X j ^ (n + 1) - l * s ∈ leadingInfinityIdeal I := by grind
     have hm := leadingInfinityIdeal_component_mem I _ hrel n
     rw [map_sub, homogeneousComponent_eq_self (isHomogeneous_X_pow j (n + 1)),
       show n + 1 = 1 + n by omega, homogeneousComponent_mul_of_isHomogeneous_left hl] at hm
@@ -78,7 +77,9 @@ private theorem power_reduction_of_infinity_certificate {K σ : Type*} [Field K]
       (Ideal.Quotient.mk I) (X j ^ (1 + n) - l * homogeneousComponent n s) at heq
     rw [map_sub, map_mul] at heq
     rw [show n + 1 = 1 + n by omega]
-    exact eq_add_of_sub_eq (heq.symm)
+    exact eq_add_of_sub_eq heq.symm
+
+end
 
 /-- Avoiding every nonzero infinity direction supplies all coordinate-power
 reductions with a single positive exponent. -/
@@ -90,24 +91,20 @@ theorem exists_power_reductions_of_infinity_avoidance {K L σ : Type*}
       r.totalDegree ≤ N - 1 ∧ s.totalDegree ≤ N - 1 ∧
       (Ideal.Quotient.mk I) (X j ^ N) = (Ideal.Quotient.mk I) r +
         (Ideal.Quotient.mk I) l * (Ideal.Quotient.mk I) s := by
-  classical
   let J := leadingInfinityIdeal I ⊔ Ideal.span {l}
   have hp (j : σ) : ∃ m : ℕ, X j ^ m ∈ J := by
     have hm : X j ∈ vanishingIdeal K (MvPolynomial.zeroLocus L J) := by
       intro z hz
       rw [hzero z hz]
       simp
-    rw [vanishingIdeal_zeroLocus_eq_radical] at hm
-    exact hm
+    rwa [vanishingIdeal_zeroLocus_eq_radical] at hm
   choose m hm using hp
   let N := Finset.univ.sup m + 1
-  have hN : 0 < N := by dsimp [N]; omega
+  have hN : 0 < N := by grind
   refine ⟨N, hN, ?_⟩
   intro j
   apply power_reduction_of_infinity_certificate I l hl j N hN
-  have hj : m j ≤ N := (Finset.le_sup (f := m) (Finset.mem_univ j)).trans (Nat.le_succ _)
+  have hj : m j ≤ N := (Finset.le_sup (Finset.mem_univ j)).trans (Nat.le_succ _)
   have hh := J.mul_mem_left (X j ^ (N - m j)) (hm j)
-  simpa only [← pow_add, Nat.sub_add_cancel hj] using hh
+  simpa [← pow_add, Nat.sub_add_cancel hj] using hh
 
-end
-end CCDN

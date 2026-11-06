@@ -3,11 +3,10 @@ Copyright (c) 2026 Ralf Stephan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ralf Stephan
 -/
-module
 
-public import ArithmeticHeights.Absolute
-public import Mathlib.NumberTheory.NumberField.House
-public import Mathlib.NumberTheory.SiegelsLemma
+import ArithmeticHeights.Absolute
+import Mathlib.NumberTheory.NumberField.House
+import Mathlib.NumberTheory.SiegelsLemma
 
 /-!
 # Siegel's lemma, in height form
@@ -75,32 +74,13 @@ Lemma D.4.1, which is the statement Mathlib's file is proved against.
 This is Layer 5.1 of the `ArithmeticHeights` roadmap.
 -/
 
-public section
-
 open Finset Height Matrix
 
 /-! ### The sup norm of an integer tuple -/
-
-namespace Rat
-
-variable {ι : Type*} [Nonempty ι] {x : ι → ℤ}
-
-end Rat
 
 /-! ### Siegel's lemma in height form -/
 
 attribute [local instance] Matrix.seminormedAddCommGroup
 
-namespace Int.Matrix
-
-variable {α β : Type*} [Fintype α] [Fintype β] (A : Matrix α β ℤ)
-
-end Int.Matrix
-
 /-! ### Siegel's lemma over a number field -/
 
-namespace NumberField
-
-variable {K : Type*} [Field K] [NumberField K] {ι : Type*} [Finite ι]
-
-end NumberField

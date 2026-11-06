@@ -3,17 +3,15 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Hypersurface.GraphHyperplaneRestriction
+import CCDN.Hypersurface.GraphHyperplaneRestriction
 import CCDN.Hypersurface.GoodHyperplaneBounds
 
 /-! Transport of the constructed good hyperplane to coordinates suited to
 the universal Noether family. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
 /-- Restriction to the graph hyperplane `x_none = ∑ a j * x j` commutes with renaming the
@@ -28,8 +26,7 @@ lemma graphHyperplaneRestriction_rename {K σ τ : Type*}
       (graphHyperplaneRestriction a).toRingHom.comp
         (rename (Equiv.optionCongr e)).toRingHom := by
     apply MvPolynomial.ringHom_ext
-    · intro r
-      simp [graphHyperplaneRestriction]
+    · simp_all
     · intro i
       cases i with
       | none =>
@@ -40,35 +37,3 @@ lemma graphHyperplaneRestriction_rename {K σ τ : Type*}
       | some i => simp [graphHyperplaneRestriction]
   exact RingHom.congr_fun he f
 
-/-- The constructed bounded integer normal yields a
-geometrically integral rational graph section in the double-Option coordinates. -/
-theorem exists_geometrically_good_graph_reindexed {n : ℕ}
-    (f : MvPolynomial (Option (Option (Fin (2 + n)))) ℤ)
-    (hir : AbsolutelyIrreducible f)
-    (hd : 0 < f.totalDegree) :
-    ∃ a : Option (Fin (2 + n)) → ℚ,
-      AbsolutelyIrreducibleRat (graphHyperplaneRestriction a (map (Int.castRingHom ℚ) f)) := by
-  let e : Option (Fin (2 + n)) ≃ Fin (3 + n) :=
-    (_root_.finSuccEquiv (2 + n)).symm.trans (finCongr (by omega))
-  let F := rename (Equiv.optionCongr e) f
-  have hFir : AbsolutelyIrreducible F := by
-    dsimp only [AbsolutelyIrreducible]
-    rw [map_rename]
-    exact (MulEquiv.irreducible_iff
-      (f := (renameEquiv (AlgebraicClosure ℚ) (Equiv.optionCongr e)).toMulEquiv)).mpr hir
-  have hFdeg : F.totalDegree = f.totalDegree := totalDegree_renameEquiv _ _
-  obtain ⟨D,a,_,_,_,_,hgood⟩ := exists_bounded_geometrically_good_hyperplane F hFir (hFdeg ▸ hd)
-  let α : Fin (3 + n) → ℚ := fun i => (a i : ℚ) / D
-  refine ⟨α ∘ e, ?_⟩
-  have he := congrArg (map (algebraMap ℚ (AlgebraicClosure ℚ)))
-    (graphHyperplaneRestriction_rename e α (map (Int.castRingHom ℚ) f))
-  rw [map_rename] at he
-  apply (MulEquiv.irreducible_iff
-    (f := (renameEquiv (AlgebraicClosure ℚ) e).toMulEquiv)).mp
-  change Irreducible (rename e (map (algebraMap ℚ (AlgebraicClosure ℚ))
-    (graphHyperplaneRestriction (α ∘ e) (map (Int.castRingHom ℚ) f))))
-  rw [he]
-  simpa only [F, map_rename] using hgood
-
-end
-end CCDN

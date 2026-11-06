@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Hilbert.FilteredPrimeDecomposition
-public import CCDN.Surface.CurveComponents
+import CCDN.Hilbert.FilteredPrimeDecomposition
+import CCDN.Surface.CurveComponents
 import CCDN.Algebra.BinomialSectionBound
 import CCDN.Algebra.CoordinatePowerGeneration
 import CCDN.Hilbert.FilteredComponentDegreeBudget
@@ -22,111 +21,107 @@ An eventual linear upper bound gives an eventual linear Hilbert
 formula, with its slope bounded by the original coefficient.
 -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
-private theorem filteredCoordinateSpace_eventually_linear_of_eventual_bound
+theorem filteredCoordinateSpace_eventually_linear_of_eventual_bound
     {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
     (I : Ideal (MvPolynomial σ K)) (C T : ℕ)
     (hbound : ∀ N ≥ T, Module.finrank K (filteredCoordinateSpace I N) ≤ C * (N + 2)) :
-    ∃ d ≤ C, HasFilteredCurveDegree I d := by
+    ∃ d, HasFilteredCurveDegree I d := by
   have hglobal (N : ℕ) (_hN : 14 ≤ N) :
       Module.finrank K (filteredCoordinateSpace I N) ≤ (C * (T + 2)) * (N + 2) := by
     by_cases hTN : T ≤ N
-    · apply (hbound N hTN).trans
-      exact Nat.mul_le_mul_right (N + 2) (Nat.le_mul_of_pos_right C (by omega))
+    · grind
     · have hNT : N ≤ T := by omega
       have hh := Submodule.finrank_mono (filteredCoordinateSpace_mono I hNT)
       exact (hh.trans (hbound T le_rfl)).trans (Nat.le_mul_of_pos_right _ (by omega))
-  obtain ⟨d, _, N, c, hlinear⟩ := filteredCoordinateSpace_eventually_linear I (C * (T + 2)) hglobal
-  refine ⟨d, ?_, N, c, hlinear⟩
-  apply eventual_linear_slope_le
-    (fun k => Module.finrank K (filteredCoordinateSpace I (k + T)))
-    (fun k => C * (k + T + 2)) d C
-  · refine ⟨N, c + (d : ℤ) * T, ?_⟩
-    intro k hk
-    rw [hlinear (k + T) (by omega)]
-    push_cast
-    ring
-  · refine ⟨0, (C : ℤ) * (T + 2), ?_⟩
-    intro k _
-    push_cast
-    ring
-  · intro k
-    exact hbound (k + T) (by omega)
+  let B := 2 * (C * (T + 2)) + 14
+  obtain ⟨N, hN⟩ := lowerSet_shell_card_eventually_constant
+    (Ideal.standardExponents I MonomialOrder.degLex)
+    (Ideal.isLowerSet_standardExponents I MonomialOrder.degLex)
+    B (by grind)
+    (fun a ha i j hi hj => standard_at_most_one_large I (C * (T + 2)) hglobal ha hi hj)
+  let d := Nat.card (fullExponentRays (Ideal.standardExponents I MonomialOrder.degLex) B)
+  have hstep (n : ℕ) (hn : N ≤ n) :
+      Module.finrank K (filteredCoordinateSpace I (n + 1)) =
+        Module.finrank K (filteredCoordinateSpace I n) + d := by
+    rw [standard_card_succ, hN (n + 1) (by omega)]
+  have hformula (k : ℕ) : Module.finrank K (filteredCoordinateSpace I (N + k)) =
+      Module.finrank K (filteredCoordinateSpace I N) + d * k := by
+    induction k with
+    | zero => simp
+    | succ k hk =>
+      rw [show N + (k + 1) = (N + k) + 1 by omega, hstep (N + k) (by omega), hk]
+      ring
+  refine ⟨d, N, (Module.finrank K (filteredCoordinateSpace I N) : ℤ) - d * N, ?_⟩
+  intro n hn
+  have he := hformula (n - N)
+  rw [Nat.add_sub_of_le hn] at he
+  rw [he]
+  push_cast
+  rw [Nat.cast_sub hn]
+  ring
 
-/-- A proper intersection of two equations in affine three-space has an
-eventually linear Hilbert function with slope at most the product of degrees.
-This holds for every ideal containing the equations, not just prime ideals. -/
-private theorem proper_intersection_eventual_linear_degree {K : Type*} [Field K]
-    {f g : MvPolynomial (Fin 3) K} (hf : Prime f) (hfg : ¬ f ∣ g)
-    (I : Ideal (MvPolynomial (Fin 3) K)) (hIf : f ∈ I) (hIg : g ∈ I) :
-    ∃ d ≤ f.totalDegree * g.totalDegree, HasFilteredCurveDegree I d := by
-  apply filteredCoordinateSpace_eventually_linear_of_eventual_bound I
-    (f.totalDegree * g.totalDegree) (f.totalDegree + g.totalDegree)
-  intro N hN
-  have hh := filteredCoordinateSpace_codim_two_bound hf hfg I hIf hIg hN
-  simp only [Nat.choose_one_right] at hh
-  exact hh.trans (Nat.mul_le_mul_left _ (by omega))
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open MvPolynomial
+variable (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
+include hf hfg
 
 /-- Every minimal-prime component has an eventual affine Hilbert
 degree. The slope is allowed to be zero until a rational point is exhibited. -/
 theorem polynomialSection_minimalPrime_degrees_exist
-    (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g) :
+    :
     ∃ d : minimalPrimeComponents (polynomialSectionIdeal f g) → ℕ,
       (∀ P, HasAffineCurveDegree P.val (d P)) ∧
         ∑ P, d P ≤ f.totalDegree * g.totalDegree := by
   classical
   have hex (P : minimalPrimeComponents (polynomialSectionIdeal f g)) :
       ∃ d : ℕ, HasAffineCurveDegree P.val d := by
-    obtain ⟨d, _, h⟩ := proper_intersection_eventual_linear_degree hf.prime hfg P.val
-      (le_minimalPrimeComponents P.property (polynomialSectionIdeal_first_mem f g))
-      (le_minimalPrimeComponents P.property (polynomialSectionIdeal_second_mem f g))
-    exact ⟨d, h⟩
+    apply filteredCoordinateSpace_eventually_linear_of_eventual_bound P.val
+      (f.totalDegree * g.totalDegree) (f.totalDegree + g.totalDegree)
+    intro N hN
+    have hh := filteredCoordinateSpace_codim_two_bound hf.prime hfg P.val (le_minimalPrimeComponents P.property (polynomialSectionIdeal_first_mem f g)) (le_minimalPrimeComponents P.property (polynomialSectionIdeal_second_mem f g)) hN
+    simp at hh
+    exact hh.trans (Nat.mul_le_mul_left _ (by omega))
   choose d hd using hex
-  exact ⟨d, hd, polynomialSection_minimalPrime_curveDegree_sum_le f g hf hfg d hd⟩
+  exact ⟨d, hd, (show ∑ P, d P ≤ f.totalDegree * g.totalDegree by
+      apply minimalPrimeComponents_slope_sum_le (polynomialSectionIdeal f g)
+        (f.totalDegree * g.totalDegree) (f.totalDegree + g.totalDegree) _ d hd
+      intro N hN
+      have hh := filteredCoordinateSpace_codim_two_bound hf.prime hfg
+        (polynomialSectionIdeal f g) (polynomialSectionIdeal_first_mem f g)
+        (polynomialSectionIdeal_second_mem f g) hN
+      simpa [Nat.choose_one_right, Nat.add_comm 1] using hh)⟩
 
 /-- A proper section in affine three-space is covered exactly by a finite
 set of rational prime curves. Their positive Hilbert degrees sum to
 at most the product of the two equation degrees. All components and degrees
 are constructed, including the case of an empty common zero set. -/
 theorem exists_completeIntersection_curve_components
-    (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g) :
+    :
     ∃ S : Finset (Ideal (CoordinatePolynomial 3)),
       ∃ d : Ideal (CoordinatePolynomial 3) → ℕ,
         (∀ P ∈ S, IsSectionCurve f g P (d P)) ∧
         zeroLocus f ∩ zeroLocus g = ⋃ P ∈ S, idealZeroLocus P ∧
-        (∑ P ∈ S, d P) ≤ f.totalDegree * g.totalDegree ∧
-        (∀ P ∈ S, (polynomialSectionIdeal f g).IsMinimalPrime P) := by
+        (∑ P ∈ S, d P) ≤ f.totalDegree * g.totalDegree := by
   classical
   let T := minimalPrimeComponents (polynomialSectionIdeal f g)
   obtain ⟨δ, hδ, hsumδ⟩ := polynomialSection_minimalPrime_degrees_exist f g hf hfg
   let d (P : Ideal (CoordinatePolynomial 3)) := if hP : P ∈ T then δ ⟨P, hP⟩ else 0
   let S := T.filter (fun P => (idealZeroLocus P).Nonempty)
-  have hd (P : T) : d P.val = δ P := by
-    simp only [d, dite_eq_left P.property]
-    rfl
+  have hd (P : T) : d P.val = δ P := by grind
   have hTP (P : Ideal (CoordinatePolynomial 3)) (hP : P ∈ T) :
       (polynomialSectionIdeal f g).IsMinimalPrime P := mem_minimalPrimeComponents.mp hP
   have hcurve (P : Ideal (CoordinatePolynomial 3)) (hP : P ∈ T) :
       HasAffineCurveDegree P (d P) := by
     rw [hd ⟨P, hP⟩]
     exact hδ ⟨P, hP⟩
-  refine ⟨S, d, ?_, ?_, ?_, ?_⟩
+  refine ⟨S, d, ?_, ?_, ?_⟩
   · intro P hP
     obtain ⟨hPT, z, hz⟩ := Finset.mem_filter.mp hP
     have hminimal := hTP P hPT
     have : P.IsPrime := hminimal.isPrime
-    have hheight : P.height = 2 :=
+    have hheight :=
       Ideal.height_eq_two_of_mem_minimalPrimes_span_pair hf.prime hfg hminimal
     have hdeg := hcurve P hPT
     exact ⟨⟨hminimal.isPrime, hheight, hminimal.le (polynomialSectionIdeal_first_mem f g), hdeg⟩,
@@ -136,8 +131,7 @@ theorem exists_completeIntersection_curve_components
     constructor
     · intro hx
       have hxi : x ∈ idealZeroLocus (polynomialSectionIdeal f g) := by
-        rw [idealZeroLocus_polynomialSectionIdeal]
-        exact hx
+        rwa [idealZeroLocus_polynomialSectionIdeal]
       rw [idealZeroLocus_eq_union_minimalPrimeComponents] at hxi
       obtain ⟨P, hxP⟩ := Set.mem_iUnion.mp hxi
       obtain ⟨hPT, hxP⟩ := Set.mem_iUnion.mp hxP
@@ -154,11 +148,7 @@ theorem exists_completeIntersection_curve_components
       exact Finset.sum_congr rfl (fun P _ => hd P)
     calc
       _ ≤ ∑ P ∈ T, d P :=
-        Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _) (by intros; omega)
+        Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _) (by grind)
       _ = _ := hsumT
       _ ≤ _ := hsumδ
-  · intro P hPS
-    exact hTP P (Finset.mem_filter.mp hPS).1
 
-end
-end CCDN

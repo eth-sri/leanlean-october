@@ -5,38 +5,23 @@ c39a751132c88b6e8080b74c74023fd95b3d8be0 (Apache-2.0).
 The first Mertens theorem only; blueprint metadata and unused results omitted.
 The explicit error constant is relaxed to avoid unrelated integral estimates.
 -/
-module
 
-public import Mathlib.Algebra.Order.Field.GeomSum
-public import Mathlib.Analysis.SumIntegralComparisons
-public import Mathlib.NumberTheory.Chebyshev
-public import Mathlib.Analysis.SpecialFunctions.Log.Summable
-public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
-public import Mathlib.Tactic
-public import Mathlib.Analysis.PSeries
-public import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Field.GeomSum
+import Mathlib.Analysis.SumIntegralComparisons
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.Analysis.SpecialFunctions.Log.Summable
+import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+import Mathlib.Tactic
+import Mathlib.Analysis.PSeries
+import Mathlib.Algebra.Order.Floor.Semifield
 
 /-! First Mertens theorem with a coefficient-independent bounded error.
 Adapted proofs retain the upstream theorem names inside a project namespace. -/
 
-@[expose] public section
 namespace CCDN.Mertens
 
 open Real Finset Filter Asymptotics Topology
 open ArithmeticFunction hiding log
-
-theorem sum_log_le {x : ℝ} (hx : 1 ≤ x) :
-    ∑ n ∈ Ioc 0 ⌊ x ⌋₊, log n ≤ x * log x := by
-  calc
-  _ ≤ ∑ n ∈ Ioc 0 ⌊ x ⌋₊, log x := by
-    refine sum_le_sum fun n hn ↦ ?_
-    simp only [mem_Ioc] at hn
-    exact log_le_log (by exact_mod_cast hn.1) (Nat.le_floor_iff (by linarith)|>.mp hn.2)
-  _ = ⌊x⌋₊ * log x := by simp
-  _ ≤ _ := by
-    gcongr
-    · exact log_nonneg hx
-    · exact Nat.floor_le (by linarith)
 
 lemma integral_log_le {a b : ℝ} (ha : 1 ≤ a) (hab : a ≤ b) :
     ∫ t in a..b, log t ≤ log b * (b - a) := by
@@ -45,11 +30,14 @@ lemma integral_log_le {a b : ℝ} (ha : 1 ≤ a) (hab : a ≤ b) :
     intro t ht
     rw [Set.uIoc_of_le hab, Set.mem_Ioc] at ht
     rw [norm_of_nonneg <| log_nonneg (by linarith)]
-    gcongr <;> linarith
+    bound
   grw [← norm_eq_abs, intervalIntegral.norm_integral_le_of_norm_le_const this,
     abs_of_nonneg (by linarith)]
 
-theorem sum_log_ge {x : ℝ} (hx : 1 ≤ x) :
+section
+variable {x : ℝ}
+
+theorem sum_log_ge (hx : 1 ≤ x) :
     ∑ n ∈ Ioc 0 ⌊ x ⌋₊, log n ≥ x * log x - 2 * x := by
   have one_le_floor : 1 ≤ ⌊x⌋₊ := by simpa
   calc
@@ -63,7 +51,7 @@ theorem sum_log_ge {x : ℝ} (hx : 1 ≤ x) :
   _ ≥ ∫ t in 1..⌊x⌋₊, log t := by
     convert MonotoneOn.integral_le_sum_Ico one_le_floor ?_|>.ge
     · norm_cast
-    · exact StrictMonoOn.monotoneOn (strictMonoOn_log.mono fun y hy ↦ (by simp_all; linarith))
+    · exact StrictMonoOn.monotoneOn (strictMonoOn_log.mono fun y hy ↦ (by grind))
   _ = (∫ t in 1..x, log t) - ∫ t in ⌊x⌋₊..x, log t := by
     nth_rw 3 [intervalIntegral.integral_symm]
     rw [sub_neg_eq_add, intervalIntegral.integral_add_adjacent_intervals] <;> exact intervalIntegral.intervalIntegrable_log'
@@ -72,24 +60,27 @@ theorem sum_log_ge {x : ℝ} (hx : 1 ≤ x) :
     grw [integral_log_le (by simpa) (Nat.floor_le (by linarith))]
     nth_rw 2 [← mul_one (log x)]
     gcongr
-    · exact log_nonneg hx
+    · bound
     · linarith [Nat.lt_floor_add_one x]
-  _ ≥ x * log x - x - log x := by simp only [integral_log, log_one, mul_zero, sub_zero, ge_iff_le,
-    tsub_le_iff_right, sub_add_cancel, le_add_iff_nonneg_right, zero_le_one]
-  _ ≥ _ := by linarith [log_le_self (by linarith : 0 ≤ x)]
+  _ ≥ x * log x - x - log x := by simp
+  _ ≥ _ := by linarith [log_le_self (by nlinarith)]
 
-theorem sum_log_eq_sum_mangoldt {x : ℝ} :
+theorem sum_log_eq_sum_mangoldt :
     ∑ n ∈ Ioc 0 ⌊x⌋₊, log n = ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d * ⌊x / d⌋₊ := by
-  have : ∀ n : ℕ, log n = (Λ * zeta) n := by simp [vonMangoldt_mul_zeta]
+  have : ∀ n : ℕ, log n = (Λ * zeta) n := by simp
   simp_rw [this, sum_Ioc_mul_zeta_eq_sum, ← Nat.floor_div_natCast]
+
+end
 
 noncomputable abbrev E₁Λ (x : ℝ) : ℝ := ∑ d ∈ Ioc 0 ⌊ x ⌋₊, (Λ d) / d - log x
 
-theorem E₁Λ.ge {x : ℝ} (hx : 1 ≤ x) :
+section
+variable {x : ℝ} (hx : 1 ≤ x)
+include hx
+
+theorem E₁Λ.ge :
     E₁Λ x  ≥ -2 := by
-  unfold E₁Λ
-  suffices x * ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d / d  ≥ x * (log x - 2) by
-    linarith [le_of_mul_le_mul_left this (by linarith)]
+  suffices x * ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d / d  ≥ x * (log x - 2) by nlinarith
   calc
   _ = ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d * (x / d) := by
     rw [Finset.mul_sum]
@@ -101,11 +92,9 @@ theorem E₁Λ.ge {x : ℝ} (hx : 1 ≤ x) :
     sum_log_eq_sum_mangoldt ▸ sum_log_ge hx
   _ = _ := by ring
 
-theorem E₁Λ.le {x : ℝ} (hx : 1 ≤ x) :
+theorem E₁Λ.le :
     E₁Λ x ≤ log 4 + 4 := by
-  unfold E₁Λ
-  suffices x * ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d / d ≤ x * (log x + log 4 + 4) by
-    linarith [le_of_mul_le_mul_left this (by linarith)]
+  suffices x * ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d / d ≤ x * (log x + log 4 + 4) by nlinarith
   calc
   _ = ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d * (x / d) := by
     rw [Finset.mul_sum]
@@ -118,13 +107,27 @@ theorem E₁Λ.le {x : ℝ} (hx : 1 ≤ x) :
     rw [Finset.sum_add_distrib, sum_log_eq_sum_mangoldt]
   _ ≤ x * log x + (log 4 + 4) * x := by
     gcongr
-    · exact sum_log_le hx
+    · calc
+      _ ≤ ∑ n ∈ Ioc 0 ⌊ x ⌋₊, log x := by
+        refine sum_le_sum fun n hn ↦ ?_
+        simp at hn
+        exact log_le_log (mod_cast hn.1) (Nat.le_floor_iff (by linarith)|>.mp hn.2)
+      _ = ⌊x⌋₊ * log x := by simp
+      _ ≤ _ := by
+        gcongr
+        · bound
+        · exact Nat.floor_le (by linarith)
     · exact Chebyshev.psi_le_const_mul_self (by linarith)
   _ = _ := by ring
 
-noncomputable abbrev E₁p (x : ℝ) : ℝ := ∑ p ∈ Ioc 0 ⌊ x ⌋₊ with p.Prime, (log p) / p - log x
+end
 
-theorem E₁p.le_E₁Λ (x : ℝ) :
+section
+variable (x : ℝ)
+
+noncomputable abbrev E₁p : ℝ := ∑ p ∈ Ioc 0 ⌊ x ⌋₊ with p.Prime, (log p) / p - log x
+
+theorem E₁p.le_E₁Λ :
     E₁p x ≤ E₁Λ x := by
     unfold E₁p E₁Λ; rw [sum_filter]
     gcongr with p _
@@ -132,6 +135,8 @@ theorem E₁p.le_E₁Λ (x : ℝ) :
     · simp [vonMangoldt_apply_prime hp]
     have : 0 ≤ Λ p := vonMangoldt_nonneg
     positivity
+
+end
 
 theorem E₁p.le {x : ℝ} (hx : 1 ≤ x) :
     E₁p x ≤ log 4 + 4 := by
@@ -170,24 +175,25 @@ theorem E₁.summable : Summable (fun p : ℕ ↦ if p.Prime then (log p) / (p*(
       exact_mod_cast h.one_le
   · positivity
 
-theorem E₁Λ.le_E₁p_add_E₁ {x : ℝ} (hx : 1 ≤ x) :
+variable {x : ℝ} (hx : 1 ≤ x)
+include hx
+
+theorem E₁Λ.le_E₁p_add_E₁ :
     E₁Λ x ≤ E₁p x + E₁ := by
-  unfold E₁Λ E₁p
   suffices ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d / d ≤ ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / p + E₁ by linarith
   simp_rw [vonMangoldt_apply, ite_div, zero_div, ← sum_filter, Chebyshev.sum_PrimePow_eq_sum_sum _ (by linarith)]
   calc
   _ = ∑ k ∈ Icc 1 ⌊log x / log 2⌋₊, ∑ p ∈ Ioc 0 ⌊x ^ (1 / (k : ℝ))⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
     refine sum_congr rfl fun k hk ↦ sum_congr rfl fun p hp ↦ ?_
-    rw [Nat.Prime.pow_minFac (by simp_all) (by simp_all; linarith)]
+    rw [Nat.Prime.pow_minFac (by simp_all) (by grind)]
   _ ≤ ∑ k ∈ Icc 1 ⌊log x / log 2⌋₊, ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
     gcongr with k hk
     apply rpow_le_self_of_one_le hx
-    simp only [mem_Icc] at hk
-    exact div_le_one₀ (by norm_cast; linarith)|>.mpr (mod_cast hk.1)
+    simp at hk
+    bound
   _ ≤ ∑ k ∈ Icc 1 (max 1 ⌊log x / log 2⌋₊), ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
     apply sum_le_sum_of_subset_of_nonneg
-    · gcongr
-      exact le_max_right ..
+    · grind
     · exact fun _ _ _ ↦ sum_nonneg fun _ _ ↦ (by positivity)
   _ = ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, (log p / p) + ∑ k ∈ Ioc 1 (max 1 ⌊log x / log 2⌋₊), ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
     rw [← add_sum_Ioc_eq_sum_Icc (le_max_left ..)]
@@ -200,27 +206,25 @@ theorem E₁Λ.le_E₁p_add_E₁ {x : ℝ} (hx : 1 ≤ x) :
     calc
     _ ≤ ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / (p * (p - 1)) := by
       gcongr with p hp
-      simp only [mem_filter, mem_Ioc] at hp
+      simp at hp
       conv => rhs; rw [← mul_one_div]
       gcongr
       rw [(by rfl : Ioc 1 (max 1 ⌊log x / log 2⌋₊) = Ico 2 (max 1 ⌊log x / log 2⌋₊  + 1))]
       grw [geom_sum_Ico_le_of_lt_one (by simp)]
       · apply le_of_eq
-        have : (p : ℝ) ≠ 0 := by exact_mod_cast hp.1.1.ne.symm
-        field
+        grind
       · simpa using inv_lt_one_of_one_lt₀ (mod_cast hp.2.one_lt)
     _ ≤ _ := by
       rw [sum_filter]
       exact E₁.summable.sum_le_tsum _ fun p hp ↦ E₁.summand_nonneg p
 
-theorem E₁p.ge {x : ℝ} (hx : 1 ≤ x) :
+theorem E₁p.ge :
     E₁p x ≥ -2 - E₁ := by
     linarith [E₁Λ.le_E₁p_add_E₁ hx, E₁Λ.ge hx]
 
-theorem prime_sum_bounded_error {x : ℝ} (hx : 1 ≤ x) :
+theorem prime_sum_bounded_error :
     |∑ p ∈ Ioc 0 ⌊x⌋₊ with p.Prime, log p / p - log x| ≤ log 4 + 6 + E₁ := by
   have hn : 0 ≤ E₁ := tsum_nonneg E₁.summand_nonneg
   have hl : 0 ≤ log 4 := log_nonneg (by norm_num)
   exact abs_le.mpr ⟨by linarith [E₁p.ge hx], by linarith [E₁p.le hx]⟩
 
-end CCDN.Mertens

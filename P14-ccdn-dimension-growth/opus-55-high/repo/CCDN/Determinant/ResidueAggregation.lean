@@ -3,10 +3,10 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Determinant.LocalDeterminant
-public import Mathlib.Basic.Real.Basic
+import CCDN.Determinant.LocalDeterminant
+import CCDN.Determinant.HypersurfaceLocalDeterminant
+import Mathlib.Basic.Real.Basic
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 import Mathlib.Tactic.Linarith
 
@@ -19,40 +19,39 @@ curve case of CCDN Proposition 2.6. The geometric local divisibility and
 finite-field multiplicity estimates are not part of this module.
 -/
 
-@[expose] public section
 namespace CCDN
-open Finset
 
-/-- Aggregate classwise quadratic estimates without losing the leading constant. -/
-private theorem aggregate_local_exponents {ι : Type*} (S : Finset ι)
-    (n μ e : ι → ℕ) (he : ∀ i ∈ S, n i ^ 2 ≤ 2 * μ i * (e i + n i)) :
-    (∑ i ∈ S, n i) ^ 2 ≤ 2 * (∑ i ∈ S, μ i) * ((∑ i ∈ S, e i) + ∑ i ∈ S, n i) := by
-  have h := Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul S
-    (r := n) (f := fun i => 2 * μ i) (g := fun i => e i + n i)
-    (fun _ _ => Nat.zero_le _) (fun _ _ => Nat.zero_le _) he
-  simpa only [← mul_sum, sum_add_distrib, mul_assoc] using h
+variable {ι : Type*} [Fintype ι] (n : ℕ) (s μ : ι → ℕ) (hμ : ∀ i, 0 < μ i)
+include hμ
 
-/-- Apply the aggregation directly to the repeated local weights. -/
-theorem aggregate_multiplicity_exponents {ι : Type*} (S : Finset ι)
-    (n μ : ι → ℕ) (hμ : ∀ i ∈ S, 0 < μ i) :
-    (∑ i ∈ S, n i) ^ 2 ≤ 2 * (∑ i ∈ S, μ i) *
-      ((∑ i ∈ S, multiplicityExponent (n i) (μ i)) + ∑ i ∈ S, n i) :=
-  aggregate_local_exponents S n μ _ (fun i hi => multiplicityExponent_lower_bound _ _ (hμ i hi))
+/-- A common cutoff aggregates without any loss in the leading coefficient. -/
+theorem aggregate_hypersurface_exponents_cutoff
+    (K : ℕ) :
+    (∑ i, s i) * K ≤ (∑ i, hypersurfaceMultiplicityExponent (n + 1) (μ i) (s i)) +
+      (∑ i, μ i) * (n + 1 + K).choose (n + 2) := by
+  have h := Finset.sum_le_sum (s := Finset.univ) (fun i _ =>
+    hypersurfaceMultiplicityExponent_cutoff n (s i) K (hμ i))
+  simpa [Finset.sum_add_distrib, ← Finset.sum_mul] using h
 
-/-- Real-valued form with a uniform upper bound for total residue multiplicity. -/
-theorem aggregate_exponent_lower {ι : Type*} (S : Finset ι)
-    (n μ e : ι → ℕ) (he : ∀ i ∈ S, n i ^ 2 ≤ 2 * μ i * (e i + n i))
-    {N : ℝ} (hN : 0 < N) (hμ : (∑ i ∈ S, μ i : ℕ) ≤ N) :
-    (∑ i ∈ S, n i : ℕ) ^ 2 / (2 * N) - (∑ i ∈ S, n i : ℕ) ≤
-      (∑ i ∈ S, e i : ℕ) := by
-  have h : ((∑ i ∈ S, n i : ℕ) : ℝ) ^ 2 ≤
-      2 * ((∑ i ∈ S, μ i : ℕ) : ℝ) *
-        (((∑ i ∈ S, e i : ℕ) : ℝ) + (∑ i ∈ S, n i : ℕ)) := by
-    exact_mod_cast aggregate_local_exponents S n μ e he
-  apply sub_le_iff_le_add.mpr
-  apply (div_le_iff₀ (by positivity : 0 < 2 * N)).mpr
-  calc _ ≤ 2 * ((∑ i ∈ S, μ i : ℕ) : ℝ) *
-        (((∑ i ∈ S, e i : ℕ) : ℝ) + (∑ i ∈ S, n i : ℕ)) := h
-    _ ≤ _ := by nlinarith
+omit hμ in
+/-- Optimizing the curve cutoff gives the sharp quadratic leading constant. -/
+theorem cutoff_exponent_lower {s e T : ℕ} (hpos : 0 < T)
+    (hK : ∀ K : ℕ, s * K ≤ e + T * (1 + K).choose 2) :
+    (s : ℝ) ^ 2 / (2 * T) - s ≤ e := by
+  have h := hK (s / T)
+  have hc := Nat.add_one_mul_choose_eq (s / T) 1
+  have hdm := Nat.div_add_mod s T
+  have hlt := Nat.mod_lt s hpos
+  simp [Nat.choose_one_right, add_comm 1, Nat.reduceAdd] at h hc
+  have key : s ^ 2 ≤ 2 * T * e + 2 * T * s := by
+    generalize s / T = q at h hc hdm
+    generalize s % T = r at hdm hlt
+    subst hdm
+    nlinarith [Nat.mul_le_mul_left (2 * T) h, congrArg (T * T * ·) hc, Nat.mul_le_mul_left r hlt.le]
+  have hT : (0 : ℝ) < T := mod_cast hpos
+  rw [sub_le_iff_le_add, div_le_iff₀ (by positivity)]
+  have := (Nat.cast_le (α := ℝ)).mpr key
+  push_cast at this
+  linarith
 
 end CCDN

@@ -3,19 +3,17 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.IdealZeroLocus
-public import CCDN.Height.Box
-public import CCDN.Hilbert.AffineCurveDegree
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-public import Mathlib.RingTheory.Ideal.Height
+import CCDN.Algebra.IdealZeroLocus
+import CCDN.Height.Box
+import CCDN.Hilbert.AffineCurveDegree
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.RingTheory.Ideal.Height
 
 /-! Named bundles for the curve components of affine surfaces in three-space: an integral
 curve of a given degree on a surface, and a positive-degree component of the intersection of
 two surfaces. -/
 
-@[expose] public section
 namespace CCDN
 
 /-- `I` is an integral affine curve of degree `e` on the surface `f = 0` in affine
@@ -41,4 +39,3 @@ structure IsSectionCurve (f g : CoordinatePolynomial 3) (I : Ideal (CoordinatePo
   /-- The degree `e` is positive. -/
   pos : 0 < e
 
-end CCDN

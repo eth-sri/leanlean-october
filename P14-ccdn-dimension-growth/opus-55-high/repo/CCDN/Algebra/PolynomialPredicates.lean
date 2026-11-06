@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
-public import Mathlib.RingTheory.MvPolynomial.Homogeneous
+import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
+import Mathlib.RingTheory.MvPolynomial.Homogeneous
 
 /-!
 # Predicates on polynomials and ideals
@@ -16,8 +15,6 @@ polynomial ring, absolute irreducibility of a polynomial (irreducibility over `�
 absolute irreducibility of its top-degree homogeneous part (the hypothesis of CCDN Theorem 4).
 All are abbreviations, so proofs may use them as their unfolded statements.
 -/
-
-@[expose] public section
 
 namespace CCDN
 
@@ -38,17 +35,21 @@ abbrev AbsolutelyIrreducible (f : MvPolynomial σ ℤ) : Prop :=
 abbrev AbsolutelyIrreducibleRat (f : MvPolynomial σ ℚ) : Prop :=
   Irreducible (map (algebraMap ℚ (AlgebraicClosure ℚ)) f)
 
+section
+variable (f : MvPolynomial σ ℤ)
+
 /-- An integer polynomial is absolutely irreducible exactly when its image over `ℚ` is. -/
-theorem absolutelyIrreducibleRat_map_iff (f : MvPolynomial σ ℤ) :
+theorem absolutelyIrreducibleRat_map_iff :
     AbsolutelyIrreducibleRat (map (Int.castRingHom ℚ) f) ↔ AbsolutelyIrreducible f := by
   rw [AbsolutelyIrreducibleRat, map_map, RingHom.ext_int ((algebraMap ℚ _).comp _)]
 
 /-- The top-degree homogeneous part of an integer polynomial is irreducible over `ℚ̄`. -/
-abbrev HasAbsIrreducibleTopForm (f : MvPolynomial σ ℤ) : Prop :=
+abbrev HasAbsIrreducibleTopForm : Prop :=
   AbsolutelyIrreducible (homogeneousComponent f.totalDegree f)
+
+end
 
 /-- The top-degree homogeneous part of a rational polynomial is irreducible over `ℚ̄`. -/
 abbrev HasAbsIrreducibleTopFormRat (f : MvPolynomial σ ℚ) : Prop :=
   AbsolutelyIrreducibleRat (homogeneousComponent f.totalDegree f)
 
-end CCDN

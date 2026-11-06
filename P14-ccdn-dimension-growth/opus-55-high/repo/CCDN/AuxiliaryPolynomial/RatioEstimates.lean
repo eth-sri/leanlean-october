@@ -3,9 +3,8 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.Basic.Real.Basic
+import Mathlib.Basic.Real.Basic
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
@@ -13,9 +12,8 @@ import Mathlib.Tactic.Ring
 /-! Reciprocal estimates retain the exact leading coefficients when solving
 the normalized determinant inequality, even when its bracket is negative. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 
 /-- If `a ≥ X (M - d) / ((r + 1) M)` with `X > 0`, `d ≥ 1` and `M ≥ 2 d`, then `a` is positive and
 `1 / a ≤ (r + 1) / X * (1 + 2 d / M)`. -/
@@ -28,12 +26,12 @@ lemma auxiliary_reciprocal_bound {r d M X a : ℝ} (hr : 0 ≤ r) (hd : 1 ≤ d)
   have hr1 : 0 < r + 1 := by linarith
   have hMd : 0 < M - d := by linarith
   have hlow : 0 < X * (M - d) / ((r + 1) * M) := by positivity
-  have ha0 : 0 < a := hlow.trans_le ha
+  have ha0 := hlow.trans_le ha
   refine ⟨ha0, (div_le_iff₀ ha0).mpr ?_⟩
   have hprod : 1 ≤ (r + 1) / X * (1 + 2 * d / M) *
       (X * (M - d) / ((r + 1) * M)) := by
     field_simp
-    nlinarith [mul_nonneg hd0.le (sub_nonneg.mpr hM)]
+    nlinarith
   exact hprod.trans (mul_le_mul_of_nonneg_left ha (by positivity))
 
 /-- If `0 < a ≤ X (M + r) / ((r + 1) M)` and `k ≥ 1 / (d (r + 1)) - 1 / M` is nonnegative, then
@@ -46,14 +44,13 @@ lemma auxiliary_kernel_quotient_bound {r d M X a k : ℝ}
   have hd0 : 0 < d := by linarith
   have hr1 : 0 < r + 1 := by linarith
   let q := 1 / (d * X) - (2 * r + 1) / (X * M)
-  change q ≤ k / a
   by_cases hq : q ≤ 0
   · exact hq.trans (div_nonneg hk ha.le)
-  have hq0 : 0 ≤ q := le_of_not_ge hq
+  have hq0 := le_of_not_ge hq
   apply (le_div_iff₀ ha).mpr
   have hh := mul_le_mul_of_nonneg_left hupper hq0
   have hcalc : q * (X * (M + r) / ((r + 1) * M)) ≤ 1 / (d * (r + 1)) - 1 / M := by
-    dsimp only [q]
+    dsimp [q]
     field_simp
     have h1 := mul_nonneg (mul_nonneg hr hM.le) (show 0 ≤ d - 1 by linarith)
     have h2 := mul_nonneg (mul_nonneg hd0.le hr) (show 0 ≤ 2 * r + 1 by linarith)
@@ -75,19 +72,17 @@ theorem auxiliary_small_height_bracket_bound {r d M X a k u b l : ℝ}
   obtain ⟨ha, hrecip⟩ := auxiliary_reciprocal_bound hr hd hM hX halow
   have hquot := auxiliary_kernel_quotient_bound hr hd hM0 hX ha hk haup hklow
   have hu : u ≤ b / a - (k / a) * l := by
-    have hh := (le_div_iff₀ ha).mpr (by nlinarith [hcomparison] : u * a ≤ b - k * l)
-    convert hh using 1
-    ring
+    have hh := (le_div_iff₀ ha).mpr (by nlinarith : u * a ≤ b - k * l)
+    grind
   have hb' : b / a ≤ ((r + 1) / X * (1 + 2 * d / M)) * b := by
-    simpa only [one_div, div_eq_mul_inv, mul_comm, mul_one] using
+    simpa [one_div, div_eq_mul_inv, mul_comm, mul_one] using
       mul_le_mul_of_nonneg_right hrecip hb
   have hl' := mul_le_mul_of_nonneg_right hquot hl
   have herr1 : 2 * (r + 1) * d * b / (X * M) ≤ 2 * (r + 1) := by
     apply (div_le_iff₀ (mul_pos hX hM0)).mpr
-    nlinarith [mul_le_mul_of_nonneg_left hscale (show 0 ≤ 2 * (r + 1) by linarith)]
+    nlinarith
   have herr2 : (2 * r + 1) * l / (X * M) ≤ 2 * (2 * r + 1) * (r + 1) := by
     apply (div_le_iff₀ (mul_pos hX hM0)).mpr
-    have hh := mul_le_mul_of_nonneg_left hheight (show 0 ≤ 2 * r + 1 by linarith)
     have hh' := mul_le_mul_of_nonneg_left hscale (show 0 ≤ 2 * (2 * r + 1) * (r + 1) by positivity)
     nlinarith
   have he : ((r + 1) / X * (1 + 2 * d / M)) * b -
@@ -96,9 +91,7 @@ theorem auxiliary_small_height_bracket_bound {r d M X a k u b l : ℝ}
           2 * (r + 1) * d * b / (X * M) + (2 * r + 1) * l / (X * M) := by ring
   have hbound : u ≤ ((r + 1) / X * (1 + 2 * d / M)) * b -
       (1 / (d * X) - (2 * r + 1) / (X * M)) * l := by
-    nlinarith [hb', hl']
+    nlinarith
   rw [he] at hbound
   nlinarith
 
-end
-end CCDN

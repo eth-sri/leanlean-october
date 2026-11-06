@@ -3,17 +3,15 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Determinant.HypersurfaceDeterminantRank
-public import CCDN.Height.CountingHypotheses
-public import CCDN.Plane.IntegerPlaneLogHeight
+import CCDN.Determinant.HypersurfaceDeterminantRank
+import CCDN.Height.CountingHypotheses
+import CCDN.Plane.IntegerPlaneLogHeight
 import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeCoordinates
 
 /-! The global determinant bound in higher dimension, with its reduction
 hypotheses verified by the bad-prime set and its coefficient-height control. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial Finset
@@ -38,9 +36,8 @@ theorem hypersurface_determinant_log_lower_height
         (Real.log s - (n + 1 : ℝ) * (4 * Real.log d + Real.log (1 + Real.log H / (d : ℝ) ^ 2)) -
           hypersurfaceHeightDeterminantError n) ≤
       Real.log (Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j))) := by
-  classical
-  have hf0 : f ≠ 0 := ne_zero_of_irreducible_map hir
-  have hdeg : f.totalDegree = d := hf.totalDegree hf0
+  have hf0 := ne_zero_of_irreducible_map hir
+  have hdeg := hf.totalDegree hf0
   obtain ⟨bad, hmem, hcharge⟩ :=
     exists_fin_hypersurface_bad_prime_charge f hir (hdeg ▸ hd) H hH hcoeff
   rw [hdeg] at hmem hcharge
@@ -48,13 +45,13 @@ theorem hypersurface_determinant_log_lower_height
       (hp : p ∈ ((Ioc 0 ⌊(s : ℝ) ^ (1 / (n + 1 : ℝ))⌋₊).filter Nat.Prime) \ bad)
       (hcut : stepanovThreshold (d : ℝ) < p) :
       HasGoodReduction f p :=
-    hasGoodReduction_of_not_mem hmem p (mem_sdiff.mp hp).2 hcut
+    hypersurface_good_reduction f p fun hb => (mem_sdiff.mp hp).2 ((hmem p).mpr ⟨mod_cast hcut, hb⟩)
   have hlower := hypersurface_determinant_log_lower_at_rank hs f hf hd F hev.isHomogeneous z
     hev.primitive hev.eval_eq_zero hev.rows_linearIndependent bad hred
   unfold hypersurfaceRankLowerBound at hlower
   have hc : 0 < hypersurfaceHeightConstant (n + 3) :=
     zero_lt_one.trans_le (hypersurfaceHeightConstant_one_le _)
-  have hh : 0 < 1 + Real.log H / (d : ℝ) ^ 2 := by
+  have hh : 0 < 1 + Real.log H / d ^ 2 := by
     have := div_nonneg (Real.log_nonneg hH) (sq_nonneg (d : ℝ))
     linarith
   rw [Real.log_mul hc.ne' hh.ne'] at hcharge
@@ -64,5 +61,3 @@ theorem hypersurface_determinant_log_lower_height
   unfold hypersurfaceHeightDeterminantError
   nlinarith
 
-end
-end CCDN

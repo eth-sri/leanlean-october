@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.FieldTheory.Minpoly.Basic
-public import Mathlib.RingTheory.IntegralClosure.IntegrallyClosed
+import Mathlib.FieldTheory.Minpoly.Basic
+import Mathlib.RingTheory.IntegralClosure.IntegrallyClosed
 import Mathlib.FieldTheory.Minpoly.Finite
 import Mathlib.FieldTheory.Minpoly.IsIntegrallyClosed
 
@@ -14,9 +13,8 @@ import Mathlib.FieldTheory.Minpoly.IsIntegrallyClosed
 polynomial of an integral element has degree at most the degree of the fraction-field
 extension. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open Polynomial
 
 /-- Let `R` be an integrally closed domain with fraction field `F`, and let `E` be a finite
@@ -34,5 +32,3 @@ theorem integral_minpoly_natDegree_le_fraction_finrank
     ← minpoly.isIntegrallyClosed_eq_field_fractions F E ha]
   exact minpoly.natDegree_le (algebraMap A E a)
 
-end
-end CCDN

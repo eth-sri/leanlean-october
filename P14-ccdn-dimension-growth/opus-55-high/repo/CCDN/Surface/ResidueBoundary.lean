@@ -3,11 +3,10 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Surface.CongruenceFamily
-public import CCDN.Surface.CongruencePrimeWindow
-public import CCDN.Surface.CurveComponents
+import CCDN.Surface.CongruenceFamily
+import CCDN.Surface.CongruencePrimeWindow
+import CCDN.Surface.CurveComponents
 import CCDN.AuxiliaryPolynomial.PlaneAuxiliaryCount
 import CCDN.Surface.CurveCrossing
 import CCDN.Surface.ResidueSubsetBoundary
@@ -17,7 +16,6 @@ import CCDN.Surface.SmoothPrimeWindow
 proper auxiliary section along a one-prime deletion edge. This constructs
 the residual cover from smooth reductions and auxiliaries. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial Finset
@@ -59,9 +57,9 @@ lemma exp_sum_log_primes (P : Finset ℕ) (hP : ∀ p ∈ P, p.Prime) :
   rw [Real.exp_sum]
   apply prod_congr rfl
   intro p hp
-  exact Real.exp_log (by exact_mod_cast (hP p hp).pos)
+  exact Real.exp_log (mod_cast (hP p hp).pos)
 
-private lemma SurfaceCongruenceFamily.terminal_degree_le
+lemma SurfaceCongruenceFamily.terminal_degree_le
     {f : MvPolynomial (Fin 3) ℤ} {B A L X : ℝ}
     (F : SurfaceCongruenceFamily f B A) (hB : 1 ≤ B) (hA : 0 ≤ A) (hL : 1 ≤ L)
     (P : Finset ℕ) (hPW : P ⊆ congruencePrimeWindow L)
@@ -71,43 +69,29 @@ private lemma SurfaceCongruenceFamily.terminal_degree_le
     ((F.auxiliary P hP r).totalDegree : ℝ) ≤ 2 * A * surfaceResidueLogBudget B L := by
   have hQ : 0 ≤ ∑ p ∈ P, Real.log p := sum_nonneg (fun p _ => Real.log_natCast_nonneg p)
   have hlogB := Real.log_nonneg hB
-  have hlog : (∑ p ∈ P, Real.log p) ≤
-      (Real.log 4 + 4) * scalingPrimeRatio * L :=
+  have hlog :=
     (sum_le_sum_of_subset_of_nonneg hPW (fun p _ _ => Real.log_natCast_nonneg p)).trans
       (congruencePrimeWindow_log_upper hL)
-  have hden : 0 < ∏ p ∈ P, (p : ℝ) := prod_pos (fun p hp => by exact_mod_cast (hP p hp).pos)
-  have hratio : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) /
+  have hratio : B ^ (1 / Real.sqrt f.totalDegree) /
       Real.exp (∑ p ∈ P, Real.log p) ≤ 1 := by
     rw [exp_sum_log_primes P hP]
-    exact (div_le_one hden).mpr (hX.trans hprod)
+    exact (div_le_one (prod_pos (fun p hp => mod_cast (hP p hp).pos))).mpr (hX.trans hprod)
   have hT : 0 ≤ surfaceResidueLogBudget B L := by
     unfold surfaceResidueLogBudget
-    have hlogB := Real.log_nonneg hB
-    linarith
+    grind
   have hd := F.degree_le P hP r
   calc
-    _ ≤ A * (B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) /
+    _ ≤ A * (B ^ (1 / Real.sqrt f.totalDegree) /
         Real.exp (∑ p ∈ P, Real.log p) + 1) *
         (1 + Real.log B + ∑ p ∈ P, Real.log p) := hd
     _ ≤ A * 2 * surfaceResidueLogBudget B L := by
       apply mul_le_mul
-      · exact mul_le_mul_of_nonneg_left (by linarith) hA
-      · dsimp only [surfaceResidueLogBudget]
+      · nlinarith
+      · dsimp [surfaceResidueLogBudget]
         linarith
       · positivity
       · positivity
     _ = _ := by ring
-
-private lemma surface_prime_curve_degree_le
-    (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
-    (I : Ideal (CoordinatePolynomial 3)) {d : ℕ} (hI : IsSurfaceCurve f I d) (hgI : g ∈ I) :
-    d ≤ f.totalDegree * g.totalDegree := by
-  have hh := surface_prime_curve_degree_sum_le f g hf hfg {I} (fun _ => d)
-    (fun P hP => by
-      have he : P = I := mem_singleton.mp hP
-      subst P
-      exact ⟨hI, hgI⟩)
-  simpa only [sum_singleton] using hh
 
 /-- A one-prime deletion edge `R.erase p ⊂ R` of the congruence family `F`, at the smooth
 residues `r`, crossing the curve `I` near the point `x`: the primes of `R` lie in the window of
@@ -149,18 +133,27 @@ theorem surface_residue_boundary_of_large_curve
     (hsmooth : ∃ j, eval x (pderiv j f) ≠ 0) :
     ∃ R : Finset ℕ, ∃ hR : ∀ p ∈ R, p.Prime,
       ∃ p ∈ R, ∃ r : SmoothAffineResidueFamily f R, IsSurfaceResidueEdge F I L X x R hR p r := by
-  classical
   have hL := hW.one_le_window
-  obtain ⟨P, hPW, hPprod, hPsmooth⟩ := exists_smooth_prime_window_subset f hW.one_le_height
-    hW.one_le_radius hL hW.coeff_le (by norm_num; exact hW.log_le_window) x hx hsmooth
+  obtain ⟨j, hj⟩ := hsmooth
+  have hbound : _ ≤ L := (integer_pderiv_log_bound f j hW.one_le_height hW.one_le_radius
+    hW.coeff_le x hx hj).trans (by norm_num; exact hW.log_le_window)
+  let P := (congruencePrimeWindow L).filter (fun p : ℕ => ¬ (p : ℤ) ∣ eval x (pderiv j f))
+  have hPW : P ⊆ congruencePrimeWindow L := filter_subset _ _
+  have hPprod := congruencePrimeWindow_avoiding_product hL hj hbound
+  have hPsmooth (p : ℕ) (hp : p ∈ P) : ∃ j, eval (fun i => (x i : ZMod p))
+      (pderiv j (map (Int.castRingHom (ZMod p)) f)) ≠ 0 := by
+    refine ⟨j, ?_⟩
+    rw [pderiv_map]
+    exact fun h => (mem_filter.mp hp).2 ((ZMod.intCast_zmod_eq_zero_iff_dvd _ p).mp
+      ((map_eval (Int.castRingHom (ZMod p)) x (pderiv j f)).trans h))
   have hPprime (p : ℕ) (hp : p ∈ P) : p.Prime :=
     ((mem_congruencePrimeWindow hL).mp (hPW hp)).1
-  obtain ⟨R₀, hR₀P, _, hR₀prod, hR₀proper, hR₀upper⟩ :=
+  obtain ⟨R₀, hR₀P, hR₀prod, hR₀proper, hR₀upper⟩ :=
     exists_minimal_product_subset P hW.one_lt_cutoff
-      (fun p hp => by exact_mod_cast (hPprime p hp).pos)
+      (fun p hp => mod_cast (hPprime p hp).pos)
       (fun p hp => ((mem_congruencePrimeWindow hL).mp (hPW hp)).2.2)
       (hW.cutoff_le_exp.trans hPprod)
-  have hR₀W : R₀ ⊆ congruencePrimeWindow L := hR₀P.trans hPW
+  have hR₀W := hR₀P.trans hPW
   have hR₀prime (q : ℕ) (hq : q ∈ R₀) : q.Prime := hPprime q (hR₀P hq)
   have hR₀smooth (q : ℕ) (hq : q ∈ R₀) := hPsmooth q (hR₀P hq)
   let aux (T : Finset ℕ) : MvPolynomial (Fin 3) ℤ :=
@@ -169,47 +162,47 @@ theorem surface_residue_boundary_of_large_curve
   have haux (T : Finset ℕ) (hT : T ⊆ R₀) :
       aux T = F.auxiliary T (fun q hq => hR₀prime q (hT hq))
         (smoothResidueFamilyOfPoint x hxf T (fun q hq => hR₀smooth q (hT hq))) := by
-    simp only [aux, dite_eq_left hT]
+    simp [aux, dite_eq_left hT]
   have hterminal : map (Int.castRingHom ℚ) (aux R₀) ∉ I := by
     intro hmem
     rw [haux R₀ (Subset.refl _)] at hmem
     have hdeg := F.terminal_degree_le hW.one_le_radius hA hL R₀ hR₀W hR₀prime
       (smoothResidueFamilyOfPoint x hxf R₀ hR₀smooth) hW.root_le_cutoff hR₀prod
-    have hcurve := surface_prime_curve_degree_le (map (Int.castRingHom ℚ) f)
-      (map (Int.castRingHom ℚ) (F.auxiliary R₀ hR₀prime
-        (smoothResidueFamilyOfPoint x hxf R₀ hR₀smooth))) hir (F.proper _ _ _)
-      I hI hmem
+    have hcurve : d ≤ (map (Int.castRingHom ℚ) f).totalDegree * (map (Int.castRingHom ℚ) (F.auxiliary R₀ hR₀prime
+        (smoothResidueFamilyOfPoint x hxf R₀ hR₀smooth))).totalDegree := by
+      have hh := surface_prime_curve_degree_sum_le (map (Int.castRingHom ℚ) f) (map (Int.castRingHom ℚ) (F.auxiliary R₀ hR₀prime
+            (smoothResidueFamilyOfPoint x hxf R₀ hR₀smooth))) hir (F.proper _ _ _) {I} (fun _ => d)
+        (fun P hP => by grind)
+      simpa using hh
     rw [rational_map_totalDegree, rational_map_totalDegree] at hcurve
     have hcurveR : (d : ℝ) ≤ (f.totalDegree : ℝ) *
         (F.auxiliary R₀ hR₀prime
-          (smoothResidueFamilyOfPoint x hxf R₀ hR₀smooth)).totalDegree := by exact_mod_cast hcurve
-    have hh := mul_le_mul_of_nonneg_left hdeg (Nat.cast_nonneg (α := ℝ) f.totalDegree)
+          (smoothResidueFamilyOfPoint x hxf R₀ hR₀smooth)).totalDegree := mod_cast hcurve
     nlinarith
-  have hempty : ¬ (map (Int.castRingHom ℚ) (aux ∅) ∉ I) := by
-    rw [haux ∅ (empty_subset _), F.initial_eq]
-    exact not_not.mpr hinitI
+  have hempty : ¬ (map (Int.castRingHom ℚ) (aux ∅) ∉ I) := by simp_all [F.initial_eq]
   obtain ⟨R, hRR₀, p, hp, hchild, hparent⟩ := exists_subset_erase_boundary R₀
     (fun T => map (Int.castRingHom ℚ) (aux T) ∉ I) hempty hterminal
   have hRprime (q : ℕ) (hq : q ∈ R) : q.Prime := hR₀prime q (hRR₀ hq)
   have hRsmooth (q : ℕ) (hq : q ∈ R) := hR₀smooth q (hRR₀ hq)
   let r := smoothResidueFamilyOfPoint x hxf R hRsmooth
-  have hparentSub : R.erase p ⊆ R₀ := (erase_subset p R).trans hRR₀
+  have hparentSub := (erase_subset p R).trans hRR₀
   have hparentEq : aux (R.erase p) =
       F.auxiliary (R.erase p) (fun q hq => hRprime q (mem_of_mem_erase hq))
         (r.restrict (erase_subset p R)) := by
     rw [haux (R.erase p) hparentSub]
     rfl
-  have hchildEq : aux R = F.auxiliary R hRprime r := haux R hRR₀
+  have hchildEq := haux R hRR₀
   refine ⟨R, hRprime, p, hp, r, hRR₀.trans hR₀W, ?_, ?_, ?_, ?_, ?_⟩
-  · have hm : (∏ q ∈ R, (q : ℝ)) ≤ ∏ q ∈ R₀, (q : ℝ) :=
-      prod_le_prod_of_subset_of_one_le₀ hRR₀ (fun _ _ => Nat.cast_nonneg _)
-        (fun q hq _ => by exact_mod_cast (hR₀prime q hq).one_le)
-    exact hm.trans_lt hR₀upper
-  · exact hR₀proper _ ((erase_ssubset hp).trans_le hRR₀)
-  · rw [← hparentEq]
-    exact not_not.mp hparent
-  · rwa [← hchildEq]
-  · exact F.point_vanishes x hx hxf R hRprime hRsmooth
+  · grind
+  · grind
+  · grind
+  · grind
+  · apply F.vanishes
+    apply mem_affineCongruencePoints.mpr
+    refine ⟨hx, hxf, ?_⟩
+    intro p hp j
+    let : NeZero p := ⟨(hRprime p hp).ne_zero⟩
+    apply (ZMod.intCast_zmod_eq_zero_iff_dvd _ p).mp
+    rw [Int.cast_sub, smoothResidueIntegerLift_cast _ ⟨p, hp⟩]
+    exact sub_self _
 
-end
-end CCDN

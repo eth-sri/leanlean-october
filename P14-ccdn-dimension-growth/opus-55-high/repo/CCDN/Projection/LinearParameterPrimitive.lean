@@ -3,12 +3,11 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Hilbert.FilteredHilbertPolynomial
-public import CCDN.Hilbert.LinearProjectionFiltration
-public import CCDN.Projection.CurvePrimitivePair
-public import Mathlib.FieldTheory.IntermediateField.Adjoin.Defs
+import CCDN.Hilbert.FilteredHilbertPolynomial
+import CCDN.Hilbert.LinearProjectionFiltration
+import CCDN.Projection.CurvePrimitivePair
+import Mathlib.FieldTheory.IntermediateField.Adjoin.Defs
 import CCDN.Height.BoundedPrimitiveElement
 import CCDN.Hilbert.BoundedDegreeFunctionFieldRank
 import CCDN.Hilbert.LinearCoordinates
@@ -19,9 +18,8 @@ import Mathlib.RingTheory.AlgebraicIndependent.Basic
 /-! Bounded primitive augmentation of any independent linear parameter
 tuple of the Hilbert dimension. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
 /-- Given `m + 1` linear forms algebraically independent modulo a prime `I` of projective dimension
@@ -48,14 +46,13 @@ theorem exists_bounded_linear_parameter_primitive
   let R := IntermediateField.adjoin K (Set.range u)
   let uR : Fin (m + 1) → R := fun i =>
     ⟨u i, IntermediateField.subset_adjoin K _ ⟨i, rfl⟩⟩
-  have hiA : AlgebraicIndependent K (fun i => (Ideal.Quotient.mk I) (l i)) :=
+  have hiA :=
     injective_projectionCoordinateMap_iff.mp hi
-  have hiF : AlgebraicIndependent K u := hiA.map' (IsFractionRing.injective A F)
-  have hiR : AlgebraicIndependent K uR := AlgebraicIndependent.of_comp R.val hiF
+  have hiR : AlgebraicIndependent K uR := AlgebraicIndependent.of_comp R.val (hiA.map' (IsFractionRing.injective A F))
   obtain ⟨hfinite, hrank⟩ := hilbert_functionField_finite_rank_le (R := R) (F := F) I d
-    (by simpa only [Fintype.card_fin] using hdimdeg) l hl uR hiR (fun _ => rfl)
+    (by simp_all) l hl uR hiR (fun _ => rfl)
   let : Module.Finite R F := hfinite
-  obtain ⟨k, hk, hprim⟩ := exists_bounded_curve_primitive_element (R := R) (F := F) I
+  obtain ⟨k, hk, hprim⟩ := exists_bounded_primitive_element _ (curve_coordinate_embeddings_injective (R := R) (F := F) I)
   refine ⟨k, hk.trans (Nat.mul_le_mul_left n (Nat.pow_le_pow_left hrank 2)), ?_⟩
   have hprim' : IntermediateField.adjoin R
       {φ ((Ideal.Quotient.mk I) (momentCoordinate K n k))} = ⊤ := by
@@ -69,5 +66,3 @@ theorem exists_bounded_linear_parameter_primitive
   funext i
   refine Fin.cases ?_ (fun j => ?_) i <;> rfl
 
-end
-end CCDN

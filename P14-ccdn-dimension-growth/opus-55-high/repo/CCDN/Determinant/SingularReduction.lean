@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Determinant.PlaneMultiplicity
-public import CCDN.Plane.FiniteFieldConstants
+import CCDN.Determinant.PlaneMultiplicity
+import CCDN.Plane.FiniteFieldConstants
 import CCDN.Determinant.BlockDeterminant
 import CCDN.Determinant.ResidueAggregation
 
@@ -14,24 +13,27 @@ import CCDN.Determinant.ResidueAggregation
 local determinant lower bound. The sharp finite-field total-multiplicity
 estimate is a separate geometric obligation. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma cast_plane_eval {p : ℕ} (f : MvPolynomial (Fin 2) ℤ) (z : Fin 2 → ℤ) :
+section
+variable (f : MvPolynomial (Fin 2) ℤ)
+
+lemma cast_plane_eval {p : ℕ} (z : Fin 2 → ℤ) :
     (MvPolynomial.eval z f : ZMod p) =
       MvPolynomial.eval₂ (Int.castRingHom (ZMod p)) (fun j => (z j : ZMod p)) f := by
-  simpa only [MvPolynomial.eval₂_id, RingHom.comp_id, Function.comp_def, Int.coe_castRingHom] using
+  simpa [MvPolynomial.eval₂_id, RingHom.comp_id, Function.comp_def, Int.coe_castRingHom] using
     MvPolynomial.eval₂_comp_left (Int.castRingHom (ZMod p)) (RingHom.id ℤ) z f
 
 /-- All affine rational points of the reduced plane equation. -/
-def PlaneResidue (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :=
+def PlaneResidue (p : ℕ) :=
   {a : Fin 2 → ZMod p // eval₂ (Int.castRingHom (ZMod p)) a f = 0}
+
+end
 
 instance (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [NeZero p] :
     Fintype (PlaneResidue f p) := by
-  classical
   unfold PlaneResidue
   infer_instance
 
@@ -45,34 +47,42 @@ def PlaneResidueCountBound (C : ℝ) (d : ℕ) (f : MvPolynomial (Fin 2) ℤ) : 
     Irreducible (MvPolynomial.map (Int.castRingHom (ZMod p)) f) →
       (Nat.card (PlaneResidue f p) : ℝ) ≤ p + C * (d : ℝ) ^ 2 * Real.sqrt p
 
+section
+variable {f : MvPolynomial (Fin 2) ℤ} {p : ℕ} (a : PlaneResidue f p)
+
 /-- The integer lift, with coordinates in `[0, p)`, of an `𝔽_p`-point of the reduced affine plane
 curve. -/
-def planeResidueLift {f : MvPolynomial (Fin 2) ℤ} {p : ℕ} (a : PlaneResidue f p) :
+def planeResidueLift :
     Fin 2 → ℤ := fun j => (a.val j).val
 
 /-- The integer lift of a residue point reduces modulo `p` to the point itself. -/
-lemma cast_planeResidueLift {f : MvPolynomial (Fin 2) ℤ} {p : ℕ} [NeZero p]
-    (a : PlaneResidue f p) (j : Fin 2) : (planeResidueLift a j : ZMod p) = a.val j := by
+lemma cast_planeResidueLift [NeZero p]
+    (j : Fin 2) : (planeResidueLift a j : ZMod p) = a.val j := by
   simp [planeResidueLift]
 
 /-- The reduction of `f` modulo `p` vanishes at the reduction of the integer lift of a residue point
 of `f`. -/
-lemma planeResidueLift_zero {f : MvPolynomial (Fin 2) ℤ} {p : ℕ} [NeZero p]
-    (a : PlaneResidue f p) :
+lemma planeResidueLift_zero [NeZero p]
+    :
     eval₂ (Int.castRingHom (ZMod p)) (fun j => (planeResidueLift a j : ZMod p)) f = 0 := by
-  simpa only [cast_planeResidueLift] using a.property
+  simpa [cast_planeResidueLift] using a.property
+
+end
+
+section
+variable (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [Fact p.Prime] (hf : map (Int.castRingHom (ZMod p)) f ≠ 0)
 
 /-- Multiplicity is selected from the translated reduced equation. -/
-def planeResidueMultiplicity (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [Fact p.Prime]
-    (hf : map (Int.castRingHom (ZMod p)) f ≠ 0) (a : PlaneResidue f p) : ℕ :=
+def planeResidueMultiplicity
+    (a : PlaneResidue f p) : ℕ :=
   Classical.choose (exists_hypersurface_reduction_multiplicity f (planeResidueLift a) hf
     (planeResidueLift_zero a))
 
 /-- The multiplicity of `f mod p` at a residue point `a` is between `1` and the total degree of `f`;
 after translating `a` to the origin, the reduced equation lies in that power of the ideal of the
 origin and has a nonzero homogeneous component of that degree. -/
-theorem planeResidueMultiplicity_spec (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [Fact p.Prime]
-    (hf : map (Int.castRingHom (ZMod p)) f ≠ 0) (a : PlaneResidue f p) :
+theorem planeResidueMultiplicity_spec
+    (a : PlaneResidue f p) :
     0 < planeResidueMultiplicity f p hf a ∧
       planeResidueMultiplicity f p hf a ≤ f.totalDegree ∧
       map (Int.castRingHom (ZMod p)) (originShift (planeResidueLift a) f) ∈
@@ -84,12 +94,12 @@ theorem planeResidueMultiplicity_spec (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [
 
 /-- The finite-field total multiplicity appearing in the denominator
 of the local determinant exponent. -/
-def planeTotalMultiplicity (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [Fact p.Prime]
-    (hf : map (Int.castRingHom (ZMod p)) f ≠ 0) : ℕ :=
+def planeTotalMultiplicity
+    : ℕ :=
   ∑ a : PlaneResidue f p, planeResidueMultiplicity f p hf a
 
-private lemma planeTotalMultiplicity_bounds (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) [Fact p.Prime]
-    (hf : map (Int.castRingHom (ZMod p)) f ≠ 0) :
+lemma planeTotalMultiplicity_bounds
+    :
     Fintype.card (PlaneResidue f p) ≤ planeTotalMultiplicity f p hf ∧
       planeTotalMultiplicity f p hf ≤ Fintype.card (PlaneResidue f p) * f.totalDegree := by
   constructor
@@ -99,56 +109,5 @@ private lemma planeTotalMultiplicity_bounds (f : MvPolynomial (Fin 2) ℤ) (p : 
            Finset.sum_le_sum fun a _ => (planeResidueMultiplicity_spec f p hf a).2.1
          _ = _ := by simp
 
-/-- Integral zeros supply all residue labels and multiplicities. The
-sum of the local exponents has the full quadratic leading coefficient.
-Singular points are allowed. -/
-theorem singular_reduction_minorGcd {s N p : ℕ} [Fact p.Prime] (hs : 0 < s)
-    (f : MvPolynomial (Fin 2) ℤ) (g : Fin N → MvPolynomial (Fin 2) ℤ)
-    (z : Fin s → Fin 2 → ℤ)
-    (hf : map (Int.castRingHom (ZMod p)) f ≠ 0)
-    (hz : ∀ i, eval (z i) f = 0) :
-    0 < planeTotalMultiplicity f p hf ∧ ∃ e : ℕ,
-      s ^ 2 ≤ 2 * planeTotalMultiplicity f p hf * (e + s) ∧
-      (s : ℝ) ^ 2 / (2 * planeTotalMultiplicity f p hf) - s ≤ e ∧
-      (p : ℤ) ^ e ∣ Int.Matrix.minorGcd (Matrix.of fun i k => eval (z i) (g k)) := by
-  classical
-  let red : Fin s → PlaneResidue f p := fun i =>
-    ⟨(fun k => (z i k : ZMod p)), by rw [← cast_plane_eval, hz i]; simp⟩
-  let c := Fintype.card (PlaneResidue f p)
-  let E := Fintype.equivFin (PlaneResidue f p)
-  let label : Fin s → Fin c := fun i => E (red i)
-  let a : Fin c → Fin 2 → ℤ := fun i => planeResidueLift (E.symm i)
-  let μ : Fin c → ℕ := fun i => planeResidueMultiplicity f p hf (E.symm i)
-  let n : Fin c → ℕ := fun i => Fintype.card {k : Fin s // label k = i}
-  let e := ∑ i : Fin c, multiplicityExponent (n i) (μ i)
-  have hμ (i : Fin c) := planeResidueMultiplicity_spec f p hf (E.symm i)
-  have hsum : ∑ i : Fin c, μ i = planeTotalMultiplicity f p hf := by
-    exact E.symm.sum_comp (planeResidueMultiplicity f p hf)
-  have hsize : ∑ i : Fin c, n i = s := sum_residue_class_sizes label
-  have hc : 0 < c := Fintype.card_pos_iff.mpr ⟨red ⟨0, hs⟩⟩
-  have hpos : 0 < planeTotalMultiplicity f p hf :=
-    hc.trans_le (planeTotalMultiplicity_bounds f p hf).1
-  refine ⟨hpos, e, ?_, ?_, ?_⟩
-  · simpa only [hsize, hsum] using aggregate_multiplicity_exponents Finset.univ n μ
-      (fun i _ => (hμ i).1)
-  · have h := aggregate_exponent_lower Finset.univ n μ
-      (fun i => multiplicityExponent (n i) (μ i))
-      (fun i _ => multiplicityExponent_lower_bound _ _ (hμ i).1)
-      (N := (planeTotalMultiplicity f p hf : ℝ)) (by exact_mod_cast hpos)
-      (by rw [hsum])
-    simpa only [hsize] using h
-  · apply singular_plane_residue_minorGcd f g z label a μ
-    · intro i
-      exact (hμ i).2.2.1
-    · intro i
-      exact (hμ i).2.2.2
-    · intro i j
-      apply (ZMod.intCast_zmod_eq_zero_iff_dvd _ p).mp
-      rw [Int.cast_sub, cast_planeResidueLift]
-      change (z i j : ZMod p) - (E.symm (E (red i))).val j = 0
-      rw [E.symm_apply_apply]
-      exact sub_self _
-    · exact hz
-
 end
-end CCDN
+

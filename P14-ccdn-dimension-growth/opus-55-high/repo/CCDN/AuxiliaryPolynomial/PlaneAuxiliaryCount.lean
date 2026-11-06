@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.HomogeneousChart
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import CCDN.Algebra.HomogeneousChart
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import CCDN.AuxiliaryPolynomial.PlaneBadPrimes
 import CCDN.ForMathlib.MvPolynomial
 import CCDN.Plane.Bezout
@@ -14,9 +13,8 @@ import CCDN.Plane.Bezout
 /-! Distinct-point bounds obtained from the auxiliary polynomials and
 Bézout. The sharp finite-field estimate remains an explicit hypothesis. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
 /-- Mapping an integer polynomial to `ℚ` preserves its total degree. -/
@@ -31,9 +29,21 @@ lemma rational_irreducible_of_charZero_map {F σ : Type*} [Field F] [CharZero F]
     Irreducible (MvPolynomial.map (Int.castRingHom ℚ) f) := by
   apply mvPolynomial_irreducible_of_field_map (algebraMap ℚ F)
   rw [map_map]
-  have he : (algebraMap ℚ F).comp (Int.castRingHom ℚ) = Int.castRingHom F := by ext; simp
-  rw [he]
-  exact hf
+  have he : (algebraMap ℚ F).comp (Int.castRingHom ℚ) = Int.castRingHom F := by aesop
+  rwa [he]
+
+/-- Bézout for distinct integer common zeros of two integer plane polynomials. -/
+theorem integer_common_zeros_card_le {t : ℕ} (F G : MvPolynomial (Fin 2) ℤ)
+    (hir : Irreducible (MvPolynomial.map (Int.castRingHom ℚ) F))
+    (hnd : ¬ MvPolynomial.map (Int.castRingHom ℚ) F ∣ MvPolynomial.map (Int.castRingHom ℚ) G)
+    (z : Fin t → Fin 2 → ℤ) (hinj : Function.Injective z)
+    (hF : ∀ i, eval (z i) F = 0) (hG : ∀ i, eval (z i) G = 0) :
+    t ≤ F.totalDegree * G.totalDegree := by
+  have h := plane_common_zeros_card_le _ _ hir hnd (fun i j => (z i j : ℚ))
+    (fun i j he => hinj (funext fun k => Int.cast_injective (congrFun he k)))
+    (fun i => by have h := congrArg (Int.castRingHom ℚ) (hF i); rwa [map_eval, map_zero] at h)
+    (fun i => by have h := congrArg (Int.castRingHom ℚ) (hG i); rwa [map_eval, map_zero] at h)
+  rwa [Fintype.card_fin, rational_map_totalDegree, rational_map_totalDegree] at h
 
 /-- The precise Bézout step for a homogeneous integer auxiliary
 polynomial and a primitive equation whose chart has full degree. -/
@@ -45,28 +55,8 @@ theorem plane_chart_points_card_le_auxiliary_degree {d M t : ℕ}
     (hnd : ¬ f ∣ g) (z : Fin t → Fin 2 → ℤ) (hinj : Function.Injective z)
     (hzf : ∀ i, eval (z i) (affineChart 2 f) = 0)
     (hzg : ∀ i, eval (Fin.cons 1 (z i)) g = 0) : t ≤ d * M := by
-  let zQ : Fin t → Fin 2 → ℚ := fun i j => (z i j : ℚ)
-  have hiQ : Function.Injective zQ := by
-    intro i j he
-    apply hinj
-    funext k
-    exact Int.cast_injective (congrFun he k)
-  have hfQ : ∀ i, eval (zQ i) (MvPolynomial.map (Int.castRingHom ℚ) (affineChart 2 f)) = 0 := by
-    intro i
-    have h := congrArg (Int.castRingHom ℚ) (hzf i)
-    rw [map_eval, map_zero] at h
-    exact h
-  have hgQ : ∀ i, eval (zQ i) (MvPolynomial.map (Int.castRingHom ℚ) (affineChart 2 g)) = 0 := by
-    intro i
-    have h := congrArg (Int.castRingHom ℚ) (hzg i)
-    rw [← affineChart_eval] at h
-    rw [map_eval, map_zero] at h
-    exact h
-  have hndQ : ¬ MvPolynomial.map (Int.castRingHom ℚ) (affineChart 2 f) ∣
-      MvPolynomial.map (Int.castRingHom ℚ) (affineChart 2 g) :=
-    rational_affineChart_not_dvd hf hf0 hg hprim hdchart hnd
-  have h := plane_common_zeros_card_le _ _ hir hndQ zQ hiQ hfQ hgQ
-  rw [Fintype.card_fin, rational_map_totalDegree, rational_map_totalDegree, hdchart] at h
+  have h := integer_common_zeros_card_le _ _ hir (rational_affineChart_not_dvd hf hf0 hg hprim hdchart hnd) z hinj hzf (fun i => by simp_all [affineChart_eval])
+  rw [hdchart] at h
   exact h.trans (Nat.mul_le_mul_left d ((affineChart_totalDegree_le g).trans hg.totalDegree_le))
 
 /-- Enumerating the integer zeros transfers finite-family bounds to
@@ -76,22 +66,16 @@ lemma integer_zero_count_le_of_family_bound {n : ℕ} (f : MvPolynomial (Fin n) 
     (hbound : ∀ (t : ℕ) (z : Fin t → Fin n → ℤ), Function.Injective z →
       (∀ i, eval (z i) f = 0) → (∀ i, InBox (z i) B) → (t : ℝ) ≤ R) :
     (count (zeroLocus (MvPolynomial.map (Int.castRingHom ℚ) f)) B : ℝ) ≤ R := by
-  classical
   let S := integralPoints (zeroLocus (MvPolynomial.map (Int.castRingHom ℚ) f)) B
   let e := (Fintype.equivFin S).symm
   let z : Fin (Fintype.card S) → Fin n → ℤ := fun i => (e i).val
-  have hinj : Function.Injective z := Subtype.val_injective.comp e.injective
-  have hzero : ∀ i, eval (z i) f = 0 := by
+  have hinj := Subtype.val_injective.comp e.injective
+  have hbox := fun i => (mem_integralPoints.mp (e i).property).1
+  have h := hbound _ z hinj (by
     intro i
     apply Int.cast_injective (α := ℚ)
     have h := (mem_integralPoints.mp (e i).property).2
-    change eval (fun j => (z i j : ℚ)) (MvPolynomial.map (Int.castRingHom ℚ) f) = 0 at h
     change (Int.castRingHom ℚ) (eval (z i) f) = 0
-    rw [map_eval]
-    exact h
-  have hbox : ∀ i, InBox (z i) B := fun i => (mem_integralPoints.mp (e i).property).1
-  have h := hbound _ z hinj hzero hbox
-  simpa only [Fintype.card_coe, S, count] using h
+    rwa [map_eval]) hbox
+  simpa [Fintype.card_coe, S, count] using h
 
-end
-end CCDN

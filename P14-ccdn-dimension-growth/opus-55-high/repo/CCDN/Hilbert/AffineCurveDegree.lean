@@ -3,9 +3,8 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Hilbert.FilteredIntersection
+import CCDN.Hilbert.FilteredIntersection
 
 /-!
 # The affine Hilbert degree of a curve
@@ -17,23 +16,26 @@ The slope of an eventually linear function is unique, and a pointwise inequality
 eventually linear functions compares their slopes (`eventual_linear_slope_le`).
 -/
 
-@[expose] public section
-
 namespace CCDN
 
 /-- The polynomial ring `ℚ[x₁, …, xₙ]` in which affine algebraic sets are cut out. -/
 abbrev CoordinatePolynomial (n : ℕ) := MvPolynomial (Fin n) ℚ
 
+section
+variable {n : ℕ} (I : Ideal (CoordinatePolynomial n))
+
 /-- The affine Hilbert function: the dimension of the polynomials of total degree at
 most `M` in the coordinate ring. -/
-noncomputable def affineHilbertFunction {n : ℕ} (I : Ideal (CoordinatePolynomial n))
+noncomputable def affineHilbertFunction
     (M : ℕ) : ℕ := Module.finrank ℚ (filteredCoordinateSpace I M)
 
 /-- Degree via the eventual affine Hilbert polynomial. This condition is mathematical
 data about the coordinate ring, and contains no point-counting estimate. -/
-def HasAffineCurveDegree {n : ℕ} (I : Ideal (CoordinatePolynomial n)) (d : ℕ) : Prop :=
+def HasAffineCurveDegree (d : ℕ) : Prop :=
   ∃ N : ℕ, ∃ c : ℤ, ∀ M : ℕ, N ≤ M →
     (affineHilbertFunction I M : ℤ) = (d : ℤ) * M + c
+
+end
 
 /-- The affine Hilbert degree of a curve is unique: if `I` has affine curve degree `d` and `e`, then
 `d = e`. -/
@@ -46,7 +48,7 @@ theorem affineCurveDegree_unique {n : ℕ} {I : Ideal (CoordinatePolynomial n)} 
   have hN1 := hN (max N P + 1) (by omega)
   have hP1 := hP (max N P + 1) (by omega)
   push_cast at hN0 hP0 hN1 hP1
-  have hde : (d : ℤ) = e := by nlinarith
+  have hde : d = e := by nlinarith
   exact_mod_cast hde
 
 /-- Pointwise domination of eventually linear functions compares their slopes. -/
@@ -59,20 +61,14 @@ lemma eventual_linear_slope_le (f g : ℕ → ℕ) (a b : ℕ)
   by_contra hbad
   have hab : b + 1 ≤ a := by omega
   let N := N₀ + N₁ + c.natAbs + e.natAbs + 1
-  have hN₀ : N₀ ≤ N := by dsimp [N]; omega
-  have hN₁ : N₁ ≤ N := by dsimp [N]; omega
-  have hh : (a : ℤ) * N + c ≤ (b : ℤ) * N + e := by
+  have hN₀ : N₀ ≤ N := by grind
+  have hN₁ : N₁ ≤ N := by grind
+  have hh : a * N + c ≤ b * N + e := by
     rw [← hc N hN₀, ← he N hN₁]
-    exact_mod_cast hle N
-  have hmul : ((b : ℤ) + 1) * N ≤ (a : ℤ) * N := by
-    exact_mod_cast Nat.mul_le_mul_right N hab
-  have hce : -(c.natAbs : ℤ) ≤ c := by
-    have hh : -c ≤ ((-c).natAbs : ℤ) := Int.le_natAbs
-    simp only [Int.natAbs_neg] at hh
-    omega
+    grind
+  have hmul : (b + 1) * N ≤ a * N := by nlinarith
+  have hce : -(c.natAbs : ℤ) ≤ c := by grind
   have hee : e ≤ (e.natAbs : ℤ) := Int.le_natAbs
-  have hNeq : (N : ℤ) = N₀ + N₁ + c.natAbs + e.natAbs + 1 := by
-    simp only [N, Nat.cast_add, Nat.cast_one]
+  have hNeq : (N : ℤ) = N₀ + N₁ + c.natAbs + e.natAbs + 1 := by grind
   nlinarith
 
-end CCDN

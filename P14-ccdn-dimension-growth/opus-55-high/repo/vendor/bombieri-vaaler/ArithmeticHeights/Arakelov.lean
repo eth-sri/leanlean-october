@@ -3,12 +3,11 @@ Copyright (c) 2026 Ralf Stephan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ralf Stephan
 -/
-module
 
-public import Mathlib.Analysis.SpecialFunctions.Log.PosLog
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-public import Mathlib.NumberTheory.Height.NumberField
-public import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.Analysis.SpecialFunctions.Log.PosLog
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
 
 /-!
 # The Arakelov height over a number field
@@ -93,8 +92,6 @@ This is Layers 0.1 and 0.2 of the `ArithmeticHeights` roadmap: the normalization
 comparison with `Height.mulHeight`.
 -/
 
-public section
-
 namespace NumberField
 
 open Finset Function Height Real
@@ -108,7 +105,7 @@ For the zero tuple we take the junk value `1`, as `Height.mulHeight` does.
 This is the normalization in which the constants of the Siegel-lemma literature are stated;
 `Height.mulHeight` uses the sup norm at every place. Both live in the library and every bound
 says which one it is in. -/
-@[expose] noncomputable def arakelovMulHeight (x : ι → K) : ℝ :=
+noncomputable def arakelovMulHeight (x : ι → K) : ℝ :=
   have : Decidable (x = 0) := Classical.propDecidable _
   if x = 0 then 1 else
     (∏ v : InfinitePlace K, (∑ i, v (x i) ^ 2) ^ (v.mult / 2 : ℝ)) *
@@ -124,26 +121,12 @@ lemma arakelovMulHeight_eq {x : ι → K} (hx : x ≠ 0) :
 lemma arakelovMulHeight_zero : arakelovMulHeight (0 : ι → K) = 1 := by
   simp [arakelovMulHeight]
 
-/-- The logarithmic Arakelov height. As everywhere in this development, the logarithmic height
-is *defined* as the logarithm of the multiplicative one and never independently. -/
-@[expose] noncomputable def arakelovLogHeight (x : ι → K) : ℝ := log (arakelovMulHeight x)
-
-lemma arakelovLogHeight_eq_log_arakelovMulHeight (x : ι → K) :
-    arakelovLogHeight x = log (arakelovMulHeight x) :=
-  rfl
-
-@[simp]
-lemma arakelovLogHeight_zero : arakelovLogHeight (0 : ι → K) = 0 := by
-  simp [arakelovLogHeight_eq_log_arakelovMulHeight]
-
 /-- The rewriting the archimedean local factor always needs: its exponent `mult v / 2` is real
 while the sup-norm factor carries the natural power `mult v`, and `(a ^ 2) ^ (n / 2) = a ^ n`
 moves between them. -/
-private lemma sq_rpow_div_two {a : ℝ} (ha : 0 ≤ a) (n : ℕ) : (a ^ 2) ^ ((n : ℝ) / 2) = a ^ n := by
+lemma sq_rpow_div_two {a : ℝ} (ha : 0 ≤ a) (n : ℕ) : (a ^ 2) ^ ((n : ℝ) / 2) = a ^ n := by
   rw [← Real.rpow_natCast a n, ← Real.rpow_natCast a 2, ← Real.rpow_mul ha]
-  congr 1
-  push_cast
-  ring
+  grind
 
 /-!
 ### Scaling invariance
@@ -158,46 +141,39 @@ section Smul
 variable {κ : Type*}
 
 omit [NumberField K] in
-private lemma iSup_smul_eq {F : Type*} [FunLike F K ℝ] [MonoidWithZeroHomClass F K ℝ]
+lemma iSup_smul_eq {F : Type*} [FunLike F K ℝ] [MonoidWithZeroHomClass F K ℝ]
     [NonnegHomClass F K ℝ] (v : F) (c : K) (x : κ → K) :
     ⨆ i, v ((c • x) i) = v c * ⨆ i, v (x i) := by
-  simp only [Pi.smul_apply, smul_eq_mul, map_mul, Real.mul_iSup_of_nonneg (apply_nonneg v c)]
+  simp [Pi.smul_apply, smul_eq_mul, map_mul, Real.mul_iSup_of_nonneg (apply_nonneg v c)]
 
-/-- The transformation law of the *finite* part of the height under scaling, extracted from
-Mathlib's `Height.mulHeight_smul_eq_mulHeight`. This is the product formula for `c`, applied to
-the finite places only. -/
-private lemma prod_infinitePlace_mul_finprod_iSup_smul [Finite κ] {x : κ → K} (hx : x ≠ 0)
-    {c : K} (hc : c ≠ 0) :
-    (∏ v : InfinitePlace K, v c ^ v.mult) * ∏ᶠ v : FinitePlace K, ⨆ i, v ((c • x) i) =
-      ∏ᶠ v : FinitePlace K, ⨆ i, v (x i) := by
-  have hcx : c • x ≠ 0 := by simp [hc, hx]
-  have hA : (0 : ℝ) < ∏ v : InfinitePlace K, (⨆ i, v (x i)) ^ v.mult := by
-    obtain ⟨i, hi⟩ : ∃ i, x i ≠ 0 := ne_iff.mp hx
-    exact prod_pos fun v _ ↦ pow_pos
-      ((v.pos_iff.mpr hi).trans_le (Finite.le_ciSup_of_le i le_rfl)) _
-  have h := Height.mulHeight_smul_eq_mulHeight x hc
-  rw [NumberField.mulHeight_eq hcx, NumberField.mulHeight_eq hx] at h
-  simp only [iSup_smul_eq, mul_pow, prod_mul_distrib] at h ⊢
-  exact mul_left_cancel₀ hA.ne' (by linear_combination h)
+variable {c : K}
 
 /-- The Arakelov height is invariant under scaling, by the product formula, so it descends to
 projective space exactly as `Height.mulHeight` does. -/
-lemma arakelovMulHeight_smul_eq (x : ι → K) {c : K} (hc : c ≠ 0) :
+lemma arakelovMulHeight_smul_eq (x : ι → K) (hc : c ≠ 0) :
     arakelovMulHeight (c • x) = arakelovMulHeight x := by
   rcases eq_or_ne x 0 with rfl | hx
-  · rw [smul_zero]
-  have hcx : c • x ≠ 0 := by simp [hc, hx]
+  · simp_all
+  have hcx : c • x ≠ 0 := by simp_all
   have harch (v : InfinitePlace K) :
       (∑ i, v ((c • x) i) ^ 2) ^ (v.mult / 2 : ℝ)
         = v c ^ v.mult * (∑ i, v (x i) ^ 2) ^ (v.mult / 2 : ℝ) := by
-    have hsum : ∑ i, v ((c • x) i) ^ 2 = v c ^ 2 * ∑ i, v (x i) ^ 2 := by
-      rw [mul_sum]
-      exact sum_congr rfl fun i _ ↦ by simp [mul_pow]
+    have hsum : ∑ i, v ((c • x) i) ^ 2 = v c ^ 2 * ∑ i, v (x i) ^ 2 := by simp_all [mul_sum, mul_pow]
     rw [hsum, Real.mul_rpow (by positivity) (by positivity),
       sq_rpow_div_two (apply_nonneg v c) v.mult]
   rw [arakelovMulHeight_eq hcx, arakelovMulHeight_eq hx]
   simp only [harch, prod_mul_distrib]
-  rw [mul_right_comm, prod_infinitePlace_mul_finprod_iSup_smul hx hc, mul_comm]
+  rw [mul_right_comm, (show (∏ v : InfinitePlace K, v c ^ v.mult) * ∏ᶠ v : FinitePlace K, ⨆ i, v ((c • x) i) =
+        ∏ᶠ v : FinitePlace K, ⨆ i, v (x i) by
+      have hcx : c • x ≠ 0 := by simp_all
+      have hA : (0 : ℝ) < ∏ v : InfinitePlace K, (⨆ i, v (x i)) ^ v.mult := by
+        obtain ⟨i, hi⟩ := ne_iff.mp hx
+        exact prod_pos fun v _ ↦ pow_pos
+          ((v.pos_iff.mpr hi).trans_le (Finite.le_ciSup_of_le i le_rfl)) _
+      have h := Height.mulHeight_smul_eq_mulHeight x hc
+      rw [NumberField.mulHeight_eq hcx, NumberField.mulHeight_eq hx] at h
+      simp only [iSup_smul_eq, mul_pow, prod_mul_distrib] at h ⊢
+      exact mul_left_cancel₀ hA.ne' (by linear_combination h)), mul_comm]
 
 end Smul
 
@@ -205,41 +181,20 @@ end Smul
 ### Positivity and reindexing
 -/
 
-/-- The Arakelov height of a tuple is always at least `1`. -/
-lemma one_le_arakelovMulHeight (x : ι → K) : 1 ≤ arakelovMulHeight x := by
-  rcases eq_or_ne x 0 with rfl | hx
-  · simp
-  obtain ⟨i, hi⟩ : ∃ i, x i ≠ 0 := ne_iff.mp hx
-  have hx' : (x i)⁻¹ • x ≠ 0 := by simp [hi, hx]
-  have hi' : ((x i)⁻¹ • x) i = 1 := by simp [hi]
-  rw [← arakelovMulHeight_smul_eq x (inv_ne_zero hi), arakelovMulHeight_eq hx']
-  refine one_le_mul_of_one_le_of_one_le (Finset.one_le_prod₀ fun v _ ↦ ?_)
-    (one_le_finprod fun v ↦ Finite.le_ciSup_of_le i (by simp [hi']))
-  have h1 : (1 : ℝ) ≤ ∑ j, v (((x i)⁻¹ • x) j) ^ 2 :=
-    le_trans (le_of_eq (by simp [hi']))
-      (single_le_sum (f := fun j ↦ v (((x i)⁻¹ • x) j) ^ 2) (fun j _ ↦ by positivity) (mem_univ i))
-  exact Real.one_le_rpow h1 (by positivity)
-
-lemma arakelovMulHeight_pos (x : ι → K) : 0 < arakelovMulHeight x :=
-  zero_lt_one.trans_le <| one_le_arakelovMulHeight x
-
-lemma arakelovLogHeight_nonneg (x : ι → K) : 0 ≤ arakelovLogHeight x :=
-  log_nonneg <| one_le_arakelovMulHeight x
-
 /-- The Arakelov height does not change under re-indexing. -/
 lemma arakelovMulHeight_comp_equiv (e : ι ≃ ι') (x : ι' → K) :
     arakelovMulHeight (x ∘ e) = arakelovMulHeight x := by
   rcases eq_or_ne x 0 with rfl | hx
   · simp
   have hx' : x ∘ e ≠ 0 := by
-    obtain ⟨i, hi⟩ : ∃ i, x i ≠ 0 := ne_iff.mp hx
-    exact ne_iff.mpr ⟨e.symm i, by simpa using hi⟩
+    obtain ⟨i, hi⟩ := ne_iff.mp hx
+    exact ne_iff.mpr ⟨e.symm i, by simp_all⟩
   have hsum (v : InfinitePlace K) : ∑ i, v (x (e i)) ^ 2 = ∑ i, v (x i) ^ 2 :=
     e.sum_comp fun i ↦ v (x i) ^ 2
   have hsup (v : FinitePlace K) : ⨆ i, v (x (e i)) = ⨆ i, v (x i) :=
     e.iSup_congr (congrFun rfl)
   rw [arakelovMulHeight_eq hx, arakelovMulHeight_eq hx']
-  simp only [comp_apply, hsum, hsup]
+  simp [comp_apply, hsum, hsup]
 
 /-!
 ### Special values
@@ -248,50 +203,6 @@ lemma arakelovMulHeight_comp_equiv (e : ι ≃ ι') (x : ι' → K) :
 tuple is `#ι ^ (totalWeight K / 2)`: these are the values that exhibit the difference between
 the two normalizations without touching the junk value.
 -/
-
-/-- The Arakelov height of the all-ones tuple. Its sup-norm counterpart `Height.mulHeight_one`
-has value `1`. -/
-lemma arakelovMulHeight_one [Nonempty ι] :
-    arakelovMulHeight (1 : ι → K) = (Fintype.card ι : ℝ) ^ ((totalWeight K : ℝ) / 2) := by
-  have hne : (1 : ι → K) ≠ 0 := ne_iff.mpr ⟨Classical.arbitrary ι, by simp⟩
-  have hfin : ∏ᶠ v : FinitePlace K, ⨆ i, v ((1 : ι → K) i) = 1 :=
-    finprod_eq_one_of_forall_eq_one fun v ↦ by simp
-  have harch (v : InfinitePlace K) :
-      (∑ i, v ((1 : ι → K) i) ^ 2) ^ (v.mult / 2 : ℝ)
-        = ((Fintype.card ι : ℝ) ^ ((1 : ℝ) / 2)) ^ v.mult := by
-    have h2 : ∑ i, v ((1 : ι → K) i) ^ 2 = (Fintype.card ι : ℝ) := by simp
-    rw [h2, ← Real.rpow_natCast ((Fintype.card ι : ℝ) ^ ((1 : ℝ) / 2)) v.mult,
-      ← Real.rpow_mul (by positivity)]
-    congr 1
-    ring
-  rw [arakelovMulHeight_eq hne, hfin, mul_one, Finset.prod_congr rfl fun v _ ↦ harch v,
-    Finset.prod_pow_eq_pow_sum, InfinitePlace.sum_mult_eq,
-    ← Real.rpow_natCast ((Fintype.card ι : ℝ) ^ ((1 : ℝ) / 2)) (Module.finrank ℚ K),
-    ← Real.rpow_mul (by positivity), totalWeight_eq_finrank]
-  congr 1
-  ring
-
-/-- On a subsingleton index type every tuple has Arakelov height `1`, by the product formula.
-This is the degenerate case in which the Arakelov and sup-norm normalizations agree. -/
-@[simp]
-lemma arakelovMulHeight_eq_one_of_subsingleton [Subsingleton ι] (x : ι → K) :
-    arakelovMulHeight x = 1 := by
-  rcases eq_or_ne x 0 with rfl | hx
-  · simp
-  obtain ⟨i, hi⟩ : ∃ i, x i ≠ 0 := ne_iff.mp hx
-  have : Nonempty ι := ⟨i⟩
-  have hcard : Fintype.card ι = 1 :=
-    le_antisymm (Fintype.card_le_one_iff_subsingleton.mpr ‹_›) Fintype.card_pos
-  have h1 : (x i)⁻¹ • x = 1 := funext fun j ↦ by
-    rw [Subsingleton.elim j i]
-    simp [inv_mul_cancel₀ hi]
-  rw [← arakelovMulHeight_smul_eq x (inv_ne_zero hi), h1, arakelovMulHeight_one, hcard,
-    Nat.cast_one, Real.one_rpow]
-
-@[simp]
-lemma arakelovLogHeight_eq_zero_of_subsingleton [Subsingleton ι] (x : ι → K) :
-    arakelovLogHeight x = 0 := by
-  simp [arakelovLogHeight_eq_log_arakelovMulHeight]
 
 /-!
 ### The comparison with the sup-norm height
@@ -306,10 +217,6 @@ The constant of the upper comparison cannot be improved: at the all-ones tuple i
 by `arakelovMulHeight_one` against `Height.mulHeight_one`.
 -/
 
-section Comparison
-
-end Comparison
-
 /-!
 ### The one-variable case
 
@@ -318,52 +225,7 @@ Unlike the sup-norm normalization, its archimedean local factor is `((v x) ^ 2 +
 rather than `max (v x) 1 ^ mult v`, so it does **not** agree with `Height.mulHeight₁`.
 -/
 
-/-- The multiplicative Arakelov height of an element of a number field, i.e. of the point
-`(x : 1)` of the projective line. -/
-@[expose] noncomputable def arakelovMulHeight₁ (x : K) : ℝ := arakelovMulHeight ![x, 1]
-
-/-- The logarithmic Arakelov height of an element of a number field. -/
-@[expose] noncomputable def arakelovLogHeight₁ (x : K) : ℝ := log (arakelovMulHeight₁ x)
-
-lemma arakelovMulHeight₁_eq_arakelovMulHeight (x : K) :
-    arakelovMulHeight₁ x = arakelovMulHeight ![x, 1] :=
-  rfl
-
-lemma arakelovLogHeight₁_eq_log_arakelovMulHeight₁ (x : K) :
-    arakelovLogHeight₁ x = log (arakelovMulHeight₁ x) :=
-  rfl
-
 omit [NumberField K] in
-private lemma iSup_cons_one {F : Type*} [FunLike F K ℝ] [MonoidWithZeroHomClass F K ℝ]
-    (v : F) (x : K) : ⨆ i, v (![x, 1] i) = max (v x) 1 := by
-  have h (i : Fin 2) : v (![x, 1] i) = ![v x, 1] i := by fin_cases i <;> simp
-  simp only [h]
-  exact le_antisymm (ciSup_le fun i ↦ by fin_cases i <;> simp)
-    (max_le (Finite.le_ciSup_of_le 0 (by simp)) (Finite.le_ciSup_of_le 1 (by simp)))
-
-/-- The familiar formula for the Arakelov height of a single element. -/
-lemma arakelovMulHeight₁_eq (x : K) :
-    arakelovMulHeight₁ x =
-      (∏ v : InfinitePlace K, (v x ^ 2 + 1) ^ (v.mult / 2 : ℝ)) *
-        ∏ᶠ v : FinitePlace K, max (v x) 1 := by
-  have hx : ![x, 1] ≠ 0 := by simp
-  rw [arakelovMulHeight₁_eq_arakelovMulHeight, arakelovMulHeight_eq hx]
-  simp only [iSup_cons_one, Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.cons_val_fin_one, map_one, one_pow]
-
-@[simp]
-lemma arakelovMulHeight₁_zero : arakelovMulHeight₁ (0 : K) = 1 := by
-  simp [arakelovMulHeight₁_eq]
-
-@[simp]
-lemma arakelovLogHeight₁_zero : arakelovLogHeight₁ (0 : K) = 0 := by
-  simp [arakelovLogHeight₁_eq_log_arakelovMulHeight₁]
-
-lemma arakelovMulHeight₁_pos (x : K) : 0 < arakelovMulHeight₁ x :=
-  arakelovMulHeight_pos _
-
-lemma arakelovLogHeight₁_nonneg (x : K) : 0 ≤ arakelovLogHeight₁ x :=
-  arakelovLogHeight_nonneg _
 
 /-!
 The comparison of Layer 0.2, applied to `![x, 1]`. This is the only relation between the two
@@ -385,67 +247,16 @@ open NumberField Real
 
 variable {K : Type*} [Field K] [NumberField K] {ι : Type*} [Fintype ι]
 
-private lemma arakelovMulHeight_aux (a b : { v : ι → K // v ≠ 0 }) (t : K)
-    (h : a.val = t • b.val) :
-    NumberField.arakelovMulHeight a.val = NumberField.arakelovMulHeight b.val :=
-  have ht : t ≠ 0 := by
-    contrapose! h
-    simpa [h] using a.prop
-  h ▸ arakelovMulHeight_smul_eq _ ht
-
-private lemma arakelovLogHeight_aux (a b : { v : ι → K // v ≠ 0 }) (t : K)
-    (h : a.val = t • b.val) :
-    NumberField.arakelovLogHeight a.val = NumberField.arakelovLogHeight b.val := by
-  simp only [arakelovLogHeight_eq_log_arakelovMulHeight, arakelovMulHeight_aux a b t h]
-
 -- We do not expose the bodies of these definitions so that we can keep the "_aux" lemmas
 -- above private.
 
 /-- The multiplicative Arakelov height of a point of projective space over a number field. -/
 noncomputable def arakelovMulHeight (x : Projectivization K (ι → K)) : ℝ :=
-  x.lift (fun r ↦ NumberField.arakelovMulHeight r.val) arakelovMulHeight_aux
-
-/-- The logarithmic Arakelov height of a point of projective space over a number field. -/
-noncomputable def arakelovLogHeight (x : Projectivization K (ι → K)) : ℝ :=
-  x.lift (fun r ↦ NumberField.arakelovLogHeight r.val) arakelovLogHeight_aux
+  x.lift (fun r ↦ NumberField.arakelovMulHeight r.val) fun a b t h ↦ h ▸ arakelovMulHeight_smul_eq _ (by aesop)
 
 lemma arakelovMulHeight_mk {x : ι → K} (hx : x ≠ 0) :
     arakelovMulHeight (mk K x hx) = NumberField.arakelovMulHeight x := by
   rfl
-
-lemma arakelovLogHeight_mk {x : ι → K} (hx : x ≠ 0) :
-    arakelovLogHeight (mk K x hx) = NumberField.arakelovLogHeight x := by
-  rfl
-
-lemma arakelovLogHeight_eq_log_arakelovMulHeight (x : Projectivization K (ι → K)) :
-    arakelovLogHeight x = log (arakelovMulHeight x) := by
-  rw [← x.mk_rep, arakelovMulHeight_mk, arakelovLogHeight_mk,
-    NumberField.arakelovLogHeight_eq_log_arakelovMulHeight]
-
-lemma one_le_arakelovMulHeight (x : Projectivization K (ι → K)) : 1 ≤ arakelovMulHeight x := by
-  rw [← x.mk_rep, arakelovMulHeight_mk]
-  exact NumberField.one_le_arakelovMulHeight _
-
-lemma arakelovMulHeight_pos (x : Projectivization K (ι → K)) : 0 < arakelovMulHeight x :=
-  zero_lt_one.trans_le <| one_le_arakelovMulHeight x
-
-lemma arakelovLogHeight_nonneg (x : Projectivization K (ι → K)) : 0 ≤ arakelovLogHeight x := by
-  rw [arakelovLogHeight_eq_log_arakelovMulHeight]
-  exact log_nonneg x.one_le_arakelovMulHeight
-
-/-- On a subsingleton index type every point of projective space has Arakelov height `1`;
-the projective form of `NumberField.arakelovMulHeight_eq_one_of_subsingleton`, and the degenerate
-case in which the Arakelov and sup-norm normalizations agree. -/
-@[simp]
-lemma arakelovMulHeight_eq_one_of_subsingleton [Subsingleton ι]
-    (x : Projectivization K (ι → K)) : arakelovMulHeight x = 1 := by
-  rw [← x.mk_rep, arakelovMulHeight_mk]
-  exact NumberField.arakelovMulHeight_eq_one_of_subsingleton _
-
-@[simp]
-lemma arakelovLogHeight_eq_zero_of_subsingleton [Subsingleton ι]
-    (x : Projectivization K (ι → K)) : arakelovLogHeight x = 0 := by
-  simp [arakelovLogHeight_eq_log_arakelovMulHeight]
 
 /-!
 #### Comparison of the two normalizations on projective space
@@ -455,85 +266,12 @@ on `Projectivization K (ι → K)`. Both sides are computed on any representativ
 descend to projective space with the same constant.
 -/
 
-end Projectivization
-
 /-!
 ### `positivity` extensions
 
 The Arakelov heights are positive (multiplicative) resp. nonnegative (logarithmic), exactly as
 their sup-norm counterparts in `Mathlib.NumberTheory.Height.Basic`.
 -/
-
-namespace Mathlib.Meta.Positivity
-
-open Lean.Meta Qq
-
-/-- Extension for the `positivity` tactic: `NumberField.arakelovMulHeight` is always positive. -/
-@[positivity NumberField.arakelovMulHeight _]
-meta def evalArakelovMulHeight : PositivityExt where eval {u α} _ pα? e :=
-  match pα? with | none => pure .none | some _ => do
-  match u, α, e with
-  | 0, ~q(ℝ), ~q(@NumberField.arakelovMulHeight $K $KF $KNF $ι $ιF $a) =>
-    assertInstancesCommute
-    pure (.positive q(NumberField.arakelovMulHeight_pos $a))
-  | _, _, _ => throwError "not NumberField.arakelovMulHeight"
-
-/-- Extension for the `positivity` tactic: `NumberField.arakelovLogHeight` is always
-nonnegative. -/
-@[positivity NumberField.arakelovLogHeight _]
-meta def evalArakelovLogHeight : PositivityExt where eval {u α} _ pα? e :=
-  match pα? with | none => pure .none | some _ => do
-  match u, α, e with
-  | 0, ~q(ℝ), ~q(@NumberField.arakelovLogHeight $K $KF $KNF $ι $ιF $a) =>
-    assertInstancesCommute
-    pure (.nonnegative q(NumberField.arakelovLogHeight_nonneg $a))
-  | _, _, _ => throwError "not NumberField.arakelovLogHeight"
-
-/-- Extension for the `positivity` tactic: `NumberField.arakelovMulHeight₁` is always
-positive. -/
-@[positivity NumberField.arakelovMulHeight₁ _]
-meta def evalArakelovMulHeight₁ : PositivityExt where eval {u α} _ pα? e :=
-  match pα? with | none => pure .none | some _ => do
-  match u, α, e with
-  | 0, ~q(ℝ), ~q(@NumberField.arakelovMulHeight₁ $K $KF $KNF $a) =>
-    assertInstancesCommute
-    pure (.positive q(NumberField.arakelovMulHeight₁_pos $a))
-  | _, _, _ => throwError "not NumberField.arakelovMulHeight₁"
-
-/-- Extension for the `positivity` tactic: `NumberField.arakelovLogHeight₁` is always
-nonnegative. -/
-@[positivity NumberField.arakelovLogHeight₁ _]
-meta def evalArakelovLogHeight₁ : PositivityExt where eval {u α} _ pα? e :=
-  match pα? with | none => pure .none | some _ => do
-  match u, α, e with
-  | 0, ~q(ℝ), ~q(@NumberField.arakelovLogHeight₁ $K $KF $KNF $a) =>
-    assertInstancesCommute
-    pure (.nonnegative q(NumberField.arakelovLogHeight₁_nonneg $a))
-  | _, _, _ => throwError "not NumberField.arakelovLogHeight₁"
-
-/-- Extension for the `positivity` tactic: `Projectivization.arakelovMulHeight` is always
-positive. -/
-@[positivity Projectivization.arakelovMulHeight _]
-meta def evalProjArakelovMulHeight : PositivityExt where eval {u α} _ pα? e :=
-  match pα? with | none => pure .none | some _ => do
-  match u, α, e with
-  | 0, ~q(ℝ), ~q(@Projectivization.arakelovMulHeight $K $KF $KNF $ι $ιF $a) =>
-    assertInstancesCommute
-    pure (.positive q(Projectivization.arakelovMulHeight_pos $a))
-  | _, _, _ => throwError "not Projectivization.arakelovMulHeight"
-
-/-- Extension for the `positivity` tactic: `Projectivization.arakelovLogHeight` is always
-nonnegative. -/
-@[positivity Projectivization.arakelovLogHeight _]
-meta def evalProjArakelovLogHeight : PositivityExt where eval {u α} _ pα? e :=
-  match pα? with | none => pure .none | some _ => do
-  match u, α, e with
-  | 0, ~q(ℝ), ~q(@Projectivization.arakelovLogHeight $K $KF $KNF $ι $ιF $a) =>
-    assertInstancesCommute
-    pure (.nonnegative q(Projectivization.arakelovLogHeight_nonneg $a))
-  | _, _, _ => throwError "not Projectivization.arakelovLogHeight"
-
-end Mathlib.Meta.Positivity
 
 /-!
 ### Worked examples
@@ -548,10 +286,3 @@ improved. The last two are rejection tests: they refute the two lemmas of
 and that do not.
 -/
 
-section Examples
-
-open Height NumberField
-
-end Examples
-
-end

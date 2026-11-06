@@ -1,6 +1,5 @@
-module
-public import CCDN.Algebra.PolynomialLinearDescent
-public import CCDN.Algebra.ProjectiveChartIdeal
+import CCDN.Algebra.PolynomialLinearDescent
+import CCDN.Algebra.ProjectiveChartIdeal
 import CCDN.Algebra.HomogeneousLinearDescent
 import CCDN.Algebra.IdealScalarDescent
 import CCDN.Algebra.ProjectionScalarExtension

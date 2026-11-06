@@ -3,9 +3,8 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.LinearAlgebra.FiniteDimensional.Defs
+import Mathlib.LinearAlgebra.FiniteDimensional.Defs
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 import Mathlib.LinearAlgebra.FreeModule.PID
 
@@ -21,8 +20,6 @@ import Mathlib.LinearAlgebra.FreeModule.PID
 * `LinearMap.finrank_span_range_le_of_ker_le`: the same bound by the rank of any linear map whose
   kernel is contained in the kernel of `g`.
 -/
-
-@[expose] public section
 
 namespace LinearMap
 
@@ -48,7 +45,6 @@ theorem finrank_span_range_le {K L V A : Type*} [Field K] [Field L]
     [AddCommGroup A] [Module K A] [Module L A] [IsScalarTower K L A]
     (g : V →ₗ[K] A) :
     Module.finrank L (Submodule.span L (Set.range g)) ≤ Module.finrank K V := by
-  classical
   let b := Module.finBasis K V
   let W := Submodule.span L (Set.range (fun i => g (b i)))
   have hg (v : V) : g v ∈ W := by
@@ -60,11 +56,11 @@ theorem finrank_span_range_le {K L V A : Type*} [Field K] [Field L]
   have he : Submodule.span L (Set.range g) = W := by
     apply le_antisymm
     · exact Submodule.span_le.mpr (by rintro _ ⟨v, rfl⟩; exact hg v)
-    · exact Submodule.span_mono (by rintro _ ⟨i, rfl⟩; exact ⟨b i, rfl⟩)
+    · exact Submodule.span_mono (by grind)
   rw [he]
   have h := finrank_range_le_card (R := L) (fun i => g (b i))
   change Module.finrank L W ≤ Fintype.card (Fin (Module.finrank K V)) at h
-  simpa only [Fintype.card_fin] using h
+  simpa using h
 
 /-- A factorization through a K-linear image bounds the dimension after
 extending the span to L. -/
@@ -75,10 +71,8 @@ theorem finrank_span_range_le_of_ker_le {K L V W A : Type*} [Field K] [Field L]
     (f : V →ₗ[K] W) (g : V →ₗ[K] A) (h : f.ker ≤ g.ker) :
     Module.finrank L (Submodule.span L (Set.range g)) ≤ Module.finrank K f.range := by
   let g' := f.ker.liftQ g h
-  have he : Set.range g' = Set.range g := by
-    rw [← LinearMap.coe_range, ← LinearMap.coe_range]
-    exact congrArg (fun S : Submodule K A => (S : Set A)) (Submodule.range_liftQ _ _ _)
+  have he : Set.range g' = Set.range g :=
+    congrArg (fun S : Submodule K A => (S : Set A)) (Submodule.range_liftQ _ _ _)
   rw [← he]
   exact (finrank_span_range_le g').trans_eq f.quotKerEquivRange.finrank_eq
 
-end LinearMap

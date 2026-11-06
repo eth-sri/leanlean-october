@@ -3,11 +3,10 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.CharZeroOrGT
-public import CCDN.Determinant.GenericPlaneSmoothness
-public import CCDN.ForMathlib.Matrix
+import CCDN.Algebra.CharZeroOrGT
+import CCDN.Determinant.GenericPlaneSmoothness
+import CCDN.ForMathlib.Matrix
 import CCDN.Determinant.ClosedFormIntegerMinor
 import CCDN.Determinant.PlaneMultiplicity
 import CCDN.Noether.ClosedFormScaling
@@ -29,9 +28,7 @@ coordinate algebra to every field, and identifies the resulting prime ideal
 in the polynomial ring over that field.
 -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
 open scoped TensorProduct
 
 /-- An irreducible plane equation with a smooth rational point remains
@@ -54,29 +51,22 @@ theorem irreducible_map_of_smooth_plane_point
     Function.Injective.isDomain e.symm e.symm.injective
   have : J.IsPrime := (Ideal.Quotient.isDomain_iff_prime J).mp inferInstance
   let E := MvPolynomial.algebraTensorAlgEquiv (σ := Fin 2) K L
-  have hmap : J.map E = Ideal.span {MvPolynomial.map (algebraMap K L) f} := by
-    simp only [J, I, Ideal.map_span, Set.image_singleton]
-    congr 1
-    change {E (1 ⊗ₜ[K] f)} = _
-    simp [E]
-  have hp : (Ideal.span {MvPolynomial.map (algebraMap K L) f}).IsPrime := by
-    rw [← hmap]
-    infer_instance
-  have hne : MvPolynomial.map (algebraMap K L) f ≠ 0 := by
-    exact (map_ne_zero_iff _ (MvPolynomial.map_injective _ (algebraMap K L).injective)).mpr
+  have hmap : J.map E = Ideal.span {MvPolynomial.map (algebraMap K L) f} := by simp_all [J, I, Ideal.map_span, Set.image_singleton, E]
+  have hne : MvPolynomial.map (algebraMap K L) f ≠ 0 :=
+    (map_ne_zero_iff _ (MvPolynomial.map_injective _ (algebraMap K L).injective)).mpr
       hf.ne_zero
-  exact ((Ideal.span_singleton_prime hne).mp hp).irreducible
+  exact ((Ideal.span_singleton_prime hne).mp (by
+    rw [← hmap]
+    infer_instance)).irreducible
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial Matrix
 
 /-- A nonzero minor over the original coefficient field, obtained by proving
 geometric irreducibility from the smooth point. -/
-private theorem exists_closedForm_minor_of_smooth_plane_point
+theorem exists_closedForm_minor_of_smooth_plane_point
     {K : Type*} [Field K]
     (d : ℕ) (f : MvPolynomial (Fin 2) K) (hf : Irreducible f)
     (z : Fin 2 → K) (j : Fin 2)
@@ -91,17 +81,17 @@ private theorem exists_closedForm_minor_of_smooth_plane_point
   let φ : K →+* L := algebraMap K L
   let g := bivariateMap φ (bivariatePolynomialEquiv K f)
   have hgi : Irreducible g := by
-    dsimp only [g]
-    rw [bivariatePolynomialEquiv_map, MulEquiv.irreducible_iff (f := bivariatePolynomialEquiv L)]
+    dsimp [g]
+    rw [bivariatePolynomialEquiv_map, MulEquiv.irreducible_iff]
     exact irreducible_map_of_smooth_plane_point f hf z j hz hj
-  have hgm : g.Monic := bivariateMap_monic φ hm
+  have hgm := bivariateMap_monic φ hm
   have hgd : g.degree = d := by
     rw [degree_eq_natDegree hgm.ne_zero, bivariateMap_natDegree_of_monic φ hm, hdeg]
   have hgt : bivariateTotalDegree g ≤ d := by
     apply (bivariateTotalDegree_map_le φ _).trans
-    simpa only [bivariateTotalDegree, AlgEquiv.symm_apply_apply] using htotal
+    simp_all [bivariateTotalDegree, AlgEquiv.symm_apply_apply]
   have hr := closedForm_coefficient_rank_lower d g hgi hgm hgd d hgt
-    ((hchar.map φ).mono (by rw [sq, mul_assoc]))
+    ((hchar.map φ).mono (by grind))
   obtain ⟨a, c, hdet⟩ := Matrix.hasNonzeroMinor_of_le_rank
     (closedFormCoefficientMatrix d g) (r := 2 * d ^ 2 - 1) (by omega)
   refine ⟨a, c, ?_⟩
@@ -109,30 +99,18 @@ private theorem exists_closedForm_minor_of_smooth_plane_point
   apply hdet
   rw [← closedForm_minor_map, he, map_zero]
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma genericPlaneMap_totalDegree_le {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
-    (f : MvPolynomial (Option σ) K) :
-    (genericPlaneMap K F σ f).totalDegree ≤ f.totalDegree := by
-  apply linear_eval₂_totalDegree_le _ _ _ f
-  intro i
-  cases i with
-  | none => simp
-  | some i => exact (totalDegree_mul _ _).trans (by simp)
+variable {K σ : Type*} [Field K] (d : ℕ) (hd : 0 < d) (f : MvPolynomial (Option σ) K) (hf : Irreducible f) (hm : (optionEquivLeft K σ f).Monic) (hdeg : (optionEquivLeft K σ f).natDegree = d)
+include hd hf hm hdeg
 
 /-- Over the fraction field of the slope ring, the generic plane of a positioned irreducible
 equation with a smooth origin is irreducible, smooth at the origin in the first coordinate,
 and monic of the same outer degree. -/
-lemma genericPlaneMap_smooth_monic {K σ : Type*} [Field K]
-    (d : ℕ) (hd : 0 < d) (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
-    (hm : (optionEquivLeft K σ f).Monic)
-    (hdeg : (optionEquivLeft K σ f).natDegree = d)
+lemma genericPlaneMap_smooth_monic
     (hz : eval (0 : Option σ → K) f = 0)
     (hs : eval (0 : Option σ → K) (pderiv none f) ≠ 0) :
     Irreducible (genericPlaneMap K (FractionRing (MvPolynomial σ K)) σ f) ∧
@@ -144,14 +122,13 @@ lemma genericPlaneMap_smooth_monic {K σ : Type*} [Field K]
         (genericPlaneMap K (FractionRing (MvPolynomial σ K)) σ f)).natDegree = d := by
   let F := FractionRing (MvPolynomial σ K)
   let φ : MvPolynomial σ K →+* F := algebraMap (MvPolynomial σ K) F
-  have hx : 0 < (optionEquivLeft K σ f).natDegree := hdeg ▸ hd
-  have hpos : 0 < f.totalDegree := by
+  have hx := hdeg ▸ hd
+  refine ⟨genericPlaneMap_irreducible f hf (by
     rw [natDegree_optionEquivLeft] at hx
-    exact hx.trans_le (degreeOf_le_totalDegree f none)
-  refine ⟨genericPlaneMap_irreducible f hf hpos hm hx, ?_, ?_, ?_, ?_⟩
+    exact hx.trans_le (degreeOf_le_totalDegree f none)) hm hx, ?_, ?_, ?_, ?_⟩
   · rw [genericPlaneMap_eval_zero, hz, map_zero]
   · rw [genericPlaneMap_pderiv, genericPlaneMap_eval_zero]
-    exact (map_ne_zero (algebraMap K F)).mpr hs
+    simp_all
   · rw [genericPlaneMap_bivariate]
     exact bivariateMap_monic φ (genericPlanePolynomial_monic f hm)
   · rw [genericPlaneMap_bivariate, bivariateMap_natDegree_of_monic φ
@@ -160,10 +137,6 @@ lemma genericPlaneMap_smooth_monic {K σ : Type*} [Field K]
 /-- In characteristic zero or greater than 2*d^2, a positioned irreducible hypersurface
 with a smooth origin supplies a nonzero minor polynomial in its plane slopes. -/
 theorem exists_genericPlane_minor
-    {K σ : Type*} [Field K]
-    (d : ℕ) (hd : 0 < d) (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
-    (hm : (optionEquivLeft K σ f).Monic)
-    (hdeg : (optionEquivLeft K σ f).natDegree = d)
     (htotal : f.totalDegree ≤ d) (hchar : CharZeroOrGT K (2 * d ^ 2))
     (hz : eval (0 : Option σ → K) f = 0)
     (hs : eval (0 : Option σ → K) (pderiv none f) ≠ 0) :
@@ -172,10 +145,13 @@ theorem exists_genericPlane_minor
   let F := FractionRing (MvPolynomial σ K)
   obtain ⟨hgi, hgz, hgs, hgm, hgd⟩ := genericPlaneMap_smooth_monic d hd f hf hm hdeg hz hs
   obtain ⟨a, c, hdet⟩ := exists_closedForm_minor_of_smooth_plane_point d _ hgi 0 0
-    hgz hgs hgm hgd ((genericPlaneMap_totalDegree_le f).trans htotal)
+    hgz hgs hgm hgd ((show (genericPlaneMap K F σ f).totalDegree ≤ f.totalDegree by
+        apply linear_eval₂_totalDegree_le _ _ _ f
+        intro i
+        cases i with
+        | none => simp
+        | some i => exact (totalDegree_mul _ _).trans (by simp)).trans htotal)
     (hchar.map (algebraMap K F))
   refine ⟨a, c, fun he ↦ hdet ?_⟩
   rw [genericPlaneMap_bivariate, ← closedForm_minor_map, he, map_zero]
 
-end
-end CCDN

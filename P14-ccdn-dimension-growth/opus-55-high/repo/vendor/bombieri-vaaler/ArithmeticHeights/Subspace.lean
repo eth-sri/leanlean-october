@@ -3,11 +3,10 @@ Copyright (c) 2026 Ralf Stephan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ralf Stephan
 -/
-module
 
-public import ArithmeticHeights.Absolute
-public import ArithmeticHeights.Arakelov
-public import ArithmeticHeights.Plucker
+import ArithmeticHeights.Absolute
+import ArithmeticHeights.Arakelov
+import ArithmeticHeights.Plucker
 
 /-!
 # The height of a linear subspace
@@ -87,8 +86,6 @@ Grassmann coordinates for the first time.
 This is Layer 3.2 of the `ArithmeticHeights` roadmap.
 -/
 
-public section
-
 open Module
 
 /-!
@@ -100,53 +97,9 @@ subsingleton lemma either, although the tuple-level `Height.mulHeight_eq_one_of_
 there.
 -/
 
-namespace Set.powersetCard
-
-/-- A type of `n`-element subsets is a subsingleton exactly when there is at most one such subset:
-`n = 0`, when only `∅` qualifies, or `n` at least the cardinality, when only `Finset.univ` does.
-This is the negation of `Set.powersetCard.nontrivial_iff`. -/
-theorem subsingleton_iff {α : Type*} [Finite α] {n : ℕ} :
-    Subsingleton (Set.powersetCard α n) ↔ n = 0 ∨ Nat.card α ≤ n := by
-  rw [← not_nontrivial_iff_subsingleton, nontrivial_iff]
-  omega
-
-end Set.powersetCard
-
-namespace Projectivization
-
-variable {K : Type*} [Field K] [Height.AdmissibleAbsValues K] {ι : Type*} [Finite ι]
-
-/-- On a subsingleton index type every point of projective space has height `1`; the projective
-form of `Height.mulHeight_eq_one_of_subsingleton`. -/
-@[simp]
-theorem mulHeight_eq_one_of_subsingleton [Subsingleton ι] (x : Projectivization K (ι → K)) :
-    mulHeight x = 1 := by
-  rw [← x.mk_rep, mulHeight_mk]
-  exact Height.mulHeight_eq_one_of_subsingleton _
-
-@[simp]
-theorem logHeight_eq_zero_of_subsingleton [Subsingleton ι] (x : Projectivization K (ι → K)) :
-    logHeight x = 0 := by
-  simp [logHeight_eq_log_mulHeight]
-
-end Projectivization
-
 namespace Submodule
 
 open exteriorPower
-
-section Degenerate
-
-variable {K : Type*} [Field K] {ι : Type*} [Fintype ι] {V : Submodule K (ι → K)}
-
-/-- The index type of the Plücker coordinates collapses to a point exactly in the two degenerate
-ranks. Every `= 1` statement below is this lemma followed by the product formula. -/
-private lemma subsingleton_powersetCard_finrank
-    (h : finrank K V = 0 ∨ Fintype.card ι ≤ finrank K V) :
-    Subsingleton (Set.powersetCard ι (finrank K V)) :=
-  Set.powersetCard.subsingleton_iff.2 (by rwa [Nat.card_eq_fintype_card])
-
-end Degenerate
 
 variable {K : Type*} [Field K] {ι : Type*} [Fintype ι] [LinearOrder ι] {k : ℕ}
   {V : Submodule K (ι → K)}
@@ -154,49 +107,6 @@ variable {K : Type*} [Field K] {ι : Type*} [Fintype ι] [LinearOrder ι] {k : �
 /-!
 ### The height of a subspace
 -/
-
-section Relative
-
-variable [Height.AdmissibleAbsValues K]
-
-/-- **The multiplicative height of a linear subspace of `ι → K`**: the projective height of its
-Plücker point, following Schmidt. The rank is read off `V` rather than supplied, so this is a
-total function of `V`. -/
-noncomputable def mulHeight (V : Submodule K (ι → K)) : ℝ :=
-  Projectivization.mulHeight (V.pluckerPoint rfl)
-
-/-- **The logarithmic height of a linear subspace of `ι → K`.** -/
-noncomputable def logHeight (V : Submodule K (ι → K)) : ℝ :=
-  Projectivization.logHeight (V.pluckerPoint rfl)
-
-theorem logHeight_eq_log_mulHeight (V : Submodule K (ι → K)) :
-    V.logHeight = Real.log V.mulHeight :=
-  Projectivization.logHeight_eq_log_mulHeight _
-
-/-- The zero subspace has height `1`: its exterior power is the line spanned by the empty wedge,
-whose single coordinate is indexed by `∅`. -/
-@[simp]
-theorem mulHeight_bot : (⊥ : Submodule K (ι → K)).mulHeight = 1 :=
-  have := subsingleton_powersetCard_finrank (.inl (finrank_bot K (ι → K)))
-  Projectivization.mulHeight_eq_one_of_subsingleton _
-
-@[simp]
-theorem logHeight_bot : (⊥ : Submodule K (ι → K)).logHeight = 0 := by
-  rw [logHeight_eq_log_mulHeight, mulHeight_bot, Real.log_one]
-
-/-- The whole space has height `1`: its exterior power is the line spanned by the wedge of the
-standard basis, whose single coordinate is indexed by `Finset.univ`. -/
-@[simp]
-theorem mulHeight_top : (⊤ : Submodule K (ι → K)).mulHeight = 1 :=
-  have := subsingleton_powersetCard_finrank (V := (⊤ : Submodule K (ι → K)))
-    (.inr (by rw [finrank_top, finrank_fintype_fun_eq_card]))
-  Projectivization.mulHeight_eq_one_of_subsingleton _
-
-@[simp]
-theorem logHeight_top : (⊤ : Submodule K (ι → K)).logHeight = 0 := by
-  rw [logHeight_eq_log_mulHeight, mulHeight_top, Real.log_one]
-
-end Relative
 
 /-!
 ### The Arakelov height of a subspace
@@ -214,48 +124,24 @@ Bombieri–Gubler 2.8.11. -/
 noncomputable def arakelovMulHeight (V : Submodule K (ι → K)) : ℝ :=
   Projectivization.arakelovMulHeight (V.pluckerPoint rfl)
 
-/-- **The logarithmic Arakelov height of a linear subspace of `ι → K`.** -/
-noncomputable def arakelovLogHeight (V : Submodule K (ι → K)) : ℝ :=
-  Projectivization.arakelovLogHeight (V.pluckerPoint rfl)
-
 theorem arakelovMulHeight_eq_arakelovMulHeight_pluckerPoint (hV : finrank K V = k) :
     V.arakelovMulHeight = Projectivization.arakelovMulHeight (V.pluckerPoint hV) := by
   subst hV
   rfl
 
-theorem arakelovLogHeight_eq_log_arakelovMulHeight (V : Submodule K (ι → K)) :
-    V.arakelovLogHeight = Real.log V.arakelovMulHeight :=
-  Projectivization.arakelovLogHeight_eq_log_arakelovMulHeight _
-
-@[simp]
-theorem arakelovMulHeight_bot : (⊥ : Submodule K (ι → K)).arakelovMulHeight = 1 :=
-  have := subsingleton_powersetCard_finrank (.inl (finrank_bot K (ι → K)))
-  Projectivization.arakelovMulHeight_eq_one_of_subsingleton _
-
-@[simp]
-theorem arakelovLogHeight_bot : (⊥ : Submodule K (ι → K)).arakelovLogHeight = 0 := by
-  rw [arakelovLogHeight_eq_log_arakelovMulHeight, arakelovMulHeight_bot, Real.log_one]
-
-@[simp]
-theorem arakelovMulHeight_top : (⊤ : Submodule K (ι → K)).arakelovMulHeight = 1 :=
-  have := subsingleton_powersetCard_finrank (V := (⊤ : Submodule K (ι → K)))
-    (.inr (by rw [finrank_top, finrank_fintype_fun_eq_card]))
-  Projectivization.arakelovMulHeight_eq_one_of_subsingleton _
-
-@[simp]
-theorem arakelovLogHeight_top : (⊤ : Submodule K (ι → K)).arakelovLogHeight = 0 := by
-  rw [arakelovLogHeight_eq_log_arakelovMulHeight, arakelovMulHeight_top, Real.log_one]
-
 /-- **The Arakelov height of the span of a linearly independent family is the Arakelov height of
 its tuple of maximal minors.** -/
 theorem arakelovMulHeight_span_range {v : Fin k → (ι → K)} (hv : LinearIndependent K v) :
     (span K (Set.range v)).arakelovMulHeight = NumberField.arakelovMulHeight (plucker k v) := by
-  have hV : finrank K (span K (Set.range v)) = k :=
+  have hV :=
     (finrank_span_eq_card hv).trans (Fintype.card_fin k)
-  rw [arakelovMulHeight_eq_arakelovMulHeight_pluckerPoint hV, pluckerPoint_span_range hv hV,
+  rw [arakelovMulHeight_eq_arakelovMulHeight_pluckerPoint hV, (show pluckerPoint (Submodule.span K (Set.range v)) hV =
+        Projectivization.mk K (plucker k v) (plucker_ne_zero hv) by
+      have hfun :=
+        funext fun i ↦ congrArg Subtype.val (Basis.span_apply hv i)
+      rw [pluckerPoint_eq_mk hV (Basis.span hv) (by rw [hfun]; exact plucker_ne_zero hv)]
+      simp),
     Projectivization.arakelovMulHeight_mk]
-
-end Arakelov
 
 /-!
 ### The absolute height of a subspace
@@ -264,54 +150,7 @@ The variant that does not depend on the field the subspace is written over; it i
 literature's `h(V)` is, and one of the six Northcott statements of 3.7.
 -/
 
-section Absolute
-
-variable [CharZero K] [Algebra.IsAlgebraic ℚ K]
-
-/-- **The absolute multiplicative height of a linear subspace of `ι → K`**, `h(V)` of
-Bombieri–Gubler 2.8.4. -/
-noncomputable def absMulHeight (V : Submodule K (ι → K)) : ℝ :=
-  Projectivization.absMulHeight (V.pluckerPoint rfl)
-
-/-- **The absolute logarithmic height of a linear subspace of `ι → K`.** -/
-noncomputable def absLogHeight (V : Submodule K (ι → K)) : ℝ :=
-  Projectivization.absLogHeight (V.pluckerPoint rfl)
-
-theorem absLogHeight_eq_log_absMulHeight (V : Submodule K (ι → K)) :
-    V.absLogHeight = Real.log V.absMulHeight :=
-  Projectivization.absLogHeight_eq_log_absMulHeight _
-
-@[simp]
-theorem absMulHeight_bot : (⊥ : Submodule K (ι → K)).absMulHeight = 1 :=
-  have := subsingleton_powersetCard_finrank (.inl (finrank_bot K (ι → K)))
-  Projectivization.absMulHeight_eq_one_of_subsingleton _
-
-@[simp]
-theorem absLogHeight_bot : (⊥ : Submodule K (ι → K)).absLogHeight = 0 := by
-  rw [absLogHeight_eq_log_absMulHeight, absMulHeight_bot, Real.log_one]
-
-@[simp]
-theorem absMulHeight_top : (⊤ : Submodule K (ι → K)).absMulHeight = 1 :=
-  have := subsingleton_powersetCard_finrank (V := (⊤ : Submodule K (ι → K)))
-    (.inr (by rw [finrank_top, finrank_fintype_fun_eq_card]))
-  Projectivization.absMulHeight_eq_one_of_subsingleton _
-
-@[simp]
-theorem absLogHeight_top : (⊤ : Submodule K (ι → K)).absLogHeight = 0 := by
-  rw [absLogHeight_eq_log_absMulHeight, absMulHeight_top, Real.log_one]
-
-end Absolute
-
-end Submodule
-
 /-!
 ### Worked examples
 -/
 
-section Examples
-
-open Submodule
-
-end Examples
-
-end

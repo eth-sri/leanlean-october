@@ -3,17 +3,15 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.FieldTheory.IsAlgClosed.Basic
-public import Mathlib.FieldTheory.RatFunc.Basic
-public import Mathlib.RingTheory.Derivation.DifferentialRing
-public import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.FieldTheory.IsAlgClosed.Basic
+import Mathlib.FieldTheory.RatFunc.Basic
+import Mathlib.RingTheory.Derivation.DifferentialRing
+import Mathlib.RingTheory.SimpleRing.Principal
 import Mathlib.FieldTheory.RatFunc.AsPolynomial
 
 /-! The formal derivative on a rational function field and its constant field. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open Polynomial
@@ -30,7 +28,7 @@ def rationalDerivativeFraction (p q : K[X]) : RatFunc K :=
 denominator by the same nonzero polynomial. -/
 lemma rationalDerivativeFraction_mul {p q a : K[X]} (hq : q ≠ 0) (ha : a ≠ 0) :
     rationalDerivativeFraction (a * p) (a * q) = rationalDerivativeFraction p q := by
-  simp only [rationalDerivativeFraction, derivative_mul, map_add, map_mul]
+  simp [rationalDerivativeFraction, derivative_mul, map_add, map_mul]
   field_simp [RatFunc.algebraMap_ne_zero hq, RatFunc.algebraMap_ne_zero ha]
   ring
 
@@ -38,7 +36,7 @@ lemma rationalDerivativeFraction_mul {p q a : K[X]} (hq : q ≠ 0) (ha : a ≠ 0
 def rationalDerivative (x : RatFunc K) : RatFunc K :=
   x.liftOn' rationalDerivativeFraction (fun _hq _ha => rationalDerivativeFraction_mul _hq _ha)
 
-private lemma rationalDerivative_div (p q : K[X]) :
+lemma rationalDerivative_div (p q : K[X]) :
     rationalDerivative (algebraMap K[X] (RatFunc K) p / algebraMap K[X] (RatFunc K) q) =
       rationalDerivativeFraction p q := by
   rw [rationalDerivative, RatFunc.liftOn'_div]
@@ -51,8 +49,11 @@ lemma rationalDerivative_polynomial (p : K[X]) :
       algebraMap K[X] (RatFunc K) p.derivative := by
   simpa [rationalDerivativeFraction] using rationalDerivative_div p 1
 
+section
+variable (x y : RatFunc K)
+
 /-- The formal rational derivative is additive. -/
-lemma rationalDerivative_add (x y : RatFunc K) :
+lemma rationalDerivative_add :
     rationalDerivative (x + y) = rationalDerivative x + rationalDerivative y := by
   induction x using RatFunc.induction_on with | _ p q hq
   induction y using RatFunc.induction_on with | _ r s hs
@@ -60,23 +61,27 @@ lemma rationalDerivative_add (x y : RatFunc K) :
   have hs' := RatFunc.algebraMap_ne_zero hs
   rw [div_add_div _ _ hq' hs', ← map_mul, ← map_mul, ← map_add, ← map_mul,
     rationalDerivative_div, rationalDerivative_div, rationalDerivative_div]
-  simp only [rationalDerivativeFraction, derivative_mul, map_add, map_mul]
+  simp [rationalDerivativeFraction, derivative_mul, map_add, map_mul]
   field_simp
   ring
 
 /-- The formal rational derivative satisfies the Leibniz rule. -/
-lemma rationalDerivative_mul (x y : RatFunc K) :
+lemma rationalDerivative_mul :
     rationalDerivative (x * y) = x * rationalDerivative y + y * rationalDerivative x := by
   induction x using RatFunc.induction_on with | _ p q hq
   induction y using RatFunc.induction_on with | _ r s hs
   rw [div_mul_div_comm, ← map_mul, ← map_mul,
     rationalDerivative_div, rationalDerivative_div, rationalDerivative_div]
-  simp only [rationalDerivativeFraction, derivative_mul, map_add, map_mul]
+  simp [rationalDerivativeFraction, derivative_mul, map_add, map_mul]
   field_simp
   ring
 
+end
+
+variable (K : Type*) [Field K]
+
 /-- Rational formal differentiation as a derivation over the coefficient field. -/
-def rationalDerivation (K : Type*) [Field K] : Derivation K (RatFunc K) (RatFunc K) where
+def rationalDerivation : Derivation K (RatFunc K) (RatFunc K) where
   toFun := rationalDerivative
   map_add' := rationalDerivative_add
   map_smul' c x := by
@@ -92,9 +97,7 @@ def rationalDerivation (K : Type*) [Field K] : Derivation K (RatFunc K) (RatFunc
 /-- The differential field structure on `RatFunc K` given by formal rational differentiation; it
 is kept explicit to avoid introducing a competing global instance on rational functions. -/
 @[reducible]
-def rationalDifferential (K : Type*) [Field K] : Differential (RatFunc K) := by
+def rationalDifferential : Differential (RatFunc K) := by
   let : Algebra ℤ (RatFunc K) := Ring.toIntAlgebra _
   exact ⟨(rationalDerivation K).restrictScalars ℤ⟩
 
-end
-end CCDN

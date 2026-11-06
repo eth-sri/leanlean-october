@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
-public import Mathlib.RingTheory.MvPolynomial.Homogeneous
+import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
+import Mathlib.RingTheory.MvPolynomial.Homogeneous
 import Mathlib.Algebra.MvPolynomial.CommRing
 import Mathlib.Tactic.Polynomial.Basic
 
@@ -14,9 +13,8 @@ import Mathlib.Tactic.Polynomial.Basic
 polynomial parameters. This property survives determinant expansion and
 extraction of any parameter coefficient. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
 /-- A polynomial `f` in the variables `σ` with coefficients in `MvPolynomial τ R` is coefficientwise
@@ -29,11 +27,6 @@ def CoefficientwiseHomogeneous {R σ τ : Type*} [CommRing R]
 namespace CoefficientwiseHomogeneous
 
 variable {R σ τ : Type*} [CommRing R]
-
-/-- The zero polynomial is coefficientwise homogeneous of every degree. -/
-lemma zero (d : ℕ) : CoefficientwiseHomogeneous (0 : MvPolynomial σ (MvPolynomial τ R)) d := by
-  intro m
-  simpa only [AddMonoidAlgebra.coeff_zero, Finsupp.zero_apply] using isHomogeneous_zero τ R d
 
 /-- The negation of a coefficientwise homogeneous polynomial of degree `d` is coefficientwise
 homogeneous of degree `d`. -/
@@ -76,7 +69,7 @@ lemma C_of_isHomogeneous {f : MvPolynomial τ R} {d : ℕ} (hf : f.IsHomogeneous
 
 /-- The polynomial `1` is coefficientwise homogeneous of degree `0`. -/
 lemma one : CoefficientwiseHomogeneous (1 : MvPolynomial σ (MvPolynomial τ R)) 0 := by
-  simpa only [map_one] using C_of_isHomogeneous (σ := σ) (isHomogeneous_one τ R)
+  simpa using C_of_isHomogeneous (isHomogeneous_one τ R)
 
 /-- A polynomial over `R`, with its coefficients viewed as constants of `MvPolynomial τ R`, is
 coefficientwise homogeneous of degree `0`. -/
@@ -94,7 +87,7 @@ lemma prod {ι : Type*} (s : Finset ι) (f : ι → MvPolynomial σ (MvPolynomia
     CoefficientwiseHomogeneous (∏ i ∈ s, f i) (∑ i ∈ s, d i) := by
   classical
   induction s using Finset.induction_on with
-  | empty => simpa only [Finset.prod_empty, Finset.sum_empty] using one (R := R) (σ := σ) (τ := τ)
+  | empty => simpa using one
   | @insert a s ha ih =>
     rw [Finset.prod_insert ha, Finset.sum_insert ha]
     exact (hf a (Finset.mem_insert_self _ _)).mul
@@ -105,20 +98,15 @@ is coefficientwise homogeneous of degree `r`. -/
 lemma det {r : ℕ} (M : Matrix (Fin r) (Fin r) (MvPolynomial σ (MvPolynomial τ R)))
     (hM : ∀ i j, CoefficientwiseHomogeneous (M i j) 1) :
     CoefficientwiseHomogeneous M.det r := by
-  classical
   rw [Matrix.det_apply']
   apply sum
   intro π _
   have hp := prod Finset.univ (fun i => M (π i) i) (fun _ => 1) (fun i _ => hM _ i)
-  have hp' : CoefficientwiseHomogeneous (∏ i, M (π i) i) r := by
-    simpa only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, smul_eq_mul, mul_one] using hp
+  have hp' : CoefficientwiseHomogeneous (∏ i, M (π i) i) r := by simp_all
   have hc : CoefficientwiseHomogeneous
       (MvPolynomial.C (MvPolynomial.C ((Equiv.Perm.sign π : ℤ) : R)) :
         MvPolynomial σ (MvPolynomial τ R)) 0 :=
     C_of_isHomogeneous (isHomogeneous_C τ _)
   have hh := hc.mul hp'
-  simpa only [zero_add, map_intCast] using hh
+  simpa using hh
 
-end CoefficientwiseHomogeneous
-end
-end CCDN

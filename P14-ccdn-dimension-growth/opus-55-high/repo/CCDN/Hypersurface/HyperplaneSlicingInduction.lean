@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Hypersurface.IntegerHyperplaneSlices
-public import CCDN.Statements
+import CCDN.Hypersurface.IntegerHyperplaneSlices
+import CCDN.Statements
 import CCDN.Hypersurface.GoodHyperplane
 import CCDN.Hypersurface.HyperplaneSliceCoordinates
 import CCDN.Hypersurface.IntegerGoodHyperplaneSlices
@@ -19,72 +18,14 @@ Integer equations for every parallel level of a good hyperplane whose
 normal has cubic degree height.
 -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
-
-private theorem exists_good_integer_hyperplane_slices {n : ℕ}
-    (f : MvPolynomial (Option (Fin (3 + n))) ℤ)
-    (hir : HasAbsIrreducibleTopForm f) (hd : 2 ≤ f.totalDegree) :
-    ∃ (D : ℤ) (a : Fin (3 + n) → ℤ) (g : ℤ → MvPolynomial (Fin (3 + n)) ℤ),
-      D ≠ 0 ∧ |D| ≤ (f.totalDegree ^ 3 : ℕ) ∧
-      (∀ i, |a i| ≤ (f.totalDegree ^ 3 : ℕ)) ∧
-      ∀ k : ℤ, (g k).totalDegree = f.totalDegree ∧
-        HasAbsIrreducibleTopForm (g k) ∧
-        ∀ x : Option (Fin (3 + n)) → ℤ,
-          D * x none - ∑ i, a i * x (some i) = k →
-          eval x f = 0 → eval (fun i => x (some i)) (g k) = 0 := by
-  obtain ⟨D, a, hD, hDb, hab, _, hgood⟩ := exists_geometrically_good_hyperplane
-    (homogeneousComponent f.totalDegree f) f.totalDegree hd
-    (homogeneousComponent_isHomogeneous _ _) hir
-  obtain ⟨g, hg⟩ := exists_integer_hyperplane_slice_models f D a hD hgood
-  exact ⟨D, a, g, hD, hDb, hab, hg⟩
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open MvPolynomial
-
-/-- A normal of height at most `d^3` costs three powers of the degree
-and one power of the box radius in a dimension induction. -/
-private theorem count_le_of_good_integer_hyperplane_slices {n d e r : ℕ}
-    (X : Set (RatPoint (n + 1))) (a : IntPoint (n + 1))
-    (j : Fin (n + 1)) (hj : a j ≠ 0) (Y : ℤ → Set (RatPoint n))
-    (hd : 1 ≤ d) {B C : ℝ} (hB : 1 ≤ B) (hC : 0 ≤ C)
-    (ha : InBox a ((d : ℝ) ^ 3))
-    (hmap : ∀ k x, x ∈ integerSlicePoints X B a k →
-      rationalPoint (deleteIntegerCoordinate j x) ∈ Y k)
-    (hcount : ∀ k, (count (Y k) B : ℝ) ≤ C * (d : ℝ) ^ e * B ^ r) :
-    (count X B : ℝ) ≤
-      (2 * (n + 1 : ℕ) + 1) * C * (d : ℝ) ^ (e + 3) * B ^ (r + 1) := by
-  have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg _
-  have hB0 : 0 ≤ B := by linarith
-  have hK : 0 ≤ C * (d : ℝ) ^ e * B ^ r := by positivity
-  have hD : 1 ≤ (d : ℝ) ^ 3 := one_le_pow₀ hdR
-  have hDB : 1 ≤ (d : ℝ) ^ 3 * B := one_le_mul_of_one_le_of_one_le hD hB
-  have hfactor :
-      2 * (n + 1 : ℕ) * ((d : ℝ) ^ 3) * B + 1 ≤
-        (2 * (n + 1 : ℕ) + 1) * (d : ℝ) ^ 3 * B := by
-    nlinarith
-  calc
-    _ ≤ (2 * (n + 1 : ℕ) * ((d : ℝ) ^ 3) * B + 1) *
-        (C * (d : ℝ) ^ e * B ^ r) :=
-      count_le_of_integer_hyperplane_slices X a j hj Y
-        (by positivity) hB0 hK ha hmap hcount
-    _ ≤ ((2 * (n + 1 : ℕ) + 1) * (d : ℝ) ^ 3 * B) *
-        (C * (d : ℝ) ^ e * B ^ r) := mul_le_mul_of_nonneg_right hfactor hK
-    _ = _ := by rw [pow_add, pow_succ]; ring
 
 /-- One bounded good hyperplane slice: affine dimension growth in `n + 3` variables
 gives it in `n + 4` variables, at the cost of three powers of the degree and one power of
 the box radius. -/
-private theorem AffineHypersurfaceGrowth.succ {n e : ℕ} (h : AffineHypersurfaceGrowth n e) :
+theorem AffineHypersurfaceGrowth.succ {n e : ℕ} (h : AffineHypersurfaceGrowth n e) :
     AffineHypersurfaceGrowth (n + 1) (e + 3) := by
-  classical
   obtain ⟨C, hC, hbound⟩ := h
   rw [show n + 3 = 3 + n by omega] at hbound
   unfold AffineHypersurfaceGrowth
@@ -94,15 +35,21 @@ private theorem AffineHypersurfaceGrowth.succ {n e : ℕ} (h : AffineHypersurfac
   let indexEquiv : Fin (3 + n + 1) ≃ Option (Fin (3 + n)) := finSuccEquiv' 0
   let F := rename indexEquiv f
   have hFdegree : F.totalDegree = f.totalDegree := totalDegree_renameEquiv indexEquiv f
-  have hFir : HasAbsIrreducibleTopForm F := integer_top_irreducible_rename indexEquiv f hir
-  obtain ⟨D, a, g, hD, hDb, hab, hg⟩ :=
-    exists_good_integer_hyperplane_slices F hFir (by rw [hFdegree]; omega)
+  have hFir : HasAbsIrreducibleTopForm (rename indexEquiv f) := by
+    dsimp [HasAbsIrreducibleTopForm, AbsolutelyIrreducible]
+    rw [show (rename indexEquiv f).totalDegree = f.totalDegree from totalDegree_renameEquiv indexEquiv f,
+      ← rename_homogeneousComponent, map_rename]
+    exact (MulEquiv.irreducible_iff (f := renameEquiv _ indexEquiv)).mpr hir
+  obtain ⟨D, a, hD, hDb, hab, hgood⟩ := exists_geometrically_good_hyperplane
+    (homogeneousComponent F.totalDegree F) F.totalDegree (by grind)
+    (homogeneousComponent_isHomogeneous _ _) hFir
+  obtain ⟨g, hg⟩ := exists_integer_hyperplane_slice_models F D a hD hgood
   rw [hFdegree] at hDb hab
   let b := graphIntegerNormal D a
-  have hb0 : b 0 ≠ 0 := hD
+  have hb0 := hD
   have hbheight (i : Fin (3 + n + 1)) :
-      |(b i : ℝ)| ≤ (f.totalDegree : ℝ) ^ 3 := by
-    simpa only [Nat.cast_pow] using graphIntegerNormal_height D a hDb hab i
+      |(b i : ℝ)| ≤ f.totalDegree ^ 3 := by
+    simpa using graphIntegerNormal_height D a hDb hab i
   let Y : ℤ → Set (RatPoint (3 + n)) :=
     fun k => zeroLocus (map (Int.castRingHom ℚ) (g k))
   have hmap (k : ℤ) (x : IntPoint (3 + n + 1))
@@ -111,11 +58,33 @@ private theorem AffineHypersurfaceGrowth.succ {n e : ℕ} (h : AffineHypersurfac
     integer_slice_map_of_option_equations f D a g (fun k => (hg k).2.2) B k x hx
   have hcount (k : ℤ) :
       (count (Y k) B : ℝ) ≤ C * (f.totalDegree : ℝ) ^ e * B ^ (n + 1) := by
-    have hdegree : (g k).totalDegree = f.totalDegree := (hg k).1.trans hFdegree
-    simpa only [hdegree, Y] using hbound (g k) (hg k).2.1 (by omega) B hB
-  exact count_le_of_good_integer_hyperplane_slices
-    (zeroLocus (map (Int.castRingHom ℚ) f)) b 0 hb0 Y
-    (show 1 ≤ f.totalDegree by omega) hB hC.le hbheight hmap hcount
+    have hdegree := (hg k).1.trans hFdegree
+    simpa [hdegree, Y] using hbound (g k) (hg k).2.1 (by omega) B hB
+  let X := zeroLocus (map (Int.castRingHom ℚ) f)
+  have hd0 : (0 : ℝ) ≤ f.totalDegree := Nat.cast_nonneg _
+  have hB0 : 0 ≤ B := by linarith
+  have hK : 0 ≤ C * (f.totalDegree : ℝ) ^ e * B ^ (n + 1) := by positivity
+  have hD : 1 ≤ (f.totalDegree : ℝ) ^ 3 := one_le_pow₀ (by bound)
+  have hDB := one_le_mul_of_one_le_of_one_le hD hB
+  have hfactor :
+      2 * (3 + n + 1 : ℕ) * (f.totalDegree ^ 3) * B + 1 ≤
+        (2 * (3 + n + 1 : ℕ) + 1) * (f.totalDegree : ℝ) ^ 3 * B := by
+    nlinarith
+  rw [(show count X B = ∑ k ∈ integerSliceLevels X B b, (integerSlicePoints X B b k).card by
+      exact Finset.card_eq_sum_card_image (integerLinearLevel b) (integralPoints X B)), Nat.cast_sum]
+  calc
+    _ ≤ ∑ _k ∈ integerSliceLevels X B b, C * (f.totalDegree : ℝ) ^ e * B ^ (n + 1) := by
+      apply Finset.sum_le_sum
+      intro k _
+      have hh : ((integerSlicePoints X B b k).card : ℝ) ≤ (count (Y k) B : ℝ) := by
+        exact_mod_cast integerSlicePoints_card_le_count X (Y k) B b 0 hb0 k (hmap k)
+      grind
+    _ = ((integerSliceLevels X B b).card : ℝ) * (C * f.totalDegree ^ e * B ^ (n + 1)) := by simp
+    _ ≤ (2 * (3 + n + 1 : ℕ) * (f.totalDegree ^ 3) * B + 1) * (C * f.totalDegree ^ e * B ^ (n + 1)) :=
+      mul_le_mul_of_nonneg_right (integerSliceLevels_card_le X b (by positivity) hB0 hbheight) hK
+    _ ≤ ((2 * (3 + n + 1 : ℕ) + 1) * f.totalDegree ^ 3 * B) *
+        (C * (f.totalDegree : ℝ) ^ e * B ^ (n + 1)) := mul_le_mul_of_nonneg_right hfactor hK
+    _ = _ := by grind
 
 /-- Bounded good hyperplanes lift a surface bound with degree exponent `e` to every
 higher dimension; each slice adds three to the exponent. -/
@@ -124,5 +93,3 @@ theorem affineHypersurfaceGrowth_of_surface {e : ℕ} (h : AffineHypersurfaceGro
   | 0 => h
   | n + 1 => (affineHypersurfaceGrowth_of_surface h n).succ
 
-end
-end CCDN

@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.Data.Finsupp.MonomialOrder.DegLex
-public import Mathlib.RingTheory.MvPolynomial.MonomialOrder
+import Mathlib.Data.Finsupp.MonomialOrder.DegLex
+import Mathlib.RingTheory.MvPolynomial.MonomialOrder
 import Mathlib.RingTheory.MvPolynomial.Groebner
 import Mathlib.RingTheory.MvPolynomial.MonomialOrder.DegLex
 
@@ -33,31 +32,33 @@ degree at most that of the original polynomial.
   polynomial supported on standard exponents for `degLex`, of no larger total degree.
 -/
 
-@[expose] public section
-
 namespace Ideal
 
 open MvPolynomial
 
 variable {K σ : Type*} [Field K]
 
+section
+variable (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ)
+
 /-- Exponents not divisible by any leading exponent of a nonzero ideal element. -/
-def standardExponents (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) : Set (σ →₀ ℕ) :=
+def standardExponents : Set (σ →₀ ℕ) :=
   {a | ∀ f ∈ I, f ≠ 0 → ¬ m.degree f ≤ a}
 
 /-- Standard exponents form a lower set. -/
-lemma isLowerSet_standardExponents (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) :
+lemma isLowerSet_standardExponents :
     IsLowerSet (standardExponents I m) := by
   intro a b hab hb f hf hn hfa
   exact hb f hf hn (hfa.trans hab)
 
 /-- A standard polynomial belonging to the ideal is zero. -/
 lemma eq_zero_of_mem_restrictSupport_standardExponents
-    (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ)
     {f : MvPolynomial σ K} (hf : f ∈ restrictSupport K (standardExponents I m))
     (hI : f ∈ I) : f = 0 := by
   by_contra hn
   exact (hf (m.degree_mem_support hn)) f hI hn le_rfl
+
+end
 
 /-- Division with respect to `degLex` gives a standard representative modulo `I` of no larger
 total degree. -/
@@ -66,7 +67,6 @@ theorem exists_standard_representative_degLex [LinearOrder σ] [WellFoundedGT σ
     ∃ r : MvPolynomial σ K,
       r ∈ restrictSupport K (standardExponents I MonomialOrder.degLex) ∧
       r.totalDegree ≤ f.totalDegree ∧ f - r ∈ I := by
-  classical
   let B : Set (MvPolynomial σ K) := {b | b ∈ I ∧ b ≠ 0}
   obtain ⟨g, r, hsum, hdeg, hstd⟩ :=
     MonomialOrder.div_set (m := MonomialOrder.degLex)
@@ -75,27 +75,26 @@ theorem exists_standard_representative_degLex [LinearOrder σ] [WellFoundedGT σ
   · intro a ha b hb hn
     exact hstd a ha b ⟨hb, hn⟩
   · have hg : Finsupp.linearCombination (MvPolynomial σ K)
-        (fun b : B => b.val) g ∈ restrictTotalDegree σ K f.totalDegree := by
+        (fun b => b.val) g ∈ restrictTotalDegree σ K f.totalDegree := by
       rw [Finsupp.linearCombination_apply, Finsupp.sum]
       apply Submodule.sum_mem
       intro b _
       rw [smul_eq_mul, mul_comm, mem_restrictTotalDegree]
       exact degLex_totalDegree_monotone (hdeg b)
     have hr : r = f - Finsupp.linearCombination (MvPolynomial σ K)
-        (fun b : B => b.val) g := by rw [hsum]; ring
+        (fun b => b.val) g := by grind
     rw [← mem_restrictTotalDegree, hr]
     exact Submodule.sub_mem _ (by rw [mem_restrictTotalDegree]) hg
   · have hg : Finsupp.linearCombination (MvPolynomial σ K)
-        (fun b : B => b.val) g ∈ I := by
+        (fun b => b.val) g ∈ I := by
       rw [Finsupp.linearCombination_apply, Finsupp.sum]
       apply I.sum_mem
       intro b _
       exact I.mul_mem_left _ b.property.1
-    simpa only [hsum, add_sub_cancel_right] using hg
+    grind
 
 /-- Standard exponents of total degree at most `N`. -/
 def boundedStandardExponents (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) (N : ℕ) :
     Set (σ →₀ ℕ) :=
   {a | a ∈ standardExponents I m ∧ a.degree ≤ N}
 
-end Ideal

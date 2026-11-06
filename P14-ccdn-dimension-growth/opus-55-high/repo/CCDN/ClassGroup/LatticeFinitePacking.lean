@@ -3,92 +3,75 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.Algebra.Module.ZLattice.Covolume
+import Mathlib.Algebra.Module.ZLattice.Covolume
 
 /-! A finite set of lattice points gives disjoint translates of a
 fundamental domain. A bounded basis therefore gives an explicit
 finite-radius volume bound, without an asymptotic onset depending on the
 lattice. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
 open MeasureTheory MeasureTheory.Measure
 open scoped Pointwise NNReal
 
-private theorem fundamentalDomain_finite_translate_packing
+theorem fundamentalDomain_finite_translate_packing
     {G E : Type*} [AddGroup G] [MeasurableSpace E] [AddAction G E]
     [MeasurableConstVAdd G E] (μ : Measure E) [VAddInvariantMeasure G E μ]
     {F U : Set E} (hF : IsAddFundamentalDomain G F μ)
     (s : Finset G) (hs : ∀ g ∈ s, g +ᵥ F ⊆ U) :
     (s.card : ENNReal) * μ F ≤ μ U := by
-  classical
-  have hd : Pairwise (Function.onFun (AEDisjoint μ) (fun g : s ↦ g.val +ᵥ F)) := by
+  have hm := measure_iUnion₀ (by
     intro a b hab
     apply hF.aedisjoint
-    exact fun h ↦ hab (Subtype.ext h)
-  have hm := measure_iUnion₀ hd (fun g : s ↦ hF.nullMeasurableSet.vadd g.val)
-  have he : (∑' g : s, μ (g.val +ᵥ F)) = (s.card : ENNReal) * μ F := by
-    simp [measure_vadd, tsum_fintype]
+    grind) (fun g : s ↦ hF.nullMeasurableSet.vadd g.val)
+  have he : (∑' g : s, μ (g.val +ᵥ F)) = s.card * μ F := by
+    simp
   rw [he] at hm
   rw [← hm]
   apply measure_mono
   exact Set.iUnion_subset (fun g ↦ hs g.val g.property)
 
-private theorem basis_lattice_finite_packing
-    {E ι : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    [MeasurableSpace E] [BorelSpace E] [Fintype ι]
-    (b : Module.Basis ι ℝ E) (μ : Measure E) [μ.IsAddHaarMeasure]
-    (s : Finset (Submodule.span ℤ (Set.range b))) {B : ℝ}
-    (hs : ∀ x ∈ s, ‖(x : E)‖ ≤ B) :
-    (s.card : ENNReal) * μ (ZSpan.fundamentalDomain b) ≤
-      μ (Metric.closedBall (0 : E) (B + ∑ i, ‖b i‖)) := by
-  have : MeasurableVAdd (Submodule.span ℤ (Set.range b)) E :=
-    inferInstanceAs (MeasurableVAdd (Submodule.span ℤ (Set.range b)).toAddSubgroup E)
-  have : VAddInvariantMeasure (Submodule.span ℤ (Set.range b)) E μ :=
-    inferInstanceAs (VAddInvariantMeasure (Submodule.span ℤ (Set.range b)).toAddSubgroup E μ)
-  apply fundamentalDomain_finite_translate_packing μ
-    (ZSpan.isAddFundamentalDomain b μ) s
-  intro x hx y hy
-  obtain ⟨z, hz, rfl⟩ := Set.mem_vadd_set.mp hy
-  apply mem_closedBall_zero_iff.mpr
-  change ‖(x : E) + z‖ ≤ _
-  have hzbound : ‖z‖ ≤ ∑ i, ‖b i‖ := by
-    rw [← ZSpan.fract_eq_self.mpr hz]
-    exact ZSpan.norm_fract_le b z
-  exact (norm_add_le _ _).trans (add_le_add (hs x hx) hzbound)
+section
+variable {E ι : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [MeasurableSpace E] [BorelSpace E] [Fintype ι] (b : Module.Basis ι ℝ E) (μ : Measure E) [μ.IsAddHaarMeasure] {B : ℝ}
 
-private theorem basis_lattice_finite_packing_real
-    {E ι : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    [MeasurableSpace E] [BorelSpace E] [Fintype ι] [FiniteDimensional ℝ E]
-    (b : Module.Basis ι ℝ E) (μ : Measure E) [μ.IsAddHaarMeasure]
-    (s : Finset (Submodule.span ℤ (Set.range b))) {B : ℝ}
+theorem basis_lattice_finite_packing_real
+    [FiniteDimensional ℝ E]
+    (s : Finset (Submodule.span ℤ (Set.range b)))
     (hs : ∀ x ∈ s, ‖(x : E)‖ ≤ B) :
     (s.card : ℝ) * μ.real (ZSpan.fundamentalDomain b) ≤
       μ.real (Metric.closedBall (0 : E) (B + ∑ i, ‖b i‖)) := by
-  have hh := basis_lattice_finite_packing b μ s hs
-  have hfin : μ (Metric.closedBall (0 : E) (B + ∑ i, ‖b i‖)) ≠ ⊤ := by
-    exact ne_of_lt (isCompact_closedBall (0 : E) _).measure_lt_top
+  have hh : s.card * μ (ZSpan.fundamentalDomain b) ≤
+      μ (Metric.closedBall (0 : E) (B + ∑ i, ‖b i‖)) := by
+    have : MeasurableVAdd (Submodule.span ℤ (Set.range b)) E :=
+      inferInstanceAs (MeasurableVAdd (Submodule.span ℤ (Set.range b)).toAddSubgroup E)
+    have : VAddInvariantMeasure (Submodule.span ℤ (Set.range b)) E μ :=
+      inferInstanceAs (VAddInvariantMeasure (Submodule.span ℤ (Set.range b)).toAddSubgroup E μ)
+    apply fundamentalDomain_finite_translate_packing μ
+      (ZSpan.isAddFundamentalDomain b μ) s
+    intro x hx y hy
+    obtain ⟨z, hz, rfl⟩ := Set.mem_vadd_set.mp hy
+    apply mem_closedBall_zero_iff.mpr
+    exact (norm_add_le _ _).trans (add_le_add (hs x hx) (by
+      rw [← ZSpan.fract_eq_self.mpr hz]
+      exact ZSpan.norm_fract_le b z))
+  have hfin : μ (Metric.closedBall (0 : E) (B + ∑ i, ‖b i‖)) ≠ ⊤ :=
+    ne_of_lt (isCompact_closedBall (0 : E) _).measure_lt_top
   have ht := ENNReal.toReal_mono hfin hh
-  simpa only [ENNReal.toReal_mul, ENNReal.toReal_natCast, Measure.real] using ht
+  simpa [ENNReal.toReal_mul, ENNReal.toReal_natCast, Measure.real] using ht
 
 /-- A single coset of the lattice generated by `b` has a packing bound:
 subtracting one point moves the whole finite fiber into that lattice. -/
-private theorem basis_lattice_coset_finite_packing
-    {E ι : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    [MeasurableSpace E] [BorelSpace E] [Fintype ι] [FiniteDimensional ℝ E]
-    (b : Module.Basis ι ℝ E) (μ : Measure E) [μ.IsAddHaarMeasure]
-    (s : Finset E) {B : ℝ}
+theorem basis_lattice_coset_finite_packing
+    [FiniteDimensional ℝ E]
+    (s : Finset E)
     (hs : ∀ x ∈ s, ‖x‖ ≤ B)
     (hcoset : ∀ x ∈ s, ∀ y ∈ s, x - y ∈ Submodule.span ℤ (Set.range b)) :
     (s.card : ℝ) * μ.real (ZSpan.fundamentalDomain b) ≤
       μ.real (Metric.closedBall (0 : E) (2 * B + ∑ i, ‖b i‖)) := by
   classical
   obtain rfl | ⟨y, hy⟩ := s.eq_empty_or_nonempty
-  · simp only [Finset.card_empty, Nat.cast_zero, zero_mul]
-    exact ENNReal.toReal_nonneg
+  · simp_all
   let e : s ↪ Submodule.span ℤ (Set.range b) :=
     ⟨fun x ↦ ⟨x.val - y, hcoset x.val x.property y hy⟩,
       fun x z h ↦ Subtype.ext (sub_left_injective (congrArg Subtype.val h))⟩
@@ -96,19 +79,17 @@ private theorem basis_lattice_coset_finite_packing
     intro z hz
     obtain ⟨x, _, rfl⟩ := Finset.mem_map.mp hz
     change ‖x.val - y‖ ≤ 2 * B
-    exact (norm_sub_le _ _).trans (by linarith [hs x.val x.property, hs y hy]))
+    exact (norm_sub_le _ _).trans (by grind))
   simpa using hh
 
 /-- The number of occupied cosets can be bounded by the lattice
 index, before cancelling that index with the covolume ratio. -/
-private theorem superlattice_finite_packing_index
-    {E ι : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    [MeasurableSpace E] [BorelSpace E] [Fintype ι] [FiniteDimensional ℝ E]
-    (b : Module.Basis ι ℝ E) (μ : Measure E) [μ.IsAddHaarMeasure]
+theorem superlattice_finite_packing_index
+    [FiniteDimensional ℝ E]
     (L : Submodule ℤ E)
     (hindex : (Submodule.span ℤ (Set.range b)).toAddSubgroup.relIndex
       L.toAddSubgroup ≠ 0)
-    (s : Finset L) {B : ℝ} (hs : ∀ x ∈ s, ‖(x : E)‖ ≤ B) :
+    (s : Finset L) (hs : ∀ x ∈ s, ‖(x : E)‖ ≤ B) :
     (s.card : ℝ) * μ.real (ZSpan.fundamentalDomain b) ≤
       ((Submodule.span ℤ (Set.range b)).toAddSubgroup.relIndex
         L.toAddSubgroup : ℝ) *
@@ -125,22 +106,22 @@ private theorem superlattice_finite_packing_index
     let t := s.filter (fun x ↦ q x = a)
     have hi : Function.Injective (fun x : L ↦ (x : E)) := Subtype.val_injective
     have ht := basis_lattice_coset_finite_packing b μ (t.image (fun x : L ↦ (x : E)))
-      (B := B) (by
+      (by
         intro x hx
         obtain ⟨y, hy, rfl⟩ := Finset.mem_image.mp hx
         exact hs y (Finset.mem_filter.mp hy).1) (by
         intro x hx y hy
         obtain ⟨x', hx', rfl⟩ := Finset.mem_image.mp hx
         obtain ⟨y', hy', rfl⟩ := Finset.mem_image.mp hy
-        have he : q x' = q y' := (Finset.mem_filter.mp hx').2.trans
+        have he := (Finset.mem_filter.mp hx').2.trans
           (Finset.mem_filter.mp hy').2.symm
         exact QuotientAddGroup.eq_iff_sub_mem.mp he)
-    simpa only [Finset.card_image_of_injective _ hi] using ht
+    simpa [Finset.card_image_of_injective _ hi] using ht
   have hcard : s.card = ∑ a : Q, (s.filter (fun x ↦ q x = a)).card :=
     Finset.card_eq_sum_card_fiberwise (fun _ _ ↦ Finset.mem_univ _)
   have hi : Fintype.card Q =
       (Submodule.span ℤ (Set.range b)).toAddSubgroup.relIndex L.toAddSubgroup := by
-    exact (Nat.card_eq_fintype_card (α := Q)).symm
+    exact (Nat.card_eq_fintype_card).symm
   calc
     (s.card : ℝ) * μ.real (ZSpan.fundamentalDomain b) =
         ∑ a : Q, ((s.filter (fun x ↦ q x = a)).card : ℝ) *
@@ -149,66 +130,55 @@ private theorem superlattice_finite_packing_index
     _ ≤ ∑ _a : Q, μ.real
         (Metric.closedBall (0 : E) (2 * B + ∑ i, ‖b i‖)) :=
       Finset.sum_le_sum (fun a _ ↦ hfiber a)
-    _ = _ := by simp [hi]
+    _ = _ := by simp_all
+
+end
+
+variable {E ι : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [MeasurableSpace E] [BorelSpace E] [Fintype ι] [FiniteDimensional ℝ E] (b : Module.Basis ι ℝ E) (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] (hb : ∀ i, b i ∈ L) (s : Finset L)
+include hb
 
 /-- A short real basis contained in a lattice suffices for a uniform
 packing estimate for the entire lattice. It need not be an integral
 basis: the relative index cancels against the covolume ratio. -/
-private theorem superlattice_finite_packing
-    {E ι : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    [MeasurableSpace E] [BorelSpace E] [Fintype ι] [FiniteDimensional ℝ E]
-    (b : Module.Basis ι ℝ E) (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L]
-    (hb : ∀ i, b i ∈ L)
-    (s : Finset L) {B : ℝ} (hs : ∀ x ∈ s, ‖(x : E)‖ ≤ B) :
+theorem superlattice_finite_packing
+    {B : ℝ} (hs : ∀ x ∈ s, ‖(x : E)‖ ≤ B) :
     (s.card : ℝ) * ZLattice.covolume L ≤
       volume.real (Metric.closedBall (0 : E) (2 * B + ∑ i, ‖b i‖)) := by
   let L₀ := Submodule.span ℤ (Set.range b)
   have hle : L₀ ≤ L := Submodule.span_le.mpr (by
     rintro _ ⟨i, rfl⟩
-    exact hb i)
+    simp_all)
   have hratio := ZLattice.covolume_div_covolume_eq_relIndex' L₀ L hle
   have hpos : (0 : ℝ) < L₀.toAddSubgroup.relIndex L.toAddSubgroup := by
     rw [← hratio]
     exact div_pos (ZLattice.covolume_pos L₀) (ZLattice.covolume_pos L)
-  have hindex : L₀.toAddSubgroup.relIndex L.toAddSubgroup ≠ 0 := by
-    exact_mod_cast hpos.ne'
-  have hp := superlattice_finite_packing_index b volume L hindex s hs
-  have hvol : ZLattice.covolume L₀ =
-      volume.real (ZSpan.fundamentalDomain b) :=
+  have hp := superlattice_finite_packing_index b volume L (by
+    exact_mod_cast hpos.ne') s hs
+  have hvol :=
     ZLattice.covolume_eq_measure_fundamentalDomain L₀ volume
       (ZSpan.isAddFundamentalDomain b volume)
-  have hc : ZLattice.covolume L₀ =
-      (L₀.toAddSubgroup.relIndex L.toAddSubgroup : ℝ) * ZLattice.covolume L :=
+  have hc :=
     (div_eq_iff (ZLattice.covolume_pos L).ne').mp hratio
   rw [← hvol, hc] at hp
   apply (mul_le_mul_iff_right₀ hpos).mp
-  nlinarith only [hp]
+  nlinarith
 
 /-- Polynomial-radius form of the finite packing estimate. The constant
 is explicit and depends only on the dimension and on the basis bound. -/
 theorem superlattice_finite_packing_polynomial
-    {E ι : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    [MeasurableSpace E] [BorelSpace E] [Fintype ι] [FiniteDimensional ℝ E]
-    (b : Module.Basis ι ℝ E) (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L]
-    (hb : ∀ i, b i ∈ L)
-    (s : Finset L) {B M : ℝ} (hB : 0 ≤ B) (hM : 0 ≤ M)
+    {B M : ℝ} (hB : 0 ≤ B) (hM : 0 ≤ M)
     (hs : ∀ x ∈ s, ‖(x : E)‖ ≤ B) (hnorm : ∀ i, ‖b i‖ ≤ M) :
     (s.card : ℝ) * ZLattice.covolume L ≤
       (2 * B + Fintype.card ι * M) ^ Module.finrank ℝ E *
         volume.real (Metric.ball (0 : E) 1) := by
   have hsum : ∑ i, ‖b i‖ ≤ Fintype.card ι * M := by
     simpa using Finset.sum_le_sum (fun i (_ : i ∈ Finset.univ) ↦ hnorm i)
-  have hR : 0 ≤ 2 * B + (Fintype.card ι : ℝ) * M := by positivity
   calc
     (s.card : ℝ) * ZLattice.covolume L ≤
         volume.real (Metric.closedBall (0 : E) (2 * B + ∑ i, ‖b i‖)) :=
       superlattice_finite_packing b L hb s hs
-    _ ≤ volume.real (Metric.closedBall (0 : E) (2 * B + Fintype.card ι * M)) := by
-      exact measureReal_mono (Metric.closedBall_subset_closedBall (by linarith))
+    _ ≤ volume.real (Metric.closedBall (0 : E) (2 * B + Fintype.card ι * M)) :=
+      measureReal_mono (Metric.closedBall_subset_closedBall (by linarith))
         (isCompact_closedBall (0 : E) _).measure_lt_top.ne
-    _ = _ := volume.addHaar_real_closedBall (0 : E) hR
+    _ = _ := volume.addHaar_real_closedBall (0 : E) (by positivity)
 
-end
-end CCDN

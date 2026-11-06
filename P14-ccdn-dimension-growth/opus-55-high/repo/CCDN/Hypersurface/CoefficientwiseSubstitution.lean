@@ -3,28 +3,26 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.CoefficientwiseHomogeneous
-public import CCDN.Noether.UniversalHomogeneousForm
+import CCDN.Algebra.CoefficientwiseHomogeneous
+import CCDN.Noether.UniversalHomogeneousForm
 
 /-! Homogeneous substitution with independent coefficient and polynomial
 variables, and specialization of the resulting coefficient forms. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial Finsupp
 
 namespace CoefficientwiseHomogeneous
 
-private lemma pow {R σ τ : Type*} [CommRing R]
+lemma pow {R σ τ : Type*} [CommRing R]
     {f : MvPolynomial σ (MvPolynomial τ R)} {d : ℕ}
     (hf : CoefficientwiseHomogeneous f d) (n : ℕ) :
     CoefficientwiseHomogeneous (f ^ n) (d * n) := by
   induction n with
-  | zero => simpa only [pow_zero, Nat.mul_zero] using one (R := R) (σ := σ) (τ := τ)
-  | succ n ih => simpa only [pow_succ, Nat.mul_succ] using ih.mul hf
+  | zero => simpa using one
+  | succ n ih => simpa [pow_succ, Nat.mul_succ] using ih.mul hf
 
 /-- Substituting coefficientwise homogeneous forms of degree `n` into a homogeneous polynomial `φ`
 of degree `m`, with constant coefficients mapped to coefficientwise degree `0`, gives a
@@ -60,8 +58,7 @@ lemma homogeneousCoefficientSpecialization_map {R S σ : Type*}
   have he : ψ.comp (homogeneousCoefficientSpecialization d f) =
       homogeneousCoefficientSpecialization d (map ψ f) := by
     apply MvPolynomial.ringHom_ext
-    · intro z
-      simp [homogeneousCoefficientSpecialization]
+    · simp_all
     · intro i
       simp [homogeneousCoefficientSpecialization, homogeneousCoefficientData, coeff_map]
   exact RingHom.congr_fun he Φ
@@ -78,8 +75,5 @@ lemma homogeneousCoefficientSpecialization_homogeneous
   apply hΦ.eval₂
   · intro z
     simpa using isHomogeneous_C τ z
-  · intro i
-    exact hf (homogeneousCoefficientExponent σ d i)
+  · aesop
 
-end
-end CCDN

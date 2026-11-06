@@ -3,11 +3,10 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.PolynomialPredicates
-public import CCDN.Hilbert.FilteredHilbertPolynomial
-public import CCDN.Hilbert.LinearProjectionFiltration
+import CCDN.Algebra.PolynomialPredicates
+import CCDN.Hilbert.FilteredHilbertPolynomial
+import CCDN.Hilbert.LinearProjectionFiltration
 import CCDN.ForMathlib.FractionRing
 import CCDN.Projection.HomogeneousBirationalDegree
 import CCDN.Projection.IntegralProjectionHilbert
@@ -17,9 +16,8 @@ import CCDN.Projection.PrimitiveCoordinateField
 Hilbert multiplicity. Both the conductor and the dimension equality
 are consequences of the algebraic hypotheses. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
 /-- A homogeneous linear projection of a homogeneous prime quotient that is integral and birational
@@ -51,7 +49,7 @@ theorem homogeneous_finite_birational_projection_leadingCoeff_eq
   let : IsScalarTower K R A := IsScalarTower.of_algHom φ
   let : Algebra R F := (η.comp φ).toRingHom.toAlgebra
   let : IsScalarTower R A F := IsScalarTower.of_algebraMap_eq (fun _ => rfl)
-  have hinj : Function.Injective (η.comp φ) :=
+  have hinj :=
     (IsFractionRing.injective A F).comp (Ideal.kerLiftAlg_injective ψ)
   let : IsFractionRing R F := isFractionRing_of_generating_tuple
     (η.comp φ) hinj (fun i => (Ideal.Quotient.mk J) (X i)) (by
@@ -60,12 +58,35 @@ theorem homogeneous_finite_birational_projection_leadingCoeff_eq
       funext i
       change algebraMap A F ((Ideal.Quotient.mk I) (aeval a (X i))) =
         algebraMap A F ((Ideal.Quotient.mk I) (a i))
-      rw [aeval_X])
+      simp_all)
   let : Algebra.IsIntegral R A := ⟨hint.kerLift⟩
   let : Algebra.FiniteType R A :=
     Algebra.FiniteType.of_restrictScalars_finiteType K R A
   let : Module.Finite R A := Algebra.IsIntegral.finite
-  obtain ⟨c, hc, hconductor⟩ := IsFractionRing.exists_ne_zero_mul_mem_range_of_finite R A F
+  obtain ⟨c, hc, hconductor⟩ : ∃ c : R, c ≠ 0 ∧ ∀ a : A, ∃ r : R,
+      algebraMap R A r = algebraMap R A c * a := by
+    obtain ⟨s, hs⟩ := (Module.Finite.fg_top : (⊤ : Submodule R A).FG)
+    let φ : A →ₐ[R] F := IsScalarTower.toAlgHom R A F
+    obtain ⟨c, hc⟩ := IsLocalization.exist_integer_multiples
+      (nonZeroDivisors R) s (fun a => φ a)
+    let N : Submodule R A :=
+      Submodule.comap ((c : R) • φ.toLinearMap) (LinearMap.range (Algebra.linearMap R F))
+    have hspan : Submodule.span R s ≤ N := by
+      apply Submodule.span_le.mpr
+      intro a ha
+      exact hc a ha
+    have hall (a : A) : a ∈ N := by simp_all
+    refine ⟨c, mem_nonZeroDivisors_iff_ne_zero.mp c.2, ?_⟩
+    intro a
+    obtain ⟨r, hr⟩ := hall a
+    refine ⟨r, ?_⟩
+    apply IsFractionRing.injective A F
+    change algebraMap A F (algebraMap R A r) =
+      algebraMap A F (algebraMap R A c * a)
+    rw [map_mul, ← IsScalarTower.algebraMap_apply R A F,
+      ← IsScalarTower.algebraMap_apply R A F]
+    simpa [LinearMap.smul_apply, Algebra.smul_def, Algebra.linearMap_apply,
+      AlgHom.toLinearMap_apply, φ, IsScalarTower.toAlgHom_apply] using hr
   obtain ⟨p, hp⟩ := Ideal.Quotient.mk_surjective c
   let q := aeval a p
   have hq : (Ideal.Quotient.mk I) q = φ c := by
@@ -74,16 +95,17 @@ theorem homogeneous_finite_birational_projection_leadingCoeff_eq
   have hqne : (Ideal.Quotient.mk I) q ≠ 0 := by
     rw [hq]
     exact (map_ne_zero_iff φ (Ideal.kerLiftAlg_injective ψ)).mpr hc
-  apply homogeneous_projection_leadingCoeff_eq I hI a ha
-    (integral_projection_hilbert_dimension_eq I ψ hint) q hqne
+  have hdim := integral_projection_hilbert_dimension_eq I ψ hint
+  refine le_antisymm (filteredHilbertPolynomial_leadingCoeff_le _ _ (RingHom.ker_ne_top _)
+    (Ideal.IsPrime.ne_top ‹_›) hdim (linear_projection_filtered_finrank_le I a
+      fun i => (ha i).totalDegree_le)) (filteredHilbertPolynomial_leadingCoeff_le_of_shift _ _
+    (Ideal.IsPrime.ne_top ‹_›) (RingHom.ker_ne_top _) hdim.symm q.totalDegree
+    (conductor_filtered_finrank_le I hI a ha q hqne ?_))
   intro x
   obtain ⟨r, hr⟩ := hconductor x
   obtain ⟨p', hp'⟩ := Ideal.Quotient.mk_surjective r
   refine ⟨p', ?_⟩
   rw [hq]
   change φ ((Ideal.Quotient.mk J) p') = φ c * x
-  rw [hp']
-  exact hr
+  rwa [hp']
 
-end
-end CCDN

@@ -3,11 +3,10 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.PolynomialPredicates
-public import CCDN.AuxiliaryPolynomial.DegreeBound
-public import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeCoordinates
+import CCDN.Algebra.PolynomialPredicates
+import CCDN.AuxiliaryPolynomial.DegreeBound
+import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeCoordinates
 import CCDN.ForMathlib.MvPolynomial
 
 /-! Bad-prime factors of integer polynomials, and the geometric bad-prime factor used by the
@@ -18,7 +17,6 @@ factor agrees with CCDN Definition 3.2.1. For affine equations its bad-prime pre
 includes degree loss; this stronger convention is not identical to the literal printed
 definition. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
@@ -57,47 +55,53 @@ lemma badPrimeFactor_nonneg (f : MvPolynomial σ ℤ) : 0 ≤ badPrimeFactor P h
   unfold badPrimeFactor
   split <;> positivity
 
+variable {f : MvPolynomial σ ℤ}
+
 /-- The bad-prime factor of an integral polynomial that is not absolutely irreducible is
 zero. -/
-lemma badPrimeFactor_eq_zero {f : MvPolynomial σ ℤ}
+lemma badPrimeFactor_eq_zero
     (hf : ¬ AbsolutelyIrreducible f) :
     badPrimeFactor P hP f = 0 := by
-  simp only [badPrimeFactor, dite_eq_right hf]
+  simp [badPrimeFactor, dite_eq_right hf]
 
 /-- For an absolutely irreducible equation of degree `d`, the bad-prime factor is the
 `primeSetFactor` of any finite set listing exactly the bad primes above `27 d⁴`. -/
-lemma badPrimeFactor_eq_primeSetFactor {d : ℕ} {f : MvPolynomial σ ℤ}
+lemma badPrimeFactor_eq_primeSetFactor {d : ℕ}
     (hf : AbsolutelyIrreducible f)
     (hdegree : f.totalDegree = d) (bad : Finset ℕ)
     (hbad : ∀ p, p ∈ bad ↔ stepanovThreshold d < p ∧ P f p) :
     badPrimeFactor P hP f = primeSetFactor bad := by
-  classical
   unfold badPrimeFactor
   rw [dite_eq_left hf]
   congr 1
   ext p
-  simp only [Set.Finite.mem_toFinset, Set.mem_ofPred_eq, hdegree, hbad]
+  simp [Set.Finite.mem_toFinset, Set.mem_ofPred_eq, hdegree, hbad]
 
 end BadPrimeFactor
 
+section
+variable {n : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ)
+
 /-- The geometric bad-prime factor: `badPrimeFactor` for `HypersurfaceBadReduction`, which
 counts both failure of absolute irreducibility and degree loss modulo `p`. -/
-def hypersurfaceBadPrimeFactor {n : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ) : ℝ :=
+def hypersurfaceBadPrimeFactor : ℝ :=
   badPrimeFactor HypersurfaceBadReduction
     (fun f h => finite_fin_hypersurface_bad_primes f h
       (absolute_integer_polynomial_totalDegree_pos f h)) f
 
 /-- The geometric bad-prime factor `hypersurfaceBadPrimeFactor f` is nonnegative. -/
-lemma hypersurfaceBadPrimeFactor_nonneg {n : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ) :
+lemma hypersurfaceBadPrimeFactor_nonneg :
     0 ≤ hypersurfaceBadPrimeFactor f :=
   badPrimeFactor_nonneg f
 
 /-- The geometric bad-prime factor of an integral polynomial that is not absolutely
 irreducible is zero. -/
-lemma hypersurfaceBadPrimeFactor_eq_zero {n : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ)
+lemma hypersurfaceBadPrimeFactor_eq_zero
     (hf : ¬ AbsolutelyIrreducible f) :
     hypersurfaceBadPrimeFactor f = 0 :=
   badPrimeFactor_eq_zero hf
+
+end
 
 /-- For an absolutely irreducible integral polynomial of degree `d`, the geometric bad-prime
 factor is the `primeSetFactor` of any finite set listing exactly the primes above
@@ -117,7 +121,7 @@ theorem hypersurfaceBadPrimeFactor_le_height {n : ℕ}
     hypersurfaceBadPrimeFactor f ≤
       (Real.exp (2 * mertensError + 1) * hypersurfaceHeightConstant (n + 1)) *
         (1 + Real.log H / (f.totalDegree : ℝ) ^ 2) := by
-  have hlog : 0 ≤ Real.log H := Real.log_nonneg hH
+  have hlog := Real.log_nonneg hH
   have hc : 0 < hypersurfaceHeightConstant (n + 1) :=
     zero_lt_one.trans_le (hypersurfaceHeightConstant_one_le _)
   by_cases hf : AbsolutelyIrreducible f
@@ -138,5 +142,3 @@ theorem hypersurfaceBadPrimeFactor_le_height {n : ℕ}
   · rw [hypersurfaceBadPrimeFactor_eq_zero f hf]
     positivity
 
-end
-end CCDN

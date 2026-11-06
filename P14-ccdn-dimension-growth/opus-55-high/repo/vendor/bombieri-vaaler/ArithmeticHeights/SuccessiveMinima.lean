@@ -3,11 +3,10 @@ Copyright (c) 2026 Ralf Stephan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ralf Stephan
 -/
-module
 
-public import Mathlib.Algebra.Module.ZLattice.Covolume
-public import Mathlib.Analysis.Convex.Gauge
-public import Mathlib.MeasureTheory.Group.GeometryOfNumbers
+import Mathlib.Algebra.Module.ZLattice.Covolume
+import Mathlib.Analysis.Convex.Gauge
+import Mathlib.MeasureTheory.Group.GeometryOfNumbers
 
 /-!
 # The successive minima of a symmetric convex body
@@ -77,8 +76,6 @@ Minkowski's first theorem is Mathlib's
 This is Layer 4.1 of the `ArithmeticHeights` roadmap.
 -/
 
-public section
-
 open Metric Module MeasureTheory Set
 
 open scoped Pointwise Topology
@@ -97,17 +94,20 @@ it is the only use of the symmetry hypothesis in the elementary theory. -/
 theorem Convex.mem_nhds_zero_of_symmetric (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B)
     (hB₂ : (interior B).Nonempty) : B ∈ 𝓝 (0 : E) := by
   obtain ⟨x, hx⟩ := hB₂
-  have hneg : -x ∈ B := hB₁ x (interior_subset hx)
-  have h0 : (0 : E) ∈ interior B := by
+  have hneg := hB₁ x (interior_subset hx)
+  exact mem_interior_iff_mem_nhds.1 (by
     have := hB₀.combo_interior_self_mem_interior hx hneg (a := 1 / 2) (b := 1 / 2)
       (by norm_num) (by norm_num) (by norm_num)
-    simpa using this
-  exact mem_interior_iff_mem_nhds.1 h0
+    simp_all)
+
+section
+variable (hB₀ : Convex ℝ B) {t : ℝ} {x : E}
+include hB₀
 
 /-- Half of the gauge dictionary, and the half that costs nothing: a point of gauge strictly less
 than `t` lies in `t • B`. No closedness is needed, and this is what the existence statements below
 use to exhibit an admissible dilation. -/
-theorem mem_smul_of_gauge_lt (hB₀ : Convex ℝ B) (h₀ : B ∈ 𝓝 (0 : E)) {t : ℝ} {x : E}
+theorem mem_smul_of_gauge_lt (h₀ : B ∈ 𝓝 (0 : E))
     (h : gauge B x < t) : x ∈ t • B := by
   have hx : x ∈ {y : E | gauge B y ≤ gauge B x} := by simp
   rw [setOfPred_gauge_le_eq hB₀ (mem_of_mem_nhds h₀) (absorbent_nhds_zero h₀)
@@ -118,16 +118,16 @@ theorem mem_smul_of_gauge_lt (hB₀ : Convex ℝ B) (h₀ : B ∈ 𝓝 (0 : E)) 
 dilation `t • B` is the same as having gauge at most `t`. This is the translation between Cassels'
 distance functions and the convex-body form of the successive minima, and closedness is exactly
 what it costs: for an open body the two sides differ on the boundary. -/
-theorem gauge_le_iff_mem_smul (hB₀ : Convex ℝ B) (hB₄ : IsClosed B) (h₀ : B ∈ 𝓝 (0 : E)) {t : ℝ}
-    (ht : 0 < t) {x : E} : gauge B x ≤ t ↔ x ∈ t • B := by
+theorem gauge_le_iff_mem_smul (hB₄ : IsClosed B) (h₀ : B ∈ 𝓝 (0 : E))
+    (ht : 0 < t) : gauge B x ≤ t ↔ x ∈ t • B := by
   refine ⟨fun h ↦ ?_, gauge_le_of_mem ht.le⟩
-  have h1 : gauge B (t⁻¹ • x) ≤ 1 := by
-    rw [gauge_smul_of_nonneg (inv_nonneg.2 ht.le), smul_eq_mul, inv_mul_le_iff₀ ht, mul_one]
-    exact h
   have h2 : t⁻¹ • x ∈ B := by
     rw [← hB₄.closure_eq]
-    exact (gauge_le_one_iff_mem_closure hB₀ h₀).1 h1
+    exact (gauge_le_one_iff_mem_closure hB₀ h₀).1 (by
+      rwa [gauge_smul_of_nonneg (inv_nonneg.2 ht.le), smul_eq_mul, inv_mul_le_iff₀ ht, mul_one])
   rwa [mem_smul_set_iff_inv_smul_mem₀ ht.ne']
+
+end
 
 namespace ZLattice
 
@@ -160,9 +160,8 @@ variable [DiscreteTopology L] [IsZLattice ℝ L]
 /-- A `ℤ`-basis of a lattice of `E`, read as an `ℝ`-basis of `E` indexed by `Fin (finrank ℝ E)`.
 Every basis vector is a lattice point, which is what makes the set of admissible dilations
 nonempty. -/
-private theorem exists_basis_mem (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] :
+theorem exists_basis_mem (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] :
     ∃ b : Basis (Fin (finrank ℝ E)) ℝ E, ∀ j, b j ∈ L := by
-  classical
   have hcard : Fintype.card (Module.Free.ChooseBasisIndex ℤ L) = finrank ℝ E := by
     rw [← finrank_eq_card_chooseBasisIndex, ZLattice.rank ℝ L]
   refine ⟨((Module.Free.chooseBasis ℤ L).ofZLatticeBasis ℝ L).reindex
@@ -170,13 +169,16 @@ private theorem exists_basis_mem (L : Submodule ℤ E) [DiscreteTopology L] [IsZ
   simp only [Basis.reindex_apply, Basis.ofZLatticeBasis_apply]
   exact SetLike.coe_mem _
 
+variable (hi : i < finrank ℝ E) (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B) (hB₂ : (interior B).Nonempty)
+include hi hB₀ hB₁ hB₂
+
 /-- Below the dimension there is an admissible dilation: a basis of `E` made of lattice vectors
 is independent, and the body absorbs its finitely many members. -/
-private theorem exists_mem_minimumSet (hi : i < finrank ℝ E) (hB₀ : Convex ℝ B)
-    (hB₁ : ∀ x ∈ B, -x ∈ B) (hB₂ : (interior B).Nonempty) :
+theorem exists_mem_minimumSet
+    :
     ∃ t : ℝ, 0 < t ∧ ∃ v : Fin (i + 1) → E,
       (∀ j, v j ∈ (t • B) ∩ (L : Set E)) ∧ LinearIndependent ℝ v := by
-  have h₀ : B ∈ 𝓝 (0 : E) := hB₀.mem_nhds_zero_of_symmetric hB₁ hB₂
+  have h₀ := hB₀.mem_nhds_zero_of_symmetric hB₁ hB₂
   obtain ⟨b, hb⟩ := exists_basis_mem L
   set v : Fin (i + 1) → E := fun j ↦ b (j.castLE hi)
   set t : ℝ := 1 + ∑ j, gauge B (v j)
@@ -188,13 +190,13 @@ private theorem exists_mem_minimumSet (hi : i < finrank ℝ E) (hB₀ : Convex �
   · have : (0 : ℝ) ≤ ∑ j, gauge B (v j) :=
       Finset.sum_nonneg fun j _ ↦ gauge_nonneg (v j)
     linarith
-  · exact hb _
+  · aesop
   · exact b.linearIndependent.comp _ fun a c h ↦ Fin.castLE_injective hi h
 
 /-- Below the dimension, a lower bound for every admissible dilation is a lower bound for the
 minimum. -/
-theorem le_successiveMinimum (hi : i < finrank ℝ E) (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B)
-    (hB₂ : (interior B).Nonempty) {c : ℝ}
+theorem le_successiveMinimum
+    {c : ℝ}
     (H : ∀ t : ℝ, 0 < t → ∀ v : Fin (i + 1) → E, (∀ j, v j ∈ (t • B) ∩ (L : Set E)) →
       LinearIndependent ℝ v → c ≤ t) :
     c ≤ successiveMinimum L B i :=
@@ -216,7 +218,7 @@ theorem successiveMinimum_eq_zero_of_le (L : Submodule ℤ E) (B : Set E) (hi : 
     rintro -
     rintro ⟨v, -, hind⟩
     have := hind.fintype_card_le_finrank
-    simp only [Fintype.card_fin] at this
+    simp at this
     omega
   rw [successiveMinimum, hempty, Real.sInf_empty]
 
@@ -237,29 +239,33 @@ section Discrete
 
 variable [DiscreteTopology L]
 
+section
+variable (L : Submodule ℤ E) [DiscreteTopology L] (h₀ : B ∈ 𝓝 (0 : E)) (hB₃ : Bornology.IsBounded B)
+include h₀ hB₃
+
 /-- A bounded gauge slice meets the lattice in a finite set: the slice is bounded because the body
 is, and the lattice is discrete and closed. This is the one place discreteness of the lattice is
 used, and every attainment statement below rests on it. -/
-private theorem finite_gauge_le_inter (L : Submodule ℤ E) [DiscreteTopology L]
-    (h₀ : B ∈ 𝓝 (0 : E)) (hB₃ : Bornology.IsBounded B) (t : ℝ) :
+theorem finite_gauge_le_inter
+    (t : ℝ) :
     ({x : E | gauge B x ≤ t} ∩ (L : Set E)).Finite := by
   obtain ⟨R, hR, hRB⟩ := hB₃.subset_closedBall_lt 0 0
   refine Metric.finite_isBounded_inter_isClosed ?_ ?_ ?_
   · exact DiscreteTopology.isDiscrete
   · refine (Metric.isBounded_closedBall (x := (0 : E)) (r := R * t)).subset fun x hx ↦ ?_
-    have hx' : ‖x‖ / R ≤ t :=
+    have hx' :=
       le_trans (le_gauge_of_subset_closedBall (absorbent_nhds_zero h₀) hR.le hRB) hx
     rw [mem_closedBall_zero_iff]
     rw [div_le_iff₀ hR] at hx'
-    linarith [hx', mul_comm t R]
-  · have : DiscreteTopology L.toAddSubgroup := inferInstanceAs (DiscreteTopology L)
+    grind
+  · have : DiscreteTopology L.toAddSubgroup := by aesop
     rw [← Submodule.coe_toAddSubgroup]
     exact AddSubgroup.isClosed_of_discreteTopology
 
 /-- The gauge attains its minimum on any nonempty set of lattice points: the points of gauge at
 most that of a chosen member form a finite set. -/
-private theorem exists_gauge_min (L : Submodule ℤ E) [DiscreteTopology L] (h₀ : B ∈ 𝓝 (0 : E))
-    (hB₃ : Bornology.IsBounded B) {S : Set E} (hS : S ⊆ (L : Set E)) (hne : S.Nonempty) :
+theorem exists_gauge_min
+    {S : Set E} (hS : S ⊆ (L : Set E)) (hne : S.Nonempty) :
     ∃ w ∈ S, ∀ y ∈ S, gauge B w ≤ gauge B y := by
   obtain ⟨x₀, hx₀⟩ := hne
   have hfin : (S ∩ {x : E | gauge B x ≤ gauge B x₀}).Finite := by
@@ -267,33 +273,30 @@ private theorem exists_gauge_min (L : Submodule ℤ E) [DiscreteTopology L] (h�
   obtain ⟨w, hw, hmin⟩ := Set.exists_min_image _ (gauge B) hfin ⟨x₀, hx₀, by simp⟩
   refine ⟨w, hw.1, fun y hy ↦ ?_⟩
   by_cases hy' : gauge B y ≤ gauge B x₀
-  · exact hmin y ⟨hy, hy'⟩
-  · exact le_trans (hmin x₀ ⟨hx₀, by simp⟩) (not_le.1 hy').le
+  · grind
+  · grind
+
+end
 
 variable [IsZLattice ℝ L]
 
-/-- Nonzero lattice points have gauge bounded away from zero. This is where boundedness of the
-body is used: the body is inside a ball, so a point of small gauge is a point of small norm, and
-the lattice has none but `0`. -/
-private theorem exists_pos_le_gauge (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (h₀ : B ∈ 𝓝 (0 : E)) (hB₃ : Bornology.IsBounded B) (hE : 0 < finrank ℝ E) :
-    ∃ δ : ℝ, 0 < δ ∧ ∀ x ∈ (L : Set E), x ≠ 0 → δ ≤ gauge B x := by
-  obtain ⟨b, hb⟩ := exists_basis_mem L
-  have hne : {x : E | x ∈ (L : Set E) ∧ x ≠ 0}.Nonempty :=
-    ⟨b ⟨0, hE⟩, hb _, b.ne_zero _⟩
-  obtain ⟨w, hw, hwmin⟩ := exists_gauge_min L h₀ hB₃ (fun y hy ↦ hy.1) hne
-  refine ⟨gauge B w, ?_, fun x hx hx0 ↦ hwmin x ⟨hx, hx0⟩⟩
-  rw [gauge_pos (absorbent_nhds_zero h₀) ((NormedSpace.isVonNBounded_iff ℝ).2 hB₃)]
-  exact hw.2
+variable (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
 
 /-- **The minima are positive.** A nonzero lattice point has gauge bounded away from zero, so no
 small dilation of a bounded body can contain one. -/
-theorem successiveMinimum_pos (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
+theorem successiveMinimum_pos
     (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B) (hB₂ : (interior B).Nonempty)
     (hB₃ : Bornology.IsBounded B) (hi : i < finrank ℝ E) : 0 < successiveMinimum L B i := by
-  have h₀ : B ∈ 𝓝 (0 : E) := hB₀.mem_nhds_zero_of_symmetric hB₁ hB₂
-  obtain ⟨δ, hδ, hlow⟩ := exists_pos_le_gauge L h₀ hB₃ (by omega)
-  refine lt_of_lt_of_le hδ (le_successiveMinimum hi hB₀ hB₁ hB₂ fun t ht v hv hind ↦ ?_)
+  have h₀ := hB₀.mem_nhds_zero_of_symmetric hB₁ hB₂
+  obtain ⟨δ, hδ, hlow⟩ : ∃ δ : ℝ, 0 < δ ∧ ∀ x ∈ (L : Set E), x ≠ 0 → δ ≤ gauge B x := by
+    obtain ⟨b, hb⟩ := exists_basis_mem L
+    have hne : {x : E | x ∈ L ∧ x ≠ 0}.Nonempty :=
+      ⟨b ⟨0, (by omega)⟩, hb _, b.ne_zero _⟩
+    obtain ⟨w, hw, hwmin⟩ := exists_gauge_min L h₀ hB₃ (fun y hy ↦ hy.1) hne
+    refine ⟨gauge B w, ?_, fun x hx hx0 ↦ hwmin x ⟨hx, hx0⟩⟩
+    rw [gauge_pos (absorbent_nhds_zero h₀) ((NormedSpace.isVonNBounded_iff ℝ).2 hB₃)]
+    exact hw.2
+  refine hδ.trans_le (le_successiveMinimum hi hB₀ hB₁ hB₂ fun t ht v hv hind ↦ ?_)
   exact (hlow (v 0) (hv 0).2 (hind.ne_zero 0)).trans (gauge_le_of_mem ht.le (hv 0).1)
 
 end Discrete
@@ -302,16 +305,19 @@ section Attainment
 
 variable [DiscreteTopology L] [IsZLattice ℝ L]
 
+section
+variable (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B) (hB₂ : (interior B).Nonempty) (hB₃ : Bornology.IsBounded B)
+include hB₀ hB₁ hB₂ hB₃
+
 /-- The inductive step of Cassels' Lemma 1, carrying the minimality of the family over the
 complement of its own span: that clause is what makes the gauges increase along the family, and
 it is the reason the construction is greedy rather than a choice for each index separately. -/
-private theorem exists_gauge_eq_aux (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B) (hB₂ : (interior B).Nonempty)
-    (hB₃ : Bornology.IsBounded B) :
+theorem exists_gauge_eq_aux
+    :
     ∀ m : ℕ, m ≤ finrank ℝ E → ∃ v : Fin m → E, (∀ j, v j ∈ (L : Set E)) ∧
       LinearIndependent ℝ v ∧ (∀ j : Fin m, gauge B (v j) = successiveMinimum L B j) ∧
       ∀ y ∈ (L : Set E), y ∉ Submodule.span ℝ (Set.range v) → ∀ j, gauge B (v j) ≤ gauge B y := by
-  have h₀ : B ∈ 𝓝 (0 : E) := hB₀.mem_nhds_zero_of_symmetric hB₁ hB₂
+  have h₀ := hB₀.mem_nhds_zero_of_symmetric hB₁ hB₂
   intro m
   induction m with
   | zero =>
@@ -322,27 +328,26 @@ private theorem exists_gauge_eq_aux (L : Submodule ℤ E) [DiscreteTopology L] [
     obtain ⟨v, hvL, hvind, hvmin, hvlow⟩ := ih (by omega)
     have hrank : finrank ℝ (Submodule.span ℝ (Set.range v)) = m := by
       rw [finrank_span_eq_card hvind, Fintype.card_fin]
-    have hWlt : Submodule.span ℝ (Set.range v) < ⊤ :=
+    have hWlt :=
       Submodule.lt_top_of_finrank_lt_finrank (by rw [hrank]; omega)
     have hne : {y : E | y ∈ (L : Set E) ∧ y ∉ Submodule.span ℝ (Set.range v)}.Nonempty := by
       by_contra hcon
       rw [not_nonempty_iff_eq_empty, eq_empty_iff_forall_notMem] at hcon
       refine hWlt.ne (top_le_iff.1 ?_)
-      rw [← (IsZLattice.span_top (K := ℝ) (L := L) : Submodule.span ℝ (L : Set E) = ⊤)]
+      rw [← (IsZLattice.span_top : Submodule.span ℝ (L : Set E) = ⊤)]
       refine Submodule.span_le.2 fun y hy ↦ ?_
-      by_contra hyW
-      exact hcon y ⟨hy, hyW⟩
+      simp_all
     obtain ⟨w, hw, hwmin⟩ := exists_gauge_min L h₀ hB₃ (fun y hy ↦ hy.1) hne
     obtain ⟨hwL, hwW⟩ := hw
     have hgle : ∀ j : Fin (m + 1), gauge B ((Fin.snoc v w : Fin (m + 1) → E) j) ≤ gauge B w := by
       refine Fin.lastCases ?_ fun k ↦ ?_
       · simp
-      · simpa using hvlow w hwL hwW k
-    have hv'ind : LinearIndependent ℝ (Fin.snoc v w : Fin (m + 1) → E) := hvind.finSnoc hwW
+      simp_all
+    have hv'ind := hvind.finSnoc hwW
     have hv'L : ∀ j : Fin (m + 1), (Fin.snoc v w : Fin (m + 1) → E) j ∈ (L : Set E) := by
       refine Fin.lastCases ?_ fun k ↦ ?_
-      · simpa using hwL
-      · simpa using hvL k
+      · simp_all
+      simp_all
     have hgw : gauge B w = successiveMinimum L B m := by
       refine le_antisymm ?_ ?_
       · refine le_successiveMinimum (by omega) hB₀ hB₁ hB₂ fun t ht u hu huind ↦ ?_
@@ -352,7 +357,7 @@ private theorem exists_gauge_eq_aux (L : Submodule ℤ E) [DiscreteTopology L] [
           have hle : Submodule.span ℝ (Set.range u) ≤ Submodule.span ℝ (Set.range v) := by
             refine Submodule.span_le.2 ?_
             rintro _ ⟨k, rfl⟩
-            exact not_not.1 (hcon k)
+            simp_all
           have := Submodule.finrank_mono hle
           rw [finrank_span_eq_card huind, Fintype.card_fin, hrank] at this
           omega
@@ -360,21 +365,17 @@ private theorem exists_gauge_eq_aux (L : Submodule ℤ E) [DiscreteTopology L] [
         exact (hwmin (u k) ⟨(hu k).2, hk⟩).trans (gauge_le_of_mem ht.le (hu k).1)
       · refine le_of_forall_gt_imp_ge_of_dense fun t ht ↦ ?_
         refine successiveMinimum_le (lt_of_le_of_lt (gauge_nonneg w) ht)
-          (v := Fin.snoc v w) (fun j ↦ ⟨?_, hv'L j⟩) hv'ind
+          (fun j ↦ ⟨?_, hv'L j⟩) hv'ind
         exact mem_smul_of_gauge_lt hB₀ h₀ (lt_of_le_of_lt (hgle j) ht)
     refine ⟨Fin.snoc v w, hv'L, hv'ind, ?_, ?_⟩
     · refine Fin.lastCases ?_ fun k ↦ ?_
-      · simpa using hgw
-      · simpa using hvmin k
+      · simp_all
+      simp_all
     · intro y hy hyW
-      have hsub : Set.range v ⊆ Set.range (Fin.snoc v w : Fin (m + 1) → E) := by
-        rw [Set.range_subset_iff]
-        exact fun k ↦ ⟨k.castSucc, by simp⟩
-      have hyW' : y ∉ Submodule.span ℝ (Set.range v) := fun h ↦
+      have hsub : Set.range v ⊆ Set.range (Fin.snoc v w : Fin (m + 1) → E) := by simp_all
+      have hyW' := fun h ↦
         hyW (Submodule.span_mono hsub h)
-      refine Fin.lastCases ?_ fun k ↦ ?_
-      · simpa using hwmin y ⟨hy, hyW'⟩
-      · simpa using hvlow y hy hyW' k
+      grind
 
 /-- **Cassels' Lemma 1: the successive minima are attained.** There is a single family of
 `finrank ℝ E` linearly independent lattice vectors whose gauges are the successive minima — not
@@ -382,9 +383,8 @@ one family for each index. This is the statement every later proof consumes.
 
 ⚠ No closedness of the body is needed here; see
 `exists_linearIndependent_mem_smul_successiveMinimum` for the body form, which does need it. -/
-theorem exists_linearIndependent_gauge_eq_successiveMinimum (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L] (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B)
-    (hB₂ : (interior B).Nonempty) (hB₃ : Bornology.IsBounded B) :
+theorem exists_linearIndependent_gauge_eq_successiveMinimum
+    :
     ∃ v : Fin (finrank ℝ E) → E, (∀ j, v j ∈ (L : Set E)) ∧ LinearIndependent ℝ v ∧
       ∀ j : Fin (finrank ℝ E), gauge B (v j) = successiveMinimum L B j :=
   let ⟨v, hvL, hvind, hvmin, _⟩ := exists_gauge_eq_aux L hB₀ hB₁ hB₂ hB₃ (finrank ℝ E) le_rfl
@@ -393,17 +393,21 @@ theorem exists_linearIndependent_gauge_eq_successiveMinimum (L : Submodule ℤ E
 /-- The body form of Cassels' Lemma 1: the independent lattice vectors realizing the minima lie in
 the corresponding dilations of the body. This is the form Minkowski's second theorem and the basis
 lemma of Layer 4.6 consume, and `IsClosed B` is exactly what it costs over the gauge form. -/
-theorem exists_linearIndependent_mem_smul_successiveMinimum (L : Submodule ℤ E)
-    [DiscreteTopology L] [IsZLattice ℝ L] (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B)
-    (hB₂ : (interior B).Nonempty) (hB₃ : Bornology.IsBounded B) (hB₄ : IsClosed B) :
+theorem exists_linearIndependent_mem_smul_successiveMinimum
+    (hB₄ : IsClosed B) :
     ∃ v : Fin (finrank ℝ E) → E, (∀ j, v j ∈ (L : Set E)) ∧ LinearIndependent ℝ v ∧
       ∀ j : Fin (finrank ℝ E), v j ∈ (successiveMinimum L B j) • B := by
   obtain ⟨v, hvL, hvind, hvg⟩ :=
     exists_linearIndependent_gauge_eq_successiveMinimum L hB₀ hB₁ hB₂ hB₃
   refine ⟨v, hvL, hvind, fun j ↦ ?_⟩
-  have hpos : 0 < successiveMinimum L B j :=
+  have hpos :=
     successiveMinimum_pos L hB₀ hB₁ hB₂ hB₃ j.isLt
   rw [← gauge_le_iff_mem_smul hB₀ hB₄ (hB₀.mem_nhds_zero_of_symmetric hB₁ hB₂) hpos, hvg j]
+
+end
+
+variable (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B) (hB₂ : (interior B).Nonempty) {v : Fin (finrank ℝ E) → E} (hvL : ∀ i, v i ∈ (L : Set E)) (hvind : LinearIndependent ℝ v) (hvg : ∀ i, gauge B (v i) = successiveMinimum L B i)
+include hB₀ hB₁ hB₂ hvL hvind hvg
 
 /-- **The dependence half of Cassels' Lemma 1.** Outside the span of the first `j` members of a
 family realizing the minima there is nothing of gauge below the `j`-th minimum. The point would
@@ -411,22 +415,20 @@ extend those `j` members to an independent family of `j + 1` lattice points, whi
 `j`-th minimum by the largest gauge in the family; the induction on `j` is what identifies that
 largest gauge as the gauge of the new point, since without it the bound is only by the maximum of
 the new gauge and the `(j - 1)`-st minimum, and those can be equal. -/
-theorem successiveMinimum_le_gauge_of_notMem_span (L : Submodule ℤ E) [DiscreteTopology L]
-    [IsZLattice ℝ L] (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B) (hB₂ : (interior B).Nonempty)
-    {v : Fin (finrank ℝ E) → E} (hvL : ∀ i, v i ∈ (L : Set E)) (hvind : LinearIndependent ℝ v)
-    (hvg : ∀ i, gauge B (v i) = successiveMinimum L B i) :
+theorem successiveMinimum_le_gauge_of_notMem_span
+    :
     ∀ j : ℕ, j ≤ finrank ℝ E → ∀ y ∈ (L : Set E),
       y ∉ Submodule.span ℝ (v '' {i : Fin (finrank ℝ E) | (i : ℕ) < j}) →
         successiveMinimum L B j ≤ gauge B y := by
-  have h₀ : B ∈ 𝓝 (0 : E) := hB₀.mem_nhds_zero_of_symmetric hB₁ hB₂
+  have h₀ := hB₀.mem_nhds_zero_of_symmetric hB₁ hB₂
   intro j
   induction j with
   | zero =>
     intro _ y hy hspan
     refine le_of_forall_gt_imp_ge_of_dense fun t ht ↦ ?_
-    have htpos : 0 < t := lt_of_le_of_lt (gauge_nonneg _) ht
+    have htpos := lt_of_le_of_lt (gauge_nonneg _) ht
     have : Subsingleton (Fin (0 + 1)) := inferInstanceAs (Subsingleton (Fin 1))
-    refine successiveMinimum_le htpos (v := fun _ : Fin (0 + 1) ↦ y)
+    refine successiveMinimum_le htpos (v := fun _ ↦ y)
       (fun _ ↦ ⟨mem_smul_of_gauge_lt hB₀ h₀ ht, hy⟩) ?_
     refine (linearIndependent_subsingleton_index_iff _).2 fun _ ↦ ?_
     intro hy0
@@ -435,15 +437,15 @@ theorem successiveMinimum_le_gauge_of_notMem_span (L : Submodule ℤ E) [Discret
   | succ j ih =>
     intro hj y hy hspan
     have hjn : j < finrank ℝ E := hj
-    have hprev : successiveMinimum L B j ≤ gauge B y :=
+    have hprev :=
       ih hjn.le y hy fun h ↦
         hspan (Submodule.span_mono (Set.image_mono fun i hi ↦ Nat.lt_succ_of_lt hi) h)
     have hrange : Set.range (v ∘ Fin.castLE hj)
-        = v '' {i : Fin (finrank ℝ E) | (i : ℕ) < j + 1} := by
+        = v '' {i : Fin (finrank ℝ E) | i < j + 1} := by
       rw [Set.range_comp, Fin.range_castLE]
     refine le_of_forall_gt_imp_ge_of_dense fun t ht ↦ ?_
-    have htpos : 0 < t := lt_of_le_of_lt (gauge_nonneg _) ht
-    refine successiveMinimum_le (i := j + 1) htpos (v := Fin.snoc (v ∘ Fin.castLE hj) y) ?_ ?_
+    have htpos := lt_of_le_of_lt (gauge_nonneg _) ht
+    refine successiveMinimum_le htpos (v := Fin.snoc (v ∘ Fin.castLE hj) y) ?_ ?_
     · refine Fin.lastCases ?_ (fun k ↦ ?_)
       · rw [Fin.snoc_last]
         exact ⟨mem_smul_of_gauge_lt hB₀ h₀ ht, hy⟩
@@ -451,7 +453,7 @@ theorem successiveMinimum_le_gauge_of_notMem_span (L : Submodule ℤ E) [Discret
         refine ⟨mem_smul_of_gauge_lt hB₀ h₀ ?_, hvL _⟩
         calc gauge B ((v ∘ Fin.castLE hj) k) = successiveMinimum L B (k.castLE hj) := hvg _
           _ ≤ successiveMinimum L B j :=
-              successiveMinimum_le_of_le (by simpa using Fin.is_le k) hjn hB₀ hB₁ hB₂
+              successiveMinimum_le_of_le (by grind) hjn hB₀ hB₁ hB₂
           _ ≤ gauge B y := hprev
           _ < t := ht
     · rw [linearIndependent_finSnoc]
@@ -461,10 +463,8 @@ theorem successiveMinimum_le_gauge_of_notMem_span (L : Submodule ℤ E) [Discret
 span of the first `j` members of a family realizing the minima. No hypothesis on `j` is needed:
 above the dimension the minima vanish and no gauge is negative. This is the input to Cassels'
 Lemma 2, `ZLattice.exists_basis_mem_span_int_of_gauge_lt`. -/
-theorem mem_span_of_gauge_lt_successiveMinimum (L : Submodule ℤ E) [DiscreteTopology L]
-    [IsZLattice ℝ L] (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B) (hB₂ : (interior B).Nonempty)
-    {v : Fin (finrank ℝ E) → E} (hvL : ∀ i, v i ∈ (L : Set E)) (hvind : LinearIndependent ℝ v)
-    (hvg : ∀ i, gauge B (v i) = successiveMinimum L B i) {y : E} (hy : y ∈ (L : Set E)) {j : ℕ}
+theorem mem_span_of_gauge_lt_successiveMinimum
+    {y : E} (hy : y ∈ (L : Set E)) {j : ℕ}
     (hgy : gauge B y < successiveMinimum L B j) :
     y ∈ Submodule.span ℝ (v '' {i : Fin (finrank ℝ E) | (i : ℕ) < j}) := by
   by_contra hspan
@@ -474,28 +474,13 @@ theorem mem_span_of_gauge_lt_successiveMinimum (L : Submodule ℤ E) [DiscreteTo
   · exact absurd (successiveMinimum_le_gauge_of_notMem_span L hB₀ hB₁ hB₂ hvL hvind hvg j hj.le y
       hy hspan) (not_le.2 hgy)
 
-end Attainment
-
 /-! ### Minkowski's first theorem as the case `i = 0`
 
 The zeroth minimum is the least dilation of the body containing a nonzero lattice point, which is
 the quantity Minkowski's convex-body theorem bounds. The identity is measure-free; the bound is
 the only statement in this file that mentions a measure. -/
 
-end ZLattice
-
 /-! ### Regrouping a product of minima -/
-
-section Regrouping
-
-end Regrouping
 
 /-! ### Worked examples -/
 
-section Examples
-
-open ZLattice
-
-variable [FiniteDimensional ℝ E] {L : Submodule ℤ E}
-
-end Examples

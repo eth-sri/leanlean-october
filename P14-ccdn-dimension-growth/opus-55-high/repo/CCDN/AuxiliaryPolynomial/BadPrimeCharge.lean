@@ -3,31 +3,32 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Analysis.PrimeCutoff
-public import CCDN.AuxiliaryPolynomial.DegreeBound
+import CCDN.Analysis.PrimeCutoff
+import CCDN.AuxiliaryPolynomial.DegreeBound
 import CCDN.Analysis.PrimeProduct
 
 /-! Analytic control of bad-prime charges from an integer witness.
 The construction and coefficient bound for a Noether witness remain separate. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open Finset Real
+
+section
+variable (P : Finset ℕ) {D : ℤ} (hD : 0 < D) (hP : ∀ p ∈ P, p.Prime) (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D)
+include hD hP hdiv
 
 /-- Distinct prime divisors of a positive integer have total logarithmic
 weight at most the logarithm of that integer. -/
-lemma prime_divisor_log_sum_le (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
-    (hP : ∀ p ∈ P, p.Prime) (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D) :
+lemma prime_divisor_log_sum_le
+    :
     (∑ p ∈ P, Real.log p) ≤ Real.log D := by
-  simpa only [Nat.cast_one, one_mul] using sum_log_prime_powers_le_log P (fun _ => 1)
-    hD hP (fun p hp => by simpa only [pow_one] using hdiv p hp)
+  simpa using sum_log_prime_powers_le_log P (fun _ => 1)
+    hD hP (fun p hp => by grind)
 
 /-- Above a cutoff T, the reciprocal-weighted charge costs at most log(D)/T. -/
-lemma prime_divisor_charge_le (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
-    (hP : ∀ p ∈ P, p.Prime) (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D)
+lemma prime_divisor_charge_le
     {T : ℝ} (hT : 0 < T) (hlo : ∀ p ∈ P, T ≤ (p : ℝ)) :
     (∑ p ∈ P, Real.log p / p) ≤ Real.log D / T := by
   calc
@@ -38,9 +39,11 @@ lemma prime_divisor_charge_le (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
     _ = (∑ p ∈ P, Real.log p) / T := (sum_div _ _ _).symm
     _ ≤ _ := div_le_div_of_nonneg_right (prime_divisor_log_sum_le P hD hP hdiv) hT.le
 
+end
+
 /-- Mertens bounds an arbitrary prime interval, with its logarithmic width
 and two absolute error terms. -/
-private lemma prime_interval_weight_le {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
+lemma prime_interval_weight_le {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
     (P : Finset ℕ) (hP : ∀ p ∈ P, p.Prime)
     (hlo : ∀ p ∈ P, L < (p : ℝ)) (hhi : ∀ p ∈ P, (p : ℝ) ≤ T) :
     (∑ p ∈ P, Real.log p / p) ≤ Real.log T - Real.log L + 2 * mertensError := by
@@ -65,14 +68,15 @@ private lemma prime_interval_weight_le {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T
   change (∑ p ∈ V, Real.log p / p) - Real.log T ≤ mertensError at ht
   linarith
 
+variable (P : Finset ℕ) {D : ℤ} (hD : 0 < D) (hP : ∀ p ∈ P, p.Prime) (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D)
+include hD hP hdiv
+
 /-- Split the bad primes at T. The low part costs log(T/L), while the high
 part is bounded using the integer witness. -/
-private theorem bad_prime_charge_split (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
-    (hP : ∀ p ∈ P, p.Prime) (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D)
+theorem bad_prime_charge_split
     {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T) (hlo : ∀ p ∈ P, L < (p : ℝ)) :
     (∑ p ∈ P, Real.log p / p) ≤
       Real.log T - Real.log L + 2 * mertensError + Real.log D / T := by
-  classical
   let U := P.filter (fun p : ℕ => (p : ℝ) ≤ T)
   let V := P.filter (fun p : ℕ => ¬ (p : ℝ) ≤ T)
   have hlow := prime_interval_weight_le hL hLT U
@@ -82,27 +86,23 @@ private theorem bad_prime_charge_split (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
   have hhigh := prime_divisor_charge_le V hD
     (fun p hp => hP p (mem_filter.mp hp).1)
     (fun p hp => hdiv p (mem_filter.mp hp).1)
-    (by linarith : 0 < T)
+    (by grind)
     (fun _ hp => (lt_of_not_ge (mem_filter.mp hp).2).le)
-  have hsplit := sum_filter_add_sum_filter_not P (fun p : ℕ => (p : ℝ) ≤ T)
-    (fun p : ℕ => Real.log p / p)
-  change (∑ p ∈ U, Real.log p / p) + (∑ p ∈ V, Real.log p / p) = _ at hsplit
+  have hsplit := sum_filter_add_sum_filter_not P (fun p => (p : ℝ) ≤ T)
+    (fun p => Real.log p / p)
   linarith
 
 /-- A logarithmic-height bound for an integer witness controls the bad-prime
 charge at the scale of the cutoff. Constructing such a witness is algebraic. -/
-theorem bad_prime_charge_of_height (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
-    (hP : ∀ p ∈ P, p.Prime) (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D)
+theorem bad_prime_charge_of_height
     {L H : ℝ} (hL : 1 ≤ L) (hH : 1 ≤ H) (hlo : ∀ p ∈ P, L < (p : ℝ))
     (hheight : Real.log D ≤ L * H) :
     (∑ p ∈ P, Real.log p / p) ≤ Real.log H + 2 * mertensError + 1 := by
   have hL0 : 0 < L := by linarith
   have hH0 : 0 < H := by linarith
-  have hLT : L ≤ L * H := le_mul_of_one_le_right hL0.le hH
+  have hLT := le_mul_of_one_le_right hL0.le hH
   have h := bad_prime_charge_split P hD hP hdiv hL hLT hlo
-  have ht : Real.log D / (L * H) ≤ 1 := (div_le_one (mul_pos hL0 hH0)).mpr hheight
+  have ht := (div_le_one (mul_pos hL0 hH0)).mpr hheight
   rw [Real.log_mul hL0.ne' hH0.ne'] at h
   linarith
 
-end
-end CCDN

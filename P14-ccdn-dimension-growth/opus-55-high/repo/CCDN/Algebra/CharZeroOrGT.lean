@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.Algebra.CharP.Defs
-public import Mathlib.Algebra.Field.Defs
+import Mathlib.Algebra.CharP.Defs
+import Mathlib.Algebra.Field.Defs
 import CCDN.ForMathlib.MvPolynomialDerivative
 
 /-!
@@ -23,8 +22,6 @@ characteristic zero and in characteristic `p > n` are stated once under this hyp
 * `CCDN.CharZeroOrGT.map`: the hypothesis passes to any extension of a field.
 * `CCDN.CharZeroOrGT.iff_ringChar`: the characterization by `ringChar`.
 -/
-
-@[expose] public section
 
 namespace CCDN
 
@@ -45,22 +42,19 @@ theorem of_charZero [AddMonoidWithOne R] [CharZero R] (n : ℕ) : CharZeroOrGT R
 theorem of_charP [AddMonoidWithOne R] {p n : ℕ} [CharP R p] (h : n < p) : CharZeroOrGT R n :=
   fun _ hm hmn ↦ CharP.natCast_ne_zero_of_lt R hm.ne' (hmn.trans_lt h)
 
+section
+variable {m n : ℕ}
+
 /-- The hypothesis weakens to any smaller bound. -/
-theorem mono [AddMonoidWithOne R] {m n : ℕ} (h : CharZeroOrGT R n) (hmn : m ≤ n) :
+theorem mono [AddMonoidWithOne R] (h : CharZeroOrGT R n) (hmn : m ≤ n) :
     CharZeroOrGT R m :=
   fun k hk hkm ↦ h k hk (hkm.trans hmn)
 
-/-- A positive natural number up to the bound is nonzero. -/
-theorem natCast_ne_zero [AddMonoidWithOne R] {m n : ℕ} (h : CharZeroOrGT R n) (hm : m ≠ 0)
-    (hmn : m ≤ n) : (m : R) ≠ 0 :=
-  h m (Nat.pos_of_ne_zero hm) hmn
+end
 
 /-- The hypothesis passes along a ring homomorphism out of a division ring, such as the
 algebra map of a field extension. -/
 theorem map [DivisionRing R] [Semiring S] [Nontrivial S] {n : ℕ} (h : CharZeroOrGT R n)
     (φ : R →+* S) : CharZeroOrGT S n :=
-  fun m hm hmn ↦ by simpa only [map_natCast] using (map_ne_zero φ).mpr (h m hm hmn)
+  fun m hm hmn ↦ by simpa using (map_ne_zero φ).mpr (h m hm hmn)
 
-end CharZeroOrGT
-
-end CCDN

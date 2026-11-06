@@ -3,15 +3,13 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Hilbert.OrthantHilbertPolynomial
+import CCDN.Hilbert.OrthantHilbertPolynomial
 
 /-! The maximal orthants determine the leading term of the Hilbert polynomial.
 In particular its factorial-normalized leading coefficient is a positive
 integer, counted by cells of the standard-exponent partition. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 
@@ -23,8 +21,8 @@ lemma sum_preHilbertPoly_leading {ι : Type*} (s : Finset ι) (hs : s.Nonempty)
     let m := s.sup dim
     let d := (s.filter (fun i => dim i = m)).card
     let P := ∑ i ∈ s, Polynomial.preHilbertPoly ℚ (dim i) (shift i)
-    0 < d ∧ P.natDegree = m ∧ P.leadingCoeff = (d : ℚ) / m.factorial := by
-  dsimp only
+    0 < d ∧ P.natDegree = m ∧ P.leadingCoeff = d / m.factorial := by
+  dsimp
   let m := s.sup dim
   let d := (s.filter (fun i => dim i = m)).card
   let P := ∑ i ∈ s, Polynomial.preHilbertPoly ℚ (dim i) (shift i)
@@ -38,7 +36,7 @@ lemma sum_preHilbertPoly_leading {ι : Type*} (s : Finset ι) (hs : s.Nonempty)
     rw [Polynomial.natDegree_preHilbertPoly]
     exact Finset.le_sup hi
   have hc : P.coeff m = (d : ℚ) * (m.factorial : ℚ)⁻¹ := by
-    simp only [P, Polynomial.finsetSum_coeff]
+    simp [P, Polynomial.finsetSum_coeff]
     calc
       _ = ∑ i ∈ s, if dim i = m then (m.factorial : ℚ)⁻¹ else 0 := by
         apply Finset.sum_congr rfl
@@ -53,9 +51,9 @@ lemma sum_preHilbertPoly_leading {ι : Type*} (s : Finset ι) (hs : s.Nonempty)
   have hc0 : P.coeff m ≠ 0 := by
     rw [hc]
     apply mul_ne_zero
-    · exact_mod_cast Nat.ne_of_gt hd
-    · exact inv_ne_zero (by exact_mod_cast Nat.factorial_ne_zero m)
-  have he : P.natDegree = m := le_antisymm hle (Polynomial.le_natDegree_of_ne_zero hc0)
+    · positivity
+    · exact inv_ne_zero (by positivity)
+  have he := hle.antisymm (Polynomial.le_natDegree_of_ne_zero hc0)
   refine ⟨hd, he, ?_⟩
   rw [Polynomial.leadingCoeff, he, hc, div_eq_mul_inv]
 
@@ -73,7 +71,7 @@ lemma lowerSetOrthantPolynomial_eq_sum {σ : Type*} [Fintype σ]
     lowerSetOrthantPolynomial S B =
       ∑ b ∈ lowerSetOrthantPatterns S B,
         Polynomial.preHilbertPoly ℚ (Fintype.card (orthantFree b)) (orthantBaseDegree b) := by
-  simp only [lowerSetOrthantPolynomial, lowerSetOrthantPatterns, Finset.sum_filter]
+  simp [lowerSetOrthantPolynomial, lowerSetOrthantPatterns, Finset.sum_filter]
 
 /-- A nonempty lower set has a positive integer multiplicity and an eventual
 polynomial of degree at most the number of exponent coordinates. -/
@@ -85,7 +83,7 @@ theorem lowerSet_eventually_polynomial_positive {σ : Type*} [Fintype σ]
       ∃ N : ℕ, ∀ n ≥ N, P.eval (n : ℚ) =
         (Nat.card {a : σ → ℕ // a ∈ S ∧ ∑ i, a i ≤ n} : ℚ) := by
   classical
-  obtain ⟨B, _, hB⟩ := lowerSet_clamp_stabilizes S hS
+  obtain ⟨B, hB⟩ := lowerSet_clamp_stabilizes S hS
   let s := lowerSetOrthantPatterns S B
   have hs : s.Nonempty := by
     obtain ⟨a, ha⟩ := hSne
@@ -103,8 +101,5 @@ theorem lowerSet_eventually_polynomial_positive {σ : Type*} [Fintype σ]
     apply Finset.sup_le
     intro b _
     exact Fintype.card_subtype_le _
-  · rw [hPe, hdeg]
-    exact hlc
+  · grind
 
-end
-end CCDN

@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeFactor
-public import CCDN.Height.PrimitiveIntegerPolynomial
+import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeFactor
+import CCDN.Height.PrimitiveIntegerPolynomial
 import CCDN.Algebra.PrimitiveNormalization
 import CCDN.AuxiliaryPolynomial.PlaneAuxiliaryCount
 import CCDN.AuxiliaryPolynomial.UnscaledHypersurfaceBadPrimes
@@ -15,15 +14,17 @@ import CCDN.Surface.TopFormIrreducibility
 /-! Bad reduction of an affine equation is contained in bad reduction of
  its top homogeneous form. This includes degree loss in the defined predicate. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
+
+section
+variable {σ : Type*} (f : MvPolynomial σ ℤ)
 
 /-- If the top form has good geometric reduction, the original affine
  equation keeps its degree and has good geometric reduction as well. -/
-private theorem hypersurfaceBadReduction_imp_top_homogeneousComponent {σ : Type*}
-    (f : MvPolynomial σ ℤ) (p : ℕ) :
+theorem hypersurfaceBadReduction_imp_top_homogeneousComponent
+    (p : ℕ) :
     HypersurfaceBadReduction f p →
       HypersurfaceBadReduction (homogeneousComponent f.totalDegree f) p := by
   intro hbad
@@ -38,30 +39,18 @@ private theorem hypersurfaceBadReduction_imp_top_homogeneousComponent {σ : Type
 
 /-- Absolute irreducibility of the highest homogeneous component implies
  absolute irreducibility of the original integer equation. -/
-theorem absolute_irreducible_of_top_homogeneousComponent_irreducible {σ : Type*}
-    (f : MvPolynomial σ ℤ)
+theorem absolute_irreducible_of_top_homogeneousComponent_irreducible
     (hir : HasAbsIrreducibleTopForm f) :
     AbsolutelyIrreducible f :=
   (map_degree_and_irreducible_of_top_irreducible _ f hir).2
 
-/-- The affine bad-prime factor is no greater than that of the top
- form when the latter is absolutely irreducible. -/
-theorem hypersurfaceBadPrimeFactor_le_top_homogeneousComponent {n : ℕ}
-    (f : MvPolynomial (Fin (n + 1)) ℤ)
-    (hir : HasAbsIrreducibleTopForm f) :
-    hypersurfaceBadPrimeFactor f ≤
-      hypersurfaceBadPrimeFactor (homogeneousComponent f.totalDegree f) := by
-  have htop : homogeneousComponent f.totalDegree f ≠ 0 := by
-    intro hz
-    exact hir.ne_zero (by rw [hz, map_zero])
-  apply hypersurfaceBadPrimeFactor_mono_of_badReduction_imp
-  · exact ((homogeneousComponent_isHomogeneous _ _).totalDegree htop).symm
-  · exact fun _ => hir
-  · exact hypersurfaceBadReduction_imp_top_homogeneousComponent f
+end
+
+variable {σ : Type*}
 
 /-- Primitivity reflects the irreducibility supplied by the absolute top form
  back to the integer polynomial ring. -/
-theorem PrimitiveIntegerPolynomial.irreducible_of_absolute_top {σ : Type*}
+theorem PrimitiveIntegerPolynomial.irreducible_of_absolute_top
     {f : MvPolynomial σ ℤ} (hprim : PrimitiveIntegerPolynomial f)
     (hir : HasAbsIrreducibleTopForm f) : Irreducible f := by
   apply hprim.irreducible_of_rational_map
@@ -70,27 +59,28 @@ theorem PrimitiveIntegerPolynomial.irreducible_of_absolute_top {σ : Type*}
 
 /-- Removing nonzero integer content preserves absolute irreducibility of
  the top homogeneous form, along with the affine degree. -/
-theorem absolute_top_irreducible_of_integer_scalar_factor {σ : Type*}
+theorem absolute_top_irreducible_of_integer_scalar_factor
     {f g : MvPolynomial σ ℤ} {c : ℤ} (hc : c ≠ 0) (he : f = C c * g)
     (hir : HasAbsIrreducibleTopForm f) :
     g.totalDegree = f.totalDegree ∧
       HasAbsIrreducibleTopForm g := by
   have hf : f ≠ 0 := by
     intro hz
-    exact hir.ne_zero (by rw [hz, map_zero, map_zero])
-  have hdegree := integer_scalar_factor_degree hf hc he
+    exact hir.ne_zero (by grind)
+  have hdegree : g.totalDegree = f.totalDegree := by
+    have hg : g ≠ 0 := by
+      intro hg
+      apply hf
+      rw [he, hg, mul_zero]
+    rw [he, totalDegree_mul_of_isDomain (C_eq_zero.not.mpr hc) hg, totalDegree_C, zero_add]
   refine ⟨hdegree, ?_⟩
   have htop : homogeneousComponent f.totalDegree f =
       C c * homogeneousComponent g.totalDegree g := by
     calc
       _ = homogeneousComponent f.totalDegree (C c * g) := congrArg (homogeneousComponent _) he
       _ = C c * homogeneousComponent f.totalDegree g := homogeneousComponent_C_mul _ _ _
-      _ = _ := by rw [hdegree]
-  dsimp only [HasAbsIrreducibleTopForm, AbsolutelyIrreducible] at hir
+      _ = _ := by grind
+  dsimp [HasAbsIrreducibleTopForm, AbsolutelyIrreducible] at hir
   rw [htop, map_mul, map_C] at hir
-  have hcK : (Int.castRingHom (AlgebraicClosure ℚ)) c ≠ 0 := by
-    simpa only [Int.coe_castRingHom, ne_eq, Int.cast_eq_zero] using hc
-  exact (irreducible_isUnit_mul ((isUnit_iff_ne_zero.mpr hcK).map C)).mp hir
+  exact (irreducible_isUnit_mul ((isUnit_iff_ne_zero.mpr (by simp_all)).map C)).mp hir
 
-end
-end CCDN

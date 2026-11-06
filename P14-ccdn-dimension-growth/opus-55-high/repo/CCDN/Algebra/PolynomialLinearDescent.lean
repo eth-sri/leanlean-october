@@ -3,52 +3,52 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.Algebra.MvPolynomial.Degrees
-public import Mathlib.RingTheory.Ideal.Maps
+import Mathlib.Algebra.MvPolynomial.Degrees
+import Mathlib.RingTheory.Ideal.Maps
 import Mathlib.LinearAlgebra.Dual.Lemmas
+import CCDN.ForMathlib.MvPolynomial
+import Mathlib.Algebra.MvPolynomial.Nilpotent
+import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
 
 /-! Coefficientwise application of a linear map to multivariate polynomials, and
 linear coefficient descent of a polynomial over a field extension: a nonzero
 polynomial vanishing at base-field points has a nonzero base-field polynomial of no
 larger degree vanishing at every one of those points. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial Module
 
+section
+variable {R A B σ : Type*} [CommSemiring R] [CommRing A] [CommRing B] [Algebra R A] [Algebra R B] (φ : A →ₗ[R] B)
+
 /-- Apply a linear coefficient map without changing any monomial. -/
-def polynomialCoefficientLinear {R A B σ : Type*} [CommSemiring R]
-    [CommRing A] [CommRing B] [Algebra R A] [Algebra R B]
-    (φ : A →ₗ[R] B) : MvPolynomial σ A →ₗ[R] MvPolynomial σ B :=
+def polynomialCoefficientLinear
+    : MvPolynomial σ A →ₗ[R] MvPolynomial σ B :=
   (AddMonoidAlgebra.coeffLinearEquiv R).symm.toLinearMap ∘ₗ
     Finsupp.mapRange.linearMap φ ∘ₗ (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
 
 /-- Each coefficient of `polynomialCoefficientLinear φ f` is the image under `φ` of the
 corresponding coefficient of `f`. -/
-@[simp] lemma polynomialCoefficientLinear_coeff {R A B σ : Type*}
-    [CommSemiring R] [CommRing A] [CommRing B] [Algebra R A] [Algebra R B]
-    (φ : A →ₗ[R] B) (f : MvPolynomial σ A) (e : σ →₀ ℕ) :
+@[simp] lemma polynomialCoefficientLinear_coeff
+    (f : MvPolynomial σ A) (e : σ →₀ ℕ) :
     (polynomialCoefficientLinear φ f).coeff e = φ (f.coeff e) := rfl
 
 /-- Applying the linear map `φ` coefficientwise sends the constant `C a` to `C (φ a)`. -/
-@[simp] lemma polynomialCoefficientLinear_C {R A B σ : Type*}
-    [CommSemiring R] [CommRing A] [CommRing B] [Algebra R A] [Algebra R B]
-    (φ : A →ₗ[R] B) (a : A) :
+@[simp] lemma polynomialCoefficientLinear_C
+    (a : A) :
     polynomialCoefficientLinear (σ := σ) φ (C a) = C (φ a) := by
   classical
   ext e
-  simp only [polynomialCoefficientLinear_coeff, coeff_C]
+  simp
   split_ifs <;> simp
 
 /-- If `φ (a * θ b) = φ a * b` for a ring map `θ : B →+* A`, then applying `φ` coefficientwise
 is linear over polynomials with coefficients in `B`: it sends `f * map θ g` to
 `polynomialCoefficientLinear φ f * g`. -/
-lemma polynomialCoefficientLinear_mul_compatible {R A B σ : Type*}
-    [CommSemiring R] [CommRing A] [CommRing B] [Algebra R A] [Algebra R B]
-    (φ : A →ₗ[R] B) (θ : B →+* A)
+lemma polynomialCoefficientLinear_mul_compatible
+    (θ : B →+* A)
     (hφ : ∀ a b, φ (a * θ b) = φ a * b)
     (f : MvPolynomial σ A) (g : MvPolynomial σ B) :
     polynomialCoefficientLinear φ (f * map θ g) =
@@ -60,6 +60,8 @@ lemma polynomialCoefficientLinear_mul_compatible {R A B σ : Type*}
   intro p _
   rw [coeff_map, polynomialCoefficientLinear_coeff, hφ]
 
+end
+
 /-- For a field extension `L / K` and a `K`-linear functional `φ : L → K`, applying `φ`
 coefficientwise is linear over polynomials with coefficients in `K`: it sends
 `f * map (algebraMap K L) g` to `polynomialCoefficientLinear φ f * g`. -/
@@ -70,7 +72,7 @@ lemma polynomialCoefficientLinear_mul_map {K L σ : Type*}
       polynomialCoefficientLinear φ f * g := by
   apply polynomialCoefficientLinear_mul_compatible
   intro a b
-  simpa only [Algebra.smul_def, smul_eq_mul, mul_comm, Algebra.algebraMap_self,
+  simpa [Algebra.smul_def, smul_eq_mul, mul_comm, Algebra.algebraMap_self,
     RingHom.id_apply] using φ.map_smul b a
 
 /-- Applying a linear map coefficientwise does not increase the total degree. -/
@@ -78,14 +80,13 @@ lemma polynomialCoefficientLinear_totalDegree_le {R A B σ : Type*}
     [CommSemiring R] [CommRing A] [CommRing B] [Algebra R A] [Algebra R B]
     (φ : A →ₗ[R] B) (f : MvPolynomial σ A) :
     (polynomialCoefficientLinear φ f).totalDegree ≤ f.totalDegree := by
-  classical
   apply Finset.sup_le
   intro m hm
   apply le_totalDegree
   rw [mem_support_iff, polynomialCoefficientLinear_coeff] at hm
   rw [mem_support_iff]
   intro hz
-  exact hm (by rw [hz, map_zero])
+  exact hm (by grind)
 
 /-- For a field extension `K / k` and a `k`-linear functional `φ : K → k`, evaluating the
 coefficientwise image of `f` under `φ` at a `k`-point `x` gives `φ` of the value of `f` at `x`. -/
@@ -94,11 +95,11 @@ lemma polynomialCoefficientLinear_eval {k K σ : Type*} [Field k] [Field K] [Alg
     eval x (polynomialCoefficientLinear φ f) = φ (eval (algebraMap k K ∘ x) f) := by
   induction f using MvPolynomial.induction_on with
   | C c => simp
-  | add f g hf hg => simp only [map_add, hf, hg]
+  | add f g hf hg => simp [map_add, hf, hg]
   | mul_X f j hf =>
     have hX : (X j : MvPolynomial σ K) = map (algebraMap k K) (X j) := by simp
     rw [hX, polynomialCoefficientLinear_mul_map, map_X]
-    simp only [map_mul, eval_X, hf, Function.comp_apply]
+    simp [map_mul, eval_X, hf, Function.comp_apply]
     rw [mul_comm _ (algebraMap k K (x j)), ← Algebra.smul_def, φ.map_smul, smul_eq_mul, mul_comm]
 
 /-- Linear coefficient descent: for a field extension `K / k`, a nonzero polynomial `f` over `K`
@@ -115,10 +116,28 @@ theorem exists_nonzero_polynomial_linear_descent {k K : Type*}
     polynomialCoefficientLinear_totalDegree_le φ f, ?_⟩
   · intro he
     have hh := polynomialCoefficientLinear_coeff φ f m
-    have hz : φ (f.coeff m) = 0 := by simpa [he] using hh.symm
-    exact hφ hz
+    simp_all
   · intro x hx
     rw [polynomialCoefficientLinear_eval, hx, map_zero]
 
-end
-end CCDN
+/-- If the base change of a polynomial of positive degree is reducible, it factors into two
+nonconstant factors whose degrees add up to the original degree. -/
+theorem exists_map_factorization {k K σ : Type*} [Field k] [Field K] [Algebra k K]
+    {f : MvPolynomial σ k} (hd : 0 < f.totalDegree)
+    (hred : ¬ Irreducible (map (algebraMap k K) f)) :
+    ∃ g h : MvPolynomial σ K, map (algebraMap k K) f = g * h ∧ g ≠ 0 ∧ h ≠ 0 ∧
+      0 < g.totalDegree ∧ 0 < h.totalDegree ∧ g.totalDegree + h.totalDegree = f.totalDegree := by
+  have hmapd := totalDegree_map_of_injective (algebraMap k K).injective f
+  have hmap0 : map (algebraMap k K) f ≠ 0 := fun he => by simp [he] at hmapd; omega
+  obtain ⟨g, h, hfac, hgu, hhu⟩ : ∃ g h : MvPolynomial σ K,
+      map (algebraMap k K) f = g * h ∧ ¬ IsUnit g ∧ ¬ IsUnit h := by
+    by_contra! hn
+    refine hred ⟨fun hu => ?_, fun g h he => ?_⟩
+    · have := (isUnit_iff_totalDegree_of_isReduced.mp hu).2
+      omega
+    · by_cases hu : IsUnit g <;> grind
+  have hg0 : g ≠ 0 := fun he => hmap0 (by grind)
+  have hh0 : h ≠ 0 := fun he => hmap0 (by grind)
+  rw [hfac, totalDegree_mul_of_isDomain hg0 hh0] at hmapd
+  exact ⟨g, h, hfac, hg0, hh0, totalDegree_pos_of_ne_zero_of_not_isUnit hg0 hgu,
+    totalDegree_pos_of_ne_zero_of_not_isUnit hh0 hhu, hmapd⟩

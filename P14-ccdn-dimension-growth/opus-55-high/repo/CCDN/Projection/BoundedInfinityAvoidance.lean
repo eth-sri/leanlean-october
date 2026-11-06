@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Projection.CurvePrimitivePair
-public import CCDN.Projection.InfinityParameterReduction
+import CCDN.Projection.CurvePrimitivePair
+import CCDN.Projection.InfinityParameterReduction
 import CCDN.Algebra.BoundedLinearSeparation
 import CCDN.Algebra.CoordinatePowerGeneration
 import Mathlib.Algebra.Polynomial.OfFn
@@ -14,9 +13,8 @@ import Mathlib.Algebra.Polynomial.OfFn
 /-! An explicit bounded integer moment form avoids any prescribed finite set
 of nonzero directions. No separation of pairs is needed for this step. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 
 /-- The moment coordinate `∑ j, k ^ j * X j` is homogeneous of degree one. -/
 lemma momentCoordinate_homogeneous (K : Type*) [Field K] (n k : ℕ) :
@@ -37,27 +35,24 @@ theorem exists_bounded_moment_nonvanishing {K ι : Type*} [Field K] [CharZero K]
     intro he
     apply hv i
     funext j
-    have hc := congrArg (fun q : Polynomial K => q.coeff j.val) he
-    simpa only [P, Polynomial.ofFn_coeff_eq_val_of_lt _ j.isLt, Polynomial.coeff_zero,
+    have hc := congrArg (fun q => q.coeff j.val) he
+    simpa [P, Polynomial.ofFn_coeff_eq_val_of_lt _ j.isLt, Polynomial.coeff_zero,
       Pi.zero_apply] using hc
   have hPd (i : ι) : (P i).natDegree ≤ n := by
     cases n with
     | zero => simp [P]
     | succ n => exact Nat.le_of_lt (Polynomial.ofFn_natDegree_lt (by omega) _)
   let Q := ∏ i, P i
-  have hQ : Q ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hPn i)
-  have hd : Q.natDegree ≤ n * Fintype.card ι := by
+  obtain ⟨k, hk, hval⟩ := polynomial_exists_small_nat_eval_ne_zero Q (Finset.prod_ne_zero_iff.mpr (fun i _ => hPn i))
+  refine ⟨k, hk.trans (by
     calc
       _ ≤ ∑ _i : ι, n := (Polynomial.natDegree_prod_le _ _).trans
         (Finset.sum_le_sum (fun i _ => hPd i))
-      _ = _ := by simp [Nat.mul_comm]
-  obtain ⟨k, hk, hval⟩ := polynomial_exists_small_nat_eval_ne_zero Q hQ
-  refine ⟨k, hk.trans hd, ?_⟩
+      _ = _ := by simp [Nat.mul_comm]), ?_⟩
   intro i
-  have hp : (∏ i, (P i).eval (k : K)) ≠ 0 := by
-    simpa only [Q, Polynomial.eval_prod] using hval
-  have hi := (Finset.prod_ne_zero_iff.mp hp) i (Finset.mem_univ i)
-  simpa only [P, Polynomial.ofFn_eq_sum_monomial, Polynomial.eval_finsetSum,
+  have hi := (Finset.prod_ne_zero_iff.mp (by
+    simpa [Q, Polynomial.eval_prod] using hval)) i (Finset.mem_univ i)
+  simpa [P, Polynomial.ofFn_eq_sum_monomial, Polynomial.eval_finsetSum,
     Polynomial.eval_monomial] using hi
 
 /-- Avoiding infinity gives the eventual recurrence of the original
@@ -73,5 +68,3 @@ theorem filtration_recurrence_of_infinity_avoidance {K L σ : Type*}
   exact ⟨Fintype.card σ * N,
     eventual_generation_of_power_reductions I l hl.totalDegree_le N hN hred⟩
 
-end
-end CCDN

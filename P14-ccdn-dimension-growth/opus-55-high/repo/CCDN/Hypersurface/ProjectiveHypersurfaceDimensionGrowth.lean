@@ -3,9 +3,8 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Statements
+import CCDN.Statements
 import CCDN.Hilbert.PrimeIdealDimensionDrop
 import CCDN.Hilbert.PrincipalHilbertPolynomial
 import CCDN.Hypersurface.AffineHypersurfaceCount
@@ -22,16 +21,14 @@ affine cone at the same height. Chosen primitive representatives give a
 height-preserving injection.
 -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
 /-- Height-preserving comparison with the affine cone, for every real radius. -/
-private theorem projective_count_le_affine_cone_count {n d : ℕ}
+theorem projective_count_le_affine_cone_count {n d : ℕ}
     (f : MvPolynomial (Fin (n + 1)) ℚ) (hf : f.IsHomogeneous d) (B : ℝ) :
     projectiveCount (projectiveZeroLocus f) B ≤ count (zeroLocus f) B := by
-  classical
   let S := projectivePoints (projectiveZeroLocus f) B
   have hsub : S.image primitiveProjectiveRep ⊆ integralPoints (zeroLocus f) B := by
     intro z hz
@@ -41,56 +38,36 @@ private theorem projective_count_le_affine_cone_count {n d : ℕ}
     refine ⟨fun i => (primitiveProjectiveRep_bound x i).trans hheight, ?_⟩
     exact (mem_projectiveZeroLocus_primitive hf x).mp hzero
   have hc := Finset.card_le_card hsub
-  rw [Finset.card_image_of_injective S primitiveProjectiveRep_injective] at hc
-  exact hc
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open MvPolynomial
-
-private theorem nonabsolute_projective_hypersurface_dimension_growth {K : Type*}
-    [Field K] [Algebra ℚ K] {n : ℕ}
-    (f : MvPolynomial (Fin (n + 2)) ℚ)
-    (hhom : f.IsHomogeneous f.totalDegree) (hir : Irreducible f)
-    (hred : ¬ Irreducible (map (algebraMap ℚ K) f))
-    {B : ℝ} (hB : 1 ≤ B) :
-    (projectiveCount (projectiveZeroLocus f) B : ℝ) ≤
-      (3 * (n + 2) : ℝ) ^ n * (f.totalDegree : ℝ) ^ 2 * B ^ n :=
-  (Nat.cast_le.mpr (projective_count_le_affine_cone_count f hhom B)).trans
-    (nonabsolute_hypersurface_dimension_growth f hir hred hB)
+  rwa [Finset.card_image_of_injective S primitiveProjectiveRep_injective] at hc
 
 /-- The affine bound on the cone gives the projective hypersurface bound with the same
 degree exponent, provided the exponent is at least two. -/
-private theorem RationalAffineHypersurfaceGrowth.projective {n e : ℕ}
+theorem RationalAffineHypersurfaceGrowth.projective {n e : ℕ}
     (h : RationalAffineHypersurfaceGrowth n e) (he : 2 ≤ e) :
     ProjectiveHypersurfaceGrowth n e := by
   obtain ⟨C, hC, hbound⟩ := h
   let A : ℝ := (3 * (n + 3) : ℝ) ^ (n + 1)
   refine ⟨C + A, by positivity, fun f hhom hir hd B hB => ?_⟩
-  have hd1 : (1 : ℝ) ≤ f.totalDegree := by exact_mod_cast (show 1 ≤ f.totalDegree by omega)
+  have hd1 : (1 : ℝ) ≤ f.totalDegree := by bound
   have hB0 : 0 ≤ B := by linarith
   by_cases habs : AbsolutelyIrreducibleRat f
   · have htop : HasAbsIrreducibleTopFormRat f := by
-      dsimp only [HasAbsIrreducibleTopFormRat, AbsolutelyIrreducibleRat]
+      dsimp [HasAbsIrreducibleTopFormRat, AbsolutelyIrreducibleRat]
       rwa [homogeneousComponent_eq_self hhom]
     calc
-      _ ≤ C * (f.totalDegree : ℝ) ^ e * B ^ (n + 1) :=
+      _ ≤ C * f.totalDegree ^ e * B ^ (n + 1) :=
         (Nat.cast_le.mpr (projective_count_le_affine_cone_count f hhom B)).trans
           (hbound f htop hd B hB)
-      _ ≤ (C + A) * (f.totalDegree : ℝ) ^ e * B ^ (n + 1) := by
-        gcongr
-        exact le_add_of_nonneg_right (by positivity)
+      _ ≤ (C + A) * f.totalDegree ^ e * B ^ (n + 1) := by bound
   · have hh : (projectiveCount (projectiveZeroLocus f) B : ℝ) ≤
-        A * (f.totalDegree : ℝ) ^ 2 * B ^ (n + 1) := by
-      simpa only [A, Nat.cast_add, Nat.cast_one, add_assoc,
+        A * f.totalDegree ^ 2 * B ^ (n + 1) := by
+      simpa [A, Nat.cast_add, Nat.cast_one, add_assoc,
         show (1 : ℝ) + 2 = 3 by norm_num] using
-        nonabsolute_projective_hypersurface_dimension_growth f hhom hir habs hB
+        (Nat.cast_le.mpr (projective_count_le_affine_cone_count f hhom B)).trans
+          (nonabsolute_hypersurface_dimension_growth f hir habs hB)
     calc
-      _ ≤ A * (f.totalDegree : ℝ) ^ 2 * B ^ (n + 1) := hh
-      _ ≤ (C + A) * (f.totalDegree : ℝ) ^ e * B ^ (n + 1) := by
+      _ ≤ A * f.totalDegree ^ 2 * B ^ (n + 1) := hh
+      _ ≤ (C + A) * f.totalDegree ^ e * B ^ (n + 1) := by
         gcongr
         linarith
 
@@ -116,17 +93,15 @@ theorem ProjectiveHypersurfaceGrowth.ideal {n e : ℕ} (h : ProjectiveHypersurfa
   have hpd : p.totalDegree = d := by
     rw [principal_filteredHilbertPolynomial_leadingCoeff p hp.ne_zero hpdeg] at hdegree
     have hf : ((n + 2).factorial : ℚ) ≠ 0 := by positivity
-    exact_mod_cast (div_left_inj' hf).mp hdegree
+    simp_all
   have hsub : projectiveIdealZeroLocus (Ideal.span {p}) ⊆ projectiveZeroLocus p :=
     fun x hx => projectiveIdealZeroLocus_rep hx p (Ideal.mem_span_singleton_self p)
   calc
     (projectiveCount (projectiveIdealZeroLocus (Ideal.span {p})) B : ℝ) ≤
         projectiveCount (projectiveZeroLocus p) B := by
       exact_mod_cast projectiveCount_mono hsub le_rfl
-    _ ≤ C * (d : ℝ) ^ e * B ^ (n + 1) := by
-      simpa only [hpd] using hbound p
+    _ ≤ C * d ^ e * B ^ (n + 1) := by
+      simpa [hpd] using hbound p
         (principal_generator_isHomogeneous _ hI p hp.ne_zero rfl) hp.irreducible
         (by omega) B hB
 
-end
-end CCDN

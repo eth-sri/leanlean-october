@@ -3,9 +3,8 @@ Copyright (c) 2026 Ralf Stephan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ralf Stephan
 -/
-module
 
-public import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.NumberField
 
 /-!
 # The affine height of a tuple
@@ -61,68 +60,3 @@ E. Bombieri and W. Gubler, *Heights in Diophantine Geometry*, Cambridge Universi
 This is Layer 0.5 of the `ArithmeticHeights` roadmap.
 -/
 
-public section
-
-open Function Real
-
-namespace Height
-
-variable {K : Type*} [Field K] [AdmissibleAbsValues K] {ι ι' : Type*}
-
-/-- The **affine height** of a tuple: the projective height of the tuple with a coordinate `1`
-appended.
-
-Unlike `Height.mulHeight` this is not invariant under scaling
-(`Height.exists_mulHeightAff_smul_ne`), and that is exactly what a bound on a non-homogeneous
-quantity needs: the value `∑ i, a i * x i` of a linear form is not a function on projective
-space, so no scaling-invariant quantity can bound its height. The affine height dominates the
-projective height (`Height.mulHeight_le_mulHeightAff`) and the height of every single coordinate
-(`Height.mulHeight₁_le_mulHeightAff`), neither of which `mulHeight` does. -/
-@[expose] noncomputable def mulHeightAff (x : ι → K) : ℝ := mulHeight fun o : Option ι ↦ o.elim 1 x
-
-/-- The affine logarithmic height of a tuple. As everywhere in this development, the logarithmic
-height is *defined* as the logarithm of the multiplicative one. -/
-@[expose] noncomputable def logHeightAff (x : ι → K) : ℝ := log (mulHeightAff x)
-
-theorem logHeightAff_eq_log_mulHeightAff (x : ι → K) :
-    logHeightAff x = log (mulHeightAff x) :=
-  rfl
-
-omit [AdmissibleAbsValues K] in
-/-- The tuple whose height is `Height.mulHeightAff x` is never zero: its coordinate at `none`
-is `1`. This is what makes the affine height positive with no hypothesis on `x`, and it is the
-nondegeneracy that consumers of the Segre relation need. -/
-theorem optionElim_one_ne_zero (x : ι → K) : (fun o : Option ι ↦ o.elim 1 x) ≠ 0 :=
-  fun h ↦ one_ne_zero (congrFun h none)
-
-section Affine
-
-variable [Finite ι]
-
-/-- The affine height of the zero tuple is `1` — not by a junk-value convention but because the
-tuple whose height is taken is `(1, 0, …, 0)`. -/
-@[simp]
-theorem mulHeightAff_zero : mulHeightAff (0 : ι → K) = 1 := by
-  have hsup (v : AbsoluteValue K ℝ) :
-      (⨆ o : Option ι, v (Option.elim o 1 (0 : ι → K))) = 1 :=
-    le_antisymm (ciSup_le fun o ↦ by cases o <;> simp)
-      (Finite.le_ciSup_of_le none (by simp))
-  rw [mulHeightAff, mulHeight_eq (optionElim_one_ne_zero (0 : ι → K))]
-  simp [hsup]
-
-@[simp]
-theorem logHeightAff_zero : logHeightAff (0 : ι → K) = 0 := by
-  rw [logHeightAff_eq_log_mulHeightAff, mulHeightAff_zero, log_one]
-
-end Affine
-
-/-!
-### Examples
-
-The acceptance criterion the roadmap states for this milestone: the affine and projective heights
-of one and the same tuple differ, so the appended coordinate is doing something.
--/
-
-end Height
-
-end

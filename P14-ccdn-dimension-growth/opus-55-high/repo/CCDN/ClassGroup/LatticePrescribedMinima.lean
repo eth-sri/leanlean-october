@@ -3,18 +3,15 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.Algebra.Module.ZLattice.Basic
 import CCDN.ForMathlib.ZLattice
 
 /-! A lattice basis with a prescribed nonzero first vector. Every later
 vector is shortest outside the previous span. A given global
 lower bound replaces the first vector's norm in the monotone thresholds. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
 open Module Submodule
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -34,29 +31,32 @@ omit [FiniteDimensional ℝ E]
 
 variable {L : Submodule ℤ E} {w : E} {k : ℕ} {v : Fin (k + 1) → E}
 
+variable (hv : IsPrescribedGreedyLatticeFamily L w v)
+include hv
+
 /-- The vectors of a prescribed greedy family are linearly independent. -/
-private theorem IsPrescribedGreedyLatticeFamily.linearIndependent
-    (hv : IsPrescribedGreedyLatticeFamily L w v) : LinearIndependent ℝ v := hv.1
+theorem IsPrescribedGreedyLatticeFamily.linearIndependent
+    : LinearIndependent ℝ v := hv.1
 
 /-- The first vector of a prescribed greedy family is the prescribed vector. -/
 theorem IsPrescribedGreedyLatticeFamily.first_eq
-    (hv : IsPrescribedGreedyLatticeFamily L w v) : v 0 = w := hv.2.1
+    : v 0 = w := hv.2.1
 
 /-- The vectors of a prescribed greedy family lie in the lattice. -/
 theorem IsPrescribedGreedyLatticeFamily.mem
-    (hv : IsPrescribedGreedyLatticeFamily L w v) (i : Fin (k + 1)) : v i ∈ L := hv.2.2.1 i
+    (i : Fin (k + 1)) : v i ∈ L := hv.2.2.1 i
 
 /-- Every later vector of a prescribed greedy family is a shortest lattice vector outside the
 span of the preceding ones. -/
 theorem IsPrescribedGreedyLatticeFamily.norm_le
-    (hv : IsPrescribedGreedyLatticeFamily L w v) {i : Fin (k + 1)} (hi : i ≠ 0) {x : E}
+    {i : Fin (k + 1)} (hi : i ≠ 0) {x : E}
     (hx : x ∈ L) (hxU : x ∉ span ℝ (v '' Set.Iio i)) : ‖v i‖ ≤ ‖x‖ :=
   hv.2.2.2 i hi x hx hxU
 
 end Projections
 
 omit [FiniteDimensional ℝ E] in
-private theorem IsPrescribedGreedyLatticeFamily.snoc
+theorem IsPrescribedGreedyLatticeFamily.snoc
     {L : Submodule ℤ E} {w : E} {k : ℕ} {v : Fin (k + 1) → E}
     (hv : IsPrescribedGreedyLatticeFamily L w v) {x : E} (hx : x ∈ L)
     (hxU : x ∉ span ℝ (Set.range v))
@@ -66,22 +66,22 @@ private theorem IsPrescribedGreedyLatticeFamily.snoc
   · simpa using hv.first_eq
   · intro i
     refine Fin.lastCases ?_ (fun j => ?_) i
-    · simpa using hx
+    · simp_all
     · simpa using hv.mem j
   · intro i
     refine Fin.lastCases ?_ (fun j => ?_) i
-    · intro _
-      simpa only [Fin.snoc_last, Fin.snoc_image_Iio_last] using hmin
+    · simp_all [Fin.snoc_last, Fin.snoc_image_Iio_last]
     · intro hj
-      have hj0 : j ≠ 0 := by intro hz; apply hj; simp [hz]
-      simpa only [Fin.snoc_castSucc, Fin.snoc_image_Iio_castSucc] using
-        fun x hx hxU => hv.norm_le hj0 hx hxU
+      simpa [Fin.snoc_castSucc, Fin.snoc_image_Iio_castSucc] using
+        fun x hx hxU => hv.norm_le (by grind) hx hxU
+
+section
+variable (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] (w : E) (hw : w ∈ L) (hw0 : w ≠ 0)
+include hw hw0
 
 /-- Prescribed-first greedy independent lattice vectors of every possible
 length. -/
-private theorem exists_prescribed_greedy_lattice_family
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (w : E) (hw : w ∈ L) (hw0 : w ≠ 0)
+theorem exists_prescribed_greedy_lattice_family
     (k : ℕ) (hk : k + 1 ≤ Module.finrank ℝ E) :
     ∃ v : Fin (k + 1) → E, IsPrescribedGreedyLatticeFamily L w v := by
   induction k with
@@ -104,13 +104,13 @@ private theorem exists_prescribed_greedy_lattice_family
 /-- Every nonzero vector `w` of a full lattice `L` in a real space of dimension `n + 1` is the first
 vector of a basis `b` of lattice vectors that forms a prescribed greedy lattice family. -/
 theorem exists_prescribed_greedy_lattice_basis
-    (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
-    (w : E) (hw : w ∈ L) (hw0 : w ≠ 0)
     {n : ℕ} (hn : Module.finrank ℝ E = n + 1) :
     ∃ b : Basis (Fin (n + 1)) ℝ E, IsPrescribedGreedyLatticeFamily L w b := by
   obtain ⟨v, hv⟩ := exists_prescribed_greedy_lattice_family L w hw hw0 n (by omega)
-  let b := basisOfLinearIndependentOfCardEqFinrank' v hv.linearIndependent (by simpa using hn.symm)
-  exact ⟨b, by simpa only [b, coe_basisOfLinearIndependentOfCardEqFinrank'] using hv⟩
+  let b := basisOfLinearIndependentOfCardEqFinrank' v hv.linearIndependent (by simp_all)
+  exact ⟨b, by aesop⟩
+
+end
 
 omit [FiniteDimensional ℝ E] in
 /-- The successive thresholds of a prescribed greedy family `v`: the first is the given lower bound
@@ -142,11 +142,11 @@ theorem IsPrescribedGreedyLatticeFamily.minima_mono
   intro i j hij
   by_cases hi : i = 0
   · by_cases hj : j = 0
-    · simp [prescribedLatticeMinima, hi, hj]
+    · grind
     · simpa [prescribedLatticeMinima, hi, hj] using
         hlower (v j) (hv.mem j) (hv.linearIndependent.ne_zero j)
   · have hj : j ≠ 0 := by intro hz; apply hi; exact le_antisymm (hz ▸ hij) (Fin.zero_le i)
-    simp only [prescribedLatticeMinima, ite_eq_right hi, ite_eq_right hj]
+    simp [prescribedLatticeMinima, ite_eq_right hi, ite_eq_right hj]
     exact hv.norm_le hi (hv.mem j) (hv.linearIndependent.notMem_span_image (not_lt_of_ge hij))
 
 omit [FiniteDimensional ℝ E] in
@@ -160,22 +160,7 @@ theorem IsPrescribedGreedyLatticeFamily.minima_outside
     ∀ i x, x ∈ L → x ∉ span ℝ (v '' Set.Iio i) → prescribedLatticeMinima v δ i ≤ ‖x‖ := by
   intro i x hx hxU
   by_cases hi : i = 0
-  · rw [prescribedLatticeMinima, ite_eq_left hi]
-    apply hlower x hx
-    intro hz
-    exact hxU (hz ▸ Submodule.zero_mem _)
+  · aesop
   · rw [prescribedLatticeMinima, ite_eq_right hi]
     exact hv.norm_le hi hx hxU
 
-omit [FiniteDimensional ℝ E] [NormedSpace ℝ E] in
-/-- The product of the norms `‖v i‖` equals `‖w‖ / δ` times the product of the thresholds
-`prescribedLatticeMinima v δ i`, where `v 0 = w` and `δ ≠ 0`. -/
-theorem prescribedLatticeMinima_prod {n : ℕ} (v : Fin (n + 1) → E)
-    {w : E} (hw : v 0 = w) {δ : ℝ} (hδ : δ ≠ 0) :
-    (∏ i, ‖v i‖) = (‖w‖ / δ) * ∏ i, prescribedLatticeMinima v δ i := by
-  rw [Fin.prod_univ_succ, Fin.prod_univ_succ]
-  simp only [prescribedLatticeMinima, Fin.succ_ne_zero, ↓reduceIte, hw]
-  rw [← mul_assoc, div_mul_cancel₀ _ hδ]
-
-end
-end CCDN

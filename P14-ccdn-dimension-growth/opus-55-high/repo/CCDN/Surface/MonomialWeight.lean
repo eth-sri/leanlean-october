@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Hilbert.PrincipalStandardMonomials
-public import Mathlib.Analysis.Real.Sqrt
+import CCDN.Hilbert.PrincipalStandardMonomials
+import Mathlib.Analysis.Real.Sqrt
 import CCDN.Analysis.SurfaceMonomialWeightNumerics
 import CCDN.AuxiliaryPolynomial.HypersurfaceRankProfile
 import CCDN.ForMathlib.MvPolynomial
@@ -17,9 +16,8 @@ import Mathlib.Algebra.Order.Star.Real
 affine surface. The coefficient 2/3 of the square-root rank is retained,
 with an explicit linear error depending only on the equation degree. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial Finset
 
 /-- Standard monomials up to degree M have weighted degree at most
@@ -32,13 +30,12 @@ theorem surface_standard_monomial_weight {K : Type*} [Field K]
     (∑ a ∈ S, ((Finsupp.degree a : ℕ) : ℝ)) ≤
       (2 / 3 : ℝ) * S.card * Real.sqrt (2 * S.card / (f.totalDegree : ℝ)) +
         (2 * f.totalDegree + 2) * S.card := by
-  classical
-  dsimp only
+  dsimp
   let H : ℕ → ℕ := fun k => Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) k)
   have hrank (k : ℕ) (hk : f.totalDegree ≤ k) :
       H k + (2 + 1 + (k - f.totalDegree)).choose (k - f.totalDegree) =
         (2 + 1 + k).choose k := by
-    simpa only [H, finrank_restrictTotalDegree, Fintype.card_fin] using
+    simpa [H, finrank_restrictTotalDegree, Fintype.card_fin] using
       principal_filtered_finrank f hf hk
   have hbounds (k : ℕ) (hk : f.totalDegree ≤ k) :
       (f.totalDegree : ℝ) * ((k : ℝ) - f.totalDegree + 1) ^ 2 / 2 ≤ H k ∧
@@ -47,18 +44,28 @@ theorem surface_standard_monomial_weight {K : Type*} [Field K]
     norm_num at hb
     exact hb
   have hsum := surface_rank_prefix_sum_lower H hM (fun k hk => (hbounds k hk).1)
-  have hid := standardMonomialPrefix_weight_identity (Ideal.span {f}) M
+  have hid : (∑ a ∈ standardMonomialPrefix (Ideal.span {f}) MonomialOrder.degLex M, Finsupp.degree a) +
+        ∑ k ∈ range M, Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) k) =
+      M * Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) := by
+    have h := sum_weights_add_prefix_counts
+      (standardMonomialPrefix (Ideal.span {f}) MonomialOrder.degLex M) Finsupp.degree M
+      (fun a ha => (mem_standardMonomialPrefix (Ideal.span {f}) _ M a).mp ha |>.2)
+    rw [standardMonomialPrefix_card] at h
+    convert h using 2
+    apply sum_congr rfl
+    intro k hk
+    rw [standardMonomialPrefix_filter (Ideal.span {f}) _ (by have := mem_range.mp hk; omega),
+      standardMonomialPrefix_card]
   have hidR :
       (∑ a ∈ standardMonomialPrefix (Ideal.span {f}) MonomialOrder.degLex M,
         ((Finsupp.degree a : ℕ) : ℝ)) + (∑ k ∈ range M, (H k : ℝ)) = (M : ℝ) * H M := by
     exact_mod_cast hid
-  have hdR : (0 : ℝ) < f.totalDegree := by exact_mod_cast hd
-  have hMR : (f.totalDegree : ℝ) ≤ M := by exact_mod_cast hM
-  have hbase : 0 ≤ 2 * (H M : ℝ) / (f.totalDegree : ℝ) := by positivity
-  let R : ℝ := Real.sqrt (2 * (H M : ℝ) / (f.totalDegree : ℝ))
+  have hdR : (0 : ℝ) < f.totalDegree := mod_cast hd
+  have hMR : (f.totalDegree : ℝ) ≤ M := mod_cast hM
+  have hbase : 0 ≤ 2 * (H M : ℝ) / f.totalDegree := by positivity
+  let R : ℝ := Real.sqrt (2 * (H M : ℝ) / f.totalDegree)
   have hR : 0 ≤ R := Real.sqrt_nonneg _
-  have hroot : (f.totalDegree : ℝ) * R ^ 2 = 2 * H M := by
-    dsimp only [R]
+  have hroot : f.totalDegree * R ^ 2 = 2 * H M := by
     rw [Real.sq_sqrt hbase]
     field_simp
   have hlo : (M : ℝ) - f.totalDegree ≤ R := by
@@ -69,15 +76,12 @@ theorem surface_standard_monomial_weight {K : Type*} [Field K]
   have hhi : R ≤ (M : ℝ) + 2 := by
     apply (Real.sqrt_le_left (by positivity)).mpr
     apply (div_le_iff₀ hdR).mpr
-    have hb := (hbounds M hM).2
-    nlinarith
+    grind
   have hw : (∑ a ∈ standardMonomialPrefix (Ideal.span {f}) MonomialOrder.degLex M,
       ((Finsupp.degree a : ℕ) : ℝ)) + (f.totalDegree : ℝ) *
         ((M : ℝ) - f.totalDegree) ^ 3 / 6 ≤ (M : ℝ) * H M := by
     linarith
   have hh := surface_weight_root_bound hdR hMR (Nat.cast_nonneg (H M)) R hR
     hroot hlo hhi hw
-  simpa only [standardMonomialPrefix_card, H, R] using hh
+  simpa [standardMonomialPrefix_card, H, R] using hh
 
-end
-end CCDN

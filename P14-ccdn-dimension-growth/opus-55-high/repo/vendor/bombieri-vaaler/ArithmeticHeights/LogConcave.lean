@@ -3,9 +3,8 @@ Copyright (c) 2026 Ralf Stephan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ralf Stephan
 -/
-module
 
-public import ArithmeticHeights.PrekopaLeindler
+import ArithmeticHeights.PrekopaLeindler
 
 /-!
 # Log-concave functions, and the log-concavity of a marginal
@@ -64,28 +63,27 @@ Definition C.3.1, Remark C.3.2 and Lemma C.3.4.
 This is Layer 4.5 (infrastructure) of the `ArithmeticHeights` roadmap.
 -/
 
-public section
-
 open MeasureTheory Set
+
+section
+variable {E : Type*} [AddCommGroup E] [Module ℝ E]
 
 /-- A function `f : E → ℝ≥0∞` on a real vector space is **log-concave** if
 `f x ^ a * f y ^ b ≤ f (a • x + b • y)` for all `x`, `y` and all weights `a, b > 0` summing to
 `1`; for positive real-valued `f` this says that `log ∘ f` is concave. -/
-@[expose] def LogConcave {E : Type*} [AddCommGroup E] [Module ℝ E] (f : E → ENNReal) : Prop :=
+def LogConcave (f : E → ENNReal) : Prop :=
   ∀ a b : ℝ, 0 < a → 0 < b → a + b = 1 → ∀ x y, f x ^ a * f y ^ b ≤ f (a • x + b • y)
 
 /-- **Every strict superlevel set of a log-concave function is convex.** This is what makes the
 layer-cake decomposition of a log-concave density a superposition of convex symmetric sets, which
 is the form Bombieri–Gubler's Lemma C.3.7 consumes. -/
-theorem LogConcave.convex_lt {E : Type*} [AddCommGroup E] [Module ℝ E] {f : E → ENNReal}
+theorem LogConcave.convex_lt {f : E → ENNReal}
     (hf : LogConcave f) (c : ENNReal) : Convex ℝ {x | c < f x} := by
   intro x hx y hy a b ha hb hab
   rcases eq_or_lt_of_le ha with ha0 | ha0
-  · have hb1 : b = 1 := by rw [← hab, ← ha0, zero_add]
-    simpa [← ha0, hb1] using hy
+  · aesop
   rcases eq_or_lt_of_le hb with hb0 | hb0
-  · have ha1 : a = 1 := by rw [← hab, ← hb0, add_zero]
-    simpa [← hb0, ha1] using hx
+  · aesop
   refine (lt_min hx hy).trans_le (le_trans ?_ (hf a b ha0 hb0 hab x y))
   calc min (f x) (f y) = min (f x) (f y) ^ (a + b) := by rw [hab, ENNReal.rpow_one]
     _ = min (f x) (f y) ^ a * min (f x) (f y) ^ b :=
@@ -95,7 +93,7 @@ theorem LogConcave.convex_lt {E : Type*} [AddCommGroup E] [Module ℝ E] {f : E 
           (ENNReal.rpow_le_rpow (min_le_right _ _) hb0.le)
 
 /-- **The indicator of a convex set is log-concave**, at any value `c`. -/
-theorem logConcave_indicator {E : Type*} [AddCommGroup E] [Module ℝ E] {s : Set E}
+theorem logConcave_indicator {s : Set E}
     (hs : Convex ℝ s) (c : ENNReal) : LogConcave (Set.indicator s (fun _ => c)) := by
   intro a b ha hb hab x y
   by_cases hx : x ∈ s
@@ -103,20 +101,10 @@ theorem logConcave_indicator {E : Type*} [AddCommGroup E] [Module ℝ E] {s : Se
     · rw [Set.indicator_of_mem hx, Set.indicator_of_mem hy,
         Set.indicator_of_mem (hs hx hy ha.le hb.le hab),
         ← ENNReal.rpow_add_of_nonneg a b ha.le hb.le, hab, ENNReal.rpow_one]
-    · simp [Set.indicator_of_notMem hy, ENNReal.zero_rpow_of_pos hb]
-  · simp [Set.indicator_of_notMem hx, ENNReal.zero_rpow_of_pos ha]
+    simp_all
+  · simp_all
 
-/-- A product of log-concave functions is log-concave. -/
-theorem LogConcave.mul {E : Type*} [AddCommGroup E] [Module ℝ E] {f g : E → ENNReal}
-    (hf : LogConcave f) (hg : LogConcave g) : LogConcave (f * g) := by
-  intro a b ha hb hab x y
-  have h1 : (f x * g x) ^ a = f x ^ a * g x ^ a := ENNReal.mul_rpow_of_nonneg _ _ ha.le
-  have h2 : (f y * g y) ^ b = f y ^ b * g y ^ b := ENNReal.mul_rpow_of_nonneg _ _ hb.le
-  simp only [Pi.mul_apply, h1, h2]
-  calc f x ^ a * g x ^ a * (f y ^ b * g y ^ b)
-      = f x ^ a * f y ^ b * (g x ^ a * g y ^ b) := by ring
-    _ ≤ f (a • x + b • y) * g (a • x + b • y) :=
-        mul_le_mul' (hf a b ha hb hab x y) (hg a b ha hb hab x y)
+end
 
 /-- **Bombieri–Gubler, Lemma C.3.4: a marginal of a log-concave function over a convex set is
 log-concave.** If `f : E × F → ℝ≥0∞` is measurable and log-concave and `A ⊆ F` is convex and
@@ -133,14 +121,13 @@ theorem LogConcave.setLIntegral_prod_right {E F : Type*} [MeasurableSpace E] [Ad
     fun x => (lintegral_indicator hA _).symm
   have hmeas : ∀ x : E, Measurable (Set.indicator A fun y => f (x, y)) :=
     fun x => (hf.comp measurable_prodMk_left).indicator hA
-  simp only [hind]
+  simp [hind]
   refine hF a b ha hb hab _ _ _ (hmeas x₁) (hmeas x₂) (hmeas (a • x₁ + b • x₂)) fun y₁ y₂ => ?_
   by_cases hy₁ : y₁ ∈ A
   · by_cases hy₂ : y₂ ∈ A
     · rw [Set.indicator_of_mem hy₁, Set.indicator_of_mem hy₂,
         Set.indicator_of_mem (hAc hy₁ hy₂ ha.le hb.le hab)]
       exact hlc a b ha hb hab (x₁, y₁) (x₂, y₂)
-    · simp [Set.indicator_of_notMem hy₂, ENNReal.zero_rpow_of_pos hb]
-  · simp [Set.indicator_of_notMem hy₁, ENNReal.zero_rpow_of_pos ha]
+    simp_all
+  · simp_all
 
-end

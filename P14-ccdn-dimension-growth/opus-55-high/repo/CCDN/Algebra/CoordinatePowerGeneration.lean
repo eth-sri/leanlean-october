@@ -3,21 +3,22 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Hilbert.FilteredIntersection
+import CCDN.Hilbert.FilteredIntersection
 
 /-! Balanced coordinate-power reductions imply eventual generation by a
 linear parameter in arbitrary ambient dimension. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
+section
+variable {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K)) {m n : ℕ}
+
 /-- The degree filtration of the coordinate ring `MvPolynomial σ K ⧸ I` is increasing. -/
-lemma filteredCoordinateSpace_mono {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) {m n : ℕ} (hmn : m ≤ n) :
+lemma filteredCoordinateSpace_mono
+    (hmn : m ≤ n) :
     filteredCoordinateSpace I m ≤ filteredCoordinateSpace I n := by
   apply Submodule.map_mono
   intro f hf
@@ -25,8 +26,8 @@ lemma filteredCoordinateSpace_mono {K σ : Type*} [Field K]
 
 /-- The degree filtration of the coordinate ring is multiplicative: a product of classes of
 degree at most `m` and `n` has degree at most `m + n`. -/
-lemma filteredCoordinateSpace_mul_mem {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) {m n : ℕ} {x y : MvPolynomial σ K ⧸ I}
+lemma filteredCoordinateSpace_mul_mem
+    {x y : MvPolynomial σ K ⧸ I}
     (hx : x ∈ filteredCoordinateSpace I m) (hy : y ∈ filteredCoordinateSpace I n) :
     x * y ∈ filteredCoordinateSpace I (m + n) := by
   obtain ⟨f, hf, rfl⟩ := Submodule.mem_map.mp hx
@@ -36,22 +37,7 @@ lemma filteredCoordinateSpace_mul_mem {K σ : Type*} [Field K]
   rw [mem_restrictTotalDegree] at hf hg ⊢
   exact (totalDegree_mul _ _).trans (Nat.add_le_add hf hg)
 
-/-- An exponent vector of positive degree at least `Fintype.card σ * N` has some coordinate
-at least `N`. -/
-lemma large_exponent_of_degree {σ : Type*} [Fintype σ]
-    (e : σ →₀ ℕ) (N : ℕ) (hpos : 0 < e.degree)
-    (he : Fintype.card σ * N ≤ e.degree) : ∃ j, N ≤ e j := by
-  classical
-  by_contra! hn
-  have hs := Finsupp.degree_eq_sum e
-  have hnon : (Finset.univ : Finset σ).Nonempty := by
-    by_contra h
-    have hz : (Finset.univ : Finset σ) = ∅ := Finset.not_nonempty_iff_eq_empty.mp h
-    rw [hz, Finset.sum_empty] at hs
-    omega
-  have hlt := Finset.sum_lt_sum_of_nonempty hnon (fun j _ => hn j)
-  simp only [Finset.sum_const, Finset.card_univ, smul_eq_mul] at hlt
-  omega
+end
 
 /-- Let `l` have total degree at most `1`. If each coordinate power `X j ^ N` is congruent
 modulo `I` to `r + l * s` with `r` and `s` of total degree at most `N - 1`, then for every
@@ -67,7 +53,6 @@ theorem eventual_generation_of_power_reductions {K σ : Type*} [Field K] [Fintyp
     ∀ n ≥ Fintype.card σ * N, filteredCoordinateSpace I (n + 1) =
       filteredCoordinateSpace I n ⊔ (filteredCoordinateSpace I n).map
         (LinearMap.mulLeft K ((Ideal.Quotient.mk I) l)) := by
-  classical
   intro n hn
   have hlmem : (Ideal.Quotient.mk I) l ∈ filteredCoordinateSpace I 1 :=
     ⟨l, (mem_restrictTotalDegree _ _ _).mpr hl, rfl⟩
@@ -80,19 +65,22 @@ theorem eventual_generation_of_power_reductions {K σ : Type*} [Field K] [Fintyp
         exact ⟨monomial e c, (mem_restrictTotalDegree _ _ _).mpr
           ((totalDegree_monomial_le e c).trans hsmall), rfl⟩
       have heq : e.degree = n + 1 := by omega
-      obtain ⟨j, hj⟩ := large_exponent_of_degree e N (by omega) (by omega)
+      obtain ⟨j, hj⟩ : ∃ j, N ≤ e j := by
+        by_contra! hn
+        have hs := Finsupp.degree_eq_sum e
+        have hnon : (Finset.univ : Finset σ).Nonempty := by
+          by_contra h
+          simp_all
+        have hlt := Finset.sum_lt_sum_of_nonempty hnon (fun j _ => hn j)
+        simp at hlt
+        omega
       obtain ⟨r, s, hr, hs, hrel⟩ := hpow j
       let u := e - Finsupp.single j N
-      have hu : u + Finsupp.single j N = e := tsub_add_cancel_of_le (Finsupp.single_le_iff.mpr hj)
+      have hu := tsub_add_cancel_of_le (Finsupp.single_le_iff.mpr hj)
       have hud : u.degree + N = e.degree := by
-        simpa only [map_add, Finsupp.degree_single] using congrArg Finsupp.degree hu
+        simpa using congrArg Finsupp.degree hu
       have hm : monomial e c = monomial u c * X j ^ N := by
         rw [X_pow_eq_monomial, monomial_mul_monomial, mul_one, hu]
-      have hr' : (monomial u c * r).totalDegree ≤ n := by
-        apply (totalDegree_mul _ _).trans
-        have hh := totalDegree_monomial_le u c
-        change (monomial u c).totalDegree ≤ u.degree at hh
-        omega
       have hs' : (monomial u c * s).totalDegree ≤ n := by
         apply (totalDegree_mul _ _).trans
         have hh := totalDegree_monomial_le u c
@@ -101,17 +89,20 @@ theorem eventual_generation_of_power_reductions {K σ : Type*} [Field K] [Fintyp
       rw [hm, map_mul, hrel, mul_add]
       apply Submodule.add_mem
       · apply (le_sup_left : filteredCoordinateSpace I n ≤ _)
-        exact ⟨monomial u c * r, (mem_restrictTotalDegree _ _ _).mpr hr', by simp⟩
+        exact ⟨monomial u c * r, (mem_restrictTotalDegree _ _ _).mpr (by
+          apply (totalDegree_mul _ _).trans
+          have hh := totalDegree_monomial_le u c
+          change (monomial u c).totalDegree ≤ u.degree at hh
+          omega), by simp⟩
       · apply (le_sup_right : (filteredCoordinateSpace I n).map
           (LinearMap.mulLeft K ((Ideal.Quotient.mk I) l)) ≤ _)
         refine ⟨(Ideal.Quotient.mk I) (monomial u c * s),
           ⟨monomial u c * s, (mem_restrictTotalDegree _ _ _).mpr hs', rfl⟩, ?_⟩
-        simp only [LinearMap.mulLeft_apply, map_mul]
+        simp
         ring
     intro x hx
     obtain ⟨f, hf, rfl⟩ := hx
     have hfd := (mem_restrictTotalDegree _ _ _).mp hf
-    change (Ideal.Quotient.mk I) f ∈ _
     rw [← f.support_sum_monomial_coeff, map_sum]
     apply Submodule.sum_mem
     intro e he
@@ -119,8 +110,6 @@ theorem eventual_generation_of_power_reductions {K σ : Type*} [Field K] [Fintyp
   · apply sup_le
     · exact filteredCoordinateSpace_mono I (by omega)
     · rintro x ⟨y, hy, rfl⟩
-      simpa only [LinearMap.mulLeft_apply, Nat.add_comm] using
+      simpa [LinearMap.mulLeft_apply, Nat.add_comm] using
         filteredCoordinateSpace_mul_mem I hlmem hy
 
-end
-end CCDN

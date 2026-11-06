@@ -3,9 +3,8 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.FieldTheory.Separable
+import Mathlib.FieldTheory.Separable
 import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import Mathlib.FieldTheory.PrimitiveElement
 
@@ -29,8 +28,6 @@ minimal polynomial.
 * `RingEquiv.exists_invariant_of_involutive`: for a compatible homomorphism `P` from the units,
   an element `I` with `τ I = P a * I` and `a σ(a) = 1` has a `τ`-invariant multiple `P b * I`.
 -/
-
-@[expose] public section
 
 section
 
@@ -78,7 +75,6 @@ theorem card_le_two_pow_finrank
     (F E : Type*) [Field F] [Field E] [Algebra F E]
     [FiniteDimensional F E] [Algebra.IsSeparable F E] :
     Nat.card (IntermediateField F E) ≤ 2 ^ Module.finrank F E := by
-  classical
   obtain ⟨α, hα⟩ := Field.exists_primitive_element F E
   let f : E[X] := (minpoly F α).map (algebraMap F E)
   let G := {g : E[X] // g.Monic ∧ g ∣ f}
@@ -93,8 +89,8 @@ theorem card_le_two_pow_finrank
     intro K K' heq
     have heq' := congrArg Subtype.val heq
     dsimp [g] at heq'
-    apply_fun fun p : E[X] => adjoin F (p.coeffs : Set E) at heq'
-    simpa only [adjoin_minpoly_coeff_of_exists_primitive_element F hα] using heq'
+    apply_fun fun p => adjoin F (p.coeffs : Set E) at heq'
+    simpa [adjoin_minpoly_coeff_of_exists_primitive_element F hα] using heq'
   have hdeg : f.natDegree = Module.finrank F E := by
     rw [Polynomial.natDegree_map]
     exact (Field.primitive_element_iff_minpoly_natDegree_eq F α).mp hα
@@ -110,10 +106,13 @@ namespace RingEquiv
 
 variable {K : Type*} [Field K]
 
+variable (σ : K ≃+* K) (hσ : Function.Involutive σ) (hσne : σ ≠ RingEquiv.refl K)
+include hσ hσne
+
 /-- A norm-one scalar for a nontrivial involution is a multiplicative
 coboundary. The explicit construction also works in characteristic two. -/
-theorem hilbert90_of_involutive (σ : K ≃+* K) (hσ : Function.Involutive σ)
-    (hσne : σ ≠ RingEquiv.refl K) {a : K} (ha : a * σ a = 1) :
+theorem hilbert90_of_involutive
+    {a : K} (ha : a * σ a = 1) :
     ∃ b : K, b ≠ 0 ∧ a * σ b = b := by
   by_cases h : 1 + a = 0
   · have ha' : a = -1 := by linear_combination h
@@ -122,17 +121,15 @@ theorem hilbert90_of_involutive (σ : K ≃+* K) (hσ : Function.Involutive σ)
       push Not at hn
       exact hσne (RingEquiv.ext hn)
     refine ⟨z - σ z, sub_ne_zero.mpr hz.symm, ?_⟩
-    rw [ha', map_sub]
-    change -1 * (σ z - σ (σ z)) = z - σ z
-    rw [hσ]
+    rw [ha', map_sub, hσ]
     ring
   · refine ⟨1 + a, h, ?_⟩
-    rw [map_add, map_one, mul_add, mul_one, ha, add_comm]
+    grind
 
 /-- Hilbert 90 for a nontrivial involution, in the unit group: a unit `a` with
 `a σ(a) = 1` has the form `b / σ(b)` for some unit `b`. -/
-theorem hilbert90_units_of_involutive (σ : K ≃+* K) (hσ : Function.Involutive σ)
-    (hσne : σ ≠ RingEquiv.refl K) (a : Kˣ)
+theorem hilbert90_units_of_involutive
+    (a : Kˣ)
     (ha : (a : K) * σ (a : K) = 1) :
     ∃ b : Kˣ, a * Units.map σ.toMonoidHom b = b := by
   obtain ⟨b, hb, hab⟩ := hilbert90_of_involutive σ hσ hσne ha
@@ -143,8 +140,7 @@ one, multiplication by a principal element produces an invariant
 representative. Here the principal map is a homomorphism. -/
 theorem exists_invariant_of_involutive
     {A : Type*} [CommGroup A]
-    (σ : K ≃+* K) (hσ : Function.Involutive σ)
-    (hσne : σ ≠ RingEquiv.refl K) (τ : A →* A) (P : Kˣ →* A)
+    (τ : A →* A) (P : Kˣ →* A)
     (hcompat : ∀ b : Kˣ, τ (P b) = P (Units.map σ.toMonoidHom b))
     (I : A) (a : Kˣ) (hI : τ I = P a * I)
     (ha : (a : K) * σ (a : K) = 1) :
@@ -153,4 +149,3 @@ theorem exists_invariant_of_involutive
   refine ⟨b, ?_⟩
   rw [map_mul, hcompat, hI, ← mul_assoc, mul_comm (P _), ← map_mul, hb]
 
-end RingEquiv

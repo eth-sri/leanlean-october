@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Plane.IntegralAffineLine
-public import CCDN.Surface.TransversePlane
+import CCDN.Plane.IntegralAffineLine
+import CCDN.Surface.TransversePlane
 import CCDN.AuxiliaryPolynomial.PlaneAuxiliaryCount
 import CCDN.Plane.Bezout
 import CCDN.Surface.DirectionalDerivative
@@ -16,41 +15,33 @@ import CCDN.Surface.TopFormBadPrimes
 the common zeros of two proper plane equations. The second equation will
 be the directional derivative. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma planeDirectionMatrix_mulVec (b c v w : Fin 3 → ℚ) (i : Fin 3) :
-    (planeDirectionMatrix b c v).mulVec w i = b i * w 0 + c i * w 1 + v i * w 2 := by
-  simp [Matrix.mulVec, dotProduct, Fin.sum_univ_succ, planeDirectionMatrix]
-  ring
-
 /-- Every line in the prescribed direction meets a transverse plane. -/
-private theorem exists_parallel_line_plane_intersection (a b c v x : Fin 3 → ℚ)
+theorem exists_parallel_line_plane_intersection (a b c v x : Fin 3 → ℚ)
     (hdet : (planeDirectionMatrix b c v).det ≠ 0) :
     ∃ (z : Fin 2 → ℚ) (t : ℚ),
       (fun i => a i + b i * z 0 + c i * z 1) = x + t • v := by
-  have hunit : IsUnit (planeDirectionMatrix b c v) :=
+  have hunit :=
     (Matrix.isUnit_iff_isUnit_det _).mpr (isUnit_iff_ne_zero.mpr hdet)
   obtain ⟨w, hw⟩ := Matrix.mulVec_surjective_iff_isUnit.mpr hunit (x - a)
   refine ⟨![w 0,w 1], -w 2, ?_⟩
   funext i
   have hi := congrFun hw i
-  rw [planeDirectionMatrix_mulVec] at hi
-  simp only [Pi.sub_apply] at hi
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Pi.add_apply, Pi.smul_apply,
-    smul_eq_mul]
+  simp [Matrix.mulVec, dotProduct, Fin.sum_univ_succ, planeDirectionMatrix] at hi
+  simp
   linarith
+
+section
+variable (f : MvPolynomial (Fin 3) ℤ) (hir : AbsolutelyIrreducible f) (hd : 0 < f.totalDegree) (v : Fin 3 → ℚ) (hv : v ≠ 0)
+include hir hd hv
 
 /-- Distinct parallel lines have distinct intersections with any
 transverse plane. The index family is arbitrary but its line sets are injective. -/
-private theorem surface_parallel_line_family_card_le_of_second_equation
+theorem surface_parallel_line_family_card_le_of_second_equation
     {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (f : MvPolynomial (Fin 3) ℤ)
-    (hir : AbsolutelyIrreducible f)
-    (hd : 0 < f.totalDegree)
-    (v : Fin 3 → ℚ) (hv : v ≠ 0) (x : ι → RatPoint 3)
+    (x : ι → RatPoint 3)
     (hinj : Function.Injective (fun i => rationalAffineLine (x i) v))
     (g : MvPolynomial (Fin 3) ℚ) (hg : g ≠ 0) (hgdeg : g.totalDegree < f.totalDegree)
     (hxf : ∀ i (t : ℚ), eval (x i + t • v) (map (Int.castRingHom ℚ) f) = 0)
@@ -69,9 +60,7 @@ private theorem surface_parallel_line_family_card_le_of_second_equation
       _ = rationalAffineLine (x j) v := rationalAffineLine_shift_base _ _ _
   have hFG : ¬ affinePlaneMap a b c (map (Int.castRingHom ℚ) f) ∣ affinePlaneMap a b c g := by
     rintro ⟨q,hq⟩
-    have hq0 : q ≠ 0 := by
-      intro hz
-      exact hG (by rw [hq, hz, mul_zero])
+    have hq0 : q ≠ 0 := by grind
     have hh : f.totalDegree ≤ (affinePlaneMap a b c g).totalDegree := by
       rw [hq, totalDegree_mul_of_isDomain hF.ne_zero hq0, hFd]
       omega
@@ -79,36 +68,32 @@ private theorem surface_parallel_line_family_card_le_of_second_equation
   have hcount := plane_common_zeros_card_le
     (affinePlaneMap a b c (map (Int.castRingHom ℚ) f)) (affinePlaneMap a b c g)
     hF hFG z hz
-    (fun i => by rw [affinePlaneMap_eval, hzt i]; exact hxf i (t i))
-    (fun i => by rw [affinePlaneMap_eval, hzt i]; exact hxg i (t i))
+    (fun i => by simp_all [affinePlaneMap_eval])
+    (fun i => by simp_all [affinePlaneMap_eval])
   rw [hFd] at hcount
   exact hcount.trans (Nat.mul_le_mul_left _ (affinePlaneMap_totalDegree_le a b c g))
 
 /-- A finite set of line sets has no duplicate lines; its cardinality
 is therefore controlled by the same proper plane intersection. -/
-private theorem surface_parallel_lines_card_le_of_second_equation
-    (f : MvPolynomial (Fin 3) ℤ)
-    (hir : AbsolutelyIrreducible f)
-    (hd : 0 < f.totalDegree)
-    (v : Fin 3 → ℚ) (hv : v ≠ 0)
+theorem surface_parallel_lines_card_le_of_second_equation
     (S : Finset (Set (RatPoint 3)))
     (hlines : ∀ L ∈ S, ∃ a, L = rationalAffineLine a v)
     (g : MvPolynomial (Fin 3) ℚ) (hg : g ≠ 0) (hgdeg : g.totalDegree < f.totalDegree)
     (hSf : ∀ L ∈ S, L ⊆ zeroLocus (map (Int.castRingHom ℚ) f))
     (hSg : ∀ L ∈ S, L ⊆ zeroLocus g) :
     S.card ≤ f.totalDegree * g.totalDegree := by
-  classical
   have hex (L : S) : ∃ a, L.val = rationalAffineLine a v := hlines L.val L.property
   choose a ha using hex
-  have hinj : Function.Injective (fun L : S => rationalAffineLine (a L) v) := by
+  have hinj : Function.Injective (fun L => rationalAffineLine (a L) v) := by
     intro L M h
-    apply Subtype.ext
-    exact (ha L).trans (h.trans (ha M).symm)
+    grind
   have hh := surface_parallel_line_family_card_le_of_second_equation
     f hir hd v hv a hinj g hg hgdeg
     (fun L t => hSf L.val L.property (by rw [ha L]; exact ⟨t,rfl⟩))
     (fun L t => hSg L.val L.property (by rw [ha L]; exact ⟨t,rfl⟩))
-  simpa only [Fintype.card_coe] using hh
+  simpa using hh
+
+end
 
 /-- A surface with absolutely irreducible top form has at most d(d-1)
 distinct lines in any prescribed nonzero rational direction. The directional
@@ -123,9 +108,14 @@ theorem surface_parallel_lines_card_le
     (hSf : ∀ L ∈ S, L ⊆ zeroLocus (map (Int.castRingHom ℚ) f)) :
     S.card ≤ f.totalDegree * (f.totalDegree - 1) := by
   let g := directionalDerivative v (map (Int.castRingHom ℚ) f)
-  have hg : g ≠ 0 := surface_directionalDerivative_ne_zero f hir hd v hv
+  have hg : directionalDerivative v (map (Int.castRingHom ℚ) f) ≠ 0 := by
+    apply top_irreducible_directionalDerivative_ne_zero (algebraMap ℚ (AlgebraicClosure ℚ))
+      (map (Int.castRingHom ℚ) f) _ hd v hv
+    rw [← map_homogeneousComponent, map_map]
+    convert hir using 1
+    congr 1
   have hgdeg : g.totalDegree ≤ f.totalDegree - 1 := by
-    simpa only [rational_map_totalDegree] using
+    simpa [rational_map_totalDegree] using
       directionalDerivative_totalDegree_le v (map (Int.castRingHom ℚ) f)
   have hh := surface_parallel_lines_card_le_of_second_equation f
     (absolute_irreducible_of_top_homogeneousComponent_irreducible f hir)
@@ -136,5 +126,3 @@ theorem surface_parallel_lines_card_le
         (map (Int.castRingHom ℚ) f) (hSf _ hL))
   exact hh.trans (Nat.mul_le_mul_left _ hgdeg)
 
-end
-end CCDN

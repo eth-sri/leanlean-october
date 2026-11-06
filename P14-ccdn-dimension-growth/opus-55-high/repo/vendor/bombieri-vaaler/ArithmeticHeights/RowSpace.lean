@@ -3,11 +3,10 @@ Copyright (c) 2026 Ralf Stephan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ralf Stephan
 -/
-module
 
-public import ArithmeticHeights.Subspace
-public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
-public import Mathlib.LinearAlgebra.Matrix.Rank
+import ArithmeticHeights.Subspace
+import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+import Mathlib.LinearAlgebra.Matrix.Rank
 
 -- Only the worked examples below mention `Matrix.mulHeight`, the height of the entries of
 -- Layer 2.5, and they mention it in order to distinguish it from the height of the row space.
@@ -76,8 +75,6 @@ Grassmannian. W. M. Schmidt, "On heights of algebraic subspaces and diophantine 
 This is Layer 3.3 of the `ArithmeticHeights` roadmap.
 -/
 
-public section
-
 namespace Matrix
 
 open Module Submodule exteriorPower
@@ -106,39 +103,9 @@ end Minors
 ### Row operations multiply the Plücker coordinates by a determinant
 -/
 
-section RowOps
-
-variable {R : Type*} [CommRing R] {ι : Type*} {m : ℕ}
-
-/-- The rows of the identity matrix are the standard basis. -/
-theorem row_one_eq_basisFun :
-    (1 : Matrix (Fin m) (Fin m) R).row = ⇑(Pi.basisFun R (Fin m)) := by
-  funext i j
-  simp [Matrix.one_apply, Pi.single_apply, eq_comm]
-
-end RowOps
-
-section Plucker
-
-variable {R : Type*} [CommRing R] {ι : Type*} [Fintype ι] [LinearOrder ι] {m : ℕ}
-
-end Plucker
-
 /-!
 ### The row space
 -/
-
-section Span
-
-variable {R : Type*} [CommRing R] {ι : Type*} {m : ℕ}
-variable {n : Type*} [Fintype n] [DecidableEq n]
-
-@[simp]
-theorem span_range_row_one : span R (Set.range (1 : Matrix (Fin m) (Fin m) R).row) = ⊤ := by
-  rw [row_one_eq_basisFun]
-  exact (Pi.basisFun R (Fin m)).span_eq
-
-end Span
 
 /-!
 ### Full row rank
@@ -155,43 +122,11 @@ theorem linearIndependent_row_iff_plucker_row_ne_zero [LinearOrder ι] (A : Matr
     LinearIndependent K A.row ↔ plucker m A.row ≠ 0 := by
   rw [ne_eq, plucker_eq_zero_iff, not_not]
 
-end Rank
-
 /-!
 ### The height of the row space
 -/
-
-section Height
-
-variable {K : Type*} [Field K] [Height.AdmissibleAbsValues K] {ι : Type*} [Fintype ι]
-  [LinearOrder ι] {m : ℕ} {A : Matrix (Fin m) ι K} {U : Matrix (Fin m) (Fin m) K}
-
-end Height
-
-section ArakelovHeight
-
-variable {K : Type*} [Field K] [NumberField K] {ι : Type*} [Fintype ι] [LinearOrder ι] {m : ℕ}
-  {A : Matrix (Fin m) ι K} {U : Matrix (Fin m) (Fin m) K}
-
-end ArakelovHeight
-
-section AbsoluteHeight
-
-variable {K : Type*} [Field K] [CharZero K] [Algebra.IsAlgebraic ℚ K] {ι : Type*} [Fintype ι]
-  [LinearOrder ι] {m : ℕ} {A : Matrix (Fin m) ι K} {U : Matrix (Fin m) (Fin m) K}
-
-end AbsoluteHeight
-
-end Matrix
 
 /-!
 ### Worked examples
 -/
 
-section Examples
-
-open Matrix Submodule exteriorPower
-
-end Examples
-
-end

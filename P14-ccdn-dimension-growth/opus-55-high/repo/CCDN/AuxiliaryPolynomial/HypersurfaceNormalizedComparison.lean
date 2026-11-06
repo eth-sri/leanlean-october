@@ -3,16 +3,14 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.AuxiliaryPolynomial.HypersurfaceRankArchimedean
-public import CCDN.Determinant.HypersurfaceHeightDeterminant
+import CCDN.AuxiliaryPolynomial.HypersurfaceRankArchimedean
+import CCDN.Determinant.HypersurfaceHeightDeterminant
 import CCDN.AuxiliaryPolynomial.HypersurfaceHeightComparison
 
 /-! The normalized higher-dimensional determinant inequality, retaining the
 exact root-rank and kernel-rank coefficients needed for uniform degree selection. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
@@ -33,11 +31,45 @@ theorem hypersurface_rank_comparison_normalized {r d M s : ℕ}
         (E + (r + 1 : ℝ) * hypersurfaceArchimedeanError r / (r.factorial : ℝ) ^ (1 / (r : ℝ)))) ≤
       Real.log B - ((r + 1 + (M - d)).choose (M - d) : ℝ) / ((M : ℝ) * s) * Real.log L := by
   have hMs := hypersurface_rank_ge_degree_parameter hrpos hd hdM hr
-  have hs0 : (0 : ℝ) < s := by exact_mod_cast lt_of_lt_of_le (lt_of_lt_of_le hd hdM) hMs
-  have hM0 : (0 : ℝ) < M := by exact_mod_cast lt_of_lt_of_le hd hdM
+  have hs0 : (0 : ℝ) < s := mod_cast lt_of_lt_of_le (hd.trans_le hdM) hMs
+  have hM0 : (0 : ℝ) < M := mod_cast hd.trans_le hdM
   have hr1 : (r + 1 : ℝ) ≠ 0 := by positivity
-  have hfac : (r.factorial : ℝ) ^ (1 / (r : ℝ)) ≠ 0 := by positivity
-  have harch := hypersurface_rank_archimedean_error hrpos hd hdM hr
+  have hfac : r.factorial ^ (1 / r) ≠ 0 := by positivity
+  have harch : Real.log s.factorial / 2 + s / 2 * Real.log ((r + 1 + M).choose M : ℝ) ≤
+      hypersurfaceArchimedeanError r * (s : ℝ) ^ (1 + 1 / (r : ℝ)) := by
+    have hs := lt_of_lt_of_le (hd.trans_le hdM) hMs
+    have hs0 : (0 : ℝ) < s := mod_cast hs
+    have hf : Real.log s.factorial ≤ s * Real.log s := by
+      have hh : (s.factorial : ℝ) ≤ (s : ℝ) ^ s := mod_cast Nat.factorial_le_pow s
+      simpa using Real.log_le_log (by positivity) hh
+    have hlog : Real.log ((r + 1 + M).choose M : ℝ) ≤ (r + 1 : ℝ) * (Real.log 2 + Real.log s) := by
+      have hs : (1 : ℝ) ≤ s := mod_cast lt_of_lt_of_le (hd.trans_le hdM) hMs
+      have hdim : (r + 1 + M).choose M ≤ (M + 1) ^ (r + 1) := by
+        rw [← Nat.choose_symm_add, Nat.add_comm (r + 1) M]
+        exact Nat.choose_add_le_add_one_pow M (r + 1)
+      have hdimR : ((r + 1 + M).choose M : ℝ) ≤ ((M : ℝ) + 1) ^ (r + 1) := mod_cast hdim
+      have hMsR : (M : ℝ) ≤ s := mod_cast hMs
+      have hbound : ((r + 1 + M).choose M : ℝ) ≤ (2 * (s : ℝ)) ^ (r + 1) :=
+        hdimR.trans (pow_le_pow_left₀ (by positivity) (by linarith) _)
+      have hh := Real.log_le_log (by
+        exact_mod_cast Nat.choose_pos (by grind)) hbound
+      rw [Real.log_pow, Real.log_mul (by norm_num) (by grind)] at hh
+      simpa using hh
+    have hlroot := log_le_dimension_root hrpos hs0
+    have hroot1 : 1 ≤ (s : ℝ) ^ (1 / (r : ℝ)) := Real.one_le_rpow (mod_cast hs) (by positivity)
+    have hl2 : Real.log 2 ≤ 1 := by
+      have hh := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 2)
+      linarith
+    have hdim : Real.log ((r + 1 + M).choose M : ℝ) ≤
+        (r + 1 : ℝ) * ((r + 1 : ℝ) * (s : ℝ) ^ (1 / (r : ℝ))) := by
+      have hh := mul_le_mul_of_nonneg_left hlroot (show 0 ≤ (r + 1 : ℝ) by positivity)
+      have h2 := mul_le_mul_of_nonneg_left (hl2.trans hroot1) (show 0 ≤ (r + 1 : ℝ) by positivity)
+      nlinarith
+    have hfac := mul_le_mul_of_nonneg_left hlroot hs0.le
+    have hdim' := mul_le_mul_of_nonneg_left hdim (show 0 ≤ (s : ℝ) / 2 by positivity)
+    rw [Real.rpow_add hs0, Real.rpow_one]
+    unfold hypersurfaceArchimedeanError
+    nlinarith
   have hkernel : ((r + 1 + M).choose M : ℝ) - s = (r + 1 + (M - d)).choose (M - d) := by
     have hh : (s : ℝ) + ((r + 1 + (M - d)).choose (M - d) : ℝ) = (r + 1 + M).choose M := by
       exact_mod_cast hr
@@ -50,20 +82,18 @@ theorem hypersurface_rank_comparison_normalized {r d M s : ℕ}
       (r.factorial : ℝ) ^ (1 / (r : ℝ)) / (r + 1 : ℝ) *
         (s : ℝ) ^ (1 + 1 / (r : ℝ)) * T -
           hypersurfaceArchimedeanError r * (s : ℝ) ^ (1 + 1 / (r : ℝ)) := by
-    dsimp only [U]
+    dsimp [U]
     field_simp
   have hraw : (r.factorial : ℝ) ^ (1 / (r : ℝ)) / (r + 1 : ℝ) *
       (s : ℝ) ^ (1 + 1 / (r : ℝ)) * (T - U) ≤
         s * M * Real.log B - ((r + 1 + (M - d)).choose (M - d) : ℝ) * Real.log L := by
     rw [hsplit]
-    dsimp only [T]
+    dsimp [T]
     linarith
   have hquot := div_le_div_of_nonneg_right hraw (mul_nonneg hM0.le hs0.le)
   convert hquot using 1
   · rw [Real.rpow_add hs0, Real.rpow_one]
-    dsimp only [T, U]
-    field_simp
-    ring
+    grind
   · field_simp
 
 /-- A dimension-only error for the normalized, height-controlled inequality. -/
@@ -71,36 +101,3 @@ def hypersurfaceNormalizedError (n : ℕ) : ℝ :=
   hypersurfaceHeightDeterminantError n +
     (n + 2 : ℝ) * hypersurfaceArchimedeanError (n + 1) /
       ((n + 1).factorial : ℝ) ^ (1 / (n + 1 : ℝ))
-
-/-- Absence of an auxiliary polynomial implies the normalized
-inequality with constructed geometry and exact Hilbert rank. -/
-theorem hypersurface_no_auxiliary_normalized_comparison
-    {K : Type*} [Field K] [CharZero K] [IsAlgClosed K] {n d M t : ℕ}
-    (order : MonomialOrder (Fin (n + 3))) (f : MvPolynomial (Fin (n + 3)) ℤ)
-    (hf : f.IsHomogeneous d) (hd : 0 < d) (hdM : d ≤ M)
-    (hir : Irreducible (map (Int.castRingHom K) f))
-    (H : ℝ) (hH : 1 ≤ H) (hcoeff : CoefficientHeightLE f H)
-    {B : ℝ} {z : Fin t → IntPoint (n + 3)} (hzB : IsPrimitiveBoxZeroFamily f B z)
-    (hrel : ∀ g : MvPolynomial (Fin (n + 3)) ℤ, g.IsHomogeneous M →
-      (∀ i, eval (z i) g = 0) → f ∣ g) :
-    ∃ s : ℕ, 0 < s ∧ s + (n + 2 + (M - d)).choose (M - d) = (n + 2 + M).choose M ∧
-      ((n + 1).factorial : ℝ) ^ (1 / (n + 1 : ℝ)) * (s : ℝ) ^ (1 / (n + 1 : ℝ)) /
-          ((n + 2 : ℝ) * M) *
-        (Real.log s - (n + 1 : ℝ) * (4 * Real.log d + Real.log (1 + Real.log H / (d : ℝ) ^ 2)) -
-          hypersurfaceNormalizedError n) ≤
-        Real.log B - ((n + 2 + (M - d)).choose (M - d) : ℝ) / ((M : ℝ) * s) *
-          Real.log |((order.leadingCoeff f : ℤ) : ℝ)| := by
-  obtain ⟨s, hs, hr, hc⟩ := hypersurface_no_auxiliary_height_comparison order f hf hd hdM hir
-    H hH hcoeff hzB hrel
-  refine ⟨s, hs, hr, ?_⟩
-  have hnN : n + 1 + 1 = n + 2 := by omega
-  have hnR : (n : ℝ) + 1 + 1 = n + 2 := by ring
-  have hh := hypersurface_rank_comparison_normalized (r := n + 1) (by omega) hd hdM hr
-    B |((order.leadingCoeff f : ℤ) : ℝ)| (1 + Real.log H / (d : ℝ) ^ 2)
-    (hypersurfaceHeightDeterminantError n) (by simpa only [hnN, Nat.cast_add, Nat.cast_one,
-      hnR] using hc)
-  simpa only [hypersurfaceNormalizedError, hnN,
-    Nat.cast_add, Nat.cast_one, hnR] using hh
-
-end
-end CCDN

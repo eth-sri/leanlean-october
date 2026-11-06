@@ -3,12 +3,11 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.ProjectiveSection
-public import CCDN.Height.ProjectiveZeroLocus
-public import CCDN.Hilbert.AffineCurveDegree
-public import CCDN.Hilbert.FilteredHilbertPolynomial
+import CCDN.Algebra.ProjectiveSection
+import CCDN.Height.ProjectiveZeroLocus
+import CCDN.Hilbert.AffineCurveDegree
+import CCDN.Hilbert.FilteredHilbertPolynomial
 
 /-!
 # Statements of the main results
@@ -33,8 +32,6 @@ Theorem 6 and Proposition 5 are stated directly by their endpoint theorems
 `classGroup_two_torsion_bound` and `projective_integral_curve_lower_bound`.
 -/
 
-@[expose] public section
-
 namespace CCDN
 
 noncomputable section
@@ -42,7 +39,7 @@ noncomputable section
 /-! ### Theorem 3: affine curves -/
 
 /-- The bound `d³ B^(1/d) (log B + d)` of Theorem 3. -/
-noncomputable def curveBound (d : ℕ) (B : ℝ) : ℝ :=
+def curveBound (d : ℕ) (B : ℝ) : ℝ :=
   (d : ℝ) ^ 3 * B ^ (1 / (d : ℝ)) * (Real.log B + d)
 
 /-- The `n = 2` case of CCDN (2020), Theorem 3, expressed using rational defining
@@ -80,10 +77,13 @@ def ProjectiveCurveBound : Prop :=
 
 /-! ### Theorem 4: affine hypersurfaces -/
 
+section
+variable (n e : ℕ)
+
 /-- Affine dimension growth with degree exponent `e` for integer equations in `n + 3`
 variables of degree at least five whose top-degree form is absolutely irreducible. The
 constant depends only on `n` and `e`. -/
-def AffineHypersurfaceGrowth (n e : ℕ) : Prop :=
+def AffineHypersurfaceGrowth : Prop :=
   ∃ C : ℝ, 0 < C ∧
     ∀ f : MvPolynomial (Fin (n + 3)) ℤ, HasAbsIrreducibleTopForm f →
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
@@ -91,7 +91,7 @@ def AffineHypersurfaceGrowth (n e : ℕ) : Prop :=
           C * (f.totalDegree : ℝ) ^ e * B ^ (n + 1)
 
 /-- The rational-equation form of `AffineHypersurfaceGrowth`. -/
-def RationalAffineHypersurfaceGrowth (n e : ℕ) : Prop :=
+def RationalAffineHypersurfaceGrowth : Prop :=
   ∃ C : ℝ, 0 < C ∧
     ∀ f : MvPolynomial (Fin (n + 3)) ℚ, HasAbsIrreducibleTopFormRat f →
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
@@ -102,12 +102,14 @@ def RationalAffineHypersurfaceGrowth (n e : ℕ) : Prop :=
 /-- Dimension growth with degree exponent `e` for rationally irreducible projective
 hypersurfaces of degree at least five in `ℙ^(n+2)`. The height exponent is the
 hypersurface dimension `n + 1`. -/
-def ProjectiveHypersurfaceGrowth (n e : ℕ) : Prop :=
+def ProjectiveHypersurfaceGrowth : Prop :=
   ∃ C : ℝ, 0 < C ∧
     ∀ f : MvPolynomial (Fin (n + 3)) ℚ, f.IsHomogeneous f.totalDegree → Irreducible f →
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
         (projectiveCount (projectiveZeroLocus f) B : ℝ) ≤
           C * (f.totalDegree : ℝ) ^ e * B ^ (n + 1)
+
+end
 
 /-- CCDN Theorem 1 in `ℙⁿ` with degree exponent `E`. A homogeneous prime ideal whose
 Hilbert polynomial has degree `r` and leading coefficient `d / r!`, with `d ≥ 5`, has at
@@ -123,6 +125,3 @@ def ProjectiveGrowth (n E : ℕ) : Prop :=
       (projectiveCount (projectiveIdealZeroLocus I) B : ℝ) ≤
         C * (d : ℝ) ^ E * B ^ ((filteredHilbertPolynomial I).natDegree - 1)
 
-end
-
-end CCDN

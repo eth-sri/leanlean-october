@@ -3,16 +3,14 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.RingTheory.ClassGroup.Basic
+import Mathlib.RingTheory.ClassGroup.Basic
 
 /-! A fractional ideal with norm-one scalar comparison to its
 conjugate can be replaced in its ideal class by an invariant fractional
 ideal. The norm-one hypothesis isolates the unit obstruction rather than
 discarding it. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open scoped nonZeroDivisors
@@ -34,7 +32,7 @@ theorem fractionalIdealUnitAction_principal (σ : R ≃+* R) (b : Kˣ) :
       toPrincipalIdeal R K
         (Units.map (IsFractionRing.ringEquivOfRingEquiv σ : K ≃+* K).toMonoidHom b) := by
   apply Units.ext
-  simp only [fractionalIdealUnitAction, Units.coe_map, coe_toPrincipalIdeal]
+  simp [fractionalIdealUnitAction, Units.coe_map, coe_toPrincipalIdeal]
   exact FractionalIdeal.ringEquivOfRingEquiv_spanSingleton K K σ b
 
 /-- The class of a principal fractional ideal is trivial. -/
@@ -42,7 +40,5 @@ theorem classGroup_mk_principal (b : Kˣ) :
     ClassGroup.mk K (toPrincipalIdeal R K b) = 1 := by
   apply ClassGroup.mk_eq_one_iff.mpr
   rw [coe_toPrincipalIdeal, FractionalIdeal.coe_spanSingleton]
-  exact ⟨⟨(b : K), rfl⟩⟩
+  exact ⟨⟨b, rfl⟩⟩
 
-end
-end CCDN

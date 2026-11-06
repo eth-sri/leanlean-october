@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.PolynomialPredicates
-public import CCDN.Hilbert.LinearProjectionFiltration
+import CCDN.Algebra.PolynomialPredicates
+import CCDN.Hilbert.LinearProjectionFiltration
 import CCDN.ForMathlib.MvPolynomial
 import CCDN.Projection.HomogeneousFilteredProjection
 import CCDN.Projection.PlaneRelationSpace
@@ -14,9 +13,8 @@ import CCDN.Projection.PlaneRelationSpace
 /-! The principal equation of the image of a homogeneous linear
 projection is homogeneous. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
 /-- For a homogeneous ideal `I` and homogeneous linear forms `a`, the kernel of the projection by
@@ -43,8 +41,7 @@ theorem principal_generator_isHomogeneous
     (hI : IsHomogeneousIdeal I)
     (f : MvPolynomial σ K) (hf : f ≠ 0) (hgen : I = Ideal.span {f}) :
     f.IsHomogeneous f.totalDegree := by
-  have hmem : f ∈ I := by rw [hgen]; exact Ideal.subset_span (Set.mem_singleton f)
-  have ht := hI f hmem f.totalDegree
+  have ht := hI f (by simp_all) f.totalDegree
   rw [hgen, Ideal.mem_span_singleton] at ht
   obtain ⟨c, hc⟩ := eq_scalar_mul_of_dvd_of_totalDegree_le f
     (homogeneousComponent f.totalDegree f) hf ht
@@ -52,24 +49,8 @@ theorem principal_generator_isHomogeneous
   have hcne : c ≠ 0 := by
     intro hz
     apply homogeneousComponent_totalDegree_ne_zero hf
-    rw [hc, hz, zero_smul]
+    simp_all
   have hh := (homogeneousComponent_isHomogeneous f.totalDegree f).C_mul c⁻¹
-  rw [hc] at hh
-  rw [← smul_eq_C_mul] at hh
-  simpa only [smul_smul, inv_mul_cancel₀ hcne, one_smul] using hh
+  rw [hc, ← smul_eq_C_mul] at hh
+  simpa [smul_smul, inv_mul_cancel₀ hcne, one_smul] using hh
 
-/-- If the kernel of the projection of a homogeneous ideal by homogeneous linear forms is generated
-by a nonzero polynomial `f`, then `f` is homogeneous of its total degree. -/
-theorem homogeneous_projection_equation
-    {K σ τ : Type*} [Field K]
-    (I : Ideal (MvPolynomial τ K))
-    (hI : IsHomogeneousIdeal I)
-    (a : σ → MvPolynomial τ K) (ha : ∀ i, (a i).IsHomogeneous 1)
-    (f : MvPolynomial σ K) (hf : f ≠ 0)
-    (hgen : RingHom.ker (projectionCoordinateMap I a) = Ideal.span {f}) :
-    f.IsHomogeneous f.totalDegree :=
-  principal_generator_isHomogeneous _ (projection_kernel_homogeneousComponent_mem I hI a ha)
-    f hf hgen
-
-end
-end CCDN

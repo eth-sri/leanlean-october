@@ -3,18 +3,16 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Plane.AffineNonzeroConstant
+import CCDN.Plane.AffineNonzeroConstant
 import CCDN.Algebra.PrimitiveNormalization
 import CCDN.Plane.AffinePlaneAssembly
 
 /-! Rational equations and the coefficient-uniform affine plane bound.
 The sharp finite-field estimate is stated as a proposition, not an axiom. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial Real
 
 /-- The finite-field counting obligation `PlaneResidueCountBound` for every plane equation
@@ -32,7 +30,7 @@ lemma rational_scalar_model_irreducible_charZero {F σ : Type*} [Field F] [CharZ
     Irreducible (MvPolynomial.map (Int.castRingHom F) g) := by
   have hh := congrArg (MvPolynomial.map (algebraMap ℚ F)) he
   rw [map_map, map_mul, map_C] at hh
-  have hc : (algebraMap ℚ F).comp (Int.castRingHom ℚ) = Int.castRingHom F := by ext; simp
+  have hc : (algebraMap ℚ F).comp (Int.castRingHom ℚ) = Int.castRingHom F := by aesop
   rw [hc] at hh
   rw [hh]
   have hu : IsUnit (C ((algebraMap ℚ F) a) : MvPolynomial σ F) :=
@@ -49,16 +47,14 @@ theorem count_rational_plane_of_residue_bound
     {B C : ℝ} (hB : 1 ≤ B) (hC : 0 ≤ C) (hres : PlaneResidueBound C) :
     (count (zeroLocus f) B : ℝ) ≤
       (2 * Real.exp 1 * affineNonzeroConstantBound C) * curveBound f.totalDegree B := by
-  have hf0 : f ≠ 0 := fun h => hir.ne_zero (by simp [h])
+  have hf0 : f ≠ 0 := fun h => hir.ne_zero (by grind)
   obtain ⟨g, a, hg, ha, he⟩ := exists_primitive_integer_model f hf0
   have hdeg := rational_scalar_model_degree ha hf0 he
   have hgi := rational_scalar_model_irreducible_charZero ha he hir
-  have hgd : 0 < g.totalDegree := by rwa [hdeg]
+  have hgd : 0 < g.totalDegree := by grind
   have hzero : zeroLocus (MvPolynomial.map (Int.castRingHom ℚ) g) = zeroLocus f := by
     ext x
     exact rational_scalar_model_zero_iff ha he x
   have h := count_plane_of_residue_bound g hg hgi hgd hB hC (hres g hgd)
   rwa [hzero, hdeg] at h
 
-end
-end CCDN

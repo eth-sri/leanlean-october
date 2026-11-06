@@ -1,5 +1,4 @@
-module
-public import ArithmeticHeights.Affine
-public import ArithmeticHeights.Arakelov
-public import Mathlib.NumberTheory.Height.MvPolynomial
-import all Mathlib.NumberTheory.Height.Basic
+import ArithmeticHeights.Affine
+import ArithmeticHeights.Arakelov
+import Mathlib.NumberTheory.Height.MvPolynomial
+import Mathlib.NumberTheory.Height.Basic

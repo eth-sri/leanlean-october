@@ -3,9 +3,8 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.ClassGroup.TwoTorsion
+import CCDN.ClassGroup.TwoTorsion
 import CCDN.ClassGroup.StronglyAmbiguousClassCount
 
 /-!
@@ -21,9 +20,8 @@ The ring of integers is identified with the integers, so its
 class group and its two-torsion subgroup are trivial.
 -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open NumberField
 open scoped NumberField
 
@@ -37,18 +35,14 @@ theorem classGroupTwoTorsionCard_eq_one_of_degree_one
   have : IsPrincipalIdealRing (𝓞 K) :=
     IsPrincipalIdealRing.of_surjective eO eO.surjective
   apply Nat.le_antisymm
-  · exact (classGroupTwoTorsionCard_le_classNumber K).trans
+  · exact (show classGroupTwoTorsionCard K ≤ NumberField.classNumber K by
+      classical
+      simpa [classGroupTwoTorsionCard, NumberField.classNumber, Nat.card_eq_fintype_card] using
+        Fintype.card_le_of_injective
+          (fun c : classGroupTwoTorsion K => (c : ClassGroup (𝓞 K))) Subtype.val_injective).trans
       (NumberField.classNumber_eq_one_iff.mpr inferInstance).le
   · exact Nat.one_le_iff_ne_zero.mpr
-      (Nat.card_pos (α := classGroupTwoTorsion K)).ne'
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open NumberField
-open scoped NumberField
+      (Nat.card_pos).ne'
 
 /-- For a quadratic extension `K / F` of number fields,
 `h₂(K) ≤ (h₂(F) * 2 ^ ([K : ℚ] * ω(discr K) + [F : ℚ])) ^ 2`, where `ω` counts distinct prime
@@ -74,7 +68,7 @@ theorem quadratic_classGroupTwoTorsion_descent
       Nat.pow_le_pow_left
         (Nat.mul_le_mul_right _
           (stronglyAmbiguousTwoTorsion_card_le_discriminant_primes F K hd σ hσ)) 2
-    _ = _ := by rw [mul_assoc, ← pow_add]
+    _ = _ := by grind
 
 /-- A quadratic number field `K` satisfies `h₂(K) ≤ 2 ^ (4 * ω(discr K) + 2)`, where `ω` counts
 distinct prime factors; this is subpower in the discriminant. -/
@@ -89,5 +83,3 @@ theorem quadratic_field_classGroupTwoTorsionCard_le
   congr 1
   ring
 
-end
-end CCDN

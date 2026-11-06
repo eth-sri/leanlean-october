@@ -3,59 +3,63 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.HomogeneousChart
-public import CCDN.Algebra.HomogeneousTranslation
-public import CCDN.Algebra.OriginShift
+import CCDN.Algebra.HomogeneousChart
+import CCDN.Algebra.HomogeneousTranslation
+import CCDN.Algebra.OriginShift
 
 /-! The affine translations underlying the homogeneous coordinate changes
 preserve degree and irreducibility, over every coefficient field. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
+section
+variable {n : ℕ}
+
 /-- The translation `X j ↦ X j + a j` of polynomials in `Fin n` variables, as an algebra
 automorphism over `R`. -/
-def affineTranslation (R : Type*) [CommRing R] {n : ℕ} (a : Fin n → R) :
+def affineTranslation (R : Type*) [CommRing R] (a : Fin n → R) :
     MvPolynomial (Fin n) R ≃ₐ[R] MvPolynomial (Fin n) R :=
   originShiftEquiv a
 
 /-- An affine translation of variables preserves and reflects irreducibility. -/
-lemma affineTranslation_irreducible_iff {R : Type*} [CommRing R] {n : ℕ}
+lemma affineTranslation_irreducible_iff {R : Type*} [CommRing R]
     (a : Fin n → R) (f : MvPolynomial (Fin n) R) :
     Irreducible (affineTranslation R a f) ↔ Irreducible f :=
   MulEquiv.irreducible_iff (f := affineTranslation R a)
 
+end
+
+section
+variable {R : Type*} [CommRing R] [Nontrivial R] {n : ℕ} (a : Fin n → R) (f : MvPolynomial (Fin n) R)
+
 /-- An affine translation of variables does not increase the total degree. -/
-lemma affineTranslation_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R] {n : ℕ}
-    (a : Fin n → R) (f : MvPolynomial (Fin n) R) :
+lemma affineTranslation_totalDegree_le
+    :
     (affineTranslation R a f).totalDegree ≤ f.totalDegree := by
-  classical
   have hm (m : Fin n →₀ ℕ) (c : R) :
       (affineTranslation R a (monomial m c)).totalDegree ≤ m.sum (fun _ e => e) := by
     change (aeval (fun j => X j + C (a j)) (monomial m c)).totalDegree ≤ _
     rw [aeval_monomial]
-    have hp : (m.prod (fun j e => (X j + C (a j)) ^ e)).totalDegree ≤ m.sum (fun _ e => e) := by
+    have hh := totalDegree_mul (C c) (m.prod (fun j e => (X j + C (a j)) ^ e))
+    simp only [totalDegree_C, zero_add] at hh
+    exact hh.trans (by
       apply (totalDegree_finsetProd _ _).trans
       apply Finset.sum_le_sum
       intro j _
-      have hh : (X j + C (a j) : MvPolynomial (Fin n) R).totalDegree ≤ 1 := by
-        exact (totalDegree_add _ _).trans (by simp)
-      exact (totalDegree_pow _ _).trans (by simpa using Nat.mul_le_mul_left (m j) hh)
-    have hh := totalDegree_mul (C c) (m.prod (fun j e => (X j + C (a j)) ^ e))
-    simp only [totalDegree_C, zero_add] at hh
-    exact hh.trans hp
+      have hh : (X j + C (a j) : MvPolynomial (Fin n) R).totalDegree ≤ 1 :=
+        (totalDegree_add _ _).trans (by simp)
+      exact (totalDegree_pow _ _).trans (by nlinarith))
   conv_lhs => rw [f.as_sum, map_sum]
   apply totalDegree_finsetSum_le
   intro m hm'
   exact (hm m _).trans (le_totalDegree hm')
 
 /-- An affine translation of variables preserves the total degree over a nontrivial ring. -/
-lemma affineTranslation_totalDegree {R : Type*} [CommRing R] [Nontrivial R] {n : ℕ}
-    (a : Fin n → R) (f : MvPolynomial (Fin n) R) :
+lemma affineTranslation_totalDegree
+    :
     (affineTranslation R a f).totalDegree = f.totalDegree := by
   apply le_antisymm (affineTranslation_totalDegree_le a f)
   have hh := affineTranslation_totalDegree_le (-a) (affineTranslation R a f)
@@ -63,17 +67,22 @@ lemma affineTranslation_totalDegree {R : Type*} [CommRing R] [Nontrivial R] {n :
     (affineTranslation R a).symm_apply_apply f
   rwa [he] at hh
 
+end
+
+variable {n : ℕ}
+
 /-- Affine translation commutes with mapping coefficients along a ring homomorphism `φ`, the
 translation vector being mapped by `φ` as well. -/
-lemma affineTranslation_map {R S : Type*} [CommRing R] [CommRing S] {n : ℕ}
+lemma affineTranslation_map {R S : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (a : Fin n → R) (f : MvPolynomial (Fin n) R) :
     MvPolynomial.map φ (affineTranslation R a f) =
       affineTranslation S (φ ∘ a) (MvPolynomial.map φ f) :=
   originShift_map φ a f
 
+set_option maxHeartbeats 2000000 in
 /-- Dehomogenizing at `X 0` intertwines the homogeneous translation
 `Xⱼ₊₁ ↦ Xⱼ₊₁ + aⱼ X₀` with the affine translation `Xⱼ ↦ Xⱼ + aⱼ`. -/
-lemma affineChart_homogeneousTranslation {R : Type*} [CommRing R] {n : ℕ}
+lemma affineChart_homogeneousTranslation {R : Type*} [CommRing R]
     (a : Fin n → R) (f : MvPolynomial (Fin (n + 1)) R) :
     affineChart n (homogeneousTranslation R a f) = affineTranslation R a (affineChart n f) := by
   have he : (affineChart n).comp (homogeneousTranslation R a).toRingHom =
@@ -86,5 +95,3 @@ lemma affineChart_homogeneousTranslation {R : Type*} [CommRing R] {n : ℕ}
         simp [affineChart, homogeneousTranslation, homogeneousTranslationHom, affineTranslation]
   exact RingHom.congr_fun he f
 
-end
-end CCDN

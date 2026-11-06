@@ -3,17 +3,15 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
+import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import CCDN.Algebra.BoundedLinearSeparation
 import Mathlib.FieldTheory.PrimitiveElement
 
 /-! Quantitative primitive elements and separation by affine coordinates. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 
 /-- A finite separating coordinate tuple has a primitive integer linear
 combination with coefficients (1,k,...), where k<=n*[F:R]^2. -/
@@ -26,16 +24,14 @@ theorem exists_bounded_primitive_element {R F : Type*} [Field R] [CharZero R] [F
   obtain ⟨k, hk, hinj⟩ := exists_bounded_moment_separation
     (fun φ : F →ₐ[R] AlgebraicClosure R => fun j => φ (a j)) hsep
   refine ⟨k, ?_, ?_⟩
-  · simpa only [AlgHom.card R F (AlgebraicClosure R)] using hk
+  · simp_all
   · apply (Field.primitive_element_iff_algHom_eq_of_eval' R (AlgebraicClosure R)
       (fun x => IsAlgClosed.splits _) _).mpr
-    intro φ ψ he
-    apply hinj
-    simpa only [map_sum, map_mul, map_pow, map_natCast] using he
+    simp_all
 
 /-- Maps from a fraction field are determined by the images of the
 original affine coordinates, even when the scalar field contains a parameter. -/
-private theorem curve_coordinate_embeddings_injective {K R F L σ : Type*}
+theorem curve_coordinate_embeddings_injective {K R F L σ : Type*}
     [Field K] [Field R] [Field F] [Field L]
     [Algebra K R] [Algebra K F] [Algebra R F] [IsScalarTower K R F]
     [Algebra K L] [Algebra R L] [IsScalarTower K R L]
@@ -58,21 +54,3 @@ private theorem curve_coordinate_embeddings_injective {K R F L σ : Type*}
   ext x
   exact RingHom.congr_fun hfield x
 
-/-- The quantitative primitive element applies to the original coordinates of
-a curve's function field, with no coordinate-generation hypothesis left over. -/
-theorem exists_bounded_curve_primitive_element {K R F : Type*}
-    [Field K] [Field R] [CharZero R] [Field F]
-    [Algebra K R] [Algebra K F] [Algebra R F] [IsScalarTower K R F]
-    [Module.Finite R F] {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin n) K)) [I.IsPrime]
-    [Algebra (MvPolynomial (Fin n) K ⧸ I) F]
-    [IsScalarTower K (MvPolynomial (Fin n) K ⧸ I) F]
-    [IsFractionRing (MvPolynomial (Fin n) K ⧸ I) F] :
-    ∃ k : ℕ, k ≤ n * (Module.finrank R F) ^ 2 ∧
-      IntermediateField.adjoin R
-        {∑ j : Fin n, algebraMap (MvPolynomial (Fin n) K ⧸ I) F
-          ((Ideal.Quotient.mk I) (MvPolynomial.X j)) * (k : F) ^ j.val} = ⊤ := by
-  exact exists_bounded_primitive_element _ (curve_coordinate_embeddings_injective I)
-
-end
-end CCDN

@@ -3,17 +3,15 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.AuxiliaryPolynomial.HypersurfaceBadReduction
-public import CCDN.Plane.FiniteFieldConstants
+import CCDN.AuxiliaryPolynomial.HypersurfaceBadReduction
+import CCDN.Plane.FiniteFieldConstants
 import CCDN.AuxiliaryPolynomial.UniversalPlaneBadReduction
 
 /-! The finite set of bad primes of an integer hypersurface. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
 /-- A polynomial with an irreducible image under a coefficient map is nonzero. -/
@@ -29,44 +27,40 @@ abbrev HasGoodReduction {σ : Type*} (f : MvPolynomial σ ℤ) (p : ℕ) [Fact p
     Irreducible (map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)))
       (map (Int.castRingHom (ZMod p)) f))
 
+variable {L σ : Type*} [Field L] [CharZero L] [IsAlgClosed L] [Fintype σ] (f : MvPolynomial (Option σ) ℤ) (hf : Irreducible (MvPolynomial.map (Int.castRingHom L) f)) (hpos : 0 < f.totalDegree)
+include hf hpos
+
 /-- A positive integer and the exact finite bad-prime set above the
 degree. -/
-private theorem exists_hypersurface_bad_prime_set
-    {L σ : Type*} [Field L] [CharZero L] [IsAlgClosed L] [Fintype σ]
-    (f : MvPolynomial (Option σ) ℤ)
-    (hf : Irreducible (MvPolynomial.map (Int.castRingHom L) f))
-    (hpos : 0 < f.totalDegree) :
-    ∃ (D : ℤ) (B : Finset ℕ), 0 < D ∧
-      (∀ p, p ∈ B ↔ f.totalDegree < p ∧ HypersurfaceBadReduction f p) ∧
-      (∀ p ∈ B, (p : ℤ) ∣ D) := by
+theorem exists_hypersurface_bad_prime_set
+    :
+    ∃ B : Finset ℕ, ∀ p, p ∈ B ↔ f.totalDegree < p ∧ HypersurfaceBadReduction f p := by
   classical
-  obtain ⟨rows, cols, e, he, hdiv⟩ := exists_integer_hypersurface_bad_prime_witness f hf hpos
+  obtain ⟨rows, cols, hw, _⟩ := exists_integer_universalPlane_badWitness f hf hpos
+  obtain ⟨e, he⟩ := ne_zero_iff.mp hw
   let D := |(universalPlaneBadWitness f rows cols).coeff e|
-  have hD : 0 < D := abs_pos.mpr he
+  have hD := abs_pos.mpr he
   have hdiv' (p : ℕ) (hp : f.totalDegree < p) (hbad : HypersurfaceBadReduction f p) :
       (p : ℤ) ∣ D := by
     obtain ⟨hpp, hbad⟩ := hbad
     let : Fact p.Prime := ⟨hpp⟩
-    exact (dvd_abs _ _).mpr (hdiv p hp hbad)
+    exact (dvd_abs _ _).mpr (bad_prime_dvd_universalPlaneBadWitness_coeff f hpos rows cols p hp hbad e)
   let B := D.natAbs.primeFactors.filter (fun p => f.totalDegree < p ∧ HypersurfaceBadReduction f p)
   have hmem (p : ℕ) : p ∈ B ↔ f.totalDegree < p ∧ HypersurfaceBadReduction f p := by
     constructor
-    · exact fun h => (Finset.mem_filter.mp h).2
+    · grind
     · intro hp
       apply Finset.mem_filter.mpr
       refine ⟨Nat.mem_primeFactors.mpr ⟨hp.2.choose, ?_, Int.natAbs_ne_zero.mpr hD.ne'⟩, hp⟩
-      simpa only [Int.natAbs_natCast] using Int.natAbs_dvd_natAbs.mpr (hdiv' p hp.1 hp.2)
-  exact ⟨D, B, hD, hmem, fun p hp => hdiv' p ((hmem p).mp hp).1 ((hmem p).mp hp).2⟩
+      simpa using Int.natAbs_dvd_natAbs.mpr (hdiv' p hp.1 hp.2)
+  exact ⟨B, hmem⟩
 
 /-- Finiteness of the paper's bad-prime set above 27*d^4. A stronger set above
 d is finite; filtering it gives the exact prescribed cutoff. -/
 theorem finite_hypersurface_bad_primes
-    {L σ : Type*} [Field L] [CharZero L] [IsAlgClosed L] [Fintype σ]
-    (f : MvPolynomial (Option σ) ℤ)
-    (hf : Irreducible (MvPolynomial.map (Int.castRingHom L) f))
-    (hpos : 0 < f.totalDegree) :
+    :
     {p : ℕ | stepanovThreshold f.totalDegree < p ∧ HypersurfaceBadReduction f p}.Finite := by
-  obtain ⟨_, B, _, hmem, _⟩ := exists_hypersurface_bad_prime_set f hf hpos
+  obtain ⟨B, hmem⟩ := exists_hypersurface_bad_prime_set f hf hpos
   apply B.finite_toSet.subset
   intro p hp
   apply (hmem p).mpr
@@ -74,7 +68,5 @@ theorem finite_hypersurface_bad_primes
   have h1 := Nat.le_mul_self f.totalDegree
   have h2 := Nat.le_mul_self (f.totalDegree * f.totalDegree)
   have h3 : 27 * f.totalDegree ^ 4 < p := hp.1
-  nlinarith [h3]
+  nlinarith
 
-end
-end CCDN

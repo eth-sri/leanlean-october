@@ -3,23 +3,25 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Analysis.PrimeCutoff
+import CCDN.Analysis.PrimeCutoff
 import CCDN.AuxiliaryPolynomial.BadPrimeCharge
 
 /-! A scaling prime from the first Mertens estimate. If every prime in a fixed
 multiplicative interval divides a nonzero integer, that integer has large
 logarithmic height. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open Finset Real
 
+section
+variable {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
+include hL hLT
+
 /-- Lower bound from the first Mertens estimate: for `1 ≤ L ≤ T`, the sum of `log p / p` over the
 primes `p` with `L < p ≤ T` is at least `log T - log L - 2 mertensError`. -/
-lemma prime_interval_weight_lower {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T) :
+lemma prime_interval_weight_lower :
     Real.log T - Real.log L - 2 * mertensError ≤
       ∑ p ∈ ((Ioc 0 ⌊T⌋₊).filter Nat.Prime) \ ((Ioc 0 ⌊L⌋₊).filter Nat.Prime),
         Real.log p / p := by
@@ -38,28 +40,25 @@ lemma prime_interval_weight_lower {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T) :
   change _ ≤ ∑ p ∈ V \ U, Real.log p / p
   linarith
 
-private theorem exists_prime_interval_not_dvd {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
+theorem exists_prime_interval_not_dvd
     {D : ℤ} (hD : 0 < D)
     (hheight : Real.log D / L < Real.log T - Real.log L - 2 * mertensError) :
     ∃ p : ℕ, p.Prime ∧ L < p ∧ (p : ℝ) ≤ T ∧ ¬ (p : ℤ) ∣ D := by
-  classical
   let U := (Ioc 0 ⌊L⌋₊).filter Nat.Prime
   let V := (Ioc 0 ⌊T⌋₊).filter Nat.Prime
-  have hmem (p : ℕ) (hp : p ∈ V \ U) : p.Prime ∧ L < p ∧ (p : ℝ) ≤ T := by
+  have hmem (p : ℕ) (hp : p ∈ V \ U) : p.Prime ∧ L < p ∧ p ≤ T := by
     have hpV := (mem_sdiff.mp hp).1
     have hpP := (mem_filter.mp hpV).2
     refine ⟨hpP, ?_, (prime_mem_upto_iff (by linarith) hpP).mp hpV⟩
     by_contra hle
     exact (mem_sdiff.mp hp).2 ((prime_mem_upto_iff (by linarith) hpP).mpr (le_of_not_gt hle))
   by_contra hnone
-  have hdiv : ∀ p ∈ V \ U, (p : ℤ) ∣ D := by
-    intro p hp
-    by_contra hnd
-    exact hnone ⟨p, (hmem p hp).1, (hmem p hp).2.1, (hmem p hp).2.2, hnd⟩
-  have hupper := prime_divisor_charge_le (V \ U) hD (fun p hp => (hmem p hp).1) hdiv
+  have hupper := prime_divisor_charge_le (V \ U) hD (fun p hp => (hmem p hp).1) (by grind)
     (show 0 < L by linarith) (fun p hp => (hmem p hp).2.1.le)
   have hlower := prime_interval_weight_lower hL hLT
   exact (not_lt_of_ge (hlower.trans hupper)) hheight
+
+end
 
 /-- The absolute constant `A = exp (2 mertensError + 2)` such that a prime in the interval
 `(B / A, B]` can be found avoiding the prime divisors of any nonzero integer `D` with
@@ -68,7 +67,6 @@ def scalingPrimeRatio : ℝ := Real.exp (2 * mertensError + 2)
 
 /-- The scaling-prime ratio is at least one. -/
 lemma scalingPrimeRatio_one_le : 1 ≤ scalingPrimeRatio := by
-  unfold scalingPrimeRatio
   apply Real.one_le_exp_iff.mpr
   have := mertensError_pos
   linarith
@@ -81,10 +79,6 @@ theorem exists_scaling_prime {B : ℝ} (hB : scalingPrimeRatio ≤ B)
   have hA := scalingPrimeRatio_one_le
   have hA0 : 0 < scalingPrimeRatio := by linarith
   have hB0 : 0 < B := by linarith
-  have hL : 1 ≤ B / scalingPrimeRatio := (le_div_iff₀ hA0).mpr (by linarith)
-  have hLB : B / scalingPrimeRatio ≤ B := by
-    apply (div_le_iff₀ hA0).mpr
-    nlinarith
   have hwidth : Real.log B - Real.log (B / scalingPrimeRatio) - 2 * mertensError = 2 := by
     rw [Real.log_div hB0.ne' hA0.ne']
     simp only [scalingPrimeRatio, Real.log_exp]
@@ -94,13 +88,13 @@ theorem exists_scaling_prime {B : ℝ} (hB : scalingPrimeRatio ≤ B)
     rw [hwidth]
     have he : ((|D| : ℤ) : ℝ) = |(D : ℝ)| := by norm_cast
     rw [he]
-    have hh : Real.log |(D : ℝ)| / (B / scalingPrimeRatio) < 1 :=
+    have hh :=
       (div_lt_one (by positivity)).mpr hheight
     linarith
-  obtain ⟨p, hp, hlo, hhi, hnd⟩ := exists_prime_interval_not_dvd hL hLB (abs_pos.mpr hD) hheight'
+  obtain ⟨p, hp, hlo, hhi, hnd⟩ := exists_prime_interval_not_dvd ((le_div_iff₀ hA0).mpr (by linarith)) (by
+    apply (div_le_iff₀ hA0).mpr
+    nlinarith) (abs_pos.mpr hD) hheight'
   refine ⟨p, hp, hlo, hhi, ?_⟩
   intro hdiv
   exact hnd ((dvd_abs _ _).mpr hdiv)
 
-end
-end CCDN

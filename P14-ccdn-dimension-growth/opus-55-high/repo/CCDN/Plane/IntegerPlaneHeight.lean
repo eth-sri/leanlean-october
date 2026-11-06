@@ -3,12 +3,11 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Height.Box
-public import CCDN.Height.IntegerCoefficientHeight
-public import CCDN.Noether.ClosedFormHeight
-public import CCDN.Plane.FiniteFieldBadPlanes
+import CCDN.Height.Box
+import CCDN.Height.IntegerCoefficientHeight
+import CCDN.Noether.ClosedFormHeight
+import CCDN.Plane.FiniteFieldBadPlanes
 import CCDN.Height.PolynomialBoxHeight
 import CCDN.Noether.UniversalPlaneSpecialization
 import CCDN.Plane.GridHeight
@@ -16,9 +15,8 @@ import CCDN.Plane.GridHeight
 /-! Coefficient height of an integer plane section with bounded
 parameters, and the resulting bound on the universal bad-prime witness. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
 /-- Taking plane sections commutes with mapping coefficients along a ring homomorphism `φ`: the
@@ -32,10 +30,8 @@ lemma universalPlaneSection_map {R S σ : Type*} [CommRing R] [CommRing S]
     ← bivariateMap_comp_apply]
   congr 2
   apply MvPolynomial.ringHom_ext
-  · intro r
-    simp
-  · intro i
-    simp
+  · simp_all
+  · simp_all
 
 /-- Height supplied by interpolation on the plane grid. -/
 def integerPlaneHeight (m d : ℕ) (H A : ℝ) : ℝ :=
@@ -58,37 +54,31 @@ theorem integer_plane_section_coefficient_bound {σ : Type*} [Fintype σ]
     rw [he]
     exact (bivariateTotalDegree_map_le _ _).trans
       (universalPlanePolynomial_specialization_totalDegree f (eval v))
-  have hB : 1 ≤ A * (1 + 2 * (f.totalDegree : ℝ)) := by
-    nlinarith [Nat.cast_nonneg (α := ℝ) f.totalDegree]
   have hgrid (x y : ℕ) (hx : x ≤ f.totalDegree) (hy : y ≤ f.totalDegree) :
       |(Polynomial.map (Polynomial.evalRingHom (y : ℝ)) g).eval (x : ℝ)| ≤
         ((f.totalDegree : ℝ) + 1) ^ Fintype.card σ * H *
           (A * (1 + 2 * f.totalDegree)) ^ f.totalDegree := by
     change |bivariateEval (x : ℝ) (y : ℝ) g| ≤ _
-    dsimp only [g]
+    dsimp [g]
     rw [universalPlaneSection_eval, eval_map]
-    apply polynomial_eval₂_box_bound f H _ hH hB hf
+    apply polynomial_eval₂_box_bound f H _ hH (by
+      nlinarith) hf
     intro i
-    have hxR : (x : ℝ) ≤ f.totalDegree := by exact_mod_cast hx
-    have hyR : (y : ℝ) ≤ f.totalDegree := by exact_mod_cast hy
-    change |(v (i,0) : ℝ) + (v (i,1) : ℝ) * x + (v (i,2) : ℝ) * y| ≤ _
+    have hxR : (x : ℝ) ≤ f.totalDegree := mod_cast hx
+    have hyR : (y : ℝ) ≤ f.totalDegree := mod_cast hy
     calc
       _ ≤ |(v (i,0) : ℝ)| + |(v (i,1) : ℝ)| * x + |(v (i,2) : ℝ)| * y := by
-        simpa only [abs_mul, abs_of_nonneg (Nat.cast_nonneg (α := ℝ) x),
-          abs_of_nonneg (Nat.cast_nonneg (α := ℝ) y)] using
+        simpa using
           (abs_add_le ((v (i,0) : ℝ) + (v (i,1) : ℝ) * x) ((v (i,2) : ℝ) * y)).trans
             (add_le_add (abs_add_le (v (i,0) : ℝ) ((v (i,1) : ℝ) * x)) le_rfl)
       _ ≤ A + A * x + A * y := by
         gcongr
-        · exact hv _
-        · exact hv _
-        · exact hv _
+        · grind
+        · grind
+        grind
       _ ≤ A * (1 + 2 * f.totalDegree) := by nlinarith
   intro i j
   have hh := bivariate_coefficient_bound_of_integer_grid g hd
     (by positivity) hgrid i j
-  rw [he, bivariateMap_coeff] at hh
-  exact hh
+  rwa [he, bivariateMap_coeff] at hh
 
-end
-end CCDN

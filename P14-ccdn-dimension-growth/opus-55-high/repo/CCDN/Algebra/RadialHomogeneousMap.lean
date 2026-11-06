@@ -3,23 +3,23 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.RadialMap
-public import CCDN.Hilbert.InfinitySection
+import CCDN.Algebra.RadialMap
+import CCDN.Hilbert.InfinitySection
 
 /-! Radial scaling records the homogeneous components as coefficients of a
 single polynomial. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K))
+
 /-- The `K`-algebra map sending `f` to `∑ n, [f_n] T ^ n`, where `f_n` is the degree-`n`
 homogeneous component of `f` and `[·]` its class modulo `I`; it lands in the homogeneous
 coordinate algebra `projectiveCoordinateAlgebra I`. -/
-def quotientRadialMap {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K)) :
+def quotientRadialMap :
     MvPolynomial σ K →ₐ[K] projectiveCoordinateAlgebra I where
   toFun f := ⟨Polynomial.map (Ideal.Quotient.mk I) (radialMap f), by
     intro n
@@ -38,8 +38,8 @@ def quotientRadialMap {K σ : Type*} [Field K] (I : Ideal (MvPolynomial σ K)) :
 
 /-- The coefficient of `T ^ n` in the radial image of `f` is the class modulo `I` of the
 degree-`n` homogeneous component of `f`. -/
-lemma quotientRadialMap_coeff {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (f : MvPolynomial σ K) (n : ℕ) :
+lemma quotientRadialMap_coeff
+    (f : MvPolynomial σ K) (n : ℕ) :
     ((quotientRadialMap I f : projectiveCoordinateAlgebra I) :
       Polynomial (MvPolynomial σ K ⧸ I)).coeff n =
       (Ideal.Quotient.mk I) (homogeneousComponent n f) := by
@@ -48,8 +48,8 @@ lemma quotientRadialMap_coeff {K σ : Type*} [Field K]
 
 /-- The radial image of a homogeneous polynomial `f` of degree `n` is the class of `f`
 placed in degree `n` of the homogeneous coordinate algebra. -/
-lemma quotientRadialMap_homogeneous {K σ : Type*} [Field K]
-    (I : Ideal (MvPolynomial σ K)) (f : MvPolynomial σ K) (n : ℕ) (hf : f.IsHomogeneous n) :
+lemma quotientRadialMap_homogeneous
+    (f : MvPolynomial σ K) (n : ℕ) (hf : f.IsHomogeneous n) :
     quotientRadialMap I f = projectiveMonomialMap I n
       ⟨(Ideal.Quotient.mk I) f,
         ⟨f, (mem_restrictTotalDegree _ _ _).mpr hf.totalDegree_le, rfl⟩⟩ := by
@@ -59,5 +59,3 @@ lemma quotientRadialMap_homogeneous {K σ : Type*} [Field K]
     homogeneousComponent_of_mem hf]
   split_ifs <;> simp_all
 
-end
-end CCDN

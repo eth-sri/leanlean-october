@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib
-public import CCDN
+import Mathlib
+import CCDN
 
 /-!
 # Solution
@@ -20,14 +19,12 @@ every other definition agrees with its library counterpart definitionally.
 | --- | --- |
 | `projective_dimension_growth` | `CCDN.projective_dimension_growth` |
 | `projective_curve_bound` | `CCDN.projectiveCurveBound` |
-| `affine_curve_bound` | `CCDN.affineCurveBound` |
-| `affine_hypersurface_bound` | `CCDN.affine_hypersurface_dimension_growth` |
-| `affine_hypersurface_bound_rat` | `CCDN.affine_hypersurface_dimension_growth_rat` |
+| `affine_curve_bound` | `CCDN.affine_curve_count` |
+| `affine_hypersurface_bound` | `CCDN.affineHypersurfaceGrowth` |
+| `affine_hypersurface_bound_rat` | `CCDN.affineHypersurfaceGrowth` (`.rational`) |
 | `projective_plane_curve_lower_bound` | `CCDN.projective_integral_curve_lower_bound` |
 | `classGroup_two_torsion_bound` | `CCDN.classGroup_two_torsion_bound` |
 -/
-
-@[expose] public section
 
 namespace CCDN.Submission
 
@@ -144,7 +141,7 @@ theorem projective_dimension_growth (n : ℕ) :
     exact CCDN.filteredHilbertPolynomial_eq_of_eventual I P
       ⟨N, fun M hM => hN M hM⟩
   rw [projectiveCount_eq]
-  have := h I hI hhom d hd (by rw [hPI]; exact hlead) B hB
+  have := h I hI hhom d hd (by grind) B hB
   rwa [hPI] at this
 
 theorem projective_curve_bound (n : ℕ) (hn : 2 ≤ n) :
@@ -154,10 +151,8 @@ theorem projective_curve_bound (n : ℕ) (hn : 2 ≤ n) :
       ∀ B : ℝ, 1 ≤ B →
       (projectiveCount (projectiveZeroSet I) B : ℝ) ≤
         C * ((d : ℝ) ^ 4 * B ^ (2 / (d : ℝ))) := by
-  obtain ⟨C, hC, h⟩ := CCDN.projectiveCurveBound n hn
-  refine ⟨C, hC, fun I hI d hd hdeg B hB => ?_⟩
-  rw [projectiveCount_eq]
-  exact h I hI d hd hdeg B hB
+  simp only [projectiveCount_eq]
+  exact CCDN.projectiveCurveBound n hn
 
 theorem affine_curve_bound (n : ℕ) (hn : 2 ≤ n) :
     ∃ C : ℝ, 0 < C ∧
@@ -166,10 +161,8 @@ theorem affine_curve_bound (n : ℕ) (hn : 2 ≤ n) :
       ∀ B : ℝ, 1 ≤ B →
       (affineCount (affineZeroSet I) B : ℝ) ≤
         C * ((d : ℝ) ^ 3 * B ^ (1 / (d : ℝ)) * (Real.log B + d)) := by
-  obtain ⟨C, hC, h⟩ := CCDN.affineCurveBound n hn
-  refine ⟨C, hC, fun I hI d hd hdeg B hB => ?_⟩
-  rw [affineCount_eq]
-  exact h I hI d hd hdeg B hB
+  simp only [affineCount_eq]
+  exact CCDN.affine_curve_count n hn
 
 theorem affine_hypersurface_bound (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧
@@ -179,10 +172,8 @@ theorem affine_hypersurface_bound (n : ℕ) :
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
       (affineCount {x | eval x (map (Int.castRingHom ℚ) f) = 0} B : ℝ) ≤
         C * (f.totalDegree : ℝ) ^ (18 + 3 * n) * B ^ (n + 1) := by
-  obtain ⟨C, hC, h⟩ := CCDN.affine_hypersurface_dimension_growth n
-  refine ⟨C, hC, fun f hf hd B hB => ?_⟩
-  rw [affineCount_eq]
-  exact h f hf hd B hB
+  simp only [affineCount_eq]
+  exact CCDN.affineHypersurfaceGrowth n
 
 theorem affine_hypersurface_bound_rat (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧
@@ -192,10 +183,8 @@ theorem affine_hypersurface_bound_rat (n : ℕ) :
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
       (affineCount {x | eval x f = 0} B : ℝ) ≤
         C * (f.totalDegree : ℝ) ^ (18 + 3 * n) * B ^ (n + 1) := by
-  obtain ⟨C, hC, h⟩ := CCDN.affine_hypersurface_dimension_growth_rat n
-  refine ⟨C, hC, fun f hf hd B hB => ?_⟩
-  rw [affineCount_eq]
-  exact h f hf hd B hB
+  simp only [affineCount_eq]
+  exact (CCDN.affineHypersurfaceGrowth n).rational
 
 theorem projective_plane_curve_lower_bound (d : ℕ) (hd : 0 < d) :
     ∃ F : MvPolynomial (Fin 3) ℚ, ∃ B : ℕ, 1 ≤ B ∧
@@ -204,18 +193,37 @@ theorem projective_plane_curve_lower_bound (d : ℕ) (hd : 0 < d) :
       (Ideal.span {F}).IsPrime ∧ IsProjectiveCurveOfDegree (Ideal.span {F}) d ∧
       ((d : ℝ) ^ 2 / 5) * (B : ℝ) ^ (2 / (d : ℝ)) ≤
         (projectiveCount (projectiveZeroSet (Ideal.span {F})) B : ℝ) := by
-  obtain ⟨F, B, hB, hhom, hdeg, hir, hprime, hcurve, hcount⟩ :=
-    CCDN.projective_integral_curve_lower_bound d hd
-  refine ⟨F, B, hB, hhom, hdeg, hir, hprime, hcurve, ?_⟩
-  rw [projectiveCount_eq]
-  exact hcount
+  simp only [projectiveCount_eq]
+  obtain ⟨F, B, hB, hhom, hdeg, habs, hcount⟩ := projective_plane_lower_bound d hd
+  have hir := mvPolynomial_irreducible_of_field_map (algebraMap ℚ (AlgebraicClosure ℚ)) F habs
+  rw [← projectiveIdealZeroLocus_span_singleton F hhom] at hcount
+  exact ⟨F, B, hB, hhom, hdeg, habs, Ideal.isPrime_span_singleton_of_prime hir.prime,
+    principal_plane_hasProjectiveCurveDegree F hhom hir.ne_zero, hcount⟩
 
 theorem classGroup_two_torsion_bound (n : ℕ) (hn : 3 ≤ n) :
     ∃ C : ℝ, 0 < C ∧
       ∀ (K : Type u) [Field K] [NumberField K], Module.finrank ℚ K = n →
         (Nat.card (powMonoidHom 2 : ClassGroup (𝓞 K) →* ClassGroup (𝓞 K)).ker : ℝ) ≤
           C * |(NumberField.discr K : ℝ)| ^ (1 / 2 - 1 / (2 * (n : ℝ))) *
-            (Real.log |(NumberField.discr K : ℝ)|) ^ (1 - n % 2) :=
-  CCDN.classGroup_two_torsion_bound.{u} n hn
+            (Real.log |(NumberField.discr K : ℝ)|) ^ (1 - n % 2) := by
+  obtain ⟨C, hC, hbound⟩ := classGroup_uniform_logarithmic_bound.{u} n (by omega)
+  let T := max (oddDegreeClassGroupConstant n) (2 * C)
+  have hCT : 2 * C ≤ T := le_max_right _ _
+  refine ⟨T, (mul_pos (by norm_num) hC).trans_le hCT, ?_⟩
+  intro K _ _ hdeg
+  show (classGroupTwoTorsionCard K : ℝ) ≤ _
+  have hlog := one_le_log_abs_discr K (by omega)
+  by_cases hodd : Odd n
+  · rw [Nat.odd_iff.mp hodd, Nat.sub_self, pow_zero, mul_one]
+    have hh := odd_degree_classGroup_two_torsion_bound K (by omega)
+      (by grind)
+    rw [hdeg] at hh
+    exact hh.trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity))
+  · rw [Nat.not_odd_iff.mp hodd, Nat.sub_zero, pow_one]
+    have hh := hbound K hdeg
+    rw [numberField_discriminant_natAbs_cast] at hh
+    have hcost := mul_le_mul_of_nonneg_left
+      (show Real.log |(NumberField.discr K : ℝ)| + 1 ≤ 2 * Real.log |(NumberField.discr K : ℝ)| by linarith)
+      (show 0 ≤ C * |(NumberField.discr K : ℝ)| ^ (1 / 2 - 1 / (2 * (n : ℝ))) by positivity)
+    nlinarith
 
-end CCDN.Submission

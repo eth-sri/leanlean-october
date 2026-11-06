@@ -3,12 +3,11 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Hilbert.FilteredIntersection
-public import CCDN.Projection.CurvePrimitivePair
-public import Mathlib.FieldTheory.RatFunc.AsPolynomial
-public import Mathlib.RingTheory.SimpleRing.Principal
+import CCDN.Hilbert.FilteredIntersection
+import CCDN.Projection.CurvePrimitivePair
+import Mathlib.FieldTheory.RatFunc.AsPolynomial
+import Mathlib.RingTheory.SimpleRing.Principal
 import CCDN.Algebra.ParameterRecurrenceGrowth
 import CCDN.Height.BoundedPrimitiveElement
 import CCDN.Hilbert.CurveFunctionField
@@ -24,46 +23,9 @@ Eventual generation of the affine degree filtration by a linear parameter
 forces the function-field extension to have the full Hilbert degree.
 -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 
-/-- A linear parameter generating the filtration in large degrees gives a
-function-field extension of degree exactly d. -/
-private theorem curve_parameter_full_degree_of_recurrence {K F σ : Type*}
-    [Field K] [Field F] [Fintype σ] [Algebra K F]
-    [Algebra (RatFunc K) F] [IsScalarTower K (RatFunc K) F]
-    (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
-    [Algebra (MvPolynomial σ K ⧸ I) F] [IsScalarTower K (MvPolynomial σ K ⧸ I) F]
-    [IsFractionRing (MvPolynomial σ K ⧸ I) F]
-    (d : ℕ) (hdegree : HasFilteredCurveDegree I d)
-    (l : MvPolynomial σ K) (hl : l.totalDegree ≤ 1)
-    (he : algebraMap (MvPolynomial σ K ⧸ I) F ((Ideal.Quotient.mk I) l) =
-      algebraMap (RatFunc K) F RatFunc.X)
-    (N : ℕ) (hrec : ∀ n ≥ N, filteredCoordinateSpace I (n + 1) =
-      filteredCoordinateSpace I n ⊔ (filteredCoordinateSpace I n).map
-        (LinearMap.mulLeft K ((Ideal.Quotient.mk I) l))) :
-    Module.Finite (RatFunc K) F ∧ Module.finrank (RatFunc K) F = d := by
-  obtain ⟨hfinite, hupper⟩ := curve_functionField_finite_rank_le I d hdegree l hl
-    RatFunc.X RatFunc.transcendental_X he
-  let : Module.Finite (RatFunc K) F := hfinite
-  let φ := IsScalarTower.toAlgHom K (MvPolynomial σ K ⧸ I) F
-  have hcomm (x : MvPolynomial σ K ⧸ I) :
-      φ.toLinearMap ((LinearMap.mulLeft K ((Ideal.Quotient.mk I) l)) x) =
-        algebraMap (RatFunc K) F RatFunc.X * φ.toLinearMap x := by
-    change φ (((Ideal.Quotient.mk I) l) * x) = _
-    rw [map_mul]
-    exact congrArg (fun y => y * φ x) he
-  have hlower := parameter_recurrence_slope_le (filteredCoordinateSpace I)
-    (LinearMap.mulLeft K ((Ideal.Quotient.mk I) l)) φ.toLinearMap
-    (IsFractionRing.injective _ _) hcomm N hrec d hdegree
-  exact ⟨hfinite, Nat.le_antisymm hupper hlower⟩
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Build the bounded second projection coordinate and a plane equation of
@@ -85,36 +47,51 @@ theorem exists_full_degree_primitive_projection {K F : Type*}
     ∃ (k : ℕ) (f : MvPolynomial (Fin 2) K), k ≤ n * d ^ 2 ∧
       Irreducible f ∧ f.totalDegree = d ∧
       ∀ g, aeval (![l, momentCoordinate K n k]) g ∈ I ↔ f ∣ g := by
-  obtain ⟨hfinite, hfull⟩ := curve_parameter_full_degree_of_recurrence I d hdegree l hl he N hrec
+  obtain ⟨hfinite, hupper⟩ := curve_functionField_finite_rank_le I d hdegree l hl
+    RatFunc.X RatFunc.transcendental_X he
   let : Module.Finite (RatFunc K) F := hfinite
   let φ := IsScalarTower.toAlgHom K (MvPolynomial (Fin n) K ⧸ I) F
-  have hu : Transcendental K ((Ideal.Quotient.mk I) l) := by
-    intro h
-    have hh := (isAlgebraic_algHom_iff φ (IsFractionRing.injective _ _)).mpr h
-    change IsAlgebraic K (algebraMap (MvPolynomial (Fin n) K ⧸ I) F ((Ideal.Quotient.mk I) l)) at hh
-    rw [he] at hh
-    exact RatFunc.transcendental_X ((isAlgebraic_algHom_iff
-      (IsScalarTower.toAlgHom K (RatFunc K) F) (algebraMap (RatFunc K) F).injective).mp hh)
-  obtain ⟨k, hk, hprim⟩ := exists_bounded_curve_primitive_element (R := RatFunc K) (F := F) I
+  have hcomm (x : MvPolynomial (Fin n) K ⧸ I) :
+      φ.toLinearMap ((LinearMap.mulLeft K ((Ideal.Quotient.mk I) l)) x) =
+        algebraMap (RatFunc K) F RatFunc.X * φ.toLinearMap x := by
+    change φ (((Ideal.Quotient.mk I) l) * x) = _
+    rw [map_mul]
+    exact congrArg (fun y => y * φ x) he
+  have hlower := parameter_recurrence_slope_le (filteredCoordinateSpace I)
+    (LinearMap.mulLeft K ((Ideal.Quotient.mk I) l)) φ.toLinearMap
+    (IsFractionRing.injective _ _) hcomm N hrec d hdegree
+  have hfull := Nat.le_antisymm hupper hlower
+  obtain ⟨k, hk, hprim⟩ := exists_bounded_primitive_element _ (curve_coordinate_embeddings_injective (R := RatFunc K) (F := F) I)
   let a : Fin 2 → MvPolynomial (Fin n) K := ![l, momentCoordinate K n k]
   have ha (i : Fin 2) : (a i).totalDegree ≤ 1 := by
     fin_cases i
     · exact hl
     · exact momentCoordinate_degree K n k
-  obtain ⟨f, hf, hker⟩ := exists_plane_projection_equation I a ha d hdegree 0 hu
+  obtain ⟨f, hf, hker⟩ := exists_plane_projection_equation I a ha d hdegree 0 (by
+    intro h
+    have hh := (isAlgebraic_algHom_iff φ (IsFractionRing.injective _ _)).mpr h
+    change IsAlgebraic K (algebraMap (MvPolynomial (Fin n) K ⧸ I) F ((Ideal.Quotient.mk I) l)) at hh
+    rw [he] at hh
+    exact RatFunc.transcendental_X ((isAlgebraic_algHom_iff
+      (IsScalarTower.toAlgHom K (RatFunc K) F) (algebraMap (RatFunc K) F).injective).mp hh))
   have hp : IntermediateField.adjoin (RatFunc K) {φ ((Ideal.Quotient.mk I) (a 1))} = ⊤ := by
     change IntermediateField.adjoin (RatFunc K)
       {algebraMap (MvPolynomial (Fin n) K ⧸ I) F
         ((Ideal.Quotient.mk I) (momentCoordinate K n k))} = ⊤
     rwa [momentCoordinate_fraction]
-  have hfd := plane_projection_degree_eq_of_full_parameter I a ha d hdegree φ f hf.ne_zero hker
-    0 1 RatFunc.X RatFunc.transcendental_X he hp hfull
-  refine ⟨k, f, by simpa only [hfull] using hk, hf, hfd, ?_⟩
+  refine ⟨k, f, by grind, hf, (by
+    refine Nat.le_antisymm (plane_projection_equation_degree_le I a ha d hdegree f hf.ne_zero hker) ?_
+    rw [← hfull]
+    let ψ := φ.comp (projectionCoordinateMap I a)
+    have hψ (i : Fin 2) : ψ (X i) = φ ((Ideal.Quotient.mk I) (a i)) := by
+      simp [ψ, projectionCoordinateMap]
+    have hz : projectionCoordinateMap I a f = 0 := by
+      rw [← RingHom.mem_ker, hker]
+      exact Ideal.mem_span_singleton_self f
+    exact primitive_field_degree_le_plane_relation ψ f hf.ne_zero (by simp [ψ, hz])
+      0 1 RatFunc.X RatFunc.transcendental_X (by rw [hψ]; exact he) (by rw [hψ]; exact hp)), ?_⟩
   intro g
-  have hg : aeval a g ∈ I ↔ g ∈ RingHom.ker (projectionCoordinateMap I a) := by
-    change _ ↔ (Ideal.Quotient.mk I) (aeval a g) = 0
-    exact Ideal.Quotient.eq_zero_iff_mem.symm
+  have hg : aeval a g ∈ I ↔ g ∈ RingHom.ker (projectionCoordinateMap I a) :=
+    Ideal.Quotient.eq_zero_iff_mem.symm
   rw [hg, hker, Ideal.mem_span_singleton]
 
-end
-end CCDN

@@ -3,13 +3,12 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Height.Box
-public import CCDN.Height.IntegerCoefficientHeight
-public import Mathlib.Algebra.MvPolynomial.PDeriv
-public import Mathlib.Data.ZMod.Basic
-public import Mathlib.RingTheory.MvPolynomial.Homogeneous
+import CCDN.Height.Box
+import CCDN.Height.IntegerCoefficientHeight
+import Mathlib.Algebra.MvPolynomial.PDeriv
+import Mathlib.Data.ZMod.Basic
+import Mathlib.RingTheory.MvPolynomial.Homogeneous
 
 /-!
 # Recurring hypotheses of the counting theorems
@@ -30,8 +29,6 @@ an equation with bounded coefficients. These bundles name the recurring groups o
   classes `a p` of `f` modulo the primes `p ∈ P`; this is the input of the congruence
   improvement of the determinant lower bound.
 -/
-
-@[expose] public section
 
 namespace CCDN
 
@@ -97,4 +94,3 @@ structure IsSmoothResidueFamily {n : ℕ} {ι : Type*} (f : MvPolynomial (Fin n)
   /-- For every `p ∈ P`, every point `x i` is congruent to `a p` modulo `p`. -/
   dvd_sub : ∀ p ∈ P, ∀ i j, (p : ℤ) ∣ x i j - a p j
 
-end CCDN

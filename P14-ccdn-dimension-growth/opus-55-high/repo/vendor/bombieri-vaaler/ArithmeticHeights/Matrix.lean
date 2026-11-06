@@ -3,12 +3,11 @@ Copyright (c) 2026 Ralf Stephan. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ralf Stephan
 -/
-module
 
-public import ArithmeticHeights.Extension
-public import ArithmeticHeights.LinearForm
-public import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
-import all Mathlib.NumberTheory.Height.Basic
+import ArithmeticHeights.Extension
+import ArithmeticHeights.LinearForm
+import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
+import Mathlib.NumberTheory.Height.Basic
 
 /-!
 # The height of a matrix
@@ -86,108 +85,3 @@ E. Bombieri and W. Gubler, *Heights in Diophantine Geometry*, Cambridge Universi
 This is Layer 2.5 of the `ArithmeticHeights` roadmap.
 -/
 
-public section
-
-open Finset Function Height AdmissibleAbsValues Real
-
-namespace Height
-
-variable {K : Type*} [Field K] [AdmissibleAbsValues K] {α ι κ : Type*}
-
-end Height
-
-namespace Matrix
-
-variable {K : Type*} [Field K] [AdmissibleAbsValues K] {m n p m' n' : Type*}
-
-/-- **The height of a matrix** is the height of the tuple of its **entries** (Bombieri–Gubler
-2.9.8). The height of its row space — the height of the tuple of maximal minors, `H(A)` in
-Bombieri–Vaaler — is a height on a Grassmannian and is never called the height of `A` here. -/
-@[expose] noncomputable def mulHeight (A : Matrix m n K) : ℝ :=
-  Height.mulHeight fun q : m × n ↦ A q.1 q.2
-
-/-- The logarithmic height of a matrix. As everywhere in this development, the logarithmic height
-is *defined* as the logarithm of the multiplicative one and never independently. -/
-@[expose] noncomputable def logHeight (A : Matrix m n K) : ℝ := log (mulHeight A)
-
-theorem logHeight_eq_log_mulHeight (A : Matrix m n K) : logHeight A = log (mulHeight A) := rfl
-
-/-- **The affine height of a matrix**: the height of the tuple of its entries with a coordinate
-`1` appended, `Height.mulHeightAff` of the entries. Unlike `Matrix.mulHeight` it is not invariant
-under scaling, which is exactly what a bound on the determinant needs. -/
-@[expose] noncomputable def mulHeightAff (A : Matrix m n K) : ℝ :=
-  Height.mulHeightAff fun q : m × n ↦ A q.1 q.2
-
-/-- The logarithmic affine height of a matrix. -/
-@[expose] noncomputable def logHeightAff (A : Matrix m n K) : ℝ := log (mulHeightAff A)
-
-@[simp]
-theorem mulHeight_zero : mulHeight (0 : Matrix m n K) = 1 := Height.mulHeight_zero
-
-@[simp]
-theorem logHeight_zero : logHeight (0 : Matrix m n K) = 0 := by
-  rw [logHeight_eq_log_mulHeight, mulHeight_zero, log_one]
-
-section Basic
-
-variable [Finite m] [Finite n]
-
-end Basic
-
-section Mul
-
-variable [Finite m] [Fintype n] [Finite p]
-
-end Mul
-
-section Det
-
-variable [Fintype n] [DecidableEq n]
-
-end Det
-
-end Matrix
-
-namespace Matrix
-
-variable {K : Type*} [Field K] [NumberField K] {m n p : Type*} [Fintype m] [Fintype n] [Fintype p]
-
-/-!
-### Matrices in the Arakelov normalization
-
-At an infinite place the local factor of the Arakelov height is the Frobenius norm of the matrix,
-and Cauchy–Schwarz entry by entry makes it submultiplicative; at a finite place the sup norm is
-submultiplicative by the ultrametric inequality. So the constant
-`Fintype.card n ^ totalWeight K` of `Matrix.mulHeight_mul_le` disappears.
--/
-
-/-- **The Arakelov height of a matrix**: the Arakelov height of the tuple of its entries, so the
-Frobenius norm at each infinite place and the sup norm at each finite one. -/
-@[expose] noncomputable def arakelovMulHeight (A : Matrix m n K) : ℝ :=
-  NumberField.arakelovMulHeight fun q : m × n ↦ A q.1 q.2
-
-/-- The logarithmic Arakelov height of a matrix. -/
-@[expose] noncomputable def arakelovLogHeight (A : Matrix m n K) : ℝ := log (arakelovMulHeight A)
-
-@[simp]
-theorem arakelovMulHeight_zero : arakelovMulHeight (0 : Matrix m n K) = 1 :=
-  NumberField.arakelovMulHeight_zero
-
-end Matrix
-
-/-!
-### Examples
-
-The tests that fix the constants of the product bound: that `Fintype.card n ^ totalWeight K` is
-attained, that its *exponent* is needed as soon as `K` has degree `> 1` — the rejection test the
-roadmap states over `ℚ(i)`, here for every number field at once — that `[Nonempty n]` cannot be
-dropped, and that the Arakelov constant `1` is attained.
--/
-
-section Examples
-
-open Height NumberField
-
-end Examples
-
-end

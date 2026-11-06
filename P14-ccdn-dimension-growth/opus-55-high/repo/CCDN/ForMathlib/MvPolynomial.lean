@@ -3,10 +3,9 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.LinearAlgebra.Dimension.Finrank
-public import Mathlib.RingTheory.MvPolynomial.Homogeneous
+import Mathlib.LinearAlgebra.Dimension.Finrank
+import Mathlib.RingTheory.MvPolynomial.Homogeneous
 import Mathlib.Data.Sym.Card
 import Mathlib.LinearAlgebra.Dimension.StrongRankCondition
 
@@ -39,8 +38,6 @@ import Mathlib.LinearAlgebra.Dimension.StrongRankCondition
   degree of a nonzero polynomial is nonzero.
 -/
 
-@[expose] public section
-
 namespace Sym
 
 variable (α : Type*) [DecidableEq α] [Fintype α] (n : ℕ)
@@ -56,7 +53,7 @@ noncomputable def equivNatSumLeOfFintype : Sym (Option α) n ≃ {P : α → ℕ
         change ∑ i, q.val (some i) ≤ n
         omega⟩
       invFun p := ⟨fun j ↦ j.elim (n - ∑ i, p.val i) p.val, by
-        simp only [Fintype.sum_option, Option.elim_none, Option.elim_some]
+        simp [Fintype.sum_option, Option.elim_none, Option.elim_some]
         exact Nat.sub_add_cancel p.property⟩
       left_inv q := by
         apply Subtype.ext
@@ -99,14 +96,14 @@ theorem totalDegree_map_le (f : R →+* S) (p : MvPolynomial σ R) :
 /-- Mapping coefficients along an injective ring homomorphism preserves the total degree. -/
 theorem totalDegree_map_of_injective {f : R →+* S} (hf : Function.Injective f)
     (p : MvPolynomial σ R) : (map f p).totalDegree = p.totalDegree := by
-  simp only [totalDegree, support_map_of_injective p hf]
+  simp [totalDegree, support_map_of_injective p hf]
 
 /-- Over a field, a nonzero polynomial which is not a unit has positive total degree. -/
 theorem totalDegree_pos_of_ne_zero_of_not_isUnit [Field K] {f : MvPolynomial σ K} (hf : f ≠ 0)
     (hu : ¬IsUnit f) : 0 < f.totalDegree := by
   refine Nat.pos_of_ne_zero fun hd ↦ hu ?_
   rw [totalDegree_eq_zero_iff_eq_C.mp hd] at hf ⊢
-  exact (isUnit_iff_ne_zero.mpr fun h ↦ hf (by rw [h, map_zero])).map C
+  exact (isUnit_iff_ne_zero.mpr fun h ↦ hf (by grind)).map C
 
 /-- Over a field, an irreducible polynomial has positive total degree. -/
 theorem totalDegree_pos_of_irreducible [Field K] {f : MvPolynomial σ K} (hf : Irreducible f) :
@@ -116,12 +113,11 @@ theorem totalDegree_pos_of_irreducible [Field K] {f : MvPolynomial σ K} (hf : I
 /-- The homogeneous component of top degree of a nonzero polynomial is nonzero. -/
 theorem homogeneousComponent_totalDegree_ne_zero {p : MvPolynomial σ R} (hp : p ≠ 0) :
     homogeneousComponent p.totalDegree p ≠ 0 := by
-  classical
   obtain ⟨m, hm, hd⟩ := Finset.exists_mem_eq_sup p.support (support_nonempty.mpr hp)
     (fun s => s.degree)
   have hdeg : m.degree = p.totalDegree := hd.symm
   intro h
-  have hc := congrArg (fun g : MvPolynomial σ R => g.coeff m) h
+  have hc := congrArg (fun g => g.coeff m) h
   rw [coeff_homogeneousComponent, ite_eq_left hdeg] at hc
   exact (mem_support_iff.mp hm) hc
 
@@ -145,7 +141,7 @@ theorem finrank_homogeneousSubmodule [Field K] [Fintype σ] (n : ℕ) :
   classical
   let e : {p : σ →₀ ℕ // p.degree = n} ≃ Sym σ n :=
     ((Sym.equivNatSum σ n).trans
-      (Equiv.subtypeEquivRight fun p => by simp [Finsupp.degree_apply, Finsupp.sum])).symm
+      (Equiv.subtypeEquivRight fun p => by aesop)).symm
   have he : homogeneousSubmodule σ K n = restrictSupport K {p | p.degree = n} := by
     rw [homogeneousSubmodule_eq_finsupp_supported]
     rfl
@@ -174,4 +170,3 @@ theorem finrank_homogeneousSubmodule_fin [Field K] (n M : ℕ) :
   congr 1
   omega
 
-end MvPolynomial

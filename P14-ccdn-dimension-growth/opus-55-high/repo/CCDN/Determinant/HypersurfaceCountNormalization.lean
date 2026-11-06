@@ -3,17 +3,15 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Determinant.ProjectiveHypersurfaceResidueDeterminant
+import CCDN.Determinant.ProjectiveHypersurfaceResidueDeterminant
 import CCDN.Determinant.HypersurfaceMultiplicityEstimate
 
 /-! Numerical normalization of a finite-field hypersurface count, as in
 CCDN Lemma 2.8. The input count bound is an explicit hypothesis. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 
 /-- A point-count error of H times P^(m-1) increases the mth root by at most H.
 There is no degree or multiplicity loss in this normalization. -/
@@ -25,7 +23,6 @@ theorem hypersurface_count_root_bound (m : ℕ) (hm : 0 < m)
     obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt hm)
     simp only [Nat.succ_sub_one, pow_succ]
     have hpow := pow_le_pow_left₀ hP (show P ≤ P + H by linarith) n
-    have h := mul_le_mul_of_nonneg_right hpow (add_nonneg hP hH)
     nlinarith
   calc
     _ ≤ ((P + H) ^ m) ^ (1 / (m : ℝ)) :=
@@ -41,7 +38,7 @@ theorem local_exponent_separated_lower_bound_of_root_bound (m s e : ℕ) (hm : 0
     (hcutoff : ∀ K : ℕ, s * K ≤ e + μ * (m + K).choose (m + 1)) :
     (m.factorial : ℝ) ^ (1 / (m : ℝ)) / Q * m / (m + 1) *
       (s : ℝ) ^ (1 + 1 / (m : ℝ)) - (m + 1 : ℝ) * s ≤ e := by
-  have hμR : (0 : ℝ) < μ := by exact_mod_cast hμ
+  have hμR : (0 : ℝ) < μ := mod_cast hμ
   have hr : (0 : ℝ) < (μ : ℝ) ^ (1 / (m : ℝ)) := Real.rpow_pos_of_pos hμR _
   have hf : (0 : ℝ) ≤ (m.factorial : ℝ) ^ (1 / (m : ℝ)) := Real.rpow_nonneg (by positivity) _
   have hcoef : (m.factorial : ℝ) ^ (1 / (m : ℝ)) / Q ≤
@@ -56,35 +53,3 @@ theorem local_exponent_separated_lower_bound_of_root_bound (m s e : ℕ) (hm : 0
   simp only [heq] at h
   linarith
 
-/-- The global single-prime determinant bound in denominator form, assuming
-the displayed bound for the total residue multiplicity. -/
-theorem projective_hypersurface_minorGcd_of_count_bound {n s N p d M : ℕ}
-    [Fact p.Prime] (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d)
-    (hf0 : MvPolynomial.map (Int.castRingHom (ZMod p)) f ≠ 0)
-    (F : Fin N → MvPolynomial (Fin (n + 3)) ℤ) (hF : ∀ j, (F j).IsHomogeneous M)
-    (z : Fin s → IntPoint (n + 3)) (hprim : ∀ i, Finset.univ.gcd (z i) = 1)
-    (hz : ∀ i, MvPolynomial.eval (z i) f = 0) {H : ℝ} (hH : 0 ≤ H)
-    (hcount : (projectiveHypersurfaceTotalMultiplicity f hf hf0 : ℝ) ≤
-      (p : ℝ) ^ (n + 1) + H * (p : ℝ) ^ n) :
-    ∃ e : ℕ,
-      ((n + 1).factorial : ℝ) ^ (1 / (n + 1 : ℝ)) / (p + H) *
-        (n + 1 : ℝ) / (n + 2 : ℝ) * (s : ℝ) ^ (1 + 1 / (n + 1 : ℝ)) -
-        (n + 2 : ℝ) * s ≤ e ∧
-      (p : ℤ) ^ e ∣ Int.Matrix.minorGcd
-        (Matrix.of fun i j => MvPolynomial.eval (z i) (F j)) := by
-  by_cases hs : 0 < s
-  · obtain ⟨hpos, e, hcut, _, hd⟩ :=
-      projective_hypersurface_reduction_minorGcd hs f hf hf0 F hF z hprim hz
-    have hroot := hypersurface_count_root_bound (n + 1) (by omega)
-      (Nat.cast_nonneg p) hH (Nat.cast_nonneg (projectiveHypersurfaceTotalMultiplicity f hf hf0))
-      (by simpa only [Nat.add_sub_cancel] using hcount)
-    refine ⟨e, ?_, hd⟩
-    simpa only [Nat.cast_add, Nat.cast_one, show (n : ℝ) + 1 + 1 = n + 2 by ring] using
-      local_exponent_separated_lower_bound_of_root_bound (n + 1) s e (by omega) hpos hroot hcut
-  · have hs0 : s = 0 := by omega
-    refine ⟨0, ?_, by simp⟩
-    simp only [hs0, Nat.cast_zero,
-      Real.zero_rpow (by positivity : (1 : ℝ) + 1 / (n + 1 : ℝ) ≠ 0), mul_zero, sub_zero, le_refl]
-
-end
-end CCDN

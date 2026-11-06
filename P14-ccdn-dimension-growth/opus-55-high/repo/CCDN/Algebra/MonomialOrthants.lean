@@ -3,42 +3,40 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import Mathlib.Algebra.BigOperators.Group.Finset.Defs
-public import Mathlib.Algebra.Group.End
-public import Mathlib.Order.UpperLower.Basic
+import Mathlib.Algebra.BigOperators.Group.Finset.Defs
+import Mathlib.Algebra.Group.End
+import Mathlib.Order.UpperLower.Basic
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-! A lower set of exponent vectors is a finite disjoint union of translated
 coordinate orthants. Dickson's lemma supplies a threshold above which each
 coordinate is either fixed or unrestricted. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 
+section
+variable {σ : Type*}
+
 /-- Truncate every coordinate of the exponent vector `a` at `B`, giving `i ↦ min (a i) B`. -/
-def clampExponent {σ : Type*} (B : ℕ) (a : σ → ℕ) : σ → ℕ :=
+def clampExponent (B : ℕ) (a : σ → ℕ) : σ → ℕ :=
   fun i => min (a i) B
 
 /-- Membership in a lower exponent set is determined by a finite box. -/
-theorem lowerSet_clamp_stabilizes {σ : Type*} [Fintype σ]
+theorem lowerSet_clamp_stabilizes [Fintype σ]
     (S : Set (σ → ℕ)) (hS : IsLowerSet S) :
-    ∃ B : ℕ, 0 < B ∧ ∀ a, a ∈ S ↔ clampExponent B a ∈ S := by
-  classical
+    ∃ B : ℕ, ∀ a, a ∈ S ↔ clampExponent B a ∈ S := by
   let T : Set (σ → ℕ) := {a | Minimal (fun a => a ∉ S) a}
   have hT : T.Finite :=
     WellQuasiOrderedLE.finite_of_isAntichain (setOfPred_minimal_antichain _)
-  let B := hT.toFinset.sup (fun a => Finset.univ.sup a) + 1
+  let B := hT.toFinset.sup (fun a => Finset.univ.sup a)
   have hbound (a : σ → ℕ) (ha : a ∈ T) (i : σ) : a i ≤ B := by
     have h₁ := Finset.le_sup (f := a) (Finset.mem_univ i)
-    have h₂ := Finset.le_sup (f := fun a : σ → ℕ => Finset.univ.sup a)
+    have h₂ := Finset.le_sup (f := fun a => Finset.univ.sup a)
       (hT.mem_toFinset.mpr ha)
-    dsimp [B]
-    omega
-  refine ⟨B, by dsimp [B]; omega, ?_⟩
-  intro a
+    grind
+  refine ⟨B, fun a => ?_⟩
   constructor
   · exact fun ha => hS (fun i => min_le_left _ _) ha
   · intro ha
@@ -48,40 +46,43 @@ theorem lowerSet_clamp_stabilizes {σ : Type*} [Fintype σ]
       exact wellQuasiOrdered_le (fun n => (f n).val)
     obtain ⟨b, hba, hb⟩ := hp.exists_le_minimal hn
     apply hb.1
-    apply hS (a := clampExponent B a) _ ha
+    apply hS _ ha
     intro i
     exact le_min (hba i) (hbound b hb i)
 
+end
+
+section
+variable {σ : Type*} {B : ℕ}
+
 /-- A truncated coordinate pattern, with value B marking its free coordinates. -/
-abbrev orthantFree {σ : Type*} {B : ℕ} (b : σ → Fin (B + 1)) :=
+abbrev orthantFree (b : σ → Fin (B + 1)) :=
   {i : σ // (b i).val = B}
 
 /-- The total degree `∑ i, b i` of the base point of the orthant with truncated coordinate
 pattern `b`. -/
-def orthantBaseDegree {σ : Type*} [Fintype σ] {B : ℕ}
+def orthantBaseDegree [Fintype σ]
     (b : σ → Fin (B + 1)) : ℕ := ∑ i, (b i).val
 
 /-- The point of the orthant with truncated pattern `b` obtained by adding `c` to the base
 point `b` in the free coordinates (those where `b i = B`). -/
-def orthantExpand {σ : Type*} {B : ℕ} (b : σ → Fin (B + 1))
+def orthantExpand (b : σ → Fin (B + 1))
     (c : orthantFree b → ℕ) : σ → ℕ :=
   fun i => (b i).val + if h : (b i).val = B then c ⟨i, h⟩ else 0
 
 /-- Every point of the orthant with truncated pattern `b` truncates back to `b`. -/
-lemma clamp_orthantExpand {σ : Type*} {B : ℕ}
+lemma clamp_orthantExpand
     (b : σ → Fin (B + 1)) (c : orthantFree b → ℕ) :
     clampExponent B (orthantExpand b c) = fun i => (b i).val := by
   funext i
-  simp only [clampExponent, orthantExpand]
+  simp [clampExponent, orthantExpand]
   split_ifs with h
-  · rw [h]
-    omega
-  · have hi := (b i).isLt
-    omega
+  · grind
+  · grind
 
 /-- The total degree of a point of the orthant with pattern `b` is the base degree of `b`
 plus the total of the added free coordinates. -/
-lemma orthantExpand_sum {σ : Type*} [Fintype σ] {B : ℕ}
+lemma orthantExpand_sum [Fintype σ]
     (b : σ → Fin (B + 1)) (c : orthantFree b → ℕ) :
     (∑ i, orthantExpand b c i) = orthantBaseDegree b + ∑ j, c j := by
   classical
@@ -98,10 +99,10 @@ lemma orthantExpand_sum {σ : Type*} [Fintype σ] {B : ℕ}
       intro i _
       by_cases hi : (b i).val = B <;> simp [hi]
     _ = _ := hh
-    _ = ∑ j, c j := Finset.sum_congr rfl (fun j _ => by simp [j.property])
+    _ = ∑ j, c j := Finset.sum_congr rfl (fun j _ => by grind)
 
 /-- Every cell of the truncation map is a coordinate orthant. -/
-def orthantExpandEquiv {σ : Type*} {B : ℕ} (b : σ → Fin (B + 1)) :
+def orthantExpandEquiv (b : σ → Fin (B + 1)) :
     (orthantFree b → ℕ) ≃
       {a : σ → ℕ // clampExponent B a = fun i => (b i).val} where
   toFun c := ⟨orthantExpand b c, clamp_orthantExpand b c⟩
@@ -114,21 +115,25 @@ def orthantExpandEquiv {σ : Type*} {B : ℕ} (b : σ → Fin (B + 1)) :
     funext i
     have hi := congrFun a.property i
     change min (a.val i) B = (b i).val at hi
-    simp only [orthantExpand]
+    simp [orthantExpand]
     split_ifs with h
     · rw [h]
       omega
     · have hb := (b i).isLt
-      simp only [add_zero]
+      simp [add_zero]
       omega
 
+end
+
+variable {σ : Type*}
+
 /-- Truncation gives the unique cell containing any exponent vector. -/
-def exponentPattern {σ : Type*} (B : ℕ) (a : σ → ℕ) : σ → Fin (B + 1) :=
+def exponentPattern (B : ℕ) (a : σ → ℕ) : σ → Fin (B + 1) :=
   fun i => ⟨min (a i) B, Nat.lt_succ_of_le (min_le_right _ _)⟩
 
 /-- A bounded slice of an orthant is a bounded exponent simplex in its free
 coordinates. -/
-def boundedOrthantEquiv {σ : Type*} [Fintype σ] {B N : ℕ}
+def boundedOrthantEquiv [Fintype σ] {B N : ℕ}
     (b : σ → Fin (B + 1)) (hN : orthantBaseDegree b ≤ N) :
     {c : orthantFree b → ℕ // ∑ i, c i ≤ N - orthantBaseDegree b} ≃
       {a : σ → ℕ // clampExponent B a = (fun i => (b i).val) ∧ ∑ i, a i ≤ N} := by
@@ -154,5 +159,3 @@ def boundedOrthantEquiv {σ : Type*} [Fintype σ] {B N : ℕ}
       omega
     exact ⟨⟨c, hc⟩, Subtype.ext he⟩
 
-end
-end CCDN

@@ -3,26 +3,25 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Hilbert.FilteredIntersection
+import CCDN.Hilbert.FilteredIntersection
 import Mathlib.LinearAlgebra.Dimension.StrongRankCondition
 import Mathlib.LinearAlgebra.FreeModule.StrongRankCondition
 
 /-! Linear coordinate substitutions preserve the total-degree filtration.
 Their image coordinate rings inject into the original filtered ring. -/
 
-@[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ τ : Type*} [Field K]
+
 /-- Substituting polynomials of total degree at most `m` multiplies the total degree by at most `m`.
 -/
-lemma aeval_totalDegree_le {K σ τ : Type*} [Field K] [Fintype σ]
+lemma aeval_totalDegree_le [Fintype σ]
     (a : σ → MvPolynomial τ K) {m : ℕ} (ha : ∀ i, (a i).totalDegree ≤ m)
     (f : MvPolynomial σ K) : (aeval a f).totalDegree ≤ m * f.totalDegree := by
-  classical
   conv_lhs => rw [f.as_sum, map_sum]
   apply totalDegree_finsetSum_le
   intro e he
@@ -39,14 +38,14 @@ lemma aeval_totalDegree_le {K σ τ : Type*} [Field K] [Fintype σ]
     _ ≤ _ := Nat.mul_le_mul_left m (le_totalDegree he)
 
 /-- The map from projection coordinates to the original coordinate ring. -/
-def projectionCoordinateMap {K σ τ : Type*} [Field K]
+def projectionCoordinateMap
     (I : Ideal (MvPolynomial τ K)) (a : σ → MvPolynomial τ K) :
     MvPolynomial σ K →ₐ[K] (MvPolynomial τ K ⧸ I) :=
   (Ideal.Quotient.mkₐ K I).comp (aeval a)
 
 /-- A linear coordinate substitution maps polynomials of total degree at most `M` into the filtered
 piece of degree `M` of the coordinate ring. -/
-lemma projectionCoordinateMap_filtered {K σ τ : Type*} [Field K] [Fintype σ]
+lemma projectionCoordinateMap_filtered [Fintype σ]
     (I : Ideal (MvPolynomial τ K)) (a : σ → MvPolynomial τ K)
     (ha : ∀ i, (a i).totalDegree ≤ 1) {M : ℕ}
     (f : MvPolynomial σ K) (hf : f.totalDegree ≤ M) :
@@ -54,10 +53,10 @@ lemma projectionCoordinateMap_filtered {K σ τ : Type*} [Field K] [Fintype σ]
   apply Submodule.mem_map.mpr
   refine ⟨aeval a f, ?_, rfl⟩
   rw [mem_restrictTotalDegree]
-  exact (aeval_totalDegree_le a ha f).trans (by simpa using hf)
+  exact (aeval_totalDegree_le a ha f).trans (by grind)
 
 /-- Linear projection cannot increase any filtered coordinate-ring dimension. -/
-theorem linear_projection_filtered_finrank_le {K σ τ : Type*} [Field K]
+theorem linear_projection_filtered_finrank_le
     [Fintype σ] [Fintype τ]
     (I : Ideal (MvPolynomial τ K)) (a : σ → MvPolynomial τ K)
     (ha : ∀ i, (a i).totalDegree ≤ 1) (M : ℕ) :
@@ -68,7 +67,6 @@ theorem linear_projection_filtered_finrank_le {K σ τ : Type*} [Field K]
   let V := filteredCoordinateSpace (RingHom.ker ψ) M
   have hmem (v : V) : φ v.val ∈ filteredCoordinateSpace I M := by
     obtain ⟨f, hf, he⟩ := Submodule.mem_map.mp v.property
-    change (Ideal.Quotient.mk (RingHom.ker ψ)) f = v.val at he
     rw [← he]
     exact projectionCoordinateMap_filtered I a ha f ((mem_restrictTotalDegree _ _ _).mp hf)
   let T : V →ₗ[K] filteredCoordinateSpace I M :=
@@ -80,5 +78,3 @@ theorem linear_projection_filtered_finrank_le {K σ τ : Type*} [Field K]
     exact congrArg Subtype.val h
   exact LinearMap.finrank_le_finrank_of_injective hi
 
-end
-end CCDN

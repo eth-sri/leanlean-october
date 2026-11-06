@@ -3,13 +3,12 @@ Copyright (c) 2026 Jason Davies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
-module
 
-public import CCDN.Algebra.IdealZeroLocus
-public import CCDN.Height.Box
-public import CCDN.Hilbert.AffineCurveDegree
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-public import Mathlib.RingTheory.Ideal.Height
+import CCDN.Algebra.IdealZeroLocus
+import CCDN.Height.Box
+import CCDN.Hilbert.AffineCurveDegree
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.RingTheory.Ideal.Height
 import CCDN.Algebra.PolynomialSection
 import CCDN.Hilbert.PrimeComponentTranscendence
 
@@ -18,17 +17,16 @@ three-space. A transcendental coordinate has fibers of size at most the
 affine Hilbert degree, and the integer box has only 2 floor(B)+1 values
 of that coordinate. -/
 
-@[expose] public section
 namespace CCDN
-noncomputable section
+section
 open MvPolynomial
 
-private theorem curve_count_le_degree_mul_integer_interval
-    (I : Ideal (CoordinatePolynomial 3)) [I.IsPrime]
-    (hheight : I.height = 2) {d : ℕ} (hdegree : HasAffineCurveDegree I d)
+variable (I : Ideal (CoordinatePolynomial 3)) [I.IsPrime] (hheight : I.height = 2) {d : ℕ} (hdegree : HasAffineCurveDegree I d)
+include hheight hdegree
+
+theorem curve_count_le_degree_mul_integer_interval
     (B : ℝ) :
     count (idealZeroLocus I) B ≤ d * (2 * ⌊B⌋ + 1).toNat := by
-  classical
   let S := integralPoints (idealZeroLocus I) B
   by_cases hS : S.Nonempty
   · obtain ⟨x, hx⟩ := hS
@@ -39,7 +37,7 @@ private theorem curve_count_le_degree_mul_integer_interval
       have he := Ideal.Quotient.eq_zero_iff_mem.mpr ht
       have hscalar : (Ideal.Quotient.mk I) (X j) =
           algebraMap ℚ (CoordinatePolynomial 3 ⧸ I) t := by
-        simpa only [map_sub, Ideal.Quotient.algebraMap_eq] using sub_eq_zero.mp he
+        simpa using sub_eq_zero.mp he
       apply hj
       rw [hscalar]
       exact isAlgebraic_algebraMap t
@@ -57,7 +55,7 @@ private theorem curve_count_le_degree_mul_integer_interval
           apply (totalDegree_sub _ _).trans
           apply max_le
           · simp
-          · change (C (t : ℚ) : CoordinatePolynomial 3).totalDegree ≤ 1
+          · change (C t : CoordinatePolynomial 3).totalDegree ≤ 1
             rw [totalDegree_C]
             omega)
         (fun x : T => rationalPoint x.val) hpoints
@@ -68,43 +66,35 @@ private theorem curve_count_le_degree_mul_integer_interval
           intro x
           have ht := (Finset.mem_filter.mp x.property).2
           simp only [map_sub, eval_X, eval_C, rationalPoint, ht, sub_self])
-      simpa only [Fintype.card_coe, Nat.mul_one] using hh
+      simpa using hh
     have himage : (S.image (fun x => x j)).card ≤ (2 * ⌊B⌋ + 1).toNat := by
       have hsub : S.image (fun x => x j) ⊆ Finset.Icc (-⌊B⌋) ⌊B⌋ := by
         intro t ht
         obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp ht
         obtain ⟨hlo, hhi⟩ := abs_le.mp ((mem_integralPoints.mp hx).1 j)
-        have hn : -(x j) ≤ ⌊B⌋ := Int.le_floor.mpr (by push_cast; linarith)
+        have hn : -(x j) ≤ ⌊B⌋ := Int.le_floor.mpr (by grind)
         exact Finset.mem_Icc.mpr ⟨by omega, Int.le_floor.mpr hhi⟩
       have hh := Finset.card_le_card hsub
       rw [Int.card_Icc] at hh
-      convert hh using 1
-      congr 1
-      omega
+      grind
     exact (Finset.card_le_mul_card_image S d (fun t _ => hfiber t)).trans
       (Nat.mul_le_mul_left d himage)
-  · have he : S = ∅ := Finset.not_nonempty_iff_eq_empty.mp hS
+  · have he := Finset.not_nonempty_iff_eq_empty.mp hS
     change S.card ≤ _
-    simp only [he, Finset.card_empty]
-    exact Nat.zero_le _
+    grind
 
 /-- CCDN's elementary degree-times-box-side bound, for rational
 prime curves in affine three-space. -/
 theorem curve_count_le_degree_mul_box_side
-    (I : Ideal (CoordinatePolynomial 3)) [I.IsPrime]
-    (hheight : I.height = 2) {d : ℕ} (hdegree : HasAffineCurveDegree I d)
     {B : ℝ} (hB : 0 ≤ B) :
     (count (idealZeroLocus I) B : ℝ) ≤ (d : ℝ) * (2 * B + 1) := by
-  have hfloor : 0 ≤ ⌊B⌋ := Int.floor_nonneg.mpr hB
+  have hfloor := Int.floor_nonneg.mpr hB
   have hside : ((2 * ⌊B⌋ + 1).toNat : ℝ) ≤ 2 * B + 1 := by
     have he : (((2 * ⌊B⌋ + 1).toNat : ℕ) : ℝ) = 2 * (⌊B⌋ : ℝ) + 1 := by
       exact_mod_cast (Int.toNat_of_nonneg (show 0 ≤ 2 * ⌊B⌋ + 1 by omega))
-    rw [he]
     linarith [Int.floor_le B]
   calc
-    _ ≤ (d : ℝ) * ((2 * ⌊B⌋ + 1).toNat : ℝ) := by
+    _ ≤ d * ((2 * ⌊B⌋ + 1).toNat : ℝ) := by
       exact_mod_cast curve_count_le_degree_mul_integer_interval I hheight hdegree B
     _ ≤ _ := mul_le_mul_of_nonneg_left hside (Nat.cast_nonneg _)
 
-end
-end CCDN
