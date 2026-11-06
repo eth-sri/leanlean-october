@@ -24,22 +24,14 @@ def canonicalIndex (z : List Bool × ℕ) : List Bool × ℕ :=
 theorem canonicalIndex_prefix {B : ℕ} {z : List Bool × ℕ}
     (hz : z ∈ splitPrefixCoordinates B) : canonicalIndex z ∈ splitPrefixCoordinates B := by
   have hz' := (mem_splitPrefixCoordinates B z).mp hz
-  apply (mem_splitPrefixCoordinates B _).mpr
-  unfold canonicalIndex
-  split
-  · dsimp
-    exact ⟨hz'.1,(Nat.sub_le _ _).trans hz'.1⟩
-  · exact hz'
+  rw [mem_splitPrefixCoordinates, canonicalIndex]
+  split_ifs <;> exact ⟨hz'.1, by omega⟩
 
 def quotientField (ω : SplitField) : InfiniteSplitEnvironment :=
   fun w k => ω (canonicalIndex (w,k))
 
-theorem quotientField_measurable : Measurable quotientField := by
-  apply Measurable.of_eval
-  intro w
-  apply Measurable.of_eval
-  intro k
-  exact measurable_pi_apply _
+theorem quotientField_measurable : Measurable quotientField :=
+  Measurable.of_eval fun _ => Measurable.of_eval fun _ => measurable_pi_apply _
 
 /-- Infinite reversible quotient survival, realized by iid marks on canonical
 coordinates. Noncanonical and invalid latent coordinates do not affect it. -/

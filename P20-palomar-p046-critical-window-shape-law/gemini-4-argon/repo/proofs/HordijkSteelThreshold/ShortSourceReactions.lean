@@ -19,9 +19,8 @@ def sourceSplitReaction {n : ℕ} (x : Molecule n) (k : ℕ)
 
 @[simp] theorem sourceSplitReaction_leftLength {n : ℕ} (x : Molecule n) (k : ℕ)
     (hk : 0 < k) (hkm : k < molLength x) :
-    reactionLeftLength (sourceSplitReaction x k hk hkm) = k := by
-  change k - 1 + 1 = k
-  omega
+    reactionLeftLength (sourceSplitReaction x k hk hkm) = k :=
+  Nat.sub_add_cancel hk
 
 /-- The side indicates deletion of a short suffix (true) or prefix (false). -/
 def sourceShortSplit {n : ℕ} (x : Molecule n) (side : Bool) (k : ℕ) : ℕ :=
@@ -30,8 +29,8 @@ def sourceShortSplit {n : ℕ} (x : Molecule n) (side : Bool) (k : ℕ) : ℕ :=
 def sourceShortReaction {n : ℕ} (x : Molecule n) (side : Bool) (k : ℕ)
     (hk : 0 < k) (hkm : k < molLength x) : Reaction n :=
   sourceSplitReaction x (sourceShortSplit x side k)
-    (by cases side <;> simp only [sourceShortSplit, Bool.false_eq_true, ↓reduceIte] <;> omega)
-    (by cases side <;> simp only [sourceShortSplit, Bool.false_eq_true, ↓reduceIte] <;> omega)
+    (by cases side <;> dsimp [sourceShortSplit] <;> omega)
+    (by cases side <;> dsimp [sourceShortSplit] <;> omega)
 
 @[simp] theorem sourceShortReaction_product {n : ℕ} (x : Molecule n)
     (side : Bool) (k : ℕ) (hk : 0 < k) (hkm : k < molLength x) :

@@ -23,6 +23,6 @@ theorem rationalPool_correct (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (k : ℕ) 
     rationalParameter (rationalPool p k) (rationalPool_nonneg p hp hp1 k) (rationalPool_le_one p hp1 k) =
       fixedPoolParameter (rationalParameter p hp hp1) k := by
   apply Subtype.ext
-  simp [rationalParameter,rationalPool]
+  simp [rationalParameter, rationalPool, fixedPoolParameter]
 
 end RAFCriticalWindowQuantitative

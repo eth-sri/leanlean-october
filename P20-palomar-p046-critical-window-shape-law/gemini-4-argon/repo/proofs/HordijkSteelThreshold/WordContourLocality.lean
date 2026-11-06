@@ -21,68 +21,37 @@ def endWordGraph : SimpleGraph (List Bool) where
     rintro u ⟨b, h | h | h | h⟩ <;>
       have hh := congrArg List.length h <;> simp at hh⟩
 
-/-- A slot belonging to an actual edge is at most one end edit from its diamond product.
-The actual-edge premise prevents a contracted-root jump. -/
 theorem wordDiamondSlot_product_walk {L N : ℕ} (v : BoundedFoodWord L N) (i : Fin 4)
     (he : wordDiamondSlot v i ∈ wordBasicEdges L N) :
     ∃ p : endWordGraph.Walk (wordDiamondSlot v i).1.val v.val, p.length ≤ 1 := by
   fin_cases i
   · exact ⟨Walk.nil, Nat.zero_le 1⟩
   · exact ⟨Walk.nil, Nat.zero_le 1⟩
-  · have hn : boundedFoodRight v ≠ boundedFoodRoot L N := by
-      simpa [wordBasicEdges, wordDiamondSlot] using he
-    obtain ⟨b, hb⟩ := boundedFoodRight_preimage v (boundedFoodRight v) hn rfl
-    have ha : endWordGraph.Adj (boundedFoodRight v).val v.val :=
-      ⟨b, Or.inr (Or.inr (Or.inl hb))⟩
-    exact ⟨Walk.cons ha Walk.nil, Nat.le_refl _⟩
-  · have hn : boundedFoodLeft v ≠ boundedFoodRoot L N := by
-      simpa [wordBasicEdges, wordDiamondSlot] using he
-    obtain ⟨b, hb⟩ := boundedFoodLeft_preimage v (boundedFoodLeft v) hn rfl
-    have ha : endWordGraph.Adj (boundedFoodLeft v).val v.val := ⟨b, Or.inl hb⟩
-    exact ⟨Walk.cons ha Walk.nil, Nat.le_refl _⟩
+  · obtain ⟨b, hb⟩ := boundedFoodRight_preimage v _ (by simpa [wordBasicEdges, wordDiamondSlot] using he) rfl
+    exact ⟨Walk.cons ⟨b, Or.inr (Or.inr (Or.inl hb))⟩ Walk.nil, le_rfl⟩
+  · obtain ⟨b, hb⟩ := boundedFoodLeft_preimage v _ (by simpa [wordBasicEdges, wordDiamondSlot] using he) rfl
+    exact ⟨Walk.cons ⟨b, Or.inl hb⟩ Walk.nil, le_rfl⟩
 
-theorem wordDiamond_products_walk {L N : ℕ} (e d : WordBasicEdge L N)
-    (he : e ∈ wordBasicEdges L N) (hd : d ∈ wordBasicEdges L N)
-    (ha : wordDiamondAdjacent e d) :
-    ∃ p : endWordGraph.Walk e.1.val d.1.val, p.length ≤ 2 := by
-  obtain ⟨v, i, j, hi, hj⟩ := ha
-  subst e
-  subst d
-  obtain ⟨p, hp⟩ := wordDiamondSlot_product_walk v i he
-  obtain ⟨q, hq⟩ := wordDiamondSlot_product_walk v j hd
-  refine ⟨p.append q.reverse, ?_⟩
-  simp only [Walk.length_append, Walk.length_reverse]
-  omega
-
-/-- Lift a contour walk to literal end edits, paying at most two per diamond step. -/
-theorem wordContour_walk_lift {L N : ℕ} {e d : WordBasicEdge L N}
-    (p : (wordContourGraph L N).Walk e d) :
-    ∃ q : endWordGraph.Walk e.1.val d.1.val, q.length ≤ 2 * p.length := by
-  induction p with
-  | nil => exact ⟨Walk.nil, by simp⟩
-  | @cons u v w huv p ih =>
-    obtain ⟨q, hq⟩ := wordDiamond_products_walk u v huv.1 huv.2.1 huv.2.2.2
-    obtain ⟨s, hs⟩ := ih
-    refine ⟨q.append s, ?_⟩
-    simp only [Walk.length_append, Walk.length_cons]
-    omega
-
-/-- Every boundary product is within 4(b-1) end edits of any chosen boundary product.
-This is contour localization, not yet molecule-to-contour anchoring. -/
 theorem wordContour_product_locality {L N : ℕ} (C : Finset (WordBasicEdge L N))
     (hsub : C ⊆ wordBasicEdges L N) (e : WordBasicEdge L N) (he : e ∈ C)
     (hconn : ∀ d ∈ C, wordContourReach C e d)
     (d : WordBasicEdge L N) (hd : d ∈ C) :
     ∃ q : endWordGraph.Walk e.1.val d.1.val, q.length ≤ 4 * (C.card - 1) := by
+  have hlift {u v : WordBasicEdge L N} (p : (wordContourGraph L N).Walk u v) :
+      ∃ q : endWordGraph.Walk u.1.val v.1.val, q.length ≤ 2 * p.length := by
+    induction p with
+    | nil => exact ⟨Walk.nil, by simp⟩
+    | @cons a b c hab p ih =>
+      obtain ⟨w, i, j, rfl, rfl⟩ := hab.2.2.2
+      obtain ⟨p₁, hp₁⟩ := wordDiamondSlot_product_walk w i hab.1
+      obtain ⟨p₂, hp₂⟩ := wordDiamondSlot_product_walk w j hab.2.1
+      obtain ⟨s, hs⟩ := ih
+      exact ⟨(p₁.append p₂.reverse).append s, by simp; omega⟩
   obtain ⟨p, hp, hl⟩ := finite_connected_covering_tour (wordContourGraph L N) C e he
     (wordContour_crossing C hsub e hconn)
-  have hdp : d ∈ p.support := by
-    apply List.mem_toFinset.mp
-    rw [hp]
-    exact hd
-  obtain ⟨q, hq⟩ := wordContour_walk_lift (p.takeUntil d hdp)
-  refine ⟨q, ?_⟩
+  have hdp : d ∈ p.support := List.mem_toFinset.mp (hp ▸ hd)
+  obtain ⟨q, hq⟩ := hlift (p.takeUntil d hdp)
   have ht := p.length_takeUntil_le_length hdp
-  omega
+  exact ⟨q, by omega⟩
 
 end HordijkSteelThreshold

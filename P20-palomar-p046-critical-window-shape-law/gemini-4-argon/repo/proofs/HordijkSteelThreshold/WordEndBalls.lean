@@ -13,70 +13,40 @@ def endWordChoices (s : List Bool) : Finset (List Bool) :=
     (((Finset.univ : Finset Bool).image (fun b => b :: s)) ∪
      ((Finset.univ : Finset Bool).image (fun b => s ++ [b])))))
 
-theorem endWordChoices_card (s : List Bool) : (endWordChoices s).card ≤ 7 := by
-  have h1 := Finset.card_image_le (s := (Finset.univ : Finset Bool)) (f := fun b => b :: s)
-  have h2 := Finset.card_image_le (s := (Finset.univ : Finset Bool)) (f := fun b => s ++ [b])
-  have hu := Finset.card_union_le
-    ((Finset.univ : Finset Bool).image (fun b => b :: s))
-    ((Finset.univ : Finset Bool).image (fun b => s ++ [b]))
-  have ha := Finset.card_insert_le s.dropLast
-    (((Finset.univ : Finset Bool).image (fun b => b :: s)) ∪
-     ((Finset.univ : Finset Bool).image (fun b => s ++ [b])))
-  have hb := Finset.card_insert_le s.tail (insert s.dropLast
-    (((Finset.univ : Finset Bool).image (fun b => b :: s)) ∪
-     ((Finset.univ : Finset Bool).image (fun b => s ++ [b]))))
-  have hc := Finset.card_insert_le s (insert s.tail (insert s.dropLast
-    (((Finset.univ : Finset Bool).image (fun b => b :: s)) ∪
-     ((Finset.univ : Finset Bool).image (fun b => s ++ [b])))))
-  simp only [Finset.card_univ, Fintype.card_bool] at h1 h2
-  unfold endWordChoices
-  omega
-
-theorem endWord_adj_mem_choices {u v : List Bool} (h : endWordGraph.Adj u v) :
-    v ∈ endWordChoices u := by
-  obtain ⟨b, h | h | h | h⟩ := h
-  · subst v; cases b <;> simp [endWordChoices]
-  · subst u; cases b <;> simp [endWordChoices]
-  · subst v; cases b <;> simp [endWordChoices]
-  · subst u; cases b <;> simp [endWordChoices]
-
 def endWordBall : ℕ → List Bool → Finset (List Bool)
   | 0, s => {s}
   | k + 1, s => (endWordChoices s).biUnion (endWordBall k)
-
-theorem endWordBall_self (k : ℕ) (s : List Bool) : s ∈ endWordBall k s := by
-  induction k with
-  | zero => simp [endWordBall]
-  | succ k ih =>
-    exact Finset.mem_biUnion.mpr ⟨s, by simp [endWordChoices], ih⟩
 
 theorem endWordBall_card (k : ℕ) (s : List Bool) : (endWordBall k s).card ≤ 7 ^ k := by
   induction k generalizing s with
   | zero => simp [endWordBall]
   | succ k ih =>
-    calc
-      (endWordBall (k + 1) s).card ≤ ∑ v ∈ endWordChoices s, (endWordBall k v).card :=
-        Finset.card_biUnion_le
-      _ ≤ ∑ _v ∈ endWordChoices s, 7 ^ k := Finset.sum_le_sum (fun v _ => ih v)
-      _ ≤ 7 * 7 ^ k := by
-        simp only [Finset.sum_const, smul_eq_mul]
-        exact Nat.mul_le_mul_right _ (endWordChoices_card s)
-      _ = 7 ^ (k + 1) := by rw [pow_succ, Nat.mul_comm]
+    let u := (Finset.univ : Finset Bool).image (fun b => b :: s)
+    let v := (Finset.univ : Finset Bool).image (fun b => s ++ [b])
+    have h1 : u.card ≤ 2 := Finset.card_image_le.trans (by decide)
+    have h2 : v.card ≤ 2 := Finset.card_image_le.trans (by decide)
+    have := Finset.card_union_le u v
+    have := Finset.card_insert_le s.dropLast (u ∪ v)
+    have := Finset.card_insert_le s.tail (insert s.dropLast (u ∪ v))
+    have := Finset.card_insert_le s (insert s.tail (insert s.dropLast (u ∪ v)))
+    have hcard : (endWordChoices s).card ≤ 7 := by
+      change (insert s (insert s.tail (insert s.dropLast (u ∪ v)))).card ≤ 7; omega
+    refine Finset.card_biUnion_le.trans ((Finset.sum_le_sum fun v _ => ih v).trans ?_)
+    simpa [pow_succ'] using Nat.mul_le_mul_right (7 ^ k) hcard
 
 theorem endWord_walk_mem_ball {u v : List Bool} (p : endWordGraph.Walk u v)
     (k : ℕ) (hk : p.length ≤ k) : v ∈ endWordBall k u := by
+  have hself (n : ℕ) (s : List Bool) : s ∈ endWordBall n s := by
+    induction n with
+    | zero => simp [endWordBall]
+    | succ n ih => exact Finset.mem_biUnion.mpr ⟨s, by simp [endWordChoices], ih⟩
   induction k generalizing u v with
-  | zero =>
-    have he := p.eq_of_length_eq_zero (by omega)
-    subst v
-    exact endWordBall_self 0 u
+  | zero => cases p.eq_of_length_eq_zero (by omega); exact hself 0 u
   | succ k ih =>
     cases p with
-    | nil => exact endWordBall_self (k + 1) u
+    | nil => exact hself (k + 1) u
     | @cons u v w ha p =>
-      apply Finset.mem_biUnion.mpr
-      refine ⟨v, endWord_adj_mem_choices ha, ih p ?_⟩
-      simp only [Walk.length_cons] at hk
-      omega
+      exact Finset.mem_biUnion.mpr ⟨v, by rcases ha with ⟨b, rfl | rfl | rfl | rfl⟩ <;> cases b <;> simp [endWordChoices],
+        ih p (by simp at hk; omega)⟩
 
 end HordijkSteelThreshold

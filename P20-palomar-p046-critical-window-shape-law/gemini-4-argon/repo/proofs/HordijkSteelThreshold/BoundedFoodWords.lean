@@ -35,39 +35,22 @@ def boundedFoodRoot (L N : ℕ) : BoundedFoodWord L N := ⟨[], Or.inl rfl⟩
 
 def boundedFoodLeft {L N : ℕ} (v : BoundedFoodWord L N) : BoundedFoodWord L N :=
   ⟨foodWordLeft L v.val, by
-    by_cases h : v.val.length ≤ L + 1
-    · left
-      simp [foodWordLeft, h]
-    · right
-      have hv := boundedFoodWord_length_le v
-      simp only [foodWordLeft, ite_eq_right h, List.length_tail]
-      omega⟩
+    have hv := boundedFoodWord_length_le v
+    by_cases h : v.val.length ≤ L + 1 <;> [left; right] <;> simp [foodWordLeft, h]; omega⟩
 
 def boundedFoodRight {L N : ℕ} (v : BoundedFoodWord L N) : BoundedFoodWord L N :=
   ⟨foodWordRight L v.val, by
-    by_cases h : v.val.length ≤ L + 1
-    · left
-      simp [foodWordRight, h]
-    · right
-      have hv := boundedFoodWord_length_le v
-      simp only [foodWordRight, ite_eq_right h, List.length_dropLast]
-      omega⟩
+    have hv := boundedFoodWord_length_le v
+    by_cases h : v.val.length ≤ L + 1 <;> [left; right] <;> simp [foodWordRight, h]; omega⟩
 
 theorem boundedFoodParents_commute {L N : ℕ} (v : BoundedFoodWord L N) :
-    boundedFoodLeft (boundedFoodRight v) = boundedFoodRight (boundedFoodLeft v) := by
-  apply Subtype.ext
-  exact foodWordParents_commute L v.val
+    boundedFoodLeft (boundedFoodRight v) = boundedFoodRight (boundedFoodLeft v) :=
+  Subtype.ext (foodWordParents_commute L v.val)
 
 theorem boundedFood_zero_height {L N : ℕ} (v : BoundedFoodWord L N)
-    (h : foodWordHeight L v.val = 0) : v = boundedFoodRoot L N := by
-  apply Subtype.ext
-  rcases v.property with hv | hv
-  · exact hv
-  · unfold foodWordHeight at h
-    omega
+    (h : foodWordHeight L v.val = 0) : v = boundedFoodRoot L N :=
+  Subtype.ext (v.2.elim id fun _ => by unfold foodWordHeight at h; omega)
 
-/-- Diamond parity only on the finite source domain suffices to integrate
-edge labels. This avoids the false zero-extension premise above the cap. -/
 theorem boundedFood_diamond_cut (L N : ℕ)
     (leftEdge rightEdge : BoundedFoodWord L N → Bool)
     (hroot : leftEdge (boundedFoodRoot L N) = false ∧
@@ -78,18 +61,11 @@ theorem boundedFood_diamond_cut (L N : ℕ)
     ((diamondPotential boundedFoodRight rightEdge N v ^^
       diamondPotential boundedFoodRight rightEdge N (boundedFoodLeft v)) = leftEdge v) ∧
     ((diamondPotential boundedFoodRight rightEdge N v ^^
-      diamondPotential boundedFoodRight rightEdge N (boundedFoodRight v)) = rightEdge v) := by
-  apply diamondPotential_edges boundedFoodLeft boundedFoodRight
+      diamondPotential boundedFoodRight rightEdge N (boundedFoodRight v)) = rightEdge v) :=
+  diamondPotential_edges boundedFoodLeft boundedFoodRight
     (fun v : BoundedFoodWord L N => foodWordHeight L v.val) leftEdge rightEdge
-  · intro u
-    exact foodWordRight_height L u.val
-  · exact boundedFoodParents_commute
-  · intro u hu
-    rw [boundedFood_zero_height u hu]
-    exact hroot
-  · exact hdiamond
-  · have hv := boundedFoodWord_length_le v
-    unfold foodWordHeight
-    omega
+    (fun u => foodWordRight_height L u.val) boundedFoodParents_commute
+    (fun u hu => boundedFood_zero_height u hu ▸ hroot) hdiamond N v
+    (by have := boundedFoodWord_length_le v; unfold foodWordHeight; omega)
 
 end HordijkSteelThreshold

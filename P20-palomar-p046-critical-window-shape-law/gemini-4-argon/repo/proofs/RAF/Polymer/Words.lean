@@ -13,8 +13,4 @@ abbrev Word (length : Nat) := Fin (2 ^ length)
 represents length `k+1`. -/
 abbrev Molecule (n : Nat) := Σ k : Fin n, Word (k.val + 1)
 
-theorem card_molecule_sigma (n : Nat) :
-    Fintype.card (Molecule n) = ∑ k : Fin n, 2 ^ (k.val + 1) := by
-  simp [Molecule, Word]
-
 end RAF.Polymer

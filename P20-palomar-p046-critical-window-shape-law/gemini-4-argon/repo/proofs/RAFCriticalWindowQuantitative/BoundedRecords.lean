@@ -21,34 +21,22 @@ theorem generated_or_bounded_record {L B : ℕ} (hLB : L ≤ B)
     · rcases ihv with hv | he
       · by_cases hlen : (u++v).length ≤ B
         · exact Or.inl (.ligate hu hv ho hlen)
-        · have hb : B ≤ (u++v).length := by omega
-          have huB := finiteReversibleGenerated_length_le hu
+        · have huB := finiteReversibleGenerated_length_le hu
           have hvB := finiteReversibleGenerated_length_le hv
-          refine Or.inr ⟨u++v, by omega, ?_, .ligate
-            (finiteReversibleGenerated_mono_cap hb hu)
-            (finiteReversibleGenerated_mono_cap hb hv) ho le_rfl⟩
-          simp only [List.length_append]
-          omega
+          exact Or.inr ⟨u++v, by omega, by simp only [List.length_append]; omega,
+            .ligate (finiteReversibleGenerated_mono_cap (by omega) hu)
+              (finiteReversibleGenerated_mono_cap (by omega) hv) ho le_rfl⟩
       · exact Or.inr he
     · exact Or.inr he
-  | left hu hv _ ho ih =>
-    rcases ih with hp | he
-    · exact Or.inl (.left hu hv hp ho)
-    · exact Or.inr he
-  | right hu hv _ ho ih =>
-    rcases ih with hp | he
-    · exact Or.inl (.right hu hv hp ho)
-    · exact Or.inr he
+  | left hu hv _ ho ih => exact ih.imp (fun hp => .left hu hv hp ho) id
+  | right hu hv _ ho ih => exact ih.imp (fun hp => .right hu hv hp ho) id
 
 theorem escape_has_bounded_record {L B : ℕ} (hLB : L ≤ B)
     {field : InfiniteSplitEnvironment}
     (h : ∃ w, B < w.length ∧ InfiniteReversibleGenerated L field w) :
     ∃ v, B < v.length ∧ v.length ≤ 2*B ∧
-      FiniteReversibleGenerated v.length L field v := by
-  obtain ⟨w,hw,hg⟩ := h
-  rcases generated_or_bounded_record hLB hg with hf | he
-  · have hl := finiteReversibleGenerated_length_le hf
-    omega
-  · exact he
+      FiniteReversibleGenerated v.length L field v :=
+  let ⟨_, hw, hg⟩ := h
+  (generated_or_bounded_record hLB hg).resolve_left fun hf => (finiteReversibleGenerated_length_le hf).not_gt hw
 
 end RAFCriticalWindowQuantitative

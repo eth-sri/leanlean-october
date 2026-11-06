@@ -6,15 +6,12 @@ public import proofs.HordijkSteelThreshold.RecordPrefixAtoms
 @[expose] public section
 
 namespace HordijkSteelThreshold
-open Classical MeasureTheory unitInterval
-open scoped ENNReal
+open Classical MeasureTheory
 
 theorem measurableSet_of_splitPrefixDetermined (P : Finset (List Bool × ℕ))
     (E : Set SplitField) (hE : SplitPrefixDetermined P E) : MeasurableSet E := by
-  obtain ⟨e,he⟩ := split_prefix_event_representation P E hE
-  rw [he]
-  have hm : Measurable (fun ω : SplitField => e (fun z : P => ω z.val)) :=
-    (measurable_of_finite e).comp (Measurable.of_eval (fun z => measurable_pi_apply z.val))
-  simpa using (MeasurableSet.singleton True).preimage hm
+  obtain ⟨e, rfl⟩ := split_prefix_event_representation P E hE
+  exact (Set.toFinite {η : P → Prop | e η}).measurableSet.preimage
+    (Measurable.of_eval fun z => measurable_pi_apply z.val)
 
 end HordijkSteelThreshold

@@ -19,15 +19,13 @@ noncomputable def temporaryReactionClosure {N : ℕ} (L : ℕ) (S : Finset (Reac
   simp [temporaryReactionClosure]
 
 theorem temporaryReactionClosure_mono {N L : ℕ} {S T : Finset (Reaction N)}
-    (hST : S ⊆ T) : temporaryReactionClosure L S ⊆ temporaryReactionClosure L T := by
-  intro x hx
-  obtain ⟨k, hk⟩ := (mem_temporaryReactionClosure S x).mp hx
-  exact (mem_temporaryReactionClosure T x).mpr ⟨k, revClosureAt_mono_reactions _ hST k hk⟩
+    (hST : S ⊆ T) : temporaryReactionClosure L S ⊆ temporaryReactionClosure L T :=
+  fun _ hx => let ⟨k, hk⟩ := (mem_temporaryReactionClosure S _).mp hx
+    (mem_temporaryReactionClosure T _).mpr ⟨k, revClosureAt_mono_reactions _ hST k hk⟩
 
 theorem temporaryReactionClosure_food {N L : ℕ} (S : Finset (Reaction N))
-    (x : Molecule N) (hx : molLength x ≤ L) : x ∈ temporaryReactionClosure L S := by
-  apply (mem_temporaryReactionClosure S x).mpr
-  exact ⟨0, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hx⟩⟩
+    (x : Molecule N) (hx : molLength x ≤ L) : x ∈ temporaryReactionClosure L S :=
+  (mem_temporaryReactionClosure S x).mpr ⟨0, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hx⟩⟩
 
 theorem temporaryReactionClosure_ligation {N L : ℕ} (S : Finset (Reaction N))
     (r : Reaction N) (hr : r ∈ S)
@@ -38,16 +36,9 @@ theorem temporaryReactionClosure_ligation {N L : ℕ} (S : Finset (Reaction N))
   obtain ⟨kr, hkr⟩ := (mem_temporaryReactionClosure S _).mp hh
   have hl' := revClosureAt_mono_stage (binaryPolymerCRS N L) S (Nat.le_max_left kl kr) hkl
   have hr' := revClosureAt_mono_stage (binaryPolymerCRS N L) S (Nat.le_max_right kl kr) hkr
-  apply (mem_temporaryReactionClosure S _).mpr
-  refine ⟨max kl kr+1, ?_⟩
-  apply Finset.mem_union_right
-  apply Finset.mem_biUnion.mpr
-  refine ⟨r, hr, Finset.mem_union_left _ ?_⟩
-  have hen : RevEnabledLhs (binaryPolymerCRS N L)
-      (revClosureAt (binaryPolymerCRS N L) S (max kl kr)) r := by
-    simpa [RevEnabledLhs, binaryPolymerCRS, Finset.insert_subset_iff,
-      Finset.singleton_subset_iff] using And.intro hl' hr'
-  rw [ite_eq_left hen]
+  refine (mem_temporaryReactionClosure S _).mpr ⟨max kl kr + 1, Finset.mem_union_right _ <|
+    Finset.mem_biUnion.mpr ⟨r, hr, Finset.mem_union_left _ ?_⟩⟩
+  rw [ite_eq_left (by simpa [RevEnabledLhs, binaryPolymerCRS, Finset.insert_subset_iff] using And.intro hl' hr')]
   exact Finset.mem_singleton_self _
 
 theorem temporaryReactionClosure_cleavage {N L : ℕ} (S : Finset (Reaction N))
@@ -56,64 +47,41 @@ theorem temporaryReactionClosure_cleavage {N L : ℕ} (S : Finset (Reaction N))
     reactionLeft r ∈ temporaryReactionClosure L S ∧
       reactionRight r ∈ temporaryReactionClosure L S := by
   obtain ⟨k, hk⟩ := (mem_temporaryReactionClosure S _).mp hp
-  have hen : RevEnabledRhs (binaryPolymerCRS N L) (revClosureAt (binaryPolymerCRS N L) S k) r := by
-    simpa [RevEnabledRhs, binaryPolymerCRS] using hk
-  have hadd : {reactionLeft r, reactionRight r} ⊆
-      revClosureAt (binaryPolymerCRS N L) S (k+1) := by
-    intro x hx
-    apply Finset.mem_union_right
-    apply Finset.mem_biUnion.mpr
-    refine ⟨r, hr, Finset.mem_union_right _ ?_⟩
-    rw [ite_eq_left hen]
-    exact hx
-  exact ⟨(mem_temporaryReactionClosure S _).mpr ⟨k+1,hadd (by simp)⟩,
-    (mem_temporaryReactionClosure S _).mpr ⟨k+1,hadd (by simp)⟩⟩
+  have hadd {x} (hx : x ∈ ({reactionLeft r, reactionRight r} : Finset (Molecule N))) :
+      x ∈ temporaryReactionClosure L S :=
+    (mem_temporaryReactionClosure S _).mpr ⟨k + 1, Finset.mem_union_right _ <|
+      Finset.mem_biUnion.mpr ⟨r, hr, Finset.mem_union_right _ <| by
+        rwa [ite_eq_left (by simpa [RevEnabledRhs, binaryPolymerCRS] using hk)]⟩⟩
+  exact ⟨hadd (by simp), hadd (by simp)⟩
 
 theorem moleculeWord_injective {N : ℕ} : Function.Injective (@moleculeWord N) := by
-  intro x y h
-  obtain ⟨kx, vx⟩ := x
-  obtain ⟨ky, vy⟩ := y
+  rintro ⟨kx, vx⟩ ⟨ky, vy⟩ h
   have hh := congrArg List.length h
-  rw [moleculeWord_length, moleculeWord_length] at hh
-  have hidx : kx = ky := Fin.ext (by unfold molLength at hh; dsimp at hh; omega)
-  subst ky
+  rw [moleculeWord_length, moleculeWord_length, molLength, molLength] at hh
+  cases Fin.ext (Nat.succ.inj hh)
   have hc := congrArg binaryWordCode h
   rw [binaryWordCode_moleculeWord, binaryWordCode_moleculeWord] at hc
-  exact Sigma.ext rfl (heq_of_eq (Fin.ext hc))
+  exact congrArg (Sigma.mk kx) (Fin.ext hc)
 
-/-- Generability is well defined on contracted words: every representative of
-food is generated, while a nonfood word has a unique source molecule. -/
 def contractedWordGenerated {N : ℕ} (L : ℕ) (S : Finset (Reaction N)) (s : List Bool) : Prop :=
   ∀ x : Molecule N, contractFoodWord L (moleculeWord x) = s → x ∈ temporaryReactionClosure L S
 
 theorem contractedWordGenerated_root {N L : ℕ} (S : Finset (Reaction N)) :
-    contractedWordGenerated L S [] := by
-  intro x hx
+    contractedWordGenerated L S [] := fun x hx => by
   by_cases hlen : (moleculeWord x).length ≤ L
   · exact temporaryReactionClosure_food S x (by rwa [moleculeWord_length] at hlen)
   · rw [contractFoodWord, ite_eq_right hlen] at hx
-    have he := congrArg List.length hx
-    rw [moleculeWord_length] at he
-    simp only [List.length_nil] at he
-    unfold molLength at he
-    omega
+    exact False.elim (by simpa [moleculeWord_length, molLength] using congrArg List.length hx)
 
 theorem contractedWordGenerated_iff {N L : ℕ} (S : Finset (Reaction N)) (x : Molecule N) :
     contractedWordGenerated L S (contractFoodWord L (moleculeWord x)) ↔
-      x ∈ temporaryReactionClosure L S := by
-  constructor
-  · intro h
-    exact h x rfl
-  · intro hx y hy
-    by_cases hyl : (moleculeWord y).length ≤ L
-    · exact temporaryReactionClosure_food S y (by rwa [moleculeWord_length] at hyl)
-    · by_cases hxl : (moleculeWord x).length ≤ L
-      · rw [contractFoodWord, ite_eq_right hyl, contractFoodWord, ite_eq_left hxl] at hy
-        have he := congrArg List.length hy
-        simp only [moleculeWord_length, List.length_nil] at he
-        unfold molLength at he
-        omega
+      x ∈ temporaryReactionClosure L S :=
+  ⟨fun h => h x rfl, fun hx y hy => by
+    by_cases hxl : (moleculeWord x).length ≤ L
+    · exact contractedWordGenerated_root S y (hy.trans (by simp [contractFoodWord, hxl]))
+    · by_cases hyl : (moleculeWord y).length ≤ L
+      · exact temporaryReactionClosure_food S y (by rwa [moleculeWord_length] at hyl)
       · rw [contractFoodWord, ite_eq_right hyl, contractFoodWord, ite_eq_right hxl] at hy
-        exact moleculeWord_injective hy ▸ hx
+        exact moleculeWord_injective hy ▸ hx⟩
 
 end HordijkSteelThreshold

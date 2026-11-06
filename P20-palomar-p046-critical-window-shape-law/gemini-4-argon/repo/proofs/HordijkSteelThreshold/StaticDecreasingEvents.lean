@@ -7,23 +7,25 @@ public import proofs.HordijkSteelThreshold.StaticParameterMonotonicity
 namespace HordijkSteelThreshold
 open Classical MeasureTheory RAF.Polymer unitInterval
 
+theorem product_decreasing_mono {J : Type*} [Fintype J]
+    (a c : J → I) (hac : ∀ j, a j ≤ c j)
+    (E : (J → Prop) → Prop) (hE : Antitone E) :
+    (Measure.pi (fun j => ambientCoordLaw (c j))) {ω | E ω} ≤
+      (Measure.pi (fun j => ambientCoordLaw (a j))) {ω | E ω} := by
+  have hi := product_increasing_mono a c hac (fun ω => ¬ E ω) fun _ _ hxy hx hy => hx (hE hxy hy)
+  have hc (q : J → I) : (Measure.pi (fun j => ambientCoordLaw (q j))) {ω | E ω} =
+      1 - (Measure.pi (fun j => ambientCoordLaw (q j))) {ω | ¬ E ω} := by
+    rw [show {ω | E ω} = {ω | ¬ E ω}ᶜ by ext; simp,
+      measure_compl (Set.toFinite _).measurableSet (measure_ne_top _ _), measure_univ]
+  rw [hc a, hc c]
+  exact tsub_le_tsub_left hi 1
+
 theorem static_decreasing_event_mono (N : ℕ) {a c : I} (hac : a ≤ c)
     (P : Finset (Reaction N) → Prop) (hP : Antitone P) :
     staticReactionMeasure N c {ω | P (staticOpenReactions ω)} ≤
       staticReactionMeasure N a {ω | P (staticOpenReactions ω)} := by
-  obtain ⟨b,rfl⟩ := exists_sprinkling_increment hac
-  have hu := iid_union_field_map (Reaction N) a b
-  change _ = _ at hu
-  rw [show staticReactionMeasure N (sprinklingParameter a b) = _ from hu.symm,
-    Measure.map_apply (measurable_of_finite _) (Set.Finite.measurableSet (Set.toFinite _))]
-  have hs : {p : (Reaction N → Prop) × (Reaction N → Prop) |
-      P (staticOpenReactions (fun r => p.1 r ∨ p.2 r))} ⊆
-      {ω | P (staticOpenReactions ω)} ×ˢ Set.univ := by
-    intro p hp
-    refine ⟨hP ?_ hp,Set.mem_univ _⟩
-    intro r hr
-    simp only [staticOpenReactions,Finset.mem_filter,Finset.mem_univ,true_and] at hr ⊢
-    exact Or.inl hr
-  exact (measure_mono hs).trans_eq (by rw [Measure.prod_prod,measure_univ,mul_one]; rfl)
+  simp only [staticReactionMeasure, Measure.infinitePi_eq_pi]
+  exact product_decreasing_mono _ _ (fun _ => hac) _ fun x y hxy =>
+    hP fun r hr => Finset.mem_filter.mpr ⟨Finset.mem_univ _, hxy r (Finset.mem_filter.mp hr).2⟩
 
 end HordijkSteelThreshold

@@ -17,14 +17,10 @@ theorem bounded_raf_has_seed_catalyst {n K : ℕ} (ω : AmbientCoord n → Prop)
     ∃ x : Molecule n, ∃ r : Reaction n,
       molLength x ≤ K ∧ RevSeedReaction (binaryPolymerCRS n 2) r ∧ ω (x,r) := by
   obtain ⟨S, hne, hfg, hcat⟩ := hraf
-  have hsub : S ⊆ catalystActive ω Finset.univ := by
-    intro r hr
-    obtain ⟨x, _, _, hx⟩ := hcat r hr
-    exact (mem_catalystActive ω Finset.univ r).mpr ⟨x, Finset.mem_univ _, hx⟩
   obtain ⟨r, hr, hseed⟩ := exists_rev_seed_of_foodGenerated _ S hne hfg
   obtain ⟨x, k, hx, hxr⟩ := hcat r hr
-  have hxS : x ∈ temporaryReactionClosure 2 S :=
-    (mem_temporaryReactionClosure S x).mpr ⟨k, hx⟩
-  exact ⟨x, r, hbounded x (temporaryReactionClosure_mono hsub hxS), hseed, hxr⟩
+  exact ⟨x, r, hbounded x (temporaryReactionClosure_mono
+    (fun _ hr' => let ⟨y, _, _, hy⟩ := hcat _ hr'; (mem_catalystActive ω Finset.univ _).mpr ⟨y, Finset.mem_univ _, hy⟩)
+    ((mem_temporaryReactionClosure S x).mpr ⟨k, hx⟩)), hseed, hxr⟩
 
 end HordijkSteelThreshold

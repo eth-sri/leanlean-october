@@ -48,29 +48,21 @@ def reactionRightLength {n : Nat} (r : Reaction n) : Nat :=
 
 theorem reaction_length_add {n : Nat} (r : Reaction n) :
     reactionLeftLength r + reactionRightLength r = reactionProductLength r := by
-  exact Eq.trans
-    (Nat.add_right_comm r.2.2.val 1 (r.1.val - r.2.2.val))
-    (congrArg (fun k : Nat => k + 1)
-      (Eq.trans (Nat.add_comm r.2.2.val (r.1.val - r.2.2.val))
-        (Nat.sub_add_cancel (Nat.le_of_lt r.2.2.isLt))))
+  dsimp [reactionLeftLength, reactionRightLength, reactionProductLength]; omega
 
 theorem reaction_left_pos {n : Nat} (r : Reaction n) :
-    1 ≤ reactionLeftLength r := by
-  exact Nat.succ_pos r.2.2.val
+    1 ≤ reactionLeftLength r := Nat.succ_pos _
 
 theorem reaction_right_pos {n : Nat} (r : Reaction n) :
-    1 ≤ reactionRightLength r := by
-  exact Nat.sub_pos_of_lt r.2.2.isLt
+    1 ≤ reactionRightLength r := Nat.sub_pos_of_lt r.2.2.isLt
 
 theorem reaction_product_le {n : Nat} (r : Reaction n) :
-    reactionProductLength r ≤ n := by
-  exact r.1.isLt
+    reactionProductLength r ≤ n := r.1.isLt
 
 theorem reaction_pow_split {n : Nat} (r : Reaction n) :
     2 ^ (r.1.val + 1) =
       2 ^ reactionLeftLength r * 2 ^ reactionRightLength r := by
-  rw [← pow_add, reaction_length_add]
-  rfl
+  rw [← pow_add, reaction_length_add]; rfl
 
 /-- Split the encoded product at its recorded split position. -/
 def splitCodes {n : Nat} (r : Reaction n) :

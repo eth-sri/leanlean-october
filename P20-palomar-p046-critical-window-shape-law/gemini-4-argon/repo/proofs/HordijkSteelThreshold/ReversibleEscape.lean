@@ -26,26 +26,8 @@ theorem reversible_generated_or_escape {L K : ℕ} (hLK : L ≤ K)
         · exact Or.inr ⟨u, by omega, hu⟩
       · exact Or.inr he
     · exact Or.inr he
-  | left hu hv _ ho ih =>
-    rcases ih with hp | he
-    · exact Or.inl (.left hu hv hp ho)
-    · exact Or.inr he
-  | right hu hv _ ho ih =>
-    rcases ih with hp | he
-    · exact Or.inl (.right hu hv hp ho)
-    · exact Or.inr he
-
-theorem reversible_escape_iff_cap {L K : ℕ} (hLK : L ≤ K)
-    (field : InfiniteSplitEnvironment) :
-    (∃ w, K < w.length ∧ InfiniteReversibleGenerated L field w) ↔
-      ∃ w, K < w.length ∧ FiniteReversibleGenerated (2*K) L field w := by
-  constructor
-  · rintro ⟨w, hw, hg⟩
-    rcases reversible_generated_or_escape hLK hg with hf | he
-    · exact ⟨w, hw, hf⟩
-    · exact he
-  · rintro ⟨w, hw, hg⟩
-    exact ⟨w, hw, finiteReversibleGenerated_to_infinite hg⟩
+  | left hu hv _ ho ih => exact ih.imp (fun hp => .left hu hv hp ho) id
+  | right hu hv _ ho ih => exact ih.imp (fun hp => .right hu hv hp ho) id
 
 def reversibleEscapeEvent (L K : ℕ) : Set InfiniteSplitEnvironment :=
   {field | ∃ w, K+L < w.length ∧ FiniteReversibleGenerated (2*(K+L)) L field w}
@@ -53,33 +35,24 @@ def reversibleEscapeEvent (L K : ℕ) : Set InfiniteSplitEnvironment :=
 theorem reversibleEscapeEvent_iff (L K : ℕ) (field : InfiniteSplitEnvironment) :
     field ∈ reversibleEscapeEvent L K ↔
       ∃ w, K+L < w.length ∧ InfiniteReversibleGenerated L field w :=
-  (reversible_escape_iff_cap (by omega : L ≤ K+L) field).symm
+  ⟨fun ⟨w, hw, hg⟩ => ⟨w, hw, finiteReversibleGenerated_to_infinite hg⟩,
+   fun ⟨w, hw, hg⟩ => (reversible_generated_or_escape (by omega : L ≤ K+L) hg).elim (⟨w, hw, ·⟩) id⟩
 
-theorem reversibleEscapeEvent_antitone (L : ℕ) : Antitone (reversibleEscapeEvent L) := by
-  intro K M hKM field h
-  obtain ⟨w, hw, hg⟩ := (reversibleEscapeEvent_iff L M field).mp h
-  exact (reversibleEscapeEvent_iff L K field).mpr ⟨w, by omega, hg⟩
+theorem reversibleEscapeEvent_antitone (L : ℕ) : Antitone (reversibleEscapeEvent L) :=
+  fun K M _ field h => let ⟨w, hw, hg⟩ := (reversibleEscapeEvent_iff L M field).mp h
+    (reversibleEscapeEvent_iff L K field).mpr ⟨w, by omega, hg⟩
 
 theorem reversibleEscapeEvent_inter (L : ℕ) :
     (⋂ K, reversibleEscapeEvent L K) = {field | ReversibleUnbounded L field} := by
   ext field
-  simp only [Set.mem_iInter, Set.mem_ofPred_eq]
-  constructor
-  · intro h K
-    obtain ⟨w, hw, hg⟩ := (reversibleEscapeEvent_iff L K field).mp (h K)
-    exact ⟨w, by omega, hg⟩
-  · intro h K
-    exact (reversibleEscapeEvent_iff L K field).mpr (h (K+L))
+  simp only [Set.mem_iInter, Set.mem_ofPred_eq, reversibleEscapeEvent_iff]
+  exact ⟨fun h K => let ⟨w, hw, hg⟩ := h K; ⟨w, by omega, hg⟩, fun h K => h (K + L)⟩
 
 theorem measurableSet_reversibleEscapeEvent (L K : ℕ) :
     MeasurableSet (reversibleEscapeEvent L K) := by
-  have he : reversibleEscapeEvent L K = ⋃ w : List Bool,
-      ⋃ (_h : K+L < w.length),
-        {field | FiniteReversibleGenerated (2*(K+L)) L field w} := by
-    ext field
-    simp [reversibleEscapeEvent]
-  rw [he]
-  exact MeasurableSet.iUnion (fun w => MeasurableSet.iUnion
-    (fun _ => measurableSet_finiteReversibleGenerated _ _ w))
+  rw [show reversibleEscapeEvent L K = ⋃ w : List Bool, ⋃ (_ : K+L < w.length),
+    {field | FiniteReversibleGenerated (2*(K+L)) L field w} by ext; simp [reversibleEscapeEvent]]
+  exact MeasurableSet.iUnion fun w => MeasurableSet.iUnion fun _ =>
+    measurableSet_finiteReversibleGenerated _ _ w
 
 end HordijkSteelThreshold

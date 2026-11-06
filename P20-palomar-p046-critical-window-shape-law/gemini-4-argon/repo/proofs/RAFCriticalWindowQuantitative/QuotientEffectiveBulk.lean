@@ -25,37 +25,22 @@ theorem effective_quotient_bulk (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
   have hhalf1 : q/2 ≤ 1 := by linarith
   let a0 := rationalParameter q hq.le hq1
   let L := 10*seedIndex (q/2) hhalf hhalf1 m
-  have heq : rationalParameter (q/2) hhalf.le hhalf1 = halfParameter a0 := by
-    apply Subtype.ext
-    simp [rationalParameter,halfParameter,a0]
   have hbulk := effective_static_bulk (q/2) hhalf hhalf1 m hm
   dsimp only at hbulk
-  rw [heq] at hbulk
+  rw [show rationalParameter (q/2) hhalf.le hhalf1 = halfParameter a0 from
+    Subtype.ext (by simp [rationalParameter, halfParameter, a0])] at hbulk
   intro a ha n hn
   let E := fun ω : RepositoryChannel n → Prop =>
     m*(quotientClosure n L (quotientOpen ω)).card < (m-1)*Fintype.card (Molecule n)
   have hi := product_decreasing_mono
     (fibreParameter (@splitToQuotient n) (halfParameter a0)) (fun _ => a)
     (fun j => (fibreParameter_half_le splitToQuotient a0 j
-      (by
-        convert split_fibre_le_two j using 1
-        congr 1
-        ext r
-        simp)).trans ha)
+      (by convert split_fibre_le_two j using 1; congr 1; ext; simp)).trans ha)
     E (quotient_mass_failure_antitone n L m)
-  have he := fieldOR_map (@splitToQuotient n) (halfParameter a0)
-  rw [← he, Measure.map_apply (measurable_of_finite _) (Set.toFinite _).measurableSet] at hi
-  have hevent : {ω : Reaction n → Prop | E (fieldOR splitToQuotient ω)} =
-      {ω | m*(temporaryReactionClosure L (staticOpenReactions ω)).card <
-        (m-1)*Fintype.card (Molecule n)} := by
-    ext ω
-    simp only [Set.mem_ofPred_eq,E,quotientClosure_OR]
-  change quotientStaticMeasure n a {ω | E ω} ≤
-    RAFEmergenceApprox.Generic.colLaw (Reaction n) (halfParameter a0)
-      {ω | E (fieldOR splitToQuotient ω)} at hi
-  rw [hevent] at hi
-  apply hi.trans
-  simpa only [staticReactionMeasure,Measure.infinitePi_eq_pi,
-    RAFEmergenceApprox.Generic.colLaw] using hbulk n hn
+  rw [← fieldOR_map (@splitToQuotient n) (halfParameter a0),
+    Measure.map_apply (measurable_of_finite _) (Set.toFinite _).measurableSet] at hi
+  refine hi.trans ?_
+  simpa only [Set.preimage_ofPred_eq, Set.mem_ofPred_eq, E, quotientClosure_OR, staticReactionMeasure,
+    Measure.infinitePi_eq_pi, RAFEmergenceApprox.Generic.colLaw] using hbulk n hn
 
 end RAFCriticalWindowQuantitative

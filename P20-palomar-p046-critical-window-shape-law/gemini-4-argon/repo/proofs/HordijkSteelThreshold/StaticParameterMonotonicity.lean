@@ -10,53 +10,37 @@ open Classical MeasureTheory RAF.Polymer RAF.Concrete unitInterval
 theorem exists_sprinkling_increment {a c : I} (hac : a ≤ c) :
     ∃ b : I, sprinklingParameter a b = c := by
   by_cases he : a = c
-  · refine ⟨0, ?_⟩
-    apply Subtype.ext
-    rw [sprinklingParameter_value]
-    simp [he]
-  · have hltI : a < c := lt_of_le_of_ne hac he
-    have hlt : (a : ℝ) < c := hltI
-    have hd : 0 < 1-(a : ℝ) := by have hc := c.property.2; linarith
-    let b : I := ⟨((c : ℝ)-a)/(1-(a : ℝ)), by
-      constructor
-      · positivity
-      · apply (div_le_one hd).mpr
-        have hc := c.property.2
-        linarith⟩
-    refine ⟨b, ?_⟩
-    apply Subtype.ext
-    rw [sprinklingParameter_value]
-    dsimp [b]
-    field_simp
-    nlinarith
+  · exact ⟨0, Subtype.ext (by rw [sprinklingParameter_value]; simp [he])⟩
+  · have hlt : (a : ℝ) < c := lt_of_le_of_ne hac (Subtype.ext_iff.not.mp he)
+    have hd : 0 < 1 - (a : ℝ) := by have := c.2.2; linarith
+    refine ⟨⟨((c : ℝ) - a) / (1 - (a : ℝ)), by positivity, (div_le_one hd).mpr (by have := c.2.2; linarith)⟩,
+      Subtype.ext ?_⟩
+    rw [sprinklingParameter_value]; dsimp; field_simp; nlinarith
 
-theorem static_increasing_event_sprinkling (N : ℕ) (a b : I)
-    (P : Finset (Reaction N) → Prop) (hP : Monotone P) :
-    staticReactionMeasure N a {ω | P (staticOpenReactions ω)} ≤
-      staticReactionMeasure N (sprinklingParameter a b) {ω | P (staticOpenReactions ω)} := by
-  have he : staticReactionMeasure N a {ω | P (staticOpenReactions ω)} =
-      ((staticReactionMeasure N a).prod (staticReactionMeasure N b))
-        {p | P (staticOpenReactions p.1)} := by
-    have hs : {p : (Reaction N → Prop) × (Reaction N → Prop) | P (staticOpenReactions p.1)} =
-        {ω | P (staticOpenReactions ω)} ×ˢ Set.univ := by ext p; simp
-    rw [hs, Measure.prod_prod, measure_univ, mul_one]
-  rw [he]
-  have hu := iid_union_field_map (Reaction N) a b
-  change _ = _ at hu
-  rw [show staticReactionMeasure N (sprinklingParameter a b) = _ from hu.symm,
-    Measure.map_apply (measurable_of_finite _) (Set.Finite.measurableSet (Set.toFinite _))]
-  apply measure_mono
-  intro p hp
-  apply hP _ hp
-  intro r hr
-  simp only [staticOpenReactions, Finset.mem_filter, Finset.mem_univ, true_and] at hr ⊢
-  exact Or.inl hr
+theorem product_increasing_mono {J : Type*} [Fintype J]
+    (a c : J → I) (hac : ∀ j, a j ≤ c j)
+    (E : (J → Prop) → Prop) (hE : Monotone E) :
+    (Measure.pi (fun j => ambientCoordLaw (a j))) {ω | E ω} ≤
+      (Measure.pi (fun j => ambientCoordLaw (c j))) {ω | E ω} := by
+  choose b hb using fun j => exists_sprinkling_increment (hac j)
+  let μ j := (ambientCoordLaw (a j)).prod (ambientCoordLaw (b j))
+  have : ∀ j, IsProbabilityMeasure (μ j) := fun j => by dsimp [μ]; infer_instance
+  have h1 : (Measure.pi μ).map (fun ω j => (ω j).1) = Measure.pi (fun j => ambientCoordLaw (a j)) := by
+    rw [Measure.pi_map_pi (μ := μ) (f := fun _ (z : Prop × Prop) => z.1) fun _ => measurable_fst.aemeasurable]
+    simp [μ]
+  have h2 : (Measure.pi μ).map (fun ω j => (ω j).1 ∨ (ω j).2) = Measure.pi (fun j => ambientCoordLaw (c j)) := by
+    rw [Measure.pi_map_pi (μ := μ) (f := fun _ (z : Prop × Prop) => z.1 ∨ z.2) fun _ => (measurable_of_finite _).aemeasurable]
+    simp only [μ, ambientCoordLaw_union, hb]
+  rw [← h1, ← h2, Measure.map_apply (measurable_of_finite _) (Set.toFinite _).measurableSet,
+    Measure.map_apply (measurable_of_finite _) (Set.toFinite _).measurableSet]
+  exact measure_mono fun _ h => hE (fun _ => Or.inl) h
 
 theorem static_increasing_event_mono (N : ℕ) {a c : I} (hac : a ≤ c)
     (P : Finset (Reaction N) → Prop) (hP : Monotone P) :
     staticReactionMeasure N a {ω | P (staticOpenReactions ω)} ≤
       staticReactionMeasure N c {ω | P (staticOpenReactions ω)} := by
-  obtain ⟨b, rfl⟩ := exists_sprinkling_increment hac
-  exact static_increasing_event_sprinkling N a b P hP
+  simp only [staticReactionMeasure, Measure.infinitePi_eq_pi]
+  exact product_increasing_mono _ _ (fun _ => hac) _ fun x y hxy =>
+    hP fun r hr => Finset.mem_filter.mpr ⟨Finset.mem_univ _, hxy r (Finset.mem_filter.mp hr).2⟩
 
 end HordijkSteelThreshold

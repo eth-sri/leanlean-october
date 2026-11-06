@@ -16,16 +16,8 @@ theorem measure_temporaryClosure_deficit {L N w k : ℕ} (hL : 2*w ≤ L)
       (temporaryReactionClosure L (staticOpenReactions ω)).card+d ≤ Fintype.card (Molecule N)} ≤
       contourBudget a k/(1-contourBudget a k) +
       (Fintype.card (Molecule N) : ENNReal)*(contourBudget a k/(1-contourBudget a k))/d := by
-  have hcard : Fintype.card (Molecule N) = (actualBinaryWords N).card := by
-    rw [card_molecules_exact, actualBinaryWords_card]
-  rw [hcard]
-  calc
-    _ ≤ staticReactionMeasure N a {ω | (rootedMolecularWords hL ω).card+d ≤
-        (actualBinaryWords N).card} := by
-      apply measure_mono
-      intro ω hω
-      have hh := rootedMolecularWords_card_le_closure hL ω
-      exact Nat.le_trans (Nat.add_le_add_right hh d) hω
-    _ ≤ _ := measure_rootedMolecularWords_deficit hL hk hfood hN a d hd
+  rw [show Fintype.card (Molecule N) = (actualBinaryWords N).card by rw [card_molecules_exact, actualBinaryWords_card]]
+  exact (measure_mono fun ω => (Nat.add_le_add_right (rootedMolecularWords_card_le_closure hL ω) d).trans).trans
+    (measure_rootedMolecularWords_deficit hL hk hfood hN a d hd)
 
 end HordijkSteelThreshold

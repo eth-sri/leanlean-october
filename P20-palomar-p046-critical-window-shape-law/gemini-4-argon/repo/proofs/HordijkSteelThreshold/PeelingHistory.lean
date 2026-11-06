@@ -27,39 +27,29 @@ theorem peeling_history_iff {X R : Type*} [Fintype X]
     (history : ℕ → Finset R) (T : ℕ) :
     (∀ t ≤ T, peelingActiveAt response closure t = history t) ↔
       ∀ t ≤ T, response (prescribedPoolAt closure history t) = history t := by
-  constructor
-  · intro h t ht
-    cases t with
+  refine ⟨fun h t ht => ?_, fun h t => ?_⟩
+  · cases t with
     | zero => exact h 0 ht
-    | succ t =>
-      have hp := h t (by omega)
-      simpa only [peelingActiveAt, hp, prescribedPoolAt] using h (t + 1) ht
-  · intro h t
-    induction t with
+    | succ t => simpa only [peelingActiveAt, h t (by omega), prescribedPoolAt] using h (t + 1) ht
+  · induction t with
     | zero => exact h 0
-    | succ t ih =>
-      intro ht
-      have hp := ih (by omega)
-      simpa only [peelingActiveAt, hp, prescribedPoolAt] using h (t + 1) ht
+    | succ t ih => exact fun ht => by simpa only [peelingActiveAt, ih (by omega), prescribedPoolAt] using h (t + 1) ht
 
 theorem peelingActiveAt_antitone {X R : Type*} [Fintype X]
     (response : Finset X → Finset R) (closure : Finset R → Finset X)
     (hresponse : Monotone response) (hclosure : Monotone closure) :
-    Antitone (peelingActiveAt response closure) := by
-  apply antitone_nat_of_succ_le
-  intro t
-  induction t with
-  | zero => exact hresponse (Finset.subset_univ _)
-  | succ t ih => exact hresponse (hclosure ih)
+    Antitone (peelingActiveAt response closure) :=
+  antitone_nat_of_succ_le fun t => by
+    induction t with
+    | zero => exact hresponse (Finset.subset_univ _)
+    | succ t ih => exact hresponse (hclosure ih)
 
 theorem prescribedPoolAt_antitone {X R : Type*} [Fintype X]
     (closure : Finset R → Finset X) (hclosure : Monotone closure)
     (history : ℕ → Finset R) (hhistory : Antitone history) :
-    Antitone (prescribedPoolAt closure history) := by
-  apply antitone_nat_of_succ_le
-  intro t
-  cases t with
-  | zero => exact Finset.subset_univ _
-  | succ t => exact hclosure (hhistory (Nat.le_succ t))
+    Antitone (prescribedPoolAt closure history) :=
+  antitone_nat_of_succ_le fun
+    | 0 => Finset.subset_univ _
+    | t + 1 => hclosure (hhistory (Nat.le_succ t))
 
 end HordijkSteelThreshold

@@ -12,12 +12,9 @@ noncomputable def finiteInitialSegment (X : Type*) [Fintype X] (k : ℕ) : Finse
     (Fintype.equivFin X).symm.toEmbedding
 
 theorem finiteInitialSegment_mono (X : Type*) [Fintype X] :
-    Monotone (finiteInitialSegment X) := by
-  intro a b hab
-  apply Finset.map_subset_map.mpr
-  intro i hi
-  have hp := Finset.mem_filter.mp hi
-  exact Finset.mem_filter.mpr ⟨hp.1, hp.2.trans_le hab⟩
+    Monotone (finiteInitialSegment X) :=
+  fun _ _ hab => Finset.map_subset_map.mpr fun _ hi =>
+    Finset.mem_filter.mpr ⟨Finset.mem_univ _, (Finset.mem_filter.mp hi).2.trans_le hab⟩
 
 theorem card_finiteInitialSegment (X : Type*) [Fintype X]
     (k : ℕ) (hk : k ≤ Fintype.card X) :

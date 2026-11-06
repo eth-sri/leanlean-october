@@ -10,7 +10,7 @@ public import proofs.RAFCriticalWindowQuantitative.WorkedBound
 @[expose] public section
 
 namespace RAFCriticalWindowQuantitative
-open HordijkSteelThreshold RAFReactionQuotient unitInterval RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source
+open HordijkSteelThreshold RAFReactionQuotient MeasureTheory unitInterval RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source
 
 /-- Quantitative properties of the specified actual profile and executable programs. -/
 structure ProfileGuarantees (S : I → ENNReal) (escape : I → ℕ → ENNReal)
@@ -26,14 +26,6 @@ structure ProfileGuarantees (S : I → ENNReal) (escape : I → ℕ → ENNReal)
   power_bound : ∀ a r, (S a).toReal ≤ (coefficient r : ℝ)*(a : ℝ)^r
   intensity_flatness : ∀ d ε, 0 < ε → ∃ δ : ℝ, 0 < δ ∧
     ∀ lam : ℝ, ∀ hlam : 0 < lam, lam < δ → (S (criticalOpenness lam hlam)).toReal < ε*lam^d
-
-theorem split_profile_guarantees : ProfileGuarantees staticSurvival splitEscapeProbability
-    splitTotalInterval splitEvaluationCap splitSparseCoefficient :=
-  ⟨splitTotalInterval_correct,split_uniform_approximation,split_sparse_real,split_low_intensity_flatness⟩
-
-theorem quotient_profile_guarantees : ProfileGuarantees quotientSurvival quotientEscapeProbability
-    quotientTotalInterval quotientEvaluationCap quotientSparseCoefficient :=
-  ⟨quotientTotalInterval_correct,quotient_uniform_approximation,quotient_sparse_real,quotient_low_intensity_flatness⟩
 
 /-- The source contract uses actual catalytic inputs, not an assumed convergence rate. -/
 def SourceGuarantees : Prop :=
@@ -54,9 +46,6 @@ def SourceGuarantees : Prop :=
       (rationalIntervalError (quotientSourceInterval n m K p q hq hq1)
         (quotientTotalInterval s hs hs1 ε hε) : ℝ))
 
-theorem finite_source_guarantees : SourceGuarantees :=
-  ⟨split_source_profile_error,quotient_source_profile_error⟩
-
 /-- Compiled minimum quantitative/computability successor for both literal RAF models.
 The programs are explicit definitions; no desired bound or validity oracle is assumed. -/
 theorem quantitative_critical_window_resolution :
@@ -70,7 +59,22 @@ theorem quantitative_critical_window_resolution :
     (∀ N k S x, x ∈ quotientClosure N 2 S → 2^(k+1) < molLength x →
       ∃ T, ProductiveHistory (repositoryCRS N 2) S k T ∧ T.card = k ∧ T ⊆ S) ∧
     (∀ a : I, (a : ℝ) ≤ 1/10^20 → (staticSurvival a).toReal < 8/10^26) :=
-  ⟨split_profile_guarantees,quotient_profile_guarantees,finite_source_guarantees,
-    split_long_target_history,quotient_long_target_history,worked_low_openness_bound⟩
+  ⟨⟨splitTotalInterval_correct,
+    fun q hq hq1 ε hε a ha => real_truncation_error q hq hq1 ε hε _ a ha _ _ (measure_ne_top _ _)
+      (explicit_split_truncation q hq hq1 _ (precisionIndex_ge_two ε) a ha _),
+    split_sparse_real,
+    power_bound_intensity_flatness _ splitSparseCoefficient split_sparse_real⟩,
+   ⟨quotientTotalInterval_correct,
+    fun q hq hq1 ε hε a ha => real_truncation_error q hq hq1 ε hε _ a ha _ _ (measure_ne_top _ _)
+      (explicit_quotient_truncation q hq hq1 _ (precisionIndex_ge_two ε) a ha _),
+    quotient_sparse_real,
+    power_bound_intensity_flatness _ quotientSparseCoefficient quotient_sparse_real⟩,
+   ⟨fun n m K hn hm p hp hp1 q hq hq1 hk hpool s hs hs1 ε hε =>
+      interval_comparison_error (splitSourceInterval_correct n m K hn hm p hp hp1 q hq hq1 hk hpool)
+        (splitTotalInterval_correct s hs hs1 ε hε),
+    fun n m K hn hm p hp hp1 q hq hq1 hk hpool s hs hs1 ε hε =>
+      interval_comparison_error (quotientSourceInterval_correct n m K hn hm p hp hp1 q hq hq1 hk hpool)
+        (quotientTotalInterval_correct s hs hs1 ε hε)⟩,
+   split_long_target_history, quotient_long_target_history, worked_low_openness_bound⟩
 
 end RAFCriticalWindowQuantitative

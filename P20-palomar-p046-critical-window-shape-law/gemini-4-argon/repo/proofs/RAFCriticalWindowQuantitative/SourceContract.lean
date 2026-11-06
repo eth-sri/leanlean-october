@@ -24,6 +24,24 @@ def quotientSourceInterval (n m K : ℕ) (p q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1
     quotientEscapeEval (rationalPool p (Fintype.card (Molecule n))) K +
       (Fintype.card (Molecule (K+2)) : ℚ)*34*p)
 
+theorem sourceInterval_of_bounds (m K B : ℕ) (hm : 0 < m)
+    (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (seedEval escapeEval : ℚ)
+    (S E P : ENNReal) (hP : P ≠ ⊤) (hE : E ≠ ⊤)
+    (hl : S ≤ P + (m : ENNReal)⁻¹)
+    (hu : P ≤ E + (Fintype.card (Molecule (K+2)) : ENNReal) * B * (toNNReal (rationalParameter p hp hp1) : ENNReal))
+    (hseed : (seedEval : ℝ) = S.toReal) (hesc : (escapeEval : ℝ) = E.toReal) :
+    ((seedEval - 1/m : ℚ) : ℝ) ≤ P.toReal ∧
+      P.toReal ≤ ((escapeEval + (Fintype.card (Molecule (K+2)) : ℚ) * B * p : ℚ) : ℝ) := by
+  have hi : (m : ENNReal)⁻¹ ≠ ⊤ := by simp [Nat.ne_of_gt hm]
+  have hlow := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hP, hi⟩) hl
+  rw [ENNReal.toReal_add hP hi, ← hseed, ENNReal.toReal_inv, ENNReal.toReal_natCast, ← one_div] at hlow
+  have ht : (Fintype.card (Molecule (K+2)) : ENNReal) * B * (toNNReal (rationalParameter p hp hp1) : ENNReal) ≠ ⊤ := by finiteness
+  have hupp := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hE, ht⟩) hu
+  rw [ENNReal.toReal_add hE ht, ← hesc] at hupp
+  simp only [ENNReal.toReal_mul, ENNReal.toReal_natCast, ENNReal.coe_toReal, coe_toNNReal, rationalParameter] at hupp
+  push_cast
+  exact ⟨by linarith, hupp⟩
+
 theorem splitSourceInterval_correct (n m K : ℕ) (hn : 4 ≤ n) (hm : 0 < m)
     (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
     (hk : 6 < nearFullPoolSize n m) (hpool : q ≤ rationalPool p (nearFullPoolSize n m)) :
@@ -34,31 +52,16 @@ theorem splitSourceInterval_correct (n m K : ℕ) (hn : 4 ≤ n) (hm : 0 < m)
   let lam : ℝ := (a : ℝ)*Fintype.card (Reaction n)/n
   have he : catalysisP n lam = a := RAFEmergenceApprox.catalysisP_covers_probability n (by omega) a
   have hqpool : rationalParameter q hq.le hq1 ≤ fixedPoolParameter a (nearFullPoolSize n m) := by
-    rw [← rationalPool_correct p hp hp1]
-    exact (Rat.cast_le (K := ℝ)).mpr hpool
-  have hl := split_finite_source_lower q hq hq1 m n hm (by omega) lam hk (by rwa [he])
+    rw [← rationalPool_correct p hp hp1]; exact (Rat.cast_le (K := ℝ)).mpr hpool
   have hu := canonical_raf_le_finite_escape_36 n K hn lam
   rw [he] at hu
-  have hP : uniformCatalysisMeasure n lam (HasRAFEvent n) ≠ ⊤ := measure_ne_top _ _
-  have hi : (m : ENNReal)⁻¹ ≠ ⊤ := by simp [Nat.ne_of_gt hm]
-  have hlow := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hP,hi⟩) hl
-  rw [ENNReal.toReal_add hP hi, ← splitSeedEval_correct n _ q hq.le hq1] at hlow
-  have hE : staticReactionMeasure (2*(K+2)) (fixedPoolParameter a (Fintype.card (Molecule n)))
-      (staticEscapeEvent 2 K) ≠ ⊤ := measure_ne_top _ _
-  have ht : (Fintype.card (Molecule (K+2)) : ENNReal)*36*(toNNReal a : ENNReal) ≠ ⊤ := by finiteness
-  have hupp := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hE,ht⟩) hu
-  rw [ENNReal.toReal_add hE ht, ← rationalPool_correct p hp hp1,
-    ← splitEscapeEval_correct _ (rationalPool_nonneg p hp hp1 _) (rationalPool_le_one p hp1 _) K] at hupp
-  rw [ENNReal.toReal_inv,ENNReal.toReal_natCast] at hlow
-  simp only [← one_div] at hlow
-  dsimp only [a] at hlow hupp
-  simp only [ENNReal.toReal_mul,ENNReal.toReal_natCast,ENNReal.toReal_ofNat,ENNReal.coe_toReal,coe_toNNReal] at hupp
-  dsimp only [splitSourceInterval,splitCatalyticProbability,Prod.fst,Prod.snd]
-  push_cast
-  constructor
-  · change _ ≤ (uniformCatalysisMeasure n lam (HasRAFEvent n)).toReal
-    linarith
-  · exact hupp
+  exact sourceInterval_of_bounds m K 36 hm p hp hp1
+    (splitSeedEval n (10*seedIndex q hq hq1 m) q) (splitEscapeEval (rationalPool p (Fintype.card (Molecule n))) K)
+    _ _ _ (measure_ne_top _ _) (measure_ne_top _ _)
+    (split_finite_source_lower q hq hq1 m n hm (by omega) lam hk (by rwa [he])) hu
+    (splitSeedEval_correct n _ q hq.le hq1)
+    ((splitEscapeEval_correct _ (rationalPool_nonneg p hp hp1 _) (rationalPool_le_one p hp1 _) K).trans
+      (by rw [rationalPool_correct p hp hp1]))
 
 theorem quotientSourceInterval_correct (n m K : ℕ) (hn : 0 < n) (hm : 0 < m)
     (p : ℚ) (hp : 0 ≤ p) (hp1 : p ≤ 1) (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
@@ -68,38 +71,15 @@ theorem quotientSourceInterval_correct (n m K : ℕ) (hn : 0 < n) (hm : 0 < m)
       (quotientRAFProbability n (rationalParameter p hp hp1)).toReal ≤ (v.2 : ℝ) := by
   let a := rationalParameter p hp hp1
   have hqpool : rationalParameter q hq.le hq1 ≤ fixedPoolParameter a (nearFullPoolSize n m) := by
-    rw [← rationalPool_correct p hp hp1]
-    exact (Rat.cast_le (K := ℝ)).mpr hpool
-  have hl := quotient_finite_source_lower q hq hq1 m n hm hn a hk hqpool
-  have hu := quotient_raf_upper n K a
-  have hP : quotientRAFProbability n a ≠ ⊤ := by unfold quotientRAFProbability quotientCatalyticLaw; exact measure_ne_top _ _
-  have hi : (m : ENNReal)⁻¹ ≠ ⊤ := by simp [Nat.ne_of_gt hm]
-  have hlow := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hP,hi⟩) hl
-  rw [ENNReal.toReal_add hP hi, ← quotientSeedEval_correct n _ q hq.le hq1] at hlow
-  have hE : quotientStaticMeasure (2*(K+2)) (fixedPoolParameter a (Fintype.card (Molecule n)))
-      (quotientEscapeEvent 2 K) ≠ ⊤ := by unfold quotientStaticMeasure; exact measure_ne_top _ _
-  have ht : (Fintype.card (Molecule (K+2)) : ENNReal)*34*(toNNReal a : ENNReal) ≠ ⊤ := by finiteness
-  have hupp := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hE,ht⟩) hu
-  rw [ENNReal.toReal_add hE ht, ← rationalPool_correct p hp hp1,
-    ← quotientEscapeEval_correct _ (rationalPool_nonneg p hp hp1 _) (rationalPool_le_one p hp1 _) K] at hupp
-  rw [ENNReal.toReal_inv,ENNReal.toReal_natCast] at hlow
-  simp only [← one_div] at hlow
-  dsimp only [a] at hlow hupp
-  simp only [ENNReal.toReal_mul,ENNReal.toReal_natCast,ENNReal.toReal_ofNat,ENNReal.coe_toReal,coe_toNNReal] at hupp
-  dsimp only [quotientSourceInterval,Prod.fst,Prod.snd]
-  push_cast
-  constructor
-  · linarith
-  · exact hupp
-
-theorem interval_comparison_error (P S lP uP lS uS : ℝ)
-    (hP : lP ≤ P ∧ P ≤ uP) (hS : lS ≤ S ∧ S ≤ uS) :
-    |P-S| ≤ max (uP-lS) (uS-lP) := by
-  apply abs_le.mpr
-  constructor
-  · have h := le_max_right (uP-lS) (uS-lP)
-    linarith [hP.1,hS.2]
-  · have h := le_max_left (uP-lS) (uS-lP)
-    linarith [hP.2,hS.1]
+    rw [← rationalPool_correct p hp hp1]; exact (Rat.cast_le (K := ℝ)).mpr hpool
+  exact sourceInterval_of_bounds m K 34 hm p hp hp1
+    (quotientSeedEval n (10*seedIndex (q/2) (rationalHalf_pos q hq) (rationalHalf_le_one q hq hq1) m) q)
+    (quotientEscapeEval (rationalPool p (Fintype.card (Molecule n))) K)
+    _ _ _ (by unfold quotientRAFProbability quotientCatalyticLaw; exact measure_ne_top _ _)
+    (by unfold quotientStaticMeasure; exact measure_ne_top _ _)
+    (quotient_finite_source_lower q hq hq1 m n hm hn a hk hqpool) (quotient_raf_upper n K a)
+    (quotientSeedEval_correct n _ q hq.le hq1)
+    ((quotientEscapeEval_correct _ (rationalPool_nonneg p hp hp1 _) (rationalPool_le_one p hp1 _) K).trans
+      (by rw [rationalPool_correct p hp hp1]))
 
 end RAFCriticalWindowQuantitative

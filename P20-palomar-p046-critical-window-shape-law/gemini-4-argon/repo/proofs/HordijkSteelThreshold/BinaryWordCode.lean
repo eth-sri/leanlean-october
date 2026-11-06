@@ -44,53 +44,35 @@ theorem binaryWordCode_injective_length {s t : List Bool}
   induction s generalizing t with
   | nil => cases t <;> simp_all
   | cons b s ih =>
-    cases t with
-    | nil => simp at hlen
-    | cons c t =>
-      have hst : s.length = t.length := by simpa using hlen
-      have hs := binaryWordCode_lt s
-      have ht := binaryWordCode_lt t
-      rw [← hst] at ht
-      cases b <;> cases c <;> simp only [binaryWordCode, Bool.false_eq_true,
-        ite_false, ite_true, zero_add, ← hst] at hcode
-      · exact congrArg (List.cons false) (ih hst hcode)
-      · omega
-      · omega
-      · exact congrArg (List.cons true) (ih hst (by omega))
+    rcases t with _ | ⟨c, t⟩; · simp at hlen
+    have hst : s.length = t.length := by simpa using hlen
+    have hs := binaryWordCode_lt s
+    have ht := hst ▸ binaryWordCode_lt t
+    cases b <;> cases c <;> simp only [binaryWordCode, Bool.false_eq_true,
+      ite_false, ite_true, zero_add, ← hst] at hcode
+    · exact congrArg (false :: ·) (ih hst hcode)
+    · omega
+    · omega
+    · exact congrArg (true :: ·) (ih hst (by omega))
 
 theorem exists_binaryWordCode (m k : ℕ) (hk : k < 2 ^ m) :
     ∃ s : List Bool, s.length = m ∧ binaryWordCode s = k := by
   induction m generalizing k with
-  | zero =>
-    have he : k = 0 := by simpa using hk
-    exact ⟨[], rfl, he.symm⟩
+  | zero => exact ⟨[], rfl, by dsimp [binaryWordCode]; omega⟩
   | succ m ih =>
     by_cases hlow : k < 2 ^ m
     · obtain ⟨s, hs, hc⟩ := ih k hlow
-      refine ⟨false :: s, by simp [hs], ?_⟩
-      simpa [binaryWordCode] using hc
-    · have ht : k - 2 ^ m < 2 ^ m := by
-        rw [pow_succ] at hk
-        omega
-      obtain ⟨s, hs, hc⟩ := ih (k - 2 ^ m) ht
-      refine ⟨true :: s, by simp [hs], ?_⟩
-      simp only [binaryWordCode, ite_true, hs, hc]
-      omega
+      exact ⟨false :: s, by simp [hs], by simpa [binaryWordCode] using hc⟩
+    · obtain ⟨s, hs, hc⟩ := ih (k - 2 ^ m) (by rw [pow_succ] at hk; omega)
+      exact ⟨true :: s, by simp [hs], by simp only [binaryWordCode, ite_true, hs, hc]; omega⟩
 
 /-- A length-preserving bijection with the source's actual fixed-length
 word type. This prevents dropping leading zeros or losing source words. -/
 noncomputable def binaryListWordEquiv (m : ℕ) :
     {s : List Bool // s.length = m} ≃ RAF.Polymer.Word m :=
   Equiv.ofBijective
-    (fun s => ⟨binaryWordCode s.val, by simpa only [s.property] using binaryWordCode_lt s.val⟩)
-    (by
-      constructor
-      · intro s t h
-        apply Subtype.ext
-        exact binaryWordCode_injective_length (s.property.trans t.property.symm)
-          (congrArg Fin.val h)
-      · intro k
-        obtain ⟨s, hs, hc⟩ := exists_binaryWordCode m k.val k.isLt
-        exact ⟨⟨s, hs⟩, Fin.ext hc⟩)
+    (fun s => ⟨binaryWordCode s.val, by simpa only [s.2] using binaryWordCode_lt s.1⟩)
+    ⟨fun s t h => Subtype.ext (binaryWordCode_injective_length (s.2.trans t.2.symm) (congrArg Fin.val h)),
+     fun k => let ⟨s, hs, hc⟩ := exists_binaryWordCode m k.val k.isLt; ⟨⟨s, hs⟩, Fin.ext hc⟩⟩
 
 end HordijkSteelThreshold

@@ -27,38 +27,20 @@ theorem molecularWordVertex_food {L N : ℕ} (s : List Bool) (hs : s.length ≤ 
     molecularWordVertex L N s = boundedFoodRoot L N := by
   simp [molecularWordVertex, not_lt.mpr hs]
 
-theorem rootedMolecularWords_cover {L N w : ℕ} (hL : 2*w ≤ L)
-    (hfood : 0 < L) (hN : 0 < N) (ω : Reaction N → Prop)
-    (hr : actualBinaryRoot N hN ∉ badMolecularWords hL ω)
-    (s : ActualBinaryWord N) (hs : s ∉ badMolecularWords hL ω) :
-    s ∈ rootedMolecularWords hL ω := by
-  have hrg : ¬ moleculeContourBad hL (actualBinaryRoot N hN).val ω := by
-    simpa only [badMolecularWords, Finset.mem_filter, Finset.mem_univ, true_and] using hr
-  have hsg : ¬ moleculeContourBad hL s.val ω := by
-    simpa only [badMolecularWords, Finset.mem_filter, Finset.mem_univ, true_and] using hs
-  have hp := outside_moleculeContourBad_connected hL ω (actualBinaryRoot N hN).val s.val
-    (actualBinaryRoot N hN).property s.property hrg hsg
-  have he : molecularWordVertex L N (actualBinaryRoot N hN).val = boundedFoodRoot L N :=
-    molecularWordVertex_food _ (by simp [actualBinaryRoot]; omega)
-  rw [he] at hp
-  exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hp⟩
-
-/-- Unconditional rooted effective-component mass bound, counting every actual
-food molecule separately rather than assigning unit weight to the contracted root. -/
 theorem measure_rootedMolecularWords_deficit {L N w k : ℕ} (hL : 2*w ≤ L)
     (hk : 5*k ≤ w) (hfood : 0 < L) (hN : 0 < N) (a : I) (d : ℕ) (hd : 0 < d) :
     staticReactionMeasure N a {ω | (rootedMolecularWords hL ω).card+d ≤
       (actualBinaryWords N).card} ≤
       contourBudget a k/(1-contourBudget a k) +
       ((actualBinaryWords N).card : ENNReal)*(contourBudget a k/(1-contourBudget a k))/d := by
-  classical
-  have hm := measure_pool_deficit_le (staticReactionMeasure N a)
+  simpa only [Fintype.card_coe] using measure_pool_deficit_le (staticReactionMeasure N a)
     (badMolecularWords hL) (rootedMolecularWords hL) (actualBinaryRoot N hN)
-    (fun ω hr s hs => rootedMolecularWords_cover hL hfood hN ω hr s hs)
-    (contourBudget a k/(1-contourBudget a k)) (by
-      intro s
-      simpa only [badMolecularWords, Finset.mem_filter, Finset.mem_univ, true_and] using
-        measure_moleculeContourBad_le hL hk s.val a) d hd
-  simpa only [Fintype.card_coe] using hm
+    (fun ω hr s hs => Finset.mem_filter.mpr ⟨Finset.mem_univ _, by
+      have hp := outside_moleculeContourBad_connected hL ω (actualBinaryRoot N hN).val s.val
+        (actualBinaryRoot N hN).property s.property
+        (by simpa [badMolecularWords] using hr) (by simpa [badMolecularWords] using hs)
+      rwa [molecularWordVertex_food _ (by simp [actualBinaryRoot]; omega)] at hp⟩)
+    (contourBudget a k/(1-contourBudget a k))
+    (fun s => by simpa [badMolecularWords] using measure_moleculeContourBad_le hL hk s.val a) d hd
 
 end HordijkSteelThreshold
