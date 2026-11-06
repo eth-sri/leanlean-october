@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.StrictOrderChains
-public import RequestProject.UnivCoverIncl
-
-@[expose] public section
+import RequestProject.StrictOrderChains
+import RequestProject.UnivCoverIncl
 
 /-! Finite chains and cycles on an actual induced subposet. -/
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] (S : Set P)
 
 def strictSubposetIncl : Hom (strictOrderCx S) (strictOrderCx P) :=

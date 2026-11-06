@@ -1,24 +1,15 @@
-module
+import Mathlib.Tactic
+import RequestProject.CmpNerve
 
-public import RequestProject.ConeAdjPoset
-
-@[expose] public section
+import RequestProject.ConeAdjPoset
 
 namespace FiniteChains.Comb
-universe u
 
 /-- A null loop obtained by closing a path with a reverse path proves the two paths homotopic. -/
 theorem htpy_of_append_rev_null {X : Complex2.{u}} {a b : X.V}
     {p q : List (X.E × Bool)} (hp : IsPath X.src X.tgt p a b)
     (hq : IsPath X.src X.tgt q a b) (h : Htpy X a a (p ++ revPath q) []) :
-    Htpy X a b p q := by
-  have hc := (htpy_revPath_append hq).congr_append hp (show IsPath X.src X.tgt [] b b from rfl)
-  have hh := h.congr_append (show IsPath X.src X.tgt [] a a from rfl) hq
-  have hc' : Htpy X a b ((p ++ revPath q) ++ q) p := by
-    simpa only [List.nil_append, List.append_nil, List.append_assoc] using hc
-  have hh' : Htpy X a b ((p ++ revPath q) ++ q) q := by
-    simpa only [List.nil_append, List.append_nil] using hh
-  exact hc'.symm.trans hh'
+    Htpy X a b p q := FiniteChains.Davis.htpy_of_loop_nil hp hq h
 
 /-- Every actual path below a fixed apex is homotopic to the two-edge path through that apex. -/
 theorem htpy_path_through_upper_bound {P : Type u} [Preorder P]

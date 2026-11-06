@@ -1,28 +1,21 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.DavisNerveCover
-public import RequestProject.DavisCellularAcyclic
-public import RequestProject.OrderUniversalThree
-
-@[expose] public section
+import RequestProject.DavisNerveCover
+import RequestProject.DavisCellularAcyclic
+import RequestProject.OrderUniversalThree
 
 /-! Full-nerve degree-two exactness for the actual path-class universal cover of the cube quotient. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V]
 
 /-- Degree-two exactness in the actual path-class universal cover, retaining its full
  three-cell boundary. No desired asphericity or homology premise is assumed. -/
-theorem exists_universal_bdry3_of_cycle_davis (A : CommRel V) (a : Sph A)
+abbrev exists_universal_bdry3_of_cycle_davis (A : CommRel V) (a : Sph A)
     (z : UF (orderCx (QCube A)) (qProjCube a) →₀ ℤ)
-    (hz : Comb.bdry2 (uCover (orderCx (QCube A)) (qProjCube a)) z = 0) :
-    ∃ y : UOrdTet (QCube A) (qProjCube a) →₀ ℤ, uOrdBoundary3 y = z :=
+    (hz : Comb.bdry2 (uCover (orderCx (QCube A)) (qProjCube a)) z = 0)  :=
   exists_uOrdBoundary3_of_cover_exact qProjCube_isPosetCover a
     (isConnected_davis A) (simplyConnected_davis A)
     (exists_cellular_bdry3_of_cycle_davis A) z hz

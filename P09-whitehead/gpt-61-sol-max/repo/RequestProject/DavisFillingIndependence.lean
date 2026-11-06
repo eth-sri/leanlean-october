@@ -1,14 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.DavisUniversalThree
-public import RequestProject.UniversalThreeAugmentation
-
-@[expose] public section
+import RequestProject.DavisUniversalThree
+import RequestProject.UniversalThreeAugmentation
 
 /-! Independence of actual universal-cover fillings modulo three-boundaries. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V]
 
 /-- Two fillings of the same cover chain differ by an actual lifted three-boundary. -/

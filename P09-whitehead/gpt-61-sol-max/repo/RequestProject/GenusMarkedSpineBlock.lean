@@ -1,14 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusNamedSpineComparison
-public import RequestProject.BlockFamilyAmalgamation
-
-@[expose] public section
+import RequestProject.GenusNamedSpineComparison
+import RequestProject.BlockFamilyAmalgamation
 
 /-! Genuine finite spine relators in the distinguished/internal order used by substitution. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -16,21 +11,17 @@ variable (q : ℕ) [NeZero q]
 
 abbrev MarkedSpineGen := (Fin q × Bool) ⊕ SpinePresentationGen q
 
-noncomputable def markedSpineBeta (m : NamedSpineRel q) : FreeGroup (MarkedSpineGen q) :=
+noncomputable def markedSpineBeta (m : NamedSpineRel q)  :=
   FreeGroup.map Sum.swap (namedSpinePresentation q m)
 
 theorem freeGroup_map_swap_swap {α β : Type} (z : FreeGroup (α ⊕ β)) :
     FreeGroup.map Sum.swap (FreeGroup.map Sum.swap z) = z := by
   have h : (FreeGroup.map (Sum.swap : β ⊕ α → α ⊕ β)).comp
       (FreeGroup.map (Sum.swap : α ⊕ β → β ⊕ α)) = MonoidHom.id _ := by
-    apply FreeGroup.ext_hom
-    rintro (a | b) <;> simp
+    aesop
   exact DFunLike.congr_fun h z
 
-noncomputable def markedSpineToOldHom :
-    FreeGroup (MarkedSpineGen q) →*
-      Pi1 (orderCx (QOld (cmpRel (GenusVertex q))))
-        ((genusSpineToOld q).onV (spineBase q)) :=
+noncomputable def markedSpineToOldHom  :=
   (namedSpineToOldEquiv q).toMonoidHom.comp
     ((QuotientGroup.mk' (relSub (namedSpinePresentation q))).comp (FreeGroup.map Sum.swap))
 
@@ -50,10 +41,7 @@ theorem markedSpineToOldHom_rel (m : NamedSpineRel q) :
 theorem markedSpineToOldHom_mark (x : Fin q × Bool) :
     markedSpineToOldHom q (FreeGroup.of (Sum.inl x)) =
       pi1Map (genusSpineToOld q) (spineBase q) (Pi1.mk (spineMarkedLoop q x)) := by
-  change namedSpineToOldEquiv q
-    (QuotientGroup.mk (FreeGroup.map Sum.swap (FreeGroup.of (Sum.inl x)))) = _
-  simp only [FreeGroup.map.of, Sum.swap_inl]
-  exact namedSpineToOld_marked q x
+  classical solve_by_elim (transparency := .default) (maxDepth := 10) [FiniteChains.Davis.neZero_eight_mul, FiniteChains.Davis.Genus.gc, FiniteChains.relSub_normal, FiniteChains.Davis.Genus.namedSpineToOld_marked, namedSpineToOldEquiv]
 
 /-- The surface word is a consequence of the actual reordered finite spine relators. -/
 theorem markedSpine_surface_mem :
@@ -71,7 +59,7 @@ theorem markedSpine_surface_mem :
     (N := Set.range (markedSpineBeta q)) (fun z hz => by
       obtain ⟨m, rfl⟩ := hz
       exact Subgroup.subset_normalClosure ⟨m, rfl⟩) h
-  simpa only [relSub, map_commWord, FreeGroup.map.of, Sum.swap_inr] using hm
+  simpa [relSub, map_commWord, FreeGroup.map.of, Sum.swap_inr] using hm
 
 /-- Simultaneous replacement by genuine finite spine relators fills each replaced word. -/
 theorem markedSpine_filled {α Jr Sx : Type}
@@ -90,7 +78,7 @@ theorem markedSpine_filled {α Jr Sx : Type}
       obtain ⟨m, rfl⟩ := hz
       exact Subgroup.subset_normalClosure ⟨m, rfl⟩) (markedSpine_surface_mem q)
   rw [map_commWord] at h
-  simp only [BlockFamily.blockSubst_of_inl] at h
+  simp  at h
   rw [hrho s, map_commWord]
   exact h
 
@@ -111,10 +99,7 @@ theorem markedSpine_substitution_injective {α Jr Sx H : Type} [Group H]
   apply BlockFamily.injective_substHomF_of_markedBlock u
     (fun _ => markedSpineBeta q) (markedSpine_filled q ρ u hrho) j hj
     (fun s => (receiver s).comp (markedSpineToOldHom q))
-  · intro s x
-    rw [MonoidHom.comp_apply, markedSpineToOldHom_mark]
-    exact hread s x
-  · intro s m
-    rw [MonoidHom.comp_apply, markedSpineToOldHom_rel, map_one]
+  · simp_all [markedSpineToOldHom_mark]
+  · simp_all [markedSpineToOldHom_rel]
 
 end FiniteChains.Davis.Genus

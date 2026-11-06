@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderRoseRealizationHomeomorph
-public import RequestProject.PresWordEmbedding
-public import RequestProject.OrderNervePosetCoverVertexStars
-
-@[expose] public section
+import RequestProject.OrderRoseRealizationHomeomorph
+import RequestProject.PresWordEmbedding
+import RequestProject.OrderNervePosetCoverVertexStars
 
 /-! Literal generator maps of disk roses, and exact naturality of the
 order-rose homeomorphism for generator embeddings. -/
@@ -12,11 +10,11 @@ order-rose homeomorphism for generator embeddings. -/
 noncomputable section
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
-open scoped Classical unitInterval
+
 
 variable {A B : Type} (f : A → B)
 
-def diskRoseMap : C(Rose A, Rose B) :=
+def diskRoseMap  :=
   desc (roseAttaching A) (boundaryFamilyInclusion A (Fin 1 → ℝ))
     (ContinuousMap.const _ (roseVertex B))
     ⟨fun d => cell (roseAttaching B) (boundaryFamilyInclusion B _) ⟨f d.1, d.2⟩,
@@ -35,7 +33,7 @@ end FiniteChains.ClassicalGraphModel
 
 namespace FiniteChains.PresModel
 open Comb ClassicalGraphModel RelativeAttachment
-open scoped Classical unitInterval
+
 
 variable {A B J K : Type} {w : J → List (A × Bool)} {v : K → List (B × Bool)}
     (h : PresWordEmbedding w v)

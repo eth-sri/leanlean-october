@@ -1,18 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NormalizedMarkedPathCoefficients
-public import RequestProject.GenusAllQuotientCorrections
-public import RequestProject.GenusAttachingRelativeOldBoundary
-
-@[expose] public section
+import RequestProject.NormalizedMarkedPathCoefficients
+import RequestProject.GenusAllQuotientCorrections
+import RequestProject.GenusAttachingRelativeOldBoundary
 
 /-! Sheetwise marking coefficients survive the actual lower-lift / chainMax
 map and order normalization. Written proof terms; no Lean run performed. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily Nerve
@@ -24,18 +20,20 @@ abbrev namedSurfaceForward : namedAttachingCover q ρ u → NamedSurfaceCover ρ
   attachingToSurfaceCover (namedSurfaceLabel ρ q u) (namedQuotientBase ρ q u)
     (namedQuotientPos_isConnected ρ q u)
 
-theorem namedSurfaceForward_monotone : Monotone (namedSurfaceForward q ρ u) :=
-  attachingToSurfaceCover_monotone (namedSurfaceLabel ρ q u)
-    (namedQuotientBase ρ q u) (namedQuotientPos_isConnected ρ q u)
+abbrev namedSurfaceForward_monotone  :=
+  FiniteChains.Davis.attachingToSurfaceCover_monotone (FiniteChains.Davis.Genus.namedSurfaceLabel ρ q u)
+    (FiniteChains.Davis.Genus.namedQuotientBase ρ q u) (FiniteChains.Davis.Genus.namedQuotientPos_isConnected ρ q u)
 
 abbrev namedAttachingSurfaceChain1 :=
   attachingSurfaceChain1 (namedSurfaceLabel ρ q u) (namedQuotientBase ρ q u)
     (namedQuotientPos_isConnected ρ q u)
 
-abbrev namedAttachingDeckHom (g : QuotientMarkingGroup q ρ u) :=
+variable (g : QuotientMarkingGroup q ρ u)
+abbrev namedAttachingDeckHom  :=
   orderCxMap (namedAttachingDeck ρ q u g) (namedAttachingDeck ρ q u g).monotone
 
-theorem exists_referenceMarkingFirst (i : Fin q × Bool) :
+variable (i : Fin q × Bool)
+theorem exists_referenceMarkingFirst  :
     ∃ e : OrdEdge (namedAttachingCover q ρ u),
       ∃ p : List (OrdEdge (namedAttachingCover q ρ u) × Bool),
         namedAttachingMarkingPath q ρ u hrho 1 i = (e, true) :: p ∧
@@ -46,30 +44,27 @@ theorem exists_referenceMarkingFirst (i : Fin q × Bool) :
   rw [gSig_first_edge] at hm
   cases hp : namedAttachingMarkingPath q ρ u hrho 1 i with
   | nil =>
-      have hlen := congrArg List.length hm
-      simp only [hp, mapPath_nil, List.length_nil, List.length_cons] at hlen
-      omega
+      simp_all
   | cons a p =>
       have hm' : ((namedAttachingProjection q ρ u).onE a.1, a.2) =
           (markingFirstEdge q i, true) ∧
           mapPath (namedAttachingProjection q ρ u) p = markingTail q i := by
-        simpa only [hp, mapPath, List.map_cons, List.cons.injEq] using hm
-      have hb : a.2 = true := congrArg Prod.snd hm'.1
+        simp_all [mapPath]
+      have hb  := congrArg Prod.snd hm'.1
       have he := congrArg Prod.fst hm'.1
       have hs := (namedAttachingMarkingPath_spec q ρ u hrho 1 i).1
       rw [hp] at hs
       refine ⟨a.1, p, ?_, ?_, he, hm'.2⟩
       · exact congrArg (fun b => (a.1, b) :: p) hb
-      · simpa only [hb, germSrc, orderCx, ite_true] using hs.1.symm
+      · aesop
 
-def referenceMarkingFirst (i : Fin q × Bool) : OrdEdge (namedAttachingCover q ρ u) :=
+def referenceMarkingFirst   :=
   Classical.choose (exists_referenceMarkingFirst q ρ u hrho i)
 
-def referenceMarkingTail (i : Fin q × Bool) :
-    List (OrdEdge (namedAttachingCover q ρ u) × Bool) :=
+def referenceMarkingTail   :=
   Classical.choose (Classical.choose_spec (exists_referenceMarkingFirst q ρ u hrho i))
 
-theorem referenceMarkingFirst_spec (i : Fin q × Bool) :
+theorem referenceMarkingFirst_spec  :
     namedAttachingMarkingPath q ρ u hrho 1 i =
         (referenceMarkingFirst q ρ u hrho i, true) :: referenceMarkingTail q ρ u hrho i ∧
       (referenceMarkingFirst q ρ u hrho i).1.1 = namedAttachingReference q ρ u hrho 1 ∧
@@ -79,26 +74,24 @@ theorem referenceMarkingFirst_spec (i : Fin q × Bool) :
         markingTail q i :=
   Classical.choose_spec (Classical.choose_spec (exists_referenceMarkingFirst q ρ u hrho i))
 
-def allNamedAttachingMarkingPath (g : QuotientMarkingGroup q ρ u) (i : Fin q × Bool) :=
+variable (i : Fin q × Bool)
+def allNamedAttachingMarkingPath   :=
   mapPath (namedAttachingDeckHom q ρ u g) (namedAttachingMarkingPath q ρ u hrho 1 i)
 
-def allNamedAttachingFirst (g : QuotientMarkingGroup q ρ u) (i : Fin q × Bool) :=
+def allNamedAttachingFirst   :=
   (namedAttachingDeckHom q ρ u g).onE (referenceMarkingFirst q ρ u hrho i)
 
-def allNamedAttachingTail (g : QuotientMarkingGroup q ρ u) (i : Fin q × Bool) :=
+def allNamedAttachingTail   :=
   mapPath (namedAttachingDeckHom q ρ u g) (referenceMarkingTail q ρ u hrho i)
 
-theorem allNamedAttachingMarkingPath_cons (g : QuotientMarkingGroup q ρ u)
-    (i : Fin q × Bool) :
+theorem allNamedAttachingMarkingPath_cons 
+     :
     allNamedAttachingMarkingPath q ρ u hrho g i =
       (allNamedAttachingFirst q ρ u hrho g i, true) :: allNamedAttachingTail q ρ u hrho g i := by
-  simpa only [allNamedAttachingMarkingPath, allNamedAttachingFirst,
-    allNamedAttachingTail, mapPath, List.map_cons] using
-    congrArg (mapPath (namedAttachingDeckHom q ρ u g))
-      (referenceMarkingFirst_spec q ρ u hrho i).1
+  simp_all [allNamedAttachingMarkingPath, allNamedAttachingFirst, allNamedAttachingTail, mapPath, referenceMarkingFirst_spec]
 
-theorem allNamedAttachingFirst_lastEndpoints (g : QuotientMarkingGroup q ρ u)
-    (i : Fin q × Bool) :
+theorem allNamedAttachingFirst_lastEndpoints 
+     :
     (namedSurfaceProjection ρ q u
         (namedSurfaceForward q ρ u (allNamedAttachingFirst q ρ u hrho g i).1.1),
       namedSurfaceProjection ρ q u
@@ -115,11 +108,10 @@ theorem allNamedAttachingFirst_lastEndpoints (g : QuotientMarkingGroup q ρ u)
       (namedAttachingDeck ρ q u g (referenceMarkingFirst q ρ u hrho i).1.1)),
     chainMax (qAttachingCoverEnd (namedQuotientBase ρ q u)
       (namedAttachingDeck ρ q u g (referenceMarkingFirst q ρ u hrho i).1.2))) = _
-  rw [namedAttachingDeck_projection, namedAttachingDeck_projection, hs, ht]
-  simp only [markingFirstEdge, markingBaseFlag, chainMax_spx1, chainMax_spx2]
+  simp_all [namedAttachingDeck_projection, markingFirstEdge, markingBaseFlag]
 
-theorem allNamedAttachingFirst_surface_strict (g : QuotientMarkingGroup q ρ u)
-    (i : Fin q × Bool) :
+theorem allNamedAttachingFirst_surface_strict 
+     :
     namedSurfaceForward q ρ u (allNamedAttachingFirst q ρ u hrho g i).1.1 <
       namedSurfaceForward q ρ u (allNamedAttachingFirst q ρ u hrho g i).1.2 := by
   apply lt_of_le_of_ne ((namedSurfaceForward_monotone q ρ u)
@@ -133,14 +125,14 @@ theorem allNamedAttachingFirst_surface_strict (g : QuotientMarkingGroup q ρ u)
   rw [hs, ht] at hh
   cases hh
 
-def allNamedSurfaceFirst (g : QuotientMarkingGroup q ρ u) (i : Fin q × Bool) :
+def allNamedSurfaceFirst   :
     StrictOrdEdge (NamedSurfaceCover ρ q u) :=
   ⟨(namedSurfaceForward q ρ u (allNamedAttachingFirst q ρ u hrho g i).1.1,
       namedSurfaceForward q ρ u (allNamedAttachingFirst q ρ u hrho g i).1.2),
     allNamedAttachingFirst_surface_strict q ρ u hrho g i⟩
 
-theorem allNamedSurfaceFirst_source (g : QuotientMarkingGroup q ρ u)
-    (i : Fin q × Bool) :
+theorem allNamedSurfaceFirst_source 
+     :
     (allNamedSurfaceFirst q ρ u hrho g i).1.1 =
       namedSurfaceDeck ρ q u g
         (namedSurfaceForward q ρ u (namedAttachingReference q ρ u hrho 1)) := by
@@ -149,8 +141,8 @@ theorem allNamedSurfaceFirst_source (g : QuotientMarkingGroup q ρ u)
   rw [(referenceMarkingFirst_spec q ρ u hrho i).2.1]
   exact namedAttachingToSurface_deck ρ q u g _
 
-theorem allNamedSurfaceFirst_target_projection (g : QuotientMarkingGroup q ρ u)
-    (i : Fin q × Bool) :
+theorem allNamedSurfaceFirst_target_projection 
+     :
     namedSurfaceProjection ρ q u (allNamedSurfaceFirst q ρ u hrho g i).1.2 =
       markingBedCell q i false :=
   congrArg Prod.snd (allNamedAttachingFirst_lastEndpoints q ρ u hrho g i)
@@ -163,7 +155,7 @@ theorem allNamedSurfaceFirst_injective :
   dsimp only at hs
   rw [allNamedSurfaceFirst_source, allNamedSurfaceFirst_source] at hs
   have hg := congrArg (fun v : NamedSurfaceCover ρ q u => v.1.1) hs
-  have hg' : x.1 = y.1 := deckV_injective_in_group _
+  have hg'  := deckV_injective_in_group _
     (namedSurfaceForward q ρ u (namedAttachingReference q ρ u hrho 1)).1.1 hg
   have ht := congrArg (fun e : StrictOrdEdge (NamedSurfaceCover ρ q u) =>
     namedSurfaceProjection ρ q u e.1.2) h
@@ -180,12 +172,7 @@ theorem markingTail_lastEndpoints_avoids (i j : Fin q × Bool)
   rcases ha with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     simp [markingBedBaseFlag, markingBedMidFlag, markingMidFlag, markingBaseFlag,
       markingBaseCell, markingBedCell, markingMidCell]
-  all_goals intro h
-  · cases h
-  · cases h
-  · have hb : true = false :=
-      congrArg (fun z : Fin q × Bool × Bool => z.2.2) (Cell.bed.inj h)
-    cases hb
+  all_goals solve | simp_all | omega | aesop | grind
 
 theorem allNamedAttachingTail_surface_avoids (g h : QuotientMarkingGroup q ρ u)
     (i j : Fin q × Bool) (a : OrdEdge (namedAttachingCover q ρ u) × Bool)
@@ -212,19 +199,18 @@ def allNamedAttachingMarkingChains :
       (OrdEdge (namedAttachingCover q ρ u) →₀ ℤ) :=
   Finsupp.linearCombination ℤ (fun x => pathChain (allNamedAttachingMarkingPath q ρ u hrho x.1 x.2))
 
-def allNamedSurfaceMarkingChains :
-    ((QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ) →ₗ[ℤ]
-      (StrictOrdEdge (NamedSurfaceCover ρ q u) →₀ ℤ) :=
+def allNamedSurfaceMarkingChains  :=
   (normalizedWeakChain1To (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u)).comp
     (allNamedAttachingMarkingChains q ρ u hrho)
 
+variable (c : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ)
 theorem allNamedSurfaceMarkingChains_coefficient
-    (c : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ)
+    
     (g : QuotientMarkingGroup q ρ u) (i : Fin q × Bool) :
     allNamedSurfaceMarkingChains q ρ u hrho c (allNamedSurfaceFirst q ρ u hrho g i) = c (g, i) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]
+  | add c d hc hd => simp_all
   | single x n =>
       change normalizedWeakChain1To _ _
         (allNamedAttachingMarkingChains q ρ u hrho (Finsupp.single x n)) _ = _
@@ -240,8 +226,7 @@ theorem allNamedSurfaceMarkingChains_coefficient
         · exact @hinj x (g, i)
         · rintro rfl
           rfl
-      by_cases hx : x = (g, i) <;> simp only [heq, hx, ↓reduceIte, Finsupp.single_apply,
-        smul_eq_mul, mul_one, mul_zero]
+      classical simp_all [Finsupp.single_apply, smul_eq_mul, mul_one, mul_zero]
 
 theorem allNamedSurfaceMarkingChains_injective :
     Function.Injective (allNamedSurfaceMarkingChains q ρ u hrho) := by
@@ -249,7 +234,7 @@ theorem allNamedSurfaceMarkingChains_injective :
   ext x
   have h := congrArg (fun z : StrictOrdEdge (NamedSurfaceCover ρ q u) →₀ ℤ =>
     z (allNamedSurfaceFirst q ρ u hrho x.1 x.2)) he
-  simpa only [allNamedSurfaceMarkingChains_coefficient] using h
+  simpa [allNamedSurfaceMarkingChains_coefficient] using h
 
 theorem namedAttachingIntoUniversal_chain1_injective :
     Function.Injective (chain1 (namedAttachingIntoUniversal q ρ u)) := by
@@ -261,7 +246,7 @@ theorem namedAttachingIntoUniversal_chain1_injective :
     (Subtype.ext (congrArg (fun d => d.1.2) he))
 
 theorem allNamedAttachingMarkingChains_image
-    (c : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ) :
+     :
     chain1 (namedAttachingIntoUniversal q ρ u) (allNamedAttachingMarkingChains q ρ u hrho c) =
       allQuotientSurfaceMarkingChains q ρ u c := by
   induction c using Finsupp.induction_linear with
@@ -300,8 +285,9 @@ theorem allNamedAttachingMarkingChains_image
         univDeck_pathChain (K := orderCx (namedQuotientPos ρ q u))
           (namedQuotientBase ρ q u) x.1 (quotientCylinderVertex q ρ u) hp
 
+variable (c : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ)
 theorem namedAttachingMarkingChains_factor
-    (c : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ) :
+     :
     namedAttachingMarkingChains q ρ u hrho c =
       allNamedAttachingMarkingChains q ρ u hrho
         (Finsupp.mapDomain (fun x => (finiteSpineToQuotient ρ q u hrho x.1, x.2)) c) := by
@@ -310,43 +296,29 @@ theorem namedAttachingMarkingChains_factor
     quotientSurfaceMarkingChains_factor]
 
 theorem namedSurfaceMarkingChains_factor
-    (c : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ) :
+     :
     normalizedWeakChain1To (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u)
         (namedAttachingMarkingChains q ρ u hrho c) =
       allNamedSurfaceMarkingChains q ρ u hrho
         (Finsupp.mapDomain (fun x => (finiteSpineToQuotient ρ q u hrho x.1, x.2)) c) := by
-  exact congrArg
-    (normalizedWeakChain1To (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u))
-    (namedAttachingMarkingChains_factor q ρ u hrho c)
+  aesop (add simp [namedAttachingMarkingChains_factor])
 
-theorem allNamedAttachingMarkingChains_translate (g : QuotientMarkingGroup q ρ u)
-    (c : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ) :
+variable (c : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ)
+theorem allNamedAttachingMarkingChains_translate 
+     :
     allNamedAttachingMarkingChains q ρ u hrho (ReceivedTree.translateCellChain g c) =
       chain1 (namedAttachingDeckHom q ρ u g) (allNamedAttachingMarkingChains q ρ u hrho c) := by
   apply namedAttachingIntoUniversal_chain1_injective q ρ u
-  rw [allNamedAttachingMarkingChains_image, namedAttachingIntoUniversal_chain1_deck,
-    allNamedAttachingMarkingChains_image, allQuotientSurfaceMarkingChains_translate]
+  simp_all [allNamedAttachingMarkingChains_image, namedAttachingIntoUniversal_chain1_deck, allQuotientSurfaceMarkingChains_translate]
 
-theorem namedSurfaceForward_deck_square (g : QuotientMarkingGroup q ρ u) :
+theorem namedSurfaceForward_deck_square  :
     (orderCxMap (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u)).comp
         (namedAttachingDeckHom q ρ u g) =
       (orderCxMap (namedSurfaceDeck ρ q u g) (namedSurfaceDeck ρ q u g).monotone).comp
-        (orderCxMap (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u)) := by
-  apply Hom.ext'
-  · funext p
-    exact namedAttachingToSurface_deck ρ q u g p
-  · funext e
-    apply Subtype.ext
-    exact Prod.ext (namedAttachingToSurface_deck ρ q u g e.1.1)
-      (namedAttachingToSurface_deck ρ q u g e.1.2)
-  · funext t
-    apply Subtype.ext
-    exact Prod.ext (namedAttachingToSurface_deck ρ q u g t.1.1)
-      (Prod.ext (namedAttachingToSurface_deck ρ q u g t.1.2.1)
-        (namedAttachingToSurface_deck ρ q u g t.1.2.2))
+        (orderCxMap (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u)) := by apply Hom.ext' <;> funext x <;> solve_by_elim (transparency := .default) (maxDepth := 10) [Subtype.ext, Prod.ext, namedAttachingToSurface_deck]
 
-theorem allNamedSurfaceMarkingChains_translate (g : QuotientMarkingGroup q ρ u)
-    (c : (QuotientMarkingGroup q ρ u × (Fin q × Bool)) →₀ ℤ) :
+theorem allNamedSurfaceMarkingChains_translate 
+     :
     allNamedSurfaceMarkingChains q ρ u hrho (ReceivedTree.translateCellChain g c) =
       chain1 (strictOrderCxMap (namedSurfaceDeck ρ q u g) (namedSurfaceDeck ρ q u g).strictMono)
         (allNamedSurfaceMarkingChains q ρ u hrho c) := by
@@ -368,17 +340,12 @@ theorem allNamedSurfaceMarkingChains_multiply
           (allNamedSurfaceMarkingChains q ρ u hrho c)) w.coeff := by
   induction w using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add w z hw hz => simp only [map_add, MonoidAlgebra.coeff_add, hw, hz]
+  | add w z hw hz => simp_all
   | single g n =>
       have hm : ReceivedTree.multiplyCellChain c (MonoidAlgebra.single g n) =
           n • ReceivedTree.translateCellChain g c := by
         simp [ReceivedTree.multiplyCellChain]
-      rw [hm, map_zsmul, allNamedSurfaceMarkingChains_translate]
-      let f := fun g => chain1
-        (strictOrderCxMap (namedSurfaceDeck ρ q u g) (namedSurfaceDeck ρ q u g).strictMono)
-        (allNamedSurfaceMarkingChains q ρ u hrho c)
-      change n • f g = Finsupp.linearCombination ℤ f (Finsupp.single g n)
-      exact (Finsupp.linearCombination_single ℤ n g).symm
+      simp_all [allNamedSurfaceMarkingChains_translate]
 
 
 /-- Exact recovery in the entire quotient group from the normalized surface
@@ -405,7 +372,6 @@ theorem namedSurfaceMarking_multiple_reflect
   simp only [← normalizedWeakChain1To_normalize, namedSurfaceMarkingChains_factor] at h
   rw [← allNamedSurfaceMarkingChains_multiply] at h
   have hc := allNamedSurfaceMarkingChains_injective q ρ u hrho h
-  simp only [quotientSurfaceMarkingChains_factor]
-  rw [hc, allQuotientSurfaceMarkingChains_multiply]
+  simp_all [quotientSurfaceMarkingChains_factor, allQuotientSurfaceMarkingChains_multiply]
 
 end FiniteChains.Davis.Genus

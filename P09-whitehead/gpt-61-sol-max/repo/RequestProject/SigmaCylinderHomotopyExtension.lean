@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CylinderBoundaryHomotopyCorrection
-public import Mathlib.Topology.Homeomorph.Lemmas
-
-@[expose] public section
+import RequestProject.CylinderBoundaryHomotopyCorrection
+import Mathlib.Topology.Homeomorph.Lemmas
 
 /-! Disk and cylinder homotopy extension for arbitrary disjoint families.
 The construction never puts a finiteness condition on the family. -/
@@ -12,7 +10,6 @@ noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u
 variable {J : Type u} {D : J → Type u} [∀ j, TopologicalSpace (D j)]
 
 def sigmaCylinderHomeomorph : (Σ j, I × D j) ≃ₜ I × (Σ j, D j) where
@@ -28,13 +25,14 @@ def sigmaCylinderHomeomorph : (Σ j, I × D j) ≃ₜ I × (Σ j, D j) where
       continuous_sigmaMk.comp continuous_swap)
     exact hs.comp ((Homeomorph.sigmaProdDistrib (X := D) (Y := I)).continuous.comp continuous_swap)
 
-def SigmaSubspace (S : ∀ j, Set (D j)) : Set (Σ j, D j) := {d | d.2 ∈ S d.1}
+variable (S : ∀ j, Set (D j))
+def SigmaSubspace  : Set (Σ j, D j) := {d | d.2 ∈ S d.1}
 
-theorem sigmaSubspace_isClosed (S : ∀ j, Set (D j)) (hS : ∀ j, IsClosed (S j)) :
+theorem sigmaSubspace_isClosed  (hS : ∀ j, IsClosed (S j)) :
     IsClosed (SigmaSubspace S) :=
   isClosed_sigma_iff.mpr hS
 
-theorem sigmaSubspace_hasHomotopyExtension (S : ∀ j, Set (D j))
+theorem sigmaSubspace_hasHomotopyExtension 
     (h : ∀ j, HasHomotopyExtension (Subtype.val : S j → D j)) :
     HasHomotopyExtension (Subtype.val : SigmaSubspace S → Σ j, D j) := by
   intro Z _ f H h₀
@@ -53,14 +51,14 @@ theorem sigmaSubspace_hasHomotopyExtension (S : ∀ j, Set (D j))
     toFun := fun d => ((G d.1).comp ⟨Prod.swap, continuous_swap⟩).curry d.2
     continuous_toFun := continuous_sigma (fun j =>
       ((G j).comp ⟨Prod.swap, continuous_swap⟩).curry.continuous) }
-  let L : C(I × (Σ j, D j), Z) := F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
+  let L  := F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
   refine ⟨L, ?_, ?_⟩
   · rintro ⟨j, d⟩
     exact hG₀ j d
   · intro t ⟨⟨j, d⟩, hd⟩
     exact hGA j t ⟨d, hd⟩
 
-theorem sigmaFullCylinder_hasHomotopyExtension (S : ∀ j, Set (D j))
+theorem sigmaFullCylinder_hasHomotopyExtension 
     (h : ∀ j, HasHomotopyExtension
       (Subtype.val : FullCylinderBoundary (S j) → I × D j)) :
     HasHomotopyExtension
@@ -103,11 +101,9 @@ def unitBoundarySubspaceHomeomorph :
   left_inv _ := rfl
   right_inv _ := rfl
   continuous_toFun := (unitBoundaryInclusion E).continuous.subtype_mk _
-  continuous_invFun := (continuous_subtype_val.comp continuous_subtype_val).subtype_mk _
+  continuous_invFun := by fun_prop
 
-theorem unitBoundarySubspace_hasHomotopyExtension :
-    HasHomotopyExtension
-      (Subtype.val : {d : ClosedUnitBall E // ‖d.val‖ = 1} → ClosedUnitBall E) :=
+abbrev unitBoundarySubspace_hasHomotopyExtension  :=
   (unitBoundary_hasHomotopyExtension E).homeomorph
     (unitBoundarySubspaceHomeomorph E) (Homeomorph.refl _) Subtype.val (fun _ => rfl)
 

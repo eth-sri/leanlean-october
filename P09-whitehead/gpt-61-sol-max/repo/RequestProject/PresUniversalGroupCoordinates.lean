@@ -1,14 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresPosetGroupEquiv
-public import RequestProject.OrderUniversalCocycleReading
-public import RequestProject.PresPosetConnected
-
-@[expose] public section
+import RequestProject.PresPosetGroupEquiv
+import RequestProject.OrderUniversalCocycleReading
+import RequestProject.PresPosetConnected
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
 
@@ -38,22 +35,23 @@ theorem presGroup_wordVal_eq_one (j : J) :
     (Subgroup.subset_normalClosure (Set.mem_range.2 ⟨j, rfl⟩))
 
 /-- The genuine presentation cocycle with values in its actual presentation group. -/
-def presGroupCocycle : OrdCocycle (PresPos w) (PresGroup ρ) :=
+def presGroupCocycle  :=
   presCoc w (fun i => QuotientGroup.mk (FreeGroup.of i)) (presGroup_wordVal_eq_one ρ w hw)
 
 @[simp] theorem presGroupCocycle_monodromy :
     (presGroupCocycle ρ w hw).monodromy (ptBase w) = readingPresW ρ w hw := rfl
 
+variable (hpos : ∀ j, 0 < (w j).length)
 /-- The actual universal-cover reading separates vertices in every endpoint fibre. -/
-theorem presUniversal_reading_injective (hpos : ∀ j, 0 < (w j).length)
+abbrev presUniversal_reading_injective 
     (p q : UV (orderCx (PresPos w)) (ptBase w)) (he : endV p = endV q)
     (hr : (presGroupCocycle ρ w hw).readVertex (ptBase w) p =
-      (presGroupCocycle ρ w hw).readVertex (ptBase w) q) : p = q :=
-  (presGroupCocycle ρ w hw).readVertex_fibre_injective (ptBase w)
-    (readingPresW_injective w ρ hw hpos) p q he hr
+      (presGroupCocycle ρ w hw).readVertex (ptBase w) q)  :=
+  FiniteChains.Comb.OrdCocycle.readVertex_fibre_injective (FiniteChains.PresModel.presGroupCocycle ρ w hw)
+    (FiniteChains.PresModel.ptBase w) (FiniteChains.PresModel.readingPresW_injective w ρ hw hpos) p q he hr
 
 /-- Reading gives genuine group coordinates on every actual endpoint fibre of the universal cover. -/
-noncomputable def presUniversalFibreGroupEquiv (hpos : ∀ j, 0 < (w j).length)
+noncomputable def presUniversalFibreGroupEquiv 
     (v : PresPos w) :
     {p : UV (orderCx (PresPos w)) (ptBase w) // endV p = v} ≃ PresGroup ρ :=
   Equiv.ofBijective (fun p => (presGroupCocycle ρ w hw).readVertex (ptBase w) p.val) ⟨by

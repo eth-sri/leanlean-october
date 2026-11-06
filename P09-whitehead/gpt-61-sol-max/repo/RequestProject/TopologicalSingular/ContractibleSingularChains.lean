@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.SingularPrism
-public import Mathlib.Topology.Homotopy.Contractible
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SingularPrism
+import Mathlib.Topology.Homotopy.Contractible
 
 /-! # Exact singular chains in all positive degrees for contractible spaces
 
@@ -17,20 +15,21 @@ namespace FiniteChains.TopologicalSingular
 
 open Set Topology SingularPrism
 
-universe u v
 variable {X : Type u} {Y : Type v} [TopologicalSpace X] [TopologicalSpace Y]
 
-noncomputable def constantCone (y : Y) (n : ℕ) : Chain X n →ₗ[ℤ] Chain Y (n + 1) :=
+  (y : Y)
+  (n : ℕ)
+noncomputable def constantCone   : Chain X n →ₗ[ℤ] Chain Y (n + 1) :=
   Finsupp.lmapDomain ℤ ℤ (fun _ => ContinuousMap.const (Domain (n + 1)) y)
 
-theorem constantCone_single (y : Y) (n : ℕ) (σ : Simplex X n) (r : ℤ) :
+theorem constantCone_single   (σ : Simplex X n) (r : ℤ) :
     constantCone y n (Finsupp.single σ r) = Finsupp.single (ContinuousMap.const (Domain (n + 1)) y) r :=
   Finsupp.mapDomain_single
 
 theorem face_constant {n : ℕ} (y : Y) (i : Fin (n + 2)) :
     face i (ContinuousMap.const (Domain (n + 1)) y) = ContinuousMap.const (Domain n) y := rfl
 
-theorem constantCone_identity_single (y : Y) (n : ℕ) (σ : Simplex X (n + 1)) (r : ℤ) :
+theorem constantCone_identity_single   (σ : Simplex X (n + 1)) (r : ℤ) :
     boundary (n + 1) (constantCone y (n + 1) (Finsupp.single σ r)) +
       constantCone y n (boundary n (Finsupp.single σ r)) =
         map (ContinuousMap.const X y) (n + 1) (Finsupp.single σ r) := by
@@ -41,7 +40,7 @@ theorem constantCone_identity_single (y : Y) (n : ℕ) (σ : Simplex X (n + 1)) 
   rw [altSum_succ]
   exact sub_add_cancel _ _
 
-theorem constantCone_identity (y : Y) (n : ℕ) (c : Chain X (n + 1)) :
+theorem constantCone_identity   (c : Chain X (n + 1)) :
     boundary (n + 1) (constantCone y (n + 1) c) + constantCone y n (boundary n c) =
       map (ContinuousMap.const X y) (n + 1) c := by
   have he : (boundary (n + 1)).comp (constantCone y (n + 1)) +
@@ -50,10 +49,10 @@ theorem constantCone_identity (y : Y) (n : ℕ) (c : Chain X (n + 1)) :
     exact constantCone_identity_single y n
   exact DFunLike.congr_fun he c
 
-theorem constantMap_cycle_bounds (y : Y) (n : ℕ) (c : Chain X (n + 1)) (hc : boundary n c = 0) :
+theorem constantMap_cycle_bounds   (c : Chain X (n + 1)) (hc : boundary n c = 0) :
     map (ContinuousMap.const X y) (n + 1) c ∈ LinearMap.range (boundary (n + 1)) := by
   refine ⟨constantCone y (n + 1) c, ?_⟩
-  simpa only [hc, map_zero, add_zero] using constantCone_identity y n c
+  simpa [hc, map_zero, add_zero] using constantCone_identity y n c
 
 theorem nullhomotopic_cycle_bounds (f : C(X, Y)) (hf : f.Nullhomotopic)
     (n : ℕ) (c : Chain X (n + 1)) (hc : boundary n c = 0) :
@@ -70,14 +69,16 @@ theorem contractible_ker_boundary_eq_range [ContractibleSpace X] (n : ℕ) :
   apply le_antisymm
   · intro c hc
     have hm := nullhomotopic_cycle_bounds (ContinuousMap.id X) (id_nullhomotopic X) n c hc
-    simpa only [map_id, LinearMap.id_apply] using hm
+    simpa [map_id, LinearMap.id_apply] using hm
   · rintro c ⟨b, rfl⟩
     exact boundary_boundary n b
 
-theorem contractible_cycle_bounds [ContractibleSpace X] (n : ℕ) (c : Chain X (n + 1))
-    (hc : boundary n c = 0) : ∃ b : Chain X (n + 2), boundary (n + 1) b = c := by
-  have hm : c ∈ LinearMap.ker (boundary (X := X) n) := hc
-  rw [contractible_ker_boundary_eq_range] at hm
-  exact hm
+abbrev contractible_cycle_bounds [ContractibleSpace X] (n : ℕ) (c : Chain X (n + 1))
+    (hc : boundary n c = 0)  :=
+  have hm := hc;
+  Eq.mp
+    (congrArg (fun (_a : Submodule ℤ (FiniteChains.TopologicalSingular.Chain X (n + 1))) => c ∈ _a)
+      (FiniteChains.TopologicalSingular.contractible_ker_boundary_eq_range n))
+    hm
 
 end FiniteChains.TopologicalSingular

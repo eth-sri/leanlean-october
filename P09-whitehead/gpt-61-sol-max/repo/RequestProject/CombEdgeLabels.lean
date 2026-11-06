@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CombPi1
-
-@[expose] public section
+import RequestProject.CombPi1
 
 /-! Group-valued edge labels and path choices. These read actual edge-path
 homotopy classes and will detect the two factors in the descent pushout.
@@ -11,35 +9,34 @@ Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u v
 variable {X Y : Complex2.{u}} {G : Type v} [Group G]
 
 namespace EdgeLabels
-def germ (w : X.E → G) (e : X.E × Bool) : G := if e.2 then w e.1 else (w e.1)⁻¹
-def read (w : X.E → G) (p : List (X.E × Bool)) : G := (p.map (germ w)).prod
+variable (w : X.E → G)
+  (e : X.E × Bool)
+def germ    := if e.2 then w e.1 else (w e.1)⁻¹
+def read  (p : List (X.E × Bool))  := (p.map (germ w)).prod
 
-@[simp] theorem read_nil (w : X.E → G) : read w [] = 1 := rfl
-@[simp] theorem read_cons (w : X.E → G) (e : X.E × Bool) (p : List (X.E × Bool)) :
+@[simp] theorem read_nil  : read w [] = 1 := rfl
+@[simp] theorem read_cons   (p : List (X.E × Bool)) :
     read w (e :: p) = germ w e * read w p := rfl
-theorem read_append (w : X.E → G) (p q : List (X.E × Bool)) :
-    read w (p ++ q) = read w p * read w q := by simp [read, List.prod_append]
-theorem germ_rev (w : X.E → G) (e : X.E × Bool) : germ w (revGerm e) = (germ w e)⁻¹ := by
-  rcases e with ⟨e, b⟩
-  cases b <;> simp [germ, revGerm]
+theorem read_append  (p q : List (X.E × Bool)) :
+    read w (p ++ q) = read w p * read w q := by simp [read]
+theorem germ_rev   : germ w (revGerm e) = (germ w e)⁻¹ := by aesop (add simp [germ, revGerm])
 
-theorem read_cancels (w : X.E → G) (hw : ∀ f, read w (X.att f) = 1)
+variable (hw : ∀ f, read w (X.att f) = 1)
+include hw in
+theorem read_cancels  
     {p q : List (X.E × Bool)} (h : Cancels X p q) : read w p = read w q := by
   rcases h with ⟨a, b, e, rfl, rfl⟩ | ⟨a, b, f, rfl, rfl⟩
-  · rw [read_append, read_append, read_cons, read_cons, germ_rev]
-    group
-  · rw [read_append, read_append, read_append, hw, mul_one]
+  · simp_all [read_append, germ_rev]
+  · simp_all [read_append]
 
-theorem read_htpy (w : X.E → G) (hw : ∀ f, read w (X.att f) = 1)
+include hw in
+theorem read_htpy  
     {a b : X.V} {p q : List (X.E × Bool)} (h : Htpy X a b p q) : read w p = read w q := by
   induction h with
   | refl => rfl
@@ -48,25 +45,23 @@ theorem read_htpy (w : X.E → G) (hw : ∀ f, read w (X.att f) = 1)
       · exact ih.trans (read_cancels w hw hs.2.2)
       · exact ih.trans (read_cancels w hw hs.2.2).symm
 
-def monodromy (w : X.E → G) (hw : ∀ f, read w (X.att f) = 1) (a : X.V) : Pi1 X a →* G where
+include hw in
+def monodromy   (a : X.V) : Pi1 X a →* G where
   toFun := Quotient.lift (fun p => read w p.val) (fun _ _ h => read_htpy w hw h)
   map_one' := rfl
   map_mul' := by rintro ⟨p⟩ ⟨q⟩; exact read_append w p.val q.val
 
 theorem read_mapPath (w : Y.E → G) (f : Hom X Y) (p : List (X.E × Bool)) :
     read w (mapPath f p) = read (w ∘ f.onE) p := by
-  induction p with
-  | nil => rfl
-  | cons e p ih => simp only [mapPath, List.map_cons, read_cons] at *; rw [ih]; rfl
+  induction p <;> aesop (add simp [mapPath, List.map_cons, read_cons])
 
-theorem read_potential (w : X.E → G) (v : X.V → G)
+theorem read_potential  (v : X.V → G)
     (hw : ∀ e, w e = (v (X.src e))⁻¹ * v (X.tgt e))
     {p : List (X.E × Bool)} {a b : X.V} (hp : IsPath X.src X.tgt p a b) :
     read w p = (v a)⁻¹ * v b := by
   have hg (e : X.E × Bool) : germ w e =
       (v (germSrc X.src X.tgt e))⁻¹ * v (germTgt X.src X.tgt e) := by
-    rcases e with ⟨e, b⟩
-    cases b <;> simp [germ, germSrc, germTgt, hw, mul_inv_rev]
+    aesop (add simp [germ])
   induction p generalizing a with
   | nil => cases hp; simp
   | cons e p ih =>
@@ -88,18 +83,17 @@ variable {a : X.V} (r : RootPaths X a)
 def choose (hc : IsConnected X) (a : X.V) : RootPaths X a where
   path b := if b = a then [] else Classical.choose (hc a b)
   valid b := by
-    split
-    · rename_i h; cases h; rfl
-    · exact Classical.choose_spec (hc a b)
+    grind [FiniteChains.Comb.IsPath]
   at_root := by simp
 
 def conjugate (p : List (X.E × Bool)) (b c : X.V) := r.path b ++ p ++ revPath (r.path c)
 
-theorem conjugate_valid {p : List (X.E × Bool)} {b c : X.V} (hp : IsPath X.src X.tgt p b c) :
-    IsPath X.src X.tgt (r.conjugate p b c) a a :=
+variable {p : List (X.E × Bool)}
+  {b c : X.V}
+abbrev conjugate_valid   (hp : IsPath X.src X.tgt p b c)  :=
   isPath_append_iff.mpr ⟨c, isPath_append_iff.mpr ⟨b, r.valid b, hp⟩, isPath_revPath (r.valid c)⟩
 
-def classOf {p : List (X.E × Bool)} {b c : X.V} (hp : IsPath X.src X.tgt p b c) : Pi1 X a :=
+def classOf   (hp : IsPath X.src X.tgt p b c)  :=
   Pi1.mk ⟨r.conjugate p b c, r.conjugate_valid hp⟩
 
 theorem classOf_htpy {p q : List (X.E × Bool)} {b c : X.V}
@@ -122,24 +116,24 @@ theorem classOf_mul {p q : List (X.E × Bool)} {b c d : X.V}
     (isPath_append_iff.mpr ⟨d, hq, isPath_revPath (r.valid d)⟩)
   simpa [loopSetoid, Pi1, Loop, conjugate, List.append_assoc] using h
 
-theorem classOf_rev {p : List (X.E × Bool)} {b c : X.V} (hp : IsPath X.src X.tgt p b c) :
+theorem classOf_rev   (hp : IsPath X.src X.tgt p b c) :
     r.classOf (isPath_revPath hp) = (r.classOf hp)⁻¹ := by
   apply Quotient.sound
-  change Htpy X a a (r.conjugate (revPath p) c b) (revPath (r.conjugate p b c))
+  
   simp only [conjugate, revPath_append, revPath_revPath, List.append_assoc]
   exact Htpy.refl _
 
-def edge (e : X.E) : Pi1 X a := r.classOf (isPath_single (e, true))
+def edge (e : X.E)  := r.classOf (isPath_single (e, true))
 
 theorem germ_classOf (e : X.E × Bool) : EdgeLabels.germ r.edge e = r.classOf (isPath_single e) := by
   rcases e with ⟨e, b⟩
   cases b with
   | true => rfl
   | false =>
-      change (r.classOf (isPath_single (e, true)))⁻¹ = r.classOf (isPath_single (e, false))
+      
       exact (r.classOf_rev (isPath_single (e, true))).symm
 
-theorem read_classOf {p : List (X.E × Bool)} {b c : X.V} (hp : IsPath X.src X.tgt p b c) :
+theorem read_classOf   (hp : IsPath X.src X.tgt p b c) :
     EdgeLabels.read r.edge p = r.classOf hp := by
   induction p generalizing b with
   | nil => cases hp; exact (r.classOf_nil _).symm
@@ -158,8 +152,8 @@ theorem edge_rel (f : X.F) : EdgeLabels.read r.edge (X.att f) = 1 := by
 theorem read_loop (p : Loop X a) : EdgeLabels.read r.edge p.val = Pi1.mk p := by
   rw [r.read_classOf p.property]
   apply Quotient.sound
-  simp only [conjugate, r.at_root, List.nil_append, revPath_nil, List.append_nil]
+  simp only [conjugate, r.at_root, revPath_nil, List.append_nil]
   exact Htpy.refl _
 
-end RootPaths
-end FiniteChains.Comb
+end FiniteChains.Comb.RootPaths
+

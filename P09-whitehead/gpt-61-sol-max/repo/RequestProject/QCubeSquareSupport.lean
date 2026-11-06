@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeSquareSubdivision
-
-@[expose] public section
+import RequestProject.QCubeSquareSubdivision
 
 /-! Restriction to the actual top cube separates square subdivisions. -/
 open scoped Classical
@@ -15,7 +13,6 @@ theorem cubeSquareSubdivision_filter_top (d c : QCube A) (v w : V) (hne : v ≠ 
     (cubeSquareSubdivision d v w hne hs).filter
       (fun t : (strictOrderCx (QCube A)).F => t.1.2.2 = c) =
       if d = c then cubeSquareSubdivision d v w hne hs else 0 := by
-  classical
   by_cases hdc : d = c
   · rw [if_pos hdc]
     apply (Finsupp.filter_eq_self_iff _ _).mpr

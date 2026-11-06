@@ -1,4 +1,3 @@
-module
-public import RequestProject.OrderUniversalDeckChains
-public import RequestProject.OrderUniversalChainNormalization
-public import RequestProject.PresUniversalRelatorDeck
+import RequestProject.OrderUniversalDeckChains
+import RequestProject.OrderUniversalChainNormalization
+import RequestProject.PresUniversalRelatorDeck

@@ -1,29 +1,25 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CombPi1
-
-@[expose] public section
+import RequestProject.CombPi1
 
 namespace FiniteChains.Comb
-universe u
 
-section Inverse
+section
 
 /-- The two-sided inverse supplied by `Function.surjInv` for a bijection. -/
-theorem surjInv_apply_apply {α β : Type u} {f : α → β} (hf : Function.Bijective f)
-    (x : α) : Function.surjInv hf.2 (f x) = x :=
-  hf.1 (Function.surjInv_eq hf.2 (f x))
+abbrev surjInv_apply_apply {α β : Type u} {f : α → β} (hf : Function.Bijective f)
+    (x : α)  :=
+  hf.left (Function.surjInv_eq hf.right (f x))
 
 variable {L E : Complex2.{u}} (ι : Hom L E)
 variable (hV : Function.Bijective ι.onV) (hE : Function.Bijective ι.onE)
   (hF : Function.Bijective ι.onF)
 
-theorem map_surjInv_map (q : List (L.E × Bool)) :
+variable (q : List (L.E × Bool))
+theorem map_surjInv_map  :
     ((q.map fun eb => (ι.onE eb.1, eb.2)).map
       fun eb => (Function.surjInv hE.2 eb.1, eb.2)) = q := by
-  induction q with
-  | nil => rfl
-  | cons a t ih => simp [ih, surjInv_apply_apply hE]
+  aesop (add simp [surjInv_apply_apply])
 
 /-- The inverse of a cellular map which is bijective on cells. -/
 noncomputable def homInv : Hom E L where
@@ -48,8 +44,7 @@ noncomputable def homInv : Hom E L where
     rw [surjInv_apply_apply hF, ι.att_onF]
     exact (map_surjInv_map ι hE (L.att f')).symm
 
-@[simp] theorem homInv_onV_apply (y : E.V) : ι.onV ((homInv ι hV hE hF).onV y) = y :=
-  Function.surjInv_eq hV.2 y
+
 
 @[simp] theorem homInv_onE_apply (e : E.E) : ι.onE ((homInv ι hV hE hF).onE e) = e :=
   Function.surjInv_eq hE.2 e
@@ -66,10 +61,10 @@ noncomputable def homInv : Hom E L where
 @[simp] theorem homInv_onF_comp (f : L.F) : (homInv ι hV hE hF).onF (ι.onF f) = f :=
   surjInv_apply_apply hF f
 
-theorem mapPath_homInv (q : List (L.E × Bool)) :
+theorem mapPath_homInv  :
     mapPath (homInv ι hV hE hF) (mapPath ι q) = q :=
   map_surjInv_map ι hE q
 
-end Inverse
+end
 
 end FiniteChains.Comb

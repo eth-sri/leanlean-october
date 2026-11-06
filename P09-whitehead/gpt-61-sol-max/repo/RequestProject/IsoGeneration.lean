@@ -1,3 +1,2 @@
-module
-public import RequestProject.CombCellularIso
-public import RequestProject.MapChainDescent
+import RequestProject.CombCellularIso
+import RequestProject.MapChainDescent

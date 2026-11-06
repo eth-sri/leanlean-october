@@ -1,3 +1,2 @@
-module
-public import RequestProject.PosetCoverEdgeFibreEquiv
-public import RequestProject.RoseCoverGeneratorEquiv
+import RequestProject.PosetCoverEdgeFibreEquiv
+import RequestProject.RoseCoverGeneratorEquiv

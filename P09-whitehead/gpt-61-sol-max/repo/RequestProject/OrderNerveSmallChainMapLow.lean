@@ -1,36 +1,32 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveSmallChainBasis
-public import RequestProject.NerveDegree
-
-@[expose] public section
+import RequestProject.OrderNerveSmallChainBasis
+import RequestProject.NerveDegree
 
 namespace FiniteChains.Comb
 open TopologicalSingular SingularSubdivision
-open scoped Classical
 
-noncomputable def orderSmallChosenVertex {P : Type} [PartialOrder P] {n : ℕ}
-    (σ : OrderSmallSimplex P n) : P := σ.property.choose
 
-theorem orderSmallChosenVertex_mem {P : Type} [PartialOrder P] {n : ℕ}
-    (σ : OrderSmallSimplex P n) :
-    orderSmallChosenVertex σ ∈ orderNerveSingularCarrier σ.val :=
+variable {P : Type}
+noncomputable def orderSmallChosenVertex  [PartialOrder P] {n : ℕ}
+    (σ : OrderSmallSimplex P n)  := σ.property.choose
+
+abbrev orderSmallChosenVertex_mem  [PartialOrder P] {n : ℕ}
+    (σ : OrderSmallSimplex P n)  :=
   orderNerveSingularStarIndices_subset_carrier σ.val σ.property.choose_spec
 
 /-- The comparison begins by choosing a vertex of a star containing each point. -/
-noncomputable def orderSmallToNerve0 {P : Type} [PartialOrder P] :
-    smallChains (orderNerveRealizationOpenStar P) 0 →ₗ[ℤ] Nerve.Ch P :=
+noncomputable def orderSmallToNerve0  [PartialOrder P]  :=
   (Finsupp.linearCombination ℤ (fun σ : OrderSmallSimplex P 0 =>
     FreeAbelianGroup.of [orderSmallChosenVertex σ])).comp (orderSmallChainEquiv P 0).toLinearMap
 
-theorem orderSmallToNerve0_single {P : Type} [PartialOrder P]
+theorem orderSmallToNerve0_single  [PartialOrder P]
     (σ : OrderSmallSimplex P 0) (r : ℤ) :
     orderSmallToNerve0 (orderSmallSingle σ r) = r • FreeAbelianGroup.of [orderSmallChosenVertex σ] := by
   rw [← orderSmallChainEquiv_symm_single]
-  simp only [orderSmallToNerve0, LinearMap.comp_apply, LinearEquiv.coe_coe,
-    LinearEquiv.apply_symm_apply, Finsupp.linearCombination_single]
+  simp [orderSmallToNerve0]
 
-theorem orderSmallToNerve0_single_carrier {P : Type} [PartialOrder P]
+theorem orderSmallToNerve0_single_carrier  [PartialOrder P]
     (σ : OrderSmallSimplex P 0) :
     orderSmallToNerve0 (orderSmallSingle σ 1) ∈ Nerve.IncOn (orderNerveSingularCarrier σ.val) := by
   rw [orderSmallToNerve0_single, one_smul]
@@ -40,7 +36,7 @@ theorem orderSmallToNerve0_single_carrier {P : Type} [PartialOrder P]
   rw [hp']
   exact orderSmallChosenVertex_mem σ
 
-theorem orderSmallToNerve0_length {P : Type} [PartialOrder P]
+theorem orderSmallToNerve0_length  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 0) :
     Nerve.lengthProjection 1 (orderSmallToNerve0 c) = orderSmallToNerve0 c := by
   have he : (Nerve.lengthProjection 1).toIntLinearMap.comp orderSmallToNerve0 =
@@ -50,7 +46,7 @@ theorem orderSmallToNerve0_length {P : Type} [PartialOrder P]
     simp [orderSmallToNerve0_single]
   exact DFunLike.congr_fun he c
 
-theorem orderSmallToNerve0_boundary {P : Type} [PartialOrder P]
+theorem orderSmallToNerve0_boundary  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 0) :
     Nerve.bdry (orderSmallToNerve0 c) = augmentation c.val • FreeAbelianGroup.of ([] : List P) := by
   have he : Nerve.bdry.toIntLinearMap.comp orderSmallToNerve0 =
@@ -66,7 +62,7 @@ theorem orderSmallToNerve0_boundary {P : Type} [PartialOrder P]
 
 /-- Each small one-simplex has an actual nerve filling of its already assigned
 endpoint boundary, supported in its own carrier. -/
-theorem orderSmallOneFill_exists {P : Type} [PartialOrder P]
+theorem orderSmallOneFill_exists  [PartialOrder P]
     (σ : OrderSmallSimplex P 1) :
     ∃ b : Nerve.Ch P, b ∈ Nerve.IncOn (orderNerveSingularCarrier σ.val) ∧
       Nerve.lengthProjection 2 b = b ∧ Nerve.bdry b =
@@ -92,22 +88,20 @@ theorem orderSmallOneFill_exists {P : Type} [PartialOrder P]
   rw [← Nerve.lengthProjection_bdry, he]
   exact orderSmallToNerve0_length _
 
-noncomputable def orderSmallOneFill {P : Type} [PartialOrder P]
-    (σ : OrderSmallSimplex P 1) : Nerve.Ch P := (orderSmallOneFill_exists σ).choose
+noncomputable def orderSmallOneFill  [PartialOrder P]
+    (σ : OrderSmallSimplex P 1)  := (orderSmallOneFill_exists σ).choose
 
-noncomputable def orderSmallToNerve1 {P : Type} [PartialOrder P] :
-    smallChains (orderNerveRealizationOpenStar P) 1 →ₗ[ℤ] Nerve.Ch P :=
+noncomputable def orderSmallToNerve1  [PartialOrder P]  :=
   (Finsupp.linearCombination ℤ orderSmallOneFill).comp (orderSmallChainEquiv P 1).toLinearMap
 
-theorem orderSmallToNerve1_single {P : Type} [PartialOrder P]
+theorem orderSmallToNerve1_single  [PartialOrder P]
     (σ : OrderSmallSimplex P 1) (r : ℤ) :
     orderSmallToNerve1 (orderSmallSingle σ r) = r • orderSmallOneFill σ := by
   rw [← orderSmallChainEquiv_symm_single]
-  simp only [orderSmallToNerve1, LinearMap.comp_apply, LinearEquiv.coe_coe,
-    LinearEquiv.apply_symm_apply, Finsupp.linearCombination_single]
+  simp [orderSmallToNerve1]
 
 /-- The constructed low-degree map commutes with the actual singular differential. -/
-theorem orderSmallToNerve1_boundary {P : Type} [PartialOrder P]
+theorem orderSmallToNerve1_boundary  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 1) :
     Nerve.bdry (orderSmallToNerve1 c) =
       orderSmallToNerve0 (smallBoundary (orderNerveRealizationOpenStar P) 0 c) := by

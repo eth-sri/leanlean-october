@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.AttachmentBaseChange
-public import RequestProject.CylinderBoundaryHomotopyCorrection
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.AttachmentBaseChange
+import RequestProject.CylinderBoundaryHomotopyCorrection
 
 /-! Cancelling a homotopy of attaching maps followed by its reverse. The
 boundary contraction is explicit; full-cylinder extension makes the disk
@@ -16,17 +14,9 @@ open scoped unitInterval Topology Classical
 
 def backtrackTime (t : I) : I :=
   ⟨min (2 * (t : ℝ)) (2 - 2 * (t : ℝ)), by
-    have hl := t.2.1
-    have hu := t.2.2
-    constructor
-    · apply le_min <;> linarith
-    · rcases le_total (t : ℝ) (1 / 2) with h | h
-      · exact (min_le_left _ _).trans (by linarith)
-      · exact (min_le_right _ _).trans (by linarith)⟩
+    grind⟩
 
-theorem backtrackTime_continuous : Continuous backtrackTime := by
-  unfold backtrackTime
-  fun_prop
+
 
 theorem backtrackTime_zero : backtrackTime 0 = 0 := by
   apply Subtype.ext
@@ -36,7 +26,6 @@ theorem backtrackTime_one : backtrackTime 1 = 0 := by
   apply Subtype.ext
   norm_num [backtrackTime]
 
-universe u
 variable {D P : Type u} [TopologicalSpace D] [TopologicalSpace P]
 
 /-- The composite of the two actual collar maps is homotopic to the
@@ -59,9 +48,9 @@ theorem attachingBacktrack_homotopic_id (S : Set D) (hS : IsClosed S)
     (hBcell : ∀ d, B (cell a₀ Subtype.val d) = L₁ (1, d)) :
     (C.comp B).Homotopic (ContinuousMap.id (Space a₀ Subtype.val)) := by
   let f₀ : C(D, Space a₀ Subtype.val) := ⟨cell a₀ Subtype.val, cell_continuous _ _⟩
-  let fm : C(D, Space a₀ Subtype.val) :=
+  let fm  :=
     C.comp ⟨cell a₁ Subtype.val, cell_continuous _ _⟩
-  let f₁ : C(D, Space a₀ Subtype.val) := (C.comp B).comp f₀
+  let f₁  := (C.comp B).comp f₀
   let F₀ : f₀.Homotopy fm := {
     toContinuousMap := L₀
     map_zero_left := hL₀zero
@@ -70,7 +59,7 @@ theorem attachingBacktrack_homotopic_id (S : Set D) (hS : IsClosed S)
     toContinuousMap := C.comp L₁
     map_zero_left := fun d => congrArg C (hL₁zero d)
     map_one_left := fun d => congrArg C (hBcell d).symm }
-  let F : f₀.Homotopy f₁ := F₀.trans F₁
+  let F  := F₀.trans F₁
   have hFside (t : I) (a : S) :
       F (t, a.val) = old a₀ Subtype.val (H (backtrackTime t, a)) := by
     rw [ContinuousMap.Homotopy.trans_apply]
@@ -80,7 +69,7 @@ theorem attachingBacktrack_homotopic_id (S : Set D) (hS : IsClosed S)
       congr 2
       refine Prod.ext ?_ rfl
       apply Subtype.ext
-      change 2 * (t : ℝ) = min (2 * (t : ℝ)) (2 - 2 * (t : ℝ))
+      
       exact (min_eq_left (by linarith)).symm
     · change C (L₁ (_, a.val)) = _
       rw [hL₁side, hCold]
@@ -94,10 +83,7 @@ theorem attachingBacktrack_homotopic_id (S : Set D) (hS : IsClosed S)
   have htime : Continuous (fun sta : I × (I × S) =>
       unitInterval.symm sta.1 * backtrackTime sta.2.1) := by
     apply Continuous.subtype_mk
-    exact (continuous_subtype_val.comp
-      (unitInterval.continuous_symm.comp continuous_fst)).mul
-        (continuous_subtype_val.comp
-          (backtrackTime_continuous.comp (continuous_fst.comp continuous_snd)))
+    fun_prop
   let J : C(I × (I × S), Space a₀ Subtype.val) := {
     toFun := fun sta => old a₀ Subtype.val
       (H (unitInterval.symm sta.1 * backtrackTime sta.2.1, sta.2.2))
@@ -126,7 +112,7 @@ theorem attachingBacktrack_homotopic_id (S : Set D) (hS : IsClosed S)
     ⟨fun tp => old a₀ Subtype.val tp.2, (old_continuous _ _).comp continuous_snd⟩
   have hg : ∀ t a, HOld (t, a₀ a) = G (t, a.val) := by
     intro t a
-    change old a₀ Subtype.val (a₀ a) = G (t, a.val)
+    
     rw [G.eq_fst t a.property]
     exact (cell_boundary a₀ Subtype.val Subtype.val_injective a).symm
   let T := attachmentHomotopyPasting a₀ Subtype.val HOld G.toContinuousMap hg

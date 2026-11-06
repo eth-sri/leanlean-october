@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalCellAttachmentHausdorff
-
-@[expose] public section
+import RequestProject.ClassicalCellAttachmentHausdorff
 
 /-! The classical CW structure on an actual disk attachment. The original
 cells are retained with their original dimensions and images; all added cells
@@ -14,9 +12,6 @@ noncomputable section
 open scoped Classical
 open Set Topology Metric
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 
@@ -25,7 +20,7 @@ variable {X J : Type} [TopologicalSpace X] [Nonempty X]
 variable (n : ℕ) (r : BoundaryFamily J (Fin n → ℝ) → X) (hr : Continuous r) (x₀ : X)
 
 /-- The precise cellular condition on the attaching maps. -/
-def FiniteLowerBoundary : Prop := ∀ j : J,
+def FiniteLowerBoundary  := ∀ j : J,
   ∃ I : ∀ m, Finset (RelCWComplex.cell (Set.univ : Set X) m),
     ∀ a : UnitBoundary (Fin n → ℝ),
       r ⟨j, a⟩ ∈ ⋃ (m < n) (k ∈ I m), RelCWComplex.closedCell m k
@@ -63,27 +58,18 @@ theorem attachmentCharacteristic_old_image (m : ℕ)
 theorem attachmentCharacteristic_source (m : ℕ)
     (j : AttachmentCell (X := X) (J := J) n m) :
     (attachmentCharacteristic n r hr x₀ m j).source = ball 0 1 := by
-  rcases j with j | ⟨j, h⟩
-  · exact ClosedEmbeddingCW.imageCharacteristic_source _ _ m j
-  · subst m
-    exact diskCharacteristic_source r x₀ j
+  classical aesop (add simp [FiniteChains.ClosedEmbeddingCW.imageCharacteristic_source, FiniteChains.RelativeAttachment.diskCharacteristic_source])
 
 theorem attachmentCharacteristic_continuousOn (m : ℕ)
     (j : AttachmentCell (X := X) (J := J) n m) :
     ContinuousOn (attachmentCharacteristic n r hr x₀ m j) (closedBall 0 1) := by
-  rcases j with j | ⟨j, h⟩
-  · exact ClosedEmbeddingCW.imageCharacteristic_continuousOn _ _ m j
-  · subst m
-    exact diskCharacteristic_continuousOn r x₀ j
+  classical aesop (add simp [FiniteChains.ClosedEmbeddingCW.imageCharacteristic_continuousOn, FiniteChains.RelativeAttachment.diskCharacteristic_continuousOn])
 
 theorem attachmentCharacteristic_continuousOn_symm (m : ℕ)
     (j : AttachmentCell (X := X) (J := J) n m) :
     ContinuousOn (attachmentCharacteristic n r hr x₀ m j).symm
       (attachmentCharacteristic n r hr x₀ m j).target := by
-  rcases j with j | ⟨j, h⟩
-  · exact ClosedEmbeddingCW.imageCharacteristic_continuousOn_symm _ _ m j
-  · subst m
-    exact diskCharacteristic_continuousOn_symm r x₀ j
+  classical aesop (add simp [FiniteChains.ClosedEmbeddingCW.imageCharacteristic_continuousOn_symm, FiniteChains.RelativeAttachment.diskCharacteristic_continuousOn_symm])
 
 theorem attachmentCharacteristic_pairwiseDisjoint :
     (Set.univ : Set (Σ m, AttachmentCell (X := X) (J := J) n m)).PairwiseDisjoint
@@ -98,10 +84,7 @@ theorem attachmentCharacteristic_pairwiseDisjoint :
     have he' := old_injective r (boundaryFamilyInclusion J (Fin n → ℝ)) he
     subst b
     apply Set.disjoint_left.mp (RelCWComplex.disjoint_openCell_of_ne (C := (Set.univ : Set X)) ?_) ha hb
-    intro h
-    apply hne
-    exact congrArg (fun z : Σ m, RelCWComplex.cell (Set.univ : Set X) m =>
-      (⟨z.1, Sum.inl z.2⟩ : Σ m, AttachmentCell (X := X) (J := J) n m)) h
+    aesop
   · subst k
     rw [attachmentCharacteristic_new, attachmentCharacteristic_old_image]
     apply (diskCharacteristic_disjoint_old r x₀ j).symm.mono_left
@@ -110,13 +93,7 @@ theorem attachmentCharacteristic_pairwiseDisjoint :
     rw [attachmentCharacteristic_new, attachmentCharacteristic_old_image]
     apply (diskCharacteristic_disjoint_old r x₀ i).mono_right
     exact Set.image_subset_range _ _
-  · subst m
-    subst k
-    rw [attachmentCharacteristic_new, attachmentCharacteristic_new]
-    apply diskCharacteristic_disjoint r x₀
-    intro h
-    subst j
-    exact hne rfl
+  · classical aesop (add unsafe apply [FiniteChains.RelativeAttachment.attachmentCharacteristic_new, FiniteChains.RelativeAttachment.diskCharacteristic_disjoint, rfl])
 
 theorem attachmentCharacteristic_mapsTo (hb : FiniteLowerBoundary n r)
     (m : ℕ) (j : AttachmentCell (X := X) (J := J) n m) :
@@ -137,7 +114,7 @@ theorem attachmentCharacteristic_mapsTo (hb : FiniteLowerBoundary n r)
     obtain ⟨I, hI⟩ := hb j
     refine ⟨fun k => (I k).image Sum.inl, ?_⟩
     intro x hx
-    have hx' : ‖x‖ = 1 := by simpa only [Metric.mem_sphere, dist_zero_right] using hx
+    have hx' : ‖x‖ = 1 := by simp_all
     rw [attachmentCharacteristic_new, diskCharacteristic_boundary r x₀ j x hx']
     obtain ⟨k, hk, i, hi, ha⟩ := by
       simpa only [Set.mem_iUnion] using hI ⟨x, hx'⟩
@@ -217,7 +194,7 @@ def attachmentOldSubcomplex :
     obtain ⟨m, hz⟩ := Set.mem_iUnion.mp hz
     obtain ⟨j', hz⟩ := Set.mem_iUnion.mp hz
     obtain ⟨j, hj⟩ := j'.property
-    have hj' : (j'.1 : AttachmentCell (X := X) (J := J) n m) = Sum.inl j := hj.symm
+    have hj'  := hj.symm
     rw [hj'] at hz
     change z ∈ attachmentCharacteristic n r hr x₀ m (Sum.inl j) '' ball 0 1 at hz
     rw [attachmentCharacteristic_old_image] at hz
@@ -225,7 +202,7 @@ def attachmentOldSubcomplex :
     exact ⟨y, rfl⟩
   · rintro ⟨x, rfl⟩
     have hx : x ∈ ⋃ m, ⋃ j : RelCWComplex.cell (Set.univ : Set X) m,
-        RelCWComplex.openCell m j := by rw [CWComplex.iUnion_openCell_eq_complex]; trivial
+        RelCWComplex.openCell m j := by classical simp_all [Topology.CWComplex.iUnion_openCell_eq_complex]
     obtain ⟨m, hx⟩ := Set.mem_iUnion.mp hx
     obtain ⟨j, hx⟩ := Set.mem_iUnion.mp hx
     apply Set.mem_iUnion.mpr
@@ -247,9 +224,7 @@ def attachmentOldCellEquiv (m : ℕ) :
       cases hk
   left_inv _ := rfl
   right_inv j := by
-    rcases j with ⟨j, hj⟩
-    obtain ⟨j, rfl⟩ := hj
-    rfl
+    aesop
 
 theorem attachment_old_openCell (m : ℕ) (j : RelCWComplex.cell (Set.univ : Set X) m) :
     letI := attachmentCW n r hr x₀ hb

@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CombPi1
-
-@[expose] public section
+import RequestProject.CombPi1
 
 /-!
 # Spanning trees of combinatorial two-complexes
@@ -24,10 +22,9 @@ bridge: spanning trees themselves.
   vertex the last edge of a shortest path.  No finiteness whatsoever is needed.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u
+
 
 variable {K : Complex2.{u}}
 
@@ -60,18 +57,19 @@ namespace SpanningTree
 
 variable (T : SpanningTree K)
 
+  (a : K.V)
 /-- The parent of a non-root vertex: the other endpoint of its tree edge. -/
-def parent (a : K.V) (ha : a ≠ T.root) : K.V := germTgt K.src K.tgt (T.up a ha)
+def parent  (ha : a ≠ T.root)  := germTgt K.src K.tgt (T.up a ha)
 
 theorem ht_parent {a : K.V} (ha : a ≠ T.root) : T.ht (T.parent a ha) + 1 = T.ht a :=
   T.up_ht a ha
 
-theorem isTree_up {a : K.V} (ha : a ≠ T.root) : T.isTree (T.up a ha).1 :=
+abbrev isTree_up {a : K.V} (ha : a ≠ T.root)  :=
   (T.isTree_iff _).2 ⟨a, ha, rfl⟩
 
 open Classical in
 /-- The tree path from the root to a vertex. -/
-noncomputable def treePath (T : SpanningTree K) (a : K.V) : List (K.E × Bool) :=
+noncomputable def treePath (T : SpanningTree K) (a : K.V)  :=
   if h : a = T.root then [] else
     treePath T (T.parent a h) ++ [revGerm (T.up a h)]
   termination_by T.ht a
@@ -89,13 +87,13 @@ theorem treePath_of_ne {a : K.V} (ha : a ≠ T.root) :
   simp [ha]
 
 /-- The tree path from the root to `a` is an edge path from the root to `a`. -/
-theorem treePath_isPath (a : K.V) : IsPath K.src K.tgt (T.treePath a) T.root a := by
+theorem treePath_isPath  : IsPath K.src K.tgt (T.treePath a) T.root a := by
   induction hn : T.ht a using Nat.strong_induction_on generalizing a with
   | _ n ih =>
       by_cases ha : a = T.root
       · subst ha
         simp
-      · have hp : T.ht (T.parent a ha) + 1 = T.ht a := T.ht_parent ha
+      · have hp  := T.ht_parent ha
         have hlt : T.ht (T.parent a ha) < n := by omega
         have hrest := ih _ hlt (T.parent a ha) rfl
         rw [T.treePath_of_ne ha]
@@ -107,14 +105,14 @@ theorem treePath_isPath (a : K.V) : IsPath K.src K.tgt (T.treePath a) T.root a :
         exact ⟨h1.symm, by simp [h2]⟩
 
 /-- Every edge of a tree path is a tree edge. -/
-theorem isTree_of_mem_treePath (a : K.V) {g : K.E × Bool} (hg : g ∈ T.treePath a) :
+theorem isTree_of_mem_treePath  {g : K.E × Bool} (hg : g ∈ T.treePath a) :
     T.isTree g.1 := by
   induction hn : T.ht a using Nat.strong_induction_on generalizing a g with
   | _ n ih =>
       by_cases ha : a = T.root
       · subst ha
         simp at hg
-      · have hp : T.ht (T.parent a ha) + 1 = T.ht a := T.ht_parent ha
+      · have hp  := T.ht_parent ha
         have hlt : T.ht (T.parent a ha) < n := by omega
         rw [T.treePath_of_ne ha, List.mem_append] at hg
         rcases hg with hg | hg
@@ -125,10 +123,10 @@ theorem isTree_of_mem_treePath (a : K.V) {g : K.E × Bool} (hg : g ∈ T.treePat
 
 /-! ### Existence -/
 
-section Existence
+section
 
 /-- The lengths of edge paths from a fixed vertex. -/
-def reach (K : Complex2.{u}) (r a : K.V) : Set ℕ := {n | ∃ p : List (K.E × Bool),
+def reach (K : Complex2.{u}) (r a : K.V)  := {n | ∃ p : List (K.E × Bool),
   p.length = n ∧ IsPath K.src K.tgt p r a}
 
 theorem reach_nonempty (hconn : IsConnected K) (r a : K.V) :
@@ -145,7 +143,7 @@ theorem exists_of_isConnected (hconn : IsConnected K) (r : K.V) :
     Nat.sInf_mem (reach_nonempty hconn r a)
   have hle : ∀ (a : K.V) (p : List (K.E × Bool)), IsPath K.src K.tgt p r a → d a ≤ p.length :=
     fun a p hp => Nat.sInf_le ⟨p, rfl, hp⟩
-  have hd_root : d r = 0 := Nat.le_antisymm (hle r [] rfl) (Nat.zero_le _)
+  have hd_root  := Nat.le_antisymm (hle r [] rfl) (Nat.zero_le _)
   have hd_eq_zero : ∀ a, d a = 0 → a = r := by
     intro a ha
     obtain ⟨p, hlen, hp⟩ := hmem a
@@ -157,27 +155,24 @@ theorem exists_of_isConnected (hconn : IsConnected K) (r : K.V) :
     intro a ha
     obtain ⟨p, hlen, hp⟩ := hmem a
     have hne : p ≠ [] := by
-      intro h
-      subst h
-      exact ha (hd_eq_zero a (by simpa using hlen.symm))
+      grind
     obtain ⟨q, g, rfl⟩ : ∃ (q : List (K.E × Bool)) (g : K.E × Bool), p = q ++ [g] :=
       ⟨p.dropLast, p.getLast hne, (List.dropLast_append_getLast hne).symm⟩
     obtain ⟨m, hq, hg⟩ := isPath_append_iff.1 hp
-    have hgs : germSrc K.src K.tgt g = m := hg.1.symm
+    have hgs  := hg.1.symm
     have hgt : germTgt K.src K.tgt g = a := by
       have := hg.2
       simpa using this
     refine ⟨revGerm g, by simpa using hgt, ?_⟩
-    have h1 : d m ≤ q.length := hle m q hq
+    have h1  := hle m q hq
     have h2 : d a ≤ d m + 1 := by
       obtain ⟨q', hlen', hq'⟩ := hmem m
-      have hpath : IsPath K.src K.tgt (q' ++ [g]) r a :=
+      have hpath  :=
         isPath_append_iff.mpr ⟨m, hq', hg⟩
       have := hle a _ hpath
       simpa [hlen'] using this
     have h3 : q.length + 1 = d a := by
-      simp only [List.length_append, List.length_singleton] at hlen
-      omega
+      grind
     have hmt : germTgt K.src K.tgt (revGerm g) = m := by simpa using hgs
     rw [hmt]
     omega
@@ -192,8 +187,8 @@ theorem exists_of_isConnected (hconn : IsConnected K) (r : K.V) :
            up_ht := hupht
            isTree_iff := fun _ => Iff.rfl }, rfl⟩
 
-end Existence
+end
 
-end SpanningTree
-end Comb
-end FiniteChains
+end FiniteChains.Comb.SpanningTree
+
+

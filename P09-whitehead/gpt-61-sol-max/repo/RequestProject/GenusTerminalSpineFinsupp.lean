@@ -1,14 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusTerminalSpineCockcroft
-public import RequestProject.CoreSignedCollapseFinsupp
-public import RequestProject.WedgeCockcroftFinsupp
-public import RequestProject.TerminalFinsupp
-public import RequestProject.CockcroftRelatorReindexFinsupp
-public import RequestProject.GenusStructuralFinsupp
-public import RequestProject.RelativeNormalizedWords
-
-@[expose] public section
+import RequestProject.GenusTerminalSpineCockcroft
+import RequestProject.CoreSignedCollapseFinsupp
+import RequestProject.WedgeCockcroftFinsupp
+import RequestProject.TerminalFinsupp
+import RequestProject.CockcroftRelatorReindexFinsupp
+import RequestProject.GenusStructuralFinsupp
+import RequestProject.RelativeNormalizedWords
 
 /-! The terminal fixed-core conclusions for arbitrary presentations and block
 families.  No generator, relator, core or family is assumed finite.  The actual
@@ -31,7 +29,7 @@ theorem terminalSpineCore_expMatrix_cap (c : (M ⊕ K) →₀ ℤ) (k : K) :
     expMatrix (terminalSpineCore (K := K) core) c (Sum.inr k) = c (Sum.inr k) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]
+  | add c d hc hd => simp_all
   | single j n =>
       cases j with
       | inl m =>
@@ -50,10 +48,12 @@ theorem terminalSpineCore_expMatrix_cap (c : (M ⊕ K) →₀ ℤ) (k : K) :
           simp [expMatrix, terminalSpineCore, corePres, expVec_apply, expSum_of,
             Finsupp.single_apply, eq_comm, mul_ite]
 
+variable (hcore : Function.Injective (expMatrix core))
+include hcore in
 /-- Adding arbitrarily many stable generator-cap pairs preserves the genuine
 supported exponent-sum injection of the original core. -/
 theorem terminalSpineCore_expMatrix_injective
-    (hcore : Function.Injective (expMatrix core)) :
+     :
     Function.Injective (expMatrix (terminalSpineCore (K := K) core)) := by
   intro c d h
   have hz : expMatrix (terminalSpineCore (K := K) core) (c - d) = 0 := by
@@ -64,22 +64,25 @@ theorem terminalSpineCore_expMatrix_injective
   exact sub_eq_zero.mp (corePres_expMatrix_kernel_reflect core
     (fun k : K => FreeGroup.of (Sum.inr k)) hcore (c - d) hz hcap)
 
-theorem terminalSpineWedge_fsIsCockcroft : FSIsCockcroft (terminalSpineWedge q) :=
+abbrev terminalSpineWedge_fsIsCockcroft  :=
   fsIsCockcroft_sigmaWedgeRel (fun s => cappedSpinePresentation (q s))
     (fun s => cappedSpinePresentation_isCockcroft (q s))
 
-theorem terminalSpine_fsIsCockcroft (hcore : Function.Injective (expMatrix core)) :
-    FSIsCockcroft (terminalSpinePres core q u) :=
-  CoreSignedCollapse.fsIsCockcroft (terminalSpineCore (K := K) core) (terminalSpineExtra q u)
-    (terminalSpineWedge q) (terminalSpineReverse q) (terminalSpine_collapse_word q u)
-    (terminalSpineCore_expMatrix_injective core hcore) (terminalSpineWedge_fsIsCockcroft q)
+include hcore in
+abbrev terminalSpine_fsIsCockcroft   :=
+  FiniteChains.CoreSignedCollapse.fsIsCockcroft (FiniteChains.Davis.Genus.terminalSpineCore core)
+    (FiniteChains.Davis.Genus.terminalSpineExtra q u) (FiniteChains.Davis.Genus.terminalSpineWedge q)
+    (FiniteChains.Davis.Genus.terminalSpineReverse q) (FiniteChains.Davis.Genus.terminalSpine_collapse_word q u)
+    (FiniteChains.Davis.Genus.terminalSpineCore_expMatrix_injective core hcore)
+    (FiniteChains.Davis.Genus.terminalSpineWedge_fsIsCockcroft q)
 
+include hcore in
 /-- Actual addRels ordering, with no finiteness assumptions. -/
-theorem terminalSpineQ_fsIsCockcroft (hcore : Function.Injective (expMatrix core)) :
-    FSIsCockcroft (terminalSpineQ core q u) :=
-  RelatorReindex.fsIsCockcroft_of (terminalSpineQ core q u) (terminalSpinePres core q u)
-    terminalCapReindex (terminalSpineQ_reindex core q u)
-    (terminalSpine_fsIsCockcroft core q u hcore)
+abbrev terminalSpineQ_fsIsCockcroft   :=
+  FiniteChains.RelatorReindex.fsIsCockcroft_of (FiniteChains.Davis.Genus.terminalSpineQ core q u)
+    (FiniteChains.Davis.Genus.terminalSpinePres core q u) FiniteChains.Davis.Genus.terminalCapReindex
+    (FiniteChains.Davis.Genus.terminalSpineQ_reindex core q u)
+    (FiniteChains.Davis.Genus.terminalSpine_fsIsCockcroft core q u hcore)
 
 theorem actualTerminalSpineFS_isCockcroft
     (ρ : M ⊕ S → FreeGroup (A ⊕ K))
@@ -116,10 +119,7 @@ theorem terminalStructuralMapFS_generates : FSGenerates (terminalStructuralMapFS
     (finiteSpineFamilyStructuralMap_generates ρ q u hrho) dSrc dTgt
 
 /-- The actual terminal inclusion, with supported chain modules. -/
-def actualTerminalSpineMorFS :
-    PresMorFS (substPresF ρ (familyFiniteSpineWordBlock q u))
-      (addRels (substPresF ρ (familyFiniteSpineWordBlock q u))
-        (terminalSpineCaps (A := A) (K := K) q)) :=
+def actualTerminalSpineMorFS  :=
   addRelsMorFS (substPresF ρ (familyFiniteSpineWordBlock q u))
     (terminalSpineCaps (A := A) (K := K) q)
 

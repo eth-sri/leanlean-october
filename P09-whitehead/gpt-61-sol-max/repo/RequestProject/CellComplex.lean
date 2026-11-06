@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib
-
-@[expose] public section
+import Mathlib
 
 /-!
 # Combinatorial two-complexes, their chain complexes and their covers
@@ -31,10 +29,9 @@ The definitions are the standard cellular ones:
 `Y` admits a connected acyclic regular cover.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u v
+
 
 /-! ### Edge paths -/
 
@@ -42,10 +39,10 @@ variable {V E : Type*}
 
 /-- The initial vertex of an oriented edge: `(e, true)` is `e`, `(e, false)` is `e`
 reversed. -/
-def germSrc (src tgt : E → V) (e : E × Bool) : V := if e.2 then src e.1 else tgt e.1
+def germSrc (src tgt : E → V) (e : E × Bool)  := if e.2 then src e.1 else tgt e.1
 
 /-- The terminal vertex of an oriented edge. -/
-def germTgt (src tgt : E → V) (e : E × Bool) : V := if e.2 then tgt e.1 else src e.1
+def germTgt (src tgt : E → V) (e : E × Bool)  := if e.2 then tgt e.1 else src e.1
 
 @[simp] theorem germSrc_true (src tgt : E → V) (e : E) : germSrc src tgt (e, true) = src e := rfl
 @[simp] theorem germSrc_false (src tgt : E → V) (e : E) : germSrc src tgt (e, false) = tgt e := rfl
@@ -67,9 +64,7 @@ def IsPath (src tgt : E → V) : List (E × Bool) → V → V → Prop
 
 theorem IsPath.append {src tgt : E → V} {p q : List (E × Bool)} {a b c : V}
     (hp : IsPath src tgt p a b) (hq : IsPath src tgt q b c) : IsPath src tgt (p ++ q) a c := by
-  induction p generalizing a with
-  | nil => cases hp; exact hq
-  | cons e p ih => exact ⟨hp.1, ih hp.2⟩
+  induction p generalizing a <;> simp_all
 
 /-! ### Combinatorial two-complexes -/
 
@@ -96,12 +91,12 @@ structure Complex2 : Type (u + 1) where
 variable (X : Complex2.{u})
 
 /-- The complex is path connected. -/
-def IsConnected : Prop := ∀ a b : X.V, ∃ p, IsPath X.src X.tgt p a b
+def IsConnected  := ∀ a b : X.V, ∃ p, IsPath X.src X.tgt p a b
 
 /-! ### The cellular chain complex -/
 
 /-- The one-chain carried by an edge path: the signed sum of its edges. -/
-noncomputable def pathChain (p : List (E × Bool)) : E →₀ ℤ :=
+noncomputable def pathChain (p : List (E × Bool))  :=
   (p.map (fun e => if e.2 then Finsupp.single e.1 (1 : ℤ) else -Finsupp.single e.1 (1 : ℤ))).sum
 
 @[simp] theorem pathChain_nil : pathChain ([] : List (E × Bool)) = 0 := rfl
@@ -113,12 +108,12 @@ theorem pathChain_cons (e : E × Bool) (p : List (E × Bool)) :
   simp [pathChain]
 
 /-- The first boundary `∂₁ e = tgt e - src e`. -/
-noncomputable def bdry1 : (X.E →₀ ℤ) →ₗ[ℤ] (X.V →₀ ℤ) :=
+noncomputable def bdry1  :=
   Finsupp.linearCombination ℤ (fun e => Finsupp.single (X.tgt e) (1 : ℤ)
     - Finsupp.single (X.src e) (1 : ℤ))
 
 /-- The second boundary: the signed sum of the edges of the attaching path. -/
-noncomputable def bdry2 : (X.F →₀ ℤ) →ₗ[ℤ] (X.E →₀ ℤ) :=
+noncomputable def bdry2  :=
   Finsupp.linearCombination ℤ (fun f => pathChain (X.att f))
 
 /-- The augmentation `C₀ → ℤ`. -/
@@ -157,7 +152,6 @@ theorem bdry1_pathChain_of_isPath {p : List (X.E × Bool)} {a b : X.V}
 
 /-- The chain complex condition `∂₁ ∘ ∂₂ = 0`. -/
 theorem bdry1_bdry2 (c : X.F →₀ ℤ) : bdry1 X (bdry2 X c) = 0 := by
-  classical
   induction c using Finsupp.induction_linear with
   | zero => simp
   | add c₁ c₂ h₁ h₂ => rw [map_add, map_add, h₁, h₂, add_zero]
@@ -193,11 +187,10 @@ variable {X Y : Complex2.{u}}
 
 theorem germSrc_onE (p : Hom X Y) (eb : X.E × Bool) :
     germSrc Y.src Y.tgt (p.onE eb.1, eb.2) = p.onV (germSrc X.src X.tgt eb) := by
-  obtain ⟨e, b⟩ := eb
-  cases b <;> simp [germSrc, p.src_onE, p.tgt_onE]
+  classical aesop (add simp [FiniteChains.Comb.Hom.tgt_onE, FiniteChains.Comb.Hom.src_onE, germSrc])
 
 /-- The germs of oriented edges at a vertex. -/
-def Germ (X : Complex2.{u}) (a : X.V) : Type u :=
+def Germ (X : Complex2.{u}) (a : X.V)  :=
   {eb : X.E × Bool // germSrc X.src X.tgt eb = a}
 
 /-- A cellular map sends germs at `a` to germs at the image of `a`. -/
@@ -241,5 +234,5 @@ structure IsRegular (p : Hom X Y) {Q : Type v} [Group Q] (A : DeckAction X Q) : 
   compat : ∀ q a, p.onV (A.smulV q a) = p.onV a
   simply_transitive : ∀ a b : X.V, p.onV a = p.onV b → ∃! q : Q, A.smulV q a = b
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

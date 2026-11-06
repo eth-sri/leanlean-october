@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresConeIntervals
-public import RequestProject.PosetCoverLowerInterval
-
-@[expose] public section
+import RequestProject.PresConeIntervals
+import RequestProject.PosetCoverLowerInterval
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 def RelatorCircle := {x : TCirc w // x.1 = j ∧ x.2.1 < (w j).length}
@@ -17,7 +14,7 @@ def relatorCircleToBelow (x : RelatorCircle w j) : StrictBelow (apexOf w j) :=
   ⟨iCirc w x.1, (presPos_lt_apex_iff w j _).mpr
     ⟨x.1.2.1, x.1.2.2, x.2.2, by
       rcases x with ⟨⟨j', k, t⟩, hj, hk⟩
-      change j' = j at hj
+      dsimp at hj
       subst j'
       rfl⟩⟩
 
@@ -37,8 +34,6 @@ noncomputable def relatorCircleOrderIso : RelatorCircle w j ≃o StrictBelow (ap
   toEquiv := Equiv.ofBijective (relatorCircleToBelow w j)
     ⟨relatorCircleToBelow_injective w j, relatorCircleToBelow_surjective w j⟩
   map_rel_iff' := by
-    intro a b
-    change iCirc w a.1 ≤ iCirc w b.1 ↔ a.1 ≤ b.1
     rfl
 
 end FiniteChains.PresModel

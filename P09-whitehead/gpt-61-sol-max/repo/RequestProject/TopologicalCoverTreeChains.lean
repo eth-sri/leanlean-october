@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalCoverCellChains
-public import RequestProject.RegularCoverFreshCells
-public import RequestProject.TreeChainPresentationRealization
-public import RequestProject.StrictTriangleTreeGenerator
-
-@[expose] public section
+import RequestProject.TopologicalCoverCellChains
+import RequestProject.RegularCoverFreshCells
+import RequestProject.TreeChainPresentationRealization
+import RequestProject.StrictTriangleTreeGenerator
 
 /-! Assemble all sufficiency steps after a specified initial tree-model
 comparison. The displayed comparison is the outstanding geometric input;
@@ -46,14 +44,13 @@ open Comb PresModel SpanningTree
 
 /-- Reduction of the original sufficiency direction to one actual
 homotopy equivalence for the initial strict order-complex tree model. -/
-theorem hasChain_of_original_cover_tree_comparison (K : Whitehead.TwoComplex)
+abbrev hasChain_of_original_cover_tree_comparison (K : Whitehead.TwoComplex)
     (T₀ : SpanningTree (strictOrderCx (CanonicalPos K)))
     (e₀ : ContinuousMap.HomotopyEquiv
       (ClassicalPresWordDisks (presCanonicalWords (treeRel T₀) (canonicalTreeGenerator K T₀))
         (presCanonicalWords_ne_nil (treeRel T₀) (canonicalTreeGenerator K T₀)))
       (orderNerveRealization (CanonicalPos K)))
-    (h : Whitehead.HasAcyclicRegularCover K) (n : ℕ) :
-    Whitehead.HasChain K (n + 1) false :=
+    (h : Whitehead.HasAcyclicRegularCover K) (n : ℕ)  :=
   hasChain_of_topological_cover_tree_comparison (CanonicalPos K)
     (presPos_isConnected _ (canonicalWords_ne_nil K)) K T₀ (canonicalTreeGenerator K T₀)
     (e₀.trans (originalCanonicalTwoComplexEquiv K).symm)

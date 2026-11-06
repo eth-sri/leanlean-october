@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeThreeFaceEdges
-public import RequestProject.CubicalThreeBoundaryMatrix
-
-@[expose] public section
+import RequestProject.QCubeThreeFaceEdges
+import RequestProject.CubicalThreeBoundaryMatrix
 
 /-! The indexed six-face boundary is the actual geometric cubical boundary. -/
 namespace FiniteChains.Davis
@@ -82,9 +80,6 @@ theorem qThreeFace_boundary_naturality (c : QCube A) (u v w : V)
   | zero => simp
   | add r z hr hz => simp only [map_add, hr, hz]
   | single i n =>
-      rw [Finsupp.lmapDomain_apply, Finsupp.mapDomain_single,
-        qSquareCubicalBoundary, Finsupp.linearCombination_single,
-        threeFacetBoundaryMatrix, Finsupp.linearCombination_single, map_smul,
-        qThreeFace_boundary_column c u v w huv hvw hs i]
+      simp_all [qSquareCubicalBoundary, threeFacetBoundaryMatrix, qThreeFace_boundary_column]
 
 end FiniteChains.Davis

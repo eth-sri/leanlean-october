@@ -1,14 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresWordEmbeddingRelators
-public import RequestProject.PresWordEmbeddingCocycle
-public import RequestProject.PresUniversalRelatorGroupCoordinates
-public import RequestProject.PresUniversalRelatorDeck
-public import RequestProject.PresPosetCoverDimension
-public import RequestProject.OrderUniversalMap
-public import RequestProject.UnivCoverIncl
-
-@[expose] public section
+import RequestProject.PresWordEmbeddingRelators
+import RequestProject.PresWordEmbeddingCocycle
+import RequestProject.PresUniversalRelatorGroupCoordinates
+import RequestProject.PresUniversalRelatorDeck
+import RequestProject.PresPosetCoverDimension
+import RequestProject.OrderUniversalMap
+import RequestProject.UnivCoverIncl
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
@@ -20,8 +18,7 @@ variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
 noncomputable def universalMap : UOrder (PresPos w) (ptBase w) →o UOrder (PresPos v) (ptBase v) :=
   uOrderMap h.posMap h.posMap.monotone (ptBase w)
 
-theorem universalMap_end (p : UOrder (PresPos w) (ptBase w)) :
-    uOrderEnd (h.universalMap p) = h.posMap (uOrderEnd p) :=
+abbrev universalMap_end (p : UOrder (PresPos w) (ptBase w))  :=
   uOrderMap_end h.posMap h.posMap.monotone (ptBase w) p
 
 /-- Comparable distinct vertices remain distinct, even when the lift identifies
@@ -30,13 +27,11 @@ theorem universalMap_strictMono : StrictMono h.universalMap := by
   intro p q hpq
   apply lt_of_le_of_ne (h.universalMap.monotone hpq.le)
   intro he
-  have hh : h.posMap (uOrderEnd p) = h.posMap (uOrderEnd q) :=
+  have hh  :=
     (h.universalMap_end p).symm.trans ((congrArg uOrderEnd he).trans (h.universalMap_end q))
   exact (ne_of_lt (uOrderEnd_strictMono hpq)) (h.posMap.injective hh)
 
-noncomputable def universalRelatorMap :
-    PresCoverRelator w (uOrderEnd (P := PresPos w) (a := ptBase w)) →
-      PresCoverRelator v (uOrderEnd (P := PresPos v) (a := ptBase v)) :=
+noncomputable def universalRelatorMap  :=
   h.coverRelatorMap uOrderEnd uOrderEnd h.universalMap h.universalMap_end
 
 theorem universalRelatorChain_map (hw : ∀ j, 0 < (w j).length) (hv : ∀ k, 0 < (v k).length)
@@ -59,23 +54,22 @@ theorem relator_compat (j : J) : σ (h.cell j) = FreeGroup.map h.gen (ρ j) := b
   rw [hw]
 
 /-- The actual induced homomorphism of presented groups. -/
-def groupHom : PresGroup ρ →* PresGroup σ :=
+def groupHom  :=
   presInclGroupHom h.gen ρ σ h.cell (h.relator_compat ρ σ hw hv)
 
-@[simp] theorem groupHom_mk (x : FreeGroup α) :
-    h.groupHom ρ σ hw hv (QuotientGroup.mk x) = QuotientGroup.mk (FreeGroup.map h.gen x) := rfl
+
 
 /-- The lifted path class has the actual induced group coordinate. -/
-theorem universal_reading_map (p : UOrder (PresPos w) (ptBase w)) :
-    (presGroupCocycle σ v hv).readVertex (ptBase v) (h.universalMap p) =
-      h.groupHom ρ σ hw hv ((presGroupCocycle ρ w hw).readVertex (ptBase w) p) :=
+abbrev universal_reading_map (p : UOrder (PresPos w) (ptBase w))  :=
   h.readVertex_map (fun i => (QuotientGroup.mk (FreeGroup.of i) : PresGroup ρ))
     (fun i => (QuotientGroup.mk (FreeGroup.of i) : PresGroup σ)) (h.groupHom ρ σ hw hv)
     (fun _ => rfl) (presGroup_wordVal_eq_one ρ w hw) (presGroup_wordVal_eq_one σ v hv)
     (ptBase w) p
 
-theorem universalRelatorGroupEquiv_map (hwp : ∀ j, 0 < (w j).length)
-    (hvp : ∀ j, 0 < (v j).length)
+variable (hwp : ∀ j, 0 < (w j).length)
+variable (hvp : ∀ j, 0 < (v j).length)
+theorem universalRelatorGroupEquiv_map 
+    
     (p : PresCoverRelator w (uOrderEnd (P := PresPos w) (a := ptBase w))) :
     presUniversalRelatorGroupEquiv σ v hv hvp (h.universalRelatorMap p) =
       Prod.map (h.groupHom ρ σ hw hv) h.cell (presUniversalRelatorGroupEquiv ρ w hw hwp p) := by
@@ -85,8 +79,8 @@ theorem universalRelatorGroupEquiv_map (hwp : ∀ j, 0 < (w j).length)
 
 /-- The full finite relator-coordinate chains commute with the actual lift,
 including summation over group elements identified by the induced homomorphism. -/
-theorem universalRelatorGroupChainEquiv_map (hwp : ∀ j, 0 < (w j).length)
-    (hvp : ∀ j, 0 < (v j).length)
+theorem universalRelatorGroupChainEquiv_map 
+    
     (c : PresCoverRelator w (uOrderEnd (P := PresPos w) (a := ptBase w)) →₀ ℤ) :
     presUniversalRelatorGroupChainEquiv σ v hv hvp (Finsupp.mapDomain h.universalRelatorMap c) =
       Finsupp.mapDomain (Prod.map (h.groupHom ρ σ hw hv) h.cell)
@@ -94,14 +88,12 @@ theorem universalRelatorGroupChainEquiv_map (hwp : ∀ j, 0 < (w j).length)
   classical
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [Finsupp.mapDomain_add, map_add, hc, hd]
+  | add c d hc hd => simp_all [Finsupp.mapDomain_add]
   | single p n =>
-    rw [Finsupp.mapDomain_single]
-    simp only [presUniversalRelatorGroupChainEquiv, Finsupp.domLCongr_single,
-      Finsupp.mapDomain_single, h.universalRelatorGroupEquiv_map ρ σ hw hv hwp hvp]
+    classical simp_all [FiniteChains.relSub_normal, FiniteChains.PresModel.PresWordEmbedding.universalRelatorGroupEquiv_map, presUniversalRelatorGroupChainEquiv]
 
-theorem universalRelatorChain_group_map (hwp : ∀ j, 0 < (w j).length)
-    (hvp : ∀ j, 0 < (v j).length)
+theorem universalRelatorChain_group_map 
+    
     (c : StrictOrdTri (UOrder (PresPos w) (ptBase w)) →₀ ℤ) :
     presUniversalRelatorGroupChainEquiv σ v hv hvp
       (presCoverRelatorChain v uOrderEnd (presUniversalEnd_isPosetCover v hvp) hvp

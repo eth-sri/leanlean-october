@@ -1,9 +1,5 @@
-module
-
-public import Mathlib.Topology.Homeomorph.Defs
-public import Mathlib.Topology.ContinuousMap.Basic
-
-@[expose] public section
+import Mathlib.Topology.Homeomorph.Defs
+import Mathlib.Topology.ContinuousMap.Basic
 
 /-! The bundled continuous map underlying a homeomorphism. -/
 

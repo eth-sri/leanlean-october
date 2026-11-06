@@ -1,39 +1,34 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.StrictTopLinkCoefficients
-public import RequestProject.RelatorCircleBoundary
-public import RequestProject.PresConeLinkOrderIso
-public import RequestProject.PresCoverConeLinks
-public import RequestProject.CellularChainMapZero
+import RequestProject.StrictTopLinkCoefficients
+import RequestProject.RelatorCircleBoundary
+import RequestProject.PresConeLinkOrderIso
+import RequestProject.PresCoverConeLinks
+import RequestProject.CellularChainMapZero
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → PresPos w) (hf : IsPosetCover f) (v : P) (j : J) (hv : f v = apexOf w j)
 
 /-- The actual attaching circle is the lower interval of each lifted relator apex. -/
-noncomputable def presCoverConeCircleOrderIso : StrictBelow v ≃o RelatorCircle w j :=
+noncomputable def presCoverConeCircleOrderIso  :=
   (hf.lowerIntervalOrderIso v).trans
     ((strictBelowCongr hv).trans (relatorCircleOrderIso w j).symm)
 
-noncomputable def presCoverConeCircleHom :
-    Hom (strictOrderCx (StrictBelow v)) (strictOrderCx (RelatorCircle w j)) :=
+noncomputable def presCoverConeCircleHom  :=
   strictOrderCxMap (presCoverConeCircleOrderIso w f hf v j hv)
     (presCoverConeCircleOrderIso w f hf v j hv).strictMono
 
-noncomputable def presCoverConeCircleChain (c : StrictOrdTri P →₀ ℤ) :
+variable (c : StrictOrdTri P →₀ ℤ)
+noncomputable def presCoverConeCircleChain  :
     StrictOrdEdge (RelatorCircle w j) →₀ ℤ :=
   chain1 (presCoverConeCircleHom w f hf v j hv) (strictTopLinkChain v c)
 
 /-- Actual presentation-cover two-cycles yield actual finite attaching-circle one-cycles. -/
-theorem presCoverConeCircleChain_cycle (c : StrictOrdTri P →₀ ℤ)
+theorem presCoverConeCircleChain_cycle 
     (hc : Comb.bdry2 (strictOrderCx P) c = 0) :
     Comb.bdry1 (strictOrderCx (RelatorCircle w j))
       (presCoverConeCircleChain w f hf v j hv c) = 0 := by
@@ -42,12 +37,11 @@ theorem presCoverConeCircleChain_cycle (c : StrictOrdTri P →₀ ℤ)
   rw [bdry1_chain1, presCover_cone_link_cycle w f hf v j hv c hc, map_zero]
 
 /-- The transported circle coefficient is the coefficient of the genuine lifted triangle. -/
-theorem presCoverConeCircleChain_apply (c : StrictOrdTri P →₀ ℤ)
+theorem presCoverConeCircleChain_apply 
     (e : StrictOrdEdge (StrictBelow v)) :
     presCoverConeCircleChain w f hf v j hv c
       ((presCoverConeCircleHom w f hf v j hv).onE e) =
-        c (strictConeTriangle v e) := by
-  exact (strictOrderCxMap_chain1_apply
+        c (strictConeTriangle v e) := (strictOrderCxMap_chain1_apply
     (presCoverConeCircleOrderIso w f hf v j hv)
     (presCoverConeCircleOrderIso w f hf v j hv).strictMono
     (presCoverConeCircleOrderIso w f hf v j hv).injective
@@ -72,6 +66,6 @@ theorem presCoverConeTriangles_eq_of_first_coefficient
     (presCoverConeCircleChain_cycle w f hf v j hv d hd) hpos he
   have heq := congrArg
     (fun z => z ((presCoverConeCircleHom w f hf v j hv).onE e)) hcd
-  simpa only [presCoverConeCircleChain_apply] using heq
+  simpa [presCoverConeCircleChain_apply] using heq
 
 end FiniteChains.PresModel

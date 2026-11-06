@@ -1,15 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalCellAttachmentMaps
-
-@[expose] public section
+import RequestProject.ClassicalCellAttachmentMaps
 
 /-! Partition an arbitrary disk family and attach its two parts successively.
 The homeomorphism is constructed directly from both quotient universal maps. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
@@ -35,8 +31,7 @@ def partitionDiskForget (s : J → Prop) :
   continuous_toFun := continuous_sigma (fun j =>
     continuous_sigmaMk (σ := fun _ : J => ClosedUnitBall E) (i := j.val))
 
-def partitionFirstInto :
-    C(DiskAttachment (partitionFirstAttaching r p), DiskAttachment r) :=
+def partitionFirstInto  :=
   desc (partitionFirstAttaching r p) (boundaryFamilyInclusion {j // p j} E)
     ⟨old r (boundaryFamilyInclusion J E), old_continuous _ _⟩
     ((⟨cell r (boundaryFamilyInclusion J E), cell_continuous _ _⟩ : C(DiskFamily J E, _)).comp
@@ -44,7 +39,7 @@ def partitionFirstInto :
     (fun a => (cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J E).injective
       ⟨a.1.val, a.2⟩).symm)
 
-def partitionFlatten : C(PartitionAttachment r p, DiskAttachment r) :=
+def partitionFlatten  :=
   desc (partitionRestAttaching r p) (boundaryFamilyInclusion {j // ¬p j} E)
     (partitionFirstInto r p)
     ((⟨cell r (boundaryFamilyInclusion J E), cell_continuous _ _⟩ : C(DiskFamily J E, _)).comp
@@ -52,11 +47,7 @@ def partitionFlatten : C(PartitionAttachment r p, DiskAttachment r) :=
     (fun a => (cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J E).injective
       ⟨a.1.val, a.2⟩).symm)
 
-@[simp] theorem partitionFlatten_old (x : X) :
-    partitionFlatten r p
-      (old (partitionRestAttaching r p) (boundaryFamilyInclusion {j // ¬p j} E)
-        (old (partitionFirstAttaching r p) (boundaryFamilyInclusion {j // p j} E) x)) =
-      old r (boundaryFamilyInclusion J E) x := rfl
+
 
 @[simp] theorem partitionFlatten_firstCell (d : DiskFamily {j // p j} E) :
     partitionFlatten r p
@@ -69,7 +60,8 @@ def partitionFlatten : C(PartitionAttachment r p, DiskAttachment r) :=
   rw [desc_cell]
   rfl
 
-@[simp] theorem partitionFlatten_restCell (d : DiskFamily {j // ¬p j} E) :
+variable (d : DiskFamily {j // ¬p j} E)
+@[simp] theorem partitionFlatten_restCell  :
     partitionFlatten r p
       (cell (partitionRestAttaching r p) (boundaryFamilyInclusion {j // ¬p j} E) d) =
       cell r (boundaryFamilyInclusion J E) ⟨d.1.val, d.2⟩ := by
@@ -111,7 +103,7 @@ theorem partitionCellMap_boundary (a : BoundaryFamily J E) :
       (boundaryFamilyInclusion_isClosedEmbedding {j // ¬p j} E).injective
       ⟨⟨j, hj⟩, a⟩).symm
 
-def partitionRegroup : C(DiskAttachment r, PartitionAttachment r p) :=
+def partitionRegroup  :=
   desc r (boundaryFamilyInclusion J E)
     ((⟨old (partitionRestAttaching r p) (boundaryFamilyInclusion {j // ¬p j} E),
       old_continuous _ _⟩ : C(DiskAttachment (partitionFirstAttaching r p), _)).comp
@@ -119,10 +111,7 @@ def partitionRegroup : C(DiskAttachment r, PartitionAttachment r p) :=
           old_continuous _ _⟩)
     (partitionCellMap r p) (partitionCellMap_boundary r p)
 
-@[simp] theorem partitionRegroup_old (x : X) :
-    partitionRegroup r p (old r (boundaryFamilyInclusion J E) x) =
-      old (partitionRestAttaching r p) (boundaryFamilyInclusion {j // ¬p j} E)
-        (old (partitionFirstAttaching r p) (boundaryFamilyInclusion {j // p j} E) x) := rfl
+
 
 @[simp] theorem partitionRegroup_firstCell (d : DiskFamily {j // p j} E) :
     partitionRegroup r p (cell r (boundaryFamilyInclusion J E) ⟨d.1.val, d.2⟩) =
@@ -132,7 +121,7 @@ def partitionRegroup : C(DiskAttachment r, PartitionAttachment r p) :=
   rw [desc_cell]
   simp only [partitionCellMap, ContinuousMap.coe_mk, dif_pos d.1.property]
 
-@[simp] theorem partitionRegroup_restCell (d : DiskFamily {j // ¬p j} E) :
+@[simp] theorem partitionRegroup_restCell  :
     partitionRegroup r p (cell r (boundaryFamilyInclusion J E) ⟨d.1.val, d.2⟩) =
       cell (partitionRestAttaching r p) (boundaryFamilyInclusion {j // ¬p j} E) d := by
   change desc _ _ _ _ _ (cell _ _ _) = _

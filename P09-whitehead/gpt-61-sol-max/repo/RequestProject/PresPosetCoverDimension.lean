@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresPosetDimension
-public import RequestProject.OrderUniversalPosetCells
-
-@[expose] public section
+import RequestProject.PresPosetDimension
+import RequestProject.OrderUniversalPosetCells
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
 /-- The genuine universal-cover endpoint strictly raises comparable vertices. -/
@@ -20,11 +17,11 @@ end FiniteChains.Comb
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u}
 
+  (w : J → List (α × Bool))
 /-- Dimension two persists in the actual path-class universal cover. -/
-theorem presPos_cover_strict_three_flags_empty (w : J → List (α × Bool)) (a : PresPos w) :
+theorem presPos_cover_strict_three_flags_empty  (a : PresPos w) :
     IsEmpty (StrictOrdTet (UOrder (PresPos w) a)) := by
   refine ⟨fun t => ?_⟩
   have h01 := presPosDimension_strictMono w (uOrderEnd_strictMono t.2.1)
@@ -33,7 +30,7 @@ theorem presPos_cover_strict_three_flags_empty (w : J → List (α × Bool)) (a 
   have hb := presPosDimension_le_two w (uOrderEnd t.1.2.2.2)
   omega
 
-theorem presPos_cover_normalized_three_boundary_zero (w : J → List (α × Bool))
+theorem presPos_cover_normalized_three_boundary_zero 
     (a : PresPos w) (y : OrdTet (UOrder (PresPos w) a) →₀ ℤ) :
     normalizeOrdChain2 (ordBoundary3 y) = 0 := by
   haveI := presPos_cover_strict_three_flags_empty w a

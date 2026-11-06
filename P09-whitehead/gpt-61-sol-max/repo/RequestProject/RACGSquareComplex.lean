@@ -1,5 +1,4 @@
-module
-public import RequestProject.RACGCovering
-public import RequestProject.SquareComplexUniversalCover
-public import RequestProject.SquareComplexTreeCase
-public import RequestProject.MedianTransport
+import RequestProject.RACGCovering
+import RequestProject.SquareComplexUniversalCover
+import RequestProject.SquareComplexTreeCase
+import RequestProject.MedianTransport

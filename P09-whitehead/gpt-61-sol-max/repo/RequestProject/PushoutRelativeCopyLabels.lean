@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.UniversalCoverCopyLabels
-public import RequestProject.SupportedLabelChains
-public import RequestProject.CombPushout
-
-@[expose] public section
+import RequestProject.UniversalCoverCopyLabels
+import RequestProject.SupportedLabelChains
+import RequestProject.CombPushout
 
 /-! Outside K every lifted cell has exactly one L-cell label.  The labels
 below make the relative boundary block diagonal over the actual lifted
@@ -12,12 +10,10 @@ copies of L. No cycle-generation statement is assumed. Unverified source. -/
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.PushoutRelativeCopies
-universe u
 variable {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
   (hiV : Function.Injective i.onV) (hiE : Function.Injective i.onE)
   (hiF : Function.Injective i.onF) (a : L.V)
@@ -25,24 +21,30 @@ variable {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
 abbrev target := pushoutComplex p i hiV hiE
 abbrev root := (pushoutMap p i hiV hiE hiF).onV a
 
-def oldEdge (e : UE (target p i hiV hiE) (root p i hiV hiE hiF a)) : Prop :=
+variable (e : UE (target p i hiV hiE) (root p i hiV hiE hiF a))
+include e in
+def oldEdge   :=
   ∃ k : K.E, e.val.2 = Sum.inl k
-def oldFace (t : UF (target p i hiV hiE) (root p i hiV hiE hiF a)) : Prop :=
+variable (t : UF (target p i hiV hiE) (root p i hiV hiE hiF a))
+include t in
+def oldFace   :=
   ∃ k : K.F, t.val.2 = Sum.inl k
 
-def edgeLabel (e : UE (target p i hiV hiE) (root p i hiV hiE hiF a)) :
-    Set (UV (target p i hiV hiE) (root p i hiV hiE hiF a) × L.V) :=
+include e in
+def edgeLabel   :=
   match e.val.2 with
   | Sum.inl _ => ∅
   | Sum.inr l => UniversalCopy.label (pushoutMap p i hiV hiE hiF) a (e.val.1, L.src l.val)
 
-def faceLabel (t : UF (target p i hiV hiE) (root p i hiV hiE hiF a)) :
-    Set (UV (target p i hiV hiE) (root p i hiV hiE hiF a) × L.V) :=
+include t in
+def faceLabel   :=
   match t.val.2 with
   | Sum.inl _ => ∅
   | Sum.inr l => UniversalCopy.label (pushoutMap p i hiV hiE hiF) a (t.val.1, L.base l.val)
 
-theorem oldEdge_map_iff (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF a)) (e : UE L a) :
+variable (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF a))
+include g in
+theorem oldEdge_map_iff  (e : UE L a) :
     oldEdge p i hiV hiE hiF a ((UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).onE e) ↔
       e.val.2 ∈ Set.range i.onE := by
   by_cases h : ∃ d, i.onE d = e.val.2
@@ -54,7 +56,7 @@ theorem oldEdge_map_iff (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF a)) 
     exact ⟨fun _ => ⟨d, hd⟩, fun _ => ⟨p.onE d, hp'⟩⟩
   · have hp' : ((UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).onE e).val.2 =
         Sum.inr (⟨e.val.2, fun d hd => h ⟨d, hd⟩⟩ : OffE i) := by
-      change pushE p i e.val.2 = _
+      
       exact pushE_of_off p i ⟨e.val.2, fun d hd => h ⟨d, hd⟩⟩
     constructor
     · rintro ⟨k, hk⟩
@@ -62,7 +64,8 @@ theorem oldEdge_map_iff (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF a)) 
       exact (Sum.inr_ne_inl hk).elim
     · exact fun he => False.elim (h he)
 
-theorem oldFace_map_iff (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF a)) (t : UF L a) :
+include g in
+theorem oldFace_map_iff  (t : UF L a) :
     oldFace p i hiV hiE hiF a ((UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).onF t) ↔
       t.val.2 ∈ Set.range i.onF := by
   by_cases h : ∃ d, i.onF d = t.val.2
@@ -74,7 +77,7 @@ theorem oldFace_map_iff (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF a)) 
     exact ⟨fun _ => ⟨d, hd⟩, fun _ => ⟨p.onF d, hp'⟩⟩
   · have hp' : ((UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).onF t).val.2 =
         Sum.inr (⟨t.val.2, fun d hd => h ⟨d, hd⟩⟩ : OffF i) := by
-      change pushF p i t.val.2 = _
+      
       exact pushF_of_off p i ⟨t.val.2, fun d hd => h ⟨d, hd⟩⟩
     constructor
     · rintro ⟨k, hk⟩
@@ -82,8 +85,11 @@ theorem oldFace_map_iff (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF a)) 
       exact (Sum.inr_ne_inl hk).elim
     · exact fun ht => False.elim (h ht)
 
-theorem edgeLabel_on_copy (hT : IsConnected (target p i hiV hiE))
-    (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF a)) (e : UE L a)
+variable (hT : IsConnected (target p i hiV hiE))
+variable (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF a))
+include hT in
+theorem edgeLabel_on_copy 
+     (e : UE L a)
     (he : ¬ oldEdge p i hiV hiE hiF a
       ((UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).onE e)) :
     edgeLabel p i hiV hiE hiF a
@@ -93,17 +99,17 @@ theorem edgeLabel_on_copy (hT : IsConnected (target p i hiV hiE))
     he ((oldEdge_map_iff p i hiV hiE hiF a g e).mpr ⟨d, hd⟩)
   have hp' : ((UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).onE e).val.2 =
       Sum.inr (⟨e.val.2, hn⟩ : OffE i) := by
-    change pushE p i e.val.2 = _
+    
     exact pushE_of_off p i ⟨e.val.2, hn⟩
   unfold edgeLabel
   rw [hp']
-  change UniversalCopy.label _ a
-    ((UniversalCopy.map _ a g).onV e.val.1, L.src e.val.2) = _
+  dsimp
   rw [← e.property]
   exact UniversalCopy.label_on_pair _ a hT g e.val.1
 
-theorem faceLabel_on_copy (hT : IsConnected (target p i hiV hiE))
-    (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF a)) (t : UF L a)
+include hT in
+theorem faceLabel_on_copy 
+     (t : UF L a)
     (ht : ¬ oldFace p i hiV hiE hiF a
       ((UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).onF t)) :
     faceLabel p i hiV hiE hiF a
@@ -113,17 +119,19 @@ theorem faceLabel_on_copy (hT : IsConnected (target p i hiV hiE))
     ht ((oldFace_map_iff p i hiV hiE hiF a g t).mpr ⟨d, hd⟩)
   have hp' : ((UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).onF t).val.2 =
       Sum.inr (⟨t.val.2, hn⟩ : OffF i) := by
-    change pushF p i t.val.2 = _
+    
     exact pushF_of_off p i ⟨t.val.2, hn⟩
   unfold faceLabel
   rw [hp']
-  change UniversalCopy.label _ a
-    ((UniversalCopy.map _ a g).onV t.val.1, L.base t.val.2) = _
+  dsimp
   rw [← t.property]
   exact UniversalCopy.label_on_pair _ a hT g t.val.1
 
-theorem old_face_boundary_old (t : UF (target p i hiV hiE) (root p i hiV hiE hiF a))
-    (ht : oldFace p i hiV hiE hiF a t)
+variable (ht : oldFace p i hiV hiE hiF a t)
+include ht in
+include t in
+theorem old_face_boundary_old 
+    
     (e : UE (target p i hiV hiE) (root p i hiV hiE hiF a))
     (he : ¬ oldEdge p i hiV hiE hiF a e) :
     bdry2 (uCover (target p i hiV hiE) (root p i hiV hiE hiF a)) (Finsupp.single t 1) e = 0 := by
@@ -144,8 +152,7 @@ theorem old_face_boundary_old (t : UF (target p i hiV hiE) (root p i hiV hiE hiF
     exact he ⟨d.val.2, hE d⟩
   have hb' := bdry2_chain2 φ (Finsupp.single k' 1)
   have hs : chain2 φ (Finsupp.single k' 1) = Finsupp.single t 1 := by
-    change Finsupp.mapDomain φ.onF (Finsupp.single k' 1) = _
-    rw [Finsupp.mapDomain_single, hkt]
+    simp_all
   rw [← hs, hb']
   exact Finsupp.mapDomain_notin_range _ e hnot
 
@@ -157,22 +164,23 @@ def relativeBoundary :
   map_add' c d := by rw [map_add, Finsupp.filter_add]
   map_smul' n c := by rw [map_smul, Finsupp.filter_smul]; rfl
 
-theorem relative_boundary_label (hT : IsConnected (target p i hiV hiE)) (hL : IsConnected L)
+variable (hL : IsConnected L)
+include hL in
+include hT in
+theorem relative_boundary_label  
     (t : UF (target p i hiV hiE) (root p i hiV hiE hiF a))
     (e : UE (target p i hiV hiE) (root p i hiV hiE hiF a))
     (he : relativeBoundary p i hiV hiE hiF a (Finsupp.single t 1) e ≠ 0) :
     edgeLabel p i hiV hiE hiF a e = faceLabel p i hiV hiE hiF a t := by
   have heoff : ¬ oldEdge p i hiV hiE hiF a e := by
-    intro heold
-    apply he
-    simp [relativeBoundary, heold]
+    aesop (add simp [relativeBoundary])
   have hb : bdry2 (uCover (target p i hiV hiE) (root p i hiV hiE hiF a))
       (Finsupp.single t 1) e ≠ 0 := by
     change ((bdry2 (uCover (target p i hiV hiE) (root p i hiV hiE hiF a))
       (Finsupp.single t 1)).filter (fun e => ¬ oldEdge p i hiV hiE hiF a e)) e ≠ 0 at he
     rw [Finsupp.filter_apply, if_pos heoff] at he
     exact he
-  have htoff : ¬ oldFace p i hiV hiE hiF a t := fun ht =>
+  have htoff  := fun ht =>
     hb (old_face_boundary_old p i hiV hiE hiF a t ht e heoff)
   obtain ⟨l, hl⟩ : ∃ l : OffF i, t.val.2 = Sum.inr l := by
     cases hh : t.val.2 with
@@ -189,31 +197,28 @@ theorem relative_boundary_label (hT : IsConnected (target p i hiV hiE)) (hL : Is
       (UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).att_onF, pathChain_map]
     exact Finsupp.mapDomain_notin_range _ e hn
   obtain ⟨y, hy⟩ := hmem
-  have hyoff : ¬ oldEdge p i hiV hiE hiF a
-      ((UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).onE y) := by rwa [hy]
-  have hxoff : ¬ oldFace p i hiV hiE hiF a
-      ((UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).onF x) := by rwa [hx]
-  rw [← hy, edgeLabel_on_copy p i hiV hiE hiF a hT g y hyoff,
-    ← hx, faceLabel_on_copy p i hiV hiE hiF a hT g x hxoff]
+  grind [edgeLabel_on_copy, faceLabel_on_copy]
 
-theorem relative_boundary_filter (hT : IsConnected (target p i hiV hiE)) (hL : IsConnected L)
+include hL in
+include hT in
+abbrev relative_boundary_filter  
     (c : UF (target p i hiV hiE) (root p i hiV hiE hiF a) →₀ ℤ)
-    (s : Set (UV (target p i hiV hiE) (root p i hiV hiE hiF a) × L.V)) :
-    relativeBoundary p i hiV hiE hiF a
-      (c.filter (fun t => faceLabel p i hiV hiE hiF a t = s)) =
-    (relativeBoundary p i hiV hiE hiF a c).filter
-      (fun e => edgeLabel p i hiV hiE hiF a e = s) :=
+    (s : Set (UV (target p i hiV hiE) (root p i hiV hiE hiF a) × L.V))  :=
   supported_label_boundary (relativeBoundary p i hiV hiE hiF a)
     (faceLabel p i hiV hiE hiF a) (edgeLabel p i hiV hiE hiF a) (fun _ => True)
     (fun t _ e => relative_boundary_label p i hiV hiE hiF a hT hL t e) c (fun _ _ => trivial) s
 
+include ht in
+include t in
 theorem faceLabel_empty_of_old
-    (t : UF (target p i hiV hiE) (root p i hiV hiE hiF a))
-    (ht : oldFace p i hiV hiE hiF a t) : faceLabel p i hiV hiE hiF a t = ∅ := by
+    
+     : faceLabel p i hiV hiE hiF a t = ∅ := by
   obtain ⟨k, hk⟩ := ht
-  simp only [faceLabel, hk]
+  simp [faceLabel, hk]
 
-theorem faceLabel_of_not_old (hT : IsConnected (target p i hiV hiE)) (hL : IsConnected L)
+include hL in
+include hT in
+theorem faceLabel_of_not_old  
     (t : UF (target p i hiV hiE) (root p i hiV hiE hiF a))
     (ht : ¬ oldFace p i hiV hiE hiF a t) :
     ∃ g, faceLabel p i hiV hiE hiF a t =
@@ -222,7 +227,7 @@ theorem faceLabel_of_not_old (hT : IsConnected (target p i hiV hiE)) (hL : IsCon
     cases hh : t.val.2 with
     | inl k => exact False.elim (ht ⟨k, hh⟩)
     | inr l => exact ⟨l, rfl⟩
-  have hlf : t.val.2 = (pushoutMap p i hiV hiE hiF).onF l.val :=
+  have hlf  :=
     hl.trans (pushF_of_off p i l).symm
   obtain ⟨g, x, hx, _⟩ := UniversalCopy.faces_covered (pushoutMap p i hiV hiE hiF) a hL t l.val hlf
   refine ⟨g, ?_⟩
@@ -230,31 +235,23 @@ theorem faceLabel_of_not_old (hT : IsConnected (target p i hiV hiE)) (hL : IsCon
   apply faceLabel_on_copy p i hiV hiE hiF a hT
   rwa [hx]
 
-theorem faceLabel_empty_iff (hT : IsConnected (target p i hiV hiE)) (hL : IsConnected L)
+include hL in
+include hT in
+theorem faceLabel_empty_iff  
     (t : UF (target p i hiV hiE) (root p i hiV hiE hiF a)) :
     faceLabel p i hiV hiE hiF a t = ∅ ↔ oldFace p i hiV hiE hiF a t := by
-  constructor
-  · intro he
-    by_contra hn
-    obtain ⟨g, hg⟩ := faceLabel_of_not_old p i hiV hiE hiF a hT hL t hn
-    have hn' := UniversalCopy.vertices_nonempty (pushoutMap p i hiV hiE hiF) a g
-    rw [← hg, he] at hn'
-    exact Set.not_nonempty_empty hn'
-  · exact faceLabel_empty_of_old p i hiV hiE hiF a t
+  classical grind [FiniteChains.Comb.PushoutRelativeCopies.faceLabel_of_not_old, FiniteChains.Comb.UniversalCopy.vertices_nonempty, Set.not_nonempty_empty, FiniteChains.Comb.PushoutRelativeCopies.faceLabel_empty_of_old]
 
-theorem face_range_of_label (hT : IsConnected (target p i hiV hiE)) (hL : IsConnected L)
+include hL in
+include hT in
+theorem face_range_of_label  
     (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF a))
     (t : UF (target p i hiV hiE) (root p i hiV hiE hiF a))
     (hl : faceLabel p i hiV hiE hiF a t =
       UniversalCopy.vertices (pushoutMap p i hiV hiE hiF) a g) :
     t ∈ Set.range (UniversalCopy.map (pushoutMap p i hiV hiE hiF) a g).onF := by
   have htoff : ¬ oldFace p i hiV hiE hiF a t := by
-    intro ht
-    have hh := faceLabel_empty_of_old p i hiV hiE hiF a t ht
-    rw [hl] at hh
-    have hn := UniversalCopy.vertices_nonempty (pushoutMap p i hiV hiE hiF) a g
-    rw [hh] at hn
-    exact Set.not_nonempty_empty hn
+    classical grind [FiniteChains.Comb.PushoutRelativeCopies.faceLabel_empty_of_old, FiniteChains.Comb.UniversalCopy.vertices_nonempty, Set.not_nonempty_empty]
   obtain ⟨l, he⟩ : ∃ l : OffF i, t.val.2 = Sum.inr l := by
     cases hh : t.val.2 with
     | inl k => exact False.elim (htoff ⟨k, hh⟩)

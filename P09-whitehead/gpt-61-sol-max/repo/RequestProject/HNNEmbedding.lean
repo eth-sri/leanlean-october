@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib
-
-@[expose] public section
+import Mathlib
 
 /-!
 # The HNN input of Section 3.4 (rule 1)
@@ -31,16 +29,9 @@ theorem not_isOfFinOrder_of_map {M N : Type*} [Monoid M] [Monoid N] (f : M →* 
   exact h (isOfFinOrder_iff_pow_eq_one.2 ⟨n, hn, by rw [← map_pow, hxn, map_one]⟩)
 
 /-- A generator of `ℤ` has infinite order. -/
-theorem not_isOfFinOrder_ofAdd_one : ¬ IsOfFinOrder (Multiplicative.ofAdd (1 : ℤ)) := by
-  rw [isOfFinOrder_iff_pow_eq_one]
-  push_neg
-  intro n hn h
-  have h2 : Multiplicative.toAdd ((Multiplicative.ofAdd (1 : ℤ)) ^ n) = 0 := by
-    rw [h]; rfl
-  simp [toAdd_pow] at h2
-  omega
+theorem not_isOfFinOrder_ofAdd_one : ¬ IsOfFinOrder (Multiplicative.ofAdd (1 : ℤ)) := by simp_all [isOfFinOrder_iff_pow_eq_one]
 
-section FreeProduct
+section
 
 variable {G : Type*} [Group G]
 
@@ -74,9 +65,9 @@ theorem not_isOfFinOrder_mul_freeGen (z : G) :
   rw [map_mul, killBase_inl, freeGen, killBase_inr, one_mul]
   exact not_isOfFinOrder_ofAdd_one
 
-end FreeProduct
+end
 
-section HNN
+section
 
 variable {G : Type*} [Group G]
 
@@ -86,15 +77,14 @@ noncomputable def zpowersEquivInt {x : G} (hx : ¬ IsOfFinOrder x) :
   refine MulEquiv.ofBijective ((zpowersHom G x).codRestrict (Subgroup.zpowers x)
     (fun n => Subgroup.zpow_mem_zpowers x _)) ⟨?_, ?_⟩
   · intro a b hab
-    have hval : x ^ (Multiplicative.toAdd a) = x ^ (Multiplicative.toAdd b) :=
+    have hval  :=
       congrArg Subtype.val hab
     exact Multiplicative.toAdd.injective (injective_zpow_iff_not_isOfFinOrder.2 hx hval)
   · rintro ⟨g, n, rfl⟩
     exact ⟨Multiplicative.ofAdd n, rfl⟩
 
 /-- Two infinite cyclic subgroups are isomorphic. -/
-noncomputable def zpowersEquivZpowers {x y : G} (hx : ¬ IsOfFinOrder x) (hy : ¬ IsOfFinOrder y) :
-    Subgroup.zpowers x ≃* Subgroup.zpowers y :=
+noncomputable def zpowersEquivZpowers {x y : G} (hx : ¬ IsOfFinOrder x) (hy : ¬ IsOfFinOrder y)  :=
   (zpowersEquivInt hx).symm.trans (zpowersEquivInt hy)
 
 /-- The form in which the paper uses it: an HNN extension identifying two infinite cyclic
@@ -118,9 +108,8 @@ theorem rule_one_embedding (z : G) :
             (zpowersEquivZpowers not_isOfFinOrder_freeGen
               (not_isOfFinOrder_mul_freeGen z))).comp
         (Monoid.Coprod.inl : G →* Monoid.Coprod G (Multiplicative ℤ))) := by
-  rw [MonoidHom.coe_comp]
-  exact (hnn_infiniteCyclic_of_injective _ _).comp Monoid.Coprod.inl_injective
+  simp_all [FiniteChains.hnn_infiniteCyclic_of_injective, Monoid.Coprod.inl_injective]
 
-end HNN
+end
 
 end FiniteChains

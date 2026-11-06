@@ -1,20 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.SurfaceCocycleCollar
-public import RequestProject.SurfaceFilling
-
-@[expose] public section
+import RequestProject.SurfaceCocycleCollar
+import RequestProject.SurfaceFilling
 
 /-! A flat section on the boundary extends through the actual polygon fan. -/
 namespace FiniteChains.Davis.SurfaceSection
 open RACG Mirror Comb Cell
-universe u v w
 variable {κ ι : Type u} {M : ℕ} [NeZero M]
   {vc : Fin M → κ} {ec : Fin M → ι} (hc : Compat vc ec)
   {G : Type v} [Group G] {Ω : Type w} [MulAction G Ω]
   (c : OrdCocycle (SCell vc ec hc) G) (rv : κ → Ω) (re : ι → Ω)
 
-def radialValue (p : Fin M) : Ω :=
+def radialValue (p : Fin M)  :=
   c.val (cC hc) (cR hc p) •
     ((c.val (cW hc p) (cR hc p))⁻¹ • collarValue hc c rv p)
 
@@ -49,7 +46,7 @@ theorem radialValue_step (p : Fin M) : radialValue hc c rv p = radialValue hc c 
     simp only [mul_smul, inv_smul_smul]
   exact left.trans right.symm
 
-def centreValue : Ω := radialValue hc c rv (cyc M 0)
+def centreValue  := radialValue hc c rv (cyc M 0)
 
 include hb in
 theorem radialValue_eq_centre (p : Fin M) : radialValue hc c rv p = centreValue hc c rv := by
@@ -65,41 +62,35 @@ theorem radialValue_eq_centre (p : Fin M) : radialValue hc c rv p = centreValue 
 
 local notation "s" => surfaceSection hc c rv re (centreValue hc c rv)
 
-theorem c_r (p : Fin M) : c.val (cC hc) (cR hc p) • s (cR hc p) = s (cC hc) := by
-  change c.val _ _ • ((c.val _ _)⁻¹ • centreValue hc c rv) = centreValue hc c rv
-  exact smul_inv_smul _ _
+theorem c_r (p : Fin M) : c.val (cC hc) (cR hc p) • s (cR hc p) = s (cC hc) := smul_inv_smul _ _
 
 include hb in
 theorem w_r (p : Fin M) : c.val (cW hc p) (cR hc p) • s (cR hc p) = s (cW hc p) := by
   change c.val _ _ • ((c.val _ _)⁻¹ • centreValue hc c rv) = collarValue hc c rv p
   rw [← radialValue_eq_centre hc c rv re hb p, radialValue, inv_smul_smul, smul_inv_smul]
 
-theorem c_i (p : Fin M) : c.val (cC hc) (cI hc p) • s (cI hc p) = s (cC hc) := by
-  change c.val _ _ • ((c.val _ _)⁻¹ • centreValue hc c rv) = centreValue hc c rv
-  exact smul_inv_smul _ _
+theorem c_i (p : Fin M) : c.val (cC hc) (cI hc p) • s (cI hc p) = s (cC hc) := smul_inv_smul _ _
 
-theorem r_i (p : Fin M) : c.val (cR hc p) (cI hc p) • s (cI hc p) = s (cR hc p) :=
+abbrev r_i (p : Fin M)  :=
   c.flat_edge_of_bottom s (cC_le_cR hc p) (cR_le_cI hc p)
     (c_r hc c rv re p) (c_i hc c rv re p)
 
-theorem r1_i (p : Fin M) :
-    c.val (cR hc (p + 1)) (cI hc p) • s (cI hc p) = s (cR hc (p + 1)) :=
+abbrev r1_i (p : Fin M)  :=
   c.flat_edge_of_bottom s (cC_le_cR hc (p + 1)) (cR1_le_cI hc p)
     (c_r hc c rv re (p + 1)) (c_i hc c rv re p)
 
 include hb in
-theorem w_i (p : Fin M) : c.val (cW hc p) (cI hc p) • s (cI hc p) = s (cW hc p) :=
+abbrev w_i (p : Fin M)  :=
   c.flat_edge_trans s (cW_le_cR hc p) (cR_le_cI hc p)
     (w_r hc c rv re hb p) (r_i hc c rv re p)
 
 include hb in
-theorem w1_i (p : Fin M) :
-    c.val (cW hc (p + 1)) (cI hc p) • s (cI hc p) = s (cW hc (p + 1)) :=
+abbrev w1_i (p : Fin M)  :=
   c.flat_edge_trans s (cW_le_cR hc (p + 1)) (cR1_le_cI hc p)
     (w_r hc c rv re hb (p + 1)) (r1_i hc c rv re p)
 
 include hb in
-theorem f_i (p : Fin M) : c.val (cF hc p) (cI hc p) • s (cI hc p) = s (cF hc p) :=
+abbrev f_i (p : Fin M)  :=
   c.flat_edge_of_bottom s (cW_le_cF hc p) (cF_le_cI hc p)
     (w_f hc c rv re (centreValue hc c rv) p) (w_i hc c rv re hb p)
 

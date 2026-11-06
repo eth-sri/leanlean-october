@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PushoutRelativeCopyLabels
-public import RequestProject.PushoutUniversalCellEmbedding
-public import RequestProject.PushoutOldCoverHomology
-public import RequestProject.AcyclicLiftedSubcomplex
-
-@[expose] public section
+import RequestProject.PushoutRelativeCopyLabels
+import RequestProject.PushoutUniversalCellEmbedding
+import RequestProject.PushoutOldCoverHomology
+import RequestProject.AcyclicLiftedSubcomplex
 
 /-! Actual regular-cover descent in degree two. Every universal-cover
 two-cycle is a finite sum of images of genuine cycles in copies of the
@@ -14,12 +12,10 @@ are all constructed in the imported files. Unverified source. -/
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.PushoutRelativeCopies
-universe u v
 variable {D K L : Complex2.{u}} {Q : Type v} [Group Q]
   (p : Hom D K) (hp : IsCovering p) (a : DeckAction D Q) (hr : IsRegular p a)
   (he : ∀ q e, p.onE (a.smulE q e) = p.onE e)
@@ -33,12 +29,13 @@ def oldFaceChains : Submodule ℤ
     (UF (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀)) →₀ ℤ) where
   carrier := {c | ∀ f, ¬ oldFace p i hiV hiE hiF (i.onV d₀) f → c f = 0}
   zero_mem' := fun _ _ => rfl
-  add_mem' hc hd f hf := by simp only [Finsupp.add_apply, hc f hf, hd f hf, add_zero]
-  smul_mem' n c hc f hf := by simp only [Finsupp.smul_apply, hc f hf, smul_zero]
+  add_mem' hc hd f hf := by simp_all
+  smul_mem' n c hc f hf := by simp_all
 
+variable (c : UF (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀)) →₀ ℤ)
 include hp hr he hf hDconn ht hD hT in
 theorem oldFaceChains_cycle_zero
-    (c : UF (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀)) →₀ ℤ)
+    
     (hc : c ∈ oldFaceChains p i hiV hiE hiF d₀)
     (hz : bdry2 (uCover (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀))) c = 0) : c = 0 := by
   have hzero : ∀ z : UF (target p i hiV hiE)
@@ -53,11 +50,13 @@ theorem oldFaceChains_cycle_zero
   by_contra hn
   exact (Finsupp.mem_support_iff.mp hf') (hc f hn)
 
+variable (hc : bdry2 (uCover (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀))) c = 0)
+include hc in
 set_option maxHeartbeats 800000 in
 include hp hr he hDconn hL ht hD hT in
 theorem copy_filter_completion
-    (c : UF (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀)) →₀ ℤ)
-    (hc : bdry2 (uCover (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀))) c = 0)
+    
+    
     (g : Pi1 (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀))) :
     ∃ z : UF (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀)) →₀ ℤ,
       z ∈ Pi2FromSub (pushoutMap p i hiV hiE hiF) (root p i hiV hiE hiF (i.onV d₀)) ∧
@@ -70,10 +69,10 @@ theorem copy_filter_completion
       (UF (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀)) →₀ ℤ) := chain2 φ
   let s := UniversalCopy.vertices (pushoutMap p i hiV hiE hiF) (i.onV d₀) g
   let d := c.filter (fun f => faceLabel p i hiV hiE hiF (i.onV d₀) f = s)
-  have hφE : Function.Injective φ.onE := UniversalCopy.map_injective_E
+  have hφE  := UniversalCopy.map_injective_E
     (pushoutMap p i hiV hiE hiF) (i.onV d₀)
     (PushoutSheets.univLift_edges_injective p hp a hr he i hiV hiE hiF hDconn hL d₀ ht) g
-  have hφF : Function.Injective φ.onF := UniversalCopy.map_injective_F
+  have hφF  := UniversalCopy.map_injective_F
     (pushoutMap p i hiV hiE hiF) (i.onV d₀)
     (PushoutSheets.univLift_faces_injective p hp a hr he i hiV hiE hiF hDconn hL d₀ ht) g
   have hd : ∀ f ∉ Set.range φ.onF, d f = 0 := by
@@ -94,7 +93,7 @@ theorem copy_filter_completion
   have hbs : ∀ e ∈ (Comb.bdry2 (uCover L (i.onV d₀)) b).support, e.val.2 ∈ Set.range i.onE := by
     intro e he'
     by_contra hn
-    have hnot : ¬ oldEdge p i hiV hiE hiF (i.onV d₀) (φ.onE e) :=
+    have hnot  :=
       fun hh => hn ((oldEdge_map_iff p i hiV hiE hiF (i.onV d₀) g e).mp hh)
     have hcoeff : Comb.bdry2 (uCover L (i.onV d₀)) b e = 0 := by
       have hh := congrArg (fun z => z (φ.onE e)) hdr
@@ -121,18 +120,19 @@ theorem copy_filter_completion
     rw [heq]
     intro f hf'
     by_contra hn
-    have hm : f ∈ (Finsupp.mapDomain φ.onF w).support := Finsupp.mem_support_iff.mpr hn
+    have hm  := Finsupp.mem_support_iff.mpr hn
     obtain ⟨t, ht', htf⟩ := Finset.mem_image.mp (Finsupp.mapDomain_support hm)
     apply hf'
     rw [← htf]
     exact (oldFace_map_iff p i hiV hiE hiF (i.onV d₀) g t).mpr (hw t ht')
 
+include hc in
 include hp hr he hf hDconn hL ht hD hT in
 /-- The actual finite-support spherical generation statement at the core
 base point. No `Pi2GeneratedByUpstairs` or exactness input remains. -/
 theorem cycle_mem_span_at_core
-    (c : UF (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀)) →₀ ℤ)
-    (hc : bdry2 (uCover (target p i hiV hiE) (root p i hiV hiE hiF (i.onV d₀))) c = 0) :
+    
+     :
     c ∈ Submodule.span ℤ
       (Pi2FromSub (pushoutMap p i hiV hiE hiF) (root p i hiV hiE hiF (i.onV d₀))) := by
   let label := faceLabel p i hiV hiE hiF (i.onV d₀)
@@ -148,20 +148,16 @@ theorem cycle_mem_span_at_core
       rw [sub_zero]
       intro f hf'
       have hn : label f ≠ s.val := by
-        rw [hs]
-        exact fun hh => hf' ((faceLabel_empty_iff p i hiV hiE hiF (i.onV d₀) hT hL f).mp hh)
+        classical aesop (add simp [FiniteChains.Comb.PushoutRelativeCopies.faceLabel_empty_iff])
       simp [hn]
     · obtain ⟨f, hf', hfs⟩ := Finset.mem_image.mp s.property
       have hfoff : ¬ oldFace p i hiV hiE hiF (i.onV d₀) f := by
-        intro hh
-        exact hs (hfs.symm.trans (faceLabel_empty_of_old p i hiV hiE hiF (i.onV d₀) f hh))
+        classical grind [FiniteChains.Comb.PushoutRelativeCopies.faceLabel_empty_of_old]
       obtain ⟨g, hg⟩ := faceLabel_of_not_old p i hiV hiE hiF (i.onV d₀) hT hL f hfoff
       obtain ⟨z, hz, hzc, hzd⟩ := copy_filter_completion p hp a hr he i hiV hiE hiF
         hDconn hL d₀ ht hD hT c hc g
       refine ⟨z, Submodule.subset_span hz, hzc, ?_⟩
-      have hsg : s.val = UniversalCopy.vertices (pushoutMap p i hiV hiE hiF) (i.onV d₀) g :=
-        hfs.symm.trans hg
-      simpa only [hsg] using hzd
+      aesop
   choose z hz hzc hzd using hpiece
   let zsum := ∑ s : {s // s ∈ S}, z s
   have hzp : zsum ∈ P := P.sum_mem (fun s _ => hz s)
@@ -175,7 +171,7 @@ theorem cycle_mem_span_at_core
         (finsupp_sum_label_filters label c)
     rw [hsum] at hh
     exact hh
-  have hzero : c - zsum = 0 := oldFaceChains_cycle_zero p hp a hr he hf i hiV hiE hiF
+  have hzero  := oldFaceChains_cycle_zero p hp a hr he hf i hiV hiE hiF
     hDconn d₀ ht hD hT _ hdiff (by rw [map_sub, hc, hzb, sub_self])
   rw [sub_eq_zero.mp hzero]
   exact hzp

@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NamedPresentationFoxMatrix
-
-@[expose] public section
+import RequestProject.NamedPresentationFoxMatrix
 
 /-! Exact relative Fox coordinates over an arbitrary receiving group ring. -/
 namespace FiniteChains.NamedPresentation
@@ -10,16 +8,17 @@ variable {α J I G : Type} [DecidableEq α] [DecidableEq I] [Fintype J] [Fintype
   [Group G] (ρ : J → FreeGroup α) (w : I → FreeGroup α)
   (φ : PresGroup (rel ρ w) →* G)
 
-noncomputable def receivedWordCoefficientMap : FreeGroupRing α →+* MonoidAlgebra ℤ G :=
+noncomputable def receivedWordCoefficientMap  :=
   (MonoidAlgebra.mapDomainRingHom ℤ φ).comp (wordCoefficientMap ρ w)
 
-noncomputable def receivedFoxBoundary (β : J ⊕ I → MonoidAlgebra ℤ G)
-    (g : α ⊕ I) : MonoidAlgebra ℤ G :=
+variable (β : J ⊕ I → MonoidAlgebra ℤ G)
+noncomputable def receivedFoxBoundary 
+    (g : α ⊕ I)  :=
   ∑ m, β m * MonoidAlgebra.mapDomainRingHom ℤ φ (foxMatrixPres (rel ρ w) g m)
 
 /-- Vanishing at the internal generators is an equality between the old
 two-boundary and the chain of the marked word paths, not an absolute cycle. -/
-theorem receivedFoxBoundary_internal (β : J ⊕ I → MonoidAlgebra ℤ G) (a : α) :
+theorem receivedFoxBoundary_internal  (a : α) :
     receivedFoxBoundary ρ w φ β (Sum.inl a) =
       (∑ j, β (Sum.inl j) * receivedWordCoefficientMap ρ w φ (fox a (ρ j))) -
       ∑ i, β (Sum.inr i) * receivedWordCoefficientMap ρ w φ (fox a (w i)) := by
@@ -29,7 +28,7 @@ theorem receivedFoxBoundary_internal (β : J ⊕ I → MonoidAlgebra ℤ G) (a :
     Finset.sum_neg_distrib, sub_eq_add_neg]
   rfl
 
-theorem receivedFoxBoundary_internal_zero_iff (β : J ⊕ I → MonoidAlgebra ℤ G) :
+theorem receivedFoxBoundary_internal_zero_iff  :
     (∀ a, receivedFoxBoundary ρ w φ β (Sum.inl a) = 0) ↔
       ∀ a, (∑ j, β (Sum.inl j) * receivedWordCoefficientMap ρ w φ (fox a (ρ j))) =
         ∑ i, β (Sum.inr i) * receivedWordCoefficientMap ρ w φ (fox a (w i)) := by

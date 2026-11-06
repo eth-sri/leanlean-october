@@ -1,15 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveCommonSimplex
-
-@[expose] public section
+import RequestProject.OrderNerveCommonSimplex
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
 open scoped unitInterval Classical
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q]
-variable (f : P → Q) (hf : Monotone f) (g : P → Q) (hg : Monotone g)
-variable (hc : ∀ p q, p ≤ q ∨ q ≤ p → f p ≤ g q ∨ g q ≤ f p)
+  (f : P → Q) (hf : Monotone f) (g : P → Q) (hg : Monotone g)
+  (hc : ∀ p q, p ≤ q ∨ q ≤ p → f p ≤ g q ∨ g q ≤ f p)
 include hc
 
 /-- Cross-comparability gives a common target simplex for both actual maps
@@ -33,20 +31,20 @@ theorem orderNerveSimplex_common_maps {n : SimplexCategory}
   refine ⟨m, u, a, b, ?_, ?_⟩
   · intro z
     have h := congrArg (fun k => k z) (orderNerveRealizationSimplex_operator Q a u)
-    change orderNerveRealizationSimplex Q u (SimplexCategory.toTop.map a z) =
-      orderNerveRealizationSimplex Q ((nerve Q).map a.op u) z at h
+    
     rw [ha] at h
     have hn := congrArg (fun k => k z) (orderNerveRealizationSimplex_natural f hf s)
     exact h.trans hn.symm
   · intro z
     have h := congrArg (fun k => k z) (orderNerveRealizationSimplex_operator Q b u)
-    change orderNerveRealizationSimplex Q u (SimplexCategory.toTop.map b z) =
-      orderNerveRealizationSimplex Q ((nerve Q).map b.op u) z at h
+    
     rw [hb] at h
     have hn := congrArg (fun k => k z) (orderNerveRealizationSimplex_natural g hg s)
     exact h.trans hn.symm
 
-theorem orderNerveRealization_blend_exists (t : I) (x : orderNerveRealization P) :
+variable (t : I)
+  (x : orderNerveRealization P)
+theorem orderNerveRealization_blend_exists   :
     ∃ y : orderNerveRealization Q, ∀ q,
       orderNerveRealizationCoordinates Q y q =
         (1 - (t : ℝ)) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap f hf x) q +
@@ -59,10 +57,9 @@ theorem orderNerveRealization_blend_exists (t : I) (x : orderNerveRealization P)
   rw [orderNerveRealizationCoordinates_blend, ha, hb]
 
 /-- The unique affine interpolation, defined in global barycentric coordinates. -/
-noncomputable def orderNerveRealizationBlend (t : I) (x : orderNerveRealization P) :
-    orderNerveRealization Q := (orderNerveRealization_blend_exists f hf g hg hc t x).choose
+noncomputable def orderNerveRealizationBlend    := (orderNerveRealization_blend_exists f hf g hg hc t x).choose
 
-theorem orderNerveRealizationBlend_coordinates (t : I) (x : orderNerveRealization P) (q : Q) :
+theorem orderNerveRealizationBlend_coordinates   (q : Q) :
     orderNerveRealizationCoordinates Q (orderNerveRealizationBlend f hf g hg hc t x) q =
       (1 - (t : ℝ)) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap f hf x) q +
       (t : ℝ) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap g hg x) q :=
@@ -91,13 +88,13 @@ theorem orderNerveRealizationBlend_continuous :
         (((SimplexCategory.toTop.map a).hom.continuous.comp continuous_snd).prodMk
           ((SimplexCategory.toTop.map b).hom.continuous.comp continuous_snd))))
 
-@[simp] theorem orderNerveRealizationBlend_zero (x : orderNerveRealization P) :
+@[simp] theorem orderNerveRealizationBlend_zero  :
     orderNerveRealizationBlend f hf g hg hc 0 x = orderNerveRealizationMap f hf x := by
   apply orderNerveRealizationCoordinates_injective Q
   funext q
   simp [orderNerveRealizationBlend_coordinates]
 
-@[simp] theorem orderNerveRealizationBlend_one (x : orderNerveRealization P) :
+@[simp] theorem orderNerveRealizationBlend_one  :
     orderNerveRealizationBlend f hf g hg hc 1 x = orderNerveRealizationMap g hg x := by
   apply orderNerveRealizationCoordinates_injective Q
   funext q

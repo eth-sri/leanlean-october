@@ -1,33 +1,22 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SquareSingularHomotopy
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SquareSingularHomotopy
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
 
 noncomputable def squareHalf : I := ⟨1 / 2, by constructor <;> norm_num⟩
 
-def leftRectangle (a : I) : C((Fin 2 → I), Fin 2 → I) where
+variable (a : I)
+def leftRectangle  : C((Fin 2 → I), Fin 2 → I) where
   toFun z := ![a * z 0, z 1]
   continuous_toFun := by
-    apply continuous_pi
-    intro i
-    fin_cases i
-    · exact (continuous_const.mul ((continuous_apply 0).subtype_val)).subtype_mk _
-    · exact continuous_apply 1
+    fun_prop
 
-def rightRectangle (a : I) : C((Fin 2 → I), Fin 2 → I) where
+def rightRectangle  : C((Fin 2 → I), Fin 2 → I) where
   toFun z := ![unitInterval.symm (unitInterval.symm a * unitInterval.symm (z 0)), z 1]
   continuous_toFun := by
-    apply continuous_pi
-    intro i
-    fin_cases i
-    · exact unitInterval.continuous_symm.comp
-        ((continuous_const.mul
-          ((unitInterval.continuous_symm.comp (continuous_apply 0)).subtype_val)).subtype_mk _)
-    · exact continuous_apply 1
+    fun_prop
 
 noncomputable def leftRectangleSweep : ContinuousMap.Homotopy (leftRectangle 0) (leftRectangle squareHalf) where
   toFun w := leftRectangle (w.1 * squareHalf) w.2
@@ -64,10 +53,9 @@ theorem rightRectangle_zero : rightRectangle 0 = ContinuousMap.id (Fin 2 → I) 
   funext i
   fin_cases i <;> simp [rightRectangle]
 
-theorem rectangle_common_edge (a : I) (z : Domain 1) :
-    leftRectangle a (cubeEdge 0 1 z) = rightRectangle a (cubeEdge 0 0 z) := by
-  funext i
-  fin_cases i <;> simp [leftRectangle, rightRectangle, cubeEdge, Whitehead.squareEdge]
+variable (z : Domain 1)
+theorem rectangle_common_edge   :
+    leftRectangle a (cubeEdge 0 1 z) = rightRectangle a (cubeEdge 0 0 z) := by simp_all [leftRectangle, rightRectangle, cubeEdge, Whitehead.squareEdge]
 
 theorem leftRectangle_horizontal_boundary (a v : I) (hv : v = 0 ∨ v = 1) (z : Domain 1) :
     leftRectangle a (cubeEdge 1 v z) ∈ Cube.boundary (Fin 2) := by
@@ -79,13 +67,11 @@ theorem rightRectangle_horizontal_boundary (a v : I) (hv : v = 0 ∨ v = 1) (z :
   refine ⟨1, ?_⟩
   simpa [rightRectangle, cubeEdge, Whitehead.squareEdge] using hv
 
-theorem leftRectangle_outer_boundary (a : I) (z : Domain 1) :
-    leftRectangle a (cubeEdge 0 0 z) ∈ Cube.boundary (Fin 2) := by
-  exact ⟨0, Or.inl (by simp [leftRectangle, cubeEdge, Whitehead.squareEdge])⟩
+theorem leftRectangle_outer_boundary   :
+    leftRectangle a (cubeEdge 0 0 z) ∈ Cube.boundary (Fin 2) := ⟨0, Or.inl (by simp [leftRectangle, cubeEdge, Whitehead.squareEdge])⟩
 
-theorem rightRectangle_outer_boundary (a : I) (z : Domain 1) :
-    rightRectangle a (cubeEdge 0 1 z) ∈ Cube.boundary (Fin 2) := by
-  exact ⟨0, Or.inr (by simp [rightRectangle, cubeEdge, Whitehead.squareEdge])⟩
+theorem rightRectangle_outer_boundary   :
+    rightRectangle a (cubeEdge 0 1 z) ∈ Cube.boundary (Fin 2) := ⟨0, Or.inr (by simp [rightRectangle, cubeEdge, Whitehead.squareEdge])⟩
 
 theorem leftRectangle_zero_boundary (z : Fin 2 → I) :
     leftRectangle 0 z ∈ Cube.boundary (Fin 2) :=

@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CombPi2
-public import RequestProject.CombPi1Conj
-
-@[expose] public section
+import RequestProject.CombPi2
+import RequestProject.CombPi1Conj
 
 /-!
 # Universal-cover transport along an actual path
@@ -18,20 +16,20 @@ No equality of base points or connectedness hypothesis is used.
 
 namespace FiniteChains.Comb
 
-universe u
 
 variable {K : Complex2.{u}} {x y : K.V} {a : List (K.E × Bool)}
   (ha : IsPath K.src K.tgt a x y)
 
+variable (p : PathFrom K y)
 /-- Prefix the actual path from `x` to `y` to a path starting at `y`. -/
-def pathTransportP (p : PathFrom K y) : PathFrom K x :=
+def pathTransportP  : PathFrom K x :=
   ⟨a ++ p.1, by
     rw [endpt_append, endpt_eq_of_isPath ha]
     exact ha.append p.2⟩
 
-theorem endpt_pathTransportP (p : PathFrom K y) :
+theorem endpt_pathTransportP  :
     endpt K x (pathTransportP ha p).1 = endpt K y p.1 := by
-  change endpt K x (a ++ p.1) = endpt K y p.1
+  unfold FiniteChains.Comb.pathTransportP
   rw [endpt_append, endpt_eq_of_isPath ha]
 
 /-- Prefixing descends to homotopy classes of paths. -/
@@ -43,13 +41,12 @@ def pathTransportV (c : UV K y) : UV K x :=
     rw [endpt_pathTransportP]
     exact Htpy.append_congr ha p.2 (Htpy.refl _) hpq) c
 
-@[simp] theorem pathTransportV_mk (p : PathFrom K y) :
+@[simp] theorem pathTransportV_mk  :
     pathTransportV ha (UV.mk p) = UV.mk (pathTransportP ha p) := rfl
 
 @[simp] theorem endV_pathTransportV (c : UV K y) :
     endV (pathTransportV ha c) = endV c := by
-  induction c using UV.ind with
-  | h p => exact endpt_pathTransportP ha p
+  induction c using UV.ind <;> simp_all [endpt_pathTransportP]
 
 /-- Prefixing commutes with extending a path by an edge, including the
 convention that an edge with the wrong source leaves a path unchanged. -/
@@ -59,23 +56,9 @@ theorem extend_pathTransportV (eb : K.E × Bool) (c : UV K y) :
   | h p =>
       have hl : (extendP eb (pathTransportP ha p)).1 =
           (pathTransportP ha (extendP eb p)).1 := by
-        by_cases h : endpt K y p.1 = germSrc K.src K.tgt eb
-        · have h' : endpt K x (pathTransportP ha p).1 = germSrc K.src K.tgt eb := by
-            rw [endpt_pathTransportP]
-            exact h
-          rw [extendP_pos h']
-          change (a ++ p.1) ++ [eb] = a ++ (extendP eb p).1
-          rw [extendP_pos h]
-          exact List.append_assoc _ _ _
-        · have h' : ¬ endpt K x (pathTransportP ha p).1 = germSrc K.src K.tgt eb := by
-            rw [endpt_pathTransportP]
-            exact h
-          rw [extendP_neg h']
-          change a ++ p.1 = a ++ (extendP eb p).1
-          rw [extendP_neg h]
+        grind [endpt, germSrc, pathTransportP, endpt_pathTransportP, extendP]
       apply UV.sound
-      change Htpy K x (endpt K x (extendP eb (pathTransportP ha p)).1)
-        (extendP eb (pathTransportP ha p)).1 (pathTransportP ha (extendP eb p)).1
+      
       rw [hl]
       exact Htpy.refl _
 
@@ -96,9 +79,7 @@ theorem liftGerm_pathTransportV {c : UV K y} {eb : K.E × Bool}
   cases b with
   | true => rfl
   | false =>
-      refine Prod.ext ?_ rfl
-      apply Subtype.ext
-      exact Prod.ext (extend_pathTransportV ha (e, false) c) rfl
+      aesop (add simp [extend_pathTransportV])
 
 theorem uLiftPath_pathTransportV :
     ∀ (p : List (K.E × Bool)) (c : UV K y) (z : K.V),
@@ -110,7 +91,7 @@ theorem uLiftPath_pathTransportV :
   | nil => intro c z _; rfl
   | cons eb p ih =>
       intro c z hp
-      have h : endV c = germSrc K.src K.tgt eb := hp.1
+      have h  := hp.1
       have h' : endV (pathTransportV ha c) = germSrc K.src K.tgt eb := by
         rw [endV_pathTransportV]
         exact h
@@ -128,7 +109,7 @@ noncomputable def uCoverPathTransport : Hom (uCover K y) (uCover K x) where
   base_onF := fun _ => rfl
   att_onF := by
     intro t
-    change uLiftPath (K.att t.1.2) (pathTransportV ha t.1.1) = _
+    
     apply uLiftPath_pathTransportV
     rw [t.2]
     exact K.att_isLoop t.1.2
@@ -136,7 +117,7 @@ noncomputable def uCoverPathTransport : Hom (uCover K y) (uCover K x) where
 theorem uCoverPathTransport_base :
     (uCoverPathTransport ha).onV (UV.base K y) =
       UV.mk ⟨a, by rw [endpt_eq_of_isPath ha]; exact ha⟩ := by
-  change UV.mk (pathTransportP ha ⟨[], rfl⟩) = _
+  
   apply congrArg UV.mk
   exact Subtype.ext (List.append_nil a)
 
@@ -154,6 +135,6 @@ theorem uCoverPathTransport_deckV (γ : Pi1 K y) (c : UV K y) :
           rw [endpt_append, endpt_eq_of_isPath ha,
             endpt_append, endpt_eq_of_isPath g.2]
           have h := (htpy_revPath_append ha).congr_append (ha.append g.2) p.2
-          simpa only [List.append_assoc, List.nil_append] using h.symm
+          simpa [List.append_assoc, List.nil_append] using h.symm
 
 end FiniteChains.Comb

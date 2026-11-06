@@ -1,14 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusCollapseCoverHomology
-public import RequestProject.OrderNervePositiveFillings
-
-@[expose] public section
+import RequestProject.GenusCollapseCoverHomology
+import RequestProject.OrderNervePositiveFillings
 
 /-! A covered two-dimensional spine has no nonzero two-chain bounding in its block. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb Nerve
@@ -22,7 +18,7 @@ theorem genus_covered_spine_three_flags_empty (hf : IsPosetCover f) :
   have h12 := truncatedCellDimension_strictMono (hf.strictMono t.2.2.1)
   have h23 := truncatedCellDimension_strictMono (hf.strictMono t.2.2.2)
   have hmax := genusSpineCell_dimension_le_two q ⟨f t.1.2.2.2.1, t.1.2.2.2.2⟩
-  change truncatedCellDimension (f t.1.2.2.2.1) ≤ 2 at hmax
+  dsimp at *
   omega
 
 /-- A filling in the entire covering block is reflected to its actual spine;
@@ -67,7 +63,7 @@ theorem genus_covered_spine_chain_zero_of_boundary (hf : IsPosetCover f)
     exact isEmptyElim t
   have hn := congrArg normalizeOrdChain2 he
   rw [normalizeOrdChain2_ordBoundary3, hzero, map_zero] at hn
-  have hi : normalizeOrdChain2 (ordStrictInclusion2 c) = c := normalizeOrdChain2_inclusion c
+  have hi  := normalizeOrdChain2_inclusion c
   exact (hn.trans hi).symm
 
 end FiniteChains.Davis.Genus

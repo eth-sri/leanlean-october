@@ -1,16 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresConeStrictExcursionReplacement
+import RequestProject.PresConeStrictExcursionReplacement
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool))
 
 /-- Every strict lower vertex of an actual relator apex belongs to the actual cylinder. -/
@@ -28,8 +23,10 @@ theorem presStrictGerm_in_cylinder (e : (strictOrderCx (PresPos w)).E × Bool)
   rcases e with ⟨e, b⟩
   cases b <;> exact pathIn_cons (by constructor <;> assumption) (pathIn_nil _)
 
+variable (hpos : ∀ j, 0 < (w j).length)
+include hpos in
 /-- Every actual strict presentation path with cylinder endpoints reduces to an actual cylinder path. -/
-theorem exists_presStrictPath_cylinder_reduction (hpos : ∀ j, 0 < (w j).length)
+theorem exists_presStrictPath_cylinder_reduction 
     (p : List ((strictOrderCx (PresPos w)).E × Bool))
     (a b : PresPos w) (ha : a ∈ coneAdjBaseSet (S := circSet w)) (hb : b ∈ coneAdjBaseSet (S := circSet w))
     (hp : IsPath (strictOrderCx (PresPos w)).src (strictOrderCx (PresPos w)).tgt p a b) :
@@ -61,9 +58,9 @@ theorem exists_presStrictPath_cylinder_reduction (hpos : ∀ j, 0 < (w j).length
       | inr j =>
         cases p with
         | nil =>
-          have hbe : b = apexOf w j := hp.symm.trans ht
+          have hbe  := hp.symm.trans ht
           obtain ⟨t, htb⟩ := hb
-          have hn : (Sum.inl t : PresPos w) = Sum.inr j := htb.trans hbe
+          have hn  := htb.trans hbe
           cases hn
         | cons d p =>
           obtain ⟨hds, hp⟩ := hp
@@ -73,7 +70,7 @@ theorem exists_presStrictPath_cylinder_reduction (hpos : ∀ j, 0 < (w j).length
           rcases d with ⟨d, ds⟩
           obtain ⟨rfl, he⟩ := hed
           obtain ⟨rfl, hd⟩ := hdd
-          have hdc : d.val.1 ∈ coneAdjBaseSet (S := circSet w) := presCone_lower_mem_cylinder w j d.val.1 (hd ▸ d.property)
+          have hdc  := presCone_lower_mem_cylinder w j d.val.1 (hd ▸ d.property)
           obtain ⟨q, hq, hqc, hh⟩ := ih p (by change p.length < _; simp) d.val.1 b hdc hb hp
           obtain ⟨r, hr, hrc, hhr⟩ := exists_presCone_strictEdge_excursion_replacement w j (hpos j) e d he hd
           subst a
@@ -85,8 +82,9 @@ theorem exists_presStrictPath_cylinder_reduction (hpos : ∀ j, 0 < (w j).length
                   [(e, true), (d, false)] e.val.1 d.val.1 from ⟨rfl, he.trans hd.symm, rfl⟩))
               (isPath_mapPath (strictOrderIncl (PresPos w)) hp) hhr hh
 
+include hpos in
 /-- Every actual weak presentation path with cylinder endpoints reduces to an actual cylinder path. -/
-theorem exists_presPath_cylinder_reduction (hpos : ∀ j, 0 < (w j).length)
+theorem exists_presPath_cylinder_reduction 
     (p : List ((orderCx (PresPos w)).E × Bool))
     (a b : PresPos w) (ha : a ∈ coneAdjBaseSet (S := circSet w))
     (hb : b ∈ coneAdjBaseSet (S := circSet w))

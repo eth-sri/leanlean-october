@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveSmallSingularApproximationAll
-
-@[expose] public section
+import RequestProject.OrderNerveSmallSingularApproximationAll
 
 namespace FiniteChains.Comb
 open TopologicalSingular SingularSubdivision
@@ -41,9 +39,7 @@ theorem orderSmallHomotopyStage_fill {n : ℕ} (s : OrderSmallHomotopyStage P n)
   · rw [map_sub, map_sub, orderSmallSingularApproximation_boundary, s.on_boundary]
     exact sub_self _
 
-noncomputable def orderSmallHomotopyStageNextMap {n : ℕ} (s : OrderSmallHomotopyStage P n) :
-    smallChains (orderNerveRealizationOpenStar P) (n + 1) →ₗ[ℤ]
-      Chain (orderNerveRealization P) (n + 2) :=
+noncomputable def orderSmallHomotopyStageNextMap {n : ℕ} (s : OrderSmallHomotopyStage P n)  :=
   (Finsupp.linearCombination ℤ (fun σ => (orderSmallHomotopyStage_fill s σ).choose)).comp
     (orderSmallChainEquiv P (n + 1)).toLinearMap
 
@@ -69,7 +65,7 @@ theorem orderSmallHomotopyStageNextMap_boundary {n : ℕ} (s : OrderSmallHomotop
         s.map.comp (smallBoundary (orderNerveRealizationOpenStar P) n) := by
     apply orderSmallSingle_spans
     intro σ
-    simp only [LinearMap.comp_apply, LinearMap.sub_apply, orderSmallHomotopyStageNextMap_single]
+    simp only [LinearMap.comp_apply, orderSmallHomotopyStageNextMap_single]
     exact (orderSmallHomotopyStage_fill s σ).choose_spec.2
   exact DFunLike.congr_fun he c
 
@@ -92,9 +88,7 @@ noncomputable def orderSmallHomotopyStage (P : Type) [PartialOrder P] :
   | 0 => orderSmallHomotopyStageZero
   | n + 1 => orderSmallHomotopyStageNext (orderSmallHomotopyStage P n)
 
-noncomputable def orderSmallHomotopy (P : Type) [PartialOrder P] (n : ℕ) :
-    smallChains (orderNerveRealizationOpenStar P) n →ₗ[ℤ]
-      Chain (orderNerveRealization P) (n + 1) :=
+noncomputable def orderSmallHomotopy (P : Type) [PartialOrder P] (n : ℕ)  :=
   (orderSmallHomotopyStage P n).map
 
 /-- A carried chain homotopy from the realized approximation to inclusion, in every degree. -/

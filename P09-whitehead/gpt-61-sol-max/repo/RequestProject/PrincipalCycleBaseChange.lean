@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MonoidAlgebraMapDomain
-public import RequestProject.BaseChangeCycles
-
-@[expose] public section
+import RequestProject.MonoidAlgebraMapDomain
+import RequestProject.BaseChangeCycles
 
 /-!
 # Principal matrix kernels under an injective group-ring extension
@@ -25,9 +23,8 @@ calculation has to supply it separately.
 
 namespace FiniteChains
 
-open MonoidAlgebra
 
-universe u v w x
+
 
 variable {H : Type u} {G : Type v} [Group H] [Group G]
   {J : Type w} [Fintype J] {I : Type x}
@@ -45,10 +42,10 @@ theorem principal_cycles_baseChange (f : H →* G) (hf : Function.Injective f)
     ∃ r : MonoidAlgebra ℤ G,
       ∀ j, v j = r * MonoidAlgebra.mapDomainRingHom ℤ f (c j) := by
   classical
-  let e : H ≃* f.range := MonoidHom.ofInjective hf
-  let er : MonoidAlgebra ℤ H →+* MonoidAlgebra ℤ f.range :=
+  let e  := MonoidHom.ofInjective hf
+  let er  :=
     MonoidAlgebra.mapDomainRingHom ℤ e.toMonoidHom
-  let eri : MonoidAlgebra ℤ f.range →+* MonoidAlgebra ℤ H :=
+  let eri  :=
     MonoidAlgebra.mapDomainRingHom ℤ e.symm.toMonoidHom
   have hinc (z : MonoidAlgebra ℤ H) :
       subRingHom f.range (er z) = MonoidAlgebra.mapDomainRingHom ℤ f z := by
@@ -61,12 +58,8 @@ theorem principal_cycles_baseChange (f : H →* G) (hf : Function.Injective f)
     show MonoidAlgebra.mapDomain e.toMonoidHom
       (MonoidAlgebra.mapDomain e.symm.toMonoidHom z) = z
     rw [← MonoidAlgebra.mapDomain_comp]
-    have he : (e.toMonoidHom : H → f.range) ∘
-        (e.symm.toMonoidHom : f.range → H) = id := by
-      funext g
-      exact e.apply_symm_apply g
-    rw [he, MonoidAlgebra.mapDomain_id]
-  let Ar : I → J → MonoidAlgebra ℤ f.range := fun i j => er (A i j)
+    simp_all
+  let Ar  := fun i j => er (A i j)
   have hvr : ∀ i, ∑ j, v j * subRingHom f.range (Ar i j) = 0 := by
     intro i
     simpa only [Ar, hinc] using hv i

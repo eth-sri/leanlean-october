@@ -1,3 +1,2 @@
-module
-public import RequestProject.TopologicalOrderCoverAcyclic
-public import RequestProject.RegularCoverAcyclicChains
+import RequestProject.TopologicalOrderCoverAcyclic
+import RequestProject.RegularCoverAcyclicChains

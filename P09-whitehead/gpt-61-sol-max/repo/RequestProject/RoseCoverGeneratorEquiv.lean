@@ -1,16 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RoseCoverCycleCoordinates
+import RequestProject.RoseCoverCycleCoordinates
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α P : Type u} [PartialOrder P] (f : P → Rose α) (hf : IsPosetCover f)
 
 /-- Actual lifted midpoint vertices, with their actual generator label. -/
@@ -38,7 +33,7 @@ theorem roseCoverMidpointEdge_injective : Function.Injective (roseCoverMidpointE
 
 theorem roseCoverMidpointEdge_surjective : Function.Surjective (roseCoverMidpointEdge f hf) := by
   rintro ⟨e, i, he⟩
-  have hv : f e.val.1 = Rose.mid i :=
+  have hv  :=
     congrArg (fun r : StrictOrdEdge (Rose α) => r.val.1) he
   refine ⟨⟨(e.val.1, i), hv⟩, ?_⟩
   apply Subtype.ext

@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TreeChainTopological
-
-@[expose] public section
+import RequestProject.TreeChainTopological
 
 /-! The reverse direction of the spanning-tree comparison for actual
 cellular inclusions. It lets a relative presentation extension be moved
@@ -10,7 +8,6 @@ back to the original graph without losing its vanishing on pi2.
  -/
 
 namespace FiniteChains.Comb.SpanningTree
-universe u
 variable {X Y : Complex2.{u}} {TX : SpanningTree X} {TY : SpanningTree Y}
   [DecidableEq (NonTree TX)] [DecidableEq (NonTree TY)]
   {h : Hom X Y} (hiff : ∀ e : X.E, TY.isTree (h.onE e) ↔ TX.isTree e)
@@ -19,7 +16,6 @@ variable {X Y : Complex2.{u}} {TX : SpanningTree X} {TY : SpanningTree Y}
 theorem zeroPi2_of_zeroPi2_presInclHom
     (hz : ZeroPi2 (presInclHom (nonTreeIncl hiff) (nonTreeIncl_injective hiff hE)
       (treeRel TX) (treeRel TY) h.onF (treeRel_onF hiff))) : ZeroPi2 h := by
-  classical
   have hzero := (zeroPi2_presInclHom_iff (ρ := treeRel TX) (σ := treeRel TY)
     (nonTreeIncl hiff) (nonTreeIncl_injective hiff hE) h.onF (treeRel_onF hiff)).mp hz
   intro x z hz

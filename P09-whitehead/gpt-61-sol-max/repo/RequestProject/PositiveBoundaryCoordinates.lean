@@ -1,24 +1,25 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CutPuncturedBoundary
-public import RequestProject.VertexPunctureIntersection
-public import RequestProject.OrderComplexPi1Transfer
-public import RequestProject.OrderComplexRetraction
-public import RequestProject.OrderComplexGluing
-
-@[expose] public section
+import RequestProject.CutPuncturedBoundary
+import RequestProject.VertexPunctureIntersection
+import RequestProject.OrderComplexPi1Transfer
+import RequestProject.OrderComplexRetraction
+import RequestProject.OrderComplexGluing
 
 /-! Coordinate restriction and extension on a positive three-cube's retained boundary. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [Fintype V] [DecidableEq V] {A : CommRel V}
 
+  (t : QOld A)
+  (ht : t.1.sgn = 0)
+include ht in
 omit [Fintype V] in
-theorem retainedBoundary_coordinate_outside (t : QOld A) (ht : t.1.sgn = 0)
+theorem retainedBoundary_coordinate_outside  
     (c : RetainedProperBoundary t) {v : V} (hv : v ∉ t.1.spx) :
     qCubeToCoordinate c.1.1 v = CubeCoord.pos := by
   have hc : v ∉ c.1.1.spx := fun h => hv (c.2.le.1 h)
-  have hs : c.1.1.sgn v = 0 := (c.2.le.2 v hv).trans (congrFun ht v)
+  have hs  := (c.2.le.2 v hv).trans (congrFun ht v)
   simp [qCubeToCoordinate, hc, hs]
 
 theorem old_coordinate_not_all_positive (c : QOld A) :
@@ -37,10 +38,11 @@ theorem old_coordinate_not_all_positive (c : QOld A) :
     exact hh.symm
   exact c.2 ⟨hspx, hs⟩
 
-def positiveBoundaryRestriction (t : QOld A) (ht : t.1.sgn = 0)
+include ht in
+def positiveBoundaryRestriction  
     (e : Fin 3 ≃ {v : V // v ∈ t.1.spx}) (c : RetainedProperBoundary t) :
     VertexPuncturedCube := by
-  let f : Cube (Fin 3) := fun i => qCubeToCoordinate c.1.1 (e i).1
+  let f  := fun i => qCubeToCoordinate c.1.1 (e i).1
   refine ⟨f, ?_, ?_⟩
   · intro he
     have hc : qCubeToCoordinate c.1.1 = qCubeToCoordinate t.1 := by
@@ -48,7 +50,7 @@ def positiveBoundaryRestriction (t : QOld A) (ht : t.1.sgn = 0)
       by_cases hv : v ∈ t.1.spx
       · obtain ⟨i, hi⟩ := e.surjective ⟨v, hv⟩
         have hh := congrFun he i
-        have hiv : (e i).1 = v := congrArg Subtype.val hi
+        have hiv  := congrArg Subtype.val hi
         change qCubeToCoordinate c.1.1 (e i).1 = CubeCoord.free at hh
         rw [hiv] at hh
         simpa only [qCubeToCoordinate, if_pos hv] using hh
@@ -61,43 +63,39 @@ def positiveBoundaryRestriction (t : QOld A) (ht : t.1.sgn = 0)
     by_cases hv : v ∈ t.1.spx
     · obtain ⟨i, hi⟩ := e.surjective ⟨v, hv⟩
       have hh := congrFun he i
-      have hiv : (e i).1 = v := congrArg Subtype.val hi
+      have hiv  := congrArg Subtype.val hi
       change qCubeToCoordinate c.1.1 (e i).1 = CubeCoord.pos at hh
       rwa [hiv] at hh
-    · exact retainedBoundary_coordinate_outside t ht c hv
+    · classical simp_all [FiniteChains.Davis.retainedBoundary_coordinate_outside]
 
-def extendPositiveCoordinates (t : QOld A)
-    (e : Fin 3 ≃ {v : V // v ∈ t.1.spx}) (c : Cube (Fin 3)) : Cube V :=
+variable (e : Fin 3 ≃ {v : V // v ∈ t.1.spx})
+variable (c : Cube (Fin 3))
+include e in
+def extendPositiveCoordinates 
+       :=
   fun v => if hv : v ∈ t.1.spx then c (e.symm ⟨v, hv⟩) else CubeCoord.pos
 
+include e in
 omit [Fintype V] in
-theorem extendPositiveCoordinates_inside (t : QOld A)
-    (e : Fin 3 ≃ {v : V // v ∈ t.1.spx}) (c : Cube (Fin 3)) (i : Fin 3) :
-    extendPositiveCoordinates t e c (e i).1 = c i := by
-  simp [extendPositiveCoordinates, (e i).2]
+theorem extendPositiveCoordinates_inside 
+      (i : Fin 3) :
+    extendPositiveCoordinates t e c (e i).1 = c i := by simp_all [extendPositiveCoordinates]
 
-def positiveBoundaryExtension (t : QOld A) (ht : t.1.sgn = 0)
+include ht in
+def positiveBoundaryExtension  
     (e : Fin 3 ≃ {v : V // v ∈ t.1.spx}) (c : VertexPuncturedCube) :
     RetainedProperBoundary t := by
   classical
   let f := extendPositiveCoordinates t e c.1
   have hsub : freeSet f ⊆ t.1.spx := by
-    intro v hv
-    by_contra hn
-    have hh := mem_freeSet.mp hv
-    simp only [f, extendPositiveCoordinates, dif_neg hn] at hh
-    cases hh
-  let d : QCube A := coordinateToQCube ⟨f, isSimplex_subset A hsub t.1.isSimplex⟩
+    classical grind [FiniteChains.mem_freeSet, FiniteChains.Davis.extendPositiveCoordinates.eq_1, extendPositiveCoordinates]
+  let d  := coordinateToQCube ⟨f, isSimplex_subset A hsub t.1.isSimplex⟩
   have hd : qCubeToCoordinate d = f := coordinateToQCube_toCoordinate _
   have hdt : d ≤ t.1 := by
     apply (qCubeToCoordinate_face_iff d t.1).mpr
     intro v
     rw [hd, qCubeToCoordinate_sgn_zero t.1 ht]
-    by_cases hv : v ∈ t.1.spx
-    · left
-      simp [posCube, hv]
-    · right
-      simp [f, extendPositiveCoordinates, posCube, hv]
+    classical aesop (add simp [posCube, f, extendPositiveCoordinates])
   have hold : ¬ (d.spx = ∅ ∧ d.sgn = 0) := by
     rintro ⟨hspx, hs⟩
     apply c.2.2
@@ -120,13 +118,14 @@ def positiveBoundaryExtension (t : QOld A) (ht : t.1.sgn = 0)
   rw [← hi]
   simp [qCubeToCoordinate, (e i).2]
 
-theorem positiveBoundaryExtension_coordinates (t : QOld A) (ht : t.1.sgn = 0)
+include ht in
+theorem positiveBoundaryExtension_coordinates  
     (e : Fin 3 ≃ {v : V // v ∈ t.1.spx}) (c : VertexPuncturedCube) :
     qCubeToCoordinate (positiveBoundaryExtension t ht e c).1.1 =
-      extendPositiveCoordinates t e c.1 := by
-  exact coordinateToQCube_toCoordinate _
+      extendPositiveCoordinates t e c.1 := coordinateToQCube_toCoordinate _
 
-def positiveBoundaryOrderIso (t : QOld A) (ht : t.1.sgn = 0)
+include ht in
+def positiveBoundaryOrderIso  
     (e : Fin 3 ≃ {v : V // v ∈ t.1.spx}) :
     RetainedProperBoundary t ≃o VertexPuncturedCube where
   toFun := positiveBoundaryRestriction t ht e
@@ -145,8 +144,7 @@ def positiveBoundaryOrderIso (t : QOld A) (ht : t.1.sgn = 0)
       have hiv : (e i).1 = v := congrArg Subtype.val hi
       rw [← hiv, extendPositiveCoordinates_inside]
       rfl
-    · rw [retainedBoundary_coordinate_outside t ht c hv]
-      simp [extendPositiveCoordinates, hv]
+    · simp_all [retainedBoundary_coordinate_outside, extendPositiveCoordinates]
   right_inv c := by
     apply Subtype.ext
     funext i
@@ -162,47 +160,48 @@ def positiveBoundaryOrderIso (t : QOld A) (ht : t.1.sgn = 0)
       by_cases hv : v ∈ t.1.spx
       · obtain ⟨i, hi⟩ := e.surjective ⟨v, hv⟩
         have hh := h i
-        have hiv : (e i).1 = v := congrArg Subtype.val hi
-        change qCubeToCoordinate d.1.1 (e i).1 = CubeCoord.free ∨
-          qCubeToCoordinate c.1.1 (e i).1 = qCubeToCoordinate d.1.1 (e i).1 at hh
-        rwa [hiv] at hh
-      · right
-        rw [retainedBoundary_coordinate_outside t ht c hv,
-          retainedBoundary_coordinate_outside t ht d hv]
+        have hiv  := congrArg Subtype.val hi
+        aesop
+      simp_all [retainedBoundary_coordinate_outside]
     · intro h i
       exact h (e i).1
 
-noncomputable def positiveThreeCubeCoordinates (t : QOld A) (hcard : t.1.spx.card = 3) :
+variable (hcard : t.1.spx.card = 3)
+noncomputable def positiveThreeCubeCoordinates   :
     Fin 3 ≃ {v : V // v ∈ t.1.spx} :=
   (Fintype.equivFinOfCardEq (by simpa using hcard)).symm
 
-theorem positiveRetainedBoundary_simplyConnected (t : QOld A)
-    (ht : t.1.sgn = 0) (hcard : t.1.spx.card = 3) :
-    SimplyConnected (orderCx (RetainedProperBoundary t)) :=
-  simplyConnected_orderCx_of_orderIso
-    (positiveBoundaryOrderIso t ht (positiveThreeCubeCoordinates t hcard))
-    vertexPuncturedCube_simplyConnected
+include ht in
+abbrev positiveRetainedBoundary_simplyConnected 
+       :=
+  FiniteChains.Comb.simplyConnected_orderCx_of_orderIso
+    (FiniteChains.Davis.positiveBoundaryOrderIso t ht (FiniteChains.Davis.positiveThreeCubeCoordinates t hcard))
+    FiniteChains.Davis.vertexPuncturedCube_simplyConnected
 
-theorem positiveRetainedBoundary_connected (t : QOld A)
-    (ht : t.1.sgn = 0) (hcard : t.1.spx.card = 3) :
-    IsConnected (orderCx (RetainedProperBoundary t)) :=
-  isConnected_orderCx_of_orderIso
-    (positiveBoundaryOrderIso t ht (positiveThreeCubeCoordinates t hcard))
-    vertexPuncturedCube_connected
+include ht in
+abbrev positiveRetainedBoundary_connected 
+       :=
+  FiniteChains.Comb.isConnected_orderCx_of_orderIso
+    (FiniteChains.Davis.positiveBoundaryOrderIso t ht (FiniteChains.Davis.positiveThreeCubeCoordinates t hcard))
+    FiniteChains.Davis.vertexPuncturedCube_connected
 
-theorem positiveCutPuncturedBoundary_simplyConnected (t : QOld A)
-    (hne : t.1.spx.Nonempty) (ht : t.1.sgn = 0) (hcard : t.1.spx.card = 3) :
-    SimplyConnected (orderCx (CutPuncturedBoundary t hne)) :=
-  cutPuncturedBoundary_simplyConnected_of_retained t hne
-    (positiveRetainedBoundary_simplyConnected t ht hcard)
+variable (hne : t.1.spx.Nonempty)
+  (ht : t.1.sgn = 0)
+variable (hcard : t.1.spx.card = 3)
+include hne in
+abbrev positiveCutPuncturedBoundary_simplyConnected 
+        :=
+  FiniteChains.Davis.cutPuncturedBoundary_simplyConnected_of_retained t hne
+    (FiniteChains.Davis.positiveRetainedBoundary_simplyConnected t ht hcard)
 
-theorem positiveCutPuncturedBoundary_connected (t : QOld A)
-    (hne : t.1.spx.Nonempty) (ht : t.1.sgn = 0) (hcard : t.1.spx.card = 3) :
-    IsConnected (orderCx (CutPuncturedBoundary t hne)) :=
-  cutPuncturedBoundary_connected_of_retained t hne
-    (positiveRetainedBoundary_connected t ht hcard)
+include hne in
+abbrev positiveCutPuncturedBoundary_connected 
+        :=
+  FiniteChains.Davis.cutPuncturedBoundary_connected_of_retained t hne
+    (FiniteChains.Davis.positiveRetainedBoundary_connected t ht hcard)
 
-def swappedCutBoundaryOrderIso (t : QOld A) (hne : t.1.spx.Nonempty) :
+include hne in
+def swappedCutBoundaryOrderIso   :
     {x : TruncatedCell A // x ≠ Sum.inr (fullCutCell t hne) ∧ x < Sum.inl t} ≃o
       CutPuncturedBoundary t hne where
   toFun x := ⟨x.1, x.2.2, x.2.1⟩
@@ -211,20 +210,18 @@ def swappedCutBoundaryOrderIso (t : QOld A) (hne : t.1.spx.Nonempty) :
   right_inv _ := rfl
   map_rel_iff' := by intros; rfl
 
-theorem positiveCutPuncturedBoundary_connectedIn (t : QOld A)
-    (hne : t.1.spx.Nonempty) (ht : t.1.sgn = 0) (hcard : t.1.spx.card = 3) :
-    ConnectedIn (fun x : TruncatedCell A =>
-      x ≠ Sum.inr (fullCutCell t hne) ∧ x < Sum.inl t) := by
-  apply connectedIn_of_isConnected
-  exact isConnected_orderCx_of_orderIso (swappedCutBoundaryOrderIso t hne)
-    (positiveCutPuncturedBoundary_connected t hne ht hcard)
+include hne in
+abbrev positiveCutPuncturedBoundary_connectedIn 
+        :=
+  FiniteChains.Comb.connectedIn_of_isConnected
+    (FiniteChains.Comb.isConnected_orderCx_of_orderIso (FiniteChains.Davis.swappedCutBoundaryOrderIso t hne)
+      (FiniteChains.Davis.positiveCutPuncturedBoundary_connected t hne ht hcard))
 
-theorem positiveCutPuncturedBoundary_simplyConnectedIn (t : QOld A)
-    (hne : t.1.spx.Nonempty) (ht : t.1.sgn = 0) (hcard : t.1.spx.card = 3) :
-    SimplyConnectedIn (fun x : TruncatedCell A =>
-      x ≠ Sum.inr (fullCutCell t hne) ∧ x < Sum.inl t) := by
-  apply simplyConnectedIn_of_simplyConnected
-  exact simplyConnected_orderCx_of_orderIso (swappedCutBoundaryOrderIso t hne)
-    (positiveCutPuncturedBoundary_simplyConnected t hne ht hcard)
+include hne in
+abbrev positiveCutPuncturedBoundary_simplyConnectedIn 
+        :=
+  FiniteChains.Comb.simplyConnectedIn_of_simplyConnected
+    (FiniteChains.Comb.simplyConnected_orderCx_of_orderIso (FiniteChains.Davis.swappedCutBoundaryOrderIso t hne)
+      (FiniteChains.Davis.positiveCutPuncturedBoundary_simplyConnected t hne ht hcard))
 
 end FiniteChains.Davis

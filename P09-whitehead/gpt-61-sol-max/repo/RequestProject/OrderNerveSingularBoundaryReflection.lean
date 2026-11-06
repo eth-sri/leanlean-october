@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveReturnHomotopy
-
-@[expose] public section
+import RequestProject.OrderNerveReturnHomotopy
 
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
@@ -24,14 +22,14 @@ theorem orderNerveExplicitSingular_reflects_boundaries (n : ℕ)
     (orderSingularToNerve_mem_inc _ _) (orderReturnHomotopy_mem_inc _ _)
   have hd : Nerve.bdry w = orderNerveGradedEncode (n + 1) c := by
     dsimp only [w]
-    rw (config := { transparency := .default }) [map_add, orderSingularToNerve_boundary, hb, orderReturnHomotopy_identity,
+    rw  [map_add, orderSingularToNerve_boundary, hb, orderReturnHomotopy_identity,
       hc, map_zero, sub_zero]
     change orderNerveRoundTrip P (n + 1) c +
       (orderNerveGradedEncode (n + 1) c - orderNerveRoundTrip P (n + 1) c) = _
     abel
   refine ⟨orderNerveGradedDecode (n + 2) w, ?_⟩
   apply orderNerveGradedEncode_injective (n + 1)
-  rw (config := { transparency := .default }) [orderNerveGradedEncode_boundary, orderNerveGradedEncode_decode _ hw,
+  rw  [orderNerveGradedEncode_boundary, orderNerveGradedEncode_decode _ hw,
     ← Nerve.lengthProjection_bdry, hd, orderNerveGradedEncode_length]
 
 end FiniteChains.Comb

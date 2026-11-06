@@ -1,3 +1,2 @@
-module
-public import RequestProject.GenusCappedMathlibHomologyPushdown
-public import RequestProject.OrderNerveSingularHomologyComparison
+import RequestProject.GenusCappedMathlibHomologyPushdown
+import RequestProject.OrderNerveSingularHomologyComparison

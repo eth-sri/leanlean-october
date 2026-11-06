@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresCylinderRoseCover
-public import RequestProject.ConeAdjBaseCover
-
-@[expose] public section
+import RequestProject.PresCylinderRoseCover
+import RequestProject.ConeAdjBaseCover
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → PresPos w)
 
@@ -23,19 +20,14 @@ noncomputable def presCoverRoseFibreEquiv (x : Rose α) :
   invFun p := by
     let b : {p : P // f p ∈ coneAdjBaseSet (S := circSet w)} :=
       ⟨p.val, cylIn (aHom w) x, p.property.symm⟩
-    have hb : coneAdjCoverBaseEnd f b = cylIn (aHom w) x :=
+    have hb  :=
       Sum.inl.inj ((coneAdjCoverBaseEnd_spec f b).trans p.property)
     let q : cylinderCoverRoseSet w (coneAdjCoverBaseEnd f) := ⟨b, x, hb⟩
     refine ⟨q, ?_⟩
     exact cylIn_injective (aHom w)
       ((cylinderCoverRoseEnd_projection w (coneAdjCoverBaseEnd f) q).trans hb)
-  left_inv p := by
-    apply Subtype.ext
-    apply Subtype.ext
-    apply Subtype.ext
-    rfl
-  right_inv p := by
-    apply Subtype.ext
+  left_inv p := rfl
+  right_inv p := Subtype.ext
     rfl
 
 end FiniteChains.PresModel

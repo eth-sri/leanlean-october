@@ -1,18 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresUniversalGroupRingBoundary
-public import RequestProject.CoverFoxTranslatedPrefixSum
-public import RequestProject.FoxFinsupp
+import RequestProject.PresUniversalGroupRingBoundary
+import RequestProject.CoverFoxTranslatedPrefixSum
+import RequestProject.FoxFinsupp
 
-@[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} [DecidableEq α] (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
@@ -32,10 +27,7 @@ theorem presUniversalGroupRingBoundary_actual_fox
   intro k _
   rw [Finsupp.smul_apply]
   by_cases hi : i = ((w p.val.2)[k.val]).1
-  · subst i
-    simp only [Finsupp.single_eq_same]
-    cases hb : ((w p.val.2)[k.val]).2 <;>
-      simp
+  · aesop
   · simp [hi]
 
 /-- Every group-translated geometric basis column is the corresponding Fox column. -/
@@ -48,7 +40,7 @@ theorem presUniversalGroupRingBoundary_fox_single (g : PresGroup ρ) (j : J) (i 
   have hg : (presGroupCocycle ρ w hw).readVertex (ptBase w) p.val.1 = g :=
     congrArg Prod.fst he
   have hj : p.val.2 = j := congrArg Prod.snd he
-  simpa only [hg, hj] using presUniversalGroupRingBoundary_actual_fox ρ w hw hpos p i
+  simpa [hg, hj] using presUniversalGroupRingBoundary_actual_fox ρ w hw hpos p i
 
 /-- The genuine universal geometric boundary equals the actual algebraic Fox boundary. -/
 theorem presUniversalGroupRingBoundary_eq_fox :
@@ -58,7 +50,7 @@ theorem presUniversalGroupRingBoundary_eq_fox :
   intro j r
   induction r using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add r s hr hs => simp only [Finsupp.single_add, map_add, hr, hs]
+  | add r s hr hs => simp_all
   | single g n =>
     have hn : MonoidAlgebra.single g n = n • MonoidAlgebra.single g (1 : ℤ) := by
       simp [MonoidAlgebra.smul_single]

@@ -1,3 +1,2 @@
-module
-public import RequestProject.OrderNerveRealizationSubtypeCells
-public import RequestProject.OrderNervePosetCoverVertexStars
+import RequestProject.OrderNerveRealizationSubtypeCells
+import RequestProject.OrderNervePosetCoverVertexStars

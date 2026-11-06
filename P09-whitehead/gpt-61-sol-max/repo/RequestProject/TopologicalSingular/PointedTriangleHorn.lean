@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.PointedSingularTriangle
-
-@[expose] public section
+import RequestProject.TopologicalSingular.PointedSingularTriangle
 
 namespace FiniteChains.TopologicalSingular
 variable {X : Type} [TopologicalSpace X] {x : X}
@@ -17,14 +15,11 @@ theorem pointed_triangle_horn_exists (i : Fin 4)
         face k (face j tau) = ContinuousMap.const (Domain 1) x) := by
   obtain ⟨tau, htau⟩ := singular_horn_filler_of_face_compatible i
     (fun j _ => (a j).map) (by
-      intro j k hj hk
-      rw [(a j).based, (a (j.succAbove k)).based])
+      classical simp_all [FiniteChains.TopologicalSingular.PointedSingularTriangle.based])
   refine ⟨tau, htau, ?_⟩
   intro j k
   by_cases hj : j = i
-  · subst j
-    rw [singular_double_face_swap tau i k,
-      htau (i.succAbove k) (Fin.succAbove_ne i k), (a (i.succAbove k)).based]
+  · classical simp_all [FiniteChains.TopologicalSingular.singular_double_face_swap, FiniteChains.TopologicalSingular.PointedSingularTriangle.based]
   · rw [htau j hj, (a j).based]
 
 end FiniteChains.TopologicalSingular

@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveAffineEdgePath
-public import RequestProject.FiniteSimpleArcConcatenation
-
-@[expose] public section
+import RequestProject.OrderNerveAffineEdgePath
+import RequestProject.FiniteSimpleArcConcatenation
 
 /-! Realizing an explicitly enumerated finite rank-one poset cycle gives
 an actual topological circle. All topological assertions follow from exact
@@ -11,7 +9,7 @@ affine edge coordinates. Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval
-open Set Topology
+
 
 namespace FiniteChains.Comb
 open RelativeAttachment
@@ -35,25 +33,23 @@ namespace FinitePosetCycle
 
 variable {P : Type} [PartialOrder P] {n : ℕ} (C : FinitePosetCycle P n)
 
-def edge (i : Fin (n + 1)) := orderNerveComparablePath (C.consecutive i)
+  (i : Fin (n + 1))
+def edge  := orderNerveComparablePath (C.consecutive i)
 def lastEdge := orderNerveComparablePath C.closing
 
-theorem edge_coordinates (i : Fin (n + 1)) (t : I) (p : P) :
+theorem edge_coordinates  (t : I) (p : P) :
     orderNerveRealizationCoordinates P (C.edge i t) p =
       (1 - (t : ℝ)) * (if C.vertex i.castSucc = p then 1 else 0) +
         (t : ℝ) * (if C.vertex i.succ = p then 1 else 0) :=
   orderNerveComparablePath_coordinates _ _ _
 
-theorem lastEdge_coordinates (t : I) (p : P) :
-    orderNerveRealizationCoordinates P (C.lastEdge t) p =
-      (1 - (t : ℝ)) * (if C.vertex (Fin.last (n + 1)) = p then 1 else 0) +
-        (t : ℝ) * (if C.vertex 0 = p then 1 else 0) :=
-  orderNerveComparablePath_coordinates _ _ _
+abbrev lastEdge_coordinates (t : I) (p : P)  :=
+  FiniteChains.Comb.orderNerveComparablePath_coordinates C.closing t p
 
 theorem vne {i j : Fin (n + 2)} (h : i.val ≠ j.val) : C.vertex i ≠ C.vertex j :=
   fun he => h (congrArg Fin.val (C.vertex.injective he))
 
-theorem edge_injective (i : Fin (n + 1)) : Function.Injective (C.edge i) :=
+theorem edge_injective  : Function.Injective (C.edge i) :=
   orderNerveComparablePath_injective _ (C.vne (by simp))
 
 theorem lastEdge_injective : Function.Injective C.lastEdge :=
@@ -77,8 +73,7 @@ theorem edge_meet (i j : Fin (n + 1)) (hij : i < j) (s t : I)
   exact ⟨Subtype.ext (show (s : ℝ) = 1 by linarith),
     Subtype.ext (show (t : ℝ) = 0 by linarith)⟩
 
-def «prefix» : Path (orderNerveRealizationVertex (C.vertex 0))
-    (orderNerveRealizationVertex (C.vertex (Fin.last (n + 1)))) :=
+def «prefix»  :=
   arcConcat n (orderNerveRealizationVertex ∘ C.vertex) C.edge
 
 theorem prefix_injective : Function.Injective C.prefix :=
@@ -116,11 +111,9 @@ theorem prefix_meet_last (s t : I) (h : C.prefix s = C.lastEdge t) :
     have ht : t = 0 := Subtype.ext (show (t : ℝ) = 0 by linarith)
     exact Or.inr (h.trans (by rw [ht]; exact C.lastEdge.source))
 
-def traversal : Path (orderNerveRealizationVertex (C.vertex 0))
-    (orderNerveRealizationVertex (C.vertex 0)) := C.prefix.trans C.lastEdge
+def traversal  := C.prefix.trans C.lastEdge
 
-theorem traversal_fiber (s t : I) (h : C.traversal s = C.traversal t) :
-    s = t ∨ (s = 0 ∧ t = 1) ∨ (s = 1 ∧ t = 0) :=
+abbrev traversal_fiber (s t : I) (h : C.traversal s = C.traversal t)  :=
   path_trans_loop_fiber C.prefix C.lastEdge C.prefix_injective C.lastEdge_injective
     C.prefix_meet_last h
 
@@ -140,18 +133,18 @@ theorem support_pair [Fintype P] (x : orderNerveRealization P) :
     by_contra hn
     push_neg at hn
     have hs : ∑ a, c a ≤ 0 := Finset.sum_nonpos (fun a _ => hn a)
-    have he : ∑ a, c a = 1 := orderNerveRealizationCoordinates_sum x
+    have he  := orderNerveRealizationCoordinates_sum x
     linarith
   obtain ⟨a, ha⟩ := hpositive
   have hc := orderNerveRealizationCoordinates_support_chain x
   by_cases hb : ∃ b, b ≠ a ∧ 0 < c b
   · obtain ⟨b, hba, hb⟩ := hb
-    have hab : a ≤ b ∨ b ≤ a := hc ha hb hba.symm
+    have hab  := hc ha hb hba.symm
     refine ⟨a, b, hba.symm, hab, ?_⟩
     intro p hpa hpb
     apply le_antisymm _ (orderNerveRealizationCoordinates_nonneg x p)
     by_contra hp
-    have hp' : 0 < c p := lt_of_not_ge hp
+    have hp'  := lt_of_not_ge hp
     have h₁ := C.height_ne hba.symm hab
     have h₂ := C.height_ne hpa (hc hp' ha hpa)
     have h₃ := C.height_ne hpb (hc hp' hb hpb)
@@ -160,20 +153,12 @@ theorem support_pair [Fintype P] (x : orderNerveRealization P) :
     have hp₁ := C.height_le p
     omega
   · have hz : ∀ p, p ≠ a → c p = 0 := by
-      intro p hpa
-      apply le_antisymm _ (orderNerveRealizationCoordinates_nonneg x p)
-      exact le_of_not_gt (fun hp => hb ⟨p, hpa, hp⟩)
+      grind [FiniteChains.Comb.orderNerveRealizationCoordinates_nonneg]
     let k := C.vertex.symm a
     by_cases hk : k = Fin.last (n + 1)
-    · have he : C.vertex (Fin.last (n + 1)) = a :=
-        (congrArg C.vertex hk).symm.trans (C.vertex.apply_symm_apply a)
-      refine ⟨a, C.vertex 0, ?_, ?_, fun p hpa _ => hz p hpa⟩
-      · rw [← he]
-        exact C.vne (by simp)
-      · rw [← he]
-        exact C.closing
+    · classical grind [FiniteChains.Comb.FinitePosetCycle.vne, FiniteChains.Comb.FinitePosetCycle.closing]
     · obtain ⟨i, hi⟩ := Fin.exists_castSucc_eq.mpr hk
-      have he : C.vertex i.castSucc = a :=
+      have he  :=
         (congrArg C.vertex hi).trans (C.vertex.apply_symm_apply a)
       refine ⟨a, C.vertex i.succ, ?_, ?_, fun p hpa _ => hz p hpa⟩
       · rw [← he]
@@ -182,7 +167,7 @@ theorem support_pair [Fintype P] (x : orderNerveRealization P) :
         exact C.consecutive i
 
 theorem traversal_surjective : Function.Surjective C.traversal := by
-  letI : Fintype P := Fintype.ofEquiv (Fin (n + 2)) C.vertex
+  letI  := Fintype.ofEquiv (Fin (n + 2)) C.vertex
   intro x
   obtain ⟨a, b, hne, hab, hs⟩ := C.support_pair x
   rcases C.edges a b hne hab with ⟨i, ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
@@ -209,8 +194,8 @@ theorem traversal_surjective : Function.Surjective C.traversal := by
     rw [Path.trans_range]
     exact Or.inr ⟨t, ht⟩
 
-def boundaryHomeomorph : orderNerveRealization P ≃ₜ UnitBoundary (Fin 2 → ℝ) :=
+def boundaryHomeomorph  :=
   (simpleLoopBoundaryHomeomorph C.traversal C.traversal_surjective C.traversal_fiber).symm
 
-end FinitePosetCycle
-end FiniteChains.Comb
+end FiniteChains.Comb.FinitePosetCycle
+

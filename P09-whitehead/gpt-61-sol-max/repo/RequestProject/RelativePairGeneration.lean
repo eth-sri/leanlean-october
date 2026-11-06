@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RelativePairInjection
-public import RequestProject.RelativeCoreSlides
-public import RequestProject.FoxCoordinateSubstitution
-public import RequestProject.Pi2Extension
-
-@[expose] public section
+import RequestProject.RelativePairInjection
+import RequestProject.RelativeCoreSlides
+import RequestProject.FoxCoordinateSubstitution
+import RequestProject.Pi2Extension
 
 /-! Actual simultaneous rule-1 generation. Distinct pairs have disjoint
 Fox coordinates. The first coordinate of the pair at z is multiplied by
@@ -16,8 +14,6 @@ All cell and coefficient chains are finitely supported. Unverified source.
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -46,7 +42,7 @@ variable {A Z J : Type}
 def pairOldCoordinate : PairGen A Z → A ⊕ Z :=
   Sum.elim Sum.inl (fun p => Sum.inr p.1)
 
-def pairFoxWeight (i : PairGen A Z) : FreeGroupRing (PairGen A Z) :=
+def pairFoxWeight (i : PairGen A Z)  :=
   fox i (pairSubstitution (FreeGroup.of (pairOldCoordinate i)))
 
 theorem pairSubstitution_generator_fox (i : PairGen A Z) (j : A ⊕ Z) :
@@ -61,8 +57,7 @@ theorem pairSubstitution_generator_fox (i : PairGen A Z) (j : A ⊕ Z) :
     | inl a =>
         cases j with
         | inl b =>
-            have hab : a ≠ b := by simpa [pairOldCoordinate] using h
-            simp [fox_of, hab]
+            simp_all [pairOldCoordinate]
         | inr z =>
             simp [commutatorElement_def, fox_mul, fox_inv, fox_of]
     | inr p =>
@@ -73,15 +68,13 @@ theorem pairSubstitution_generator_fox (i : PairGen A Z) (j : A ⊕ Z) :
             obtain ⟨p, b⟩ := p
             simp [commutatorElement_def, fox_mul, fox_inv, fox_of, hpz]
 
-theorem pairSubstitution_fox (i : PairGen A Z) (w : FreeGroup (A ⊕ Z)) :
-    fox i (pairSubstitution w) =
-      MonoidAlgebra.mapDomainRingHom ℤ pairSubstitution (fox (pairOldCoordinate i) w) *
-        pairFoxWeight i :=
-  fox_subst_weighted_coordinate (pairSubstitution (A := A) (Z := Z))
-    (pairOldCoordinate i) i (pairFoxWeight i) (pairSubstitution_generator_fox i) w
+abbrev pairSubstitution_fox (i : PairGen A Z) (w : FreeGroup (A ⊕ Z))  :=
+  FiniteChains.fox_subst_weighted_coordinate FiniteChains.RelativeNormalForm.pairSubstitution
+    (FiniteChains.RelativeNormalForm.pairOldCoordinate i) i (FiniteChains.RelativeNormalForm.pairFoxWeight i)
+    (FiniteChains.RelativeNormalForm.pairSubstitution_generator_fox i) w
 
 @[simp] theorem pairFoxWeight_core (a : A) : pairFoxWeight (Sum.inl (β := Z × Bool) a) = 1 := by
-  simp [pairFoxWeight, pairOldCoordinate, fox_of]
+  simp [pairFoxWeight, pairOldCoordinate]
 
 def pairConjugate (z : Z) : FreeGroup (PairGen A Z) :=
   FreeGroup.of (Sum.inr (z, false)) * FreeGroup.of (Sum.inr (z, true)) *
@@ -115,8 +108,9 @@ theorem pairCoefficients_proj (x : FreeGroupRing (A ⊕ Z)) :
 def pairOldBoundary := fsRingMapBoundary (pairCoefficients ρ)
   (fun j => coverFoxGradient (relSub ρ) (ρ j))
 
+variable (x : J →₀ MonoidAlgebra ℤ (PresGroup (pairRel ρ)))
 theorem pair_boundary_coordinate
-    (x : J →₀ MonoidAlgebra ℤ (PresGroup (pairRel ρ))) (i : PairGen A Z) :
+     (i : PairGen A Z) :
     coverSecondBoundary (relSub (pairRel ρ)) (pairRel ρ) x i =
       pairOldBoundary ρ x (pairOldCoordinate i) *
         proj (relSub (pairRel ρ)) (pairFoxWeight i) := by
@@ -153,14 +147,13 @@ theorem pairConjugate_infinite_order (z : Z) :
 /-- Every new cycle is an actual old Fox cycle over the enlarged coefficient
 ring. This is the content of rule 1, before the injective base-change step. -/
 theorem pair_cycle_reflection
-    (x : J →₀ MonoidAlgebra ℤ (PresGroup (pairRel ρ)))
+    
     (hx : FSIsFoxCycle (pairRel ρ) x) : pairOldBoundary ρ x = 0 := by
   ext i : 1
   cases i with
   | inl a =>
       have h := congrArg (fun c => c (Sum.inl a)) hx
-      simpa only [pair_boundary_coordinate, pairOldCoordinate, Sum.elim_inl, Sum.elim_inr, pairFoxWeight_core,
-        map_one, mul_one, Finsupp.zero_apply] using h
+      simp_all [pair_boundary_coordinate, pairOldCoordinate]
   | inr z =>
       apply mul_one_sub_single_eq_zero (pairConjugate_infinite_order ρ z)
       have h := congrArg (fun c => c (Sum.inr (z, false))) hx
@@ -171,15 +164,9 @@ def pairStructuralMap : PresMorFS ρ (pairRel ρ) where
   hom := pairSubGroupHom ρ
   cells := fun x => x.mapRange (pairCoefficients ρ) (map_zero _)
   cells_add := by
-    intro x y
-    ext j : 1
-    simp only [Finsupp.mapRange_apply, Finsupp.add_apply]
-    exact map_add _ _ _
+    aesop
   cells_smul := by
-    intro a x
-    ext j : 1
-    simp only [Finsupp.mapRange_apply, Finsupp.smul_apply, smul_eq_mul]
-    exact map_mul _ _ _
+    aesop
   cells_cycle := by
     intro x hx
     change coverSecondBoundary _ _ _ = 0
@@ -201,5 +188,5 @@ theorem pairStructuralMap_generates : FSGenerates (pairStructuralMap ρ) := by
     (pairSubGroupHom_injective ρ)
     (fun j => coverFoxGradient (relSub ρ) (ρ j)) x (pair_cycle_reflection ρ x hx)
 
-end RelativeNormalForm
-end FiniteChains
+end FiniteChains.RelativeNormalForm
+

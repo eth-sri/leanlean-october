@@ -1,21 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Pi2GenerationDescent
-
-@[expose] public section
+import RequestProject.Pi2GenerationDescent
 
 /-! Change the base vertex in an actual spherical generation statement.
 Both directions are genuine universal-cover path transports. Unverified source. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X : Complex2.{u}} {x y : X.V} {p : List (X.E × Bool)}
 
-theorem shiftV_reverse_cancel (hp : IsPath X.src X.tgt p x y) (v : UV X x) :
+variable (hp : IsPath X.src X.tgt p x y)
+theorem shiftV_reverse_cancel  (v : UV X x) :
     shiftV hp (shiftV (isPath_revPath hp) v) = v := by
   induction v using UV.ind with
   | h q =>
@@ -25,13 +21,13 @@ theorem shiftV_reverse_cancel (hp : IsPath X.src X.tgt p x y) (v : UV X x) :
       rw [endpt_shiftP, endpt_shiftP]
       have h := Htpy.append_congr (hp.append (isPath_revPath hp)) q.property
         (htpy_append_revPath hp) (Htpy.refl q.val)
-      simpa only [List.append_assoc, List.nil_append] using h
+      simpa [List.append_assoc, List.nil_append] using h
 
-theorem shiftF_reverse_cancel (hp : IsPath X.src X.tgt p x y) (f : UF X x) :
+theorem shiftF_reverse_cancel  (f : UF X x) :
     shiftF hp (shiftF (isPath_revPath hp) f) = f :=
   Subtype.ext (Prod.ext (shiftV_reverse_cancel hp f.val.1) rfl)
 
-theorem chain2_shift_reverse_cancel (hp : IsPath X.src X.tgt p x y) (c : UF X x →₀ ℤ) :
+theorem chain2_shift_reverse_cancel  (c : UF X x →₀ ℤ) :
     chain2 (shiftHom hp) (chain2 (shiftHom (isPath_revPath hp)) c) = c := by
   change Finsupp.mapDomain (shiftF hp) (Finsupp.mapDomain (shiftF (isPath_revPath hp)) c) = c
   rw [← Finsupp.mapDomain_comp]

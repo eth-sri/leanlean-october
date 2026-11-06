@@ -1,13 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CylinderPoset
-public import RequestProject.ConeAdjPoset
-
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+import RequestProject.CylinderPoset
+import RequestProject.ConeAdjPoset
 
 namespace FiniteChains.Comb
 universe u

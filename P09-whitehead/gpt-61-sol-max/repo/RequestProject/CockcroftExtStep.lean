@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Pi2ExtensionInjective
-
-@[expose] public section
+import RequestProject.Pi2ExtensionInjective
 
 /-!
 # The extension steps of rule 1 preserve the Cockcroft property
@@ -23,15 +21,12 @@ integer combination of the augmentations of those cycles, hence zero.  Together 
   no hypothesis on the fundamental groups beyond the infinite-order condition of the paper.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
 
 namespace FiniteChains
 
 open MonoidAlgebra
 
-universe u
 
 variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
 variable (ρ : J → FreeGroup α) (w₀ : FreeGroup (Option α))
@@ -46,8 +41,6 @@ theorem augQ_mapDomain {G G' : Type*} [Group G] [Group G'] (f : G →* G')
   | zero => simp
   | add x y hx hy => simp only [map_add, hx, hy]
   | single g m =>
-      show (MonoidAlgebra.lift ℤ ℤ G' 1).toRingHom (MonoidAlgebra.mapDomain f (single g m)) = _
-      rw [MonoidAlgebra.mapDomain_single]
-      simp [MonoidAlgebra.lift_apply]
+      simp_all
 
 end FiniteChains

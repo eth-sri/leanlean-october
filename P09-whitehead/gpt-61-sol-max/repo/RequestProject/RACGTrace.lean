@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib
-
-@[expose] public section
+import Mathlib
 
 /-!
 # Traces: words modulo commutation of letters
@@ -36,10 +34,9 @@ Main results:
   commute, and can be moved there together**: this is the right-angled descent lemma.
 -/
 
-namespace FiniteChains
-namespace RACG
+namespace FiniteChains.RACG
 
-universe u
+
 
 variable {V : Type u}
 
@@ -51,39 +48,39 @@ inductive Swap (Cm : V → V → Prop) : List V → List V → Prop
   | cons (x : V) {l l' : List V} : Swap Cm l l' → Swap Cm (x :: l) (x :: l')
 
 /-- Equality of traces: words modulo commutation of adjacent commuting letters. -/
-def CEq (Cm : V → V → Prop) : List V → List V → Prop := Relation.ReflTransGen (Swap Cm)
+def CEq (Cm : V → V → Prop)  := Relation.ReflTransGen (Swap Cm)
 
 variable {Cm : V → V → Prop}
 
-theorem Swap.symm' (hs : ∀ {a b : V}, Cm a b → Cm b a) {l l' : List V} (h : Swap Cm l l') :
+  (hs : ∀ {a b : V}, Cm a b → Cm b a)
+  {l l' : List V}
+include hs in
+theorem Swap.symm'   (h : Swap Cm l l') :
     Swap Cm l' l := by
-  induction h with
-  | head h q => exact Swap.head (hs h) q
-  | cons x _ ih => exact Swap.cons x ih
+  classical
+  induction h <;> simp_all [FiniteChains.RACG.Swap.head, FiniteChains.RACG.Swap.cons]
 
-theorem Swap.length_eq {l l' : List V} (h : Swap Cm l l') : l.length = l'.length := by
-  induction h with
-  | head h q => simp
-  | cons x _ ih => simp [ih]
+theorem Swap.length_eq  (h : Swap Cm l l') : l.length = l'.length := by
+  induction h <;> simp_all
 
 theorem CEq.refl (l : List V) : CEq Cm l l := Relation.ReflTransGen.refl
 
 theorem CEq.trans {l l' l'' : List V} (h : CEq Cm l l') (h' : CEq Cm l' l'') : CEq Cm l l'' :=
   Relation.ReflTransGen.trans h h'
 
-theorem CEq.of_swap {l l' : List V} (h : Swap Cm l l') : CEq Cm l l' :=
+theorem CEq.of_swap  (h : Swap Cm l l') : CEq Cm l l' :=
   Relation.ReflTransGen.single h
 
-theorem CEq.symm (hs : ∀ {a b : V}, Cm a b → Cm b a) {l l' : List V} (h : CEq Cm l l') :
+include hs in
+theorem CEq.symm   (h : CEq Cm l l') :
     CEq Cm l' l := by
   induction h with
   | refl => exact CEq.refl _
   | tail _ hstep ih => exact CEq.trans (CEq.of_swap (hstep.symm' hs)) ih
 
-theorem CEq.length_eq {l l' : List V} (h : CEq Cm l l') : l.length = l'.length := by
-  induction h with
-  | refl => rfl
-  | tail _ hstep ih => exact ih.trans hstep.length_eq
+theorem CEq.length_eq  (h : CEq Cm l l') : l.length = l'.length := by
+  classical
+  induction h <;> grind [FiniteChains.RACG.Swap.length_eq, refl]
 
 theorem CEq.cons (x : V) {l l' : List V} (h : CEq Cm l l') : CEq Cm (x :: l) (x :: l') := by
   induction h with
@@ -106,7 +103,7 @@ def popStart [DecidableEq V] (s : V) : List V → List V
   | [] => []
   | a :: t => if a = s then t else a :: popStart s t
 
-@[simp] theorem popStart_nil [DecidableEq V] (s : V) : popStart s ([] : List V) = [] := rfl
+
 
 @[simp] theorem popStart_cons [DecidableEq V] (s a : V) (t : List V) :
     popStart s (a :: t) = if a = s then t else a :: popStart s t := rfl
@@ -121,60 +118,34 @@ def IsRed (Cm : V → V → Prop) : List V → Prop
 @[simp] theorem isRed_cons {a : V} {t : List V} :
     IsRed Cm (a :: t) ↔ IsRed Cm t ∧ ¬ canStart Cm a t := Iff.rfl
 
-section Basic
+section
 
 variable (hirr : ∀ a : V, ¬ Cm a a) (hsymm : ∀ {a b : V}, Cm a b → Cm b a)
 include hirr hsymm
 
-omit hirr in
+section
+omit hirr
 /-- `canStart` only depends on the trace. -/
 theorem canStart_swap {s : V} {l l' : List V} (h : Swap Cm l l') :
     canStart Cm s l ↔ canStart Cm s l' := by
-  induction h with
-  | @head a b hab q =>
-      have hba : Cm b a := hsymm hab
-      simp only [canStart_cons]
-      constructor
-      · rintro (rfl | ⟨hsa, rfl | ⟨hsb, hq⟩⟩) <;> tauto
-      · rintro (rfl | ⟨hsb, rfl | ⟨hsa, hq⟩⟩) <;> tauto
-  | cons x _ ih => simp only [canStart_cons, ih]
+  induction h <;> grind [canStart_cons]
 
-omit hirr in
 theorem canStart_ceq {s : V} {l l' : List V} (h : CEq Cm l l') :
     canStart Cm s l ↔ canStart Cm s l' := by
-  induction h with
-  | refl => exact Iff.rfl
-  | tail _ hstep ih => exact ih.trans (canStart_swap hsymm hstep)
+  induction h <;> grind [canStart_swap]
+end
 
 /-- Reducedness only depends on the trace. -/
 theorem isRed_swap {l l' : List V} (h : Swap Cm l l') : IsRed Cm l ↔ IsRed Cm l' := by
-  induction h with
-  | @head a b hab q =>
-      have hba : Cm b a := hsymm hab
-      have hne : a ≠ b := by rintro rfl; exact hirr _ hab
-      simp only [isRed_cons, canStart_cons]
-      constructor
-      · rintro ⟨⟨hq, hbq⟩, hstart⟩
-        refine ⟨⟨hq, fun hc => hstart (Or.inr ⟨hab, hc⟩)⟩, ?_⟩
-        rintro (h' | ⟨_, h'⟩)
-        · exact hne h'
-        · exact hbq h'
-      · rintro ⟨⟨hq, haq⟩, hstart⟩
-        refine ⟨⟨hq, fun hc => hstart (Or.inr ⟨hba, hc⟩)⟩, ?_⟩
-        rintro (h' | ⟨_, h'⟩)
-        · exact hne h'.symm
-        · exact haq h'
-  | @cons x l₀ l₀' hstep ih =>
-      simp only [isRed_cons, ih, canStart_swap (s := x) hsymm hstep]
+  induction h <;> grind [isRed_cons, canStart_cons, canStart_swap]
 
 theorem isRed_ceq {l l' : List V} (h : CEq Cm l l') : IsRed Cm l ↔ IsRed Cm l' := by
-  induction h with
-  | refl => exact Iff.rfl
-  | tail _ hstep ih => exact ih.trans (isRed_swap hirr hsymm hstep)
+  induction h <;> grind [isRed_swap]
 
 variable [DecidableEq V]
 
-omit hirr in
+section
+omit hirr
 /-- If `s` can be moved to the front, the trace is `s` followed by the rest. -/
 theorem ceq_popStart {s : V} {l : List V} (h : canStart Cm s l) :
     CEq Cm l (s :: popStart s l) := by
@@ -182,67 +153,48 @@ theorem ceq_popStart {s : V} {l : List V} (h : canStart Cm s l) :
   | nil => exact absurd h (canStart_nil s)
   | cons a t ih =>
       by_cases hat : a = s
-      · subst hat
-        simp only [popStart_cons, if_pos]
-        exact CEq.refl _
+      · simp_all [CEq.refl]
       · rcases h with h | ⟨hsa, ht⟩
         · exact absurd h hat
-        · have h1 : CEq Cm (a :: t) (a :: s :: popStart s t) := CEq.cons a (ih ht)
+        · have h1  := CEq.cons a (ih ht)
           have h2 : Swap Cm (a :: s :: popStart s t) (s :: a :: popStart s t) :=
             Swap.head (hsymm hsa) _
-          have h3 : CEq Cm (a :: t) (s :: a :: popStart s t) := h1.trans (CEq.of_swap h2)
+          have h3  := h1.trans (CEq.of_swap h2)
           simpa [hat] using h3
 
-omit hirr in
 theorem length_popStart {s : V} {l : List V} (h : canStart Cm s l) :
     (popStart s l).length + 1 = l.length := by
   have := (ceq_popStart hsymm h).length_eq
   simpa using this.symm
+end
 
-omit hsymm in
+section
+omit hsymm
+variable {s : V}
+  {l l' : List V}
 /-- `popStart` respects traces. -/
-theorem popStart_swap {s : V} {l l' : List V} (h : Swap Cm l l') :
+theorem popStart_swap   (h : Swap Cm l l') :
     CEq Cm (popStart s l) (popStart s l') := by
-  induction h with
-  | @head a b hab q =>
-      have hne : a ≠ b := by rintro rfl; exact hirr _ hab
-      by_cases hs : a = s
-      · subst hs
-        have hbs : b ≠ a := fun h => hne h.symm
-        simp only [popStart_cons, if_neg hbs]
-        exact CEq.refl _
-      · by_cases hbs : b = s
-        · subst hbs
-          simp only [popStart_cons, if_neg hs]
-          exact CEq.refl _
-        · simp only [popStart_cons, if_neg hs, if_neg hbs]
-          exact CEq.of_swap (Swap.head hab _)
-  | @cons x l₀ l₀' hstep ih =>
-      by_cases hx : x = s
-      · subst hx; simpa using CEq.of_swap hstep
-      · simpa [hx] using CEq.cons x ih
+  classical
+  induction h <;> aesop (add unsafe apply [rfl, FiniteChains.RACG.popStart_cons, if_neg, FiniteChains.RACG.CEq.refl, FiniteChains.RACG.CEq.of_swap, FiniteChains.RACG.Swap.head, FiniteChains.RACG.CEq.cons])
 
-omit hsymm in
-theorem popStart_ceq {s : V} {l l' : List V} (h : CEq Cm l l') :
+theorem popStart_ceq   (h : CEq Cm l l') :
     CEq Cm (popStart s l) (popStart s l') := by
-  induction h with
-  | refl => exact CEq.refl _
-  | tail _ hstep ih => exact ih.trans (popStart_swap hirr hstep)
+  classical
+  induction h <;> grind [FiniteChains.RACG.CEq.refl, FiniteChains.RACG.CEq.trans, FiniteChains.RACG.popStart_swap, FiniteChains.RACG.CEq]
 
-omit hsymm in
 /-- Traces are left cancellable. -/
-theorem cancel_head {s : V} {l l' : List V} (h : CEq Cm (s :: l) (s :: l')) : CEq Cm l l' := by
+theorem cancel_head   (h : CEq Cm (s :: l) (s :: l')) : CEq Cm l l' := by
   simpa using popStart_ceq (s := s) hirr h
+end
 
 /-- Deleting the front letter of a reduced word leaves a reduced word. -/
-theorem isRed_popStart {s : V} {l : List V} (hl : IsRed Cm l) (h : canStart Cm s l) :
-    IsRed Cm (popStart s l) :=
+abbrev isRed_popStart {s : V} {l : List V} (hl : IsRed Cm l) (h : canStart Cm s l)  :=
   ((isRed_ceq hirr hsymm (ceq_popStart hsymm h)).1 hl).1
 
 /-- After deleting the front occurrence of `s` from a reduced word, `s` can no longer be moved
 to the front. -/
-theorem not_canStart_popStart {s : V} {l : List V} (hl : IsRed Cm l) (h : canStart Cm s l) :
-    ¬ canStart Cm s (popStart s l) :=
+abbrev not_canStart_popStart {s : V} {l : List V} (hl : IsRed Cm l) (h : canStart Cm s l)  :=
   ((isRed_ceq hirr hsymm (ceq_popStart hsymm h)).1 hl).2
 
 omit hirr in
@@ -252,25 +204,9 @@ first. -/
 theorem canStart_two {s r : V} (hsr : s ≠ r) {l : List V}
     (hs : canStart Cm s l) (hr : canStart Cm r l) :
     Cm s r ∧ canStart Cm r (popStart s l) := by
-  induction l with
-  | nil => exact absurd hs (canStart_nil s)
-  | cons a t ih =>
-      by_cases has : a = s
-      · subst has
-        rcases hr with h | ⟨hra, hrt⟩
-        · exact absurd h hsr
-        · exact ⟨hsymm hra, by simpa using hrt⟩
-      · rcases hs with h | ⟨hsa, hst⟩
-        · exact absurd h has
-        · by_cases har : a = r
-          · subst har
-            exact ⟨hsa, by simp [has]⟩
-          · rcases hr with h | ⟨hra, hrt⟩
-            · exact absurd h har
-            · obtain ⟨hcom, hpop⟩ := ih hst hrt
-              exact ⟨hcom, by simp [has, har, hra, hpop]⟩
+  induction l <;> aesop
 
-end Basic
+end
 
-end RACG
-end FiniteChains
+end FiniteChains.RACG
+

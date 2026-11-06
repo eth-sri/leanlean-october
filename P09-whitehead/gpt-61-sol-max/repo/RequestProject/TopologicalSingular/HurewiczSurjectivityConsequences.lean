@@ -1,16 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.HurewiczSurjectivity
+import RequestProject.TopologicalSingular.HurewiczSurjectivity
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology
-open scoped Topology
+
 variable {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y] [SimplyConnectedSpace X]
 
 /-- A map killing actual pi2 kills every H2 class when its domain is simply

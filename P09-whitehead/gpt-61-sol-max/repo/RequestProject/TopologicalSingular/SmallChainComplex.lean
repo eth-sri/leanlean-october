@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.SmallChainHomology
-public import RequestProject.TopologicalSingular.SingularHomologySequence
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SmallChainHomology
+import RequestProject.TopologicalSingular.SingularHomologySequence
 
 /-! # The small singular subcomplex and its quotient
 
@@ -14,19 +12,15 @@ short exact sequence is valid for an arbitrary family of subsets; no
 openness or covering assumption is used in this file.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.SingularSubdivision
 
 open CategoryTheory CategoryTheory.Limits TopologicalSingular Set
 
-universe u v
 variable {X : Type u} [TopologicalSpace X] {ι : Type v}
 
-noncomputable def smallBoundary (U : ι → Set X) (n : ℕ) :
-    smallChains U (n + 1) →ₗ[ℤ] smallChains U n :=
+noncomputable def smallBoundary (U : ι → Set X) (n : ℕ)  :=
   ((boundary n).comp (smallChains U (n + 1)).subtype).codRestrict _
     (fun c => boundary_mem_small U n c.property)
 

@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NervePrism
-
-@[expose] public section
+import RequestProject.NervePrism
 
 /-!
 # Chains supported on a subposet, and the chain-level gluing (Mayer–Vietoris) step
@@ -36,16 +34,15 @@ how the contractions of `RequestProject/NervePrism.lean` are stated.  In particu
 `∂₃` and the chains `C₃` are kept throughout; nothing here truncates the complex.
 -/
 
-namespace FiniteChains
-namespace Nerve
+namespace FiniteChains.Nerve
 
-universe u
+
 
 open FreeAbelianGroup
 
 /-! ### The support criterion -/
 
-section Support
+section
 
 variable {X : Type u}
 
@@ -61,12 +58,8 @@ theorem mem_closure_image_of_iff (S : Set X) (x : FreeAbelianGroup X) :
       rw [support_of, Finset.mem_singleton] at hy
       exact hy ▸ hl
     · simp
-    · intro u v _ _ hu hv y hy
-      rcases Finset.mem_union.1 (support_add u v hy) with h | h
-      exacts [hu y h, hv y h]
-    · intro u _ hu y hy
-      rw [support_neg] at hy
-      exact hu y hy
+    · classical grind [Finset.mem_union, FreeAbelianGroup.support_add]
+    · simp_all
   · intro h
     have key : ∀ f : X →₀ ℤ, (∀ y ∈ f.support, y ∈ S) →
         (equivFinsupp X).symm f ∈ AddSubgroup.closure (FreeAbelianGroup.of '' S) := by
@@ -75,15 +68,13 @@ theorem mem_closure_image_of_iff (S : Set X) (x : FreeAbelianGroup X) :
       | zero => intro _; simp
       | @single_add a b f ha hb ih =>
           intro hsup
-          have hsupport : (Finsupp.single a b + f).support = Finset.cons a f.support ha :=
+          have hsupport  :=
             Finsupp.support_single_add ha hb
-          have haS : a ∈ S := hsup a (by rw [hsupport]; exact Finset.mem_cons_self _ _)
+          have haS  := hsup a (by simp_all)
           have hfS : ∀ y ∈ f.support, y ∈ S := by
-            intro y hy
-            exact hsup y (by rw [hsupport]; exact Finset.mem_cons_of_mem hy)
+            simp_all
           have hsingle : (equivFinsupp X).symm (Finsupp.single a b) = b • FreeAbelianGroup.of a := by
-            apply (equivFinsupp X).injective
-            simp [equivFinsupp]
+            simp_all
           rw [map_add, hsingle]
           refine AddSubgroup.add_mem _ ?_ (ih hfS)
           exact AddSubgroup.zsmul_mem _
@@ -92,19 +83,20 @@ theorem mem_closure_image_of_iff (S : Set X) (x : FreeAbelianGroup X) :
     rw [hx]
     exact key _ h
 
-end Support
+end
 
 /-! ### Chains supported on a subposet -/
 
 variable {P Q : Type u} [Preorder P]
 
+  (A : P → Prop)
 /-- The admissible increasing lists with all vertices in `A`. -/
-def IncLists (A : P → Prop) : Set (List P) :=
+def IncLists   :=
   {l : List P | List.IsChain (· ≤ ·) l ∧ ∀ a ∈ l, A a}
 
 /-- **The chains supported on the subposet `A`**: the subgroup `C_*(A)` of `ℤ[List P]` generated
 by the increasing lists whose vertices all satisfy `A`. -/
-def IncOn (A : P → Prop) : AddSubgroup (Ch P) :=
+def IncOn   :=
   AddSubgroup.closure (FreeAbelianGroup.of '' IncLists A)
 
 /-- **The support criterion for `C_*(A)`.** -/
@@ -121,14 +113,11 @@ theorem mem_inc_iff (x : Ch P) :
     x ∈ Inc P ↔ ∀ l ∈ x.support, List.IsChain (· ≤ ·) l := by
   have hset : {x : Ch P | ∃ l : List P, List.IsChain (· ≤ ·) l ∧ x = FreeAbelianGroup.of l} =
       FreeAbelianGroup.of '' {l : List P | List.IsChain (· ≤ ·) l} := by
-    ext y
-    constructor
-    · rintro ⟨l, hl, rfl⟩; exact ⟨l, hl, rfl⟩
-    · rintro ⟨l, hl, rfl⟩; exact ⟨l, hl, rfl⟩
+    aesop
   rw [Inc, hset]
   exact mem_closure_image_of_iff _ x
 
-theorem incOn_le_inc (A : P → Prop) : IncOn A ≤ Inc P := by
+theorem incOn_le_inc  : IncOn A ≤ Inc P := by
   intro x hx
   rw [mem_inc_iff]
   intro l hl
@@ -148,16 +137,11 @@ theorem incOn_inf (A B : P → Prop) :
     IncOn A ⊓ IncOn B = IncOn (fun p => A p ∧ B p) := by
   ext x
   simp only [AddSubgroup.mem_inf, mem_incOn_iff]
-  constructor
-  · rintro ⟨hA, hB⟩ l hl
-    exact ⟨(hA l hl).1, fun a ha => ⟨(hA l hl).2 a ha, (hB l hl).2 a ha⟩⟩
-  · intro h
-    exact ⟨fun l hl => ⟨(h l hl).1, fun a ha => ((h l hl).2 a ha).1⟩,
-      fun l hl => ⟨(h l hl).1, fun a ha => ((h l hl).2 a ha).2⟩⟩
+  grind
 
 /-! ### The boundary preserves `C_*(A)` -/
 
-theorem consList_bdryOn_mem_incOn (A : P → Prop) :
+theorem consList_bdryOn_mem_incOn  :
     ∀ (l pre : List P), List.IsChain (· ≤ ·) (pre ++ l) → (∀ a ∈ pre ++ l, A a) →
       consList pre (bdryOn l) ∈ IncOn A := by
   intro l
@@ -167,15 +151,8 @@ theorem consList_bdryOn_mem_incOn (A : P → Prop) :
       intro pre hchain hall
       rw [bdryOn_cons, map_sub, consList_of, consList_consMap]
       refine AddSubgroup.sub_mem _ ?_ ?_
-      · refine of_mem_incOn (isChain_append_of_isChain_append_cons hchain) ?_
-        intro b hb
-        rcases List.mem_append.1 hb with h | h
-        · exact hall b (List.mem_append.2 (Or.inl h))
-        · exact hall b (List.mem_append.2 (Or.inr (List.mem_cons_of_mem _ h)))
-      · refine ih (pre ++ [a]) (by simpa using hchain) ?_
-        intro b hb
-        simp only [List.append_assoc, List.cons_append, List.nil_append] at hb
-        exact hall b (by simpa using hb)
+      · grind [of_mem_incOn]
+      grind
 
 theorem bdryOn_mem_incOn {A : P → Prop} {l : List P} (hl : List.IsChain (· ≤ ·) l)
     (hA : ∀ a ∈ l, A a) : bdryOn l ∈ IncOn A := by
@@ -188,10 +165,8 @@ theorem bdry_mem_incOn {A : P → Prop} {x : Ch P} (hx : x ∈ IncOn A) : bdry x
   · rintro y ⟨l, ⟨hl, hA⟩, rfl⟩
     simpa using bdryOn_mem_incOn hl hA
   · simp
-  · intro y z _ _ hy hz
-    simpa using AddSubgroup.add_mem _ hy hz
-  · intro y _ hy
-    simpa using AddSubgroup.neg_mem _ hy
+  · aesop
+  · simp_all
 
 /-! ### Unmixedness and the splitting of chains of a union -/
 
@@ -215,14 +190,7 @@ theorem forall_mem_or_of_unmixed {A B U : P → Prop}
       · exact Or.inl (le_of_eq hxy)
       · letI : Std.Symm (fun x y : P => x ≤ y ∨ y ≤ x) := ⟨fun _ _ h => h.symm⟩
         exact hpw.forall hx hy hxy
-    intro c hc
-    rcases hpair c₀ hc₀l c hc with h | h
-    · rcases hmix c₀ c h (hlU c₀ hc₀l) (hlU c hc) with ⟨h1, _⟩ | ⟨_, h2⟩
-      · exact absurd h1 hc₀
-      · exact h2
-    · rcases hmix c c₀ h (hlU c hc) (hlU c₀ hc₀l) with ⟨_, h2⟩ | ⟨h1, _⟩
-      · exact absurd h2 hc₀
-      · exact h1
+    grind
 
 /-- **Splitting a chain of the union.**  The decomposition is defined on the basis: a list goes
 into `a` if all its vertices lie in `A`, and into `b` otherwise. -/
@@ -246,15 +214,12 @@ theorem exists_split_of_unmixed {A B U : P → Prop}
 
 /-- Acyclicity of the part of the complex supported on `A`: every cycle supported on `A` is the
 boundary of a chain supported on `A`. -/
-def AcyclicIn (A : P → Prop) : Prop :=
+def AcyclicIn   :=
   ∀ x ∈ IncOn A, bdry x = 0 → ∃ y ∈ IncOn A, bdry y = x
 
 theorem acyclicIn_congr {A B : P → Prop} (h : ∀ p, A p ↔ B p) (hA : AcyclicIn A) :
     AcyclicIn B := by
-  have hAB : IncOn A = IncOn B := incOn_congr h
-  intro x hx hcyc
-  obtain ⟨y, hy, hdy⟩ := hA x (by rw [hAB]; exact hx) hcyc
-  exact ⟨y, by rwa [hAB] at hy, hdy⟩
+  grind [FiniteChains.Nerve.AcyclicIn, incOn_congr]
 
 /-- **The chain-level gluing step.**  If the two pieces and their intersection have vanishing
 homology (in all degrees, in the augmented complex), so does their union. -/
@@ -266,8 +231,8 @@ theorem acyclicIn_union_of_unmixed {A B U : P → Prop}
   intro z hz hcyc
   obtain ⟨a, ha, b, hb, rfl⟩ := exists_split_of_unmixed hmix hz
   -- `t = ∂a = -∂b` is a cycle supported on the intersection
-  have hda : bdry a ∈ IncOn A := bdry_mem_incOn ha
-  have hdb : bdry b ∈ IncOn B := bdry_mem_incOn hb
+  have hda  := bdry_mem_incOn ha
+  have hdb  := bdry_mem_incOn hb
   have hsum : bdry a + bdry b = 0 := by rw [← map_add]; exact hcyc
   have hdaB : bdry a ∈ IncOn B := by
     have : bdry a = -bdry b := by linear_combination (norm := abel) hsum
@@ -277,14 +242,13 @@ theorem acyclicIn_union_of_unmixed {A B U : P → Prop}
     rw [← incOn_inf]
     exact ⟨hda, hdaB⟩
   obtain ⟨u, hu, hdu⟩ := hJ (bdry a) htJ (by simp [bdry_bdry])
-  have huA : u ∈ IncOn A := (incOn_mono (fun p hp => hp.1)) hu
-  have huB : u ∈ IncOn B := (incOn_mono (fun p hp => hp.2)) hu
+  have huA  := (incOn_mono (fun p hp => hp.1)) hu
+  have huB  := (incOn_mono (fun p hp => hp.2)) hu
   -- `a - u` and `b + u` are cycles of the two pieces
   obtain ⟨p, hp, hdp⟩ := hA (a - u) (AddSubgroup.sub_mem _ ha huA) (by
     rw [map_sub, hdu, sub_self])
   obtain ⟨q, hq, hdq⟩ := hB (b + u) (AddSubgroup.add_mem _ hb huB) (by
-    rw [map_add, hdu]
-    linear_combination (norm := abel) hsum)
+    grind)
   refine ⟨p + q, AddSubgroup.add_mem _ ?_ ?_, ?_⟩
   · exact incOn_mono (fun r hr => (hU r).2 (Or.inl hr)) hp
   · exact incOn_mono (fun r hr => (hU r).2 (Or.inr hr)) hq
@@ -293,7 +257,7 @@ theorem acyclicIn_union_of_unmixed {A B U : P → Prop}
 
 /-! ### Transfer between a subposet and the chains supported on it -/
 
-section Transfer
+section
 
 variable (A : P → Prop)
 
@@ -305,14 +269,10 @@ theorem cmap_val_mem_incOn {x : Ch {p : P // A p}} (hx : x ∈ Inc {p : P // A p
     rw [cmap_of]
     refine of_mem_incOn ?_ ?_
     · exact List.isChain_map_of_isChain (Subtype.val : {p : P // A p} → P) (fun _ _ h => h) hl
-    · intro a ha
-      obtain ⟨b, -, rfl⟩ := List.mem_map.1 ha
-      exact b.2
+    · simp_all
   · simp
-  · intro y z _ _ hy hz
-    simpa using AddSubgroup.add_mem _ hy hz
-  · intro y _ hy
-    simpa using AddSubgroup.neg_mem _ hy
+  · aesop
+  · simp_all
 
 theorem exists_preimage_of_mem_incOn {x : Ch P} (hx : x ∈ IncOn A) :
     ∃ x' ∈ Inc {p : P // A p}, cmap (Subtype.val) x' = x := by
@@ -328,16 +288,18 @@ theorem exists_preimage_of_mem_incOn {x : Ch P} (hx : x ∈ IncOn A) :
         (fun _ _ h => h) this
     · rw [cmap_of]
       simp
-  · exact ⟨0, AddSubgroup.zero_mem _, by simp⟩
+  · aesop
   · rintro y z _ _ ⟨y', hy', rfl⟩ ⟨z', hz', rfl⟩
     exact ⟨y' + z', AddSubgroup.add_mem _ hy' hz', by simp⟩
   · rintro y _ ⟨y', hy', rfl⟩
     exact ⟨-y', AddSubgroup.neg_mem _ hy', by simp⟩
 
+variable (hne : ∃ p : P, A p)
+include hne in
 omit [Preorder P] in
 /-- The pushforward along the inclusion of a nonempty subposet is injective: it has the
 retraction induced by any retraction of the inclusion of types. -/
-theorem cmap_val_injective (hne : ∃ p : P, A p) :
+theorem cmap_val_injective  :
     Function.Injective (cmap (Subtype.val : {p : P // A p} → P)) := by
   classical
   obtain ⟨p₀, hp₀⟩ := hne
@@ -360,8 +322,9 @@ theorem cmap_val_injective (hne : ∃ p : P, A p) :
   have := congrArg (cmap r) hxy
   rwa [h, h] at this
 
+include hne in
 /-- **Transfer of acyclicity from the subposet to the chains supported on it.** -/
-theorem acyclicIn_of_subtype (hne : ∃ p : P, A p)
+theorem acyclicIn_of_subtype 
     (hsub : ∀ x ∈ Inc {p : P // A p}, bdry x = 0 →
       ∃ y ∈ Inc {p : P // A p}, bdry y = x) :
     AcyclicIn A := by
@@ -373,7 +336,7 @@ theorem acyclicIn_of_subtype (hne : ∃ p : P, A p)
   obtain ⟨y', hy', hdy'⟩ := hsub x' hx' hcyc'
   exact ⟨cmap (Subtype.val) y', cmap_val_mem_incOn A hy', by rw [← cmap_bdry, hdy']⟩
 
-end Transfer
+end
 
-end Nerve
-end FiniteChains
+end FiniteChains.Nerve
+

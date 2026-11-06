@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.TetrahedronSquareDisks
-public import RequestProject.TopologicalSingular.SimplexLinearHomotopy
-
-@[expose] public section
+import RequestProject.TopologicalSingular.TetrahedronSquareDisks
+import RequestProject.TopologicalSingular.SimplexLinearHomotopy
 
 namespace FiniteChains.TopologicalSingular
-open scoped unitInterval Topology
-universe u
+
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
 theorem basedTetrahedron_eq_of_two_zero_coordinates (tau : Simplex X 3)
@@ -21,6 +18,6 @@ theorem basedTetrahedron_eq_of_two_zero_coordinates (tau : Simplex X 3)
     rw [← simplex_face_coordinate_succAbove i w k, hk, hw, hj]
   obtain ⟨q, hq⟩ := domain_zero_coordinate_face w k hz
   have he := congrArg (fun f : Simplex X 1 => f q) (hedge i k)
-  simpa only [face_apply, hq, hw, ContinuousMap.const_apply] using he
+  simpa [face_apply, hq, hw, ContinuousMap.const_apply] using he
 
 end FiniteChains.TopologicalSingular

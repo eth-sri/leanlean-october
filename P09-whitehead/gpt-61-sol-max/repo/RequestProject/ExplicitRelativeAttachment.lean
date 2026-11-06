@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib.Topology.Homeomorph.Lemmas
-public import Mathlib.Topology.Constructions.SumProd
-public import Mathlib.Topology.ContinuousMap.Basic
-
-@[expose] public section
+import Mathlib.Topology.Homeomorph.Lemmas
+import Mathlib.Topology.Constructions.SumProd
+import Mathlib.Topology.ContinuousMap.Basic
 
 /-! An explicit attachment space retaining every point of its base. The
 base is proved to embed as a closed subspace when the boundary inclusion is
@@ -16,17 +14,15 @@ noncomputable section
 open scoped Classical
 open Set Topology TopologicalSpace
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 
 namespace FiniteChains.RelativeAttachment
 
-universe u
 variable {A X D : Type u}
 
 /-- The old points and the interior points are distinct summands. The base
 map is retained in the type because it determines the attachment topology. -/
-def Space (_r : A → X) (i : A → D) : Type u :=
+def Space (_r : A → X) (i : A → D)  :=
   X ⊕ {d : D // d ∉ Set.range i}
 
 def old (r : A → X) (i : A → D) : X → Space r i := Sum.inl
@@ -35,7 +31,7 @@ def cell (r : A → X) (i : A → D) (d : D) : Space r i :=
   if h : d ∈ Set.range i then Sum.inl (r (Classical.choose h))
   else Sum.inr ⟨d, h⟩
 
-def quotientMap (r : A → X) (i : A → D) : X ⊕ D → Space r i :=
+def quotientMap (r : A → X) (i : A → D)  :=
   Sum.elim (old r i) (cell r i)
 
 /-- The genuinely added interior points. -/
@@ -53,7 +49,7 @@ theorem old_injective (r : A → X) (i : A → D) : Function.Injective (old r i)
 theorem cell_boundary (r : A → X) (i : A → D) (hi : Function.Injective i) (a : A) :
     cell r i (i a) = old r i (r a) := by
   have h : i a ∈ Set.range i := ⟨a, rfl⟩
-  simp only [cell, old]
+  simp only [cell]
   rw [dite_eq_left h]
   exact congrArg Sum.inl (congrArg r (hi (Classical.choose_spec h)))
 
@@ -81,13 +77,14 @@ theorem cell_continuous (r : A → X) (i : A → D) : Continuous (cell r i) :=
 
 theorem fresh_continuous (r : A → X) (i : A → D) : Continuous (fresh r i) := by
   have he : fresh r i = cell r i ∘ Subtype.val := by
-    funext d
-    exact (cell_of_not_mem r i d.val d.property).symm
+    aesop
   rw [he]
   exact (cell_continuous r i).comp continuous_subtype_val
 
-omit [TopologicalSpace X] [TopologicalSpace D] in
-theorem old_preimage_fresh_image (r : A → X) (i : A → D)
+section
+omit [TopologicalSpace X] [TopologicalSpace D]
+variable (r : A → X)
+theorem old_preimage_fresh_image  (i : A → D)
     (S : Set {d : D // d ∉ Set.range i}) :
     (old r i) ⁻¹' ((fresh r i) '' S) = ∅ := by
   ext x
@@ -96,27 +93,22 @@ theorem old_preimage_fresh_image (r : A → X) (i : A → D)
     exact Sum.inr_ne_inl he
   · exact False.elim
 
-omit [TopologicalSpace X] [TopologicalSpace D] in
-theorem cell_preimage_fresh_image (r : A → X) (i : A → D)
+theorem cell_preimage_fresh_image  (i : A → D)
     (S : Set {d : D // d ∉ Set.range i}) :
     (cell r i) ⁻¹' ((fresh r i) '' S) = Subtype.val '' S := by
   ext d
   constructor
   · rintro ⟨v, hv, he⟩
     by_cases hd : d ∈ Set.range i
-    · have he' : Sum.inr v = Sum.inl (r (Classical.choose hd)) := by
-        simp only [fresh, cell] at he
-        rw [dite_eq_left hd] at he
-        exact he
-      exact (Sum.inr_ne_inl he').elim
+    · simp_all [fresh, cell]
     · have hvd : v = ⟨d, hd⟩ := by
         apply Sum.inr_injective
         simp only [fresh, cell] at he
         rw [dite_eq_right hd] at he
         exact he
       exact ⟨v, hv, congrArg Subtype.val hvd⟩
-  · rintro ⟨v, hv, rfl⟩
-    exact ⟨v, hv, (cell_of_not_mem r i v.val v.property).symm⟩
+  · aesop
+end
 
 /-- The new interiors have their original topology and form an open subset
 of the attachment whenever the boundary is closed. -/
@@ -150,9 +142,7 @@ def descFun (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z)) :
 theorem descFun_cell (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z))
     (h : ∀ a, f (r a) = g (i a)) (d : D) : descFun r i f g (cell r i d) = g d := by
   simp only [cell, descFun]
-  split_ifs with hd
-  · simp only [Sum.elim_inl]; rw [h, Classical.choose_spec hd]
-  · simp only [Sum.elim_inr]
+  grind
 
 /-- The actual continuous pushout map determined by compatible maps on the
 base and the disks. -/
@@ -209,8 +199,7 @@ theorem cell_preimage_old_image (r : A → X) (i : A → D)
     · have he' := he
       rw [cell_of_not_mem r i d hd] at he'
       exact (Sum.inl_ne_inr he').elim
-  · rintro ⟨a, ha, rfl⟩
-    exact ⟨r a, ha, (cell_boundary r i hi a).symm⟩
+  · aesop (add simp [cell_boundary])
 
 /-- The literal original space embeds as a closed subspace of the actual
 attachment, provided the boundary inclusion is a closed embedding. -/

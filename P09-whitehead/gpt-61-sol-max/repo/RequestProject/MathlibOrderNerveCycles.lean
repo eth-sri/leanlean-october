@@ -1,13 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MathlibOrderNerveChainBoundary
-public import RequestProject.OrderNerveH2
+import RequestProject.MathlibOrderNerveChainBoundary
+import RequestProject.OrderNerveH2
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 variable (P : Type) [PartialOrder P]
@@ -20,7 +16,7 @@ theorem mathlibOrderNerve_cycle_iff (c : OrdTri P →₀ ℤ) :
   constructor
   · intro h
     apply Finsupp.mapDomain_injective (ordEdgeNerveEquiv P).injective
-    simpa only [LinearMap.mem_ker, Finsupp.mapDomain_zero] using h
+    simpa [LinearMap.mem_ker, Finsupp.mapDomain_zero] using h
   · intro h
     rw [h, Finsupp.mapDomain_zero]
 
@@ -90,10 +86,7 @@ theorem mathlibOrderNerveCycleEquiv_boundary_range :
 
 /-- Actual order-cell second homology agrees with the quotient formed from
 Mathlib's genuine alternating-face differentials. -/
-noncomputable def mathlibOrderNerveH2Equiv : OrderNerveH2 P ≃ₗ[ℤ]
-    (LinearMap.ker ((AlgebraicTopology.AlternatingFaceMapComplex.objD
-      (mathlibOrderNerveModule P) 1).hom)) ⧸
-        LinearMap.range (mathlibOrderNerveBoundary3Cycles P) :=
+noncomputable def mathlibOrderNerveH2Equiv  :=
   Submodule.Quotient.equiv _ _ (mathlibOrderNerveCycleEquiv P)
     (mathlibOrderNerveCycleEquiv_boundary_range P)
 

@@ -1,17 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.FinitePosetCycleNaturality
-public import RequestProject.OrderNerveAffinePathWords
-
-@[expose] public section
+import RequestProject.FinitePosetCycleNaturality
+import RequestProject.OrderNerveAffinePathWords
 
 /-! A monotone image of an explicit cycle reads its ordered edge word by
 an actual endpoint-preserving path homotopy. Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.FinitePosetCycle
@@ -25,8 +21,7 @@ def mappedEdge (i : Fin (n + 1)) :=
 
 def mappedLastEdge := orderNerveComparablePath (C.closing.imp (fun h => hf h) (fun h => hf h))
 
-def mappedLoop : Path (orderNerveRealizationVertex (f (C.vertex 0)))
-    (orderNerveRealizationVertex (f (C.vertex 0))) :=
+def mappedLoop  :=
   (arcConcat n (fun i => orderNerveRealizationVertex (f (C.vertex i)))
     (C.mappedEdge f hf)).trans (C.mappedLastEdge f hf)
 
@@ -40,8 +35,7 @@ theorem mappedLoop_apply (t : I) :
   simp only [mappedLoop, traversal, Path.trans_apply]
   split_ifs
   · exact (hp _).symm
-  · exact (orderNerveComparablePath_natural f hf C.closing
-      (C.closing.imp (fun h => hf h) (fun h => hf h)) _).symm
+  · solve_by_elim [FiniteChains.Comb.orderNerveComparablePath_natural, symm]
 
 variable (g : Fin (n + 2) → (orderCx Q).E × Bool)
   (hs : ∀ i, f (C.vertex i) = germSrc (orderCx Q).src (orderCx Q).tgt (g i))
@@ -75,7 +69,7 @@ theorem mappedLoop_homotopic_word :
       (isPath_ofFn _ _ (n + 1) (f ∘ C.vertex) (fun i => g i.castSucc)
         (fun i => hs i.castSucc) ht) ⟨hs _, hclose⟩)
   have he : List.ofFn (fun i : Fin (n + 1) => g i.castSucc) ++ [g (Fin.last (n + 1))] =
-      List.ofFn g := by simpa only [List.concat_eq_append] using (List.ofFn_succ' g).symm
+      List.ofFn g := by simpa [List.concat_eq_append] using (List.ofFn_succ' g).symm
   simpa only [he, mappedLoop, mappedLastEdge, affineOrderWordPath] using H
 
 end FiniteChains.Comb.FinitePosetCycle

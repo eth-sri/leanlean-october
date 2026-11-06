@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.AttachmentQuotientHomeomorph
-public import RequestProject.ClassicalCellAttachmentMaps
-
-@[expose] public section
+import RequestProject.AttachmentQuotientHomeomorph
+import RequestProject.ClassicalCellAttachmentMaps
 
 /-! A closed-disk quotient which preserves the interior bijectively may
 replace the characteristic parametrization of an attached cell. Boundary
@@ -12,7 +10,7 @@ constructs an actual homeomorphism, also for infinite cell families.
  -/
 
 noncomputable section
-open scoped Classical
+
 namespace FiniteChains.RelativeAttachment
 open Topology
 
@@ -26,7 +24,7 @@ variable {J K X E : Type} [TopologicalSpace X]
   (hint : ∀ j x, ‖(q j x).val‖ < 1 ↔ ‖x.val‖ < 1)
   (hinj : ∀ j, Set.InjOn (q j) {x | ‖x.val‖ < 1})
 
-def reparametrizedAttaching (a : BoundaryFamily J E) : X :=
+def reparametrizedAttaching (a : BoundaryFamily J E)  :=
   r ⟨e a.1, b a.1 a.2⟩
 
 def reparametrizedDiskFamily : C(DiskFamily J E, DiskFamily K E) where
@@ -35,24 +33,14 @@ def reparametrizedDiskFamily : C(DiskFamily J E, DiskFamily K E) where
     (show Continuous (Sigma.mk (β := fun _ : K => ClosedUnitBall E) (e j)) from
       continuous_sigmaMk).comp (q j).continuous)
 
+variable (d : DiskFamily J E)
 include hint in
-theorem reparametrizedDiskFamily_boundary_iff (d : DiskFamily J E) :
+theorem reparametrizedDiskFamily_boundary_iff  :
     reparametrizedDiskFamily e q d ∈ Set.range (boundaryFamilyInclusion K E) ↔
       d ∈ Set.range (boundaryFamilyInclusion J E) := by
   rw [boundaryFamilyInclusion_range, boundaryFamilyInclusion_range]
   change ‖(q d.1 d.2).val‖ = 1 ↔ ‖d.2.val‖ = 1
-  have h := hint d.1 d.2
-  have ha := (q d.1 d.2).property
-  have hc := d.2.property
-  constructor <;> intro he
-  · by_contra hn
-    have hl : ‖d.2.val‖ < 1 := lt_of_le_of_ne hc hn
-    have := h.mpr hl
-    linarith
-  · by_contra hn
-    have hl : ‖(q d.1 d.2).val‖ < 1 := lt_of_le_of_ne ha hn
-    have := h.mp hl
-    linarith
+  grind
 
 include hinj in
 theorem reparametrizedDiskFamily_injective_interior
@@ -64,10 +52,10 @@ theorem reparametrizedDiskFamily_injective_interior
   rcases d' with ⟨k, y⟩
   have hjk : j = k := e.injective (congrArg Sigma.fst he)
   subst k
-  have hxy : q j x = q j y := eq_of_heq (Sigma.mk.inj_iff.mp he).2
-  have hx : ‖x.val‖ < 1 := lt_of_le_of_ne x.property
+  have hxy  := eq_of_heq (Sigma.mk.inj_iff.mp he).2
+  have hx  := lt_of_le_of_ne x.property
     (fun h => hd ((boundaryFamilyInclusion_range J E _).mpr h))
-  have hy : ‖y.val‖ < 1 := lt_of_le_of_ne y.property
+  have hy  := lt_of_le_of_ne y.property
     (fun h => hd' ((boundaryFamilyInclusion_range J E _).mpr h))
   exact congrArg (Sigma.mk (β := fun _ : J => ClosedUnitBall E) j) (hinj j hx hy hxy)
 
@@ -106,24 +94,21 @@ theorem reparametrizedOldAndDisks_isQuotientMap :
       exact ⟨Sum.inr d', rfl⟩
   · intro S
     rw [isClosed_sum_iff, isClosed_sum_iff]
-    change (IsClosed (Sum.inl ⁻¹' S) ∧ IsClosed (Sum.inr ⁻¹' S)) ↔
-      (IsClosed (Sum.inl ⁻¹' S) ∧
-        IsClosed ((reparametrizedDiskFamily e q) ⁻¹' (Sum.inr ⁻¹' S)))
+    
     exact and_congr Iff.rfl hQ.isClosed_preimage.symm
 
-def reparametrizedDiskEvaluation : C(DiskFamily J E, DiskAttachment r) :=
+def reparametrizedDiskEvaluation  :=
   (⟨cell r (boundaryFamilyInclusion K E), cell_continuous r _⟩ :
     C(DiskFamily K E, DiskAttachment r)).comp
     (reparametrizedDiskFamily e q)
 
 include hint in
-theorem reparametrizedDiskEvaluation_separation (d : DiskFamily J E) :
+theorem reparametrizedDiskEvaluation_separation  :
     reparametrizedDiskEvaluation r e q d ∈ Set.range (old r (boundaryFamilyInclusion K E)) ↔
       d ∈ Set.range (boundaryFamilyInclusion J E) := by
   rw [← reparametrizedDiskFamily_boundary_iff e q hint d]
   let d' := reparametrizedDiskFamily e q d
-  change cell r (boundaryFamilyInclusion K E) d' ∈ Set.range (old r _) ↔
-    d' ∈ Set.range (boundaryFamilyInclusion K E)
+  dsimp [FiniteChains.RelativeAttachment.reparametrizedDiskEvaluation]
   constructor
   · rintro ⟨x, hx⟩
     by_contra hd
@@ -149,9 +134,9 @@ def diskAttachmentQuotientReparametrization :
   have hnew : ∀ d d', d ∉ Set.range (boundaryFamilyInclusion J E) →
       d' ∉ Set.range (boundaryFamilyInclusion J E) → g d = g d' → d = d' := by
     intro d d' hd hd' he
-    have hdq : reparametrizedDiskFamily e q d ∉ Set.range (boundaryFamilyInclusion K E) :=
+    have hdq  :=
       fun h => hd ((reparametrizedDiskFamily_boundary_iff e q hint d).mp h)
-    have hdq' : reparametrizedDiskFamily e q d' ∉ Set.range (boundaryFamilyInclusion K E) :=
+    have hdq'  :=
       fun h => hd' ((reparametrizedDiskFamily_boundary_iff e q hint d').mp h)
     change cell r _ (reparametrizedDiskFamily e q d) =
       cell r _ (reparametrizedDiskFamily e q d') at he
@@ -171,12 +156,9 @@ def diskAttachmentQuotientReparametrization :
     (boundaryFamilyInclusion J E) f g hbd (old_injective r _)
     (reparametrizedDiskEvaluation_separation r e q hint) hnew hq'
 
-@[simp] theorem diskAttachmentQuotientReparametrization_old (x : X) :
-    diskAttachmentQuotientReparametrization r e q b hb hq hint hinj
-      (old (reparametrizedAttaching r e b) (boundaryFamilyInclusion J E) x) =
-        old r (boundaryFamilyInclusion K E) x := rfl
 
-@[simp] theorem diskAttachmentQuotientReparametrization_cell (d : DiskFamily J E) :
+
+@[simp] theorem diskAttachmentQuotientReparametrization_cell  :
     diskAttachmentQuotientReparametrization r e q b hb hq hint hinj
       (cell (reparametrizedAttaching r e b) (boundaryFamilyInclusion J E) d) =
         cell r (boundaryFamilyInclusion K E) (reparametrizedDiskFamily e q d) := by

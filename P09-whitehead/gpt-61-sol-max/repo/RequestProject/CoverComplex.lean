@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CellComplex
-public import RequestProject.CoverAcyclic
-
-@[expose] public section
+import RequestProject.CellComplex
+import RequestProject.CoverAcyclic
 
 /-!
 # The presentation complex, its covers, and the dictionary with the Fox complex
@@ -35,27 +33,23 @@ the requirements (2.2) produces a connected acyclic regular cover of the present
 complex.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-open MonoidAlgebra
 
-universe u
+
+
 
 variable {α : Type u} [Fintype α] [DecidableEq α]
-variable {J : Type u} [Fintype J] [DecidableEq J]
+  {J : Type u} [Fintype J] [DecidableEq J]
 
 /-! ### Paths in a complex with one vertex -/
 
 theorem isPath_of_subsingleton {V E : Type*} [Subsingleton V] (src tgt : E → V)
     (p : List (E × Bool)) (a b : V) : IsPath src tgt p a b := by
-  induction p generalizing a with
-  | nil => exact Subsingleton.elim _ _
-  | cons e p ih => exact ⟨Subsingleton.elim _ _, ih _⟩
+  classical
+  induction p generalizing a <;> aesop (add unsafe apply [Subsingleton.elim])
 
 /-! ### The presentation complex -/
 
@@ -87,29 +81,31 @@ def liftPath : List (α × Bool) → (FreeGroup α ⧸ Nsub) →
   | (i, true) :: L, q => ((q, i), true) :: liftPath L (q * qof Nsub i)
   | (i, false) :: L, q => ((q * (qof Nsub i)⁻¹, i), false) :: liftPath L (q * (qof Nsub i)⁻¹)
 
-omit [Fintype α] [DecidableEq α] in
+section
+omit [Fintype α] [DecidableEq α]
 @[simp] theorem liftPath_nil (q : FreeGroup α ⧸ Nsub) : liftPath [] q = [] := rfl
 
-omit [Fintype α] [DecidableEq α] in
 @[simp] theorem liftPath_cons_true (i : α) (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
     liftPath ((i, true) :: L) q = ((q, i), true) :: liftPath L (q * qof Nsub i) := rfl
 
-omit [Fintype α] [DecidableEq α] in
 @[simp] theorem liftPath_cons_false (i : α) (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
     liftPath ((i, false) :: L) q
       = ((q * (qof Nsub i)⁻¹, i), false) :: liftPath L (q * (qof Nsub i)⁻¹) := rfl
+end
 
-omit [Fintype α] in
+section
+omit [Fintype α]
 theorem mk_cons_true (i : α) (L : List (α × Bool)) :
     FreeGroup.mk ((i, true) :: L) = FreeGroup.of i * FreeGroup.mk L :=
   FreeGroup.toWord_inj.mp rfl
 
-omit [Fintype α] in
 theorem mk_cons_false (i : α) (L : List (α × Bool)) :
     FreeGroup.mk ((i, false) :: L) = (FreeGroup.of i)⁻¹ * FreeGroup.mk L :=
   FreeGroup.toWord_inj.mp rfl
+end
 
-omit [Fintype α] [DecidableEq α] in
+section
+omit [Fintype α] [DecidableEq α]
 /-- The projection of the lift of a word is the word itself. -/
 theorem map_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
     (liftPath L q).map (fun eb => (eb.1.2, eb.2)) = L := by
@@ -121,23 +117,15 @@ theorem map_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
       · simpa using ih (q * (qof Nsub i)⁻¹)
       · simpa using ih (q * qof Nsub i)
 
-omit [Fintype α] [DecidableEq α] in
-/-- The lift of a word is equivariant for left translation. -/
-theorem liftPath_translate (L : List (α × Bool)) (q₀ q : FreeGroup α ⧸ Nsub) :
-    liftPath L (q₀ * q) = (liftPath L q).map (fun eb => ((q₀ * eb.1.1, eb.1.2), eb.2)) := by
-  induction L generalizing q with
-  | nil => rfl
-  | cons a L ih =>
-      obtain ⟨i, b⟩ := a
-      cases b
-      · simpa [mul_assoc] using ih (q * (qof Nsub i)⁻¹)
-      · simpa [mul_assoc] using ih (q * qof Nsub i)
+
+end
 
 variable (Nsub)
 
+variable (L : List (α × Bool))
 omit [Fintype α] in
 /-- The lift at `q` of the word `w` is an edge path from `q` to `q · w`. -/
-theorem liftPath_isPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
+theorem liftPath_isPath  (q : FreeGroup α ⧸ Nsub) :
     IsPath (fun e : (FreeGroup α ⧸ Nsub) × α => e.1)
       (fun e : (FreeGroup α ⧸ Nsub) × α => e.1 * qof Nsub e.2) (liftPath L q) q
       (q * QuotientGroup.mk (FreeGroup.mk L)) := by
@@ -151,7 +139,6 @@ theorem liftPath_isPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
       cases b
       · have hmk : (QuotientGroup.mk (FreeGroup.mk ((i, false) :: L)) : FreeGroup α ⧸ Nsub)
             = (qof Nsub i)⁻¹ * QuotientGroup.mk (FreeGroup.mk L) := by
-          rw [mk_cons_false, QuotientGroup.mk_mul, QuotientGroup.mk_inv]
           rfl
         refine ⟨?_, ?_⟩
         · show q = (q * (qof Nsub i)⁻¹) * qof Nsub i
@@ -161,7 +148,6 @@ theorem liftPath_isPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
           exact h
       · have hmk : (QuotientGroup.mk (FreeGroup.mk ((i, true) :: L)) : FreeGroup α ⧸ Nsub)
             = qof Nsub i * QuotientGroup.mk (FreeGroup.mk L) := by
-          rw [mk_cons_true, QuotientGroup.mk_mul]
           rfl
         refine ⟨rfl, ?_⟩
         have h := ih (q * qof Nsub i)
@@ -182,9 +168,7 @@ abbrev coverComplex (hρ : ∀ j, ρ j ∈ Nsub) : Complex2.{u} where
   base f := f.1
   att f := liftPath (FreeGroup.toWord (ρ f.2)) f.1
   att_isLoop f := by
-    have h := liftPath_isPath Nsub (FreeGroup.toWord (ρ f.2)) f.1
-    rw [FreeGroup.mk_toWord] at h
-    rwa [(QuotientGroup.eq_one_iff (ρ f.2)).2 (hρ f.2), mul_one] at h
+    classical grind [FiniteChains.Comb.liftPath_isPath, FreeGroup.mk_toWord, QuotientGroup.eq_one_iff, mul_one]
 
 variable {Nsub ρ}
 
@@ -192,10 +176,10 @@ variable {Nsub ρ}
 
 variable (Nsub)
 
+variable (β : Type u)
 /-- The cellular chains on the cells `Q × β` of the cover, read as the free `ℤ[Q]`-module
 on `β`. -/
-noncomputable def coords (β : Type u) [Fintype β] [DecidableEq β] :
-    (((FreeGroup α ⧸ Nsub) × β) →₀ ℤ) ≃ₗ[ℤ] (β → CoverRing Nsub) :=
+noncomputable def coords  [Fintype β] [DecidableEq β]  :=
   (Finsupp.domLCongr (Equiv.prodComm (FreeGroup α ⧸ Nsub) β)).trans
     ((Finsupp.curryLinearEquiv (R := ℤ)).trans
       ((Finsupp.linearEquivFunOnFinite ℤ ((FreeGroup α ⧸ Nsub) →₀ ℤ) β).trans
@@ -205,15 +189,12 @@ variable {Nsub}
 
 omit [Fintype α] [DecidableEq α] [Nsub.Normal] in
 /-- The coordinates of a cellular chain: the coefficient of the cell `(q, i)`. -/
-theorem coords_apply (β : Type u) [Fintype β] [DecidableEq β]
+theorem coords_apply  [Fintype β] [DecidableEq β]
     (c : ((FreeGroup α ⧸ Nsub) × β) →₀ ℤ) (i : β) (q : FreeGroup α ⧸ Nsub) :
-    ((coords Nsub β c) i).coeff q = c (q, i) := by
-  show ((Finsupp.equivMapDomain (Equiv.prodComm _ β) c).curry i) q = c (q, i)
-  rw [Finsupp.curry_apply, Finsupp.equivMapDomain_apply]
-  rfl
+    ((coords Nsub β c) i).coeff q = c (q, i) := rfl
 
 omit [Fintype α] [DecidableEq α] in
-theorem coords_single (β : Type u) [Fintype β] [DecidableEq β] (q : FreeGroup α ⧸ Nsub)
+theorem coords_single  [Fintype β] [DecidableEq β] (q : FreeGroup α ⧸ Nsub)
     (i : β) (n : ℤ) :
     coords Nsub β (Finsupp.single (q, i) n) = Pi.single i (MonoidAlgebra.single q n) := by
   classical
@@ -222,27 +203,19 @@ theorem coords_single (β : Type u) [Fintype β] [DecidableEq β] (q : FreeGroup
   refine Finsupp.ext fun q' => ?_
   rw [coords_apply, Finsupp.single_apply]
   by_cases h : k = i
-  · subst h
-    rw [Pi.single_eq_same, MonoidAlgebra.coeff_single, Finsupp.single_apply]
-    by_cases hq : q = q'
-    · simp [hq]
-    · simp [hq]
-  · rw [Pi.single_eq_of_ne h]
-    simp [Ne.symm h]
+  all_goals solve | simp_all | omega | aesop | grind
 
 /-- **The dictionary between the cellular boundary and the Fox derivative.**  In the
 coordinates above, the cellular chain carried by the lift at `q` of the word `w` is the
 Fox vector `q · (∂w/∂x_i)_i`. -/
-theorem coords_pathChain_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ Nsub) :
+theorem coords_pathChain_liftPath  (q : FreeGroup α ⧸ Nsub) :
     coords Nsub α (pathChain (liftPath L q))
       = fun i => (MonoidAlgebra.single q (1 : ℤ) : CoverRing Nsub) *
           proj Nsub (fox i (FreeGroup.mk L)) := by
   classical
   induction L generalizing q with
   | nil =>
-      funext i
-      rw [show FreeGroup.mk ([] : List (α × Bool)) = 1 from rfl]
-      simp
+      aesop
   | cons a L ih =>
       obtain ⟨i₀, b⟩ := a
       cases b
@@ -259,10 +232,7 @@ theorem coords_pathChain_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ 
         rw [Pi.add_apply, Pi.neg_apply, coords_single, mk_cons_false, fox_mul, fox_inv,
           map_add, map_neg, map_mul, map_mul, mul_add, mul_neg, ← mul_assoc, ← mul_assoc, ← hq]
         congr 1
-        by_cases h : i = i₀
-        · subst h
-          rw [Pi.single_eq_same, fox_of, if_pos rfl, map_one, mul_one]
-        · rw [Pi.single_eq_of_ne h, fox_of, if_neg h, map_zero, mul_zero, neg_zero]
+        aesop
       · -- the letter `x_{i₀}`
         have hq : (MonoidAlgebra.single (q * qof Nsub i₀) (1 : ℤ) : CoverRing Nsub)
             = (MonoidAlgebra.single q (1 : ℤ) : CoverRing Nsub) *
@@ -275,11 +245,7 @@ theorem coords_pathChain_liftPath (L : List (α × Bool)) (q : FreeGroup α ⧸ 
         funext i
         rw [Pi.add_apply, coords_single, mk_cons_true, fox_mul, map_add, map_mul, mul_add,
           ← mul_assoc, ← hq]
-        congr 1
-        by_cases h : i = i₀
-        · subst h
-          rw [Pi.single_eq_same, fox_of, if_pos rfl, map_one, mul_one]
-        · rw [Pi.single_eq_of_ne h, fox_of, if_neg h, map_zero, mul_zero]
+        aesop
 
 /-! ### The cellular chain complex of the cover is the Fox complex -/
 
@@ -294,7 +260,7 @@ theorem coverComplex_bdry2 (u : ((FreeGroup α ⧸ Nsub) × J) →₀ ℤ) :
   induction u using Finsupp.induction_linear with
   | zero => rw [map_zero, _root_.FiniteChains.bdry2_zero, map_zero, map_zero]
   | add u₁ u₂ h₁ h₂ =>
-      rw [map_add, _root_.FiniteChains.bdry2_add, h₁, h₂, map_add, ← map_add]
+      classical simp_all [map_add, FiniteChains.bdry2_add]
   | single f n =>
       obtain ⟨q, j⟩ := f
       rw [coords_single, bdry2_single, map_smul, coords_pathChain_liftPath, FreeGroup.mk_toWord]
@@ -306,7 +272,7 @@ theorem coverComplex_bdry2 (u : ((FreeGroup α ⧸ Nsub) × J) →₀ ℤ) :
       simp only [Pi.single_eq_same, Pi.smul_apply]
       rw [show (MonoidAlgebra.single q n : CoverRing Nsub)
           = n • (MonoidAlgebra.single q (1 : ℤ) : CoverRing Nsub) by
-        rw [MonoidAlgebra.smul_single, smul_eq_mul, mul_one], smul_mul_assoc]
+        simp_all, smul_mul_assoc]
 
 /-! ### Acyclicity of the cover -/
 
@@ -324,23 +290,9 @@ def coverProj : Hom (coverComplex Nsub ρ hρ) (presComplex ρ) where
   base_onF _ := rfl
   att_onF f := (map_liftPath (FreeGroup.toWord (ρ f.2)) f.1).symm
 
-/-- The deck action of `Q = F/Ñ` on the cover, by left translation. -/
-def coverDeck : DeckAction (coverComplex Nsub ρ hρ) (FreeGroup α ⧸ Nsub) where
-  smulV q a := q * a
-  smulE q e := (q * e.1, e.2)
-  smulF q f := (q * f.1, f.2)
-  one_smulV _ := one_mul _
-  mul_smulV _ _ _ := mul_assoc ..
-  one_smulE e := by simp
-  mul_smulE _ _ e := by simp [mul_assoc]
-  one_smulF f := by simp
-  mul_smulF _ _ f := by simp [mul_assoc]
-  src_smul _ _ := rfl
-  tgt_smul _ e := mul_assoc ..
-  base_smul _ _ := rfl
-  att_smul q f := liftPath_translate (FreeGroup.toWord (ρ f.2)) q f.1
+
 
 /-! ### The topological input of Section 2, as a theorem -/
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

@@ -1,34 +1,32 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TruncatedCubePoset
-public import RequestProject.OrderCxNullTransfer
-
-@[expose] public section
+import RequestProject.TruncatedCubePoset
+import RequestProject.OrderCxNullTransfer
 
 /-! Retraction of the actual boundary with its cut facet deleted onto retained proper faces. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] {A : CommRel V}
 
-def fullCutCell (t : QOld A) (hne : t.1.spx.Nonempty) : CutCell A :=
+  (t : QOld A)
+  (hne : t.1.spx.Nonempty)
+def fullCutCell   : CutCell A :=
   ⟨t.1.spx, hne, t.1.isSimplex⟩
 
-def CutPuncturedBoundary (t : QOld A) (hne : t.1.spx.Nonempty) :=
+def CutPuncturedBoundary   :=
   {c : TruncatedCell A // c < Sum.inl t ∧ c ≠ Sum.inr (fullCutCell t hne)}
 
-def RetainedProperBoundary (t : QOld A) := {c : QOld A // c < t}
+def RetainedProperBoundary  := {c : QOld A // c < t}
 
 instance (t : QOld A) (hne : t.1.spx.Nonempty) :
     PartialOrder (CutPuncturedBoundary t hne) := Subtype.partialOrder _
 instance (t : QOld A) : PartialOrder (RetainedProperBoundary t) := Subtype.partialOrder _
 
-def cutBoundaryRetraction (t : QOld A) (hne : t.1.spx.Nonempty)
+def cutBoundaryRetraction  
     (c : CutPuncturedBoundary t hne) : RetainedProperBoundary t := by
-  have hle : truncatedCellRetraction c.1 ≤ t :=
+  have hle  :=
     truncatedCellRetraction_monotone c.2.1.le
   refine ⟨truncatedCellRetraction c.1, lt_of_le_of_ne hle ?_⟩
   intro he
@@ -36,30 +34,30 @@ def cutBoundaryRetraction (t : QOld A) (hne : t.1.spx.Nonempty)
   cases c with
   | inl d => exact hc.1.ne (congrArg Sum.inl he)
   | inr σ =>
-    have hs : σ.1 = t.1.spx := congrArg (fun d : QOld A => d.1.spx) he
+    have hs  := congrArg (fun d : QOld A => d.1.spx) he
     exact hc.2 (congrArg Sum.inr (Subtype.ext hs))
 
-def cutBoundarySection (t : QOld A) (hne : t.1.spx.Nonempty)
+def cutBoundarySection  
     (c : RetainedProperBoundary t) : CutPuncturedBoundary t hne :=
   ⟨Sum.inl c.1, lt_of_le_of_ne c.2.le (fun h => c.2.ne (Sum.inl.inj h)), by simp⟩
 
-theorem cutBoundaryRetraction_monotone (t : QOld A) (hne : t.1.spx.Nonempty) :
+theorem cutBoundaryRetraction_monotone   :
     Monotone (cutBoundaryRetraction t hne) := by
   intro c d h
   exact truncatedCellRetraction_monotone h
 
-theorem cutBoundarySection_monotone (t : QOld A) (hne : t.1.spx.Nonempty) :
+theorem cutBoundarySection_monotone   :
     Monotone (cutBoundarySection t hne) := fun _ _ h => h
 
-theorem cutBoundary_le_section_retraction (t : QOld A) (hne : t.1.spx.Nonempty)
+theorem cutBoundary_le_section_retraction  
     (c : CutPuncturedBoundary t hne) :
     c ≤ cutBoundarySection t hne (cutBoundaryRetraction t hne c) :=
   truncatedCell_le_retraction c.1
 
 /-- The remaining simple-connectedness problem is exactly the retained proper-face boundary.
 The retraction and its order homotopy are constructed, not assumed. -/
-theorem cutPuncturedBoundary_simplyConnected_of_retained (t : QOld A)
-    (hne : t.1.spx.Nonempty) (hsc : SimplyConnected (orderCx (RetainedProperBoundary t))) :
+theorem cutPuncturedBoundary_simplyConnected_of_retained 
+     (hsc : SimplyConnected (orderCx (RetainedProperBoundary t))) :
     SimplyConnected (orderCx (CutPuncturedBoundary t hne)) := by
   intro a p hp
   let r := cutBoundaryRetraction t hne
@@ -75,8 +73,8 @@ theorem cutPuncturedBoundary_simplyConnected_of_retained (t : QOld A)
     (cutBoundary_le_section_retraction t hne) hp).mpr hnil
   simpa [mapPath, orderCxMap] using hid
 
-theorem cutPuncturedBoundary_connected_of_retained (t : QOld A)
-    (hne : t.1.spx.Nonempty) (hconn : IsConnected (orderCx (RetainedProperBoundary t))) :
+theorem cutPuncturedBoundary_connected_of_retained 
+     (hconn : IsConnected (orderCx (RetainedProperBoundary t))) :
     IsConnected (orderCx (CutPuncturedBoundary t hne)) := by
   intro a b
   obtain ⟨p, hp⟩ := hconn (cutBoundaryRetraction t hne a) (cutBoundaryRetraction t hne b)

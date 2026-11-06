@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Statement
-public import RequestProject.OrderNerveRealizationPaths
-
-@[expose] public section
+import RequestProject.Statement
+import RequestProject.OrderNerveRealizationPaths
 
 namespace FiniteChains.Comb
 open CategoryTheory Topology
@@ -12,7 +10,7 @@ open CategoryTheory Topology
 connectedness and dimension, is a genuine two-complex of the submission statement. -/
 noncomputable def orderNerveTwoComplex (P : Type) [PartialOrder P] [Nonempty P]
     [(nerve P).HasDimensionLE 2] (hP : IsConnected (orderCx P)) : Whitehead.TwoComplex := by
-  letI : PathConnectedSpace (orderNerveRealization P) := orderNerveRealization_pathConnectedSpace P hP
+  letI  := orderNerveRealization_pathConnectedSpace P hP
   exact
     { space := orderNerveRealization P
       topology := inferInstance

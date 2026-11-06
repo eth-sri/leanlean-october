@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.BlockSpinePres
-
-@[expose] public section
+import RequestProject.BlockSpinePres
 
 /-!
 # The block is connected, so it carries a spanning tree
@@ -23,41 +21,36 @@ never met.
   prescribed root, in particular rooted at a cell of the cut surface.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
+
 
 open RACG Mirror Comb
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
 /-- Being joined by an edge path in the block. -/
-def ConnQ (a b : QOld A) : Prop :=
+def ConnQ (a b : QOld A)  :=
   ∃ p, IsPath (orderCx (QOld A)).src (orderCx (QOld A)).tgt p a b
 
 namespace ConnQ
 
-omit [Fintype V] in
+section
+omit [Fintype V]
 theorem refl (a : QOld A) : ConnQ a a := ⟨[], rfl⟩
 
-omit [Fintype V] in
-theorem symm {a b : QOld A} (h : ConnQ a b) : ConnQ b a :=
+variable {a b : QOld A}
+theorem symm  (h : ConnQ a b) : ConnQ b a :=
   ⟨revPath h.choose, isPath_revPath h.choose_spec⟩
 
-omit [Fintype V] in
 theorem trans {a b c : QOld A} (h : ConnQ a b) (h' : ConnQ b c) : ConnQ a c :=
   ⟨h.choose ++ h'.choose, h.choose_spec.append h'.choose_spec⟩
 
-omit [Fintype V] in
-theorem of_le {a b : QOld A} (h : a ≤ b) : ConnQ a b := ⟨[ordPos h], isPath_ordPos h⟩
+theorem of_le  (h : a ≤ b) : ConnQ a b := ⟨[ordPos h], isPath_ordPos h⟩
 
-omit [Fintype V] in
-theorem of_ge {a b : QOld A} (h : b ≤ a) : ConnQ a b := ⟨[ordNeg h], isPath_ordNeg h⟩
+theorem of_ge  (h : b ≤ a) : ConnQ a b := ⟨[ordNeg h], isPath_ordNeg h⟩
+end
 
 end ConnQ
 
@@ -72,41 +65,41 @@ def oneCube (v : V) (ξ : V → ZMod 2) : QOld A :=
       rw [Finset.mem_singleton] at hw
       subst hw
       simp⟩,
-    fun h => by simpa using congrArg (fun s : Finset V => v ∈ s) h.1⟩
+    fun h => by simp_all⟩
 
-omit [Fintype V] in
+section
+omit [Fintype V]
 theorem vtxCube_le_oneCube {ξ : V → ZMod 2} (hξ : ξ ≠ 0) (v : V) :
     (vtxCube ξ hξ : QOld A) ≤ oneCube v ξ := by
   refine ⟨Finset.empty_subset _, fun w hw => ?_⟩
-  have hwv : w ≠ v := fun h => hw (by rw [h]; exact Finset.mem_singleton_self v)
-  simp [oneCube, vtxCube, hwv]
+  simp_all [oneCube, vtxCube]
 
-omit [Fintype V] in
 theorem vtxCube_update_le_oneCube {ξ : V → ZMod 2} (v : V) (a : ZMod 2)
     (h : Function.update ξ v a ≠ 0) :
     (vtxCube (Function.update ξ v a) h : QOld A) ≤ oneCube v ξ := by
   refine ⟨Finset.empty_subset _, fun w hw => ?_⟩
-  have hwv : w ≠ v := fun h' => hw (by rw [h']; exact Finset.mem_singleton_self v)
-  simp [oneCube, vtxCube, hwv]
+  simp_all [oneCube, vtxCube]
+end
 
 /-- The support of a sign vector. -/
-noncomputable def sgnSupport (ξ : V → ZMod 2) : Finset V :=
+noncomputable def sgnSupport (ξ : V → ZMod 2)  :=
   Finset.univ.filter (fun v => ξ v ≠ 0)
 
 omit [DecidableEq V] in
 theorem mem_sgnSupport {ξ : V → ZMod 2} {v : V} : v ∈ sgnSupport ξ ↔ ξ v ≠ 0 := by
   simp [sgnSupport]
 
+variable (v₀ : V)
 /-- The distinguished sign vector: `1` at `v₀` and `0` elsewhere. -/
-def unitSgn (v₀ : V) : V → ZMod 2 := fun w => if w = v₀ then 1 else 0
+def unitSgn  : V → ZMod 2 := fun w => if w = v₀ then 1 else 0
 
 omit [Fintype V] in
-theorem unitSgn_ne_zero (v₀ : V) : unitSgn (V := V) v₀ ≠ 0 := by
+theorem unitSgn_ne_zero  : unitSgn (V := V) v₀ ≠ 0 := by
   intro h
   simpa [unitSgn] using congrFun h v₀
 
 /-- **Every vertex cube whose sign at `v₀` is `1` is joined to the distinguished one.** -/
-theorem connQ_vtxCube_unit (v₀ : V) :
+theorem connQ_vtxCube_unit  :
     ∀ (n : ℕ) (ξ : V → ZMod 2) (hξ : ξ ≠ 0), ξ v₀ = 1 → (sgnSupport ξ).card = n →
       ConnQ (vtxCube ξ hξ : QOld A) (vtxCube (unitSgn v₀) (unitSgn_ne_zero v₀)) := by
   intro n
@@ -116,21 +109,14 @@ theorem connQ_vtxCube_unit (v₀ : V) :
     by_cases hsupp : ∀ w, ξ w ≠ 0 → w = v₀
     · -- the support is `{v₀}`, so `ξ` is the distinguished vector
       have hxi : ξ = unitSgn v₀ := by
-        funext w
-        by_cases hw : w = v₀
-        · subst hw
-          simp [unitSgn, hv₀]
-        · have : ξ w = 0 := by
-            by_contra hne
-            exact hw (hsupp w hne)
-          simp [unitSgn, hw, this]
+        grind [unitSgn]
       subst hxi
       exact ConnQ.refl _
     · push_neg at hsupp
       obtain ⟨w, hw, hwv⟩ := hsupp
       set ξ' := Function.update ξ w 0 with hξ'
       have hξ'v₀ : ξ' v₀ = 1 := by
-        rw [hξ', Function.update_apply, if_neg (Ne.symm hwv), hv₀]
+        grind
       have hξ'ne : ξ' ≠ 0 := by
         intro h
         simpa [hξ'v₀] using congrFun h v₀
@@ -141,14 +127,9 @@ theorem connQ_vtxCube_unit (v₀ : V) :
       -- the support has become smaller
       have hsub : sgnSupport ξ' ⊂ sgnSupport ξ := by
         constructor
-        · intro x hx
-          rw [mem_sgnSupport] at hx ⊢
-          by_cases hxw : x = w
-          · subst hxw
-            simp [hξ'] at hx
-          · rwa [hξ', Function.update_apply, if_neg hxw] at hx
+        · grind [mem_sgnSupport]
         · intro hle
-          have : w ∈ sgnSupport ξ' := hle (mem_sgnSupport.2 hw)
+          have  := hle (mem_sgnSupport.2 hw)
           rw [mem_sgnSupport, hξ'] at this
           simp at this
       have hlt : (sgnSupport ξ').card < n := by
@@ -161,7 +142,7 @@ omit [Fintype V] in
 theorem connQ_to_vtxCube (c : QOld A) :
     ∃ (ξ : V → ZMod 2) (hξ : ξ ≠ 0), ConnQ c (vtxCube ξ hξ) := by
   by_cases hs : c.1.spx = ∅
-  · have hne : c.1.sgn ≠ 0 := fun h => c.2 ⟨hs, h⟩
+  · have hne  := fun h => c.2 ⟨hs, h⟩
     refine ⟨c.1.sgn, hne, ?_⟩
     have hEq : c = vtxCube c.1.sgn hne := by
       apply Subtype.ext
@@ -197,9 +178,8 @@ theorem isConnected_orderCx_qOld [Nonempty V] : IsConnected (orderCx (QOld A)) :
 
 /-- **The block carries a spanning tree with any prescribed root**, in particular one rooted at a
 cell of the cut surface. -/
-theorem exists_spanningTree_qOld [Nonempty V] (r : QOld A) :
-    ∃ T : SpanningTree (orderCx (QOld A)), T.root = r :=
-  SpanningTree.exists_of_isConnected isConnected_orderCx_qOld r
+abbrev exists_spanningTree_qOld [Nonempty V] (r : QOld A)  :=
+  FiniteChains.Comb.SpanningTree.exists_of_isConnected FiniteChains.Davis.isConnected_orderCx_qOld r
 
-end Davis
-end FiniteChains
+end FiniteChains.Davis
+

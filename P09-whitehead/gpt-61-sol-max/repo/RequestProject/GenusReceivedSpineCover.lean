@@ -1,14 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusSpineSubstitutedBoundary
-public import RequestProject.ReceivedTreeComparison
-public import RequestProject.ReceivedTreeFoxCoordinates
-
-@[expose] public section
+import RequestProject.GenusSpineSubstitutedBoundary
+import RequestProject.ReceivedTreeComparison
+import RequestProject.ReceivedTreeFoxCoordinates
 
 /-! A genuine spine cover with the actual substituted group as its sheet set. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
@@ -17,17 +13,17 @@ open scoped Classical
 variable {A Jr S : Type} (ρ : Jr ⊕ S → FreeGroup A)
   (q : S → ℕ) [∀ s, NeZero (q s)] (u : ∀ s, Fin (q s) × Bool → FreeGroup A)
 
-noncomputable def receivedSpineWordReceiver (s : S) : PresGroup (spinePresentation (q s)) →*
-    PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u)) :=
+variable (s : S)
+noncomputable def receivedSpineWordReceiver   :=
   (familySpineHom ρ q u s).comp
     (NamedPresentation.inclusion (spinePresentation (q s)) (spinePresentationMarkedWord (q s)))
 
-noncomputable abbrev receivedSpineCover (s : S) : Complex2 :=
+noncomputable abbrev receivedSpineCover   :=
   ReceivedTree.cover (markedSpineTree (q s)) (receivedSpineWordReceiver ρ q u s)
 
 /-- Its word coefficients are exactly the coefficient map in the relative Fox
 boundary already proved for the substituted family. -/
-theorem receivedSpineWordReceiver_coeff (s : S) (x : FreeGroupRing (SpinePresentationGen (q s))) :
+theorem receivedSpineWordReceiver_coeff  (x : FreeGroupRing (SpinePresentationGen (q s))) :
     MonoidAlgebra.mapDomainRingHom ℤ (receivedSpineWordReceiver ρ q u s)
       (quotRingHom ℤ (relSub (spinePresentation (q s))) x) =
     NamedPresentation.receivedWordCoefficientMap (spinePresentation (q s))
@@ -44,12 +40,12 @@ theorem receivedSpineWordReceiver_coeff (s : S) (x : FreeGroupRing (SpinePresent
   congr 1
 
 set_option maxHeartbeats 500000 in
-theorem familySpineHom_marked (s : S) (i : Fin (q s) × Bool) :
+theorem familySpineHom_marked  (i : Fin (q s) × Bool) :
     familySpineHom ρ q u s (QuotientGroup.mk (FreeGroup.of (Sum.inr i))) =
       QuotientGroup.mk (FreeGroup.map (Sum.inl (β := Σ s, SpinePresentationGen (q s))) (u s i)) := by
   change QuotientGroup.mk (FreeGroup.map (genEmb s)
       (blockSubst u s (FreeGroup.map Sum.swap (FreeGroup.of (Sum.inr i))))) = _
-  rw (config := { transparency := .default }) [FreeGroup.map.of, Sum.swap_inr, blockSubst_of_inl]
+  rw  [FreeGroup.map.of, Sum.swap_inr, blockSubst_of_inl]
   have h : (FreeGroup.map (genEmb (α := A) (Zt := fun s => SpinePresentationGen (q s)) s)).comp
       (FreeGroup.map (Sum.inl (β := SpinePresentationGen (q s)))) =
       FreeGroup.map (Sum.inl (β := Σ s, SpinePresentationGen (q s))) := by
@@ -58,25 +54,23 @@ theorem familySpineHom_marked (s : S) (i : Fin (q s) × Bool) :
     simp
   exact congrArg QuotientGroup.mk (DFunLike.congr_fun h (u s i))
 
+variable (β : NamedSpineRel (q s) → MonoidAlgebra ℤ
+      (PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u))))
 /-- The old-face part of a named coefficient vector as an actual finite chain
 in the constructed cover, with every group coefficient retained. -/
-noncomputable def receivedSpineFaceChain (s : S)
-    (β : NamedSpineRel (q s) → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u)))) :
-    (receivedSpineCover ρ q u s).F →₀ ℤ :=
+noncomputable def receivedSpineFaceChain 
+      :=
   (ReceivedTree.cellCoordinates (SpinePresentationRel (q s))).symm (fun j => β (Sum.inl j))
 
-theorem receivedSpineFaceChain_coefficient (s : S)
-    (β : NamedSpineRel (q s) → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u)))) (j : SpinePresentationRel (q s)) :
+theorem receivedSpineFaceChain_coefficient 
+     (j : SpinePresentationRel (q s)) :
     ReceivedTree.cellCoefficient j (receivedSpineFaceChain ρ q u s β) = β (Sum.inl j) :=
   ReceivedTree.cellCoefficient_coordinates_symm _ _ _
 
 /-- The actual two-boundary of the old face chain has the prescribed marked-word
 coordinates whenever the genuine B2 internal-coordinate condition holds. -/
-theorem receivedSpineFaceChain_relative_boundary (s : S)
-    (β : NamedSpineRel (q s) → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u))))
+theorem receivedSpineFaceChain_relative_boundary 
+    
     (hβ : ∀ z : SpinePresentationGen (q s),
       (∑ m, β m * foxMatrixPres (substPresF ρ (familyFiniteSpineWordBlock q u))
         (Sum.inr ⟨s, z⟩) (Sum.inr ⟨s, m⟩)) = 0)
@@ -86,7 +80,7 @@ theorem receivedSpineFaceChain_relative_boundary (s : S)
       ∑ i, β (Sum.inr i) * NamedPresentation.receivedWordCoefficientMap
         (spinePresentation (q s)) (spinePresentationMarkedWord (q s))
         (familySpineHom ρ q u s) (fox z (spinePresentationMarkedWord (q s) i)) := by
-  rw (config := { transparency := .default }) [ReceivedTree.cellCoefficient_bdry2]
+  rw  [ReceivedTree.cellCoefficient_bdry2]
   simp only [receivedSpineFaceChain_coefficient, ReceivedTree.coefficientMap,
     RingHom.comp_apply]
   change (∑ j, β (Sum.inl j) * MonoidAlgebra.mapDomainRingHom ℤ

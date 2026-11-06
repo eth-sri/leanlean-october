@@ -1,4 +1,3 @@
-module
-public import RequestProject.FrameworkNecessity
-public import RequestProject.ChainFormulaMod
-public import RequestProject.FoxCommutatorMod
+import RequestProject.FrameworkNecessity
+import RequestProject.ChainFormulaMod
+import RequestProject.FoxCommutatorMod

@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ComponentComplex
-public import RequestProject.OrderComplexGluing
-
-@[expose] public section
+import RequestProject.ComponentComplex
+import RequestProject.OrderComplexGluing
 
 /-! Actual path components of an order complex, as labels of its vertices. -/
 namespace FiniteChains.Comb
-universe u
 variable (P : Type u) [Preorder P]
 
 def orderComponentSetoid : Setoid P where

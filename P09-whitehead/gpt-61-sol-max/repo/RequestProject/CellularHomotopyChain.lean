@@ -1,23 +1,15 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CombHurewicz1Pres
-
-@[expose] public section
+import RequestProject.CombHurewicz1Pres
 
 /-! Integral chain witnesses for edge-path homotopies in arbitrary cellular two-complexes. -/
 
 namespace FiniteChains.Comb
-universe u
 variable {X : Complex2.{u}}
 
 theorem pathChain_revPath (p : List (X.E × Bool)) :
     pathChain (revPath p) = -pathChain p := by
-  induction p with
-  | nil => simp
-  | cons e p ih =>
-    rw [revPath_cons, pathChain_append, ih, pathChain_cons]
-    obtain ⟨e, b⟩ := e
-    cases b <;> simp [revGerm, pathChain_cons]
+  induction p <;> aesop (add simp [pathChain_append, pathChain_cons, revGerm])
 
 /-- An elementary path cancellation has an explicit cellular two-chain witness. -/
 theorem Cancels.exists_boundary {p q : List (X.E × Bool)} (h : Cancels X p q) :

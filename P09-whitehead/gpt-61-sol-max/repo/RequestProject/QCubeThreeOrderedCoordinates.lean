@@ -1,8 +1,4 @@
-module
-
-public import RequestProject.QCubeThreeGeometricKernel
-
-@[expose] public section
+import RequestProject.QCubeThreeGeometricKernel
 
 /-! Exact coefficient coordinates for finite chains on the six actual facets of a three-cube. -/
 namespace FiniteChains.Davis

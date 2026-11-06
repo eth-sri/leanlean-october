@@ -1,19 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.FreePaddingNaturality
-
-@[expose] public section
+import RequestProject.FreePaddingNaturality
 
 /-! Composition and relabelling for literal supported presentation maps.
 These identities are on the actual group-ring coefficients, not only on
 homology classes. Awaiting the final Lean verification phase. -/
 
 noncomputable section
-open scoped Classical
+
 
 namespace FiniteChains.PresInclusionFS
 
-section Square
+section
 variable {A B D E J K L M : Type}
   [DecidableEq A] [DecidableEq B] [DecidableEq D] [DecidableEq E]
   (ρ : J → FreeGroup A) (τ : K → FreeGroup B)
@@ -37,14 +35,10 @@ theorem square_group :
   intro z
   induction z using QuotientGroup.induction_on with
   | H w =>
-      change QuotientGroup.mk (FreeGroup.map k (FreeGroup.map a w)) =
-        QuotientGroup.mk (FreeGroup.map b (FreeGroup.map g w))
+      
       have hm : (FreeGroup.map k).comp (FreeGroup.map a) =
           (FreeGroup.map b).comp (FreeGroup.map g) := by
-        apply FreeGroup.ext_hom
-        intro x
-        simp only [MonoidHom.comp_apply, FreeGroup.map.of]
-        exact congrArg FreeGroup.of (hgen x)
+        aesop
       exact congrArg (fun h : FreeGroup A →* FreeGroup E =>
         (QuotientGroup.mk (h w) : PresGroup υ)) hm
 
@@ -55,8 +49,7 @@ theorem square_cells (x : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
   induction x using Finsupp.induction_linear with
   | zero => simp
   | add x y hx hy =>
-      rw [PresMorFS.cells_add, PresMorFS.cells_add, PresMorFS.cells_add,
-        PresMorFS.cells_add, hx, hy]
+      simp_all [FiniteChains.PresMorFS.cells_add]
   | single j r =>
       change cells σ υ k l hσυ (cells ρ σ a c hρσ (Finsupp.single j r)) =
         cells τ υ b d hτυ (cells ρ τ g f hρτ (Finsupp.single j r))
@@ -68,9 +61,9 @@ theorem square_cells (x : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
           (MonoidAlgebra.mapDomainRingHom ℤ (groupHom ρ τ g f hρτ) r)
       rw [BlockMor.mapDomainRingHom_comp', BlockMor.mapDomainRingHom_comp',
         square_group ρ τ σ υ g f hρτ a c hρσ b d hτυ k l hσυ hgen]
-end Square
+end
 
-section Relabel
+section
 variable {A B J K : Type} [DecidableEq A] [DecidableEq B]
   (ρ : J → FreeGroup A) (τ : K → FreeGroup B)
   (g : A ≃ B) (f : J ≃ K)
@@ -81,7 +74,7 @@ omit [DecidableEq A] [DecidableEq B] in
 theorem inverse_rel (k : K) :
     ρ (f.symm k) = FreeGroup.map g.symm (τ k) := by
   have hk : τ k = FreeGroup.map g (ρ (f.symm k)) := by
-    simpa only [Equiv.apply_symm_apply] using hrel (f.symm k)
+    grind
   rw [hk]
   have hm : (FreeGroup.map g.symm).comp (FreeGroup.map g) = MonoidHom.id _ := by
     apply FreeGroup.ext_hom
@@ -99,7 +92,7 @@ theorem relabel_cells_inverse (x : K →₀ MonoidAlgebra ℤ (PresGroup τ)) :
     intro z
     induction z using QuotientGroup.induction_on with
     | H w =>
-        change QuotientGroup.mk (FreeGroup.map g (FreeGroup.map g.symm w)) = QuotientGroup.mk w
+        
         have hw : (FreeGroup.map g).comp (FreeGroup.map g.symm) = MonoidHom.id _ := by
           apply FreeGroup.ext_hom
           intro b
@@ -108,7 +101,7 @@ theorem relabel_cells_inverse (x : K →₀ MonoidAlgebra ℤ (PresGroup τ)) :
           (QuotientGroup.mk (h w) : PresGroup τ)) hw
   induction x using Finsupp.induction_linear with
   | zero => simp
-  | add x y hx hy => rw [PresMorFS.cells_add, PresMorFS.cells_add, hx, hy]
+  | add x y hx hy => simp_all [FiniteChains.PresMorFS.cells_add]
   | single j r =>
       change cells ρ τ g f hrel (cells τ ρ g.symm f.symm
         (inverse_rel ρ τ g f hrel) (Finsupp.single j r)) = _
@@ -126,9 +119,9 @@ theorem relabel_generates : FSGenerates (mor ρ τ g f g.injective f.injective h
     (inverse_rel ρ τ g f hrel)
   apply Submodule.subset_span
   exact ⟨inv.cells x, inv.cells_cycle x hx, (relabel_cells_inverse ρ τ g f hrel x).symm⟩
-end Relabel
+end
 
-section PaddingRelabel
+section
 variable {A B J K : Type} [DecidableEq A] [DecidableEq B]
   (ρ : J → FreeGroup A) (τ : K → FreeGroup B)
   (g : A → B) (hg : Function.Injective g) (f : J ≃ K)
@@ -137,16 +130,14 @@ variable {A B J K : Type} [DecidableEq A] [DecidableEq B]
 theorem paddingRelabel_generates : FSGenerates (mor ρ τ g f hg f.injective hrel) := by
   let σ := FreePadding.rel ρ g
   have hσ : ∀ j, τ (f j) = FreeGroup.map (Equiv.refl B) (σ j) := by
-    intro j
-    simpa [σ, FreePadding.rel] using hrel j
+    aesop
   let pad := FreePadding.structuralMap ρ g hg
   let relabel := mor σ τ (Equiv.refl B) f (Equiv.refl B).injective f.injective hσ
   have hc : ∀ x, (mor ρ τ g f hg f.injective hrel).cells x = relabel.cells (pad.cells x) := by
     intro x
     induction x using Finsupp.induction_linear with
     | zero => simp
-    | add x y hx hy => rw [PresMorFS.cells_add, PresMorFS.cells_add,
-        PresMorFS.cells_add, hx, hy]
+    | add x y hx hy => classical simp_all [FiniteChains.PresMorFS.cells_add]
     | single j r =>
         change cells ρ τ g f hrel (Finsupp.single j r) =
           cells σ τ (Equiv.refl B) f hσ
@@ -155,22 +146,14 @@ theorem paddingRelabel_generates : FSGenerates (mor ρ τ g f hg f.injective hre
         congr 1
         have hh : groupHom ρ τ g f hrel =
             (groupHom σ τ (Equiv.refl B) f hσ).comp (FreePadding.groupHom ρ g) := by
-          apply MonoidHom.ext
-          intro z
-          induction z using QuotientGroup.induction_on with
-          | H w => change QuotientGroup.mk (FreeGroup.map g w) =
-              QuotientGroup.mk (FreeGroup.map (Equiv.refl B) (FreeGroup.map g w)); simp
+          aesop
         change MonoidAlgebra.mapDomainRingHom ℤ (groupHom ρ τ g f hrel) r =
           MonoidAlgebra.mapDomainRingHom ℤ (groupHom σ τ (Equiv.refl B) f hσ)
             (MonoidAlgebra.mapDomainRingHom ℤ (FreePadding.groupHom ρ g) r)
         rw [BlockMor.mapDomainRingHom_comp', ← hh]
   have hgen := (relabel_generates σ τ (Equiv.refl B) f hσ).comp
     (FreePadding.structuralMap_generates ρ g hg)
-  intro x hx
-  have hs := hgen x hx
-  apply Submodule.span_mono _ hs
-  rintro z ⟨y, hy, rfl⟩
-  exact ⟨y, hy, (hc y).symm⟩
-end PaddingRelabel
+  aesop (add simp [FiniteChains.FSGenerates])
+end
 
 end FiniteChains.PresInclusionFS

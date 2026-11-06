@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PosetCoverPullback
-public import RequestProject.NerveUpperSectionReflection
-public import RequestProject.TruncatedCubePoset
-
-@[expose] public section
+import RequestProject.PosetCoverPullback
+import RequestProject.NerveUpperSectionReflection
+import RequestProject.TruncatedCubePoset
 
 /-! Pulling a genuine old-cell covering back to the actual truncated block. -/
 namespace FiniteChains.Davis
@@ -30,9 +28,7 @@ def truncatedCoverSection (p : P) : TruncatedCover f :=
 theorem truncatedCoverSection_monotone (hf : Monotone f) :
     Monotone (truncatedCoverSection f) := fun _ _ h => ⟨h, oldCellIncl_monotone (hf h)⟩
 
-omit [DecidableEq V] [PartialOrder P] in
-@[simp] theorem truncatedCoverRetraction_section (p : P) :
-    truncatedCoverRetraction f (truncatedCoverSection f p) = p := rfl
+
 
 theorem truncatedCover_le_section_retraction (p : TruncatedCover f) :
     p ≤ truncatedCoverSection f (truncatedCoverRetraction f p) := by
@@ -42,13 +38,14 @@ theorem truncatedCover_le_section_retraction (p : TruncatedCover f) :
   exact truncatedCell_le_retraction p.1.2
 
 /-- Actual filling reflection in every old-cell covering, without a homology hypothesis. -/
-theorem truncatedCoverRetraction_reflects_boundaries (hf : Monotone f)
+abbrev truncatedCoverRetraction_reflects_boundaries (hf : Monotone f)
     (c : Ch (TruncatedCover f)) (hc : c ∈ Inc (TruncatedCover f))
     (hcyc : Nerve.bdry c = 0)
-    (hbound : ∃ y ∈ Inc P, Nerve.bdry y = cmap (truncatedCoverRetraction f) c) :
-    ∃ y ∈ Inc (TruncatedCover f), Nerve.bdry y = c :=
-  boundary_reflection_of_upper_section (truncatedCoverRetraction f) (truncatedCoverSection f)
-    (posetPullbackOriginal_monotone f _) (truncatedCoverSection_monotone f hf)
-    (truncatedCover_le_section_retraction f) c hc hcyc hbound
+    (hbound : ∃ y ∈ Inc P, Nerve.bdry y = cmap (truncatedCoverRetraction f) c)  :=
+  FiniteChains.Nerve.boundary_reflection_of_upper_section (FiniteChains.Davis.truncatedCoverRetraction f)
+    (FiniteChains.Davis.truncatedCoverSection f)
+    (FiniteChains.Comb.posetPullbackOriginal_monotone f FiniteChains.Davis.truncatedCellRetraction)
+    (FiniteChains.Davis.truncatedCoverSection_monotone f hf) (FiniteChains.Davis.truncatedCover_le_section_retraction f) c
+    hc hcyc hbound
 
 end FiniteChains.Davis

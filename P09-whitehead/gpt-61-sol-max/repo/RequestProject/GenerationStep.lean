@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Pi2Generation
-
-@[expose] public section
+import RequestProject.Pi2Generation
 
 /-!
 # Structural maps with the generation property, and their composites
@@ -36,15 +34,12 @@ The elementary move of rule 1 is packaged as a `PresMor` in
 treated.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
-open MonoidAlgebra
 
-universe u
+
 
 section
 
@@ -75,11 +70,7 @@ namespace PresMor
 
 variable {ρ : J → FreeGroup α} {ρ' : J' → FreeGroup α'} {ρ'' : J'' → FreeGroup α''}
 
-omit [Fintype α] [Fintype α'] in
-@[simp] theorem cells_zero (f : PresMor ρ ρ') : f.cells 0 = 0 := by
-  have h := f.cells_smul 0 0
-  rw [zero_smul, map_zero, zero_smul] at h
-  exact h
+
 
 omit [Fintype α] [DecidableEq α] [Fintype J] [Fintype α'] [DecidableEq α'] [Fintype J']
   [Fintype α''] [DecidableEq α''] [Fintype J''] in
@@ -87,28 +78,15 @@ omit [Fintype α] [DecidableEq α] [Fintype J] [Fintype α'] [DecidableEq α'] [
 theorem mapDomainRingHom_comp (g : PresGroup ρ' →* PresGroup ρ'') (f : PresGroup ρ →* PresGroup ρ')
     (c : MonoidAlgebra ℤ (PresGroup ρ)) :
     MonoidAlgebra.mapDomainRingHom ℤ (g.comp f) c
-      = MonoidAlgebra.mapDomainRingHom ℤ g (MonoidAlgebra.mapDomainRingHom ℤ f c) := by
-  change MonoidAlgebra.mapDomain (g.comp f) c = MonoidAlgebra.mapDomain g (MonoidAlgebra.mapDomain f c)
-  rw [← MonoidAlgebra.mapDomain_comp]
-  rfl
+      = MonoidAlgebra.mapDomainRingHom ℤ g (MonoidAlgebra.mapDomainRingHom ℤ f c) := by simp_all
 
-/-- The composite of two structural maps. -/
-def comp (g : PresMor ρ' ρ'') (f : PresMor ρ ρ') : PresMor ρ ρ'' where
-  hom := g.hom.comp f.hom
-  cells := fun y => g.cells (f.cells y)
-  cells_add := fun y z => by rw [f.cells_add, g.cells_add]
-  cells_smul := fun c y => by
-    rw [f.cells_smul, g.cells_smul, mapDomainRingHom_comp]
-  cells_cycle := fun y hy => g.cells_cycle _ (f.cells_cycle _ hy)
-  cells_aug := fun y hy => g.cells_aug _ (f.cells_aug _ hy)
 
-omit [Fintype α] [Fintype α'] [Fintype α''] in
-@[simp] theorem comp_cells (g : PresMor ρ' ρ'') (f : PresMor ρ ρ')
-    (y : J → MonoidAlgebra ℤ (PresGroup ρ)) : (g.comp f).cells y = g.cells (f.cells y) := rfl
+
+
 
 end PresMor
 
-variable {ρ : J → FreeGroup α} {ρ' : J' → FreeGroup α'} {ρ'' : J'' → FreeGroup α''}
+
 
 end
 

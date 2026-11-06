@@ -1,22 +1,18 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalCWChainDiskModels
-
-@[expose] public section
+import RequestProject.ClassicalCWChainDiskModels
 
 /-! The coherent word-disk models form actual commuting squares with
 the original subcomplex inclusions. Thus original topological pi2
 vanishing transfers to the constructed model inclusions. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment
 open Set Topology
-open scoped Classical
+
 variable (K : Whitehead.TwoComplex)
 
 theorem subcomplexAsDiskAttachment_natural
@@ -39,14 +35,13 @@ variable {n : ℕ} (C : Fin (n + 1) → CWComplex.Subcomplex (Set.univ : Set K))
   (hC : Monotone C)
   [Choices C]
 
+variable {i k : Fin (n + 1)}
 omit [Choices C] in
-theorem rawAttaching_natural {i k : Fin (n + 1)} (hik : i ≤ k)
-    (j : RelCWComplex.cell (C i : Set K) 2) (a : UnitBoundary (Fin 2 → ℝ)) :
-    subcomplexGraphDiskMap (hC hik) (rawAttaching C i ⟨j, a⟩) =
-      rawAttaching C k ⟨subcomplexCellInclusion (hC hik) 2 j, a⟩ :=
+abbrev rawAttaching_natural  (hik : i ≤ k)
+    (j : RelCWComplex.cell (C i : Set K) 2) (a : UnitBoundary (Fin 2 → ℝ))  :=
   congrArg (fun f => f a) (subcomplexCellBoundary_natural (hC hik) j)
 
-theorem wordAttaching_natural {i k : Fin (n + 1)} (hik : i ≤ k)
+theorem wordAttaching_natural  (hik : i ≤ k)
     (j : RelCWComplex.cell (C i : Set K) 2) (a : UnitBoundary (Fin 2 → ℝ)) :
     subcomplexGraphDiskMap (hC hik) (wordAttaching C hC i ⟨j, a⟩) =
       wordAttaching C hC k ⟨subcomplexCellInclusion (hC hik) 2 j, a⟩ := by
@@ -55,20 +50,16 @@ theorem wordAttaching_natural {i k : Fin (n + 1)} (hik : i ≤ k)
   rw [word_natural C hC hik]
   exact congrArg (fun f => f a) (subcomplexBoundaryWord_map (hC hik) (word C hC i j))
 
-def rawDiskInclusion {i k : Fin (n + 1)} (hik : i ≤ k) :
-    C(DiskAttachment (rawAttaching C i), DiskAttachment (rawAttaching C k)) :=
+def rawDiskInclusion  (hik : i ≤ k)  :=
   diskFamilyMap (rawAttaching C i) (rawAttaching C k) (subcomplexGraphDiskMap (hC hik))
     (subcomplexCellInclusion (hC hik) 2) (rawAttaching_natural K C hC hik)
 
-def wordDiskInclusion {i k : Fin (n + 1)} (hik : i ≤ k) :
-    C(DiskAttachment (wordAttaching C hC i), DiskAttachment (wordAttaching C hC k)) :=
+def wordDiskInclusion  (hik : i ≤ k)  :=
   diskFamilyMap (wordAttaching C hC i) (wordAttaching C hC k)
     (subcomplexGraphDiskMap (hC hik)) (subcomplexCellInclusion (hC hik) 2)
     (wordAttaching_natural K C hC hik)
 
-theorem wordDiskChange_natural {i k : Fin (n + 1)} (hik : i ≤ k) :
-    (wordDiskInclusion K C hC hik).comp (wordDiskChange C hC i).toFun =
-      (wordDiskChange C hC k).toFun.comp (rawDiskInclusion K C hC hik) :=
+abbrev wordDiskChange_natural  (hik : i ≤ k)  :=
   naturalDiskAttachingEquiv_natural _ _ (attachingHomotopy C hC i)
     _ _ (attachingHomotopy C hC k) (subcomplexGraphDiskMap (hC hik))
     (subcomplexCellInclusion (hC hik) 2) (rawAttaching_natural K C hC hik)
@@ -79,8 +70,10 @@ def rawBaseChange (i : Fin (n + 1)) :=
   diskAttachmentBaseChangeHomotopyEquiv (skeletonAttachingMap (C i : Set K) 2)
     (skeletonAsDiskAttachment (C i : Set K) 1).toHomotopyEquiv
 
-omit [Choices C] in
-theorem rawBaseChange_natural {i k : Fin (n + 1)} (hik : i ≤ k) :
+section
+omit [Choices C]
+variable {i k : Fin (n + 1)}
+theorem rawBaseChange_natural  (hik : i ≤ k) :
     (rawDiskInclusion K C hC hik).comp (rawBaseChange K C i).toFun =
       (rawBaseChange K C k).toFun.comp (subcomplexDiskMap (hC hik) 2) := by
   apply hom_ext (skeletonAttachingMap (C i : Set K) 2)
@@ -110,8 +103,7 @@ theorem rawBaseChange_natural {i k : Fin (n + 1)} (hik : i ≤ k) :
     rw [diskFamilyMap_cell, subcomplexDiskMap_cell, diskAttachmentBaseChangeHomotopyEquiv_cell]
     rfl
 
-omit [Choices C] in
-theorem rawDiskEquiv_natural {i k : Fin (n + 1)} (hik : i ≤ k) (x : (C i : Set K)) :
+theorem rawDiskEquiv_natural  (hik : i ≤ k) (x : (C i : Set K)) :
     rawDiskInclusion K C hC hik (rawDiskEquiv K C i x) =
       rawDiskEquiv K C k (Set.inclusion (hC hik) x) := by
   change rawDiskInclusion K C hC hik
@@ -120,8 +112,9 @@ theorem rawDiskEquiv_natural {i k : Fin (n + 1)} (hik : i ≤ k) (x : (C i : Set
   rw [subcomplexAsDiskAttachment_natural K (hC hik) x]
   exact congrArg (fun f => f (subcomplexAsDiskAttachment K (C i) x))
     (rawBaseChange_natural K C hC hik)
+end
 
-theorem wordDiskEquiv_natural {i k : Fin (n + 1)} (hik : i ≤ k) :
+theorem wordDiskEquiv_natural  (hik : i ≤ k) :
     (wordDiskInclusion K C hC hik).comp (wordDiskEquiv K C hC i).toFun =
       (wordDiskEquiv K C hC k).toFun.comp
         ⟨Set.inclusion (hC hik), continuous_inclusion (hC hik)⟩ := by
@@ -133,7 +126,7 @@ theorem wordDiskEquiv_natural {i k : Fin (n + 1)} (hik : i ≤ k) :
   rw [h, rawDiskEquiv_natural]
   rfl
 
-theorem wordDiskInclusion_killsPi2_iff {i k : Fin (n + 1)} (hik : i ≤ k) :
+theorem wordDiskInclusion_killsPi2_iff  (hik : i ≤ k) :
     Whitehead.KillsPi2 (wordDiskInclusion K C hC hik) ↔
       Whitehead.KillsPi2 (⟨Set.inclusion (hC hik), continuous_inclusion (hC hik)⟩ :
         C((C i : Set K), (C k : Set K))) := by
@@ -141,5 +134,5 @@ theorem wordDiskInclusion_killsPi2_iff {i k : Fin (n + 1)} (hik : i ≤ k) :
     (wordDiskEquiv K C hC i) (wordDiskEquiv K C hC k)
   rw [wordDiskEquiv_natural]
 
-end ChainWords
-end FiniteChains.ClassicalCW
+end FiniteChains.ClassicalCW.ChainWords
+

@@ -1,22 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SmallRefinementStep
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SmallRefinementStep
 
 namespace FiniteChains.SingularSubdivision
 open TopologicalSingular
-universe u v
 variable {X : Type u} [TopologicalSpace X] {ι : Type v}
 
 noncomputable def smallRefinementNextMap (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
-    (hcover : ∀ x, ∃ i, x ∈ U i) {n : ℕ} (s : SmallRefinementStage U n) :
-    Chain X (n + 1) →ₗ[ℤ] Chain X (n + 1) :=
+    (hcover : ∀ x, ∃ i, x ∈ U i) {n : ℕ} (s : SmallRefinementStage U n)  :=
   Finsupp.linearCombination ℤ (fun σ => (smallRefinementStep_exists U hU hcover s σ).choose)
 
 noncomputable def smallRefinementNextHomotopy (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
-    (hcover : ∀ x, ∃ i, x ∈ U i) {n : ℕ} (s : SmallRefinementStage U n) :
-    Chain X (n + 1) →ₗ[ℤ] Chain X (n + 2) :=
+    (hcover : ∀ x, ∃ i, x ∈ U i) {n : ℕ} (s : SmallRefinementStage U n)  :=
   Finsupp.linearCombination ℤ
     (fun σ => (smallRefinementStep_exists U hU hcover s σ).choose_spec.choose)
 
@@ -45,14 +40,14 @@ noncomputable def smallRefinementStageNext (U : ι → Set X) (hU : ∀ i, IsOpe
   small c := by
     induction c using Finsupp.induction_linear with
     | zero => simp only [map_zero, Submodule.zero_mem]
-    | add c d hc hd => simpa only [map_add] using Submodule.add_mem _ hc hd
+    | add c d hc hd => aesop
     | single σ r =>
       dsimp only [smallRefinementNextMap]
       rw [Finsupp.linearCombination_single]
       exact Submodule.smul_mem _ r
         (smallRefinementStep_exists U hU hcover s σ).choose_spec.choose_spec.1
   small_support σ := by
-    dsimp only [smallRefinementNextMap]
+    dsimp [smallRefinementNextMap]
     rw [Finsupp.linearCombination_single, one_smul]
     exact (smallRefinementStep_exists U hU hcover s σ).choose_spec.choose_spec.2.1
   homotopy_support σ := by
@@ -68,11 +63,11 @@ noncomputable def smallRefinementStage (U : ι → Set X) (hU : ∀ i, IsOpen (U
   | n + 1 => smallRefinementStageNext U hU hcover (smallRefinementStage U hU hcover n)
 
 noncomputable def smallRefinement (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
-    (hcover : ∀ x, ∃ i, x ∈ U i) (n : ℕ) : Chain X n →ₗ[ℤ] Chain X n :=
+    (hcover : ∀ x, ∃ i, x ∈ U i) (n : ℕ)  :=
   (smallRefinementStage U hU hcover n).smallMap
 
 noncomputable def smallRefinementHomotopy (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
-    (hcover : ∀ x, ∃ i, x ∈ U i) (n : ℕ) : Chain X n →ₗ[ℤ] Chain X (n + 1) :=
+    (hcover : ∀ x, ∃ i, x ∈ U i) (n : ℕ)  :=
   (smallRefinementStage U hU hcover n).homotopyMap
 
 theorem smallRefinementHomotopy_identity (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
@@ -93,16 +88,15 @@ theorem smallRefinement_boundary (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
     (boundary n c - smallRefinement U hU hcover n (boundary n c)) at he
   linear_combination (norm := abel) he
 
-theorem smallRefinement_mem_small (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
-    (hcover : ∀ x, ∃ i, x ∈ U i) (n : ℕ) (c : Chain X n) :
-    smallRefinement U hU hcover n c ∈ smallChains U n :=
-  (smallRefinementStage U hU hcover n).small c
+abbrev smallRefinement_mem_small (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
+    (hcover : ∀ x, ∃ i, x ∈ U i) (n : ℕ) (c : Chain X n)  :=
+  (FiniteChains.SingularSubdivision.smallRefinementStage U hU hcover n).small c
 
 /-- Refinement preserves every subspace, even though the subdivision count may
 depend on the individual simplex. -/
-theorem smallRefinement_support (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
+abbrev smallRefinement_support (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
     (hcover : ∀ x, ∃ i, x ∈ U i) (n : ℕ) (A : Set X) {c : Chain X n}
-    (hc : c ∈ subChains A n) : smallRefinement U hU hcover n c ∈ subChains A n :=
+    (hc : c ∈ subChains A n)  :=
   carried_linearMap_mem_subChains _ (smallRefinementStage U hU hcover n).small_support A hc
 
 end FiniteChains.SingularSubdivision

@@ -1,19 +1,18 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberZCoverDegreeLocal
-
-@[expose] public section
+import RequestProject.ChamberZCoverDegreeLocal
 
 /-! Degree-two generation on actual poset covers of the modified chamber construction. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] [Nonempty X]
   {M : CayGroup A → Prop} {att : NeSpx A →o X}
   {P : Type u} [PartialOrder P] {f : P → Zpos A X M att}
 
-theorem generatesDegreeIn_cover_zupto_insert (hf : IsPosetCover f) (n : ℕ)
+variable (hf : IsPosetCover f)
+include hf in
+theorem generatesDegreeIn_cover_zupto_insert  (n : ℕ)
     (hprev : GeneratesDegreeIn (fun p : P => ZUpto n (f p))
       (fun p => InZBase (f p)) 3) :
     ∀ S : Set (CayGroup A), S.Finite → (∀ y ∈ S, RACG.clen A y = n + 1) →
@@ -23,17 +22,16 @@ theorem generatesDegreeIn_cover_zupto_insert (hf : IsPosetCover f) (n : ℕ)
   intro S hS
   induction S, hS using Set.Finite.induction_on with
   | empty =>
-      intro _
-      exact generatesDegreeIn_congr (fun p => by simp) hprev
+      simp_all
   | @insert x S hxS hSfin ih =>
       intro hlen
       have hPrevGen := ih (fun y hy => hlen y (Set.mem_insert_of_mem _ hy))
-      have hxlen : RACG.clen A x = n + 1 := hlen x (Set.mem_insert _ _)
+      have hxlen  := hlen x (Set.mem_insert _ _)
       have hx1 : x ≠ 1 := by
         intro h
         rw [h, clen_one] at hxlen
         omega
-      let Prev : P → Prop := fun p => ZUpto n (f p) ∨ ∃ y ∈ S, InZChamber y (f p)
+      let Prev  := fun p => ZUpto n (f p) ∨ ∃ y ∈ S, InZChamber y (f p)
       have hup : ∀ p q : P, p ≤ q → Prev p → Prev q := by
         rintro p q hpq (h | ⟨y, hy, hyp⟩)
         · exact Or.inl (zUpto_up (hf.mono hpq) h)
@@ -43,13 +41,10 @@ theorem generatesDegreeIn_cover_zupto_insert (hf : IsPosetCover f) (n : ℕ)
         constructor
         · rintro ⟨hprev', hpx⟩
           rcases hprev' with ⟨y, hy, hyp⟩ | ⟨y, hyS, hyp⟩
-          · exact (mem_shorter_zchamber_iff hpx).1 ⟨y, by omega, hyp⟩
-          · refine (mem_earlier_zchamber_iff hpx).1 ⟨y, ?_, ?_, hyp⟩
-            · intro hxy
-              exact hxS (hxy ▸ hyS)
-            · rw [hlen y (Set.mem_insert_of_mem _ hyS), hxlen]
+          · grind [FiniteChains.Davis.mem_shorter_zchamber_iff]
+          · grind [FiniteChains.Davis.mem_earlier_zchamber_iff]
         · intro hJ
-          have hpx : InZChamber x (f p) := zJSet_imp_inZChamber hJ
+          have hpx  := zJSet_imp_inZChamber hJ
           obtain ⟨y, hylt, hyp⟩ := (mem_shorter_zchamber_iff hpx).2 hJ
           exact ⟨Or.inl ⟨y, by omega, hyp⟩, hpx⟩
       have hmain : GeneratesDegreeIn
@@ -63,25 +58,16 @@ theorem generatesDegreeIn_cover_zupto_insert (hf : IsPosetCover f) (n : ℕ)
         · exact Or.inl ⟨hp, hup p q hpq hp⟩
         · exact Or.inr ⟨hp, inZChamber_of_le (hf.mono hpq) hp⟩
       refine generatesDegreeIn_congr (fun p => ?_) hmain
-      constructor
-      · rintro ((h | ⟨y, hy, hyp⟩) | h)
-        · exact Or.inl h
-        · exact Or.inr ⟨y, Set.mem_insert_of_mem _ hy, hyp⟩
-        · exact Or.inr ⟨x, Set.mem_insert _ _, h⟩
-      · rintro (h | ⟨y, hy, hyp⟩)
-        · exact Or.inl (Or.inl h)
-        · rcases Set.mem_insert_iff.1 hy with rfl | hy
-          · exact Or.inr hyp
-          · exact Or.inl (Or.inr ⟨y, hy, hyp⟩)
+      grind
 
-theorem generatesDegreeIn_cover_zupto (hf : IsPosetCover f) :
+include hf in
+theorem generatesDegreeIn_cover_zupto  :
     ∀ n : ℕ, GeneratesDegreeIn (fun p : P => ZUpto n (f p))
       (fun p => InZBase (f p)) 3 := by
   intro n
   induction n with
   | zero =>
-      exact generatesDegreeIn_congr (fun p => (zUpto_zero_iff (f p)).symm)
-        (generatesDegreeIn_cover_chamber hf 1)
+      simp_all [FiniteChains.Davis.zUpto_zero_iff, FiniteChains.Davis.generatesDegreeIn_cover_chamber]
   | succ n ih =>
       have h := generatesDegreeIn_cover_zupto_insert hf n ih
         {x : CayGroup A | RACG.clen A x = n + 1} (level_finite A (n + 1)) (fun _ hy => hy)
@@ -95,7 +81,7 @@ theorem generatesDegreeIn_cover_zupto (hf : IsPosetCover f) :
         · exact Or.inl ⟨y, by omega, hyp⟩
         · exact Or.inr ⟨y, le_antisymm hy h', hyp⟩
 
-noncomputable def coverChainBound (c : Nerve.Ch P) : ℕ :=
+noncomputable def coverChainBound (c : Nerve.Ch P)  :=
   c.support.sup (fun l => (l.map (fun p => zlen (f p))).sum)
 
 omit [Fintype V] [Nonempty X] in
@@ -112,9 +98,10 @@ theorem mem_incOn_cover_bound {c : Nerve.Ch P} (hc : c ∈ Nerve.Inc P) :
   exact hy.trans (h1.trans (Finset.le_sup
     (f := fun l : List P => (l.map (fun q => zlen (f q))).sum) hl))
 
+include hf in
 /-- Every homogeneous two-cycle in an actual covering poset is a cycle on the
 actual preimage of the inserted bases plus a genuine finite three-boundary. -/
-theorem exists_cover_base_twoCycle (hf : IsPosetCover f) {c : Nerve.Ch P}
+theorem exists_cover_base_twoCycle  {c : Nerve.Ch P}
     (hc : c ∈ Nerve.Inc P) (hd : lengthProjection 3 c = c) (hcyc : Nerve.bdry c = 0) :
     ∃ d ∈ IncOn (fun p => InZBase (f p)), ∃ y ∈ Nerve.Inc P,
       Nerve.bdry d = 0 ∧ c = d + Nerve.bdry y := by

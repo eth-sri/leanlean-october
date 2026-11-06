@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.FoxWordPrefixSum
-public import RequestProject.CoverChainComplex
-
-@[expose] public section
+import RequestProject.FoxWordPrefixSum
+import RequestProject.CoverChainComplex
 
 namespace FiniteChains
 variable {α : Type*} [DecidableEq α]
@@ -25,10 +23,7 @@ theorem coverFox_mk_prefix_sum (i : α) (l : List (α × Bool)) :
   apply Finset.sum_congr rfl
   intro k _
   by_cases hi : i = l[k.val].1
-  · cases hb : l[k.val].2 <;>
-      simp [foxWordIncidence, hi, hb, map_neg,
-        MonoidAlgebra.single_mul_single, grp_eq_single, proj_single,
-        QuotientGroup.mk_inv]
+  · aesop (add simp [foxWordIncidence, grp_eq_single])
   · simp [foxWordIncidence, hi]
 
 end FiniteChains

@@ -1,20 +1,15 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderCocyclePotential
-
-@[expose] public section
+import RequestProject.OrderCocyclePotential
 
 /-! Flat sections for arbitrary group actions, retaining nonabelian monodromy. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
-universe u v w
 variable {P : Type u} [Preorder P] {G : Type v} [Group G]
   {Ω : Type w} [MulAction G Ω] (c : OrdCocycle P G)
 
-def IsFlatSection (s : P → Ω) : Prop :=
+def IsFlatSection (s : P → Ω)  :=
   ∀ {a b}, a ≤ b → c.val a b • s b = s a
 
 end FiniteChains.Comb.OrdCocycle

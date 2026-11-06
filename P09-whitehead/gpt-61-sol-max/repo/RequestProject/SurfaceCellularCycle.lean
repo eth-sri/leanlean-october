@@ -1,15 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CellularHomotopyChain
-public import RequestProject.GenusFiniteMarking
-
-@[expose] public section
+import RequestProject.CellularHomotopyChain
+import RequestProject.GenusFiniteMarking
 
 /-! Cellular filling chains of the actual marked surface words. -/
 
 namespace FiniteChains.Davis
 open Comb
-universe u
 variable {X : Complex2.{u}} {a : X.V} {ι : Type u}
 
 /-- The edge path spelling a product of commutators of marked loops. -/
@@ -36,12 +33,10 @@ theorem surfacePath_class (f : ι → Loop X a) (ps : List (ι × ι)) :
     rfl
 
 /-- The canonical surface word bounds by its proved edge-path relation. -/
-theorem surfacePath_nullhomotopic (f : ι → Loop X a) (ps : List (ι × ι))
-    (hf : commWord (fun i => Pi1.mk (f i)) ps = 1) :
-    Htpy X a a (surfacePath f ps) [] := by
-  have he : Pi1.mk ⟨surfacePath f ps, surfacePath_isLoop f ps⟩ =
-      Pi1.mk (⟨[], rfl⟩ : Loop X a) := (surfacePath_class f ps).trans hf
-  exact Quotient.exact he
+abbrev surfacePath_nullhomotopic (f : ι → Loop X a) (ps : List (ι × ι))
+    (hf : commWord (fun i => Pi1.mk (f i)) ps = 1)  :=
+  have he := Eq.trans (FiniteChains.Davis.surfacePath_class f ps) hf;
+  Quotient.exact he
 
 namespace Genus
 variable (q : ℕ) [NeZero q]
@@ -50,5 +45,5 @@ noncomputable def finiteMarkedLoops (x : Fin q × Bool) :
     Loop (sdCx (gc q)) (gBase q) :=
   ⟨finiteSig q x, isPath_gSig q (x.1.val, x.2)⟩
 
-end Genus
-end FiniteChains.Davis
+end FiniteChains.Davis.Genus
+

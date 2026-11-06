@@ -1,14 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberQuotientOldRelativeFillings
-public import RequestProject.ChamberQuotientAttachingCover
-
-@[expose] public section
+import RequestProject.ChamberQuotientOldRelativeFillings
+import RequestProject.ChamberQuotientAttachingCover
 
 /-! Relative old-cell fillings with the prescribed boundary in the actual attaching cover. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

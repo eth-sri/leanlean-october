@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderComponentLabels
-public import RequestProject.ConeAdjPoset
-public import RequestProject.CylinderPoset
-
-@[expose] public section
+import RequestProject.OrderComponentLabels
+import RequestProject.ConeAdjPoset
+import RequestProject.CylinderPoset
 
 namespace FiniteChains.Comb
-universe u
 
  theorem cylP_isConnected {X S : Type u} [Preorder X] [Preorder S]
     (a : S →o X) (hc : IsConnected (orderCx X)) : IsConnected (orderCx (CylP a)) := by

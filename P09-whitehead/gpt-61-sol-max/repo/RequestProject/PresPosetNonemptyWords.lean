@@ -1,22 +1,20 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresPosetAlpha
-
-@[expose] public section
+import RequestProject.PresPosetAlpha
 
 namespace FiniteChains.PresModel
-universe u
 variable {α J : Type u}
 
+  (ρ : J → FreeGroup α)
+  (a : α)
 /-- Nonempty attaching-word representatives, using a cancelling pair. -/
-noncomputable def presNonemptyWords (ρ : J → FreeGroup α) (a : α) (j : J) :
-    List (α × Bool) := presWords ρ j ++ [(a, true), (a, false)]
+noncomputable def presNonemptyWords   (j : J)  := presWords ρ j ++ [(a, true), (a, false)]
 
-theorem presNonemptyWords_ne_nil (ρ : J → FreeGroup α) (a : α) (j : J) :
+theorem presNonemptyWords_ne_nil   (j : J) :
     presNonemptyWords ρ a j ≠ [] := by
   simp [presNonemptyWords]
 
-theorem mk_presNonemptyWords (ρ : J → FreeGroup α) (a : α) (j : J) :
+theorem mk_presNonemptyWords   (j : J) :
     FreeGroup.mk (presNonemptyWords ρ a j) = ρ j := by
   have hc : FreeGroup.mk [(a, true), (a, false)] = (1 : FreeGroup α) := by
     change FreeGroup.of a * (FreeGroup.of a)⁻¹ = 1

@@ -1,19 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresWordEmbedding
-public import RequestProject.PresPosetReading
-public import RequestProject.OrderUniversalCocycleReading
-public import RequestProject.CombPi2
+import RequestProject.PresWordEmbedding
+import RequestProject.PresPosetReading
+import RequestProject.OrderUniversalCocycleReading
+import RequestProject.CombPi2
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
-universe u t s
 variable {α β J K : Type u} {G : Type t} {H : Type s} [Group G] [Group H]
 variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
   (h : PresWordEmbedding w v) (a : α → G) (b : β → H) (φ : G →* H)
@@ -97,7 +92,7 @@ theorem readGerm_map (e : (orderCx (PresPos w)).E × Bool) :
     (presCoc v b hv).readGerm ((orderCxMap h.posMap h.posMap.monotone).onE e.1, e.2) =
       φ ((presCoc w a hw).readGerm e) := by
   rcases e with ⟨e, s⟩
-  cases s <;> simp only [OrdCocycle.readGerm, Bool.false_eq_true, if_false, if_true]
+  cases s <;> simp only [OrdCocycle.readGerm, Bool.false_eq_true, if_false]
   · rw [map_inv]
     exact congrArg Inv.inv (h.presCoc_map a b φ hb hw hv _ _)
   · exact h.presCoc_map a b φ hb hw hv _ _
@@ -109,11 +104,7 @@ theorem readPath_map (p : List ((orderCx (PresPos w)).E × Bool)) :
   induction p with
   | nil => exact (map_one φ).symm
   | cons e p ih =>
-    change (presCoc v b hv).readPath
-      (((orderCxMap h.posMap h.posMap.monotone).onE e.1, e.2) ::
-        mapPath (orderCxMap h.posMap h.posMap.monotone) p) = _
-    rw [OrdCocycle.readPath_cons, OrdCocycle.readPath_cons,
-      h.readGerm_map a b φ hb hw hv, ih, map_mul]
+    classical grind [FiniteChains.Comb.OrdCocycle.readPath_cons, FiniteChains.PresModel.PresWordEmbedding.readGerm_map, presCoc, orderCxMap, mapPath]
 
 include hb in
 /-- Naturality holds on the actual path-class universal cover, not just on loops. -/

@@ -1,3 +1,2 @@
-module
-public import RequestProject.OrderConeThreeChains
-public import RequestProject.PositiveCornerChainExtraction
+import RequestProject.OrderConeThreeChains
+import RequestProject.PositiveCornerChainExtraction

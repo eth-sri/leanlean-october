@@ -1,27 +1,24 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderUniversalPosetHom
-public import RequestProject.OrderUniversalThree
-
-@[expose] public section
+import RequestProject.OrderUniversalPosetHom
+import RequestProject.OrderUniversalThree
 
 /-! The actual lifted three-boundary under the universal-cover order identification. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
-def uOrderTet (t : OrdTet (UOrder P a)) : UOrdTet P a :=
+variable (t : OrdTet (UOrder P a))
+def uOrderTet  : UOrdTet P a :=
   ⟨(t.1.1, ⟨(uOrderEnd t.1.1, uOrderEnd t.1.2.1,
     uOrderEnd t.1.2.2.1, uOrderEnd t.1.2.2.2),
     uOrderEnd_monotone t.2.1, uOrderEnd_monotone t.2.2.1,
     uOrderEnd_monotone t.2.2.2⟩), rfl⟩
 
 /-- The four actual lifted faces have precisely the alternating nerve boundary. -/
-theorem uOrderTet_boundary (t : OrdTet (UOrder P a)) :
+theorem uOrderTet_boundary  :
     Finsupp.mapDomain uOrderFace (ordTetBoundary t) = uOrdTetBoundary (uOrderTet t) := by
   obtain ⟨⟨v, w, z, r⟩, hvw, hwz, hzr⟩ := t
   let t : OrdTet (UOrder P a) := ⟨(v, w, z, r), hvw, hwz, hzr⟩
@@ -47,7 +44,7 @@ theorem uOrderHom_ordBoundary3 (c : OrdTet (UOrder P a) →₀ ℤ) :
     chain2 uOrderHom (ordBoundary3 c) = uOrdBoundary3 (Finsupp.mapDomain uOrderTet c) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw [map_add, map_add, hc, hd, Finsupp.mapDomain_add, map_add]
+  | add c d hc hd => simp_all [Finsupp.mapDomain_add]
   | single t n =>
     rw [ordBoundary3, Finsupp.linearCombination_single, map_smul]
     change n • Finsupp.mapDomain uOrderFace (ordTetBoundary t) = _

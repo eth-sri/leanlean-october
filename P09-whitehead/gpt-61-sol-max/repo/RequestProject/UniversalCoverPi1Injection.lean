@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CombPi2
-
-@[expose] public section
+import RequestProject.CombPi2
 
 /-! An injective fundamental-group inclusion embeds its genuine universal-cover vertices. -/
 namespace FiniteChains.Comb
-universe u
 variable {X Y : Complex2.{u}}
 
 theorem univLiftV_deckV (f : Hom X Y) (a : X.V) (g : Pi1 X a) (v : UV X a) :
@@ -15,8 +12,7 @@ theorem univLiftV_deckV (f : Hom X Y) (a : X.V) (g : Pi1 X a) (v : UV X a) :
   | _ p =>
     induction v using UV.ind with
     | h q =>
-      change UV.mk (mapPathFrom a f (deckP p q)) =
-        UV.mk (deckP ⟨mapPath f p.1, isPath_mapPath f p.2⟩ (mapPathFrom a f q))
+      dsimp
       congr 1
       apply Subtype.ext
       exact mapPath_append f p.1 q.1

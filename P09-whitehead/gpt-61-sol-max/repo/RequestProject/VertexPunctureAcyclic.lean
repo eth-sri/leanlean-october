@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.VertexIntersectionContraction
-public import RequestProject.NerveRelativeGluing
-
-@[expose] public section
+import RequestProject.VertexIntersectionContraction
+import RequestProject.NerveRelativeGluing
 
 /-! Augmented acyclicity of the actual punctured three-cube boundary. -/
 namespace FiniteChains.Davis
@@ -27,7 +25,7 @@ theorem vertexPuncture_right_acyclic : AcyclicIn vertexPunctureRight := by
 theorem vertexPuncturedCube_acyclic :
     ∀ c ∈ Inc VertexPuncturedCube, Nerve.bdry c = 0 →
       ∃ y ∈ Inc VertexPuncturedCube, Nerve.bdry y = c := by
-  have h : AcyclicIn (fun _ : VertexPuncturedCube => True) :=
+  have h  :=
     acyclicIn_union_of_unmixed (fun c => ⟨fun _ => vertexPuncture_cover c, fun _ => trivial⟩)
       (fun c d h _ _ => vertexPuncture_unmixed c d h)
       vertexPuncture_left_acyclic vertexPuncture_right_acyclic

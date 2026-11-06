@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.DavisSimplyConnected
-public import RequestProject.NerveSupport
-
-@[expose] public section
+import RequestProject.DavisSimplyConnected
+import RequestProject.NerveSupport
 
 /-!
 # The chamber complex `𝒟` is acyclic: `H_*(𝒟) = 0`, in particular `H₂(𝒟) = 0`
@@ -33,12 +31,11 @@ Main results:
   is truncated.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
+
 
 open RACG Mirror Comb Nerve
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
@@ -74,7 +71,7 @@ theorem acyclicIn_union_chamber {x : CayGroup A} (hx : x ≠ 1) (Prev : Sph A �
     (Nerve.acyclicIn_congr (fun p => (hinter p).symm) (acyclicIn_chamberInter hx))
   rintro a b hab (ha | ha) hb
   · exact Or.inl ⟨ha, hup a b hab ha⟩
-  · exact Or.inr ⟨ha, inChamber_of_le hab ha⟩
+  · grind [inChamber_of_le]
 
 /-- Adding, one at a time, finitely many chambers of length `n + 1`. -/
 theorem acyclicIn_upto_insert (n : ℕ) (hprev : AcyclicIn (Upto (A := A) n)) :
@@ -83,21 +80,18 @@ theorem acyclicIn_upto_insert (n : ℕ) (hprev : AcyclicIn (Upto (A := A) n)) :
   intro S hS
   induction S, hS using Set.Finite.induction_on with
   | empty =>
-      intro _
-      exact Nerve.acyclicIn_congr (fun p => by simp [Upto]) hprev
+      simp_all
   | @insert x S hxS hSfin ih =>
       intro hlen
       have hPrevAcyc := ih (fun y hy => hlen y (Set.mem_insert_of_mem _ hy))
-      have hxlen : RACG.clen A x = n + 1 := hlen x (Set.mem_insert _ _)
+      have hxlen  := hlen x (Set.mem_insert _ _)
       have hx1 : x ≠ 1 := by
         intro h
         rw [h] at hxlen
         simp at hxlen
       set Prev : Sph A → Prop := fun p => Upto n p ∨ ∃ y ∈ S, InChamber y p with hPrev
       have hup : ∀ p q : Sph A, p ≤ q → Prev p → Prev q := by
-        rintro p q hpq (h | ⟨y, hy, hyp⟩)
-        · exact Or.inl (upto_up hpq h)
-        · exact Or.inr ⟨y, hy, inChamber_of_le hpq hyp⟩
+        grind [upto_up, inChamber_of_le]
       have hinter : ∀ p : Sph A, (Prev p ∧ InChamber x p) ↔
           (InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty) := by
         intro p
@@ -105,26 +99,14 @@ theorem acyclicIn_upto_insert (n : ℕ) (hprev : AcyclicIn (Upto (A := A) n)) :
         · rintro ⟨hprev', hpx⟩
           refine ⟨hpx, ?_⟩
           rcases hprev' with ⟨y, hy, hyp⟩ | ⟨y, hyS, hyp⟩
-          · exact (mem_shorter_chamber_iff hpx).1 ⟨y, by omega, hyp⟩
-          · refine (mem_earlier_chamber_iff hpx).1 ⟨y, ?_, ?_, hyp⟩
-            · intro hxy
-              exact hxS (hxy ▸ hyS)
-            · rw [hlen y (Set.mem_insert_of_mem _ hyS), hxlen]
+          · grind [FiniteChains.Davis.mem_shorter_chamber_iff]
+          · grind [FiniteChains.Davis.mem_earlier_chamber_iff]
         · rintro ⟨hpx, hne⟩
           obtain ⟨y, hylt, hyp⟩ := (mem_shorter_chamber_iff hpx).2 hne
           exact ⟨Or.inl ⟨y, by omega, hyp⟩, hpx⟩
       have hmain := acyclicIn_union_chamber hx1 Prev hup hPrevAcyc hinter
       refine Nerve.acyclicIn_congr (fun p => ?_) hmain
-      constructor
-      · rintro ((h | ⟨y, hy, hyp⟩) | h)
-        · exact Or.inl h
-        · exact Or.inr ⟨y, Set.mem_insert_of_mem _ hy, hyp⟩
-        · exact Or.inr ⟨x, Set.mem_insert _ _, h⟩
-      · rintro (h | ⟨y, hy, hyp⟩)
-        · exact Or.inl (Or.inl h)
-        · rcases Set.mem_insert_iff.1 hy with rfl | hy
-          · exact Or.inr hyp
-          · exact Or.inl (Or.inr ⟨y, hy, hyp⟩)
+      grind
 
 /-- **Every cycle supported on the first `n` length levels of chambers is a boundary there.** -/
 theorem acyclicIn_upto (A : CommRel V) : ∀ n : ℕ, AcyclicIn (Upto (A := A) n) := by
@@ -148,7 +130,7 @@ theorem acyclicIn_upto (A : CommRel V) : ∀ n : ℕ, AcyclicIn (Upto (A := A) n
 /-! ### Acyclicity of the whole complex -/
 
 /-- A bound on the lengths of the representatives of the vertices occurring in a chain. -/
-noncomputable def chainBound (z : Nerve.Ch (Sph A)) : ℕ :=
+noncomputable def chainBound (z : Nerve.Ch (Sph A))  :=
   z.support.sup (fun l => (l.map (fun p : Sph A => RACG.clen A p.rep)).sum)
 
 omit [Fintype V] in
@@ -174,5 +156,5 @@ theorem exists_bdry_eq_of_cycle_davis (A : CommRel V) {z : Nerve.Ch (Sph A)}
     acyclicIn_upto A (chainBound z) z (mem_incOn_upto_chainBound hz) hcyc
   exact ⟨v, Nerve.incOn_le_inc _ hv, hdv⟩
 
-end Davis
-end FiniteChains
+end FiniteChains.Davis
+

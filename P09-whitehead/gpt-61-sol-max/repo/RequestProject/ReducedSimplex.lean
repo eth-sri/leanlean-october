@@ -1,18 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib.Analysis.Convex.StdSimplex
-public import Mathlib.Analysis.Convex.GaugeRescale
-
-@[expose] public section
+import Mathlib.Analysis.Convex.StdSimplex
+import Mathlib.Analysis.Convex.GaugeRescale
 
 namespace FiniteChains
 
+variable (n : ℕ)
 /-- The standard simplex in its actual dimension, obtained by omitting the first barycentric coordinate. -/
-def reducedSimplex (n : ℕ) : Set (Fin n → ℝ) :=
+def reducedSimplex  : Set (Fin n → ℝ) :=
   {x | (∀ i, 0 ≤ x i) ∧ ∑ i, x i ≤ 1}
 
 /-- Reinsert the first barycentric coordinate into reduced simplex coordinates. -/
-def reducedSimplexToStandard (n : ℕ) (x : reducedSimplex n) :
+def reducedSimplexToStandard  (x : reducedSimplex n) :
     stdSimplex ℝ (Fin (n + 1)) :=
   ⟨Fin.cons (1 - ∑ i, x.val i) x.val,
     (by
@@ -23,24 +22,21 @@ def reducedSimplexToStandard (n : ℕ) (x : reducedSimplex n) :
     (by simp [Fin.sum_univ_succ])⟩
 
 /-- Omit the first barycentric coordinate. -/
-def standardSimplexToReduced (n : ℕ) (z : stdSimplex ℝ (Fin (n + 1))) :
+def standardSimplexToReduced  (z : stdSimplex ℝ (Fin (n + 1))) :
     reducedSimplex n :=
   ⟨fun i => z.val i.succ, (fun i => z.property.1 i.succ), by
     have hs := z.property.2
     rw [Fin.sum_univ_succ] at hs
     have h0 := z.property.1 0
-    change z.val 0 + ∑ i : Fin n, z.val i.succ = 1 at hs
+    
     linarith⟩
 
 /-- The actual standard simplex is homeomorphic to the reduced-coordinate simplex. -/
-def reducedSimplexHomeomorph (n : ℕ) :
+def reducedSimplexHomeomorph  :
     reducedSimplex n ≃ₜ stdSimplex ℝ (Fin (n + 1)) where
   toFun := reducedSimplexToStandard n
   invFun := standardSimplexToReduced n
-  left_inv x := by
-    apply Subtype.ext
-    funext i
-    simp [standardSimplexToReduced, reducedSimplexToStandard]
+  left_inv x := rfl
   right_inv z := by
     apply Subtype.ext
     funext i
@@ -49,29 +45,26 @@ def reducedSimplexHomeomorph (n : ℕ) :
       rw [Fin.sum_univ_succ] at hs
       change 1 - ∑ j : Fin n, z.val j.succ = z.val 0
       linarith
-    · simp [standardSimplexToReduced, reducedSimplexToStandard]
+    · rfl
   continuous_toFun := by
     apply Continuous.subtype_mk
     apply continuous_pi
     intro i
     refine Fin.cases ?_ (fun j => ?_) i
-    · exact continuous_const.sub (continuous_finset_sum _ (fun j _ =>
-        (continuous_apply j).comp continuous_subtype_val))
-    · exact (continuous_apply j).comp continuous_subtype_val
-  continuous_invFun := by
-    exact Continuous.subtype_mk (continuous_pi (fun i =>
+    · fun_prop
+    · fun_prop
+  continuous_invFun := Continuous.subtype_mk (continuous_pi (fun i =>
       (continuous_apply i.succ).comp continuous_subtype_val)) _
 
 /-- The reduced simplex is closed in its ambient finite-dimensional space. -/
-theorem reducedSimplex_isClosed (n : ℕ) : IsClosed (reducedSimplex n) := by
+theorem reducedSimplex_isClosed  : IsClosed (reducedSimplex n) := by
   change IsClosed ({x : Fin n → ℝ | ∀ i, 0 ≤ x i} ∩ {x | ∑ i, x i ≤ 1})
   apply IsClosed.inter
-  · simp only [Set.setOf_forall]
-    exact isClosed_iInter (fun i => isClosed_le continuous_const (continuous_apply i))
-  · exact isClosed_le (continuous_finset_sum _ (fun i _ => continuous_apply i)) continuous_const
+  · simp_all [Set.setOf_forall, isClosed_iInter, isClosed_le, continuous_const, continuous_apply]
+  · simp_all [isClosed_le, continuous_finset_sum, continuous_apply, continuous_const]
 
 /-- The reduced simplex is convex. -/
-theorem reducedSimplex_convex (n : ℕ) : Convex ℝ (reducedSimplex n) := by
+theorem reducedSimplex_convex  : Convex ℝ (reducedSimplex n) := by
   intro x hx y hy a b ha hb hab
   constructor
   · intro i
@@ -83,31 +76,30 @@ theorem reducedSimplex_convex (n : ℕ) : Convex ℝ (reducedSimplex n) := by
     nlinarith
 
 /-- The reduced simplex is compact. -/
-theorem reducedSimplex_isCompact (n : ℕ) : IsCompact (reducedSimplex n) := by
-  letI : CompactSpace (reducedSimplex n) := (reducedSimplexHomeomorph n).symm.compactSpace
+theorem reducedSimplex_isCompact  : IsCompact (reducedSimplex n) := by
+  letI  := (reducedSimplexHomeomorph n).symm.compactSpace
   exact isCompact_iff_compactSpace.mpr inferInstance
 
 /-- The reduced simplex is bounded. -/
-theorem reducedSimplex_isBounded (n : ℕ) : Bornology.IsBounded (reducedSimplex n) :=
-  (reducedSimplex_isCompact n).isBounded
+abbrev reducedSimplex_isBounded   :=
+  IsCompact.isBounded (FiniteChains.reducedSimplex_isCompact n)
 
 /-- Strict reduced-coordinate inequalities define the simplex interior candidate. -/
-def reducedSimplexPositive (n : ℕ) : Set (Fin n → ℝ) :=
+def reducedSimplexPositive  : Set (Fin n → ℝ) :=
   {x | (∀ i, 0 < x i) ∧ ∑ i, x i < 1}
 
- theorem reducedSimplexPositive_isOpen (n : ℕ) : IsOpen (reducedSimplexPositive n) := by
+ theorem reducedSimplexPositive_isOpen  : IsOpen (reducedSimplexPositive n) := by
   change IsOpen ({x : Fin n → ℝ | ∀ i, 0 < x i} ∩ {x | ∑ i, x i < 1})
   apply IsOpen.inter
-  · simp only [Set.setOf_forall]
-    exact isOpen_iInter_of_finite (fun i => isOpen_lt continuous_const (continuous_apply i))
-  · exact isOpen_lt (continuous_finset_sum _ (fun i _ => continuous_apply i)) continuous_const
+  · simp_all [Set.setOf_forall, isOpen_iInter_of_finite, isOpen_lt, continuous_const, continuous_apply]
+  · simp_all [isOpen_lt, continuous_finset_sum, continuous_apply, continuous_const]
 
- theorem reducedSimplexPositive_subset (n : ℕ) : reducedSimplexPositive n ⊆ reducedSimplex n :=
+ theorem reducedSimplexPositive_subset  : reducedSimplexPositive n ⊆ reducedSimplex n :=
   fun _ hx => ⟨fun i => le_of_lt (hx.1 i), le_of_lt hx.2⟩
 
 /-- The reduced simplex has nonempty interior, including dimension zero. -/
-theorem reducedSimplex_interior_nonempty (n : ℕ) : (interior (reducedSimplex n)).Nonempty := by
-  let c : ℝ := 1 / ((n : ℝ) + 1)
+theorem reducedSimplex_interior_nonempty  : (interior (reducedSimplex n)).Nonempty := by
+  let c  := 1 / ((n : ℝ) + 1)
   have hc : 0 < c := by dsimp [c]; positivity
   have hsum : (∑ _ : Fin n, c) < 1 := by
     simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
@@ -120,7 +112,7 @@ theorem reducedSimplex_interior_nonempty (n : ℕ) : (interior (reducedSimplex n
 
 /-- A genuine ambient homeomorphism takes the reduced simplex to the closed unit ball,
 its interior to the open unit ball and its frontier to the unit sphere. -/
-theorem reducedSimplex_exists_ball_homeomorph (n : ℕ) :
+theorem reducedSimplex_exists_ball_homeomorph  :
     ∃ h : (Fin n → ℝ) ≃ₜ (Fin n → ℝ),
       h '' interior (reducedSimplex n) = Metric.ball 0 1 ∧
       h '' reducedSimplex n = Metric.closedBall 0 1 ∧

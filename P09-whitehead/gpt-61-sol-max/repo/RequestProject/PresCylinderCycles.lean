@@ -1,17 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresPosetDimension
-public import RequestProject.OrderComparableCycleHomotopy
-
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+import RequestProject.PresPosetDimension
+import RequestProject.OrderComparableCycleHomotopy
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u}
 
 theorem rose_strict_triangles_empty : IsEmpty (StrictOrdTri (Rose α)) := by

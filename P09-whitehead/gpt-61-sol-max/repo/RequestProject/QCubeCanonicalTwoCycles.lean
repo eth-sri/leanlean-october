@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeTwoCycleSubdivision
-
-@[expose] public section
+import RequestProject.QCubeTwoCycleSubdivision
 
 /-! The actual square cells and their unconditional finite two-cycle subdivision dictionary. -/
 set_option backward.defeqAttrib.useBackward true
@@ -15,24 +13,25 @@ variable {V : Type} [DecidableEq V] [LinearOrder V] {A : CommRel V}
 
 abbrev QSquare (A : CommRel V) := {c : QCube A // c.spx.card = 2}
 
-noncomputable def qSquareFrame (c : QSquare A) :
+variable (c : QSquare A)
+noncomputable def qSquareFrame  :
     {p : V × V // p.2 < p.1 ∧ c.1.spx = {p.1, p.2}} := by
   apply Classical.choice
   obtain ⟨a, b, hne, hs⟩ := Finset.card_eq_two.mp c.2
   rcases lt_or_gt_of_ne hne with hab | hba
-  · exact ⟨⟨(b, a), hab, by simpa [Finset.pair_comm] using hs⟩⟩
+  · aesop
   · exact ⟨⟨(a, b), hba, hs⟩⟩
 
-noncomputable def qSquareLeft (c : QSquare A) : V := (qSquareFrame c).1.1
-noncomputable def qSquareRight (c : QSquare A) : V := (qSquareFrame c).1.2
+noncomputable def qSquareLeft   := (qSquareFrame c).1.1
+noncomputable def qSquareRight   := (qSquareFrame c).1.2
 
-theorem qSquare_directions_ne (c : QSquare A) : qSquareLeft c ≠ qSquareRight c :=
+theorem qSquare_directions_ne  : qSquareLeft c ≠ qSquareRight c :=
   Ne.symm (qSquareFrame c).2.1.ne
 
-theorem qSquare_directions_decreasing (c : QSquare A) : qSquareRight c < qSquareLeft c :=
+theorem qSquare_directions_decreasing  : qSquareRight c < qSquareLeft c :=
   (qSquareFrame c).2.1
 
-theorem qSquare_free_directions (c : QSquare A) : c.1.spx = {qSquareLeft c, qSquareRight c} :=
+theorem qSquare_free_directions  : c.1.spx = {qSquareLeft c, qSquareRight c} :=
   (qSquareFrame c).2.2
 
 noncomputable def qSquareChainSubdivision : (QSquare A →₀ ℤ) →ₗ[ℤ]
@@ -50,18 +49,22 @@ noncomputable def qSquareFacetBoundary : (QSquare A →₀ ℤ) →ₗ[ℤ]
   squareChainEdgeBoundary Subtype.val qSquareLeft qSquareRight
     qSquare_directions_ne qSquare_free_directions
 
+variable (z : (strictOrderCx (QCube A)).F →₀ ℤ)
+variable (hz : ∀ t ∈ z.support, t.1.2.2.spx.card ≤ 2)
+include hz in
 /-- Every actual strict two-cycle supported in cube dimension at most two is exactly the
 subdivision of its finite integer chain on the actual square cells. -/
-theorem qCube_twoCycle_reconstruction (z : (strictOrderCx (QCube A)).F →₀ ℤ)
-    (hz : ∀ t ∈ z.support, t.1.2.2.spx.card ≤ 2)
+theorem qCube_twoCycle_reconstruction 
+    
     (hcycle : Comb.bdry2 (strictOrderCx (QCube A)) z = 0) :
     qSquareChainSubdivision (qSquareCycleCoefficients z) = z :=
   (cubeTwoCycle_is_squareSubdivision Subtype.val qSquareLeft qSquareRight
     qSquare_directions_ne qSquare_free_directions Subtype.val_injective
     (fun c hc => ⟨⟨c, hc⟩, rfl⟩) z hz hcycle).symm
 
-theorem qCube_twoCycle_coefficients_cycle (z : (strictOrderCx (QCube A)).F →₀ ℤ)
-    (hz : ∀ t ∈ z.support, t.1.2.2.spx.card ≤ 2)
+include hz in
+theorem qCube_twoCycle_coefficients_cycle 
+    
     (hcycle : Comb.bdry2 (strictOrderCx (QCube A)) z = 0) :
     qSquareFacetBoundary (qSquareCycleCoefficients z) = 0 :=
   cubeTwoCycle_coefficients_cycle Subtype.val qSquareLeft qSquareRight
@@ -71,7 +74,6 @@ theorem qCube_twoCycle_coefficients_cycle (z : (strictOrderCx (QCube A)).F →�
 /-- Recovering coefficients is a left inverse on all finite chains of actual square cells. -/
 theorem qSquare_coefficients_subdivision (r : QSquare A →₀ ℤ) :
     qSquareCycleCoefficients (qSquareChainSubdivision r) = r := by
-  classical
   ext c
   change qSquareChainSubdivision r
     (squareFlag c.1 (qSquareLeft c) (qSquareRight c) (qSquare_directions_ne c)

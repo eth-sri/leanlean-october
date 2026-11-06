@@ -1,42 +1,38 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.StrictTriangleBoundary
+import RequestProject.StrictTriangleBoundary
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
-def StrictBelow (v : P) := {p : P // p < v}
+  (v : P)
+def StrictBelow  := {p : P // p < v}
 
 instance (v : P) : PartialOrder (StrictBelow v) := Subtype.partialOrder _
 
-noncomputable def strictRayEdge (v : P) (e : StrictOrdEdge P) : StrictBelow v →₀ ℤ := by
+noncomputable def strictRayEdge  (e : StrictOrdEdge P) : StrictBelow v →₀ ℤ := by
   classical
   exact if h : e.1.2 = v then Finsupp.single ⟨e.1.1, h ▸ e.2⟩ 1 else 0
 
-noncomputable def strictRayChain (v : P) :
-    (StrictOrdEdge P →₀ ℤ) →ₗ[ℤ] (StrictBelow v →₀ ℤ) :=
+noncomputable def strictRayChain   :=
   Finsupp.linearCombination ℤ (strictRayEdge v)
 
-noncomputable def strictTopLinkTriangle (v : P) (t : StrictOrdTri P) :
+noncomputable def strictTopLinkTriangle  (t : StrictOrdTri P) :
     StrictOrdEdge (StrictBelow v) →₀ ℤ := by
   classical
   exact if h : t.1.2.2 = v then Finsupp.single
     ⟨(⟨t.1.1, h ▸ t.2.1.trans t.2.2⟩, ⟨t.1.2.1, h ▸ t.2.2⟩), t.2.1⟩ 1 else 0
 
-noncomputable def strictTopLinkChain (v : P) :
-    (StrictOrdTri P →₀ ℤ) →ₗ[ℤ] (StrictOrdEdge (StrictBelow v) →₀ ℤ) :=
+noncomputable def strictTopLinkChain   :=
   Finsupp.linearCombination ℤ (strictTopLinkTriangle v)
 
+variable (hm : ∀ p, v ≤ p → p = v)
+include hm in
 /-- At a maximal vertex, extracting cone rays from the actual triangle boundary
 is the actual boundary of the extracted link edge chain. -/
-theorem strictTopLink_boundary (v : P) (hm : ∀ p, v ≤ p → p = v)
+theorem strictTopLink_boundary  
     (c : StrictOrdTri P →₀ ℤ) :
     strictRayChain v (bdry2 (strictOrderCx P) c) =
       bdry1 (strictOrderCx (StrictBelow v)) (strictTopLinkChain v c) := by
@@ -54,11 +50,11 @@ theorem strictTopLink_boundary (v : P) (hm : ∀ p, v ≤ p → p = v)
     · simp [strictRayChain, strictRayEdge, strictTopLinkChain, strictTopLinkTriangle,
         strictTriangleEdge01, strictTriangleEdge12, strictTriangleEdge02, hmid, ht,
         bdry1, strictOrderCx, smul_sub]
-    · simp [strictRayChain, strictRayEdge, strictTopLinkChain, strictTopLinkTriangle,
-        strictTriangleEdge01, strictTriangleEdge12, strictTriangleEdge02, hmid, ht]
+    · simp_all [strictRayChain, strictRayEdge, strictTopLinkChain, strictTopLinkTriangle, strictTriangleEdge01, strictTriangleEdge12, strictTriangleEdge02]
 
+include hm in
 /-- Genuine cover two-cycles give genuine one-cycles in the link of each maximal apex. -/
-theorem strictTopLink_cycle (v : P) (hm : ∀ p, v ≤ p → p = v)
+theorem strictTopLink_cycle  
     (c : StrictOrdTri P →₀ ℤ) (hc : bdry2 (strictOrderCx P) c = 0) :
     bdry1 (strictOrderCx (StrictBelow v)) (strictTopLinkChain v c) = 0 := by
   rw [← strictTopLink_boundary v hm, hc, map_zero]

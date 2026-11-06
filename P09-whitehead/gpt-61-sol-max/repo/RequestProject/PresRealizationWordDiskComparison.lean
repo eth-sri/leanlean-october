@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresRealizationWordDisks
-public import RequestProject.RelatorCircleBoundaryHomeomorph
-
-@[expose] public section
+import RequestProject.PresRealizationWordDisks
+import RequestProject.RelatorCircleBoundaryHomeomorph
 
 /-! Specialize the actual cone/disk comparison to the explicit relator
 circle geometry. No boundary-homeomorphism input remains in this API. -/
@@ -11,12 +9,11 @@ circle geometry. No boundary-homeomorphism input remains in this API. -/
 noncomputable section
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment
-open scoped Topology
+
 
 variable {A J : Type} (w : J → List (A × Bool)) (hw : ∀ j, w j ≠ [])
 
-def presCircleBoundaryHomeomorph (j : J) :
-    orderNerveRealization (RelatorCircle w j) ≃ₜ UnitBoundary (Fin 2 → ℝ) :=
+def presCircleBoundaryHomeomorph (j : J)  :=
   relatorCircleBoundaryHomeomorph w j (List.length_pos_of_ne_nil (hw j))
 
 def actualPresWordAttaching :

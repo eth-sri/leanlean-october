@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveSmallHomotopyAll
-
-@[expose] public section
+import RequestProject.OrderNerveSmallHomotopyAll
 
 namespace FiniteChains.Comb
 open CategoryTheory TopologicalSingular SingularSubdivision
@@ -20,9 +18,7 @@ theorem orderNerveRealization_cycle_nerveRepresentative (n : ℕ)
   obtain ⟨b, hb⟩ := orderSmallSingularApproximation_homologous n d' hd'
   refine ⟨orderSmallToNerve P (n + 1) d', orderSmallToNerve_mem_inc _ _,
     orderSmallToNerve_length _ _, ?_, b - a, ?_⟩
-  · rw [orderSmallToNerve_boundary, hd', map_zero]
-  · rw [map_sub, hb, ha]
-    change d - orderNerveGradedRealize P (n + 1) (orderSmallToNerve P (n + 1) d') - (d - c) = _
-    abel
+  · simp_all [orderSmallToNerve_boundary]
+  · aesop
 
 end FiniteChains.Comb

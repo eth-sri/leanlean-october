@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SingularPrism
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SingularPrism
 
 namespace FiniteChains.SingularPrism
 open TopologicalSingular
 open scoped unitInterval
-universe u v w
 variable {A : Type u} {B : Type v} {X : Type w}
   [TopologicalSpace A] [TopologicalSpace B] [TopologicalSpace X]
   {f g : C(A, X)} {f' g' : C(B, X)}
@@ -22,6 +19,6 @@ theorem prism_single_congr (H : f.Homotopy g) (K : f'.Homotopy g')
     intro z
     exact h (prismMap i z).1 (prismMap i z).2
   rw [prism_single, prism_single]
-  simp only [he]
+  simp [*]
 
 end FiniteChains.SingularPrism

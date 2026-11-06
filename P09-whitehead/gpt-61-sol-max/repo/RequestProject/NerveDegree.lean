@@ -1,24 +1,18 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NerveSupport
-
-@[expose] public section
+import RequestProject.NerveSupport
 
 /-! Degree projections for the full augmented order-nerve chain complex. -/
 
 namespace FiniteChains.Nerve
 open FreeAbelianGroup
-universe u
 variable {P : Type u}
 
 /-- Retain precisely the basis lists of length `n`. The augmentation has length zero. -/
-noncomputable def lengthProjection (n : ℕ) : Ch P →+ Ch P := by
-  classical
-  exact lift (fun l => if l.length = n then of l else 0)
+noncomputable def lengthProjection (n : ℕ) : Ch P →+ Ch P := lift (fun l => if l.length = n then of l else 0)
 
 @[simp] theorem lengthProjection_of (n : ℕ) (l : List P) :
     lengthProjection n (of l) = if l.length = n then of l else 0 := by
-  classical
   simp [lengthProjection]
 
 theorem lengthProjection_consMap_succ (n : ℕ) (a : P) (c : Ch P) :
@@ -33,7 +27,6 @@ theorem lengthProjection_consMap_succ (n : ℕ) (a : P) (c : Ch P) :
 
 theorem lengthProjection_consMap_zero (a : P) (c : Ch P) :
     lengthProjection 0 (consMap a c) = 0 := by
-  classical
   apply ext_apply (F := (lengthProjection 0).comp (consMap a)) (G := 0)
   intro l
   simp
@@ -45,19 +38,7 @@ theorem lengthProjection_bdryOn (n : ℕ) (l : List P) :
   induction l generalizing n with
   | nil => simp [bdryOn]
   | cons a l ih =>
-    cases n with
-    | zero =>
-      simp only [bdryOn_cons, map_sub, lengthProjection_of, lengthProjection_consMap_zero,
-        sub_zero, List.length_cons, Nat.add_right_cancel_iff]
-      split_ifs with h
-      · have hl : l = [] := List.eq_nil_of_length_eq_zero h
-        subst l
-        simp [bdryOn]
-      · rfl
-    | succ n =>
-      rw [bdryOn_cons, map_sub, lengthProjection_of, lengthProjection_consMap_succ, ih]
-      simp only [List.length_cons, Nat.add_right_cancel_iff]
-      split_ifs <;> simp
+    cases n <;> aesop (add simp [lengthProjection_consMap_zero, bdryOn, lengthProjection_consMap_succ])
 
 /-- Degree projection commutes with boundary, with the required degree shift. -/
 theorem lengthProjection_bdry (n : ℕ) (c : Ch P) :
@@ -101,11 +82,7 @@ theorem lengthProjection_mem_inc (n : ℕ) {c : Ch P} (hc : c ∈ Inc P) :
   classical
   induction hc using AddSubgroup.closure_induction with
   | mem x hx =>
-    rcases hx with ⟨l, hl, rfl⟩
-    rw [lengthProjection_of]
-    split_ifs
-    · exact of_mem_inc hl
-    · exact AddSubgroup.zero_mem _
+    aesop (add unsafe apply [FiniteChains.Nerve.of_mem_inc])
   | zero => simp
   | add x y _ _ hx hy => simpa using AddSubgroup.add_mem _ hx hy
   | neg x _ hx => simpa using AddSubgroup.neg_mem _ hx

@@ -1,16 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeCoordinateFacetRecovery
-public import RequestProject.QCubeFacetIndex
-
-@[expose] public section
+import RequestProject.QCubeCoordinateFacetRecovery
+import RequestProject.QCubeFacetIndex
 
 /-! Finite coordinate facet chains realize the collapse's ordinary cubical boundary. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] [Fintype V] [LinearOrder V] {A : CommRel V}
 
-noncomputable def qCubeCoordinateFacetChain (c : QCube A) : Cube V →₀ ℤ :=
+noncomputable def qCubeCoordinateFacetChain (c : QCube A)  :=
   ∑ i : {v : V // v ∈ c.spx} × ZMod 2,
     Finsupp.single (qCubeToCoordinate (qCubeFacetIndex c i))
       (incid (qCubeToCoordinate (qCubeFacetIndex c i)) i.1.1)
@@ -20,8 +18,7 @@ cubical boundary coefficient used by the truncated collapse. -/
 theorem qCubeCoordinateFacetChain_apply (c : QCube A) (g : Cube V) :
     qCubeCoordinateFacetChain c g = cubeBdry (qCubeToCoordinate c) (Sum.inl g) := by
   classical
-  have hinj : Function.Injective (fun i : {v : V // v ∈ c.spx} × ZMod 2 =>
-      qCubeToCoordinate (qCubeFacetIndex c i)) :=
+  have hinj  :=
     qCubeToCoordinate_injective.comp (qCubeFacetIndex_injective c)
   simp only [qCubeCoordinateFacetChain, Finsupp.finset_sum_apply]
   by_cases hg : ∃ i : {v : V // v ∈ c.spx} × ZMod 2,

@@ -1,17 +1,14 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.VertexSubdivisionHomotopy
-public import Mathlib.LinearAlgebra.Finsupp.Supported
-
-@[expose] public section
+import RequestProject.TopologicalSingular.VertexSubdivisionHomotopy
+import Mathlib.LinearAlgebra.Finsupp.Supported
 
 /-! # Carrier control for subdivision and its homotopy -/
 
 namespace FiniteChains.VertexChains
 
-universe u
 variable {V : Type u}
 
 theorem map_mem_of_supported {ι M : Type*} [AddCommGroup M] [Module ℤ M]
@@ -25,13 +22,14 @@ theorem map_mem_of_supported {ι M : Type*} [AddCommGroup M] [Module ℤ M]
     exact hL v hv
   exact he hc
 
-noncomputable def carried (S : Set V) (n : ℕ) : Submodule ℤ (Chain V n) :=
+variable (S : Set V)
+noncomputable def carried  (n : ℕ) : Submodule ℤ (Chain V n) :=
   Finsupp.supported ℤ ℤ {v | ∀ i, v i ∈ S}
 
-theorem single_mem_carried (S : Set V) {n : ℕ} (v : Vertices V n) (r : ℤ) (hv : ∀ i, v i ∈ S) :
+theorem single_mem_carried  {n : ℕ} (v : Vertices V n) (r : ℤ) (hv : ∀ i, v i ∈ S) :
     Finsupp.single v r ∈ carried S n := Finsupp.single_mem_supported ℤ r hv
 
-theorem boundary_mem_carried (S : Set V) (n : ℕ) {c : Chain V (n + 1)}
+theorem boundary_mem_carried  (n : ℕ) {c : Chain V (n + 1)}
     (hc : c ∈ carried S (n + 1)) : boundary n c ∈ carried S n := by
   apply map_mem_of_supported _ _ (boundary n) ?_ hc
   intro v hv
@@ -41,7 +39,7 @@ theorem boundary_mem_carried (S : Set V) (n : ℕ) {c : Chain V (n + 1)}
   apply Submodule.smul_mem
   exact single_mem_carried S _ 1 (fun j => hv (i.succAbove j))
 
-theorem cone_mem_carried (S : Set V) (p : V) (hp : p ∈ S) (n : ℕ) {c : Chain V n}
+theorem cone_mem_carried  (p : V) (hp : p ∈ S) (n : ℕ) {c : Chain V n}
     (hc : c ∈ carried S n) : cone p n c ∈ carried S (n + 1) := by
   apply map_mem_of_supported _ _ (cone p n) ?_ hc
   intro v hv
@@ -51,7 +49,7 @@ theorem cone_mem_carried (S : Set V) (p : V) (hp : p ∈ S) (n : ℕ) {c : Chain
   exact Fin.cases hp (fun j => hv j) i
 
 variable (center : ∀ n, Vertices V n → V) (S : Set V)
-variable (hcenter : ∀ n v, (∀ i, v i ∈ S) → center n v ∈ S)
+  (hcenter : ∀ n v, (∀ i, v i ∈ S) → center n v ∈ S)
 
 include hcenter in
 theorem subdivide_mem_carried (n : ℕ) {c : Chain V n} (hc : c ∈ carried S n) :

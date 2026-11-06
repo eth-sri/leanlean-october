@@ -1,16 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CellComplex
-public import RequestProject.StrictOrderChains
+import RequestProject.CellComplex
+import RequestProject.StrictOrderChains
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 
 /-- Paths from a chosen vertex fill every augmented cellular zero-cycle. -/
 theorem zeroCycle_filling_of_connected (X : Complex2.{u}) (a : X.V)
@@ -18,7 +13,7 @@ theorem zeroCycle_filling_of_connected (X : Complex2.{u}) (a : X.V)
     ∃ b : X.E →₀ ℤ, bdry1 X b = c := by
   classical
   choose p hp using hX a
-  let s : (X.V →₀ ℤ) →ₗ[ℤ] (X.E →₀ ℤ) :=
+  let s  :=
     Finsupp.linearCombination ℤ (fun v => pathChain (p v))
   have hs (z : X.V →₀ ℤ) : bdry1 X (s z) = z - augC X z • Finsupp.single a 1 := by
     induction z using Finsupp.induction_linear with

@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalCWChainCanonicalHomotopies
-public import RequestProject.PresWordEmbeddingCombPi2
-public import RequestProject.PresChainTopologicalFinsupp
-
-@[expose] public section
+import RequestProject.ClassicalCWChainCanonicalHomotopies
+import RequestProject.PresWordEmbeddingCombPi2
+import RequestProject.PresChainTopologicalFinsupp
 
 /-! The actual topological pi2 hypotheses of an original CW filtration
 give a finite-support presentation chain. The initial presentation here
@@ -14,7 +12,7 @@ Unverified source. -/
 
 noncomputable section
 namespace FiniteChains.ClassicalCW.ChainWords
-open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment PresModel
+
 open Set Topology
 open scoped Classical
 variable (K : Whitehead.TwoComplex) {n : ℕ}
@@ -68,11 +66,7 @@ def canonicalPresChainTopFS
       (show i.castSucc ≤ i.succ from Nat.le_succ r)).mpr (hkill i)
     have hleft : boundedStage n r = i.castSucc := Fin.ext (Nat.min_eq_left (Nat.le_of_lt hr))
     have hright : boundedStage n (r + 1) = i.succ := Fin.ext (Nat.min_eq_left (Nat.succ_le_of_lt hr))
-    change Comb.ZeroPi2 (Comb.presInclHom
-      (canonicalGenInclusion K C hC hconn (boundedStage_monotone n (Nat.le_succ r))) _
-      (canonicalRelators K C hC hconn (boundedStage n r))
-      (canonicalRelators K C hC hconn (boundedStage n (r + 1)))
-      (canonicalCellInclusion K C hC (boundedStage_monotone n (Nat.le_succ r))) _)
+    
     have hh (a b : Fin (n + 1)) (hab : a ≤ b)
         (ha : a = i.castSucc) (hb : b = i.succ) :
         Comb.ZeroPi2 (Comb.presInclHom (canonicalGenInclusion K C hC hconn hab)

@@ -1,18 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNormalizationHomotopy
-public import RequestProject.NervePrism
-
-@[expose] public section
+import RequestProject.OrderNormalizationHomotopy
+import RequestProject.NervePrism
 
 /-! The actual cellular boundary maps in degrees two and three agree with the full nerve. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
 noncomputable def ordNerveChain1 : (OrdEdge P →₀ ℤ) →ₗ[ℤ] Nerve.Ch P :=
@@ -25,8 +21,9 @@ noncomputable def ordNerveChain3 : (OrdTet P →₀ ℤ) →ₗ[ℤ] Nerve.Ch P 
   Finsupp.linearCombination ℤ (fun t =>
     FreeAbelianGroup.of [t.1.1, t.1.2.1, t.1.2.2.1, t.1.2.2.2])
 
+variable (c : OrdTri P →₀ ℤ)
 /-- A triangle's attaching edge chain is its alternating simplicial boundary. -/
-theorem ordNerveChain1_bdry2 (c : OrdTri P →₀ ℤ) :
+theorem ordNerveChain1_bdry2  :
     ordNerveChain1 (bdry2 (orderCx P) c) = Nerve.bdry (ordNerveChain2 c) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
@@ -49,7 +46,7 @@ theorem ordNerveChain2_ordBoundary3 (c : OrdTet P →₀ ℤ) :
     abel
 
 /-- The normalized image of every weak two-cycle represents the same full-nerve class. -/
-theorem ordNerve_normalization_cycle (c : OrdTri P →₀ ℤ)
+theorem ordNerve_normalization_cycle 
     (hc : bdry2 (orderCx P) c = 0) :
     ordNerveChain2 c - ordNerveChain2 (ordStrictInclusion2 (normalizeOrdChain2 c)) =
       Nerve.bdry (ordNerveChain3 (ordNormalizationHomotopy2 c)) := by

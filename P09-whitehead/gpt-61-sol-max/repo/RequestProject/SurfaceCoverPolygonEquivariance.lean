@@ -1,14 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.SurfaceCoverPolygonLift
-public import RequestProject.StrictOrderNormalizationMaps
-
-@[expose] public section
+import RequestProject.SurfaceCoverPolygonLift
+import RequestProject.StrictOrderNormalizationMaps
 
 /-! Naturality and deck reconstruction of the actual lifted polygon filling. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open Comb Cell
@@ -23,34 +19,34 @@ include hf in
 /-- All positions in a lifted polygon are forced by its centre, including the
 identified boundary positions. This removes all dependence on interval choices. -/
 theorem fundamental_unique : D.fundamental = E.fundamental := by
-  have hR : D.R = E.R := funext fun p => hf.up_inj (D.cr p) (E.cr p)
+  have hR  := funext fun p => hf.up_inj (D.cr p) (E.cr p)
     ((D.projR p).trans (E.projR p).symm)
-  have hI : D.I = E.I := funext fun p => hf.up_inj
+  have hI  := funext fun p => hf.up_inj
     ((D.cr p).trans (D.ri p)) ((E.cr p).trans (E.ri p))
     ((D.projI p).trans (E.projI p).symm)
-  have hW : D.W = E.W := funext fun p => hf.down_inj (D.wr p)
-    (by rw (config := { transparency := .default }) [hR]; exact E.wr p) ((D.projW p).trans (E.projW p).symm)
-  have hF : D.F = E.F := funext fun p => hf.down_inj (D.fi p)
-    (by rw (config := { transparency := .default }) [hI]; exact E.fi p) ((D.projF p).trans (E.projF p).symm)
-  have hT2 : D.T2 = E.T2 := funext fun p => hf.up_inj (D.ft2 p)
-    (by rw (config := { transparency := .default }) [hF]; exact E.ft2 p) ((D.projT2 p).trans (E.projT2 p).symm)
-  have hV : D.V = E.V := funext fun p => hf.down_inj
+  have hW  := funext fun p => hf.down_inj (D.wr p)
+    (by classical simp_all [FiniteChains.Davis.CoveredPolygon.wr]) ((D.projW p).trans (E.projW p).symm)
+  have hF  := funext fun p => hf.down_inj (D.fi p)
+    (by classical simp_all [FiniteChains.Davis.CoveredPolygon.fi]) ((D.projF p).trans (E.projF p).symm)
+  have hT2  := funext fun p => hf.up_inj (D.ft2 p)
+    (by classical simp_all [FiniteChains.Davis.CoveredPolygon.ft2]) ((D.projT2 p).trans (E.projT2 p).symm)
+  have hV  := funext fun p => hf.down_inj
     ((D.vd p).trans (D.dt2 p))
-    (by rw (config := { transparency := .default }) [hT2]; exact (E.vd p).trans (E.dt2 p))
+    (by classical grind [FiniteChains.Davis.CoveredPolygon.vd, FiniteChains.Davis.CoveredPolygon.dt2])
     ((D.projV p).trans (E.projV p).symm)
-  have hD : D.D = E.D := funext fun p => hf.down_inj (D.dt2 p)
-    (by rw (config := { transparency := .default }) [hT2]; exact E.dt2 p) ((D.projD p).trans (E.projD p).symm)
-  have hG : D.G = E.G := funext fun p => hf.down_inj (D.gt2 p)
-    (by rw (config := { transparency := .default }) [hT2]; exact E.gt2 p) ((D.projG p).trans (E.projG p).symm)
-  have hT1 : D.T1 = E.T1 := funext fun p => hf.up_inj (D.gt1 p)
-    (by rw (config := { transparency := .default }) [hG]; exact E.gt1 p) ((D.projT1 p).trans (E.projT1 p).symm)
-  have hE : D.E = E.E := funext fun p => hf.down_inj (D.et1 p)
-    (by rw (config := { transparency := .default }) [hT1]; exact E.et1 p) ((D.projE p).trans (E.projE p).symm)
+  have hD  := funext fun p => hf.down_inj (D.dt2 p)
+    (by classical simp_all [FiniteChains.Davis.CoveredPolygon.dt2]) ((D.projD p).trans (E.projD p).symm)
+  have hG  := funext fun p => hf.down_inj (D.gt2 p)
+    (by classical simp_all [FiniteChains.Davis.CoveredPolygon.gt2]) ((D.projG p).trans (E.projG p).symm)
+  have hT1  := funext fun p => hf.up_inj (D.gt1 p)
+    (by classical simp_all [FiniteChains.Davis.CoveredPolygon.gt1]) ((D.projT1 p).trans (E.projT1 p).symm)
+  have hE  := funext fun p => hf.down_inj (D.et1 p)
+    (by classical simp_all [FiniteChains.Davis.CoveredPolygon.et1]) ((D.projE p).trans (E.projE p).symm)
   simp only [fundamental, sector, hR, hI, hW, hF, hT2, hV, hD, hG, hT1, hE]
 
 include hf in
 theorem cellularFundamental_unique : D.cellularFundamental = E.cellularFundamental := by
-  rw (config := { transparency := .default }) [cellularFundamental, cellularFundamental, fundamental_unique hc f hf D E]
+  rw  [cellularFundamental, cellularFundamental, fundamental_unique hc f hf D E]
 
 variable (g : Q → SCell vc ec hc) (h : P → Q) (hm : Monotone h)
   (hp : ∀ p, g (h p) = f p)
@@ -102,8 +98,7 @@ def map : CoveredPolygon hc g (mapPole hc f g h hp (v := v)) where
 
 theorem map_fundamental :
     (D.map hc f g h hm hp).fundamental = Nerve.cmap h D.fundamental := by
-  simp only [fundamental, sector, map, triangleFlagChain, map_add, map_sub, map_sum,
-    Nerve.cmap_of, List.map_cons, List.map_nil, Function.comp_apply, mapPole]
+  classical simp_all [fundamental, sector, map, triangleFlagChain, map_add, map_sub, map_sum, List.map_cons, List.map_nil, mapPole]
 
 theorem map_cellularFundamental (hs : StrictMono h) :
     (D.map hc f g h hm hp).cellularFundamental =
@@ -111,11 +106,11 @@ theorem map_cellularFundamental (hs : StrictMono h) :
   have he : decodeOrdNerve2 ((D.map hc f g h hm hp).fundamental) =
       chain2 (orderCxMap h hs.monotone) (decodeOrdNerve2 D.fundamental) := by
     apply ordNerveChain2_injective
-    rw (config := { transparency := .default }) [ordNerveChain2_decode (D.map hc f g h hm hp).fundamental_mem_inc,
+    rw  [ordNerveChain2_decode (D.map hc f g h hm hp).fundamental_mem_inc,
       (D.map hc f g h hm hp).fundamental_degree, ordNerveChain2_chain2,
       ordNerveChain2_decode D.fundamental_mem_inc, D.fundamental_degree,
       map_fundamental]
-  rw (config := { transparency := .default }) [cellularFundamental, he, normalizeOrdChain2_strict_map]
+  rw  [cellularFundamental, he, normalizeOrdChain2_strict_map]
   rfl
 
 end CoveredPolygon
@@ -129,7 +124,7 @@ theorem polygonCoverFilling_map
     chain2 (strictOrderCxMap h hs) (polygonCoverFilling hc f hf v) =
       polygonCoverFilling hc g hg ⟨h v.1, (hp v.1).trans v.2⟩ := by
   let D := coveredPolygon hc f hf v
-  rw (config := { transparency := .default }) [show polygonCoverFilling hc f hf v = D.cellularFundamental from rfl,
+  rw  [show polygonCoverFilling hc f hf v = D.cellularFundamental from rfl,
     ← CoveredPolygon.map_cellularFundamental hc f D g h hs.monotone hp hs]
   exact CoveredPolygon.cellularFundamental_unique hc g hg _ _
 
@@ -152,9 +147,9 @@ theorem polygonRelative_eq_deck_sum (hd : PolygonData vc ec)
           (polygonCoverFilling hc f hf v)) (Finsupp.mapDomain e.symm a) := by
     induction a using Finsupp.induction_linear with
     | zero => simp
-    | add a b ha hb => rw (config := { transparency := .default }) [map_add, Finsupp.mapDomain_add, map_add, ha, hb]
+    | add a b ha hb => simp_all
     | single w n =>
-      rw (config := { transparency := .default }) [polygonCoverReconstruct, Finsupp.linearCombination_single,
+      rw  [polygonCoverReconstruct, Finsupp.linearCombination_single,
         Finsupp.mapDomain_single, Finsupp.linearCombination_single,
         polygonCoverFilling_map hc f hf f hf (deck (e.symm w))
           (deck (e.symm w)).strictMono (hdeck (e.symm w)) v]

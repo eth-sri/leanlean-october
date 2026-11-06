@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MirrorSimplyConnected
-
-@[expose] public section
+import RequestProject.MirrorSimplyConnected
 
 /-!
 # Gluing two subposets along a connected intersection
@@ -30,18 +28,15 @@ loop is cut at its returns to `J` into segments lying on one side, each segment 
 the chosen `J`-paths to the base vertex, and each resulting loop is killed on its own side.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u
+
 
 /-! ### Functoriality of the order complex -/
 
-section Map
+section
 
 variable {P Q : Type u} [Preorder P] [Preorder Q]
 
@@ -58,49 +53,50 @@ def orderCxMap (f : P → Q) (hf : Monotone f) : Hom (orderCx P) (orderCx Q) whe
 @[simp] theorem orderCxMap_onV (f : P → Q) (hf : Monotone f) (p : P) :
     (orderCxMap f hf).onV p = f p := rfl
 
-end Map
+end
 
 /-! ### Paths inside a subposet -/
 
-section PathIn
+section
 
 variable {P : Type u} [Preorder P]
 
 /-- Every edge of the path `l` has both endpoints in `A`. -/
-def PathIn (A : P → Prop) (l : List ((orderCx P).E × Bool)) : Prop :=
+def PathIn (A : P → Prop) (l : List ((orderCx P).E × Bool))  :=
   ∀ e ∈ l, A e.1.1.1 ∧ A e.1.1.2
 
 theorem pathIn_nil (A : P → Prop) : PathIn A ([] : List ((orderCx P).E × Bool)) := by
   intro e he
   exact absurd he (by simp)
 
-theorem pathIn_cons {A : P → Prop} {e : (orderCx P).E × Bool}
-    {l : List ((orderCx P).E × Bool)} (he : A e.1.1.1 ∧ A e.1.1.2) (hl : PathIn A l) :
+variable {A : P → Prop}
+variable {e : (orderCx P).E × Bool}
+variable {l : List ((orderCx P).E × Bool)}
+theorem pathIn_cons  
+     (he : A e.1.1.1 ∧ A e.1.1.2) (hl : PathIn A l) :
     PathIn A (e :: l) := by
-  intro x hx
-  rcases List.mem_cons.1 hx with rfl | h
-  · exact he
-  · exact hl x h
+  grind [FiniteChains.Comb.PathIn]
 
-theorem pathIn_of_cons {A : P → Prop} {e : (orderCx P).E × Bool}
-    {l : List ((orderCx P).E × Bool)} (h : PathIn A (e :: l)) :
+theorem pathIn_of_cons  
+     (h : PathIn A (e :: l)) :
     (A e.1.1.1 ∧ A e.1.1.2) ∧ PathIn A l :=
   ⟨h e (by simp), fun x hx => h x (by simp [hx])⟩
 
-theorem pathIn_append {A : P → Prop} {l l' : List ((orderCx P).E × Bool)}
+variable {l l' : List ((orderCx P).E × Bool)}
+theorem pathIn_append  
     (h : PathIn A l) (h' : PathIn A l') : PathIn A (l ++ l') := by
-  intro x hx
-  rcases List.mem_append.1 hx with hx | hx
-  · exact h x hx
-  · exact h' x hx
+  grind [FiniteChains.Comb.PathIn]
 
-theorem pathIn_of_append_left {A : P → Prop} {l l' : List ((orderCx P).E × Bool)}
-    (h : PathIn A (l ++ l')) : PathIn A l := fun x hx => h x (by simp [hx])
+variable (h : PathIn A (l ++ l'))
+include h in
+theorem pathIn_of_append_left  
+     : PathIn A l := fun x hx => h x (by simp [hx])
 
-theorem pathIn_of_append_right {A : P → Prop} {l l' : List ((orderCx P).E × Bool)}
-    (h : PathIn A (l ++ l')) : PathIn A l' := fun x hx => h x (by simp [hx])
+include h in
+theorem pathIn_of_append_right  
+     : PathIn A l' := fun x hx => h x (by simp [hx])
 
-theorem pathIn_revPath {A : P → Prop} {l : List ((orderCx P).E × Bool)} (h : PathIn A l) :
+theorem pathIn_revPath   (h : PathIn A l) :
     PathIn A (revPath l) := by
   intro x hx
   simp only [revPath, List.mem_reverse, List.mem_map] at hx
@@ -111,11 +107,11 @@ theorem pathIn_mono {A B : P → Prop} (hAB : ∀ p, A p → B p)
     {l : List ((orderCx P).E × Bool)} (h : PathIn A l) : PathIn B l :=
   fun x hx => ⟨hAB _ (h x hx).1, hAB _ (h x hx).2⟩
 
-end PathIn
+end
 
 /-! ### Lifting a path to a subposet -/
 
-section Lift
+section
 
 variable {P : Type u} [Preorder P] {A : P → Prop}
 
@@ -124,12 +120,11 @@ theorem monotone_subtypeVal : Monotone (fun p : {p : P // A p} => (p : P)) :=
   fun _ _ h => h
 
 /-- The cellular map induced by the inclusion of a subposet. -/
-def subposetHom (A : P → Prop) : Hom (orderCx {p : P // A p}) (orderCx P) :=
+def subposetHom (A : P → Prop)  :=
   orderCxMap (fun p : {p : P // A p} => (p : P)) monotone_subtypeVal
 
 /-- The lift of one oriented edge with endpoints in `A`. -/
-def liftGermIn (e : (orderCx P).E × Bool) (h : A e.1.1.1 ∧ A e.1.1.2) :
-    (orderCx {p : P // A p}).E × Bool :=
+def liftGermIn (e : (orderCx P).E × Bool) (h : A e.1.1.1 ∧ A e.1.1.2)  :=
   ((⟨(⟨e.1.1.1, h.1⟩, ⟨e.1.1.2, h.2⟩), e.1.2⟩ : OrdEdge {p : P // A p}), e.2)
 
 /-- The lift of a path all of whose edges have endpoints in `A`. -/
@@ -152,7 +147,7 @@ theorem isPath_liftPathIn : ∀ (l : List ((orderCx P).E × Bool)) (h : PathIn A
     IsPath (orderCx {p : P // A p}).src (orderCx {p : P // A p}).tgt (liftPathIn l h)
       ⟨u, hu⟩ ⟨v, hv⟩
   | [], _, u, v, hu, hv, hp => by
-      have : u = v := hp
+      have  := hp
       subst this
       rfl
   | e :: t, h, u, v, hu, hv, hp => by
@@ -177,22 +172,23 @@ theorem htpy_nil_of_pathIn (hA : SimplyConnected (orderCx {p : P // A p}))
   rw [mapPath_liftPathIn l hl] at this
   simpa [mapPath, subposetHom] using this
 
-end Lift
+end
 
 /-! ### The gluing lemma -/
 
-section VanKampen
+section
 
 variable {P : Type u} [Preorder P]
 
+  (A : P → Prop)
 /-- Every loop of the ambient order complex all of whose edges lie in `A` is null-homotopic in
 the ambient complex. -/
-def NullIn (A : P → Prop) : Prop :=
+def NullIn   :=
   ∀ (v : P) (l : List ((orderCx P).E × Bool)), A v →
     IsPath (orderCx P).src (orderCx P).tgt l v v → PathIn A l → Htpy (orderCx P) v v l []
 
 /-- Any two elements of `A` are joined by a path all of whose edges lie in `A`. -/
-def ConnectedIn (A : P → Prop) : Prop :=
+def ConnectedIn   :=
   ∀ u v : P, A u → A v → ∃ l, IsPath (orderCx P).src (orderCx P).tgt l u v ∧ PathIn A l
 
 /-- A simply connected subposet gives `NullIn`. -/
@@ -201,7 +197,7 @@ theorem nullIn_of_simplyConnected {A : P → Prop}
   fun _ _ hv hp hl => htpy_nil_of_pathIn hA hv hp hl
 
 /-- The image of a path of the subposet complex lies in the subposet. -/
-theorem pathIn_mapPath (A : P → Prop) (l : List ((orderCx {p : P // A p}).E × Bool)) :
+theorem pathIn_mapPath  (l : List ((orderCx {p : P // A p}).E × Bool)) :
     PathIn A (mapPath (subposetHom A) l) := by
   intro e he
   simp only [mapPath, List.mem_map] at he
@@ -215,18 +211,21 @@ theorem connectedIn_of_isConnected {A : P → Prop} (h : IsConnected (orderCx {p
   obtain ⟨l, hl⟩ := h ⟨u, hu⟩ ⟨v, hv⟩
   exact ⟨mapPath (subposetHom A) l, isPath_mapPath (subposetHom A) hl, pathIn_mapPath A l⟩
 
-theorem pathIn_congr {A A' : P → Prop} (h : ∀ p, A p ↔ A' p)
+variable {A A' : P → Prop}
+  (h : ∀ p, A p ↔ A' p)
+include h in
+theorem pathIn_congr  
     {l : List ((orderCx P).E × Bool)} (hl : PathIn A l) : PathIn A' l :=
   pathIn_mono (fun p hp => (h p).1 hp) hl
 
-theorem nullIn_congr {A A' : P → Prop} (h : ∀ p, A p ↔ A' p) (hA : NullIn A) : NullIn A' :=
+include h in
+abbrev nullIn_congr   (hA : NullIn A)  :=
   fun v l hv hp hl => hA v l ((h v).2 hv) hp (pathIn_congr (fun p => (h p).symm) hl)
 
-theorem connectedIn_congr {A A' : P → Prop} (h : ∀ p, A p ↔ A' p) (hA : ConnectedIn A) :
+include h in
+theorem connectedIn_congr   (hA : ConnectedIn A) :
     ConnectedIn A' := by
-  intro u v hu hv
-  obtain ⟨l, hl, hlin⟩ := hA u v ((h u).2 hu) ((h v).2 hv)
-  exact ⟨l, hl, pathIn_congr h hlin⟩
+  grind [FiniteChains.Comb.ConnectedIn, pathIn_congr]
 
 /-- **Cutting a path at its first return to the intersection.**  A path that starts on the `S`
 side runs inside `S` until it first meets `S ∩ S'`. -/
@@ -240,17 +239,14 @@ theorem split_side {S S' U : P → Prop}
   intro t
   induction t with
   | nil =>
-      intro w v hp _ hv _
-      have hwv : w = v := hp
-      subst hwv
-      exact ⟨[], [], w, rfl, rfl, rfl, hv, pathIn_nil S⟩
+      simp_all [pathIn_nil]
   | cons e t ih =>
       intro w v hp hUl hv hw
       by_cases hJ : S w ∧ S' w
       · exact ⟨[], e :: t, w, rfl, rfl, hp, hJ, pathIn_nil S⟩
       · obtain ⟨hstart, hrest⟩ := hp
         obtain ⟨hUe, hUt⟩ := pathIn_of_cons hUl
-        have hS' : ¬ S' w := fun h => hJ ⟨hw, h⟩
+        have hS'  := fun h => hJ ⟨hw, h⟩
         have hSe : S e.1.1.1 ∧ S e.1.1.2 := by
           rcases hmix e.1.1.1 e.1.1.2 e.1.2 hUe.1 hUe.2 with h | h
           · exact h
@@ -270,14 +266,17 @@ theorem split_side {S S' U : P → Prop}
           ih (germTgt (orderCx P).src (orderCx P).tgt e) v hrest hUt hv hSw
         exact ⟨e :: t₁, t₂, z, by simp [hteq], ⟨hstart, hp1⟩, hp2, hz, pathIn_cons hSe hin1⟩
 
+variable {A B U : P → Prop}
+  (hU : ∀ p, U p ↔ (A p ∨ B p))
+include hU in
 /-- **The gluing lemma at the level of `π₁`.**  Let `U` be covered by two subposets `A` and `B`
 such that no comparability inside `U` is mixed, let loops inside `A` and inside `B` be
 null-homotopic in the ambient order complex, let `A`, `B` and their intersection `J = A ∩ B` be
 connected and let `J` be nonempty.  Then every loop inside `U` is null-homotopic in the ambient
 order complex.  This is the van Kampen step of the chamber induction, written so that its
 conclusion is again a hypothesis of the same shape. -/
-theorem htpy_nil_of_pathIn_union {A B U : P → Prop}
-    (hU : ∀ p, U p ↔ (A p ∨ B p))
+theorem htpy_nil_of_pathIn_union 
+    
     (hmix : ∀ a b : P, a ≤ b → U a → U b → (A a ∧ A b) ∨ (B a ∧ B b))
     (hA : NullIn A) (hB : NullIn B)
     (hAconn : ConnectedIn A) (hBconn : ConnectedIn B)
@@ -290,12 +289,10 @@ theorem htpy_nil_of_pathIn_union {A B U : P → Prop}
         PathIn (fun p => A p ∧ B p) g) ∧ (u = j → g = []) := by
     intro u
     by_cases hu : u = j
-    · subst hu
-      exact ⟨[], fun _ => ⟨rfl, pathIn_nil _⟩, fun _ => rfl⟩
+    · simp_all [pathIn_nil]
     · by_cases h : A u ∧ B u
-      · obtain ⟨g, hg⟩ := hJconn j u hj h
-        exact ⟨g, fun _ => hg, fun hc => absurd hc hu⟩
-      · exact ⟨[], fun hc => absurd hc h, fun _ => rfl⟩
+      · aesop
+      · simp_all
   choose γ hγ hγj using hex
   have key : ∀ (n : ℕ) (l : List ((orderCx P).E × Bool)) (u v : P), l.length ≤ n →
       IsPath (orderCx P).src (orderCx P).tgt l u v → PathIn U l →
@@ -305,18 +302,16 @@ theorem htpy_nil_of_pathIn_union {A B U : P → Prop}
     induction n with
     | zero =>
         intro l u v hlen hp _ hu _
-        have hl : l = [] := List.eq_nil_of_length_eq_zero (Nat.le_zero.1 hlen)
+        have hl  := List.eq_nil_of_length_eq_zero (Nat.le_zero.1 hlen)
         subst hl
-        have huv : u = v := hp
+        have huv  := hp
         subst huv
         simpa using htpy_append_revPath (hγ u hu).1
     | succ n ih =>
         intro l u v hlen hp hUl hu hv
         cases l with
         | nil =>
-            have huv : u = v := hp
-            subst huv
-            simpa using htpy_append_revPath (hγ u hu).1
+            grind
         | cons e t =>
             obtain ⟨hstart, hrest⟩ := hp
             obtain ⟨hUe, hUt⟩ := pathIn_of_cons hUl
@@ -335,11 +330,11 @@ theorem htpy_nil_of_pathIn_union {A B U : P → Prop}
                 | true => exact hSe.2
               obtain ⟨t₁, t₂, z, hteq, hp1, hp2, hz, hin1⟩ :=
                 split_side hmixS t _ v hrest hUt (hJS' v hv) hSw
-              have hJz : A z ∧ B z := hJS z hz
+              have hJz  := hJS z hz
               have hgu := (hγ u hu).1
               have hgv := (hγ v hv).1
               have hgz := (hγ z hJz).1
-              have hSj : S j ∧ S' j := hJS' j hj
+              have hSj  := hJS' j hj
               have hpath1 : IsPath (orderCx P).src (orderCx P).tgt (γ u ++ (e :: t₁)) j z :=
                 isPath_append_iff.mpr ⟨u, hgu, ⟨hstart, hp1⟩⟩
               have hpathY : IsPath (orderCx P).src (orderCx P).tgt
@@ -354,30 +349,20 @@ theorem htpy_nil_of_pathIn_union {A B U : P → Prop}
               have hloop1 : Htpy (orderCx P) j j ((γ u ++ (e :: t₁)) ++ revPath (γ z)) [] := by
                 refine hNullS j _ hSj.1 hX ?_
                 refine pathIn_append (pathIn_append ?_ (pathIn_cons hSe hin1)) ?_
-                · exact pathIn_mono (fun p h => (hJS' p h).1) (hγ u hu).2
+                · classical grind [FiniteChains.Comb.PathIn]
                 · exact pathIn_revPath (pathIn_mono (fun p h => (hJS' p h).1) (hγ z hJz).2)
               have hlen2 : t₂.length ≤ n := by
-                have h1 : t₂.length ≤ t.length := by
-                  rw [hteq]; simp
-                simp only [List.length_cons] at hlen
-                omega
+                grind
               have hUt₂ : PathIn U t₂ := by
-                have hUt' : PathIn U (t₁ ++ t₂) := by rw [← hteq]; exact hUt
-                exact pathIn_of_append_right hUt'
+                grind [pathIn_of_append_right]
               have hloop2 : Htpy (orderCx P) j j (γ z ++ (t₂ ++ revPath (γ v))) [] := by
-                have h := ih t₂ z v hlen2 hp2 hUt₂ hJz hv
-                simpa [List.append_assoc] using h
-              have hcancel : Htpy (orderCx P) j j
-                  ((γ u ++ (e :: t₁)) ++ [] ++ (t₂ ++ revPath (γ v)))
-                  ((γ u ++ (e :: t₁)) ++ (revPath (γ z) ++ γ z) ++ (t₂ ++ revPath (γ v))) :=
+                grind
+              have hcancel  :=
                 (htpy_revPath_append hgz).symm.congr_append hpath1 hpathY
-              have hfinal : Htpy (orderCx P) j j
-                  (((γ u ++ (e :: t₁)) ++ revPath (γ z)) ++ (γ z ++ (t₂ ++ revPath (γ v))))
-                  ([] ++ []) := Htpy.append_congr hX hY hloop1 hloop2
+              have hfinal  := Htpy.append_congr hX hY hloop1 hloop2
               have hcomb : Htpy (orderCx P) j j
                   ((γ u ++ (e :: t₁)) ++ [] ++ (t₂ ++ revPath (γ v))) [] := by
-                refine hcancel.trans ?_
-                simpa [List.append_assoc] using hfinal
+                grind [FiniteChains.Comb.Htpy.trans]
               simpa [hteq, List.append_assoc] using hcomb
             rcases hmix e.1.1.1 e.1.1.2 e.1.2 hUe.1 hUe.2 with hside | hside
             · exact side A B hmix hA (fun _ h => h) (fun _ h => h) hside
@@ -391,44 +376,27 @@ theorem htpy_nil_of_pathIn_union {A B U : P → Prop}
           Htpy (orderCx P) v v (e :: t) [] := by
         intro S hNullS hconnS hSU hSv hSj
         obtain ⟨d, hd, hdin⟩ := hconnS v j hSv hSj
-        have hdU : PathIn U d := pathIn_mono hSU hdin
+        have hdU  := pathIn_mono hSU hdin
         have hq : IsPath (orderCx P).src (orderCx P).tgt
             (revPath d ++ ((e :: t) ++ d)) j j :=
           isPath_append_iff.mpr ⟨v, isPath_revPath hd,
             isPath_append_iff.mpr ⟨v, hp, hd⟩⟩
-        have hqU : PathIn U (revPath d ++ ((e :: t) ++ d)) :=
+        have hqU  :=
           pathIn_append (pathIn_revPath hdU) (pathIn_append hUl hdU)
         have hkey := key (revPath d ++ ((e :: t) ++ d)).length _ j j le_rfl hq hqU hj hj
         rw [hγj j rfl] at hkey
         have hq0 : Htpy (orderCx P) j j (revPath d ++ ((e :: t) ++ d)) [] := by
           simpa [revPath] using hkey
-        have e1 : Htpy (orderCx P) v v
-            (d ++ (revPath d ++ ((e :: t) ++ d)) ++ revPath d) (d ++ [] ++ revPath d) :=
-          hq0.congr_append hd (isPath_revPath hd)
-        have e2 : Htpy (orderCx P) v v (d ++ [] ++ revPath d) [] := by
-          simpa using htpy_append_revPath hd
-        have hdd : IsPath (orderCx P).src (orderCx P).tgt (d ++ revPath d) v v :=
-          isPath_append_iff.mpr ⟨j, hd, isPath_revPath hd⟩
-        have f1 : Htpy (orderCx P) v v ((e :: t) ++ []) ((e :: t) ++ (d ++ revPath d)) :=
-          Htpy.append_congr hp (isPath_nil' v) (Htpy.refl _) (htpy_append_revPath hd).symm
-        have f2 : Htpy (orderCx P) v v ([] ++ ((e :: t) ++ (d ++ revPath d)))
-            ((d ++ revPath d) ++ ((e :: t) ++ (d ++ revPath d))) :=
-          Htpy.append_congr (isPath_nil' v)
-            (isPath_append_iff.mpr ⟨v, hp, hdd⟩) (htpy_append_revPath hd).symm (Htpy.refl _)
-        have e3 : Htpy (orderCx P) v v (e :: t)
-            (d ++ (revPath d ++ ((e :: t) ++ d)) ++ revPath d) := by
-          simpa [List.append_assoc] using f1.trans f2
-        exact (e3.trans e1).trans e2
-      rcases (hU v).1 hUv with hv | hv
-      · exact hcase A hA hAconn (fun p h => (hU p).2 (Or.inl h)) hv hj.1
-      · exact hcase B hB hBconn (fun p h => (hU p).2 (Or.inr h)) hv hj.2
+        exact htpy_nil_of_conjugate hd hp (by simpa [List.append_assoc] using hq0)
+      grind
 
+include hU in
 /-- Under the hypotheses of the gluing lemma the union is connected. -/
-theorem connectedIn_union {A B U : P → Prop} (hU : ∀ p, U p ↔ (A p ∨ B p))
+theorem connectedIn_union  
     (hAconn : ConnectedIn A) (hBconn : ConnectedIn B) {j : P} (hj : A j ∧ B j) :
     ConnectedIn U := by
-  have hAU : ∀ p, A p → U p := fun p h => (hU p).2 (Or.inl h)
-  have hBU : ∀ p, B p → U p := fun p h => (hU p).2 (Or.inr h)
+  have hAU : ∀ p, A p → U p := by grind
+  have hBU : ∀ p, B p → U p := by grind
   have hside : ∀ (u : P), U u → ∃ l, IsPath (orderCx P).src (orderCx P).tgt l u j ∧ PathIn U l := by
     intro u hu
     rcases (hU u).1 hu with h | h
@@ -442,7 +410,7 @@ theorem connectedIn_union {A B U : P → Prop} (hU : ∀ p, U p ↔ (A p ∨ B p
   exact ⟨l ++ revPath m, isPath_append_iff.mpr ⟨j, hl, isPath_revPath hm⟩,
     pathIn_append hlin (pathIn_revPath hmin)⟩
 
-end VanKampen
+end
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

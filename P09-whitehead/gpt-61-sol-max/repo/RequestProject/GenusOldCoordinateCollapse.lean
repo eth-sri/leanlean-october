@@ -1,13 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusCutCoefficientCycles
-
-@[expose] public section
+import RequestProject.GenusCutCoefficientCycles
 
 /-! The actual recovered ordinary old-spine coefficients vanish under the genus collapse. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -39,17 +35,9 @@ theorem genus_oldCoordinate_collapse_zero_of_boundary (d : (markedSpineCx q).F �
     rw [qThreeTruncatedCoordinateBoundary_split, Finsupp.sub_apply]
     cases f with
     | inl g =>
-        have hz : Finsupp.mapDomain
-            (Sum.inr : Finset (GenusVertex q) → Cube (GenusVertex q) ⊕ Finset (GenusVertex q))
-            (qThreeCutFaceChain r) (Sum.inl g) = 0 :=
-          Finsupp.mapDomain_notin_range _ _ (by rintro ⟨σ, h⟩; cases h)
-        simp [Finsupp.lmapDomain_apply, hz, x]
+        aesop (add simp [Finsupp.mapDomain_notin_range])
     | inr σ =>
-        have hc : Finsupp.mapDomain
-            (Sum.inr : Finset (GenusVertex q) → Cube (GenusVertex q) ⊕ Finset (GenusVertex q))
-            (qThreeCutFaceChain r) (Sum.inr σ) = qThreeCutFaceChain r σ :=
-          Finsupp.mapDomain_apply_of_injective Sum.inr_injective _ σ
-        simp [Finsupp.lmapDomain_apply, hc, x, sub_eq_add_neg]
+        aesop (add simp [Sum.inr_injective])
   have hz := genus_truncated_three_boundary_collapse_zero q r
   rw [hsplit, CollapseChain.cmap_add,
     genus_cutFaceChain_collapse_zero_of_old_boundary q d hd r he, add_zero] at hz

@@ -1,18 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ReceivedTreeMarkedChains
-public import RequestProject.ReceivedTreeComparison
-
-@[expose] public section
+import RequestProject.ReceivedTreeMarkedChains
+import RequestProject.ReceivedTreeComparison
 
 /-! Geometric images of exact marked relative boundaries. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
-universe u
 variable {K Y : Complex2.{u}} (T : SpanningTree K) (f : Hom K Y)
   {G : Type u} [Group G] (φ : PresGroup (treeRel T) →* G)
   (ψ : G →* Pi1 Y (f.onV T.root))
@@ -24,7 +20,7 @@ theorem comparison_pathChain (g : G) {a b : K.V} {p : List (K.E × Bool)}
       pathChain (uLiftPath (mapPath f p) (receiverVertex T f ψ g a)) := by
   change Finsupp.mapDomain (comparison T f φ ψ hψ).onE
     (pathChain (liftPath T φ p g)) = _
-  rw (config := { transparency := .default }) [← pathChain_map (comparison T f φ ψ hψ)]
+  rw  [← pathChain_map (comparison T f φ ψ hψ)]
   exact congrArg pathChain (comparison_liftPath T f φ ψ hψ g hp)
 
 variable {I : Type u}
@@ -40,10 +36,10 @@ theorem comparison_markedChainMap (p : I → Loop K T.root) (c : (G × I) →₀
       geometricMarkedChainMap T f ψ p c := by
   induction c using Finsupp.induction_linear with
   | zero => simp [chain1, LinearMap.map_zero]
-  | add c d hc hd => rw (config := { transparency := .default }) [map_add, map_add, hc, hd, map_add]
+  | add c d hc hd => simp_all
   | single x n =>
     obtain ⟨g, i⟩ := x
-    rw (config := { transparency := .default }) [markedChainMap_single, map_smul, comparison_pathChain T f φ ψ hψ g (p i).2,
+    rw  [markedChainMap_single, map_smul, comparison_pathChain T f φ ψ hψ g (p i).2,
       geometricMarkedChainMap, Finsupp.linearCombination_single]
 
 variable [Fintype I] [DecidableEq (NonTree T)]
@@ -57,7 +53,7 @@ theorem comparison_relative_boundary (p : I → Loop K T.root)
       ∑ i, γ i * coefficientMap T φ (fox z (pathWord T (p i).1))) :
     bdry2 (uCover Y (f.onV T.root)) (chain2 (comparison T f φ ψ hψ) c) =
       geometricMarkedChainMap T f ψ p ((cellCoordinates I).symm γ) := by
-  rw (config := { transparency := .default }) [comparison_bdry2, bdry2_eq_markedChain_of_coordinates T φ p γ c hc]
+  rw  [comparison_bdry2, bdry2_eq_markedChain_of_coordinates T φ p γ c hc]
   exact comparison_markedChainMap T f φ ψ hψ p _
 
 end FiniteChains.Comb.ReceivedTree

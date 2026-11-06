@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RACGTrace
-
-@[expose] public section
+import RequestProject.RACGTrace
 
 /-!
 # Right-angled Coxeter groups through their reduced traces
@@ -29,14 +27,11 @@ On top of this the file develops the descent theory used in `RequestProject/RACG
 lemma `FiniteChains.RACG.isDesc_two`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace RACG
+namespace FiniteChains.RACG
 
-universe u
+
 
 /-- A **commutation graph**: a symmetric irreflexive relation on the alphabet `V`.  Two letters
 related by `rel` are the generators of a `(s t)² = 1` relation of the right-angled Coxeter
@@ -59,10 +54,11 @@ def redSetoid : Setoid {l : List V // IsRed A.rel l} where
 
 /-- The set of **reduced traces**: reduced words modulo commutation.  This is the vertex set of
 the Cayley graph of the right-angled Coxeter group. -/
-def Tr : Type u := Quotient (redSetoid A)
+def Tr  := Quotient (redSetoid A)
 
+variable (l : List V)
 /-- The trace of a reduced word. -/
-def mkTr (l : List V) (h : IsRed A.rel l) : Tr A := Quotient.mk (redSetoid A) ⟨l, h⟩
+def mkTr  (h : IsRed A.rel l)  := Quotient.mk (redSetoid A) ⟨l, h⟩
 
 omit [DecidableEq V] in
 theorem mkTr_eq_iff {l m : List V} (hl : IsRed A.rel l) (hm : IsRed A.rel m) :
@@ -70,24 +66,26 @@ theorem mkTr_eq_iff {l m : List V} (hl : IsRed A.rel l) (hm : IsRed A.rel m) :
   ⟨fun h => Quotient.exact h, fun h => Quotient.sound h⟩
 
 /-- The empty trace: the identity element. -/
-def oneTr : Tr A := mkTr A [] trivial
+def oneTr  := mkTr A [] trivial
 
 /-- The length of a reduced trace. -/
 def trLen : Tr A → ℕ :=
   Quotient.lift (fun l : {l : List V // IsRed A.rel l} => l.1.length)
     (fun _ _ h => CEq.length_eq h)
 
-omit [DecidableEq V] in
+section
+omit [DecidableEq V]
 @[simp] theorem trLen_mkTr (l : List V) (h : IsRed A.rel l) : trLen A (mkTr A l h) = l.length :=
   rfl
 
-omit [DecidableEq V] in
 @[simp] theorem trLen_one : trLen A (oneTr A) = 0 := rfl
+end
 
+variable (s : V)
 open Classical in
 /-- The elementary move on reduced words: delete the letter `s` from the front if it can be
 moved there, otherwise prepend it. -/
-noncomputable def actRep (s : V) (l : {l : List V // IsRed A.rel l}) :
+noncomputable def actRep  (l : {l : List V // IsRed A.rel l}) :
     {l : List V // IsRed A.rel l} :=
   if h : canStart A.rel s l.1 then
     ⟨popStart s l.1, isRed_popStart A.rel_irrefl A.rel_symm l.2 h⟩
@@ -95,39 +93,30 @@ noncomputable def actRep (s : V) (l : {l : List V // IsRed A.rel l}) :
 
 theorem actRep_of_canStart {s : V} {l : {l : List V // IsRed A.rel l}}
     (h : canStart A.rel s l.1) : (actRep A s l).1 = popStart s l.1 := by
-  classical
   simp [actRep, h]
 
 theorem actRep_of_not_canStart {s : V} {l : {l : List V // IsRed A.rel l}}
     (h : ¬ canStart A.rel s l.1) : (actRep A s l).1 = s :: l.1 := by
-  classical
   simp [actRep, h]
 
 theorem actRep_respects {s : V} {a b : {l : List V // IsRed A.rel l}} (h : CEq A.rel a.1 b.1) :
     CEq A.rel (actRep A s a).1 (actRep A s b).1 := by
-  classical
-  by_cases ha : canStart A.rel s a.1
-  · have hb : canStart A.rel s b.1 := (canStart_ceq A.rel_symm h).1 ha
-    rw [actRep_of_canStart A ha, actRep_of_canStart A hb]
-    exact popStart_ceq A.rel_irrefl h
-  · have hb : ¬ canStart A.rel s b.1 := fun hb => ha ((canStart_ceq A.rel_symm h).2 hb)
-    rw [actRep_of_not_canStart A ha, actRep_of_not_canStart A hb]
-    exact CEq.cons s h
+  grind [FiniteChains.RACG.canStart_ceq, FiniteChains.RACG.CommRel.rel_symm, FiniteChains.RACG.actRep_of_canStart, FiniteChains.RACG.popStart_ceq, FiniteChains.RACG.CommRel.rel_irrefl, FiniteChains.RACG.actRep_of_not_canStart, FiniteChains.RACG.CEq.cons]
 
 /-- The elementary move on reduced traces. -/
-noncomputable def act (s : V) : Tr A → Tr A :=
+noncomputable def act  : Tr A → Tr A :=
   Quotient.map (actRep A s) (fun _ _ h => actRep_respects A h)
 
-@[simp] theorem act_mk (s : V) (l : List V) (h : IsRed A.rel l) :
+variable (l : List V)
+@[simp] theorem act_mk   (h : IsRed A.rel l) :
     act A s (mkTr A l h) = Quotient.mk (redSetoid A) (actRep A s ⟨l, h⟩) := rfl
 
-theorem act_involutive (s : V) : Function.Involutive (act A s) := by
-  classical
+theorem act_involutive  : Function.Involutive (act A s) := by
   intro t
   induction t using Quotient.inductionOn with
   | _ l =>
       by_cases h : canStart A.rel s l.1
-      · have h1 : (actRep A s l).1 = popStart s l.1 := actRep_of_canStart A h
+      · have h1  := actRep_of_canStart A h
         have h2 : ¬ canStart A.rel s (actRep A s l).1 := by
           rw [h1]; exact not_canStart_popStart A.rel_irrefl A.rel_symm l.2 h
         have h3 : (actRep A s (actRep A s l)).1 = s :: popStart s l.1 := by
@@ -136,7 +125,7 @@ theorem act_involutive (s : V) : Function.Involutive (act A s) := by
         show CEq A.rel (actRep A s (actRep A s l)).1 l.1
         rw [h3]
         exact CEq.symm A.rel_symm (ceq_popStart A.rel_symm h)
-      · have h1 : (actRep A s l).1 = s :: l.1 := actRep_of_not_canStart A h
+      · have h1  := actRep_of_not_canStart A h
         have h2 : canStart A.rel s (actRep A s l).1 := by rw [h1]; exact Or.inl rfl
         have h3 : (actRep A s (actRep A s l)).1 = l.1 := by
           rw [actRep_of_canStart A h2, h1]; simp
@@ -146,33 +135,29 @@ theorem act_involutive (s : V) : Function.Involutive (act A s) := by
         exact CEq.refl _
 
 /-- The elementary move as a permutation of the set of reduced traces. -/
-noncomputable def actPerm (s : V) : Equiv.Perm (Tr A) := (act_involutive A s).toPerm _
+noncomputable def actPerm   := (act_involutive A s).toPerm _
 
-@[simp] theorem actPerm_apply (s : V) (t : Tr A) : actPerm A s t = act A s t := rfl
+@[simp] theorem actPerm_apply  (t : Tr A) : actPerm A s t = act A s t := rfl
 
-theorem actPerm_inv (s : V) : (actPerm A s)⁻¹ = actPerm A s :=
-  inv_eq_of_mul_eq_one_left (by ext t; simpa using act_involutive A s t)
+theorem actPerm_inv  : (actPerm A s)⁻¹ = actPerm A s :=
+  rfl
 
 theorem act_mkTr_of_canStart {s : V} {l : List V} (hl : IsRed A.rel l)
     (h : canStart A.rel s l) :
     act A s (mkTr A l hl) = mkTr A (popStart s l) (isRed_popStart A.rel_irrefl A.rel_symm hl h) :=
   Quotient.sound (by
-    show CEq A.rel (actRep A s ⟨l, hl⟩).1 (popStart s l)
-    rw [actRep_of_canStart A h]
-    exact CEq.refl _)
+    simp_all [actRep])
 
 theorem act_mkTr_of_not_canStart {s : V} {l : List V} (hl : IsRed A.rel l)
     (h : ¬ canStart A.rel s l) :
     act A s (mkTr A l hl) = mkTr A (s :: l) ⟨hl, h⟩ :=
   Quotient.sound (by
-    show CEq A.rel (actRep A s ⟨l, hl⟩).1 (s :: l)
-    rw [actRep_of_not_canStart A h]
-    exact CEq.refl _)
+    simp_all [actRep])
 
 /-- Commuting letters give commuting moves. -/
 theorem act_comm {s r : V} (h : A.rel s r) (t : Tr A) :
     act A s (act A r t) = act A r (act A s t) := by
-  have hrs : A.rel r s := A.rel_symm h
+  have hrs  := A.rel_symm h
   have hsr : s ≠ r := by rintro rfl; exact A.rel_irrefl s h
   induction t using Quotient.inductionOn with
   | _ lp =>
@@ -187,16 +172,15 @@ theorem act_comm {s r : V} (h : A.rel s r) (t : Tr A) :
           act_mkTr_of_canStart A hl hs, act_mkTr_of_canStart A _ hrs']
         refine (mkTr_eq_iff A _ _).2 ?_
         -- both sides are obtained from `l` by deleting one `s` and one `r`
-        have e1 : CEq A.rel l (s :: r :: popStart r (popStart s l)) :=
+        have e1  :=
           (ceq_popStart A.rel_symm hs).trans
             (CEq.cons s (ceq_popStart A.rel_symm hrs'))
-        have e2 : CEq A.rel l (r :: s :: popStart s (popStart r l)) :=
+        have e2  :=
           (ceq_popStart A.rel_symm hr).trans
             (CEq.cons r (ceq_popStart A.rel_symm hsr'))
         have e3 : CEq A.rel (s :: r :: popStart r (popStart s l))
             (r :: s :: popStart r (popStart s l)) := CEq.of_swap (Swap.head h _)
-        have e4 : CEq A.rel (r :: s :: popStart r (popStart s l))
-            (r :: s :: popStart s (popStart r l)) :=
+        have e4  :=
           (CEq.symm A.rel_symm (e1.trans e3)).trans e2
         exact CEq.symm A.rel_symm (cancel_head A.rel_irrefl (cancel_head A.rel_irrefl e4))
       · -- only `s` can
@@ -204,103 +188,70 @@ theorem act_comm {s r : V} (h : A.rel s r) (t : Tr A) :
           intro hc
           exact hr ((canStart_ceq A.rel_symm (ceq_popStart A.rel_symm hs)).2
             (Or.inr ⟨hrs, hc⟩))
-        have hs' : canStart A.rel s (r :: l) := Or.inr ⟨h, hs⟩
-        rw [act_mkTr_of_not_canStart A hl hr, act_mkTr_of_canStart A _ hs',
-          act_mkTr_of_canStart A hl hs, act_mkTr_of_not_canStart A _ hr']
-        refine (mkTr_eq_iff A _ _).2 ?_
-        have : popStart s (r :: l) = r :: popStart s l := by
-          simp [popStart, Ne.symm hsr]
-        rw [this]
-        exact CEq.refl _
+        grind [canStart, act_mkTr_of_not_canStart, act_mkTr_of_canStart, popStart]
     · by_cases hr : canStart A.rel r l
       · -- only `r` can
         have hs' : ¬ canStart A.rel s (popStart r l) := by
           intro hc
           exact hs ((canStart_ceq A.rel_symm (ceq_popStart A.rel_symm hr)).2
             (Or.inr ⟨h, hc⟩))
-        have hr' : canStart A.rel r (s :: l) := Or.inr ⟨hrs, hr⟩
-        rw [act_mkTr_of_canStart A hl hr, act_mkTr_of_not_canStart A _ hs',
-          act_mkTr_of_not_canStart A hl hs, act_mkTr_of_canStart A _ hr']
-        refine (mkTr_eq_iff A _ _).2 ?_
-        have : popStart r (s :: l) = s :: popStart r l := by
-          simp [popStart, hsr]
-        rw [this]
-        exact CEq.refl _
+        grind [canStart, act_mkTr_of_canStart, act_mkTr_of_not_canStart, popStart]
       · -- neither can
-        have hs' : ¬ canStart A.rel s (r :: l) := by
-          rintro (rfl | ⟨-, hc⟩)
-          · exact hsr rfl
-          · exact hs hc
-        have hr' : ¬ canStart A.rel r (s :: l) := by
-          rintro (rfl | ⟨-, hc⟩)
-          · exact hsr rfl
-          · exact hr hc
-        rw [act_mkTr_of_not_canStart A hl hr, act_mkTr_of_not_canStart A _ hs',
-          act_mkTr_of_not_canStart A hl hs, act_mkTr_of_not_canStart A _ hr']
-        exact (mkTr_eq_iff A _ _).2 (CEq.of_swap (Swap.head h l))
+        classical grind [canStart, act_mkTr_of_not_canStart, mkTr_eq_iff, CEq.of_swap, Swap.head]
 
 theorem actPerm_mul_comm {s r : V} (h : A.rel s r) :
     actPerm A s * actPerm A r = actPerm A r * actPerm A s := by
   ext t
   simpa using act_comm A h t
 
-theorem actPerm_mul_self (s : V) : actPerm A s * actPerm A s = 1 := by
+theorem actPerm_mul_self  : actPerm A s * actPerm A s = 1 := by
   ext t
   simpa using act_involutive A s t
 
 /-- The permutation of reduced traces determined by a word. -/
-noncomputable def wordPerm (l : List V) : Equiv.Perm (Tr A) := (l.map (actPerm A)).prod
+noncomputable def wordPerm   := (l.map (actPerm A)).prod
 
 @[simp] theorem wordPerm_nil : wordPerm A [] = 1 := rfl
 
-@[simp] theorem wordPerm_singleton (s : V) : wordPerm A [s] = actPerm A s := by
+@[simp] theorem wordPerm_singleton  : wordPerm A [s] = actPerm A s := by
   simp [wordPerm]
 
-@[simp] theorem wordPerm_cons (s : V) (l : List V) :
+@[simp] theorem wordPerm_cons   :
     wordPerm A (s :: l) = actPerm A s * wordPerm A l := by
   simp [wordPerm]
 
 theorem wordPerm_append (l m : List V) :
     wordPerm A (l ++ m) = wordPerm A l * wordPerm A m := by
-  induction l with
-  | nil => simp
-  | cons a t ih => simp [ih, mul_assoc]
+  induction l <;> simp_all [mul_assoc]
 
-theorem wordPerm_reverse (l : List V) : wordPerm A l.reverse = (wordPerm A l)⁻¹ := by
-  induction l with
-  | nil => simp
-  | cons a t ih =>
-      have hc : wordPerm A (a :: t) = actPerm A a * wordPerm A t := wordPerm_cons A a t
-      rw [List.reverse_cons, wordPerm_append, ih, hc, mul_inv_rev, actPerm_inv]
-      simp
+theorem wordPerm_reverse  : wordPerm A l.reverse = (wordPerm A l)⁻¹ := by
+  induction l <;> simp_all [wordPerm_append, actPerm_inv]
 
 theorem wordPerm_swap {l m : List V} (h : Swap A.rel l m) : wordPerm A l = wordPerm A m := by
   induction h with
   | @head a b hab q =>
-      simp only [wordPerm_cons, ← mul_assoc]
+      simp [← mul_assoc]
       rw [actPerm_mul_comm A hab]
-  | cons x _ ih => simp only [wordPerm_cons, ih]
+  | cons x _ ih => simp [*]
 
 /-- Words with the same trace act in the same way. -/
 theorem wordPerm_ceq {l m : List V} (h : CEq A.rel l m) : wordPerm A l = wordPerm A m := by
-  induction h with
-  | refl => rfl
-  | tail _ hstep ih => exact ih.trans (wordPerm_swap A hstep)
+  induction h <;> grind [wordPerm_swap]
 
 /-- Deleting a cancelling pair does not change the action. -/
-theorem wordPerm_cancel (s : V) (l : List V) :
+theorem wordPerm_cancel   :
     wordPerm A (s :: s :: l) = wordPerm A l := by
-  simp only [wordPerm_cons, ← mul_assoc, actPerm_mul_self, one_mul]
+  grind [wordPerm_cons, actPerm_mul_self]
 
 /-- A reduced word acts on the empty trace by producing its own trace. -/
 theorem wordPerm_apply_one : ∀ {l : List V} (h : IsRed A.rel l),
     wordPerm A l (oneTr A) = mkTr A l h
   | [], _ => rfl
   | a :: t, h => by
-      have ht : IsRed A.rel t := h.1
-      have hna : ¬ canStart A.rel a t := h.2
+      have ht  := h.1
+      have hna  := h.2
       have : wordPerm A (a :: t) (oneTr A) = act A a (wordPerm A t (oneTr A)) := by
-        simp [wordPerm_cons]
+        simp 
       rw [this, wordPerm_apply_one ht, act_mkTr_of_not_canStart A ht hna]
 
 /-- A word that is not reduced can be shortened without changing its action. -/
@@ -311,41 +262,32 @@ theorem exists_shorter_of_not_isRed :
   | a :: t, h => by
       by_cases hc : canStart A.rel a t
       · refine ⟨popStart a t, ?_, ?_⟩
-        · have := length_popStart A.rel_symm (Cm := A.rel) (s := a) hc
-          simp only [List.length_cons]
-          omega
-        · have h1 : wordPerm A t = wordPerm A (a :: popStart a t) :=
+        · grind [FiniteChains.RACG.length_popStart, FiniteChains.RACG.CommRel.rel_symm]
+        · have h1  :=
             wordPerm_ceq A (ceq_popStart A.rel_symm hc)
           calc wordPerm A (popStart a t)
               = wordPerm A (a :: a :: popStart a t) := (wordPerm_cancel A a _).symm
             _ = actPerm A a * wordPerm A (a :: popStart a t) := by rw [wordPerm_cons]
             _ = actPerm A a * wordPerm A t := by rw [h1]
             _ = wordPerm A (a :: t) := (wordPerm_cons A a t).symm
-      · have ht : ¬ IsRed A.rel t := fun ht => h ⟨ht, hc⟩
+      · have ht : ¬ IsRed A.rel t := by simp_all
         obtain ⟨m, hm, hm'⟩ := exists_shorter_of_not_isRed ht
         exact ⟨a :: m, by simpa using hm, by simp [wordPerm_cons, hm']⟩
 
 /-- Every word can be shortened to a reduced word acting in the same way. -/
-theorem exists_isRed_word (l : List V) :
+theorem exists_isRed_word  :
     ∃ m : List V, IsRed A.rel m ∧ m.length ≤ l.length ∧ wordPerm A m = wordPerm A l := by
-  induction hn : l.length using Nat.strong_induction_on generalizing l with
-  | _ n ih =>
-      subst hn
-      by_cases hred : IsRed A.rel l
-      · exact ⟨l, hred, le_rfl, rfl⟩
-      · obtain ⟨m, hlt, hperm⟩ := exists_shorter_of_not_isRed A hred
-        obtain ⟨m', hm', hlen, hperm'⟩ := ih m.length hlt m rfl
-        exact ⟨m', hm', by omega, by rw [hperm', hperm]⟩
+  induction hn : l.length using Nat.strong_induction_on generalizing l <;> grind [exists_shorter_of_not_isRed]
 
 /-- The length of an element of the right-angled Coxeter group: the length of its reduced
 trace. -/
-noncomputable def len (w : Equiv.Perm (Tr A)) : ℕ := trLen A (w (oneTr A))
+noncomputable def len (w : Equiv.Perm (Tr A))  := trLen A (w (oneTr A))
 
 omit [DecidableEq V] in
 @[simp] theorem len_one : len A 1 = 0 := rfl
 
 /-- The trace length changes by one under an elementary move. -/
-theorem trLen_act (s : V) (t : Tr A) :
+theorem trLen_act  (t : Tr A) :
     trLen A (act A s t) + 1 = trLen A t ∨ trLen A (act A s t) = trLen A t + 1 := by
   induction t using Quotient.inductionOn with
   | _ lp =>
@@ -360,15 +302,13 @@ theorem trLen_act (s : V) (t : Tr A) :
           act_mkTr_of_not_canStart A hl hc]
         simp
 
-theorem len_le_length (l : List V) : len A (wordPerm A l) ≤ l.length := by
+theorem len_le_length  : len A (wordPerm A l) ≤ l.length := by
   induction l with
   | nil => simp [len]
   | cons a t ih =>
       have h1 : wordPerm A (a :: t) (oneTr A) = act A a (wordPerm A t (oneTr A)) := by
         simp [wordPerm_cons]
-      have h2 := trLen_act A a (wordPerm A t (oneTr A))
-      simp only [len, h1, List.length_cons] at *
-      omega
+      grind [trLen_act, len]
 
-end RACG
-end FiniteChains
+end FiniteChains.RACG
+

@@ -1,2 +1,1 @@
-module
-public import RequestProject.ChamberQuotientCanonicalInclusion
+import RequestProject.ChamberQuotientCanonicalInclusion

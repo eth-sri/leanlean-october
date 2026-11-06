@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusControlledCapFillings
-public import RequestProject.PositiveCornerChainExtraction
-public import RequestProject.GenusControlledFillingComparison
-
-@[expose] public section
+import RequestProject.GenusControlledCapFillings
+import RequestProject.PositiveCornerChainExtraction
+import RequestProject.GenusControlledFillingComparison
 
 /-! Cap coefficients of actual capped-cover cycles bound on the actual genus surface. -/
 set_option backward.defeqAttrib.useBackward true
@@ -21,19 +19,19 @@ theorem cornerSurfaceChain2_oldToFullCube
   classical
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw (config := { transparency := .default }) [map_add, map_add, hc, hd, add_zero]
+  | add c d hc hd => rw  [map_add, map_add, hc, hd, add_zero]
   | single f n =>
       have hn := oldToFullCube_face_ne_corner q f
       change chain1 (cornerSurfaceMap _) (cornerChain2 (positiveCorner _)
         (Finsupp.mapDomain (oldToFullCube q).onF (Finsupp.single f n))) = 0
-      rw (config := { transparency := .default }) [Finsupp.mapDomain_single, cornerChain2, Finsupp.linearCombination_single]
+      rw  [Finsupp.mapDomain_single, cornerChain2, Finsupp.linearCombination_single]
       simp [cornerTriangleEdge, hn]
 
 theorem cornerSurfaceChain2_controlledCoverCap (x : Fin q × Bool) :
     cornerSurfaceChain2 (cmpRel (GenusVertex q))
       (hurewicz _ (fullCubeMarkBase q) (controlledCoverCap q x)) =
         pathChain (gSig q (x.1.val, x.2)) := by
-  rw (config := { transparency := .default }) [controlledCoverCap_hurewicz, map_add, cornerSurfaceChain2_oldToFullCube,
+  rw  [controlledCoverCap_hurewicz, map_add, cornerSurfaceChain2_oldToFullCube,
     cornerSurfaceChain2_surfaceCornerFan, zero_add]
 
 noncomputable def capSurfaceFace : (cappedSpineCx q).F →
@@ -41,8 +39,7 @@ noncomputable def capSurfaceFace : (cappedSpineCx q).F →
   | .inl _ => 0
   | .inr x => pathChain (gSig q (x.1.val, x.2))
 
-noncomputable def capSurfaceChain2 : ((cappedSpineCx q).F →₀ ℤ) →ₗ[ℤ]
-    ((orderCx (NeSpx (cmpRel (GenusVertex q)))).E →₀ ℤ) :=
+noncomputable def capSurfaceChain2  :=
   Finsupp.linearCombination ℤ (capSurfaceFace q)
 
 theorem cornerSurfaceChain2_controlledAugmentedChain2 (c : (cappedSpineCx q).F →₀ ℤ) :
@@ -50,9 +47,9 @@ theorem cornerSurfaceChain2_controlledAugmentedChain2 (c : (cappedSpineCx q).F �
       capSurfaceChain2 q c := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw (config := { transparency := .default }) [map_add, map_add, map_add, hc, hd]
+  | add c d hc hd => simp_all
   | single f n =>
-      rw (config := { transparency := .default }) [controlledAugmentedChain2, Finsupp.linearCombination_single, map_smul,
+      rw  [controlledAugmentedChain2, Finsupp.linearCombination_single, map_smul,
         capSurfaceChain2, Finsupp.linearCombination_single]
       apply congrArg (n • ·)
       obtain f | x := f
@@ -62,7 +59,7 @@ theorem cornerSurfaceChain2_controlledAugmentedChain2 (c : (cappedSpineCx q).F �
         change cornerSurfaceChain2 _ (Finsupp.mapDomain (oldToFullCube q).onF
           (Finsupp.single (((genusSpineToOld q).comp
             (componentIncl (genusSpineCx q) (spineBase q))).onF f) 1)) = 0 at h
-        rw (config := { transparency := .default }) [Finsupp.mapDomain_single] at h
+        rw  [Finsupp.mapDomain_single] at h
         exact h
       · exact cornerSurfaceChain2_controlledCoverCap q x
 
@@ -73,7 +70,7 @@ theorem capSurfaceCycle_boundary (c : (cappedTreeCover q).F →₀ ℤ)
       Comb.bdry2 _ d = capSurfaceChain2 q (Finsupp.mapDomain Prod.snd c) := by
   obtain ⟨y, hy⟩ := controlledAugmentedCycle_boundary3 q c hc
   refine ⟨-cornerSurfaceChain3 _ y, ?_⟩
-  rw (config := { transparency := .default }) [map_neg, ← cornerSurfaceChain2_ordBoundary3, hy,
+  rw  [map_neg, ← cornerSurfaceChain2_ordBoundary3, hy,
     cornerSurfaceChain2_controlledAugmentedChain2]
 
 end FiniteChains.Davis.Genus

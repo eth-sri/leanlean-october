@@ -1,40 +1,37 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SingularChains
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SingularChains
 
 /-! An explicit retraction of a simplex prism onto its bottom and its sides.
 The radial projection is taken from height two above the barycentre. Its
 denominator is bounded below by one half, including at the barycentre. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
 
-noncomputable def simplexMin {n : ℕ} (z : Domain n) : ℝ :=
+variable {n : ℕ}
+  (z : Domain n)
+noncomputable def simplexMin    :=
   Finset.univ.inf' Finset.univ_nonempty z.val
 
-theorem simplexMin_nonneg {n : ℕ} (z : Domain n) : 0 ≤ simplexMin z :=
+theorem simplexMin_nonneg   : 0 ≤ simplexMin z :=
   Finset.le_inf' _ _ (fun i _ => z.property.1 i)
 
-theorem simplexMin_le {n : ℕ} (z : Domain n) (i : Fin (n + 1)) : simplexMin z ≤ z.val i :=
+theorem simplexMin_le   (i : Fin (n + 1)) : simplexMin z ≤ z.val i :=
   Finset.inf'_le _ (Finset.mem_univ i)
 
-theorem simplexMin_attained {n : ℕ} (z : Domain n) : ∃ i, simplexMin z = z.val i := by
+theorem simplexMin_attained   : ∃ i, simplexMin z = z.val i := by
   obtain ⟨i, _, hi⟩ := Finset.exists_mem_eq_inf' Finset.univ_nonempty z.val
   exact ⟨i, hi⟩
 
-theorem simplexMin_continuous (n : ℕ) : Continuous (simplexMin (n := n)) := by
-  exact Continuous.finset_inf'_apply Finset.univ_nonempty
+theorem simplexMin_continuous (n : ℕ) : Continuous (simplexMin (n := n)) := Continuous.finset_inf'_apply Finset.univ_nonempty
     (fun i _ => (continuous_apply i).comp continuous_subtype_val)
 
 def simplexBoundary (n : ℕ) : Set (Domain n) := {z | ∃ i, z.val i = 0}
 
-theorem simplexMin_eq_zero_iff {n : ℕ} (z : Domain n) :
+theorem simplexMin_eq_zero_iff   :
     simplexMin z = 0 ↔ z ∈ simplexBoundary n := by
   constructor
   · intro h
@@ -50,26 +47,23 @@ theorem simplexBoundary_isClosed (n : ℕ) : IsClosed (simplexBoundary n) := by
   rw [he]
   exact isClosed_eq (simplexMin_continuous n) continuous_const
 
-noncomputable def prismDenom {n : ℕ} (w : I × Domain n) : ℝ :=
+variable (w : I × Domain n)
+noncomputable def prismDenom    :=
   max (1 - (w.1 : ℝ) / 2) (1 - (n + 1 : ℝ) * simplexMin w.2)
 
-theorem prismDenom_pos {n : ℕ} (w : I × Domain n) : 0 < prismDenom w := by
-  have h := le_max_left (1 - (w.1 : ℝ) / 2) (1 - (n + 1 : ℝ) * simplexMin w.2)
-  have ht := w.1.property.2
-  change 1 - (w.1 : ℝ) / 2 ≤ prismDenom w at h
-  linarith
+theorem prismDenom_pos   : 0 < prismDenom w := by
+  grind [simplexMin, prismDenom]
 
-theorem prismDenom_le_one {n : ℕ} (w : I × Domain n) : prismDenom w ≤ 1 := by
+theorem prismDenom_le_one   : prismDenom w ≤ 1 := by
   apply max_le
   · linarith [w.1.property.1]
   · have hp : 0 ≤ (n + 1 : ℝ) * simplexMin w.2 := mul_nonneg (by positivity) (simplexMin_nonneg _)
     linarith
 
-theorem prismDenom_continuous (n : ℕ) : Continuous (prismDenom (n := n)) := by
-  exact (continuous_const.sub (continuous_fst.subtype_val.div_const 2)).max
+theorem prismDenom_continuous (n : ℕ) : Continuous (prismDenom (n := n)) := (continuous_const.sub (continuous_fst.subtype_val.div_const 2)).max
     (continuous_const.sub (continuous_const.mul ((simplexMin_continuous n).comp continuous_snd)))
 
-theorem prismDenom_eq_one {n : ℕ} (w : I × Domain n)
+theorem prismDenom_eq_one  
     (h : w.1 = 0 ∨ w.2 ∈ simplexBoundary n) : prismDenom w = 1 := by
   apply le_antisymm (prismDenom_le_one w)
   rcases h with h | h
@@ -79,7 +73,7 @@ theorem prismDenom_eq_one {n : ℕ} (w : I × Domain n)
     have he : 1 - (n + 1 : ℝ) * simplexMin w.2 = 1 := by rw [hm]; ring
     exact he ▸ le_max_right _ _
 
-noncomputable def prismRetractTime {n : ℕ} (w : I × Domain n) : I :=
+noncomputable def prismRetractTime   : I :=
   ⟨2 + ((w.1 : ℝ) - 2) / prismDenom w, by
     have hd := prismDenom_pos w
     have htime : 1 - (w.1 : ℝ) / 2 ≤ prismDenom w := le_max_left _ _
@@ -92,7 +86,7 @@ noncomputable def prismRetractTime {n : ℕ} (w : I × Domain n) : I :=
         (div_le_iff₀ hd).mpr (by linarith [w.1.property.2])
       linarith⟩
 
-noncomputable def prismRetractPoint {n : ℕ} (w : I × Domain n) : Domain n :=
+noncomputable def prismRetractPoint   : Domain n :=
   ⟨fun i => (w.2.val i - (1 - prismDenom w) / (n + 1 : ℝ)) / prismDenom w, by
     have hd := prismDenom_pos w
     have hk : 0 < (n + 1 : ℝ) := by positivity
@@ -126,7 +120,7 @@ theorem prismRetractPoint_continuous (n : ℕ) : Continuous (prismRetractPoint (
 def simplexPrismSide (n : ℕ) : Set (I × Domain n) :=
   {w | w.1 = 0 ∨ w.2 ∈ simplexBoundary n}
 
-theorem prismRetract_mem {n : ℕ} (w : I × Domain n) :
+theorem prismRetract_mem   :
     (prismRetractTime w, prismRetractPoint w) ∈ simplexPrismSide n := by
   have hd := prismDenom_pos w
   have hk : (n + 1 : ℝ) ≠ 0 := by positivity
@@ -142,12 +136,7 @@ theorem prismRetract_mem {n : ℕ} (w : I × Domain n) :
     apply Subtype.ext
     change 2 + ((w.1 : ℝ) - 2) / prismDenom w = 0
     have he : prismDenom w = 1 - (w.1 : ℝ) / 2 := max_eq_left h
-    have hq : ((w.1 : ℝ) - 2) / prismDenom w = -2 := by
-      apply (div_eq_iff (ne_of_gt hd)).mpr
-      rw [he]
-      ring
-    rw [hq]
-    ring
+    grind
 
 /-- Radial retraction onto the bottom and all boundary faces of a prism. -/
 noncomputable def simplexPrismRetraction (n : ℕ) : C(I × Domain n, simplexPrismSide n) where
@@ -155,7 +144,7 @@ noncomputable def simplexPrismRetraction (n : ℕ) : C(I × Domain n, simplexPri
   continuous_toFun := (prismRetractTime_continuous n).prodMk
     (prismRetractPoint_continuous n) |>.subtype_mk _
 
-theorem simplexPrismRetraction_fixes {n : ℕ} (w : I × Domain n) (hw : w ∈ simplexPrismSide n) :
+theorem simplexPrismRetraction_fixes   (hw : w ∈ simplexPrismSide n) :
     (simplexPrismRetraction n w).val = w := by
   have hd := prismDenom_eq_one w hw
   apply Prod.ext

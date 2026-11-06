@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.TopologicalOrderCoverStarLift
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.TopologicalOrderCoverStarLift
 
 /-! The continuous closed-star lift takes every reconstructed vertex to
 its actual point in the given covering space. This is the overlap datum
@@ -11,7 +9,7 @@ needed to glue the local lifts. Unverified source. -/
 
 noncomputable section
 namespace FiniteChains.Comb.TopologicalOrderCover
-open CategoryTheory Simplicial Topology
+
 open scoped unitInterval Classical
 variable {P : Type} [PartialOrder P] {E : Type} [TopologicalSpace E]
   (p : C(E, orderNerveRealization P)) (hp : IsCoveringMap p)
@@ -23,16 +21,17 @@ theorem starBaseMap_mem (q : P) (x : orderNerveRealization (orderNerveVertexStar
   rw [orderNerveRealizationSubtypeHomeomorph_coe] at h
   exact h
 
-def starLiftFibre (v : Cover p hp) (w : orderNerveVertexStar P v.1) :
+variable (v : Cover p hp)
+def starLiftFibre  (w : orderNerveVertexStar P v.1) :
     p ⁻¹' {orderNerveRealizationVertex w.val} :=
   ⟨starLift p hp v (orderNerveRealizationVertex w),
     (starLift_projection p hp v _).trans (orderNerveRealizationMap_vertex _ _ w)⟩
 
-theorem starLiftFibre_center (v : Cover p hp) :
+theorem starLiftFibre_center  :
     starLiftFibre p hp v (starCenter v.1) = v.2 :=
   Subtype.ext (starLift_center p hp v)
 
-theorem starLiftFibre_transport (v : Cover p hp)
+theorem starLiftFibre_transport 
     (w z : orderNerveVertexStar P v.1) (hwz : w ≤ z) :
     hp.monodromy (Path.Homotopic.Quotient.mk (orderNerveRealizationEdgePath (show w.val ≤ z.val from hwz)))
       (starLiftFibre p hp v w) = starLiftFibre p hp v z := by
@@ -61,10 +60,8 @@ theorem starLiftFibre_transport (v : Cover p hp)
   have hΓ : Γ = hp.liftPath β (starLiftFibre p hp v w).val h₀ := by
     apply (hp.eq_liftPath_iff' h₀).mpr
     constructor
-    · funext t
-      exact starLift_projection p hp v (γ t)
-    · change starLift p hp v (γ 0) = starLift p hp v (orderNerveRealizationVertex w)
-      rw [γ.source]
+    · aesop (add simp [FiniteChains.Comb.TopologicalOrderCover.starLift_projection])
+    aesop
   apply Subtype.ext
   change hp.liftPath β (starLiftFibre p hp v w).val h₀ 1 =
     starLift p hp v (orderNerveRealizationVertex z)
@@ -89,7 +86,7 @@ theorem starLift_vertex (v w : Cover p hp) (hw : w ≤ v ∨ v ≤ w) :
       rw [starLiftFibre_transport p hp v z (starCenter v.1) hle,
         starLiftFibre_center]
       exact (comparable_transport p hp hwv).symm
-    · have hle : starCenter v.1 ≤ z := (projection_monotone p hp) hvw
+    · have hle  := (projection_monotone p hp) hvw
       have h := starLiftFibre_transport p hp v (starCenter v.1) z hle
       rw [starLiftFibre_center] at h
       exact h.symm.trans (comparable_transport p hp hvw)

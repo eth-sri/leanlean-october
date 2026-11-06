@@ -1,18 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberQuotientChosenGeneration
-
-@[expose] public section
+import RequestProject.ChamberQuotientChosenGeneration
 
 /-! Actual quotient cycles are generated modulo genuine three-boundaries by
 deck translates of genuine universal-cover cycles of the chosen base. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 
@@ -20,8 +15,7 @@ def qLiftedBaseTriangleMap (a : Qpos A X att) :
     OrdTri (QLiftedBase a) → OrdTri (UOrder (Qpos A X att) a) :=
   fun t => ⟨(t.1.1.1, t.1.2.1.1, t.1.2.2.1), t.2⟩
 
-def qLiftedBaseFaceMap (a : Qpos A X att) :
-    OrdTri (QLiftedBase a) → UF (orderCx (Qpos A X att)) a :=
+def qLiftedBaseFaceMap (a : Qpos A X att)  :=
   uOrderFace ∘ qLiftedBaseTriangleMap a
 
 theorem qpos_isConnected_of_zpos
@@ -35,7 +29,7 @@ theorem qpos_isConnected_of_zpos
   have h := isPath_mapPath p hl
   change IsPath (orderCx (Qpos A X att)).src (orderCx (Qpos A X att)).tgt
     (mapPath p l) (zProj v) (zProj w) at h
-  rw (config := { transparency := .default }) [hv, hw] at h
+  rw  [hv, hw] at h
   exact ⟨mapPath p l, h⟩
 
 omit [Fintype V] in
@@ -54,16 +48,16 @@ theorem exists_qCover_base_cycle_preimage {a : Qpos A X att}
   have hes : ∀ t ∈ e.support, t.1.1 ∈ S ∧ t.1.2.1 ∈ S ∧ t.1.2.2 ∈ S := by
     intro t ht
     have ht' : uOrderFace t ∈ c.support := by
-      rw (config := { transparency := .default }) [← he', Finsupp.mapDomain_support_of_injective uOrderFace_injective]
+      rw  [← he', Finsupp.mapDomain_support_of_injective uOrderFace_injective]
       exact Finset.mem_image.mpr ⟨t, ht, rfl⟩
     exact hs _ ht'
   obtain ⟨d, hd, hdcyc⟩ := exists_ordSubposet_cycle S e hes hecyc
   refine ⟨d, hdcyc, ?_⟩
   change Finsupp.mapDomain (uOrderFace ∘ (ordSubposetIncl S).onF) d = c
-  rw (config := { transparency := .default }) [Finsupp.mapDomain_comp]
+  rw  [Finsupp.mapDomain_comp]
   change Finsupp.mapDomain uOrderFace (chain2 (ordSubposetIncl S) d) = c
-  rw (config := { transparency := .default }) [hd, he']
+  rw  [hd, he']
 
-variable [Nonempty X]
+
 
 end FiniteChains.Davis

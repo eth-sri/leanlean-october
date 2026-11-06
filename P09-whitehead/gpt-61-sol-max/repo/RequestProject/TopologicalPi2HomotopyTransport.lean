@@ -1,38 +1,36 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalCoverPi2
-public import RequestProject.SquareMovingBasepoint
-
-@[expose] public section
+import RequestProject.TopologicalCoverPi2
+import RequestProject.SquareMovingBasepoint
 
 /-! Invariance of the challenge's actual based-square zero condition under ordinary
 homotopies and homotopy equivalences. Base points need not be fixed by the homotopies. -/
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace Whitehead
 open scoped unitInterval Topology
 
 variable {X Y Z : Type}
-variable [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]
+  [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]
 
-theorem killsPi2_precompose (f : C(X, Y)) (g : C(Y, Z)) (hg : KillsPi2 g) :
+  (f : C(X, Y))
+  (g : C(Y, Z))
+theorem killsPi2_precompose   (hg : KillsPi2 g) :
     KillsPi2 (g.comp f) := by
   intro x p
   exact hg (f x) (mapSquare f p)
 
-theorem killsPi2_postcompose (f : C(X, Y)) (g : C(Y, Z)) (hf : KillsPi2 f) :
+theorem killsPi2_postcompose   (hf : KillsPi2 f) :
     KillsPi2 (g.comp f) := by
   intro x p
   have h := mapSquare_homotopic g (hf x p)
-  simpa only [mapSquare_const, ← mapSquare_comp] using h
+  simpa [mapSquare_const, ← mapSquare_comp] using h
 
+variable {f g : C(X, Y)}
 /-- An ordinary homotopy preserves the vanishing of the induced second homotopy map. -/
-theorem killsPi2_of_homotopic {f g : C(X, Y)} (hfg : f.Homotopic g)
+theorem killsPi2_of_homotopic  (hfg : f.Homotopic g)
     (hg : KillsPi2 g) : KillsPi2 f := by
   obtain ⟨H⟩ := hfg
   intro x p
@@ -50,13 +48,13 @@ theorem killsPi2_of_homotopic {f g : C(X, Y)} (hfg : f.Homotopic g)
     toHomotopy := G.toHomotopy
     prop' := by
       intro t z hz
-      change G (t, z) = G (t, fun _ => 0)
+      dsimp
       rw [G.eq_fst t hz, G.eq_fst t hz₀]
       exact (GenLoop.boundary (mapSquare g p) z hz).trans
         (GenLoop.boundary (mapSquare g p) _ hz₀).symm }
   exact genLoop_null_of_movingBoundary (mapSquare f p) (F.trans G')
 
-theorem killsPi2_homotopic_iff {f g : C(X, Y)} (hfg : f.Homotopic g) :
+theorem killsPi2_homotopic_iff  (hfg : f.Homotopic g) :
     KillsPi2 f ↔ KillsPi2 g :=
   ⟨killsPi2_of_homotopic hfg.symm, killsPi2_of_homotopic hfg⟩
 
@@ -66,7 +64,7 @@ theorem killsPi2_homotopyEquiv_postcomp_iff (e : ContinuousMap.HomotopyEquiv Y Z
   constructor
   · intro h
     have hk := killsPi2_postcompose (e.toFun.comp f) e.invFun h
-    change KillsPi2 ((e.invFun.comp e.toFun).comp f) at hk
+    
     have hh : ((e.invFun.comp e.toFun).comp f).Homotopic f := by
       simpa using e.left_inv.comp (ContinuousMap.Homotopic.refl f)
     exact (killsPi2_homotopic_iff hh).mp hk
@@ -78,7 +76,7 @@ theorem killsPi2_homotopyEquiv_precomp_iff (e : ContinuousMap.HomotopyEquiv X Y)
   constructor
   · intro h
     have hk := killsPi2_precompose e.invFun (f.comp e.toFun) h
-    change KillsPi2 (f.comp (e.toFun.comp e.invFun)) at hk
+    
     have hh : (f.comp (e.toFun.comp e.invFun)).Homotopic f := by
       simpa using (ContinuousMap.Homotopic.refl f).comp e.right_inv
     exact (killsPi2_homotopic_iff hh).mp hk
@@ -92,8 +90,6 @@ theorem killsPi2_homotopyEquiv_square_iff {X' Y' : Type}
     (f : C(X, Y)) (g : C(X', Y'))
     (h : (g.comp e.toFun).Homotopic (d.toFun.comp f)) :
     KillsPi2 g ↔ KillsPi2 f := by
-  rw [← killsPi2_homotopyEquiv_precomp_iff e g]
-  rw [killsPi2_homotopic_iff h]
-  exact killsPi2_homotopyEquiv_postcomp_iff d f
+  grind [killsPi2_homotopyEquiv_precomp_iff, killsPi2_homotopic_iff, killsPi2_homotopyEquiv_postcomp_iff]
 
 end Whitehead

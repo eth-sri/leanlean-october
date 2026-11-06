@@ -1,17 +1,16 @@
-module
-
-public import RequestProject.GenusPositiveSquareCoefficients
-public import RequestProject.QCubePositiveCoordinateChains
-
-@[expose] public section
+import RequestProject.GenusPositiveSquareCoefficients
+import RequestProject.QCubePositiveCoordinateChains
 
 /-! Actual recovered cut-face coefficients are cycles killed by the genus collapse. -/
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-theorem genus_cutFaceChain_cycle_of_old_boundary (d : (markedSpineCx q).F →₀ ℤ)
-    (hd : Comb.bdry2 (markedSpineCx q) d = 0)
+variable (d : (markedSpineCx q).F →₀ ℤ)
+variable (hd : Comb.bdry2 (markedSpineCx q) d = 0)
+include hd in
+theorem genus_cutFaceChain_cycle_of_old_boundary 
+    
     (r : QThreeCube (cmpRel (GenusVertex q)) →₀ ℤ)
     (he : Finsupp.lmapDomain ℤ ℤ
       (fun s : QSquare (cmpRel (GenusVertex q)) => qCubeToCoordinate s.1)
@@ -24,10 +23,11 @@ theorem genus_cutFaceChain_cycle_of_old_boundary (d : (markedSpineCx q).F →₀
   rw [← he]
   exact qSquareCoordinate_positive_zero _ (markedSpineCycle_positive_square_zero q d hd) σ
 
+include hd in
 /-- The cut correction of an actual ordinary boundary of an old-spine cycle is killed
 by the already constructed geometric genus collapse. -/
-theorem genus_cutFaceChain_collapse_zero_of_old_boundary (d : (markedSpineCx q).F →₀ ℤ)
-    (hd : Comb.bdry2 (markedSpineCx q) d = 0)
+theorem genus_cutFaceChain_collapse_zero_of_old_boundary 
+    
     (r : QThreeCube (cmpRel (GenusVertex q)) →₀ ℤ)
     (he : Finsupp.lmapDomain ℤ ℤ
       (fun s : QSquare (cmpRel (GenusVertex q)) => qCubeToCoordinate s.1)

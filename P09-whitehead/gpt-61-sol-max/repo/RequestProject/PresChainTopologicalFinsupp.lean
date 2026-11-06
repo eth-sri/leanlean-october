@@ -1,15 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresUnivCoverIso
-public import RequestProject.PresentationChainFinsupp
-
-@[expose] public section
+import RequestProject.PresUnivCoverIso
+import RequestProject.PresentationChainFinsupp
 
 /-! Arbitrary presentation chains in the cellular edge-path model. -/
 
 namespace FiniteChains
 
-universe u
 
 variable {α J : Type u}
 
@@ -76,6 +73,6 @@ def toPresChainFS : PresChainFS ρ n where
     exact (Comb.zeroPi2_presInclHom_iff (ρ := h.rel r) (σ := h.rel (r + 1)) (h.genIncl r)
       (h.genIncl_injective r) (h.cellIncl r) (h.rel_incl r)).1 (h.zero_pi2 r hr)
 
-end PresChainTopFS
+end FiniteChains.PresChainTopFS
 
-end FiniteChains
+

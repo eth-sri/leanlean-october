@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.SurfaceWordExpansion
-
-@[expose] public section
+import RequestProject.SurfaceWordExpansion
 
 /-! Adjoining names for concrete words preserves a presented group. -/
 namespace FiniteChains.NamedPresentation
@@ -33,14 +31,11 @@ theorem folded_relator_eq_one (j : J ⊕ I) :
     (QuotientGroup.mk (SurfaceWordExpansion.foldNames w (rel ρ w j)) : PresGroup ρ) = 1 := by
   cases j with
   | inl j =>
-    change (QuotientGroup.mk (SurfaceWordExpansion.foldNames w (FreeGroup.map Sum.inl (ρ j))) :
-      PresGroup ρ) = 1
+    dsimp!
     rw [SurfaceWordExpansion.foldNames_map_inl]
     exact (QuotientGroup.eq_one_iff _).mpr (Subgroup.subset_normalClosure ⟨j, rfl⟩)
   | inr i =>
-    change (QuotientGroup.mk' (relSub ρ))
-      (SurfaceWordExpansion.foldNames w
-        (FreeGroup.of (Sum.inr i) * (FreeGroup.map Sum.inl (w i))⁻¹)) = 1
+    dsimp!
     rw [map_mul, map_inv, SurfaceWordExpansion.foldNames_map_inl]
     simp [SurfaceWordExpansion.foldNames]
 
@@ -63,10 +58,7 @@ theorem inclusion_elimination (g : PresGroup (rel ρ w)) :
   have h : ((QuotientGroup.mk' (relSub (rel ρ w))).comp
       (FreeGroup.map (Sum.inl (β := I)))).comp (SurfaceWordExpansion.foldNames w) =
         QuotientGroup.mk' (relSub (rel ρ w)) := by
-    apply FreeGroup.ext_hom
-    rintro (a | i)
-    · simp [SurfaceWordExpansion.foldNames]
-    · simpa [SurfaceWordExpansion.foldNames] using (name_eq_word ρ w i).symm
+    aesop (add simp [SurfaceWordExpansion.foldNames, name_eq_word])
   induction g using QuotientGroup.induction_on with
   | H v => exact DFunLike.congr_fun h v
 

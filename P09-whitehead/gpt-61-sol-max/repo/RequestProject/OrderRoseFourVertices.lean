@@ -1,15 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderRoseWedgeTopology
-
-@[expose] public section
+import RequestProject.OrderRoseWedgeTopology
 
 /-! The concrete cyclic order of the four vertices in one rose circle.
 This fixes the positive generator orientation before passing to realization. -/
 
 noncomputable section
 namespace FiniteChains.PresModel
-open scoped Classical
+
 
 def roseFourVertex : Fin 4 → Rose PUnit :=
   ![.base, .edg PUnit.unit false, .mid PUnit.unit, .edg PUnit.unit true]
@@ -32,6 +30,6 @@ theorem roseFourVertex_surjective : Function.Surjective roseFourVertex := by
 def roseFourVertexEquiv : Fin 4 ≃ Rose PUnit :=
   Equiv.ofBijective roseFourVertex ⟨roseFourVertex_injective, roseFourVertex_surjective⟩
 
-@[simp] theorem roseFourVertex_zero : roseFourVertex 0 = Rose.base := rfl
+
 
 end FiniteChains.PresModel

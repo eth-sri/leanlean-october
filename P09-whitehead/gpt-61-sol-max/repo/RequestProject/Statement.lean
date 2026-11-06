@@ -1,13 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib.Topology.CWComplex.Classical.Subcomplex
-public import Mathlib.Topology.Covering.Basic
-public import Mathlib.Topology.Homotopy.HomotopyGroup
-public import Mathlib.AlgebraicTopology.SingularHomology.Basic
-public import Mathlib.Algebra.Category.ModuleCat.Abelian
-public import Mathlib.Algebra.Category.ModuleCat.Colimits
-
-@[expose] public section
+import Mathlib.Topology.CWComplex.Classical.Subcomplex
+import Mathlib.Topology.Covering.Basic
+import Mathlib.Topology.Homotopy.HomotopyGroup
+import Mathlib.AlgebraicTopology.SingularHomology.Basic
+import Mathlib.Algebra.Category.ModuleCat.Abelian
+import Mathlib.Algebra.Category.ModuleCat.Colimits
 
 /-! Definitions used in the statement of Theorem A. They are identical to those in
 `Challenge.lean`; the theorem itself is stated and proved in `Solution.lean`. -/
@@ -37,33 +35,34 @@ def mapSquare {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
   ⟨f.comp p.val, fun y hy => congrArg f (GenLoop.boundary p y hy)⟩
 
 /-- The induced map on the topological second homotopy groups is zero at every base point. -/
-def KillsPi2 {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y] (f : C(X, Y)) : Prop :=
+def KillsPi2 {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y] (f : C(X, Y))  :=
   ∀ (x : X) (p : GenLoop (Fin 2) X x),
     GenLoop.Homotopic (mapSquare f p) GenLoop.const
 
 /-- Vanishing of all positive-degree integral singular homology groups. Connectedness is
 specified separately wherever acyclicity is used. -/
-def Acyclic (X : Type) [TopologicalSpace X] : Prop :=
+def Acyclic (X : Type) [TopologicalSpace X]  :=
   ∀ n : ℕ, 0 < n → Limits.IsZero
     (((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) n).obj
       (ModuleCat.of ℤ ℤ)).obj (TopCat.of X))
 
 /-- Regularity means that deck transformations act transitively on every fiber. -/
-def Regular {D X : Type} [TopologicalSpace D] [TopologicalSpace X] (p : C(D, X)) : Prop :=
+def Regular {D X : Type} [TopologicalSpace D] [TopologicalSpace X] (p : C(D, X))  :=
   ∀ d e : D, p d = p e → ∃ h : D ≃ₜ D, (∀ z, p (h z) = p z) ∧ h d = e
 
-def HasAcyclicRegularCover (K : TwoComplex) : Prop :=
+variable (K : TwoComplex)
+def HasAcyclicRegularCover   :=
   ∃ (D : Type) (t : TopologicalSpace D),
     letI := t
     ∃ p : C(D, K), IsCoveringMap p ∧ Function.Surjective p ∧
       ConnectedSpace D ∧ Regular p ∧ Acyclic D
 
-def FiniteCells (K : TwoComplex) : Prop :=
+def FiniteCells   :=
   Finite (Σ n, RelCWComplex.cell (Set.univ : Set K) n)
 
 /-- Identify the given CW complex with the initial subcomplex, preserving its open cells. -/
 def InitialIdentification {K L : TwoComplex}
-    (C : CWComplex.Subcomplex (Set.univ : Set L)) (e : K ≃ₜ (C : Set L)) : Prop :=
+    (C : CWComplex.Subcomplex (Set.univ : Set L)) (e : K ≃ₜ (C : Set L))  :=
   ∀ n, ∃ b : RelCWComplex.cell (Set.univ : Set K) n ≃
       {j : RelCWComplex.cell (Set.univ : Set L) n // j ∈ C.I n},
     ∀ i, (fun x : K => (e x).val) '' CWComplex.openCell (C := (Set.univ : Set K)) n i =
@@ -71,7 +70,7 @@ def InitialIdentification {K L : TwoComplex}
 
 /-- A strict chain of subcomplexes of a common connected two-complex. Finite chains additionally
 require the ambient CW complex, hence every subcomplex in the chain, to have finitely many cells. -/
-def HasChain (K : TwoComplex) (n : ℕ) (finite : Bool) : Prop :=
+def HasChain  (n : ℕ) (finite : Bool)  :=
   ∃ (L : TwoComplex) (C : Fin (n + 1) → CWComplex.Subcomplex (Set.univ : Set L))
     (e : K ≃ₜ (C 0 : Set L)),
     InitialIdentification (C 0) e ∧

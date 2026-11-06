@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.DavisChamberGluing
-
-@[expose] public section
+import RequestProject.DavisChamberGluing
 
 /-!
 # The Davis complex of a right-angled Coxeter group is simply connected
@@ -24,12 +22,11 @@ This file carries out the exhaustion by chambers in the concrete model of
   finite edge path meets only finitely many chambers, so it lies in some `Upto n`.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
+
 
 open RACG Mirror Comb
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
@@ -37,9 +34,7 @@ variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
 omit [Fintype V] in
 /-- Every coset contains its own representative, so every cell lies in a chamber. -/
-theorem inChamber_rep (p : Sph A) : InChamber p.rep p := by
-  rw [InChamber, inv_mul_cancel]
-  exact Subgroup.one_mem _
+theorem inChamber_rep (p : Sph A) : InChamber p.rep p := by simp_all [InChamber]
 
 /-- **The intersection formula with strict length.**  A cell of `F_x` lies in a strictly shorter
 chamber exactly when its mirror type meets `D(x)`. -/
@@ -47,11 +42,7 @@ theorem mem_shorter_chamber_iff {x : CayGroup A} {p : Sph A} (hp : InChamber x p
     (∃ y : CayGroup A, RACG.clen A y < RACG.clen A x ∧ InChamber y p) ↔
       (p.spx ∩ rdescFinset A x).Nonempty := by
   constructor
-  · rintro ⟨y, hlt, hy⟩
-    refine (mem_earlier_chamber_iff hp).1 ⟨y, ?_, le_of_lt hlt, hy⟩
-    intro hxy
-    rw [hxy] at hlt
-    omega
+  · classical grind [FiniteChains.Davis.mem_earlier_chamber_iff, le_of_lt]
   · rintro ⟨s, hs⟩
     obtain ⟨hsσ, hsd⟩ := Finset.mem_inter.1 hs
     obtain ⟨h1, -, h3⟩ := earlier_of_rdesc A (T := (p.spx : Set V)) (Finset.mem_coe.2 hsσ)
@@ -64,21 +55,21 @@ theorem mem_shorter_chamber_iff {x : CayGroup A} {p : Sph A} (hp : InChamber x p
 /-! ### The filtration by length -/
 
 /-- The union of the chambers `F_y` with `ℓ(y) ≤ n`. -/
-def Upto (n : ℕ) (p : Sph A) : Prop := ∃ y : CayGroup A, RACG.clen A y ≤ n ∧ InChamber y p
+def Upto (n : ℕ) (p : Sph A)  := ∃ y : CayGroup A, RACG.clen A y ≤ n ∧ InChamber y p
 
-omit [Fintype V] in
+section
+omit [Fintype V]
 theorem upto_up {n : ℕ} {p q : Sph A} (hpq : p ≤ q) (hp : Upto n p) : Upto n q := by
-  obtain ⟨y, hy, hyp⟩ := hp
-  exact ⟨y, hy, inChamber_of_le hpq hyp⟩
+  classical grind [FiniteChains.Davis.Upto, inChamber_of_le]
 
-omit [Fintype V] in
 theorem upto_zero_iff (p : Sph A) : Upto 0 p ↔ InChamber 1 p := by
   constructor
   · rintro ⟨y, hy, hyp⟩
-    have : y = 1 := (RACG.clen_eq_zero_iff A).1 (Nat.le_zero.1 hy)
+    have  := (RACG.clen_eq_zero_iff A).1 (Nat.le_zero.1 hy)
     rwa [this] at hyp
   · intro h
     exact ⟨1, by simp, h⟩
+end
 
 /-- The ball of radius `n` in the word metric is finite. -/
 theorem ball_finite (A : CommRel V) (n : ℕ) : {x : CayGroup A | RACG.clen A x ≤ n}.Finite := by
@@ -87,7 +78,7 @@ theorem ball_finite (A : CommRel V) (n : ℕ) : {x : CayGroup A | RACG.clen A x 
   obtain ⟨l, hl, hlx⟩ := exists_cword A x
   refine ⟨l, ?_, hlx⟩
   have : l.length = RACG.clen A x := by rw [← hlx, clen_cword A hl]
-  simp only [Set.mem_setOf_eq, this]
+  simp [*]
   exact hx
 
 /-- The elements of length exactly `n` form a finite set. -/
@@ -106,23 +97,18 @@ theorem nullIn_upto_insert (n : ℕ) (hnull : NullIn (Upto (A := A) n))
   intro S hS
   induction S, hS using Set.Finite.induction_on with
   | empty =>
-      intro _
-      constructor
-      · exact nullIn_congr (fun p => by simp [Upto]) hnull
-      · exact connectedIn_congr (fun p => by simp [Upto]) hconn
+      simp_all
   | @insert x S hxS hSfin ih =>
       intro hlen
       obtain ⟨hprevNull, hprevConn⟩ := ih (fun y hy => hlen y (Set.mem_insert_of_mem _ hy))
-      have hxlen : RACG.clen A x = n + 1 := hlen x (Set.mem_insert _ _)
+      have hxlen  := hlen x (Set.mem_insert _ _)
       have hx1 : x ≠ 1 := by
         intro h
         rw [h] at hxlen
         simp at hxlen
       set Prev : Sph A → Prop := fun p => Upto n p ∨ ∃ y ∈ S, InChamber y p with hPrev
       have hup : ∀ p q : Sph A, p ≤ q → Prev p → Prev q := by
-        rintro p q hpq (h | ⟨y, hy, hyp⟩)
-        · exact Or.inl (upto_up hpq h)
-        · exact Or.inr ⟨y, hy, inChamber_of_le hpq hyp⟩
+        classical grind [upto_up, inChamber_of_le]
       have hinter : ∀ p : Sph A, (Prev p ∧ InChamber x p) ↔
           (InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty) := by
         intro p
@@ -130,11 +116,8 @@ theorem nullIn_upto_insert (n : ℕ) (hnull : NullIn (Upto (A := A) n))
         · rintro ⟨hprev, hpx⟩
           refine ⟨hpx, ?_⟩
           rcases hprev with ⟨y, hy, hyp⟩ | ⟨y, hyS, hyp⟩
-          · exact (mem_shorter_chamber_iff hpx).1 ⟨y, by omega, hyp⟩
-          · refine (mem_earlier_chamber_iff hpx).1 ⟨y, ?_, ?_, hyp⟩
-            · intro hxy
-              exact hxS (hxy ▸ hyS)
-            · rw [hlen y (Set.mem_insert_of_mem _ hyS), hxlen]
+          · grind [mem_shorter_chamber_iff]
+          · classical grind [FiniteChains.Davis.mem_earlier_chamber_iff, Set.mem_insert_of_mem]
         · rintro ⟨hpx, hne⟩
           obtain ⟨y, hylt, hyp⟩ := (mem_shorter_chamber_iff hpx).2 hne
           refine ⟨Or.inl ⟨y, ?_, hyp⟩, hpx⟩
@@ -142,17 +125,7 @@ theorem nullIn_upto_insert (n : ℕ) (hnull : NullIn (Upto (A := A) n))
       obtain ⟨hN, hC⟩ := nullIn_union_chamber hx1 Prev hup hprevNull hprevConn hinter
       have hiff : ∀ p : Sph A, (Prev p ∨ InChamber x p) ↔
           (Upto n p ∨ ∃ y ∈ insert x S, InChamber y p) := by
-        intro p
-        constructor
-        · rintro ((h | ⟨y, hy, hyp⟩) | h)
-          · exact Or.inl h
-          · exact Or.inr ⟨y, Set.mem_insert_of_mem _ hy, hyp⟩
-          · exact Or.inr ⟨x, Set.mem_insert _ _, h⟩
-        · rintro (h | ⟨y, hy, hyp⟩)
-          · exact Or.inl (Or.inl h)
-          · rcases Set.mem_insert_iff.1 hy with rfl | hy
-            · exact Or.inr hyp
-            · exact Or.inl (Or.inr ⟨y, hy, hyp⟩)
+        grind
       exact ⟨nullIn_congr hiff hN, connectedIn_congr hiff hC⟩
 
 /-- **Every loop inside the first `n` length levels of chambers is null-homotopic, and these
@@ -184,12 +157,13 @@ theorem nullIn_upto (A : CommRel V) : ∀ n : ℕ,
 
 /-! ### Simple connectivity of the whole complex -/
 
+variable (l : List ((orderCx (Sph A)).E × Bool))
 /-- A bound on the lengths of the representatives occurring along an edge path. -/
-noncomputable def pathBound (l : List ((orderCx (Sph A)).E × Bool)) : ℕ :=
+noncomputable def pathBound   :=
   (l.map (fun e => RACG.clen A (e.1.1.1).rep + RACG.clen A (e.1.1.2).rep)).sum
 
 omit [Fintype V] in
-theorem pathIn_upto_pathBound (l : List ((orderCx (Sph A)).E × Bool)) :
+theorem pathIn_upto_pathBound  :
     PathIn (Upto (A := A) (pathBound l)) l := by
   intro e he
   have hmem : RACG.clen A (e.1.1.1).rep + RACG.clen A (e.1.1.2).rep ∈
@@ -223,5 +197,5 @@ theorem isConnected_davis (A : CommRel V) : IsConnected (orderCx (Sph A)) := by
       ⟨p.rep, by omega, inChamber_rep _⟩ ⟨q.rep, by omega, inChamber_rep _⟩
   exact ⟨l, hl⟩
 
-end Davis
-end FiniteChains
+end FiniteChains.Davis
+

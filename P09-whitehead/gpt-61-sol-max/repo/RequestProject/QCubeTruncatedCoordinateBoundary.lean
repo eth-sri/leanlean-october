@@ -1,17 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeThreeCoordinateIncidence
-
-@[expose] public section
+import RequestProject.QCubeThreeCoordinateIncidence
 
 /-! Genuine finite truncated cube boundaries, including their cut-face coefficients. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-open scoped Classical
+
 variable {V : Type} [DecidableEq V] [Fintype V] {A : CommRel V}
 
 theorem qCube_coordinate_pos_iff (c : QCube A) (σ : Finset V) :
@@ -31,8 +27,7 @@ theorem qCube_coordinate_pos_iff (c : QCube A) (σ : Finset V) :
 
 variable [LinearOrder V]
 
-noncomputable def qCubeTruncatedCoordinateBoundary (c : QCube A) :
-    (Cube V ⊕ Finset V) →₀ ℤ :=
+noncomputable def qCubeTruncatedCoordinateBoundary (c : QCube A)  :=
   Finsupp.lmapDomain ℤ ℤ Sum.inl (qCubeCoordinateFacetChain c) +
     if c.sgn = 0 then Finsupp.single (Sum.inr c.spx) (cutSign c.spx) else 0
 
@@ -54,10 +49,7 @@ theorem qCubeTruncatedCoordinateBoundary_apply (c : QCube A) (f : Cube V ⊕ Fin
       simp only [qCubeTruncatedCoordinateBoundary, Finsupp.add_apply,
         Finsupp.lmapDomain_apply, hmap, zero_add, cubeBdry_inr, qCube_coordinate_pos_iff]
       by_cases hsgn : c.sgn = 0
-      · by_cases hs : σ = c.spx
-        · subst σ
-          simp [hsgn]
-        · simp [hsgn, hs]
+      · aesop
       · simp [hsgn]
 
 /-- For a three-cube the extra cut face has coefficient minus one precisely at the
@@ -66,11 +58,9 @@ theorem qThreeCubeTruncatedCoordinateBoundary (c : QThreeCube A) :
     qCubeTruncatedCoordinateBoundary c.1 =
       Finsupp.lmapDomain ℤ ℤ Sum.inl (qCubeCoordinateFacetChain c.1) -
         if c.1.sgn = 0 then Finsupp.single (Sum.inr c.1.spx) 1 else 0 := by
-  simp only [qCubeTruncatedCoordinateBoundary, cutSign, c.2]
-  by_cases hsgn : c.1.sgn = 0 <;> simp [hsgn, sub_eq_add_neg]
+  aesop (add simp [qCubeTruncatedCoordinateBoundary, cutSign])
 
-noncomputable def qThreeTruncatedCoordinateBoundary : (QThreeCube A →₀ ℤ) →ₗ[ℤ]
-    ((Cube V ⊕ Finset V) →₀ ℤ) :=
+noncomputable def qThreeTruncatedCoordinateBoundary  :=
   Finsupp.linearCombination ℤ (fun c : QThreeCube A => qCubeTruncatedCoordinateBoundary c.1)
 
 noncomputable def qThreeCutFaceChain : (QThreeCube A →₀ ℤ) →ₗ[ℤ] (Finset V →₀ ℤ) :=
@@ -91,11 +81,6 @@ theorem qThreeTruncatedCoordinateBoundary_split (r : QThreeCube A →₀ ℤ) :
       simp only [map_add, hr, hs]
       abel
   | single c n =>
-      rw [qThreeTruncatedCoordinateBoundary, Finsupp.linearCombination_single,
-        qThreeCubeTruncatedCoordinateBoundary, smul_sub,
-        Finsupp.linearCombination_single, map_smul,
-        qThreeCutFaceChain, Finsupp.linearCombination_single, map_smul]
-      by_cases hsgn : c.1.sgn = 0 <;>
-        simp [hsgn, Finsupp.lmapDomain_apply]
+      aesop (add simp [qThreeTruncatedCoordinateBoundary, qThreeCubeTruncatedCoordinateBoundary, smul_sub, qThreeCutFaceChain])
 
 end FiniteChains.Davis

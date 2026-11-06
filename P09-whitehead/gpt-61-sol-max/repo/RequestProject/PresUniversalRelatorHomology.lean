@@ -1,6 +1,5 @@
-module
-public import RequestProject.OrderUniversalTetLift
-public import RequestProject.PresPosetCoverDimension
-public import RequestProject.PresUniversalRelatorCoordinates
-public import RequestProject.OrderNormalizationHomotopy
-public import RequestProject.OrderUniversalPosetThree
+import RequestProject.OrderUniversalTetLift
+import RequestProject.PresPosetCoverDimension
+import RequestProject.PresUniversalRelatorCoordinates
+import RequestProject.OrderNormalizationHomotopy
+import RequestProject.OrderUniversalPosetThree

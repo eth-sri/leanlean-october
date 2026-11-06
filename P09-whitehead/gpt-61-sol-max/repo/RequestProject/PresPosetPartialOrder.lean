@@ -1,12 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresPosetModel
-public import RequestProject.OrderConstructionPartialOrder
+import RequestProject.PresPosetModel
+import RequestProject.OrderConstructionPartialOrder
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel

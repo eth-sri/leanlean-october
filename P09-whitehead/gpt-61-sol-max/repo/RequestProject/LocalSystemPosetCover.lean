@@ -1,21 +1,15 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderPosetCovering
-
-@[expose] public section
+import RequestProject.OrderPosetCovering
 
 /-! An actual set-valued local system on a poset gives a poset covering.
 The construction retains the whole fibre; no choice of group coordinates
 or covering classification theorem is needed. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.LocalSystem
 open CategoryTheory
-universe u
 variable {P : Type u} [PartialOrder P] (F : P ⥤ Type u)
 
 def Cover := Σ p : P, F.obj p
@@ -28,8 +22,7 @@ instance coverPartialOrder : PartialOrder (Cover F) where
     obtain ⟨hyz, hfy⟩ := hyz
     refine ⟨hxy.trans hyz, ?_⟩
     have hh := ConcreteCategory.congr_hom (F.map_comp (homOfLE hxy) (homOfLE hyz)) x.2
-    change F.map (homOfLE (hxy.trans hyz)) x.2 =
-      F.map (homOfLE hyz) (F.map (homOfLE hxy) x.2) at hh
+    dsimp at *
     rw [hh, hfx, hfy]
   le_antisymm x y hxy hyx := by
     rcases x with ⟨p, x⟩
@@ -48,7 +41,6 @@ theorem projection_monotone : Monotone (projection F) := fun _ _ h => h.choose
 theorem projection_isPosetCover
     (hF : ∀ {p q : P} (h : p ≤ q), Function.Bijective (F.map (homOfLE h)))
     (hne : ∀ p, Nonempty (F.obj p)) : IsPosetCover (projection F) := by
-  classical
   refine ⟨projection_monotone F, fun p => ⟨⟨p, Classical.choice (hne p)⟩, rfl⟩, ?_, ?_⟩
   · intro x q hxq
     refine ⟨⟨q, F.map (homOfLE hxq) x.2⟩, ⟨⟨hxq, rfl⟩, rfl⟩, ?_⟩

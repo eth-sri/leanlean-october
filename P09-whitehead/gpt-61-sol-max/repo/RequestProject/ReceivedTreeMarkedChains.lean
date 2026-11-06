@@ -1,18 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ReceivedTreeRootedChainFaithfulness
-
-@[expose] public section
+import RequestProject.ReceivedTreeRootedChainFaithfulness
 
 /-! Exact marked relative boundaries in the actual receiving-group cover. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
-open scoped Classical
-universe u
+
 variable {K : Complex2.{u}} (T : SpanningTree K) {G : Type u} [Group G]
   (φ : PresGroup (treeRel T) →* G) {I : Type u}
 
@@ -34,7 +30,7 @@ theorem markedChainMap_boundary_off_root (p : I → Loop K T.root)
   classical
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd, add_zero]
+  | add c d hc hd => simp_all
   | single x n =>
     obtain ⟨h, i⟩ := x
     rw [markedChainMap_single, map_smul,
@@ -57,7 +53,7 @@ theorem cellCoefficient_markedChainMap (p : I → List (K.E × Bool))
   classical
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, hc, hd, add_mul, Finset.sum_add_distrib]
+  | add c d hc hd => simp_all [add_mul, Finset.sum_add_distrib]
   | single x n =>
     obtain ⟨g, i⟩ := x
     rw [markedChainMap_single, map_smul, cellCoefficient_liftPath,
@@ -65,16 +61,13 @@ theorem cellCoefficient_markedChainMap (p : I → List (K.E × Bool))
     simp [cellCoefficient_single]
 
 /-- Assemble the full group-ring marked coefficients into genuine edge chains. -/
-noncomputable def markedChain (p : I → Loop K T.root) (γ : I → MonoidAlgebra ℤ G) :
-    (G × K.E) →₀ ℤ :=
+noncomputable def markedChain (p : I → Loop K T.root) (γ : I → MonoidAlgebra ℤ G)  :=
   markedChainMap T φ (fun i => (p i).1) ((cellCoordinates I).symm γ)
 
 theorem cellCoefficient_markedChain (p : I → Loop K T.root)
     (γ : I → MonoidAlgebra ℤ G) (z : NonTree T) :
     cellCoefficient z.1 (markedChain T φ p γ) =
-      ∑ i, γ i * coefficientMap T φ (fox z (pathWord T (p i).1)) := by
-  rw [markedChain, cellCoefficient_markedChainMap]
-  simp only [cellCoefficient_coordinates_symm]
+      ∑ i, γ i * coefficientMap T φ (fox z (pathWord T (p i).1)) := by simp_all [markedChain, cellCoefficient_markedChainMap, cellCoefficient_coordinates_symm]
 
 omit [DecidableEq (NonTree T)] in
 theorem markedChain_boundary_off_root (p : I → Loop K T.root)
@@ -90,10 +83,7 @@ theorem bdry2_eq_markedChain_of_coordinates (p : I → Loop K T.root)
       ∑ i, γ i * coefficientMap T φ (fox z (pathWord T (p i).1))) :
     bdry2 (cover T φ) c = markedChain T φ p γ := by
   apply edgeChains_eq_of_nonTree_coordinates T φ
-  · intro z
-    rw [cellCoefficient_markedChain]
-    exact hc z
-  · intro g v hv
-    rw [bdry1_bdry2, Finsupp.zero_apply, markedChain_boundary_off_root T φ p γ g v hv]
+  · simp_all [cellCoefficient_markedChain]
+  · simp_all [FiniteChains.Comb.bdry1_bdry2, FiniteChains.Comb.ReceivedTree.markedChain_boundary_off_root]
 
 end FiniteChains.Comb.ReceivedTree

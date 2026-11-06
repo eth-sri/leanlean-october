@@ -1,8 +1,4 @@
-module
-
-public import RequestProject.OrderNerveRealizationCovering
-
-@[expose] public section
+import RequestProject.OrderNerveRealizationCovering
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -27,5 +23,5 @@ theorem realization_hasDimensionLE (hf : IsPosetCover f) (d : ℕ)
   have hdim := (nerve Q).dim_le_of_nonDegenerate ⟨t, ht⟩ d
   omega
 
-end IsPosetCover
-end FiniteChains.Comb
+end FiniteChains.Comb.IsPosetCover
+

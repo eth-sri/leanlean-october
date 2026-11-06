@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.DiskFamilyHomotopyBaseChange
-public import RequestProject.DiskFamilyMap
-public import RequestProject.AttachingHomotopyChosenExtensions
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.DiskFamilyHomotopyBaseChange
+import RequestProject.DiskFamilyMap
+import RequestProject.AttachingHomotopyChosenExtensions
 
 /-! Explicit disk extensions, natural in the base map and disk labels.
 The extension on a disk is the fixed ball-cylinder retraction, independent
@@ -45,7 +43,7 @@ theorem naturalDiskBoundaryStart (j : J) (a : UnitBoundary E) :
   exact (cell_boundary r₀ _ (boundaryFamilyInclusion_isClosedEmbedding J E).injective
     ⟨j, a⟩).symm
 
-def naturalDiskExtensionAt (j : J) : C(I × ClosedUnitBall E, DiskAttachment r₀) :=
+def naturalDiskExtensionAt (j : J)  :=
   ballHomotopyExtension
     ⟨fun x => cell r₀ (boundaryFamilyInclusion J E) ⟨j, x⟩,
       (cell_continuous _ _).comp
@@ -57,7 +55,7 @@ def naturalDiskExtensionAt (j : J) : C(I × ClosedUnitBall E, DiskAttachment r�
             continuous_snd)))⟩
     (naturalDiskBoundaryStart r₀ r₁ H j)
 
-def naturalDiskExtension : C(I × DiskFamily J E, DiskAttachment r₀) :=
+def naturalDiskExtension  :=
   (⟨fun z : Σ _ : J, I × ClosedUnitBall E => naturalDiskExtensionAt r₀ r₁ H z.1 z.2,
     continuous_sigma (fun j => (naturalDiskExtensionAt r₀ r₁ H j).continuous)⟩ :
       C((Σ _ : J, I × ClosedUnitBall E), DiskAttachment r₀)).comp
@@ -65,39 +63,27 @@ def naturalDiskExtension : C(I × DiskFamily J E, DiskAttachment r₀) :=
 
 theorem naturalDiskExtension_zero (d : DiskFamily J E) :
     naturalDiskExtension r₀ r₁ H (0, d) = cell r₀ (boundaryFamilyInclusion J E) d := by
-  change naturalDiskExtensionAt r₀ r₁ H d.1 (0, d.2) = _
-  unfold naturalDiskExtensionAt
-  rw [ballHomotopyExtension_zero]
-  rfl
+  classical solve_by_elim (transparency := .default) (maxDepth := 10) [FiniteChains.RelativeAttachment.naturalDiskBoundaryStart, FiniteChains.RelativeAttachment.ballHomotopyExtension_zero, naturalDiskExtensionAt]
 
 theorem naturalDiskExtension_boundary (t : I) (a : BoundaryFamily J E) :
     naturalDiskExtension r₀ r₁ H (t, boundaryFamilyInclusion J E a) =
       old r₀ (boundaryFamilyInclusion J E) (H (t, a)) := by
-  change naturalDiskExtensionAt r₀ r₁ H a.1 (t, unitBoundaryInclusion E a.2) = _
-  unfold naturalDiskExtensionAt
-  rw [ballHomotopyExtension_boundary]
-  rfl
+  classical solve_by_elim (transparency := .default) (maxDepth := 10) [FiniteChains.RelativeAttachment.naturalDiskBoundaryStart, FiniteChains.RelativeAttachment.ballHomotopyExtension_boundary, naturalDiskExtensionAt, unitBoundaryInclusion]
 
-def naturalDiskBackward : C(DiskAttachment r₁, DiskAttachment r₀) :=
+def naturalDiskBackward  :=
   desc r₁ (boundaryFamilyInclusion J E)
     ⟨old r₀ (boundaryFamilyInclusion J E), old_continuous _ _⟩
     ((naturalDiskExtension r₀ r₁ H).comp
       ⟨fun d => (1, d), continuous_const.prodMk continuous_id⟩)
     (fun a => by
-      change old r₀ (boundaryFamilyInclusion J E) (r₁ a) =
-        naturalDiskExtension r₀ r₁ H (1, boundaryFamilyInclusion J E a)
-      rw [naturalDiskExtension_boundary, H.apply_one])
+      simp_all [naturalDiskExtension_boundary])
 
-@[simp] theorem naturalDiskBackward_old (x : X) :
-    naturalDiskBackward r₀ r₁ H (old r₁ (boundaryFamilyInclusion J E) x) =
-      old r₀ (boundaryFamilyInclusion J E) x := rfl
+
 
 @[simp] theorem naturalDiskBackward_cell (d : DiskFamily J E) :
     naturalDiskBackward r₀ r₁ H (cell r₁ (boundaryFamilyInclusion J E) d) =
       naturalDiskExtension r₀ r₁ H (1, d) := by
-  unfold naturalDiskBackward
-  rw [desc_cell]
-  rfl
+  simp_all [naturalDiskBackward]
 
 variable (s₀ s₁ : C(BoundaryFamily K E, Y)) (G : s₀.Homotopy s₁)
   (f : C(X, Y)) (i : J → K)
@@ -111,8 +97,7 @@ theorem naturalDiskExtension_natural (t : I) (j : J) (x : ClosedUnitBall E) :
       naturalDiskExtension s₀ s₁ G (t, ⟨i j, x⟩) := by
   apply ballHomotopyExtension_natural (diskFamilyMap r₀ s₀ f i h₀) _ _ _ _
     (naturalDiskBoundaryStart r₀ r₁ H j) (naturalDiskBoundaryStart s₀ s₁ G (i j))
-  · intro d
-    exact diskFamilyMap_cell r₀ s₀ f i h₀ j d
+  · solve_by_elim [FiniteChains.RelativeAttachment.diskFamilyMap_cell]
   · intro τ a
     change diskFamilyMap r₀ s₀ f i h₀
       (old r₀ (boundaryFamilyInclusion J E) (H (τ, ⟨j, a⟩))) =
@@ -126,10 +111,6 @@ theorem naturalDiskBackward_natural :
   apply hom_ext r₁ (boundaryFamilyInclusion J E)
   · intro x
     rfl
-  · rintro ⟨j, x⟩
-    dsimp only [ContinuousMap.comp_apply]
-    change diskFamilyMap r₀ s₀ f i h₀ (naturalDiskBackward r₀ r₁ H (cell _ _ ⟨j, x⟩)) = _
-    rw [naturalDiskBackward_cell, naturalDiskExtension_natural r₀ r₁ H s₀ s₁ G f i h₀ hH,
-      diskFamilyMap_cell, naturalDiskBackward_cell]
+  · grind [ContinuousMap.comp_apply, FiniteChains.RelativeAttachment.naturalDiskBackward_cell, FiniteChains.RelativeAttachment.naturalDiskExtension_natural, FiniteChains.RelativeAttachment.diskFamilyMap_cell]
 
 end FiniteChains.RelativeAttachment

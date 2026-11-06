@@ -1,14 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresUniversalGeneratorGroupCoordinates
-public import RequestProject.PresCoverRelatorLetterCoefficients
-public import RequestProject.PresUniversalCylinderCollapseReading
-
-@[expose] public section
+import RequestProject.PresUniversalGeneratorGroupCoordinates
+import RequestProject.PresCoverRelatorLetterCoefficients
+import RequestProject.PresUniversalCylinderCollapseReading
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
@@ -25,11 +22,7 @@ theorem presUniversalLetter_midpoint_coordinates
           (if ((w p.val.2)[k.val]).2 then 1 else
             (QuotientGroup.mk (FreeGroup.of ((w p.val.2)[k.val]).1) : PresGroup ρ)⁻¹)),
         ((w p.val.2)[k.val]).1) := by
-  apply Prod.ext
-  · exact presUniversalRelator_collapsed_midpoint_reading w hpos
-      (fun i => (QuotientGroup.mk (FreeGroup.of i) : PresGroup ρ))
-      (presGroup_wordVal_eq_one ρ w hw) p k
-  · rfl
+  solve_by_elim [Prod.ext, FiniteChains.PresModel.presUniversalRelator_collapsed_midpoint_reading]
 
 /-- The selected incidence of an actual midpoint has that midpoint's group coordinates. -/
 theorem presUniversalGeneratorGroupEquiv_midpoint

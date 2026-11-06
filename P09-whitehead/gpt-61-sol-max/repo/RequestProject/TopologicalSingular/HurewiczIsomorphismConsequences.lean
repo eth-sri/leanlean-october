@@ -1,13 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.HurewiczIsomorphism
-public import RequestProject.TopologicalSingular.HurewiczSurjectivityConsequences
+import RequestProject.TopologicalSingular.HurewiczIsomorphism
+import RequestProject.TopologicalSingular.HurewiczSurjectivityConsequences
 
-@[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology

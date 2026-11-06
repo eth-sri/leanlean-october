@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MinimalGap
-public import RequestProject.Pi2GenerationDescent
-
-@[expose] public section
+import RequestProject.MinimalGap
+import RequestProject.Pi2GenerationDescent
 
 /-!
 # Proposition 3.11 for chains given by explicit inclusions
@@ -36,10 +34,9 @@ This file works with the faithful, map-carrying form throughout.
   (3.5).
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u
+
 
 /-! ### Chains with explicit inclusions -/
 
@@ -49,8 +46,7 @@ def inclFrom (c : ℕ → Complex2.{u}) (inc : ∀ i, Hom (c i) (c (i + 1))) :
   | 0 => Hom.id (c 0)
   | i + 1 => (inc i).comp (inclFrom c inc i)
 
-@[simp] theorem inclFrom_succ (c : ℕ → Complex2.{u}) (inc : ∀ i, Hom (c i) (c (i + 1)))
-    (i : ℕ) : inclFrom c inc (i + 1) = (inc i).comp (inclFrom c inc i) := rfl
+
 
 /-- **A relative chain of Proposition 3.7 carrying its inclusions.**  The chain is indexed by
 all of `ℕ` (a chain of length `n` is extended by repeating its last term); the conditions of
@@ -84,33 +80,23 @@ namespace RelChainW
 
 variable {D : Complex2.{u}} {c : ℕ → Complex2.{u}} {n : ℕ} (R : RelChainW D c n)
 
-theorem inclV (i : ℕ) : Function.Injective (inclFrom c R.inc i).onV := by
-  induction i with
-  | zero => exact fun _ _ h => h
-  | succ i ih => exact (R.incV i).comp ih
 
-theorem inclE (i : ℕ) : Function.Injective (inclFrom c R.inc i).onE := by
-  induction i with
-  | zero => exact fun _ _ h => h
-  | succ i ih => exact (R.incE i).comp ih
+
+
 
 /-! ### The descended chain -/
 
 variable (K : Complex2.{u}) (p : Hom (c 0) K)
 
-/-- **The descended chain of Proposition 3.11**: `E₀ = K` and `Eᵢ₊₁ = K ∪_p Lᵢ₊₁`. -/
-noncomputable def desc : ℕ → Complex2.{u}
-  | 0 => K
-  | i + 1 => pushoutComplex p (inclFrom c R.inc (i + 1)) (R.inclV (i + 1)) (R.inclE (i + 1))
 
-@[simp] theorem desc_zero : R.desc K p 0 = K := rfl
 
-@[simp] theorem desc_succ (i : ℕ) : R.desc K p (i + 1) =
-    pushoutComplex p (inclFrom c R.inc (i + 1)) (R.inclV (i + 1)) (R.inclE (i + 1)) := rfl
+
+
+
 
 /-! ### The induced maps of pushouts are inclusions -/
 
-section Functor
+section
 
 variable {L L' : Complex2.{u}} {D' : Complex2.{u}} (q : Hom D' K) (j : Hom D' L) (j' : Hom D' L')
   (k : Hom L L') (hjV : Function.Injective j.onV) (hjE : Function.Injective j.onE)
@@ -125,8 +111,7 @@ theorem pushoutFunctor_injV (hkV : Function.Injective k.onV) :
   have hinr : ∀ w : OffV j, F.onV (Sum.inr w) = Sum.inr ⟨k.onV w.1, off_map_V hkV hkj w⟩ :=
     fun w => pushV_of_off q j' ⟨k.onV w.1, off_map_V hkV hkj w⟩
   rintro (a | w) (b | w') h
-  · rw [hinl, hinl] at h
-    exact congrArg Sum.inl (Sum.inl_injective h)
+  · grind
   · rw [hinl, hinr] at h
     simp at h
   · rw [hinr, hinl] at h
@@ -142,8 +127,7 @@ theorem pushoutFunctor_injE (hkE : Function.Injective k.onE) :
   have hinr : ∀ w : OffE j, F.onE (Sum.inr w) = Sum.inr ⟨k.onE w.1, off_map_E hkE hkj w⟩ :=
     fun w => pushE_of_off q j' ⟨k.onE w.1, off_map_E hkE hkj w⟩
   rintro (a | w) (b | w') h
-  · rw [hinl, hinl] at h
-    exact congrArg Sum.inl (Sum.inl_injective h)
+  · grind
   · rw [hinl, hinr] at h
     simp at h
   · rw [hinr, hinl] at h
@@ -159,8 +143,7 @@ theorem pushoutFunctor_injF (hkF : Function.Injective k.onF) :
   have hinr : ∀ w : OffF j, F.onF (Sum.inr w) = Sum.inr ⟨k.onF w.1, off_map_F hkF hkj w⟩ :=
     fun w => pushF_of_off q j' ⟨k.onF w.1, off_map_F hkF hkj w⟩
   rintro (a | w) (b | w') h
-  · rw [hinl, hinl] at h
-    exact congrArg Sum.inl (Sum.inl_injective h)
+  · grind
   · rw [hinl, hinr] at h
     simp at h
   · rw [hinr, hinl] at h
@@ -168,7 +151,7 @@ theorem pushoutFunctor_injF (hkF : Function.Injective k.onF) :
   · rw [hinr, hinr] at h
     exact congrArg Sum.inr (Subtype.ext (hkF (congrArg Subtype.val (Sum.inr_injective h))))
 
-end Functor
+end
 
 /-! ### Finiteness and connectivity of the stages -/
 
@@ -176,25 +159,25 @@ end Functor
 
 end RelChainW
 
-namespace RelChainW
 
-variable {D : Complex2.{u}} {c : ℕ → Complex2.{u}} {n : ℕ} (R : RelChainW D c n)
-variable (K : Complex2.{u}) (p : Hom (c 0) K)
 
-end RelChainW
+
+
+
+
 
 /-! ### Strictness of the descended chain -/
 
-section Strict
 
-variable {D : Complex2.{u}} {c : ℕ → Complex2.{u}} {n : ℕ} (R : RelChainW D c n)
-variable (K : Complex2.{u}) (p : Hom (c 0) K)
 
-end Strict
+
+
+
+
 
 /-! ### Non-vacuity: the constant chain -/
 
 /-! ### Assembling Theorem A -/
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

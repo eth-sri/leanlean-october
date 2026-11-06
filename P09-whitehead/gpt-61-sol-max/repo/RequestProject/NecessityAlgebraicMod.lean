@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NecessityAlgebraic
-public import RequestProject.ChainFormulaMod
-public import RequestProject.FoxCommutatorMod
-public import RequestProject.FoxRequirementMod
-
-@[expose] public section
+import RequestProject.NecessityAlgebraic
+import RequestProject.ChainFormulaMod
+import RequestProject.FoxCommutatorMod
+import RequestProject.FoxRequirementMod
 
 /-!
 # Section 2 with the full family of requirements, without any topological interface
@@ -29,16 +27,15 @@ subgroup of `G` satisfying all the requirements (2.2).
 
 namespace FiniteChains
 
-open MonoidAlgebra
 
-universe u
+
 
 variable {G : Type u} [Group G] {I J : Type u}
 
 /-- **Condition (1) at cell level, with the lifting of cycles modulo every `m`.**  For
 every `n` the chain `K = X₀ ⊂ ⋯ ⊂ Xₙ` supplies the data of `ChainInput` together with the
 property that a cycle which becomes divisible by `m` lifts to a chain divisible by `m`. -/
-def HasCellChainsLift (b : I → J → MonoidAlgebra ℤ G) : Prop :=
+def HasCellChainsLift (b : I → J → MonoidAlgebra ℤ G)  :=
   ∀ n : ℕ, ∃ (Fund : ℕ → Type u) (_ : ∀ r, Group (Fund r)) (Gen Cell : ℕ → Type u)
     (h : ChainInput b n Fund Gen Cell), ∀ m : ℕ, CycleLiftsMod h m
 
@@ -46,11 +43,11 @@ variable {b : I → J → MonoidAlgebra ℤ G}
 
 /-- The index set of the requirements (2.2): a coefficient vector together with either `0`
 (the integral requirement) or a prime `p` (the requirement modulo `p`). -/
-abbrev ReqIndex (G : Type u) [Group G] (J : Type u) : Type u :=
+abbrev ReqIndex (G : Type u) [Group G] (J : Type u)  :=
   (J →₀ MonoidAlgebra ℤ G) × {m : ℕ // m = 0 ∨ m.Prime}
 
 /-- The requirement attached to an index. -/
-def SatIndex (b : I → J → MonoidAlgebra ℤ G) (N : Subgroup G) (vm : ReqIndex G J) : Prop :=
+def SatIndex (b : I → J → MonoidAlgebra ℤ G) (N : Subgroup G) (vm : ReqIndex G J)  :=
   FoxSatMod vm.2.1 b vm.1 N
 
 /-- **Steps 1–2 of Section 2, with the full family of requirements.**  Any finite family of
@@ -95,9 +92,9 @@ theorem exists_perfect_normal_foxSatMod (hchains : HasCellChainsLift b)
           (fun N hNmem => (hC N hNmem).2))
       M hMnormal hM
   haveI := hNnormal
-  have hmod : ∀ p : ℕ, p.Prime → ∀ v : J →₀ MonoidAlgebra ℤ G, FoxSatMod p b v N :=
+  have hmod  :=
     fun p hp v => hN (v, ⟨p, Or.inr hp⟩)
-  have hint : ∀ v : J →₀ MonoidAlgebra ℤ G, FoxSat b v N :=
+  have hint  :=
     fun v => (foxSatMod_zero_iff b v N).1 (hN (v, ⟨0, Or.inl rfl⟩))
   haveI := htf N hmod
   -- Lemma 2.1: the requirements pass to the commutator subgroup

@@ -1,21 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderUniversalPosetCells
-public import RequestProject.UnivCoverIncl
-
-@[expose] public section
+import RequestProject.OrderUniversalPosetCells
+import RequestProject.UnivCoverIncl
 
 /-! The cellular identification of the genuine universal-cover order complex. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
-theorem uOrderEdge_target (e : OrdEdge (UOrder P a)) :
-    uTgt (uOrderEdge e) = e.1.2 := e.2.2
+abbrev uOrderEdge_target (e : OrdEdge (UOrder P a))  :=
+  e.property.2
 
 theorem uOrderFace_att (t : OrdTri (UOrder P a)) :
     uAtt (uOrderFace t) = ((orderCx (UOrder P a)).att t).map
@@ -28,8 +24,7 @@ theorem uOrderFace_att (t : OrdTri (UOrder P a)) :
   have hback : extend (ordNeg (uOrderEnd_monotone (hvw.trans hwz))) z = v := by
     have h := extend_revGerm (c := (v : UV (orderCx P) a))
       (eb := ordPos (uOrderEnd_monotone (hvw.trans hwz))) rfl
-    change extend (ordNeg (uOrderEnd_monotone (hvw.trans hwz)))
-      (extend (ordPos (uOrderEnd_monotone (hvw.trans hwz))) v) = v at h
+    
     rwa [hvz'] at h
   change uLiftPath [ordPos (uOrderEnd_monotone hvw), ordPos (uOrderEnd_monotone hwz),
     ordNeg (uOrderEnd_monotone (hvw.trans hwz))] v =
@@ -37,7 +32,7 @@ theorem uOrderFace_att (t : OrdTri (UOrder P a)) :
         (uOrderEdge ⟨(v, z), hvw.trans hwz⟩, false)]
   rw [uLiftPath_cons rfl, hvw', uLiftPath_cons rfl, hwz', uLiftPath_cons rfl,
     uLiftPath_nil]
-  simp only [ordPos, ordNeg, liftGerm_true, liftGerm_false]
+  simp only [ordNeg, liftGerm_false]
   congr 1
   congr 1
   congr 1
@@ -71,7 +66,7 @@ theorem uOrderHom_cycle_iff (c : OrdTri (UOrder P a) →₀ ℤ) :
   constructor
   · intro h
     apply Finsupp.mapDomain_injective uOrderEdge_injective
-    change chain1 uOrderHom (bdry2 (orderCx (UOrder P a)) c) = Finsupp.mapDomain _ 0
+    
     rw [Finsupp.mapDomain_zero]
     exact h
   · intro h

@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalCWFixedPresentationComparison
-public import RequestProject.PresTopologicalPerfectCover
-public import RequestProject.TopologicalAcyclicCoverHomotopy
-
-@[expose] public section
+import RequestProject.ClassicalCWFixedPresentationComparison
+import RequestProject.PresTopologicalPerfectCover
+import RequestProject.TopologicalAcyclicCoverHomotopy
 
 /-! The original necessity direction, with one fixed presentation chosen
 before any chain length or ambient CW complex. The result is an actual
@@ -18,14 +16,14 @@ theorem hasAcyclicRegularCover_of_chains (K : TwoComplex)
     (h : ∀ n : ℕ, 1 ≤ n → HasChain K n false) : HasAcyclicRegularCover K := by
   let T := originalGraphTree K
   let w := fixedCanonicalWords K T
-  let hpos : ∀ j, 0 < (w j).length :=
+  let hpos  :=
     fun j => List.length_pos_iff.mpr (fixedCanonicalWords_ne_nil K T j)
   let L := coveredPresentationTwoComplex w hpos
-  have hL : HasAcyclicRegularCover L :=
+  have hL  :=
     coveredPresentation_hasAcyclicRegularCover_of_presChains w hpos
       (fixedRelators K T) (fixedCanonicalWords_mk K T)
       (fixedPresChainsFS_of_original_chains K T h)
-  let e : ContinuousMap.HomotopyEquiv K L := fixedCanonicalRealizationEquiv K T
+  let e  := fixedCanonicalRealizationEquiv K T
   exact hasAcyclicRegularCover_of_homotopyEquiv K L e hL
 
 end Whitehead

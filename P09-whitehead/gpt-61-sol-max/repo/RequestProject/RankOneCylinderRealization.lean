@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderConstructionPartialOrder
-public import RequestProject.OrderNerveContiguousHomotopy
-public import Mathlib.Topology.Homotopy.Equiv
-
-@[expose] public section
+import RequestProject.OrderConstructionPartialOrder
+import RequestProject.OrderNerveContiguousHomotopy
+import Mathlib.Topology.Homotopy.Equiv
 
 /-! An actual homotopy equivalence from the realization of a poset mapping
 cylinder to its base when the outer poset has height at most one. Collapsing
@@ -13,13 +11,11 @@ contiguous homotopies; pointwise order comparison is not mistaken for
 cross-comparability. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-open CategoryTheory
-open scoped unitInterval Topology Classical
+
+
 
 theorem orderNerveRealizationMap_congr {P Q : Type} [PartialOrder P] [PartialOrder Q]
     {f g : P → Q} (hf : Monotone f) (hg : Monotone g) (he : f = g)
@@ -54,21 +50,16 @@ theorem cylinderHalfCollapse_monotone : Monotone (cylinderHalfCollapse a d) := b
   rcases p with x | s <;> rcases q with y | t
   · exact hpq
   · exact hpq.elim
-  · change a s ≤ y at hpq
-    change CylP.le a (cylinderHalfCollapse a d (Sum.inr s)) (cylinderHalfCollapse a d (Sum.inl y))
-    by_cases hs : d s = 1 <;> simpa only [cylinderHalfCollapse, hs, ↓reduceIte, CylP.le] using hpq
+  · aesop (add simp [cylinderHalfCollapse])
   · change s ≤ t at hpq
     by_cases hs : d s = 1
-    · have he := rankOne_maximal d hd hd₁ hs hpq
-      subst t
-      exact le_rfl
+    · grind [rankOne_maximal]
     · by_cases ht : d t = 1
       · change ((if d s = 1 then Sum.inl (a s) else Sum.inr s) : CylP a) ≤
           (if d t = 1 then Sum.inl (a t) else Sum.inr t)
         rw [if_neg hs, if_pos ht]
         exact a.monotone hpq
-      · change CylP.le a (cylinderHalfCollapse a d (Sum.inr s)) (cylinderHalfCollapse a d (Sum.inr t))
-        simpa only [cylinderHalfCollapse, if_neg hs, if_neg ht, CylP.le] using hpq
+      aesop (add simp [cylinderHalfCollapse])
 
 include hd hd₁ in
 theorem cylinderHalfCollapse_cross :
@@ -82,7 +73,7 @@ theorem cylinderHalfCollapse_cross :
       rcases hpq with h | h
       · exact h.elim
       · exact Or.inr h
-    · simpa only [cylinderHalfCollapse, CylP.le, if_neg ht] using hpq
+    · simp_all [cylinderHalfCollapse]
   · exact hpq
   · by_cases ht : d t = 1
     · rw [cylinderHalfCollapse, if_pos ht]
@@ -91,7 +82,7 @@ theorem cylinderHalfCollapse_cross :
       · have he := rankOne_maximal d hd hd₁ ht h
         subst s
         exact Or.inl (le_refl (a t))
-    · simpa only [cylinderHalfCollapse, CylP.le, if_neg ht] using hpq
+    · simp_all [cylinderHalfCollapse]
 
 include hd hd₁ in
 theorem cylinderCollapse_half_cross :
@@ -105,13 +96,7 @@ theorem cylinderCollapse_half_cross :
     · exact h.elim
     · exact Or.inr h
   · rcases hpq with h | h
-    · by_cases hs : d s = 1
-      · change CylP.le a (cylinderHalfCollapse a d (Sum.inr s)) (cylCollapse a (Sum.inl y)) ∨
-          CylP.le a (cylCollapse a (Sum.inl y)) (cylinderHalfCollapse a d (Sum.inr s))
-        simpa only [cylinderHalfCollapse, if_pos hs, cylCollapse, cylRetr, cylIn, Sum.elim_inl, id_eq, CylP.le] using
-          (Or.inl h : a s ≤ y ∨ y ≤ a s)
-      · apply Or.inl
-        simpa only [cylinderHalfCollapse, CylP.le, if_neg hs, cylCollapse, cylRetr, cylIn, Sum.elim_inl, id_eq] using h
+    · classical aesop (add simp [CylP.le, cylinderHalfCollapse, cylCollapse, cylRetr, cylIn])
     · exact h.elim
   · by_cases hs : d s = 1
     · simp only [cylinderHalfCollapse, CylP.le, if_pos hs, cylCollapse, cylRetr, cylIn, Sum.elim_inl, id_eq]
@@ -169,10 +154,7 @@ def rankOneCylinderRealizationDeformation : ContinuousMap.Homotopy
         (orderNerveRealizationMap (cylCollapse a) (cylCollapse_monotone a)).hom.continuous⟩ :
           C(orderNerveRealization (CylP a), orderNerveRealization (CylP a))) =
       (cylinderRealizationInclusion a).comp (cylinderRealizationRetraction a) := by
-    apply ContinuousMap.ext
-    intro x
-    exact (orderNerveRealizationMap_comp (cylRetr a) (cylRetr_monotone a)
-      (cylIn a) (cylIn_monotone a) x).symm
+    solve_by_elim [ContinuousMap.ext, FiniteChains.Comb.orderNerveRealizationMap_comp, symm]
   exact (hzero ▸ hone ▸ H₀.trans H₁)
 
 def rankOneCylinderRealizationHomotopyEquiv :

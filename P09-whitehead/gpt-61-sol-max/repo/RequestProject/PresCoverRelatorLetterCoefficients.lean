@@ -1,18 +1,16 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CylinderCoverCollapsedLetterCoefficients
-public import RequestProject.PresCoverRelatorGeneratorBoundary
-
-@[expose] public section
+import RequestProject.CylinderCoverCollapsedLetterCoefficients
+import RequestProject.PresCoverRelatorGeneratorBoundary
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → PresPos w) (hf : IsPosetCover f)
 
+variable (p : PresCoverRelator w f)
 /-- The genuine cylinder projection of a lifted attaching circle is the actual outer circle. -/
-theorem presCoverCircleCylinderInclusion_projection (p : PresCoverRelator w f)
+theorem presCoverCircleCylinderInclusion_projection 
     (x : RelatorCircle w p.val.2) :
     coneAdjCoverBaseEnd f (presCoverCircleCylinderInclusion w f hf p x) =
       cylOuter (aHom w) x.val := by
@@ -21,14 +19,14 @@ theorem presCoverCircleCylinderInclusion_projection (p : PresCoverRelator w f)
     (presCoverConeCircleOrderIso_symm_projection w f hf p.val.1 p.val.2 p.property x)
 
 /-- Actual collapsed lifted-letter midpoints for a genuine lifted relator. -/
-noncomputable def presCoverRelatorLetterMidpoint (p : PresCoverRelator w f)
+noncomputable def presCoverRelatorLetterMidpoint 
     (k : Fin (w p.val.2).length) :=
   cylinderCoverCollapsedLetterMidpoint w p.val.2 (coneAdjCoverBaseEnd f)
     (coneAdjCoverBaseEnd_isPosetCover f hf) (presCoverCircleCylinderInclusion w f hf p)
       (presCoverCircleCylinderInclusion_projection w f hf p) k
 
 /-- The actual relator generator-boundary column is its signed actual lifted-letter sum. -/
-theorem presCoverRelatorGeneratorBoundary_single (p : PresCoverRelator w f) :
+theorem presCoverRelatorGeneratorBoundary_single  :
     presCoverRelatorGeneratorBoundary w f hf (Finsupp.single p 1) =
       ∑ k : Fin (w p.val.2).length,
         (if ((w p.val.2)[k.val]).2 then (1 : ℤ) else -1) •

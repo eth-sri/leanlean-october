@@ -1,33 +1,30 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeSquareSubdivision
-public import RequestProject.QCubeImmediateFaces
-
-@[expose] public section
+import RequestProject.QCubeSquareSubdivision
+import RequestProject.QCubeImmediateFaces
 
 /-! The eight actual nondegenerate vertex-edge-square flags of a square subdivision. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] {A : CommRel V}
 
-def squarePositiveFlag (c : QCube A) (a b : V) (hne : a ≠ b)
+  (c : QCube A)
+def squarePositiveFlag  (a b : V) (hne : a ≠ b)
     (hs : c.spx = {a, b}) (s : ZMod 2) : (strictOrderCx (QCube A)).F :=
   ⟨(cubePositiveVertex (qCubeFacet c a s), qCubeFacet c a s, c),
     cubePositiveVertex_lt _ b (by rw [squareFacet_w_spx c hne hs s]; simp),
     qCubeFacet_lt c a s (by rw [hs]; simp)⟩
 
-def squareNegativeFlag (c : QCube A) (a b : V) (hne : a ≠ b)
+def squareNegativeFlag  (a b : V) (hne : a ≠ b)
     (hs : c.spx = {a, b}) (s : ZMod 2) : (strictOrderCx (QCube A)).F :=
   ⟨(cubeNegativeVertex (qCubeFacet c a s) b, qCubeFacet c a s, c),
     cubeNegativeVertex_lt _ b (by rw [squareFacet_w_spx c hne hs s]; simp),
     qCubeFacet_lt c a s (by rw [hs]; simp)⟩
 
 /-- The actual cone filling is the signed sum of its eight genuine square flags. -/
-theorem cubeSquareSubdivision_flags (c : QCube A) (v w : V) (hne : v ≠ w)
+theorem cubeSquareSubdivision_flags  (v w : V) (hne : v ≠ w)
     (hs : c.spx = {v, w}) :
     cubeSquareSubdivision c v w hne hs =
       Finsupp.single (squareNegativeFlag c w v (Ne.symm hne)
@@ -46,7 +43,7 @@ theorem cubeSquareSubdivision_flags (c : QCube A) (v w : V) (hne : v ≠ w)
     strictTopConeEdgeChain, strictTopConeEdgeTriangle, squarePositiveFlag, squareNegativeFlag]
 
 /-- Every strict triangle with this square as its top cell is one of the eight actual flags. -/
-theorem squareFlags_exhaustive (c : QCube A) (v w : V) (hne : v ≠ w)
+theorem squareFlags_exhaustive  (v w : V) (hne : v ≠ w)
     (hs : c.spx = {v, w}) (t : (strictOrderCx (QCube A)).F) (ht : t.1.2.2 = c) :
     ∃ s : ZMod 2,
       t = squarePositiveFlag c v w hne hs s ∨

@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresPosetReading
-
-@[expose] public section
+import RequestProject.PresPosetReading
 
 /-!
 # The comparison with the model built on a prescribed choice of relator words
@@ -21,16 +19,13 @@ This file repeats the two halves of the comparison for such a prescribed `w`:
   the model being a left inverse.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace PresModel
+namespace FiniteChains.PresModel
+
 
 open Comb
 
-universe u
 
 variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
@@ -49,9 +44,7 @@ def alphaHomW : PresGroup ρ →* Pi1 (orderCx (PresPos w)) (ptBase w) :=
 @[simp] theorem alphaHomW_mk (x : FreeGroup α) :
     alphaHomW ρ w hw (QuotientGroup.mk x) = alphaFree w x := rfl
 
-theorem alphaHomW_gen (i : α) :
-    alphaHomW ρ w hw (QuotientGroup.mk (FreeGroup.of i)) = genClass w i := by
-  rw [alphaHomW_mk, alphaFree_of]
+
 
 /-- The reading homomorphism of the model with values in the presentation group. -/
 def readingPresW : Pi1 (orderCx (PresPos w)) (ptBase w) →* PresGroup ρ :=
@@ -72,17 +65,13 @@ theorem readingPresW_alphaHomW (x : PresGroup ρ) :
   | _ y =>
       have key : ((readingPresW ρ w hw).comp (alphaHomW ρ w hw)).comp
           (QuotientGroup.mk' (relSub ρ)) = QuotientGroup.mk' (relSub ρ) := by
-        refine FreeGroup.ext_hom _ _ fun i => ?_
-        show readingPresW ρ w hw (alphaHomW ρ w hw (QuotientGroup.mk (FreeGroup.of i)))
-          = QuotientGroup.mk (FreeGroup.of i)
-        rw [alphaHomW_gen]
-        exact reading_genClass _ _ _ i
+        aesop
       exact DFunLike.congr_fun key y
 
 /-- **The presentation group embeds into the fundamental group of the model built on the
 prescribed relator words.** -/
-theorem alphaHomW_injective : Function.Injective (alphaHomW ρ w hw) :=
-  Function.LeftInverse.injective (readingPresW_alphaHomW ρ w hw)
+abbrev alphaHomW_injective  :=
+  Function.LeftInverse.injective (FiniteChains.PresModel.readingPresW_alphaHomW ρ w hw)
 
-end PresModel
-end FiniteChains
+end FiniteChains.PresModel
+

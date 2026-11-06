@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.SurfaceLabel
-public import RequestProject.SurfaceFilling
-public import RequestProject.AttCycleLoop
-
-@[expose] public section
+import RequestProject.SurfaceLabel
+import RequestProject.SurfaceFilling
+import RequestProject.AttCycleLoop
 
 /-!
 # The boundary of the polygon reads the word
@@ -22,18 +20,15 @@ backtrackings which cancel, exactly the loop `letterLoop w (w j₀)[k]` of that 
   is the loop of the letter.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Davis
+
+namespace FiniteChains.Davis
+
 
 open RACG Mirror Comb PresModel Cell
 
-universe u
 
-section Reading
+section
 
 variable {α J : Type u} {w : J → List (α × Bool)} {j₀ : J}
   {κ ι : Type u} {M : ℕ} [NeZero M] [DecidableEq κ] [DecidableEq ι]
@@ -59,25 +54,26 @@ include hM hvlab helb
 
 /-! ### The values of the attaching map on the boundary -/
 
-theorem att_V (p : Fin M) :
+variable (p : Fin M)
+theorem att_V  :
     surfAtt hM hvlab helb hc (spx1 (cV hc p)) = iRose w (vertLab (w j₀) p.val) := by
   rw [surfAtt, nerveAtt_spx1]
   show iRose w (vlab (vc p)) = _
   rw [hvlab p]
 
-theorem att_E (p : Fin M) :
+theorem att_E  :
     surfAtt hM hvlab helb hc (spx1 (cE hc p)) = iRose w (edgeLab (w j₀) p.val) := by
   rw [surfAtt, nerveAtt_spx1]
   show iRose w (elb (ec p)) = _
   rw [helb p]
 
-theorem att_VE (p : Fin M) :
+theorem att_VE  :
     surfAtt hM hvlab helb hc (spx2 (cV_le_cE hc p)) = iRose w (edgeLab (w j₀) p.val) := by
   rw [surfAtt, nerveAtt_spx2]
   show iRose w (elb (ec p)) = _
   rw [helb p]
 
-theorem att_V1E (p : Fin M) :
+theorem att_V1E  :
     surfAtt hM hvlab helb hc (spx2 (cV1_le_cE hc p)) = iRose w (edgeLab (w j₀) p.val) := by
   rw [surfAtt, nerveAtt_spx2]
   show iRose w (elb (ec p)) = _
@@ -86,7 +82,7 @@ theorem att_V1E (p : Fin M) :
 /-! ### The image of one boundary edge -/
 
 /-- The image of the two-edge crossing of the boundary edge at `p`. -/
-theorem mapPath_bdEdge (p : Fin M)
+theorem mapPath_bdEdge 
     (h1 : iRose w (vertLab (w j₀) p.val) ≤ iRose w (edgeLab (w j₀) p.val))
     (h0 : iRose w (edgeLab (w j₀) p.val) ≤ iRose w (edgeLab (w j₀) p.val))
     (h2 : iRose w (vertLab (w j₀) (p + 1).val) ≤ iRose w (edgeLab (w j₀) p.val)) :
@@ -110,7 +106,7 @@ theorem mapPath_bdEdge (p : Fin M)
     (congrArg₂ List.cons c4 rfl)))
 
 /-- The two backtrackings in the image of a boundary edge cancel. -/
-theorem htpy_mapPath_bdEdge (p : Fin M) (rv rv' re : Rose α)
+theorem htpy_mapPath_bdEdge  (rv rv' re : Rose α)
     (hv : vertLab (w j₀) p.val = rv) (hv' : vertLab (w j₀) (p + 1).val = rv')
     (he : edgeLab (w j₀) p.val = re)
     (h1 : iRose w rv ≤ iRose w re) (h2 : iRose w rv' ≤ iRose w re) :
@@ -138,8 +134,8 @@ theorem htpy_mapPath_letter (k : ℕ) (hk : k < (w j₀).length) :
       (letterLoop w ((w j₀)[k]'hk)) := by
   classical
   set q : α × Bool := (w j₀)[k]'hk with hqdef
-  have hlen : M = 2 * (w j₀).length := hM
-  have hq : (w j₀)[k]? = some q := List.getElem?_eq_getElem hk
+  
+  have hq  := List.getElem?_eq_getElem hk
   -- the two positions of the letter
   have h2k : 2 * k < M := by omega
   have h2k1 : 2 * k + 1 < M := by omega
@@ -156,8 +152,7 @@ theorem htpy_mapPath_letter (k : ℕ) (hk : k < (w j₀).length) :
   have hedge0 : edgeLab (w j₀) (cyc M (2 * k)).val = Rose.edg q.1 (!q.2) := by
     rw [hv0, edgeLab_eq hq0, if_pos (by omega)]
   have hvert1 : vertLab (w j₀) (cyc M (2 * k) + 1).val = Rose.mid q.1 := by
-    rw [hsucc, hv1]
-    exact vertLab_of_odd (by omega) hq1
+    simp_all [FiniteChains.Davis.vertLab_of_odd]
   have hvert1' : vertLab (w j₀) (cyc M (2 * k + 1)).val = Rose.mid q.1 := by
     rw [hv1]; exact vertLab_of_odd (by omega) hq1
   have hedge1 : edgeLab (w j₀) (cyc M (2 * k + 1)).val = Rose.edg q.1 q.2 := by
@@ -165,12 +160,7 @@ theorem htpy_mapPath_letter (k : ℕ) (hk : k < (w j₀).length) :
   have hvert2 : vertLab (w j₀) (cyc M (2 * k + 1) + 1).val = Rose.base := by
     have hval : (cyc M (2 * k + 1) + 1).val = (2 * k + 2) % M := by
       rw [fin_succ_val, hv1]
-    rw [hval]
-    refine vertLab_of_even ?_
-    rcases Nat.lt_or_ge (2 * k + 2) M with hlt | hge
-    · rw [Nat.mod_eq_of_lt hlt]; omega
-    · have : 2 * k + 2 = M := by omega
-      rw [this, Nat.mod_self]
+    aesop
   -- the two halves of the letter
   have hA := htpy_mapPath_bdEdge hM hvlab helb hc (cyc M (2 * k)) Rose.base (Rose.mid q.1)
     (Rose.edg q.1 (!q.2)) hvert0 hvert1 hedge0
@@ -180,33 +170,11 @@ theorem htpy_mapPath_letter (k : ℕ) (hk : k < (w j₀).length) :
     (Rose.edg q.1 q.2) hvert1' hvert2 hedge1
     ((iRose_monotone w) (Rose.mid_le_edg q.1 q.2))
     ((iRose_monotone w) (Rose.base_le_edg q.1 q.2))
-  have e0 : (surfAtt hM hvlab helb hc) (spx1 (cV hc (cyc M (2 * k)))) = iRose w Rose.base := by
-    rw [att_V hM hvlab helb hc, hvert0]
-  have e1 : (surfAtt hM hvlab helb hc) (spx1 (cV hc (cyc M (2 * k) + 1)))
-      = iRose w (Rose.mid q.1) := by rw [att_V hM hvlab helb hc, hvert1]
-  have e1' : (surfAtt hM hvlab helb hc) (spx1 (cV hc (cyc M (2 * k + 1))))
-      = iRose w (Rose.mid q.1) := by rw [att_V hM hvlab helb hc, hvert1']
-  have e2 : (surfAtt hM hvlab helb hc) (spx1 (cV hc (cyc M (2 * k + 1) + 1)))
-      = iRose w Rose.base := by rw [att_V hM hvlab helb hc, hvert2]
-  have hpathA : IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt
-      (mapPath (orderCxMap (surfAtt hM hvlab helb hc) (surfAtt hM hvlab helb hc).monotone)
-        (bdEdge hc (cyc M (2 * k)))) (iRose w Rose.base) (iRose w (Rose.mid q.1)) := by
-    rw [← e0, ← e1]
-    exact isPath_mapPath
-      (orderCxMap (surfAtt hM hvlab helb hc) (surfAtt hM hvlab helb hc).monotone)
-      (isPath_bdEdge hc (cyc M (2 * k)))
-  have hpathB : IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt
-      (mapPath (orderCxMap (surfAtt hM hvlab helb hc) (surfAtt hM hvlab helb hc).monotone)
-        (bdEdge hc (cyc M (2 * k + 1)))) (iRose w (Rose.mid q.1)) (iRose w Rose.base) := by
-    rw [← e1', ← e2]
-    exact isPath_mapPath
-      (orderCxMap (surfAtt hM hvlab helb hc) (surfAtt hM hvlab helb hc).monotone)
-      (isPath_bdEdge hc (cyc M (2 * k + 1)))
-  have hcomb := Htpy.append_congr hpathA hpathB hA hB
-  rw [mapPath_append, letterLoop_eq' q]
-  simpa [PresModel.ptBase, PresModel.iRose] using hcomb
+  have hcomb := Htpy.append_congr (hA.symm.isPath ⟨rfl, rfl, rfl⟩)
+    (hB.symm.isPath ⟨rfl, rfl, rfl⟩) hA hB
+  simp_all [FiniteChains.Comb.Htpy, letterLoop_eq', PresModel.ptBase, PresModel.iRose]
 
-end Reading
+end
 
-end Davis
-end FiniteChains
+end FiniteChains.Davis
+

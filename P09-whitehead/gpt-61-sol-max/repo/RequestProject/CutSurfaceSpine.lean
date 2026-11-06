@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CollapseChainMap
-public import RequestProject.SpineCollapse
-
-@[expose] public section
+import RequestProject.CollapseChainMap
+import RequestProject.SpineCollapse
 
 /-!
 # Lemma 3.3 (iii) in the form used by the capping argument: the cut surface is the zero
@@ -37,7 +35,7 @@ variable {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
 
 /-- The cellular boundary of the three-cube `t` in the truncated complex, as a coefficient
 function on the codimension one faces used by the collapse (squares and cut cells). -/
-noncomputable def cubeBdry (t : Cube V) : Cube V ⊕ Finset V → ℤ :=
+noncomputable def cubeBdry (t : Cube V)  :=
   Sum.elim (fun g => bdry (fun f => if f = t then 1 else 0) g)
     (fun τ => cutSign τ * (if posCube τ = t then 1 else 0))
 
@@ -56,8 +54,7 @@ theorem update_free_injective {g : Cube V} {j k : V} (hj : g j ≠ CubeCoord.fre
     (h : Function.update g j CubeCoord.free = Function.update g k CubeCoord.free) : j = k := by
   by_contra hjk
   have hval := congrFun h j
-  rw [Function.update_apply, if_pos rfl, Function.update_apply, if_neg hjk] at hval
-  exact hj hval.symm
+  simp_all
 
 omit [DecidableEq V] in
 /-- The incidence number of a cube with a codimension one face is a unit. -/
@@ -71,30 +68,24 @@ theorem incid_eq_unit {g : Cube V} {j : V} (hj : g j ≠ CubeCoord.free) :
   rcases Nat.even_or_odd ((freeSet g).filter (fun i => i < j)).card with he | ho
   · rw [incid, he.neg_one_pow, one_mul]
     exact hs
-  · rw [incid, ho.neg_one_pow]
-    rcases hs with h | h <;> rw [h] <;> simp
+  · aesop (add simp [incid])
 
+variable {L : ASC V}
 /-- **The boundary of a three-cube on a square face is `±1` when the cube lies above that
 face.** -/
-theorem cubeBdry_inl_eq_unit {L : ASC V} {g t : Cube V} (ht : t ∈ cofaces L g) :
+theorem cubeBdry_inl_eq_unit  {g t : Cube V} (ht : t ∈ cofaces L g) :
     cubeBdry t (Sum.inl g) = 1 ∨ cubeBdry t (Sum.inl g) = -1 := by
   classical
   obtain ⟨j, hj, -, rfl⟩ := mem_cofaces.1 ht
   have hmem : j ∈ univ.filter (fun k => g k ≠ CubeCoord.free) := by simp [hj]
   rw [cubeBdry_inl, Finset.sum_eq_single j]
-  · rw [if_pos rfl, mul_one]
-    exact incid_eq_unit hj
-  · intro k hk hkj
-    have hk' : g k ≠ CubeCoord.free := by simpa using hk
-    rw [if_neg, mul_zero]
-    intro hcon
-    exact hkj (update_free_injective hk' hcon)
+  · simp_all [incid_eq_unit]
+  · grind [update_free_injective]
   · intro hcon; exact absurd hmem hcon
 
 /-- **A three-cube not lying above a square has zero boundary coefficient there.** -/
-theorem cubeBdry_inl_eq_zero {L : ASC V} {g t : Cube V} (htop : t ∈ topCubes L)
+theorem cubeBdry_inl_eq_zero  {g t : Cube V} (htop : t ∈ topCubes L)
     (ht : t ∉ cofaces L g) : cubeBdry t (Sum.inl g) = 0 := by
-  classical
   rw [cubeBdry_inl]
   refine Finset.sum_eq_zero fun j hj => ?_
   have hj' : g j ≠ CubeCoord.free := by simpa using hj
@@ -109,15 +100,12 @@ theorem cubeBdry_inl_eq_zero {L : ASC V} {g t : Cube V} (htop : t ∈ topCubes L
 
 /-- **The boundary of the truncated corner cube over a triangle on its cut face is `-1`.** -/
 theorem cubeBdry_inr_eq_neg_one {τ : Finset V} (hτ : τ.card = 3) :
-    cubeBdry (posCube τ) (Sum.inr τ) = -1 := by
-  rw [cubeBdry_inr, if_pos rfl, mul_one, cutSign, hτ]
-  norm_num
+    cubeBdry (posCube τ) (Sum.inr τ) = -1 := by simp_all [cubeBdry_inr, cutSign]
 
 /-- A three-cube other than the truncated corner cube over `τ` has zero coefficient on the
 cut face of `τ`. -/
 theorem cubeBdry_inr_eq_zero {t : Cube V} {τ : Finset V} (h : t ≠ posCube τ) :
-    cubeBdry t (Sum.inr τ) = 0 := by
-  rw [cubeBdry_inr, if_neg (Ne.symm h), mul_zero]
+    cubeBdry t (Sum.inr τ) = 0 := by aesop (add simp [cubeBdry_inr, mul_zero])
 
 /-! ### From a combinatorial collapse to a chain collapse -/
 
@@ -134,7 +122,7 @@ theorem Collapse.mem_list_of_isCollapse {T F : Type*} [DecidableEq T] {inc : F �
       intro t ht
       by_cases htu : t = u
       · exact htu ▸ List.mem_cons_self
-      · exact List.mem_cons_of_mem _ (ih hrest t (Finset.mem_erase.2 ⟨htu, ht⟩))
+      · aesop
 
 /-! ### The boundary of a three-chain, cell by cell -/
 
@@ -157,19 +145,10 @@ theorem bdryT_eq_sum {c : Cube V → ℤ} {S : Finset (Cube V)} (hc : ∀ t, c t
         have : ∀ t ∈ S, c t * (incid g j * if Function.update g j CubeCoord.free = t then 1
             else 0) = if t = Function.update g j CubeCoord.free then
               c t * incid g j else 0 := by
-          intro t _
-          by_cases htj : t = Function.update g j CubeCoord.free
-          · subst htj; simp
-          · rw [if_neg htj, if_neg (fun hcon => htj hcon.symm), mul_zero, mul_zero]
+          aesop
         rw [Finset.sum_congr rfl this, Finset.sum_ite_eq' S
           (Function.update g j CubeCoord.free) (fun t => c t * incid g j)]
-        by_cases hmem : Function.update g j CubeCoord.free ∈ S
-        · rw [if_pos hmem, mul_comm]
-        · rw [if_neg hmem]
-          have : c (Function.update g j CubeCoord.free) = 0 := by
-            by_contra hcon
-            exact hmem (hc _ hcon)
-          rw [this, mul_zero]
+        grind
       rw [hswap]
   | inr τ =>
       show cutSign τ * c (posCube τ) + simpBdry 0 τ = _
@@ -177,20 +156,12 @@ theorem bdryT_eq_sum {c : Cube V → ℤ} {S : Finset (Cube V)} (hc : ∀ t, c t
       rw [hz, add_zero]
       have : ∀ t ∈ S, c t * cubeBdry t (Sum.inr τ)
           = if t = posCube τ then cutSign τ * c t else 0 := by
-        intro t _
-        rw [cubeBdry_inr]
-        by_cases htp : t = posCube τ
-        · subst htp; ring_nf; simp
-        · rw [if_neg (fun hcon => htp hcon.symm), if_neg htp, mul_zero, mul_zero]
+        grind [cubeBdry_inr]
       rw [Finset.sum_congr rfl this,
         Finset.sum_ite_eq' S (posCube τ) (fun t => cutSign τ * c t)]
       by_cases hmem : posCube τ ∈ S
       · rw [if_pos hmem]
-      · rw [if_neg hmem]
-        have : c (posCube τ) = 0 := by
-          by_contra hcon
-          exact hmem (hc _ hcon)
-        rw [this, mul_zero]
+      · grind
 
 /-! ### Lemma 3.3 (iii) after the collapse -/
 
@@ -200,7 +171,7 @@ oriented triangulated closed surface `L`, so that the cut surface of the truncat
 after the collapse of all three-cubes of `M` — the collapse of Lemma 3.3 (ii) — the cellular
 chain of the cut surface is zero.  This is Lemma 3.3 (iii) in the form used by the capping
 argument of (B3): the image of `[Σ_q]` in the two-dimensional spine is the zero chain. -/
-theorem cutSurface_cmap_eq_zero {L : ASC V} {o : Finset V → ℤ} (hcyc : simpBdry o = 0)
+theorem cutSurface_cmap_eq_zero  {o : Finset V → ℤ} (hcyc : simpBdry o = 0)
     (hsupp : ∀ σ : Finset V, σ.card ≠ 3 → o σ = 0)
     (hfaces : ∀ σ : Finset V, σ ∉ L.faces → o σ = 0)
     {l : List (Cube V)} (hl : Collapse.IsCollapse (spineInc L) l (topCubes L))
@@ -212,10 +183,8 @@ theorem cutSurface_cmap_eq_zero {L : ASC V} {o : Finset V → ℤ} (hcyc : simpB
     intro t ht
     rw [mem_topCubes]
     refine ⟨?_, ?_⟩
-    · by_contra hcon
-      exact ht (by simp [cubeChain, hfaces _ hcon])
-    · by_contra hcon
-      exact ht (by simp [cubeChain, hsupp _ hcon])
+    · classical grind [cubeChain]
+    · classical grind [cubeChain]
   have hx : ∀ f : Cube V ⊕ Finset V,
       Sum.elim (0 : Cube V → ℤ) (fun τ => -o τ) f
         = ∑ t ∈ topCubes L, cubeChain o t * cubeBdry t f := by
@@ -226,7 +195,7 @@ theorem cutSurface_cmap_eq_zero {L : ASC V} {o : Finset V → ℤ} (hcyc : simpB
     | inr τ => rfl
   have hsub : ∀ t ∈ topCubes L, ∃ f, (t, f) ∈ lp := by
     intro t ht
-    have htl : t ∈ l := Collapse.mem_list_of_isCollapse hl t ht
+    have htl  := Collapse.mem_list_of_isCollapse hl t ht
     rw [← hmap] at htl
     obtain ⟨p, hp, hp1⟩ := List.mem_map.1 htl
     exact ⟨p.2, by rw [← hp1]; simpa using hp⟩

@@ -1,17 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SquareSingularChains
-public import RequestProject.TopologicalSingular.RelativeSingularPrism
-public import RequestProject.TopologicalCoverPi2
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SquareSingularChains
+import RequestProject.TopologicalSingular.RelativeSingularPrism
+import RequestProject.TopologicalCoverPi2
 
 namespace FiniteChains.SingularPrism
 open TopologicalSingular
 open scoped unitInterval
-universe u v
 variable {X : Type u} {Y : Type v} [TopologicalSpace X] [TopologicalSpace Y]
-variable {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g)
+  {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g)
 
 theorem prism_one_single_eq_zero_of_constant (tau : Simplex X 1) (r : ℤ) (y : Y)
     (h : ∀ t : I, ∀ z, H (t, tau z) = y) : prism H 1 (Finsupp.single tau r) = 0 := by
@@ -20,7 +17,7 @@ theorem prism_one_single_eq_zero_of_constant (tau : Simplex X 1) (r : ℤ) (y : 
     intro z
     exact h _ _
   rw [prism_single, altSum, Fin.sum_univ_two]
-  simp only [hs, Fin.val_zero, Fin.val_one, pow_zero, pow_one, one_smul, neg_smul]
+  simp only [hs, Fin.val_zero, Fin.val_one, pow_zero, pow_one, neg_smul]
   exact add_neg_cancel _
 
 theorem prism_one_eq_zero_of_constant_on (A : Set X) (y : Y)
@@ -37,8 +34,7 @@ theorem prism_one_eq_zero_of_constant_on (A : Set X) (y : Y)
 end FiniteChains.SingularPrism
 
 namespace FiniteChains.TopologicalSingular
-open scoped unitInterval Topology
-universe u
+
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
 /-- An actual homotopy relative to the square boundary gives an explicit

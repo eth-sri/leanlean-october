@@ -1,34 +1,30 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveRealizationCW
-
-@[expose] public section
+import RequestProject.OrderNerveRealizationCW
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
 
+variable {P : Type}
 /-- The canonical actual realization point of a poset vertex. -/
-noncomputable def orderNerveRealizationVertex {P : Type} [PartialOrder P] (p : P) :
-    orderNerveRealization P :=
+noncomputable def orderNerveRealizationVertex  [PartialOrder P] (p : P)  :=
   orderNerveRealizationSimplex P (n := ⦋0⦌) (ComposableArrows.mk₀ p) default
 
 /-- Every vertex of a simplex belongs to its actual canonical image. -/
-theorem orderNerveRealizationVertex_mem_simplex {P : Type} [PartialOrder P]
+theorem orderNerveRealizationVertex_mem_simplex  [PartialOrder P]
     {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n)) (i : Fin (n.len + 1)) :
     ∃ z : SimplexCategory.toTop.obj n,
       orderNerveRealizationSimplex P s z = orderNerveRealizationVertex (s.obj i) := by
   let a : ⦋0⦌ ⟶ n := SimplexCategory.mkHom (OrderHom.const _ i)
   refine ⟨SimplexCategory.toTop.map a default, ?_⟩
   have h := congrArg (fun k => k default) (orderNerveRealizationSimplex_operator P a s)
-  change orderNerveRealizationSimplex P s (SimplexCategory.toTop.map a default) =
-    orderNerveRealizationSimplex P ((nerve P).map a.op s) default at h
-  have hs : (nerve P).map a.op s = ComposableArrows.mk₀ (s.obj i) := by
-    exact CategoryTheory.Functor.ext (fun _ => rfl)
+  
+  have hs : (nerve P).map a.op s = ComposableArrows.mk₀ (s.obj i) := CategoryTheory.Functor.ext (fun _ => rfl)
   rw [hs] at h
   exact h
 
 /-- Every actual simplex point is joined by a continuous path to each of its vertices. -/
-theorem orderNerveRealizationSimplex_joined_vertex {P : Type} [PartialOrder P]
+theorem orderNerveRealizationSimplex_joined_vertex  [PartialOrder P]
     {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n))
     (z : SimplexCategory.toTop.obj n) (i : Fin (n.len + 1)) :
     Joined (orderNerveRealizationSimplex P s z) (orderNerveRealizationVertex (s.obj i)) := by
@@ -40,22 +36,22 @@ theorem orderNerveRealizationSimplex_joined_vertex {P : Type} [PartialOrder P]
   exact h
 
 /-- Comparable poset vertices are joined in the actual realization. -/
-theorem orderNerveRealizationVertex_joined_of_le {P : Type} [PartialOrder P]
-    {p q : P} (h : p ≤ q) : Joined (orderNerveRealizationVertex p) (orderNerveRealizationVertex q) := by
-  let s := ComposableArrows.mk₁ (homOfLE h)
-  let z : SimplexCategory.toTop.obj ⦋1⦌ := Classical.choice inferInstance
-  have hp := orderNerveRealizationSimplex_joined_vertex s z (0 : Fin 2)
-  have hq := orderNerveRealizationSimplex_joined_vertex s z (1 : Fin 2)
-  exact hp.symm.trans hq
+abbrev orderNerveRealizationVertex_joined_of_le  [PartialOrder P]
+    {p q : P} (h : p ≤ q)  :=
+  let s := CategoryTheory.ComposableArrows.mk₁ (CategoryTheory.homOfLE h);
+  let z := Classical.choice inferInstance;
+  have hp := FiniteChains.Comb.orderNerveRealizationSimplex_joined_vertex s z 0;
+  have hq := FiniteChains.Comb.orderNerveRealizationSimplex_joined_vertex s z 1;
+  Joined.trans (Joined.symm hp) hq
 
 /-- Actual realization vertices joined by a combinatorial edge path are topologically joined. -/
-theorem orderNerveRealizationVertex_joined_of_isPath {P : Type} [PartialOrder P]
+theorem orderNerveRealizationVertex_joined_of_isPath  [PartialOrder P]
     {a b : P} {p : List (OrdEdge P × Bool)}
     (hp : IsPath (orderCx P).src (orderCx P).tgt p a b) :
     Joined (orderNerveRealizationVertex a) (orderNerveRealizationVertex b) := by
   induction p generalizing a with
   | nil =>
-    change a = b at hp
+    
     subst b
     exact Joined.refl _
   | cons e p ih =>

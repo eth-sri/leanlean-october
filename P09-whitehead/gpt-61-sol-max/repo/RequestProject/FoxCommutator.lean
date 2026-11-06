@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib
-public import RequestProject.FoxRequirement
-public import RequestProject.BoundaryRing
-
-@[expose] public section
+import Mathlib
+import RequestProject.FoxRequirement
+import RequestProject.BoundaryRing
 
 /-!
 # The requirements pass to the commutator subgroup (Lemma 2.1 in the paper's application)
@@ -20,56 +18,49 @@ of `RequestProject/LemmaTwoOne.lean`.
 
 open scoped commutatorElement
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
-open MonoidAlgebra
+
 
 variable {G : Type*} [Group G] {I J : Type*}
 
 /-- Coefficientwise reduction of a vector over `ℤ[G]` to a vector over `ℤ[G/M]`. -/
-noncomputable def redVec (M : Subgroup G) [M.Normal] (v : J →₀ MonoidAlgebra ℤ G) :
-    J →₀ MonoidAlgebra ℤ (G ⧸ M) :=
-  redVecK ℤ M v
+noncomputable def redVec.{eta_u0, eta_u1} :=
+  @FiniteChains.redVecK.{0, eta_u0, eta_u1} Int Int.instCommRing
 
-@[simp] theorem redVec_apply (M : Subgroup G) [M.Normal] (v : J →₀ MonoidAlgebra ℤ G) (j : J) :
+variable (M : Subgroup G)
+@[simp] theorem redVec_apply  [M.Normal] (v : J →₀ MonoidAlgebra ℤ G) (j : J) :
     redVec M v j = quotRingHom ℤ M (v j) := rfl
 
-/-- The `j`-th column of the reduced boundary matrix. -/
-noncomputable def boundaryCol (b : I → J → MonoidAlgebra ℤ G)
-    (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal] (j : J) :
-    I →₀ MonoidAlgebra ℤ (G ⧸ M) :=
-  boundaryColK ℤ b hcol M j
 
-@[simp] theorem boundaryCol_apply (b : I → J → MonoidAlgebra ℤ G)
-    (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal] (j : J) (i : I) :
-    boundaryCol b hcol M j i = quotRingHom ℤ M (b i j) := rfl
+
+
 
 /-- The Fox boundary `∂_{2,M}` as a map of free left `ℤ[G/M]`-modules. -/
-noncomputable def boundaryMap (b : I → J → MonoidAlgebra ℤ G)
-    (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal] :
-    (J →₀ MonoidAlgebra ℤ (G ⧸ M)) →ₗ[MonoidAlgebra ℤ (G ⧸ M)]
-      (I →₀ MonoidAlgebra ℤ (G ⧸ M)) :=
-  boundaryMapK ℤ b hcol M
+noncomputable def boundaryMap.{eta_u0, eta_u1, eta_u2} :=
+  @FiniteChains.boundaryMapK.{0, eta_u0, eta_u1, eta_u2} Int Int.instCommRing
 
-theorem boundaryMap_apply_coord (b : I → J → MonoidAlgebra ℤ G)
-    (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal]
+variable (b : I → J → MonoidAlgebra ℤ G)
+  (hcol : ∀ j, {i | b i j ≠ 0}.Finite)
+include hcol in
+theorem boundaryMap_apply_coord 
+     (M : Subgroup G) [M.Normal]
     (u : J →₀ MonoidAlgebra ℤ (G ⧸ M)) (i : I) :
     boundaryMap b hcol M u i = ∑ j ∈ u.support, u j * quotRingHom ℤ M (b i j) :=
   boundaryMapK_apply_coord b hcol M u i
 
-theorem boundaryMap_redVec (b : I → J → MonoidAlgebra ℤ G)
-    (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal]
+include hcol in
+theorem boundaryMap_redVec 
+     (M : Subgroup G) [M.Normal]
     (v : J →₀ MonoidAlgebra ℤ G) (i : I) :
     boundaryMap b hcol M (redVec M v) i = quotRingHom ℤ M (foxBoundary b v i) :=
   boundaryMapK_redVecK b hcol M v i
 
 /-- Reduction of `x ∈ ℤ[G]` vanishes exactly when, inside every coset of `M`, the
 coefficients of `x` add up to zero. -/
-theorem vanishesMod_iff_quotRingHom_eq_zero (M : Subgroup G) [M.Normal] (x : MonoidAlgebra ℤ G) :
+theorem vanishesMod_iff_quotRingHom_eq_zero  [M.Normal] (x : MonoidAlgebra ℤ G) :
     VanishesMod M x.coeff ↔ quotRingHom ℤ M x = 0 := by
   classical
   have hval : ∀ g : G, (quotRingHom ℤ M x).coeff ((g : G ⧸ M)) =
@@ -103,13 +94,14 @@ theorem vanishesMod_iff_quotRingHom_eq_zero (M : Subgroup G) [M.Normal] (x : Mon
     simp
 
 /-- Every vector over `ℤ[G/M]` lifts to a vector over `ℤ[G]`. -/
-theorem exists_lift (M : Subgroup G) [M.Normal] (u : J →₀ MonoidAlgebra ℤ (G ⧸ M)) :
+theorem exists_lift  [M.Normal] (u : J →₀ MonoidAlgebra ℤ (G ⧸ M)) :
     ∃ v : J →₀ MonoidAlgebra ℤ G, redVec M v = u := exists_liftK M u
 
+include hcol in
 /-- The requirements attached to all coefficient vectors hold at `M` exactly when the
 reduced boundary map is injective. -/
-theorem forall_foxSat_iff_injective (b : I → J → MonoidAlgebra ℤ G)
-    (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal] :
+theorem forall_foxSat_iff_injective 
+     (M : Subgroup G) [M.Normal] :
     (∀ v : J →₀ MonoidAlgebra ℤ G, FoxSat b v M) ↔
       Function.Injective (boundaryMap b hcol M) := by
   classical
@@ -129,9 +121,7 @@ theorem forall_foxSat_iff_injective (b : I → J → MonoidAlgebra ℤ G)
   · intro h v hbd j
     rw [vanishesMod_iff_quotRingHom_eq_zero]
     have hu : boundaryMap b hcol M (redVec M v) = 0 := by
-      refine Finsupp.ext fun i => ?_
-      rw [boundaryMap_redVec, Finsupp.coe_zero, Pi.zero_apply]
-      exact (vanishesMod_iff_quotRingHom_eq_zero M _).1 (hbd i)
+      classical grind [boundaryMap_redVec, vanishesMod_iff_quotRingHom_eq_zero]
     have hz : redVec M v = 0 := h (by rw [hu, map_zero])
     have := congrArg (fun w : J →₀ MonoidAlgebra ℤ (G ⧸ M) => w j) hz
     simpa using this
@@ -140,14 +130,10 @@ theorem forall_foxSat_iff_injective (b : I → J → MonoidAlgebra ℤ G)
 with `N/C` torsion-free abelian, then injectivity of the boundary reduced modulo `N`
 implies injectivity of the boundary reduced modulo `C`.  This is the case `k = ℤ` of
 `FiniteChains.injective_boundaryMapK_of_injective`. -/
-theorem injective_boundaryMap_of_injective (b : I → J → MonoidAlgebra ℤ G)
-    (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (C N : Subgroup G) [C.Normal] [N.Normal]
-    (hCN : C ≤ N)
-    [IsMulCommutative (N.map (QuotientGroup.mk' C))]
-    [IsMulTorsionFree (N.map (QuotientGroup.mk' C))]
-    (h : Function.Injective (boundaryMap b hcol N)) :
-    Function.Injective (boundaryMap b hcol C) :=
-  injective_boundaryMapK_of_injective b hcol C N hCN h
+abbrev injective_boundaryMap_of_injective.{eta_u0, eta_u1, eta_u2} :=
+  fun {G : Type eta_u0} [inst : Group.{eta_u0} G] {I : Type eta_u1} {J : Type eta_u2} =>
+    @FiniteChains.injective_boundaryMapK_of_injective.{0, eta_u0, eta_u1, eta_u2} Int Int.instCommRing G inst I J
+      Int.instIsDomain
 
 /-- The image of `N` in `G/[N,N]`, that is `N/[N,N]`, is abelian. -/
 instance isMulCommutative_map_commutator (N : Subgroup G) [N.Normal] :
@@ -166,15 +152,16 @@ instance isMulCommutative_map_commutator (N : Subgroup G) [N.Normal] :
   rw [hgr]
   exact Subgroup.commutator_mem_commutator (N.inv_mem hm) (N.inv_mem hn)
 
+include hcol in
 /-- **The requirements pass to the commutator subgroup.**  If every requirement (2.2) holds
 for the normal subgroup `N` and `N/[N,N]` is torsion free, then every requirement holds for
 `[N,N]`. -/
-theorem foxSat_commutator (b : I → J → MonoidAlgebra ℤ G)
-    (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (N : Subgroup G) [N.Normal]
+theorem foxSat_commutator 
+     (N : Subgroup G) [N.Normal]
     [IsMulTorsionFree (N.map (QuotientGroup.mk' ⁅N, N⁆))]
     (h : ∀ v : J →₀ MonoidAlgebra ℤ G, FoxSat b v N) :
     ∀ v : J →₀ MonoidAlgebra ℤ G, FoxSat b v ⁅N, N⁆ := by
-  have hle : ⁅N, N⁆ ≤ N := Subgroup.commutator_le_left N N
+  have hle  := Subgroup.commutator_le_left N N
   rw [forall_foxSat_iff_injective b hcol]
   exact injective_boundaryMap_of_injective b hcol ⁅N, N⁆ N hle
     ((forall_foxSat_iff_injective b hcol N).1 h)

@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib
-public import RequestProject.GroupRingReduction
-public import RequestProject.QuotientInjectivity
-public import RequestProject.TorsionFreeGroupRing
-
-@[expose] public section
+import Mathlib
+import RequestProject.GroupRingReduction
+import RequestProject.QuotientInjectivity
+import RequestProject.TorsionFreeGroupRing
 
 /-!
 # Lemma 2.1: injectivity detected by the quotient `Q → Q/H`
@@ -28,8 +26,6 @@ is the commutative-algebra core proved in
 `RequestProject/QuotientInjectivity.lean`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxHeartbeats 800000
@@ -43,8 +39,7 @@ open MonoidAlgebra
 variable (k : Type*) [CommRing k] {Q : Type*} [Group Q] (H : Subgroup Q)
 
 /-- Coefficientwise reduction of a vector over `k[Q]` to a vector over `k[Q/H]`. -/
-noncomputable def reduceVecQ [H.Normal] {ι : Type*} (u : ι →₀ MonoidAlgebra k Q) :
-    ι →₀ MonoidAlgebra k (Q ⧸ H) :=
+noncomputable def reduceVecQ [H.Normal] {ι : Type*} (u : ι →₀ MonoidAlgebra k Q)  :=
   Finsupp.mapRange (quotRingHom k H) (map_zero _) u
 
 /-- The reduction along `k[Q] → k[Q/H]` of a map of free left `k[Q]`-modules: the map given
@@ -63,8 +58,7 @@ variable {k H}
 theorem reduceVecQ_smul [H.Normal] {ι : Type*} (x : MonoidAlgebra k Q)
     (u : ι →₀ MonoidAlgebra k Q) :
     reduceVecQ k H (x • u) = quotRingHom k H x • reduceVecQ k H u := by
-  ext i
-  simp [reduceVecQ, Finsupp.smul_apply, smul_eq_mul]
+  aesop
 
 theorem reduceLinQ_single [H.Normal] {ι κ : Type*}
     (f : (ι →₀ MonoidAlgebra k Q) →ₗ[MonoidAlgebra k Q] (κ →₀ MonoidAlgebra k Q))
@@ -84,8 +78,7 @@ noncomputable def restrictToH [IsMulCommutative H] {ι κ : Type*}
   toFun := f
   map_add' := f.map_add
   map_smul' r u := by
-    rw [smul_vec_eq (H := H) r u, f.map_smul, ← smul_vec_eq (H := H)]
-    rfl
+    simp_all [smul_vec_eq]
 
 variable (H) in
 @[simp] theorem restrictToH_apply [IsMulCommutative H] {ι κ : Type*}
@@ -101,13 +94,7 @@ theorem cosetQuotEquiv_cosetRep [H.Normal] (c : RightCosets H) :
 theorem cosetBasis_repr_cosetRep [IsMulCommutative H] (c : RightCosets H) :
     (cosetBasis (k := k) (H := H)).repr (single (cosetRep H c) (1 : k)) =
       Finsupp.single c (1 : MonoidAlgebra k H) := by
-  rw [cosetBasis_repr_single (k := k) (H := H)]
-  have hc : Quotient.mk (QuotientGroup.rightRel H) (cosetRep H c) = c := Quotient.out_eq c
-  simp only [hc]
-  congr 1
-  have hone : (⟨cosetRep H c * (cosetRep H c)⁻¹, by simp⟩ : H) = 1 := Subtype.ext (by simp)
-  rw [hone]
-  rfl
+  classical aesop (add simp [cosetBasis_repr_single, cosetRep])
 
 theorem vecCoords_symm_single [IsMulCommutative H] {ι : Type*} (i : ι) (c : RightCosets H) :
     (vecCoords k H ι).symm (Finsupp.single (i, c) 1) =
@@ -118,35 +105,21 @@ theorem vecCoords_symm_single [IsMulCommutative H] {ι : Type*} (i : ι) (c : Ri
   rintro ⟨i', c'⟩
   rw [vecCoords_apply]
   by_cases hi : i' = i
-  · subst hi
-    rw [Finsupp.single_eq_same, cosetBasis_repr_cosetRep, Finsupp.single_apply,
-      Finsupp.single_apply]
-    simp [Prod.ext_iff]
-  · have h0 : (Finsupp.single i (single (cosetRep H c) (1 : k)) : ι →₀ MonoidAlgebra k Q) i' = 0 :=
-      Finsupp.single_eq_of_ne hi
-    rw [h0, map_zero, Finsupp.coe_zero, Pi.zero_apply, Finsupp.single_apply,
-      if_neg (fun hcon => hi (congrArg Prod.fst hcon).symm)]
+  · simp_all [cosetBasis_repr_cosetRep, Finsupp.single_apply]
+  · simp_all
 
 theorem redCoords_symm_single [H.Normal] {ι : Type*} (i : ι) (c : RightCosets H) (a : k) :
     (redCoords k H ι).symm (Finsupp.single (i, c) a) =
       Finsupp.single i (single (cosetQuotEquiv H c) a) := by
-  classical
   rw [LinearEquiv.symm_apply_eq]
   refine Finsupp.ext ?_
   rintro ⟨i', c'⟩
   rw [redCoords_apply]
   by_cases hi : i' = i
-  · subst hi
-    rw [Finsupp.single_eq_same, MonoidAlgebra.coeff_single, Finsupp.single_apply, Finsupp.single_apply]
-    have hiff : ((cosetQuotEquiv H) c = (cosetQuotEquiv H) c') ↔ ((i', c) = (i', c')) := by
-      simp [Prod.ext_iff, (cosetQuotEquiv H).injective.eq_iff]
-    simp [hiff]
-  · have h0 : (Finsupp.single i (single (cosetQuotEquiv H c) a) :
-        ι →₀ MonoidAlgebra k (Q ⧸ H)) i' = 0 := Finsupp.single_eq_of_ne hi
-    rw [h0, Finsupp.single_apply, if_neg (fun hcon => hi (congrArg Prod.fst hcon).symm)]
-    rfl
+  · classical simp_all [Finsupp.single_apply]
+  · simp_all
 
-section Main
+section
 
 variable [IsDomain k] [H.Normal] [IsMulCommutative H] [IsMulTorsionFree H]
 
@@ -157,7 +130,7 @@ theorem injective_of_reduceLinQ_injective {ι κ : Type*}
     (f : (ι →₀ MonoidAlgebra k Q) →ₗ[MonoidAlgebra k Q] (κ →₀ MonoidAlgebra k Q))
     (hred : Function.Injective (reduceLinQ k H f)) : Function.Injective f := by
   classical
-  haveI : IsDomain (MonoidAlgebra k H) := monoidAlgebra_isDomain k H
+  haveI  := monoidAlgebra_isDomain k H
   -- `f` written in the `k[H]`-basis of coset representatives
   set F : ((ι × RightCosets H) →₀ MonoidAlgebra k H) →ₗ[MonoidAlgebra k H]
       ((κ × RightCosets H) →₀ MonoidAlgebra k H) :=
@@ -177,8 +150,7 @@ theorem injective_of_reduceLinQ_injective {ι κ : Type*}
         have hsingle : (Finsupp.single i (single (cosetRep H c) (1 : k)) :
             ι →₀ MonoidAlgebra k Q) =
             (single (cosetRep H c) (1 : k) : MonoidAlgebra k Q) • Finsupp.single i 1 := by
-          ext j
-          by_cases hj : j = i <;> simp [hj, Finsupp.single_apply]
+          simp_all
         rw [hsingle, f.map_smul]
         -- pass to the reduced side
         rw [show (reduceVec (augH k H)
@@ -194,17 +166,12 @@ theorem injective_of_reduceLinQ_injective {ι κ : Type*}
         congr 1
         simp
   have hFinj : Function.Injective (reduceMap (augH k H) F) := by
-    have hfun : (reduceMap (augH k H) F : _ → _) =
-        (redCoords k H κ) ∘ (reduceLinQ k H f) ∘ (redCoords k H ι).symm := funext hsquare
+    have hfun  := funext hsquare
     rw [hfun]
     exact (redCoords k H κ).injective.comp (hred.comp (redCoords k H ι).symm.injective)
-  have hFinj' : Function.Injective F := injective_of_reduceMap_injective (augH k H) F hFinj
-  intro u v huv
-  have h1 : F (vecCoords k H ι u) = F (vecCoords k H ι v) := by
-    simp only [hF, LinearMap.comp_apply, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply,
-      restrictToH_apply, huv]
-  exact (vecCoords k H ι).injective (hFinj' h1)
+  have hFinj'  := injective_of_reduceMap_injective (augH k H) F hFinj
+  aesop
 
-end Main
+end
 
 end FiniteChains

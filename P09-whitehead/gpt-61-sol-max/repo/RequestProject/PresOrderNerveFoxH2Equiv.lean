@@ -1,3 +1,2 @@
-module
-public import RequestProject.OrderUniversalH2Equiv
-public import RequestProject.PresUniversalFoxHomologyEquiv
+import RequestProject.OrderUniversalH2Equiv
+import RequestProject.PresUniversalFoxHomologyEquiv

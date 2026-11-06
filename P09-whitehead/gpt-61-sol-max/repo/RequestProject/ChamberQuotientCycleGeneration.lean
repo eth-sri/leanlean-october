@@ -1,25 +1,21 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberZUniversalCycleGeneration
-public import RequestProject.UniversalCoverCoverMap
-public import RequestProject.UniversalOrderThreeNaturality
-public import RequestProject.ChamberQuotientCover
-public import RequestProject.StrictChamberInjection
-
-@[expose] public section
+import RequestProject.ChamberZUniversalCycleGeneration
+import RequestProject.UniversalCoverCoverMap
+import RequestProject.UniversalOrderThreeNaturality
+import RequestProject.ChamberQuotientCover
+import RequestProject.StrictChamberInjection
 
 /-! Genuine universal-cover two-cycle generation in the quotient chamber model. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] [Nonempty X] {att : NeSpx A →o X}
 
-def InQBase (q : Qpos A X att) : Prop := ∃ x : X, qNew (A := A) (att := att) x = q
+def InQBase (q : Qpos A X att)  := ∃ x : X, qNew (A := A) (att := att) x = q
 
 omit [Fintype V] [Nonempty X] in
 theorem inQBase_zProj {z : Zpos A X (IsGamma A) att} (hz : InZBase z) :

@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.FlagComplex
-
-@[expose] public section
+import RequestProject.FlagComplex
 
 /-!
 # The barycentric subdivision of a closed surface is again a closed surface
@@ -30,28 +28,25 @@ Together with `RequestProject/FlagComplex.lean` this verifies, for the subdivisi
 combinatorial hypotheses that the cube complex `C(L_q)` of the paper requires.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
+namespace FiniteChains.ASC
 
-namespace ASC
 
-universe u
+
 
 variable {V : Type u} [DecidableEq V]
 
 /-- "The predicate `P` has exactly two witnesses." -/
-def ExactlyTwo {α : Sort*} (P : α → Prop) : Prop :=
+def ExactlyTwo {α : Sort*} (P : α → Prop)  :=
   ∃ x y, x ≠ y ∧ P x ∧ P y ∧ ∀ z, P z → z = x ∨ z = y
 
 /-- Every edge of `K` lies in exactly two triangles: for every edge `e` there are exactly
 two vertices outside `e` spanning a triangle with it. -/
-def EdgeInTwoTriangles (K : ASC V) : Prop :=
+def EdgeInTwoTriangles (K : ASC V)  :=
   ∀ e ∈ K.faces, e.card = 2 → ExactlyTwo (fun v => v ∉ e ∧ insert v e ∈ K.faces)
 
-section Chains
+section
 
 variable {P : Type u} [Preorder P]
 
@@ -67,13 +62,11 @@ theorem le_or_le_of_isChain {s : Set P} (hs : IsChain (· ≤ ·) s) {x y : P} (
   · exact Or.inl (le_of_eq hxy)
   · exact hs hx hy hxy
 
-end Chains
+end
 
 instance faceDecidableEq (K : ASC V) : DecidableEq K.Face := fun a b =>
   decidable_of_iff (a.1 = b.1) (by
-    constructor
-    · intro h; exact Subtype.ext h
-    · intro h; rw [h])
+    grind [Subtype.ext])
 
 /-- The poset of faces of a complex on a finite vertex type is finite. -/
 noncomputable instance faceFintype (K : ASC V) [Fintype V] : Fintype K.Face :=
@@ -81,6 +74,6 @@ noncomputable instance faceFintype (K : ASC V) [Fintype V] : Fintype K.Face :=
 
 /-! ### Every vertex of the subdivision lies in a triangle -/
 
-end ASC
+end FiniteChains.ASC
 
-end FiniteChains
+

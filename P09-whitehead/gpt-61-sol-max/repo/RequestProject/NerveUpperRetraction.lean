@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NerveBoundaryReflection
-
-@[expose] public section
+import RequestProject.NerveBoundaryReflection
 
 /-! Both chain comparisons for a genuine monotone upper retraction. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P Q : Type u} [Preorder P]
 
 theorem cmap_eq_of_eqOn_incOn {B : P → Prop} (f g : P → Q)
@@ -29,12 +26,10 @@ theorem reflectsBoundsIn_of_retraction {U B : P → Prop}
     (hfix : ∀ p : {p : P // U p}, B p.1 → ρ p = p) (n : ℕ) :
     ReflectsBoundsIn U B n := by
   classical
-  let r : P → P := fun p => if h : U p then (ρ ⟨p, h⟩).1 else p
+  let r  := fun p => if h : U p then (ρ ⟨p, h⟩).1 else p
   have hr (p : {p : P // U p}) : r p.1 = (ρ p).1 := by simp [r, p.2]
   have hrfix (p : P) (hp : B p) : r p = p := by
-    have h := hfix ⟨p, hBU p hp⟩ hp
-    simp only [r, dif_pos (hBU p hp)]
-    exact congrArg Subtype.val h
+    simp_all
   intro c hc _ hbound
   obtain ⟨y, hy, hdy⟩ := hbound
   have hryn : cmap r y ∈ IncOn B := by
@@ -60,7 +55,7 @@ theorem acyclicRelIn_of_upper_retraction {U B : P → Prop} (hne : ∃ p : P, U 
     rw [cmap_bdry, hcyc, map_zero]
   have hp := bdry_prism_add_prism_bdry id ρ c'
   rw [hcyc', map_zero, add_zero, cmap_id] at hp
-  have hpi : prism id ρ c' ∈ Inc {p : P // U p} :=
+  have hpi  :=
     prism_mem_inc monotone_id hmono hle hc'
   refine ⟨cmap Subtype.val (cmap ρ c'), ?_, -cmap Subtype.val (prism id ρ c'),
     AddSubgroup.neg_mem _ (cmap_val_mem_incOn U hpi), ?_, ?_⟩

@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TruncatedCubePoset
-public import RequestProject.TruncatedCellIncidence
-public import RequestProject.PuncturedCubeBoundary
-public import RequestProject.OrderComplexPi1Transfer
-
-@[expose] public section
+import RequestProject.TruncatedCubePoset
+import RequestProject.TruncatedCellIncidence
+import RequestProject.PuncturedCubeBoundary
+import RequestProject.OrderComplexPi1Transfer
 
 /-! Ordinary punctured cube boundaries inside the actual truncated-cell face poset. -/
 namespace FiniteChains.Davis
@@ -43,11 +41,11 @@ def ordinaryBoundaryToCoordinate {f t : QOld A} (ht : t.1.sgn ≠ 0)
     exact h
   refine ⟨qCubeToCoordinate d.1, (qCubeToCoordinate_face_iff d.1 t.1).mp hle, ?_, ?_⟩
   · intro he
-    have hdt : d = t := Subtype.ext
+    have hdt  := Subtype.ext
       (qCubeCoordinateEquiv.injective (Subtype.ext he))
     exact c.2.1.ne (hd.trans (congrArg Sum.inl hdt))
   · intro he
-    have hdf : d = f := Subtype.ext
+    have hdf  := Subtype.ext
       (qCubeCoordinateEquiv.injective (Subtype.ext (he.trans hf.symm)))
     exact c.2.2 (hd.trans (congrArg Sum.inl hdf))
 
@@ -62,24 +60,16 @@ def coordinateBoundaryToOrdinary {f t : QOld A} (ht : t.1.sgn ≠ 0)
       · exact mem_freeSet.mpr he
       · exact mem_freeSet.mpr (he.symm.trans hvc)
     simpa using hvt
-  let d : QCube A := coordinateToQCube ⟨c.1, isSimplex_subset A hs t.1.isSimplex⟩
+  let d  := coordinateToQCube ⟨c.1, isSimplex_subset A hs t.1.isSimplex⟩
   have hd : qCubeToCoordinate d = c.1 := coordinateToQCube_toCoordinate _
-  have hdt : d ≤ t.1 := (qCubeToCoordinate_face_iff d t.1).mpr (hd ▸ c.2.1)
+  have hdt  := (qCubeToCoordinate_face_iff d t.1).mpr (hd ▸ c.2.1)
   have hold : ¬ (d.spx = ∅ ∧ d.sgn = 0) := by
     rintro ⟨_, hz⟩
     exact ht (qCube_sgn_zero_of_face hdt hz)
   let w : QOld A := ⟨d, hold⟩
   refine ⟨Sum.inl w, lt_of_le_of_ne hdt ?_, ?_⟩
-  · intro he
-    have hw : w = t := Sum.inl.inj he
-    have hh : c.1 = qCubeToCoordinate t.1 := hd.symm.trans
-      (congrArg (fun x : QOld A => qCubeToCoordinate x.1) hw)
-    exact c.2.2.1 hh
-  · intro he
-    have hw : w = f := Sum.inl.inj he
-    have hh : c.1 = coordinateFix j b (qCubeToCoordinate t.1) := hd.symm.trans
-      ((congrArg (fun x : QOld A => qCubeToCoordinate x.1) hw).trans hf)
-    exact c.2.2.2 hh
+  · grind
+  · grind
 
 theorem coordinateBoundaryToOrdinary_coordinate {f t : QOld A} (ht : t.1.sgn ≠ 0)
     (j : V) (b : CubeCoord) (hf : qCubeToCoordinate f.1 = coordinateFix j b (qCubeToCoordinate t.1))
@@ -130,42 +120,32 @@ theorem ordinaryTruncatedBoundary_simplyConnected {f t : QOld A} (ht : t.1.sgn �
   simplyConnected_orderCx_of_orderIso (ordinaryTruncatedBoundaryOrderIso ht j b hf)
     (ordinary_puncturedCubeBoundary_simplyConnected _ j b hb htj)
 
-theorem exists_facet_coordinates_of_inc {L : ASC V} (f t : QOld A)
+variable {L : ASC V}
+theorem exists_facet_coordinates_of_inc  (f t : QOld A)
     (hi : qCubeToCoordinate t.1 ∈ spineInc L (Sum.inl (qCubeToCoordinate f.1))) :
     ∃ j : V, ∃ b : CubeCoord, b ≠ CubeCoord.free ∧
       qCubeToCoordinate t.1 j = CubeCoord.free ∧
       qCubeToCoordinate f.1 = coordinateFix j b (qCubeToCoordinate t.1) := by
   classical
   have hm : qCubeToCoordinate t.1 ∈ cofaces L (qCubeToCoordinate f.1) := by
-    simp only [spineInc] at hi
-    split at hi
-    · exact hi
-    · simp at hi
+    aesop (add simp [spineInc])
   obtain ⟨j, hj, _, he⟩ := mem_cofaces.mp hm
   refine ⟨j, qCubeToCoordinate f.1 j, hj, ?_, ?_⟩
   · rw [he]
     exact Function.update_self _ _ _
-  · funext v
-    by_cases hv : v = j
-    · subst v
-      change qCubeToCoordinate f.1 j =
-        Function.update (qCubeToCoordinate t.1) j (qCubeToCoordinate f.1 j) j
-      exact (Function.update_self j (qCubeToCoordinate f.1 j) (qCubeToCoordinate t.1)).symm
-    · simp only [coordinateFix, Function.update_of_ne hv, he]
+  simp_all [coordinateFix]
 
-theorem ordinaryTruncatedBoundary_connected_of_inc {L : ASC V} {f t : QOld A}
+theorem ordinaryTruncatedBoundary_connected_of_inc  {f t : QOld A}
     (ht : t.1.sgn ≠ 0)
     (hi : qCubeToCoordinate t.1 ∈ spineInc L (Sum.inl (qCubeToCoordinate f.1))) :
     IsConnected (orderCx (OldPuncturedBoundary f t)) := by
-  obtain ⟨j, b, hb, htj, hf⟩ := exists_facet_coordinates_of_inc f t hi
-  exact ordinaryTruncatedBoundary_connected ht j b hb htj hf
+  grind [exists_facet_coordinates_of_inc, ordinaryTruncatedBoundary_connected]
 
-theorem ordinaryTruncatedBoundary_simplyConnected_of_inc {L : ASC V} {f t : QOld A}
+theorem ordinaryTruncatedBoundary_simplyConnected_of_inc  {f t : QOld A}
     (ht : t.1.sgn ≠ 0)
     (hi : qCubeToCoordinate t.1 ∈ spineInc L (Sum.inl (qCubeToCoordinate f.1))) :
     SimplyConnected (orderCx (OldPuncturedBoundary f t)) := by
-  obtain ⟨j, b, hb, htj, hf⟩ := exists_facet_coordinates_of_inc f t hi
-  exact ordinaryTruncatedBoundary_simplyConnected ht j b hb htj hf
+  grind [exists_facet_coordinates_of_inc, ordinaryTruncatedBoundary_simplyConnected]
 
 def swappedBoundaryOrderIso (f t : QOld A) :
     {x : TruncatedCell A // x ≠ Sum.inl f ∧ x < Sum.inl t} ≃o OldPuncturedBoundary f t where
@@ -175,20 +155,18 @@ def swappedBoundaryOrderIso (f t : QOld A) :
   right_inv _ := rfl
   map_rel_iff' := by intros; rfl
 
-theorem ordinaryTruncatedBoundary_connectedIn {L : ASC V} {f t : QOld A}
+abbrev ordinaryTruncatedBoundary_connectedIn  {f t : QOld A}
     (ht : t.1.sgn ≠ 0)
-    (hi : qCubeToCoordinate t.1 ∈ spineInc L (Sum.inl (qCubeToCoordinate f.1))) :
-    ConnectedIn (fun x : TruncatedCell A => x ≠ Sum.inl f ∧ x < Sum.inl t) := by
-  apply connectedIn_of_isConnected
-  exact isConnected_orderCx_of_orderIso (swappedBoundaryOrderIso f t)
-    (ordinaryTruncatedBoundary_connected_of_inc ht hi)
+    (hi : qCubeToCoordinate t.1 ∈ spineInc L (Sum.inl (qCubeToCoordinate f.1)))  :=
+  FiniteChains.Comb.connectedIn_of_isConnected
+    (FiniteChains.Comb.isConnected_orderCx_of_orderIso (FiniteChains.Davis.swappedBoundaryOrderIso f t)
+      (FiniteChains.Davis.ordinaryTruncatedBoundary_connected_of_inc ht hi))
 
-theorem ordinaryTruncatedBoundary_simplyConnectedIn {L : ASC V} {f t : QOld A}
+abbrev ordinaryTruncatedBoundary_simplyConnectedIn  {f t : QOld A}
     (ht : t.1.sgn ≠ 0)
-    (hi : qCubeToCoordinate t.1 ∈ spineInc L (Sum.inl (qCubeToCoordinate f.1))) :
-    SimplyConnectedIn (fun x : TruncatedCell A => x ≠ Sum.inl f ∧ x < Sum.inl t) := by
-  apply simplyConnectedIn_of_simplyConnected
-  exact simplyConnected_orderCx_of_orderIso (swappedBoundaryOrderIso f t)
-    (ordinaryTruncatedBoundary_simplyConnected_of_inc ht hi)
+    (hi : qCubeToCoordinate t.1 ∈ spineInc L (Sum.inl (qCubeToCoordinate f.1)))  :=
+  FiniteChains.Comb.simplyConnectedIn_of_simplyConnected
+    (FiniteChains.Comb.simplyConnected_orderCx_of_orderIso (FiniteChains.Davis.swappedBoundaryOrderIso f t)
+      (FiniteChains.Davis.ordinaryTruncatedBoundary_simplyConnected_of_inc ht hi))
 
 end FiniteChains.Davis

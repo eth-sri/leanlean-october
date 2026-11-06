@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.WedgeCockcroft
-
-@[expose] public section
+import RequestProject.WedgeCockcroft
 
 /-!
 # An arbitrary wedge of Cockcroft complexes is Cockcroft
@@ -30,9 +28,8 @@ the generators of all other factors.
 
 namespace FiniteChains
 
-open MonoidAlgebra
 
-universe u
+
 
 variable {S : Type u} {α : S → Type u} {J : S → Type u} (ρ : ∀ s, J s → FreeGroup (α s))
 
@@ -76,14 +73,7 @@ theorem isBlock_sigmaWedge (s : S) :
   cell_injective := sigma_mk_injective
   rel_eq _ := rfl
   fox_outside i l hl := by
-    obtain ⟨t, j⟩ := l
-    have hts : t ≠ s := by
-      rintro rfl
-      exact hl ⟨j, rfl⟩
-    rw [sigmaWedgeRel_mk]
-    refine fox_map_of_not_mem_range (Sigma.mk t) ?_ (ρ t j)
-    intro a hcontra
-    exact hts (congrArg Sigma.fst hcontra).symm
+    aesop (add unsafe apply [FiniteChains.fox_map_of_not_mem_range])
   retract_map w := killOther_map_self s w
   retract_rel l := by
     obtain ⟨t, j⟩ := l
@@ -91,9 +81,8 @@ theorem isBlock_sigmaWedge (s : S) :
     · subst hts
       rw [sigmaWedgeRel_mk, killOther_map_self]
       exact Subgroup.subset_normalClosure (Set.mem_range_self _)
-    · rw [sigmaWedgeRel_mk, killOther_map_other hts]
-      exact one_mem _
+    · simp_all
 
-variable [Fintype S] [∀ s, Fintype (α s)] [∀ s, Fintype (J s)]
+
 
 end FiniteChains

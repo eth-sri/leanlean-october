@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ConeAdjPoset
-public import RequestProject.CylinderPoset
-public import RequestProject.OrderCxNatHtpy
-
-@[expose] public section
+import RequestProject.ConeAdjPoset
+import RequestProject.CylinderPoset
+import RequestProject.OrderCxNatHtpy
 
 /-!
 # The poset model of a presentation complex
@@ -34,12 +32,11 @@ comparison homomorphisms themselves are built in `RequestProject/PresPosetAlpha.
 `RequestProject/PresPosetReading.lean`.
 -/
 
-namespace FiniteChains
-namespace PresModel
+namespace FiniteChains.PresModel
+
 
 open Comb
 
-universe u
 
 variable {α J : Type u}
 
@@ -76,10 +73,7 @@ protected def le : Rose α → Rose α → Prop
 instance : Preorder (Rose α) where
   le := Rose.le
   le_refl x := by
-    cases x with
-    | base => exact trivial
-    | mid i => exact rfl
-    | edg i b => exact ⟨rfl, rfl⟩
+    cases x <;> simp_all [FiniteChains.PresModel.Rose.le]
   le_trans a b c hab hbc := by
     cases a <;> cases b <;> cases c <;> simp_all [Rose.le]
 
@@ -137,14 +131,12 @@ protected def le (x y : TCirc w) : Prop := x = y ∨ TCirc.lt w x y
 theorem lt_left_tag {x y : TCirc w} (h : TCirc.lt w x y) :
     x.2.2 = CPos.cor ∨ x.2.2 = CPos.cmid := by
   obtain ⟨-, -, h⟩ := h
-  rcases h with ⟨h, -, -⟩ | ⟨h, -, -⟩ | ⟨h, -, -⟩ | ⟨h, -, -⟩
-  exacts [Or.inl h, Or.inr h, Or.inr h, Or.inl h]
+  aesop
 
 theorem lt_right_tag {x y : TCirc w} (h : TCirc.lt w x y) :
     y.2.2 = CPos.cedgL ∨ y.2.2 = CPos.cedgR := by
   obtain ⟨-, -, h⟩ := h
-  rcases h with ⟨-, h, -⟩ | ⟨-, h, -⟩ | ⟨-, h, -⟩ | ⟨-, h, -⟩
-  exacts [Or.inl h, Or.inl h, Or.inr h, Or.inr h]
+  aesop
 
 instance : Preorder (TCirc w) where
   le := TCirc.le w
@@ -208,25 +200,13 @@ def aFun : TCirc w → Rose α
 @[simp] theorem aFun_cor (j : J) (k : ℕ) : aFun w (j, k, CPos.cor) = Rose.base := rfl
 
 theorem aFun_cmid_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
-    aFun w (j, k, CPos.cmid) = Rose.mid p.1 := by
-  show (match (w j)[k]? with
-    | some p => Rose.mid p.1
-    | none => Rose.base) = _
-  rw [h]
+    aFun w (j, k, CPos.cmid) = Rose.mid p.1 := by classical simp_all!
 
 theorem aFun_cedgL_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
-    aFun w (j, k, CPos.cedgL) = Rose.edg p.1 (!p.2) := by
-  show (match (w j)[k]? with
-    | some p => Rose.edg p.1 (!p.2)
-    | none => Rose.base) = _
-  rw [h]
+    aFun w (j, k, CPos.cedgL) = Rose.edg p.1 (!p.2) := by classical simp_all!
 
 theorem aFun_cedgR_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
-    aFun w (j, k, CPos.cedgR) = Rose.edg p.1 p.2 := by
-  show (match (w j)[k]? with
-    | some p => Rose.edg p.1 p.2
-    | none => Rose.base) = _
-  rw [h]
+    aFun w (j, k, CPos.cedgR) = Rose.edg p.1 p.2 := by classical simp_all!
 
 theorem aFun_pt_cmid_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
     aFun w (TCirc.pt w j k CPos.cmid) = Rose.mid p.1 := aFun_cmid_of_get w h
@@ -250,17 +230,7 @@ theorem aFun_monotone : Monotone (aFun w) := by
   obtain ⟨j, k, t⟩ := x
   obtain ⟨j', k', t'⟩ := y
   obtain ⟨hj, hk', hcase⟩ := h
-  subst hj
-  obtain ⟨p, hp⟩ := exists_get_of_lt w hk'
-  rcases hcase with ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩
-  · rw [aFun_cor, aFun_cedgL_of_get w hp]
-    exact Rose.base_le_edg _ _
-  · rw [aFun_cmid_of_get w hp, aFun_cedgL_of_get w hp]
-    exact Rose.mid_le_edg _ _
-  · rw [aFun_cmid_of_get w hp, aFun_cedgR_of_get w hp]
-    exact Rose.mid_le_edg _ _
-  · rw [aFun_cor, aFun_cedgR_of_get w hp]
-    exact Rose.base_le_edg _ _
+  aesop (add simp [aFun_cedgL_of_get, aFun_cmid_of_get, aFun_cedgR_of_get])
 
 /-- The attaching map as a monotone map. -/
 def aHom : TCirc w →o Rose α := ⟨aFun w, aFun_monotone w⟩
@@ -360,12 +330,8 @@ theorem isPath_letterLoop (p : α × Bool) :
 theorem isPath_wordLoop (l : List (α × Bool)) :
     IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt (wordLoop w l)
       (ptBase w) (ptBase w) := by
-  induction l with
-  | nil => rfl
-  | cons p l ih =>
-      have hsplit : wordLoop w (p :: l) = letterLoop w p ++ wordLoop w l := rfl
-      rw [hsplit]
-      exact isPath_append_iff.mpr ⟨ptBase w, isPath_letterLoop w p, ih⟩
+  classical
+  induction l <;> grind [FiniteChains.Comb.isPath_append_iff, FiniteChains.PresModel.isPath_letterLoop, FiniteChains.Comb.IsPath, wordLoop, letterLoop, ptBase]
 
 /-! ### The loops of the attaching circles -/
 
@@ -385,5 +351,5 @@ def circPath (j : J) : ℕ → List ((orderCx (TCirc w)).E × Bool)
 /-- The attaching loop of the relator `j`. -/
 def circLoop (j : J) : List ((orderCx (TCirc w)).E × Bool) := circPath w j (w j).length
 
-end PresModel
-end FiniteChains
+end FiniteChains.PresModel
+

@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusCutPairCollapse
-public import RequestProject.GenusSpineTruncation
-
-@[expose] public section
+import RequestProject.GenusCutPairCollapse
+import RequestProject.GenusSpineTruncation
 
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
@@ -74,14 +72,14 @@ theorem genus_pair_cells (p : GenusCollapsePair q)
       exact ⟨t, Sum.inr f, htc, rfl⟩
     next => simp at hi
 
+variable (left right : List (GenusCollapsePair q))
 /-- Each pair in the chosen coordinate list reflects null homotopies at its stage. -/
-theorem genus_pair_stage_injIn (left right : List (GenusCollapsePair q))
+theorem genus_pair_stage_injIn 
     (p : GenusCollapsePair q)
     (hsplit : genusChainCollapse q = left ++ p :: right) :
     InjIn (genusCollapseStage q left) (genusCollapseStage q (left ++ [p])) := by
   have hp : p ∈ genusChainCollapse q := by
-    rw [hsplit]
-    exact List.mem_append.mpr (Or.inr List.mem_cons_self)
+    simp_all
   obtain ⟨t, f, ht, hf⟩ := genus_pair_cells q p hp
   have he : p = (qCubeToCoordinate t.1, truncatedFaceIndex f) :=
     Prod.ext ht.symm hf.symm
@@ -90,28 +88,20 @@ theorem genus_pair_stage_injIn (left right : List (GenusCollapsePair q))
   | inl f => exact genus_old_pair_stage_injIn q left right f t hsplit
   | inr σ => exact genus_recorded_cut_pair_stage_injIn q left right σ t hsplit
 
-theorem genusCollapseStage_append_subset (left right : List (GenusCollapsePair q))
+theorem genusCollapseStage_append_subset 
     (c : GenusTruncatedCell q) (hc : genusCollapseStage q (left ++ right) c) :
     genusCollapseStage q left c := by
-  constructor
-  · intro hm
-    exact hc.1 (by simpa only [List.map_append, List.mem_append] using Or.inl hm)
-  · cases c with
-    | inl d =>
-      intro hm
-      exact hc.2 (by simpa only [List.map_append, List.mem_append] using Or.inl hm)
-    | inr σ => trivial
+  grind [FiniteChains.Davis.Genus.genusCollapseStage]
 
 /-- Null homotopy reflection through the entire genuine geometric collapse. -/
 theorem genus_collapse_suffix_injIn (right left : List (GenusCollapsePair q))
     (hsplit : genusChainCollapse q = left ++ right) :
     InjIn (genusCollapseStage q left) (genusCollapseStage q (left ++ right)) := by
   induction right generalizing left with
-  | nil => simpa using injIn_self (genusCollapseStage q left)
+  | nil => grind [FiniteChains.Comb.InjIn]
   | cons p right ih =>
     have hfirst := genus_pair_stage_injIn q left right p hsplit
-    have htail := ih (left ++ [p]) (by simpa only [List.append_assoc,
-      List.singleton_append] using hsplit)
+    have htail := ih (left ++ [p]) (by simp_all)
     have hcombined := injIn_trans
       (genusCollapseStage_append_subset q (left ++ [p]) right) hfirst htail
     simpa only [List.append_assoc, List.singleton_append] using hcombined
@@ -123,7 +113,7 @@ theorem genusSpine_injIn :
   have h := genus_collapse_suffix_injIn q (genusChainCollapse q) [] (by simp)
   intro v l hv hp hl hh
   have hnull := h v l
-    (by simpa only [List.nil_append, genusCollapseStage_final_iff] using hv) hp
+    (by simp_all [FiniteChains.Davis.Genus.genusCollapseStage_final_iff]) hp
     (pathIn_mono (fun c hc => (genusCollapseStage_final_iff q c).mpr hc) hl)
     (hh.mono (fun c _ => genusCollapseStage_nil q c))
   exact hnull.mono (fun c hc => (genusCollapseStage_final_iff q c).mp hc)
@@ -142,15 +132,14 @@ theorem genusSpineToTruncated_pi1_injective :
     induction z using Quotient.inductionOn with
     | h p =>
       apply congrArg Pi1.mk
-      apply Subtype.ext
-      simp [genusSpineToTruncated, mapPath, Hom.comp, List.map_map, Function.comp_def]
+      aesop (add simp [mapPath])
   intro z w he
   apply (strictOrderPi1Equiv (P := GenusSpineCell q) (spineBase q)).injective
   apply hincl
   rwa [← hfactor z, ← hfactor w]
 
-theorem genusSpineToOld_pi1_injective :
-    Function.Injective (pi1Map (genusSpineToOld q) (spineBase q)) :=
-  (genusSpine_pi1_injective_iff q).mpr (genusSpineToTruncated_pi1_injective q)
+abbrev genusSpineToOld_pi1_injective  :=
+  (FiniteChains.Davis.Genus.genusSpine_pi1_injective_iff q).mpr
+    (FiniteChains.Davis.Genus.genusSpineToTruncated_pi1_injective q)
 
 end FiniteChains.Davis.Genus

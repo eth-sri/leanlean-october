@@ -1,30 +1,26 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberQuotientLiftedStarRetraction
-public import RequestProject.ChamberQuotientBaseSimplyConnected
-public import RequestProject.ChamberZConnected
-public import RequestProject.OrderSimplyConnectedOneFillings
-public import RequestProject.NerveLowerMapFillings
-
-@[expose] public section
+import RequestProject.ChamberQuotientLiftedStarRetraction
+import RequestProject.ChamberQuotientBaseSimplyConnected
+import RequestProject.ChamberZConnected
+import RequestProject.OrderSimplyConnectedOneFillings
+import RequestProject.NerveLowerMapFillings
 
 /-! Every one-cycle of the actual lifted base star has a finite filling there. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 
-theorem qLiftedBaseStar_oneCycle_filling (a : Qpos A X att)
+abbrev qLiftedBaseStar_oneCycle_filling (a : Qpos A X att)
     (hc : IsConnected (orderCx (Qpos A X att)))
     (c : Ch (QLiftedBaseStar a)) (hi : c ∈ Inc _)
-    (hd : lengthProjection 2 c = c) (hcyc : Nerve.bdry c = 0) :
-    ∃ y ∈ Inc (QLiftedBaseStar a), Nerve.bdry y = c :=
-  filling_of_lower_composite (qLiftedStarRetraction a hc) (qBaseIntoStar a)
-    (qLiftedStarRetraction_monotone a hc) (qBaseIntoStar_monotone a)
-    (qLiftedStarRetraction_le a hc) 2
-    (nerve_oneCycle_filling_of_simplyConnected (qLiftedBase_simplyConnected a hc))
-    c hi hd hcyc
+    (hd : lengthProjection 2 c = c) (hcyc : Nerve.bdry c = 0)  :=
+  FiniteChains.Nerve.filling_of_lower_composite (FiniteChains.Davis.qLiftedStarRetraction a hc)
+    (FiniteChains.Davis.qBaseIntoStar a) (FiniteChains.Davis.qLiftedStarRetraction_monotone a hc)
+    (FiniteChains.Davis.qBaseIntoStar_monotone a) (FiniteChains.Davis.qLiftedStarRetraction_le a hc) 2
+    (FiniteChains.Comb.nerve_oneCycle_filling_of_simplyConnected (FiniteChains.Davis.qLiftedBase_simplyConnected a hc)) c
+    hi hd hcyc
 
 theorem qUniversal_baseStar_fillsDegree_two (x : X) (hx : IsConnected (orderCx X)) :
     FillsDegreeIn

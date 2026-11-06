@@ -1,11 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresCoverRelatorChains
-
-@[expose] public section
+import RequestProject.PresCoverRelatorChains
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
 theorem strictBelowCongr_val {a b : P} (h : a = b) (p : StrictBelow a) :
@@ -16,7 +13,6 @@ end FiniteChains.Comb
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → PresPos w) (hf : IsPosetCover f) (v : P) (j : J) (hv : f v = apexOf w j)
 
@@ -33,25 +29,23 @@ theorem presCoverConeCircleOrderIso_symm_projection (x : RelatorCircle w j) :
   rw [OrderIso.apply_symm_apply, strictBelowCongr_val] at hx
   exact hx
 
+variable (hpos : ∀ j, 0 < (w j).length)
 /-- The actual first incidence triangle of a nonempty presentation relator. -/
-noncomputable def presRelatorFirstTriangle (hpos : ∀ j, 0 < (w j).length) (j : J) :
-    StrictOrdTri (PresPos w) :=
+noncomputable def presRelatorFirstTriangle  (j : J)  :=
   strictConeTriangle (apexOf w j)
     ((strictOrderEdgeEquiv (relatorCircleOrderIso w j))
       (relatorCircleEdge0 w j ⟨0, hpos j⟩))
 
 /-- The coordinate triangle lies over the genuine first relator incidence triangle. -/
-theorem presCoverRelatorTriangle_projection (hpos : ∀ j, 0 < (w j).length)
+theorem presCoverRelatorTriangle_projection 
     (p : PresCoverRelator w f) :
     (strictOrderCxMap f hf.strictMono).onF (presCoverRelatorTriangle w f hf hpos p) =
       presRelatorFirstTriangle w hpos p.1.2 := by
   apply Subtype.ext
   apply Prod.ext
-  · exact presCoverConeCircleOrderIso_symm_projection w f hf p.1.1 p.1.2 p.2
-      (relatorCirclePoint w p.1.2 ⟨0, hpos p.1.2⟩ CPos.cor)
+  · solve_by_elim [FiniteChains.PresModel.presCoverConeCircleOrderIso_symm_projection]
   · apply Prod.ext
-    · exact presCoverConeCircleOrderIso_symm_projection w f hf p.1.1 p.1.2 p.2
-        (relatorCirclePoint w p.1.2 ⟨0, hpos p.1.2⟩ CPos.cedgL)
+    · solve_by_elim [FiniteChains.PresModel.presCoverConeCircleOrderIso_symm_projection]
     · exact p.2
 
 end FiniteChains.PresModel

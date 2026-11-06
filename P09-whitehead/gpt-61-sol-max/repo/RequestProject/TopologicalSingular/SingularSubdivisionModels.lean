@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.AffineSubdivisionNaturality
-
-@[expose] public section
+import RequestProject.TopologicalSingular.AffineSubdivisionNaturality
 
 /-! # The universal singular chains for barycentric subdivision -/
 
@@ -12,18 +10,19 @@ namespace FiniteChains.SingularSubdivision
 
 open AffineVertexChains
 
-noncomputable def generator (n : ℕ) : VertexChains.Chain (TopologicalSingular.Domain n) n :=
+variable (n : ℕ)
+noncomputable def generator  : VertexChains.Chain (TopologicalSingular.Domain n) n :=
   Finsupp.single (standardVertices n) 1
 
-noncomputable def model (n : ℕ) : TopologicalSingular.Chain (TopologicalSingular.Domain n) n :=
+noncomputable def model   :=
   realize (convex_stdSimplex ℝ (Fin (n + 1))) n
     (VertexChains.subdivide (center (convex_stdSimplex ℝ (Fin (n + 1)))) n (generator n))
 
-noncomputable def homotopyModel (n : ℕ) : TopologicalSingular.Chain (TopologicalSingular.Domain n) (n + 1) :=
+noncomputable def homotopyModel   :=
   realize (convex_stdSimplex ℝ (Fin (n + 1))) (n + 1)
     (VertexChains.subdivideHomotopy (center (convex_stdSimplex ℝ (Fin (n + 1)))) n (generator n))
 
-theorem boundary_model (n : ℕ) :
+theorem boundary_model  :
     TopologicalSingular.boundary n (model (n + 1)) =
       ∑ i : Fin (n + 2), (-1 : ℤ) ^ i.val •
         TopologicalSingular.map (standardMap i.succAbove) n (model n) := by
@@ -34,11 +33,9 @@ theorem boundary_model (n : ℕ) :
   intro i _
   congr 1
   exact (by
-    simpa only [VertexChains.map_single, standardMap_vertices, VertexChains.face, model, generator]
-      using (realize_standard_subdivide_naturality i.succAbove
-        (Finsupp.single (standardVertices n) 1)).symm)
+    simp_all [standardMap_vertices, VertexChains.face, model, generator, realize_standard_subdivide_naturality])
 
-theorem homotopy_on_boundary (n : ℕ) :
+theorem homotopy_on_boundary  :
     realize (convex_stdSimplex ℝ (Fin (n + 2))) (n + 1)
         (VertexChains.subdivideHomotopy (center (convex_stdSimplex ℝ (Fin (n + 2)))) n
           (VertexChains.boundary n (generator (n + 1)))) =
@@ -50,11 +47,9 @@ theorem homotopy_on_boundary (n : ℕ) :
   intro i _
   congr 1
   exact (by
-    simpa only [VertexChains.map_single, standardMap_vertices, VertexChains.face, homotopyModel, generator]
-      using (realize_standard_homotopy_naturality i.succAbove
-        (Finsupp.single (standardVertices n) 1)).symm)
+    simp_all [standardMap_vertices, VertexChains.face, homotopyModel, generator, realize_standard_homotopy_naturality])
 
-theorem homotopyModel_identity (n : ℕ) :
+theorem homotopyModel_identity  :
     TopologicalSingular.boundary (n + 1) (homotopyModel (n + 1)) +
       (∑ i : Fin (n + 2), (-1 : ℤ) ^ i.val •
         TopologicalSingular.map (standardMap i.succAbove) (n + 1) (homotopyModel n)) =

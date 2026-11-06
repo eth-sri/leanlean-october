@@ -1,10 +1,6 @@
-module
-
-public import RequestProject.GenusSpineOriginAvoidance
-public import RequestProject.QCubePositiveSquareCoefficients
-public import RequestProject.GenusOldCubicalBoundaryRecovery
-
-@[expose] public section
+import RequestProject.GenusSpineOriginAvoidance
+import RequestProject.QCubePositiveSquareCoefficients
+import RequestProject.GenusOldCubicalBoundaryRecovery
 
 /-! Positive-square coefficients vanish in actual normalized old-spine cycles. -/
 namespace FiniteChains.Davis.Genus

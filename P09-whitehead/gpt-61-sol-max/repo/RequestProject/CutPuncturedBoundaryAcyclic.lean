@@ -1,19 +1,15 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.VertexPunctureAcyclic
-public import RequestProject.PositiveBoundaryCoordinates
-
-@[expose] public section
+import RequestProject.VertexPunctureAcyclic
+import RequestProject.PositiveBoundaryCoordinates
 
 /-! Actual augmented fillings on the boundary after its cut facet is removed. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
 variable {V : Type} [Fintype V] [DecidableEq V] {A : CommRel V}
 
-theorem positiveRetainedBoundary_acyclic (t : QOld A)
-    (ht : t.1.sgn = 0) (hcard : t.1.spx.card = 3) :
-    ∀ c ∈ Inc (RetainedProperBoundary t), Nerve.bdry c = 0 →
-      ∃ y ∈ Inc (RetainedProperBoundary t), Nerve.bdry y = c :=
+abbrev positiveRetainedBoundary_acyclic (t : QOld A)
+    (ht : t.1.sgn = 0) (hcard : t.1.spx.card = 3)  :=
   exists_bdry_eq_of_cycle_of_orderIso
     (positiveBoundaryOrderIso t ht (positiveThreeCubeCoordinates t hcard))
     vertexPuncturedCube_acyclic

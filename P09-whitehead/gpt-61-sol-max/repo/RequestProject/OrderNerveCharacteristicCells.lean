@@ -1,18 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveCharacteristicMap
-
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+import RequestProject.OrderNerveCharacteristicMap
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
 
+variable {P : Type}
 /-- Closed characteristic cells are precisely the canonical simplex images. -/
-theorem orderNerveCharacteristicMap_closedCell {P : Type} [PartialOrder P]
+theorem orderNerveCharacteristicMap_closedCell  [PartialOrder P]
     {n : ℕ} (s : (nerve P).nonDegenerate n) :
     orderNerveCharacteristicMap s '' Metric.closedBall 0 1 =
       Set.range (orderNerveRealizationSimplex P s.val) := by
@@ -25,7 +20,7 @@ theorem orderNerveCharacteristicMap_closedCell {P : Type} [PartialOrder P]
     exact ⟨u.val, u.property, orderNerveCharacteristicFunction_closedBall s u⟩
 
 /-- The open characteristic cell consists exactly of the positive-coordinate simplex points. -/
-theorem orderNerveCharacteristicMap_openCell {P : Type} [PartialOrder P]
+theorem orderNerveCharacteristicMap_openCell  [PartialOrder P]
     {n : ℕ} (s : (nerve P).nonDegenerate n) :
     orderNerveCharacteristicMap s '' Metric.ball 0 1 =
       {x | ∃ z : SimplexCategory.toTop.obj ⦋n⦌,
@@ -38,8 +33,7 @@ theorem orderNerveCharacteristicMap_openCell {P : Type} [PartialOrder P]
     let z := (orderNerveSimplexClosedBallHomeomorph n).symm v
     refine ⟨ULift.up z, ?_, ?_⟩
     · apply (orderNerveSimplexClosedBallHomeomorph_positive_iff n z).mpr
-      change (orderNerveSimplexClosedBallHomeomorph n
-        ((orderNerveSimplexClosedBallHomeomorph n).symm v)).val ∈ Metric.ball 0 1
+      
       rw [Homeomorph.apply_symm_apply]
       exact hu
     · exact (orderNerveCharacteristicFunction_closedBall s v).symm
@@ -50,14 +44,13 @@ theorem orderNerveCharacteristicMap_openCell {P : Type} [PartialOrder P]
     refine ⟨u.val, hu, ?_⟩
     rw [show orderNerveCharacteristicMap s u.val = orderNerveClosedBallChart s u from
       orderNerveCharacteristicFunction_closedBall s u]
-    change orderNerveRealizationSimplex P s.val
-      (ULift.up ((orderNerveSimplexClosedBallHomeomorph n).symm
-        (orderNerveSimplexClosedBallHomeomorph n z.down))) = _
+    dsimp [FiniteChains.Comb.orderNerveClosedBallChart]
     rw [Homeomorph.symm_apply_apply]
     rfl
 
+variable (P : Type)
 /-- The actual characteristic open cells are pairwise disjoint in all dimensions. -/
-theorem orderNerveCharacteristicMap_pairwiseDisjoint (P : Type) [PartialOrder P] :
+theorem orderNerveCharacteristicMap_pairwiseDisjoint  [PartialOrder P] :
     (Set.univ : Set (Σ n, (nerve P).nonDegenerate n)).PairwiseDisjoint
       (fun a => orderNerveCharacteristicMap a.2 '' Metric.ball 0 1) := by
   intro a _ b _ hab
@@ -65,7 +58,7 @@ theorem orderNerveCharacteristicMap_pairwiseDisjoint (P : Type) [PartialOrder P]
   intro x hxa hxb
   rcases a with ⟨n, s⟩
   rcases b with ⟨m, t⟩
-  dsimp only at hxa hxb
+  dsimp at hxa hxb
   rw [orderNerveCharacteristicMap_openCell] at hxa hxb
   obtain ⟨z, hz, hx⟩ := hxa
   obtain ⟨w, hw, hy⟩ := hxb
@@ -77,7 +70,7 @@ theorem orderNerveCharacteristicMap_pairwiseDisjoint (P : Type) [PartialOrder P]
   exact hab rfl
 
 /-- The actual closed characteristic cells cover the entire realization. -/
-theorem orderNerveCharacteristicMap_union (P : Type) [PartialOrder P] :
+theorem orderNerveCharacteristicMap_union  [PartialOrder P] :
     (⋃ (n : ℕ) (s : (nerve P).nonDegenerate n),
       orderNerveCharacteristicMap s '' Metric.closedBall 0 1) = Set.univ := by
   apply Set.eq_univ_of_forall
@@ -89,7 +82,7 @@ theorem orderNerveCharacteristicMap_union (P : Type) [PartialOrder P] :
   exact ⟨z, hz⟩
 
 /-- The characteristic closed cells give the weak topology of the actual realization. -/
-theorem orderNerveCharacteristicMap_isClosed (P : Type) [PartialOrder P]
+theorem orderNerveCharacteristicMap_isClosed  [PartialOrder P]
     (A : Set (orderNerveRealization P))
     (h : ∀ n (s : (nerve P).nonDegenerate n),
       IsClosed (A ∩ orderNerveCharacteristicMap s '' Metric.closedBall 0 1)) : IsClosed A := by
@@ -97,8 +90,9 @@ theorem orderNerveCharacteristicMap_isClosed (P : Type) [PartialOrder P]
   intro n s
   simpa only [orderNerveCharacteristicMap_closedCell] using h n s
 
+variable {P : Type}
 /-- Characteristic sphere boundaries lie in finitely many codimension-one closed cells. -/
-theorem orderNerveCharacteristicMap_boundary {P : Type} [PartialOrder P]
+theorem orderNerveCharacteristicMap_boundary  [PartialOrder P]
     {n : ℕ} (s : (nerve P).nonDegenerate (n + 1)) :
     ∃ I : Finset ((nerve P).nonDegenerate n),
       ∀ x ∈ Metric.sphere (0 : Fin (n + 1) → ℝ) 1,
@@ -113,12 +107,11 @@ theorem orderNerveCharacteristicMap_boundary {P : Type} [PartialOrder P]
   have hz : ¬ ∀ i, 0 < z.weights i := by
     intro hp
     have hb := (orderNerveSimplexClosedBallHomeomorph_positive_iff (n + 1) z).mp hp
-    change (orderNerveSimplexClosedBallHomeomorph (n + 1)
-      ((orderNerveSimplexClosedBallHomeomorph (n + 1)).symm u)).val ∈ Metric.ball 0 1 at hb
+    
     rw [Homeomorph.apply_symm_apply] at hb
     have he := Metric.mem_sphere.mp hx
     have hl := Metric.mem_ball.mp hb
-    change dist x 0 < 1 at hl
+    
     rw [he] at hl
     exact (lt_irrefl _ hl)
   obtain ⟨t, ht, w, hw⟩ := hI (ULift.up z) hz

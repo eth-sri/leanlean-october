@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NervePrism
-
-@[expose] public section
+import RequestProject.NervePrism
 
 /-! A three-leg order contraction supplies actual augmented nerve fillings. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P : Type u} [Preorder P]
 
 theorem exists_bdry_eq_of_cycle_threeLeg (r g : P → P) (d : P)
@@ -32,7 +29,6 @@ theorem exists_bdry_eq_of_cycle_threeLeg (r g : P → P) (d : P)
         (AddSubgroup.sub_mem _ (prism_mem_inc hr monotone_id hri hc)
           (prism_mem_inc hr hg hrg hc))
         (prism_mem_inc monotone_const hg hdg hc)) (cone_const_mem_inc d c)
-  · rw [map_add, map_add, map_sub, h₁, h₂, h₃, h₄]
-    abel
+  · simp_all
 
 end FiniteChains.Nerve

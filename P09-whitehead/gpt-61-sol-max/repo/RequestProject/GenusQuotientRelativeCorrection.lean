@@ -1,16 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusReceivedQuotientComparison
-public import RequestProject.LiftedHomotopyChains
-public import RequestProject.DeckChainTransport
-
-@[expose] public section
+import RequestProject.GenusReceivedQuotientComparison
+import RequestProject.LiftedHomotopyChains
+import RequestProject.DeckChainTransport
 
 /-! The actual old-cell correction from spine markings to attaching-surface
 markings. 
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -22,7 +19,7 @@ theorem univLift_pathChain (a : K.V) (f : Hom K Y) (v : UV K a)
     (hp : IsPath K.src K.tgt p (endV v) b) :
     chain1 (univLift K f a) (pathChain (uLiftPath p v)) =
       pathChain (uLiftPath (mapPath f p) (univLiftV a f v)) := by
-  change Finsupp.mapDomain (univLift K f a).onE (pathChain _) = _
+  dsimp [FiniteChains.Comb.chain1]
   rw (config := { transparency := .default }) [← pathChain_map]
   exact congrArg pathChain (uLiftPath_univLiftV a f p v b hp).symm
 
@@ -32,7 +29,7 @@ theorem uCoverPathTransport_pathChain {a b : K.V} {c : List (K.E × Bool)}
     (hp : IsPath K.src K.tgt p (endV v) d) :
     chain1 (uCoverPathTransport hc) (pathChain (uLiftPath p v)) =
       pathChain (uLiftPath p ((uCoverPathTransport hc).onV v)) := by
-  change Finsupp.mapDomain (uCoverPathTransport hc).onE (pathChain _) = _
+  dsimp [FiniteChains.Comb.chain1]
   rw (config := { transparency := .default }) [← pathChain_map]
   exact congrArg pathChain (uLiftPath_pathTransportV hc p v d hp).symm
 
@@ -41,7 +38,7 @@ theorem univDeck_pathChain (a : K.V) (g : Pi1 K a) (v : UV K a)
     (hp : IsPath K.src K.tgt p (endV v) b) :
     chain1 ((univDeck K a).cellHom g) (pathChain (uLiftPath p v)) =
       pathChain (uLiftPath p (deckV g v)) := by
-  change Finsupp.mapDomain ((univDeck K a).cellHom g).onE (pathChain (uLiftPath p v)) = _
+  dsimp [FiniteChains.Comb.chain1]
   rw (config := { transparency := .default }) [← pathChain_map ((univDeck K a).cellHom g)]
   exact congrArg pathChain (uLiftPath_deckV g p v b hp).symm
 
@@ -55,32 +52,27 @@ variable (q : ℕ) [NeZero q]
 noncomputable abbrev spineOldBase := posQCube (gBase q)
 noncomputable abbrev spineOldCx := orderCx (QOld (cmpRel (GenusVertex q)))
 
-noncomputable def spineOldMarking (i : Fin q × Bool) : List ((spineOldCx q).E × Bool) :=
+noncomputable def spineOldMarking (i : Fin q × Bool)  :=
   mapPath (genusSpineToOld q) (spineMarkedLoop q i).1
 
-noncomputable def surfaceOldMarking (i : Fin q × Bool) : List ((spineOldCx q).E × Bool) :=
+noncomputable def surfaceOldMarking (i : Fin q × Bool)  :=
   mapPath (surfCx (cmpRel (GenusVertex q))) (gSig q (i.1.val, i.2))
 
-theorem spineOldMarking_isPath (i : Fin q × Bool) :
-    IsPath (spineOldCx q).src (spineOldCx q).tgt (spineOldMarking q i)
-      (spineOldBase q) (spineOldBase q) :=
-  isPath_mapPath (genusSpineToOld q) (spineMarkedLoop q i).2
+abbrev spineOldMarking_isPath (i : Fin q × Bool)  :=
+  FiniteChains.Comb.isPath_mapPath (FiniteChains.Davis.Genus.genusSpineToOld q)
+    (FiniteChains.Davis.Genus.spineMarkedLoop q i).property
 
-theorem surfaceOldMarking_isPath (i : Fin q × Bool) :
-    IsPath (spineOldCx q).src (spineOldCx q).tgt (surfaceOldMarking q i)
-      (spineOldBase q) (spineOldBase q) :=
+abbrev surfaceOldMarking_isPath (i : Fin q × Bool)  :=
   isPath_mapPath (surfCx _) (isPath_gSig q (i.1.val, i.2))
 
 theorem exists_spineOldMarkingCorrection (i : Fin q × Bool) :
     ∃ d : (uCover (spineOldCx q) (spineOldBase q)).F →₀ ℤ,
       Comb.bdry2 _ d =
         pathChain (uLiftPath (spineOldMarking q i) (UV.base _ (spineOldBase q))) -
-          pathChain (uLiftPath (surfaceOldMarking q i) (UV.base _ (spineOldBase q))) := by
-  exact (htpy_uLiftPath (c := UV.base (spineOldCx q) (spineOldBase q))
+          pathChain (uLiftPath (surfaceOldMarking q i) (UV.base _ (spineOldBase q))) := (htpy_uLiftPath (c := UV.base (spineOldCx q) (spineOldBase q))
     (spineOldMarking_isPath q i) (spineMarkedLoop_toOld_htpy q i)).exists_boundary
 
-noncomputable def spineOldMarkingCorrection (i : Fin q × Bool) :
-    (uCover (spineOldCx q) (spineOldBase q)).F →₀ ℤ :=
+noncomputable def spineOldMarkingCorrection (i : Fin q × Bool)  :=
   Classical.choose (exists_spineOldMarkingCorrection q i)
 
 theorem spineOldMarkingCorrection_boundary (i : Fin q × Bool) :
@@ -93,31 +85,24 @@ variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (u : Fin q × Bool → FreeGroup α)
   (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
 
-noncomputable def oldIntoNamedQuotient :
-    Hom (spineOldCx q) (orderCx (namedQuotientPos ρ q u)) :=
+noncomputable def oldIntoNamedQuotient  :=
   orderCxMap (qOldIncl (att := namedAtt ρ q u)) qOldIncl_monotone
 
-theorem oldCylinderPath_isPath :
-    IsPath (orderCx (namedQuotientPos ρ q u)).src
-      (orderCx (namedQuotientPos ρ q u)).tgt (spineQuotientCylinderPath q ρ u)
-      (namedQuotientBase ρ q u) ((oldIntoNamedQuotient q ρ u).onV (spineOldBase q)) :=
+abbrev oldCylinderPath_isPath  :=
   isPath_ordPos (qNew_att_le_qOldIncl (att := namedAtt ρ q u) (gBase q))
 
 noncomputable def quotientCylinderVertex :
     UV (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) :=
   UV.mk ⟨spineQuotientCylinderPath q ρ u, by
-    rw (config := { transparency := .default }) [endpt_eq_of_isPath (oldCylinderPath_isPath q ρ u)]
-    exact oldCylinderPath_isPath q ρ u⟩
+    solve_by_elim []⟩
 
 theorem quotientCylinderVertex_end :
     endV (quotientCylinderVertex q ρ u) =
       (oldIntoNamedQuotient q ρ u).onV (spineOldBase q) :=
-  endpt_eq_of_isPath (oldCylinderPath_isPath q ρ u)
+  rfl
 
 /-- Every face of this lift is an actual old face of the quotient. -/
-noncomputable def oldCoverToNamedQuotient :
-    Hom (uCover (spineOldCx q) (spineOldBase q))
-      (uCover (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)) :=
+noncomputable def oldCoverToNamedQuotient  :=
   (uCoverPathTransport (oldCylinderPath_isPath q ρ u)).comp
     (univLift (spineOldCx q) (oldIntoNamedQuotient q ρ u) (spineOldBase q))
 
@@ -129,11 +114,12 @@ theorem oldCoverToNamedQuotient_pathChain
       pathChain (uLiftPath (mapPath (oldIntoNamedQuotient q ρ u) p)
         (quotientCylinderVertex q ρ u)) := by
   rw (config := { transparency := .default }) [oldCoverToNamedQuotient, chain1_comp_apply, univLift_pathChain _ _ _ hp]
-  rw (config := { transparency := .default }) [uCoverPathTransport_pathChain _ _ (isPath_mapPath (oldIntoNamedQuotient q ρ u) hp)]
+  rw  [uCoverPathTransport_pathChain _ _ (isPath_mapPath (oldIntoNamedQuotient q ρ u) hp)]
   congr 2
 
+variable (g : PresGroup (substPresF ρ (finiteSpineWordBlock q u)))
 theorem receivedSpineToQuotient_root
-    (g : PresGroup (substPresF ρ (finiteSpineWordBlock q u))) :
+     :
     (receivedSpineToQuotient q ρ u hrho).onV (g, (markedSpineTree q).root) =
       deckV (finiteSpineToQuotient ρ q u hrho g) (quotientCylinderVertex q ρ u) := by
   change (uCoverPathTransport (spineQuotientCylinderPath_isPath q ρ u)).onV
@@ -142,15 +128,14 @@ theorem receivedSpineToQuotient_root
         (markedSpineToNamedQuotient q ρ u) (markedSpineTree q).root)) = _
   simp only [SpanningTree.mappedTreeReference, SpanningTree.treePath_root,
     mapPath, List.map_nil, extendList_nil]
-  rw (config := { transparency := .default }) [uCoverPathTransport_deckV, uCoverPathTransport_base]
+  rw  [uCoverPathTransport_deckV, uCoverPathTransport_base]
   change deckV (pi1Conj (spineQuotientCylinderPath_isPath q ρ u)
     (pi1Conj (isPath_revPath (spineQuotientCylinderPath_isPath q ρ u))
       (finiteSpineToQuotient ρ q u hrho g))) (quotientCylinderVertex q ρ u) = _
-  rw (config := { transparency := .default }) [pi1Conj_cancel_reverse]
+  rw  [pi1Conj_cancel_reverse]
 
 noncomputable def quotientMarkingCorrection
-    (g : PresGroup (substPresF ρ (finiteSpineWordBlock q u))) (i : Fin q × Bool) :
-    (uCover (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)).F →₀ ℤ :=
+     (i : Fin q × Bool)  :=
   (univDeck (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)).faceChains
     (finiteSpineToQuotient ρ q u hrho g)
     (chain2 (oldCoverToNamedQuotient q ρ u) (spineOldMarkingCorrection q i))
@@ -158,7 +143,7 @@ noncomputable def quotientMarkingCorrection
 /-- The correction is lifted in the old subcomplex before translation;
 its boundary changes exactly the two chosen marking paths. -/
 theorem quotientMarkingCorrection_boundary
-    (g : PresGroup (substPresF ρ (finiteSpineWordBlock q u))) (i : Fin q × Bool) :
+     (i : Fin q × Bool) :
     Comb.bdry2 _ (quotientMarkingCorrection q ρ u hrho g i) =
       pathChain (uLiftPath
         (mapPath (oldIntoNamedQuotient q ρ u) (spineOldMarking q i))
@@ -175,14 +160,14 @@ theorem quotientMarkingCorrection_boundary
       (mapPath (oldIntoNamedQuotient q ρ u) (spineOldMarking q i))
       (endV (quotientCylinderVertex q ρ u))
       ((oldIntoNamedQuotient q ρ u).onV (spineOldBase q)) := by
-    rw (config := { transparency := .default }) [quotientCylinderVertex_end]
+    rw  [quotientCylinderVertex_end]
     exact isPath_mapPath _ (spineOldMarking_isPath q i)
   have hs : IsPath (orderCx (namedQuotientPos ρ q u)).src
       (orderCx (namedQuotientPos ρ q u)).tgt
       (mapPath (oldIntoNamedQuotient q ρ u) (surfaceOldMarking q i))
       (endV (quotientCylinderVertex q ρ u))
       ((oldIntoNamedQuotient q ρ u).onV (spineOldBase q)) := by
-    rw (config := { transparency := .default }) [quotientCylinderVertex_end]
+    rw  [quotientCylinderVertex_end]
     exact isPath_mapPath _ (surfaceOldMarking_isPath q i)
   rw (config := { transparency := .default }) [univDeck_pathChain _ _ _ hp, univDeck_pathChain _ _ _ hs]
 
@@ -205,14 +190,15 @@ noncomputable def quotientSurfaceMarkingChains :
     (mapPath (oldIntoNamedQuotient q ρ u) (surfaceOldMarking q x.2))
     (deckV (finiteSpineToQuotient ρ q u hrho x.1) (quotientCylinderVertex q ρ u))))
 
+variable (c : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ)
 theorem quotientMarkingCorrections_boundary
-    (c : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ) :
+     :
     Comb.bdry2 _ (quotientMarkingCorrections q ρ u hrho c) =
       quotientSpineMarkingChains q ρ u hrho c - quotientSurfaceMarkingChains q ρ u hrho c := by
   induction c using Finsupp.induction_linear with
   | zero => simp
   | add c d hc hd =>
-      rw (config := { transparency := .default }) [map_add, map_add, hc, hd, map_add, map_add]
+      rw  [map_add, map_add, hc, hd, map_add, map_add]
       abel
   | single x n =>
       simp only [quotientMarkingCorrections, quotientSpineMarkingChains,
@@ -225,23 +211,23 @@ theorem markedSpineToNamedQuotient_marking_path (i : Fin q × Bool) :
   change mapPath ((oldIntoNamedQuotient q ρ u).comp
       ((genusSpineToOld q).comp (componentIncl (genusSpineCx q) (spineBase q))))
     (markedSpineLoop q i).1 = _
-  rw (config := { transparency := .default }) [← mapPath_comp, ← mapPath_comp, markedSpineLoop_inclusion]
+  rw  [← mapPath_comp, ← mapPath_comp, markedSpineLoop_inclusion]
   rfl
 
 /-- The abstractly indexed marked chain map agrees exactly with the actual
 translated lifted marking paths at the cylinder endpoint. -/
 theorem quotientSpineMarkingChains_eq
-    (c : (PresGroup (substPresF ρ (finiteSpineWordBlock q u)) × (Fin q × Bool)) →₀ ℤ) :
+     :
     chain1 (uCoverPathTransport (spineQuotientCylinderPath_isPath q ρ u))
       (ReceivedTree.geometricMarkedChainMap (markedSpineTree q)
         (markedSpineToNamedQuotient q ρ u) (finiteSpineOldRootReceiver q ρ u hrho)
         (treeMarkedSpineLoop q) c) = quotientSpineMarkingChains q ρ u hrho c := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw (config := { transparency := .default }) [map_add, map_add, hc, hd, map_add]
+  | add c d hc hd => simp_all
   | single x n =>
       obtain ⟨g, i⟩ := x
-      rw (config := { transparency := .default }) [ReceivedTree.geometricMarkedChainMap, Finsupp.linearCombination_single,
+      rw  [ReceivedTree.geometricMarkedChainMap, Finsupp.linearCombination_single,
         map_smul, quotientSpineMarkingChains, Finsupp.linearCombination_single]
       apply congrArg (fun z => n • z)
       have hp : IsPath (orderCx (namedQuotientPos ρ q u)).src
@@ -253,15 +239,14 @@ theorem quotientSpineMarkingChains_eq
           ((markedSpineToNamedQuotient q ρ u).onV (markedSpineTree q).root) := by
         rw (config := { transparency := .default }) [ReceivedTree.receiverVertex_end]
         exact isPath_mapPath _ (treeMarkedSpineLoop q i).2
-      rw (config := { transparency := .default }) [uCoverPathTransport_pathChain _ _ hp, markedSpineToNamedQuotient_marking_path]
+      rw  [uCoverPathTransport_pathChain _ _ hp, markedSpineToNamedQuotient_marking_path]
       change pathChain (uLiftPath _
         ((receivedSpineToQuotient q ρ u hrho).onV (g, (markedSpineTree q).root))) = _
-      rw (config := { transparency := .default }) [receivedSpineToQuotient_root]
+      rw  [receivedSpineToQuotient_root]
 
 noncomputable def quotientCorrectedRelativeChain
     (β : NamedSpineRel q → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ (finiteSpineWordBlock q u)))) :
-    (uCover (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)).F →₀ ℤ :=
+      (PresGroup (substPresF ρ (finiteSpineWordBlock q u))))  :=
   chain2 (receivedSpineToQuotient q ρ u hrho)
     (receivedSpineFaceChain ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit β) -
       quotientMarkingCorrections q ρ u hrho
@@ -279,7 +264,7 @@ theorem quotientCorrectedRelativeChain_boundary
     Comb.bdry2 _ (quotientCorrectedRelativeChain q ρ u hrho β) =
       quotientSurfaceMarkingChains q ρ u hrho
         ((ReceivedTree.cellCoordinates (Fin q × Bool)).symm (fun i => β (Sum.inr i))) := by
-  rw (config := { transparency := .default }) [quotientCorrectedRelativeChain, map_sub,
+  rw  [quotientCorrectedRelativeChain, map_sub,
     receivedSpineToQuotient_relative_boundary q ρ u hrho β hβ,
     quotientSpineMarkingChains_eq, quotientMarkingCorrections_boundary]
   abel

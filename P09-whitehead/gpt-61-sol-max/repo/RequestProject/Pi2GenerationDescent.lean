@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ZeroPi2Descent
-
-@[expose] public section
+import RequestProject.ZeroPi2Descent
 
 /-!
 # From generation of `π₂` to the vanishing of the arrows of the descended chain
@@ -29,74 +27,57 @@ statement (3.5) itself.
   classes coming from `L`, then `j` is zero on `π₂`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u
+
 
 /-! ### Changing the base vertex of the universal cover -/
 
-section Shift
+section
 
 variable {X : Complex2.{u}} {y₀ w₀ : X.V} {q : List (X.E × Bool)}
 
+variable (hq : IsPath X.src X.tgt q y₀ w₀)
+  (p : PathFrom X w₀)
 /-- Prepending a fixed path to a path issued from its endpoint. -/
-def shiftP (hq : IsPath X.src X.tgt q y₀ w₀) (p : PathFrom X w₀) : PathFrom X y₀ :=
+def shiftP   : PathFrom X y₀ :=
   ⟨q ++ p.1, by
-    have hend : endpt X y₀ (q ++ p.1) = endpt X w₀ p.1 := by
-      rw [endpt_append, endpt_eq_of_isPath hq]
-    rw [hend]
-    exact isPath_append_iff.mpr ⟨w₀, hq, p.2⟩⟩
+    grind [FiniteChains.Comb.endpt_append, FiniteChains.Comb.endpt_eq_of_isPath, FiniteChains.Comb.isPath_append_iff]⟩
 
-theorem endpt_shiftP (hq : IsPath X.src X.tgt q y₀ w₀) (p : PathFrom X w₀) :
+theorem endpt_shiftP   :
     endpt X y₀ (shiftP hq p).1 = endpt X w₀ p.1 := by
   show endpt X y₀ (q ++ p.1) = endpt X w₀ p.1
   rw [endpt_append, endpt_eq_of_isPath hq]
 
 /-- Changing the base vertex of the universal cover, on vertices. -/
-def shiftV (hq : IsPath X.src X.tgt q y₀ w₀) (c : UV X w₀) : UV X y₀ :=
+def shiftV  (c : UV X w₀) : UV X y₀ :=
   Quotient.map (shiftP hq) (by
     intro p p' hpp
     show Htpy X y₀ (endpt X y₀ (shiftP hq p).1) (shiftP hq p).1 (shiftP hq p').1
     rw [endpt_shiftP]
     exact Htpy.append_congr hq p.2 (Htpy.refl q) hpp) c
 
-@[simp] theorem shiftV_mk (hq : IsPath X.src X.tgt q y₀ w₀) (p : PathFrom X w₀) :
+@[simp] theorem shiftV_mk   :
     shiftV hq (UV.mk p) = UV.mk (shiftP hq p) := rfl
 
-@[simp] theorem endV_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) (c : UV X w₀) :
+@[simp] theorem endV_shiftV  (c : UV X w₀) :
     endV (shiftV hq c) = endV c := by
-  induction c using UV.ind with
-  | h p => exact endpt_shiftP hq p
+  induction c using UV.ind <;> simp_all [endpt_shiftP]
 
-theorem shiftV_base (hq : IsPath X.src X.tgt q y₀ w₀) :
+theorem shiftV_base  :
     shiftV hq (UV.base X w₀) = UV.mk ⟨q, by rw [endpt_eq_of_isPath hq]; exact hq⟩ := by
   refine congrArg UV.mk (Subtype.ext ?_)
   show q ++ [] = q
   exact List.append_nil q
 
-theorem extend_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) (eb : X.E × Bool) (c : UV X w₀) :
+theorem extend_shiftV  (eb : X.E × Bool) (c : UV X w₀) :
     extend eb (shiftV hq c) = shiftV hq (extend eb c) := by
   induction c using UV.ind with
   | h p =>
       have hl : (extendP eb (shiftP hq p)).1 = (shiftP hq (extendP eb p)).1 := by
-        by_cases h : endpt X w₀ p.1 = germSrc X.src X.tgt eb
-        · have h' : endpt X y₀ (shiftP hq p).1 = germSrc X.src X.tgt eb := by
-            rw [endpt_shiftP]; exact h
-          rw [extendP_pos h']
-          show (q ++ p.1) ++ [eb] = q ++ (extendP eb p).1
-          rw [extendP_pos h]
-          simp
-        · have h' : ¬ endpt X y₀ (shiftP hq p).1 = germSrc X.src X.tgt eb := by
-            rw [endpt_shiftP]; exact h
-          rw [extendP_neg h']
-          show (shiftP hq p).1 = q ++ (extendP eb p).1
-          rw [extendP_neg h]
-          rfl
+        grind [endpt, germSrc, shiftP, endpt_shiftP, extendP]
       refine Quotient.sound ?_
       show Htpy X y₀ (endpt X y₀ (extendP eb (shiftP hq p)).1) (extendP eb (shiftP hq p)).1
         (shiftP hq (extendP eb p)).1
@@ -104,25 +85,20 @@ theorem extend_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) (eb : X.E × Bool) (
       exact Htpy.refl _
 
 /-- Changing the base vertex of the universal cover, on edges. -/
-def shiftE (hq : IsPath X.src X.tgt q y₀ w₀) (E : UE X w₀) : UE X y₀ :=
+def shiftE  (E : UE X w₀) : UE X y₀ :=
   ⟨(shiftV hq E.1.1, E.1.2), by rw [endV_shiftV]; exact E.2⟩
 
 /-- Changing the base vertex of the universal cover, on two-cells. -/
-def shiftF (hq : IsPath X.src X.tgt q y₀ w₀) (F : UF X w₀) : UF X y₀ :=
+def shiftF  (F : UF X w₀) : UF X y₀ :=
   ⟨(shiftV hq F.1.1, F.1.2), by rw [endV_shiftV]; exact F.2⟩
 
-theorem liftGerm_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) {c : UV X w₀} {eb : X.E × Bool}
+theorem liftGerm_shiftV  {c : UV X w₀} {eb : X.E × Bool}
     (h : endV c = germSrc X.src X.tgt eb) (h' : endV (shiftV hq c) = germSrc X.src X.tgt eb) :
     liftGerm (shiftV hq c) eb h' = (shiftE hq (liftGerm c eb h).1, (liftGerm c eb h).2) := by
   obtain ⟨e, b⟩ := eb
-  cases b with
-  | true => rfl
-  | false =>
-      refine Prod.ext ?_ rfl
-      refine Subtype.ext (Prod.ext ?_ rfl)
-      exact extend_shiftV hq (e, false) c
+  cases b <;> aesop (add simp [extend_shiftV])
 
-theorem uLiftPath_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) :
+theorem uLiftPath_shiftV  :
     ∀ (l : List (X.E × Bool)) (c : UV X w₀) (v : X.V), IsPath X.src X.tgt l (endV c) v →
       uLiftPath l (shiftV hq c) = (uLiftPath l c).map (fun Eb => (shiftE hq Eb.1, Eb.2)) := by
   intro l
@@ -130,7 +106,7 @@ theorem uLiftPath_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) :
   | nil => intro c v _; rfl
   | cons eb t ih =>
       intro c v hl
-      have h : endV c = germSrc X.src X.tgt eb := hl.1
+      have h  := hl.1
       have h' : endV (shiftV hq c) = germSrc X.src X.tgt eb := by rw [endV_shiftV]; exact h
       rw [uLiftPath_cons h', uLiftPath_cons h, List.map_cons, liftGerm_shiftV hq h h',
         extend_shiftV hq eb c, ih (extend eb c) v (by rw [endV_extend h]; exact hl.2)]
@@ -138,7 +114,7 @@ theorem uLiftPath_shiftV (hq : IsPath X.src X.tgt q y₀ w₀) :
 /-- **Change of base vertex of the universal cover.**  A path from `y₀` to `w₀` induces a
 cellular map `Ũ(X, w₀) → Ũ(X, y₀)` over `X`; it sends the base vertex to the class of the
 path.  For a loop this is the deck transformation attached to its class. -/
-noncomputable def shiftHom (hq : IsPath X.src X.tgt q y₀ w₀) :
+noncomputable def shiftHom  :
     Hom (uCover X w₀) (uCover X y₀) where
   onV := shiftV hq
   onE := shiftE hq
@@ -148,29 +124,30 @@ noncomputable def shiftHom (hq : IsPath X.src X.tgt q y₀ w₀) :
   base_onF := fun _ => rfl
   att_onF := by
     intro F
-    have hbase : endV F.1.1 = X.base F.1.2 := F.2
+    have hbase  := F.2
     have hatt : IsPath X.src X.tgt (X.att F.1.2) (endV F.1.1) (X.base F.1.2) := by
       rw [hbase]; exact X.att_isLoop F.1.2
     show uLiftPath (X.att F.1.2) (shiftV hq F.1.1) = _
     exact uLiftPath_shiftV hq (X.att F.1.2) F.1.1 (X.base F.1.2) hatt
 
-@[simp] theorem onE_shiftHom (hq : IsPath X.src X.tgt q y₀ w₀) (E : UE X w₀) :
+@[simp] theorem onE_shiftHom  (E : UE X w₀) :
     ((shiftHom hq).onE E).1.2 = E.1.2 := rfl
 
-@[simp] theorem onF_shiftHom (hq : IsPath X.src X.tgt q y₀ w₀) (F : UF X w₀) :
+@[simp] theorem onF_shiftHom  (F : UF X w₀) :
     ((shiftHom hq).onF F).1.2 = F.1.2 := rfl
 
-end Shift
+end
 
 /-! ### Spherical classes coming from a subcomplex -/
 
 variable {L L' E E' : Complex2.{u}}
 
+variable (ι : Hom L E)
 /-- The set of spherical classes of `E` **coming from `L`** along `ι : L → E`: the images of
 the two-cycles of the universal cover of `L` under all lifts of `ι` to the universal covers.
 Letting the lift vary over all lifts (equivalently, over all copies of `L̃` in `Ẽ`) is what
 makes the set closed under the deck group of `Ẽ`. -/
-def Pi2FromSub (ι : Hom L E) (x₀ : E.V) : Set ((uCover E x₀).F →₀ ℤ) :=
+def Pi2FromSub  (x₀ : E.V)  :=
   {d | ∃ (l₀ : L.V) (φ : Hom (uCover L l₀) (uCover E x₀)),
       (∀ v, endV (φ.onV v) = ι.onV (endV v)) ∧
       (∀ e : UE L l₀, ((φ.onE e).1).2 = ι.onE (e.1.2)) ∧
@@ -180,7 +157,7 @@ def Pi2FromSub (ι : Hom L E) (x₀ : E.V) : Set ((uCover E x₀).F →₀ ℤ) 
 /-- **The last step of the proof of Proposition 3.11.**  Let `j ∘ ι = ι' ∘ k` be a commuting
 square of cellular maps in which the upper arrow `k : L → L'` is zero on `π₂`.  Then `j` kills
 every spherical class of `E` which lies in the span of the classes coming from `L`. -/
-theorem zeroPi2_chain_of_generated (ι : Hom L E) (k : Hom L L') (ι' : Hom L' E') (j : Hom E E')
+theorem zeroPi2_chain_of_generated  (k : Hom L L') (ι' : Hom L' E') (j : Hom E E')
     (hsq : j.comp ι = ι'.comp k) (hconnE' : IsConnected E') (hzero : ZeroPi2 k) {x₀ : E.V}
     {c : (uCover E x₀).F →₀ ℤ} (hgen : c ∈ Submodule.span ℤ (Pi2FromSub ι x₀)) :
     chain2 (univLift E j x₀) c = 0 := by
@@ -231,7 +208,7 @@ theorem zeroPi2_chain_of_generated (ι : Hom L E) (k : Hom L L') (ι' : Hom L' E
     have hV := lift_onV_eq hqcov isConnected_univCover hE hbase
     have hFeq := lift_onF_eq hqcov hF hV
     -- the upper arrow kills `z`
-    have hkz : chain2 kappa z = 0 := hzero l₀ z hz
+    have hkz  := hzero l₀ z hz
     have hAB : chain2 A z = chain2 B z :=
       congrArg (fun m => Finsupp.mapDomain m z) (funext hFeq)
     have hBz : chain2 B z = chain2 chi (chain2 kappa z) := by
@@ -249,25 +226,23 @@ theorem zeroPi2_chain_of_generated (ι : Hom L E) (k : Hom L L') (ι' : Hom L' E
 upstairs.**  If every spherical class of `E` is a combination of classes coming from `L`, and
 the upper arrow `k : L → L'` is zero on `π₂`, then the lower arrow `j : E → E'` is zero on
 `π₂`. -/
-theorem zeroPi2_of_pi2Generated (ι : Hom L E) (k : Hom L L') (ι' : Hom L' E') (j : Hom E E')
+abbrev zeroPi2_of_pi2Generated  (k : Hom L L') (ι' : Hom L' E') (j : Hom E E')
     (hsq : j.comp ι = ι'.comp k) (hconnE' : IsConnected E') (hzero : ZeroPi2 k)
-    (hgen : ∀ (x₀ : E.V), ∀ c ∈ Pi2 E x₀, c ∈ Submodule.span ℤ (Pi2FromSub ι x₀)) :
-    ZeroPi2 j :=
+    (hgen : ∀ (x₀ : E.V), ∀ c ∈ Pi2 E x₀, c ∈ Submodule.span ℤ (Pi2FromSub ι x₀))  :=
   fun x₀ c hc => zeroPi2_chain_of_generated ι k ι' j hsq hconnE' hzero (hgen x₀ c hc)
 
 /-! ### The arrows of the descended chain -/
 
-section Pushout
+section
 
 variable {D K M : Complex2.{u}}
 
 theorem hom_ext {X Y : Complex2.{u}} : ∀ a b : Hom X Y,
-    a.onV = b.onV → a.onE = b.onE → a.onF = b.onF → a = b := by
-  rintro ⟨a1, a2, a3, p1, p2, p3, p4⟩ ⟨b1, b2, b3, q1, q2, q3, q4⟩ hV hE hF
-  cases hV; cases hE; cases hF; rfl
+    a.onV = b.onV → a.onE = b.onE → a.onF = b.onF → a = b := @Hom.ext' X Y
 
+variable (p : Hom D K)
 /-- The factorization through the pushout restricts to the given map on the term upstairs. -/
-theorem pushoutLift_comp_pushoutMap (p : Hom D K) (i : Hom D L) (hiV : Function.Injective i.onV)
+theorem pushoutLift_comp_pushoutMap  (i : Hom D L) (hiV : Function.Injective i.onV)
     (hiE : Function.Injective i.onE) (hiF : Function.Injective i.onF) (f : Hom K M) (g : Hom L M)
     (hV : ∀ d, g.onV (i.onV d) = f.onV (p.onV d))
     (hE : ∀ d, g.onE (i.onE d) = f.onE (p.onE d))
@@ -276,29 +251,23 @@ theorem pushoutLift_comp_pushoutMap (p : Hom D K) (i : Hom D L) (hiV : Function.
   refine hom_ext _ _ (funext fun v => ?_) (funext fun e => ?_) (funext fun c => ?_)
   · show Sum.elim f.onV (fun w : OffV i => g.onV w.1) (pushV p i v) = g.onV v
     by_cases h : ∃ d, i.onV d = v
-    · obtain ⟨d, rfl⟩ := h
-      rw [pushV_of_mem p hiV d]
-      exact (hV d).symm
+    · classical aesop (add simp [pushV_of_mem])
     · rw [pushV_of_off p i ⟨v, fun d hd => h ⟨d, hd⟩⟩]
       rfl
   · show Sum.elim f.onE (fun w : OffE i => g.onE w.1) (pushE p i e) = g.onE e
     by_cases h : ∃ d, i.onE d = e
-    · obtain ⟨d, rfl⟩ := h
-      rw [pushE_of_mem p hiE d]
-      exact (hE d).symm
+    · classical aesop (add simp [pushE_of_mem])
     · rw [pushE_of_off p i ⟨e, fun d hd => h ⟨d, hd⟩⟩]
       rfl
   · show Sum.elim f.onF (fun w : OffF i => g.onF w.1) (pushF p i c) = g.onF c
     by_cases h : ∃ d, i.onF d = c
-    · obtain ⟨d, rfl⟩ := h
-      rw [pushF_of_mem p hiF d]
-      exact (hF d).symm
+    · classical aesop (add simp [pushF_of_mem])
     · rw [pushF_of_off p i ⟨c, fun d hd => h ⟨d, hd⟩⟩]
       rfl
 
 /-- **The square of Proposition 3.11 commutes**: the map of pushouts induced by `L ⊆ L'`
 restricted to `L` is the composite `L → L' → K ∪_p L'`. -/
-theorem pushoutFunctor_comm (p : Hom D K) (j : Hom D L) (j' : Hom D L') (k : Hom L L')
+theorem pushoutFunctor_comm  (j : Hom D L) (j' : Hom D L') (k : Hom L L')
     (hjV : Function.Injective j.onV) (hjE : Function.Injective j.onE)
     (hjF : Function.Injective j.onF) (hj'V : Function.Injective j'.onV)
     (hj'E : Function.Injective j'.onE) (hj'F : Function.Injective j'.onF)
@@ -329,7 +298,7 @@ theorem pushoutFunctor_comm (p : Hom D K) (j : Hom D L) (j' : Hom D L') (k : Hom
 (3.5).**  For the cellular pushouts `E = K ∪_p L ⊆ E' = K ∪_p L'` of Proposition 3.11: if the
 second homotopy module of `E` is generated by the classes coming from `L`, and `L → L'` is
 zero on `π₂`, then so is `E → E'`. -/
-theorem zeroPi2_pushoutFunctor (p : Hom D K) (j : Hom D L) (j' : Hom D L') (k : Hom L L')
+abbrev zeroPi2_pushoutFunctor  (j : Hom D L) (j' : Hom D L') (k : Hom L L')
     (hjV : Function.Injective j.onV) (hjE : Function.Injective j.onE)
     (hjF : Function.Injective j.onF) (hj'V : Function.Injective j'.onV)
     (hj'E : Function.Injective j'.onE) (hj'F : Function.Injective j'.onF)
@@ -337,12 +306,11 @@ theorem zeroPi2_pushoutFunctor (p : Hom D K) (j : Hom D L) (j' : Hom D L') (k : 
     (hzero : ZeroPi2 k)
     (hgen : ∀ x₀ : (pushoutComplex p j hjV hjE).V,
       ∀ c ∈ Pi2 (pushoutComplex p j hjV hjE) x₀,
-        c ∈ Submodule.span ℤ (Pi2FromSub (pushoutMap p j hjV hjE hjF) x₀)) :
-    ZeroPi2 (pushoutFunctor p j j' k hjV hjE hj'V hj'E hj'F hkj) :=
+        c ∈ Submodule.span ℤ (Pi2FromSub (pushoutMap p j hjV hjE hjF) x₀))  :=
   zeroPi2_of_pi2Generated (pushoutMap p j hjV hjE hjF) k (pushoutMap p j' hj'V hj'E hj'F) _
     (pushoutFunctor_comm p j j' k hjV hjE hjF hj'V hj'E hj'F hkj) hconnE' hzero hgen
 
-end Pushout
+end
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

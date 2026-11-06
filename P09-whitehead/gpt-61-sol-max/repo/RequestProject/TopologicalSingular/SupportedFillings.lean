@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.RelativeSingularMaps
-public import RequestProject.TopologicalSingular.SingularChainH0
-public import RequestProject.TopologicalSingular.ContractibleSingularChains
-
-@[expose] public section
+import RequestProject.TopologicalSingular.RelativeSingularMaps
+import RequestProject.TopologicalSingular.SingularChainH0
+import RequestProject.TopologicalSingular.ContractibleSingularChains
 
 namespace FiniteChains.TopologicalSingular
-universe u
 variable {X : Type u} [TopologicalSpace X]
 
 /-- Exactness in a contractible subspace gives a filling that stays in it. -/
@@ -29,8 +26,8 @@ theorem connected_supported_zero_bounds (A : Set X) [PathConnectedSpace A]
     ∃ b : Chain X 1, b ∈ subChains A 1 ∧ boundary 0 b = c := by
   obtain ⟨a, rfl⟩ := hc
   have ha : a ∈ LinearMap.ker augmentation := by
-    change augmentation a = 0
-    simpa only [augmentation_map] using hz
+    
+    simpa [augmentation_map] using hz
   rw [ker_augmentation_eq_range_boundary] at ha
   obtain ⟨b, hb⟩ := ha
   refine ⟨map (inclusion A) 1 b, ⟨b, rfl⟩, ?_⟩

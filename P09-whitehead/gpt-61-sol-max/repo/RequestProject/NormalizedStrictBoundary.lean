@@ -1,16 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNormalizationNaturality
-public import RequestProject.OrderComparableOneHomotopy
+import RequestProject.OrderNormalizationNaturality
+import RequestProject.OrderComparableOneHomotopy
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
 /-- Actual cellular normalization and an actual monotone endomorphism commute

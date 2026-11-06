@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TreePi2Reflection
-public import RequestProject.CombPushout
-
-@[expose] public section
+import RequestProject.TreePi2Reflection
+import RequestProject.CombPushout
 
 /-! Undo a spanning-tree collapse relative to the original complex.
 New generators are actual loops at the original tree root. An old
@@ -13,7 +11,6 @@ paths. Original vertices, edges and two-cells are retained literally.
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -38,9 +35,8 @@ def loopGraph : Complex2 where
 def oldPath (l : List (D.E × Bool)) : List ((D.E ⊕ Z) × Bool) :=
   l.map (fun e => (Sum.inl e.1, e.2))
 
-theorem oldPath_isPath {l : List (D.E × Bool)} {a b : D.V}
-    (hl : IsPath D.src D.tgt l a b) :
-    IsPath (source T) (target T) (oldPath (Z := Z) l) a b :=
+abbrev oldPath_isPath {l : List (D.E × Bool)} {a b : D.V}
+    (hl : IsPath D.src D.tgt l a b)  :=
   FiniteChains.Comb.isPath_map (src := D.src) (tgt := D.tgt)
     (src' := source T) (tgt' := target T) (fun x : D.V => x)
     (Sum.inl : D.E → D.E ⊕ Z) (fun _ => rfl) (fun _ => rfl) hl
@@ -52,13 +48,14 @@ def generatorLoop : NonTree T ⊕ Z → List ((D.E ⊕ Z) × Bool)
 theorem generatorLoop_isPath (a : NonTree T ⊕ Z) :
     IsPath (source T) (target T) (generatorLoop T a) T.root T.root := by
   cases a with
-  | inl e => exact oldPath_isPath T (conjPath_isLoop T (isPath_single (e.val, true)))
+  | inl e => classical solve_by_elim (transparency := .default) [FiniteChains.Comb.RelativeTreeExtension.oldPath_isPath, FiniteChains.Comb.SpanningTree.conjPath_isLoop, FiniteChains.Comb.isPath_single]
   | inr z => exact ⟨rfl, rfl⟩
 
-def signedLoop (e : (NonTree T ⊕ Z) × Bool) : List ((D.E ⊕ Z) × Bool) :=
+variable (e : (NonTree T ⊕ Z) × Bool)
+def signedLoop  : List ((D.E ⊕ Z) × Bool) :=
   if e.2 then generatorLoop T e.1 else revPath (X := loopGraph (Z := Z) T) (generatorLoop T e.1)
 
-theorem signedLoop_isPath (e : (NonTree T ⊕ Z) × Bool) :
+theorem signedLoop_isPath  :
     IsPath (source T) (target T) (signedLoop T e) T.root T.root := by
   rcases e with ⟨a, b⟩
   cases b
@@ -152,11 +149,9 @@ theorem generatorLoop_collapsed (a : NonTree T ⊕ Z) :
   cases a with
   | inl e =>
       rw [generatorLoop, oldPath_collapsed]
-      simp [conjPath, pathWord_append, pathWord_revPath, pathWord_cons,
-        germWord, e.property]
+      simp [conjPath, pathWord_append, pathWord_revPath, pathWord_cons, germWord, e.property]
   | inr z =>
-      change FreeGroup.map (generatorEquiv T extra)
-        (pathWord (tree T extra) [(Sum.inr z, true)]) = _
+      dsimp!
       rw [pathWord_cons, pathWord_nil, mul_one]
       simp [germWord, tree, generatorEquiv]
 
@@ -164,7 +159,7 @@ theorem readWord_collapsed (l : List ((NonTree T ⊕ Z) × Bool)) :
     FreeGroup.map (generatorEquiv T extra)
       (pathWord (tree T extra) (readWord T l)) = FreeGroup.mk l := by
   induction l with
-  | nil => change FreeGroup.map _ (pathWord (tree T extra) []) = FreeGroup.mk []; rw [pathWord_nil, map_one]; rfl
+  | nil => rfl
   | cons e l ih =>
       rcases e with ⟨a, b⟩
       cases b
@@ -194,8 +189,6 @@ theorem treeRel_equation (f : D.F ⊕ S) :
       rw [readWord_collapsed, FreeGroup.mk_toWord]
 
 theorem connected : IsConnected (complex T extra) := by
-  intro a b
-  exact ⟨oldPath (revPath (T.treePath a) ++ T.treePath b),
-    oldPath_isPath T ((isPath_revPath (T.treePath_isPath a)).append (T.treePath_isPath b))⟩
+  classical solve_by_elim (transparency := .default) (maxDepth := 10) [Exists.intro, FiniteChains.Comb.RelativeTreeExtension.oldPath_isPath, FiniteChains.Comb.IsPath.append, FiniteChains.Comb.isPath_revPath, FiniteChains.Comb.SpanningTree.treePath_isPath]
 
 end FiniteChains.Comb.RelativeTreeExtension

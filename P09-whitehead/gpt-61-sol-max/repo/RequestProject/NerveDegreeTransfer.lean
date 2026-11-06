@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NerveDegreeGluing
-
-@[expose] public section
+import RequestProject.NerveDegreeGluing
 
 /-! Homogeneous positive-degree fillings transfer from an actual induced subposet. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P Q : Type u}
 
 theorem lengthProjection_cmap (f : P → Q) (n : ℕ) (c : Ch P) :

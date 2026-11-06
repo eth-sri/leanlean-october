@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.NaturalDiskAttachingExtensions
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.NaturalDiskAttachingExtensions
 
 /-! Attaching-map change with natural forward map. The inverse proof uses
 the established full-cylinder backtrack homotopy with the explicit ball
@@ -19,20 +17,19 @@ def naturalDiskReparam (r : C(BoundaryFamily J E, X)) :=
     (boundaryFamilyInclusion_isClosedEmbedding J E).injective
     (diskFamilyBoundarySet J E) (diskFamilyBoundaryHomeomorph J E) (fun _ => rfl)
 
-def naturalSubspaceExtension (r₀ r₁ : C(BoundaryFamily J E, X)) (H : r₀.Homotopy r₁) :
-    C(I × DiskFamily J E,
-      Space (r₀ ∘ (diskFamilyBoundaryHomeomorph J E).symm) Subtype.val) :=
+variable (r₀ r₁ : C(BoundaryFamily J E, X))
+def naturalSubspaceExtension  (H : r₀.Homotopy r₁)  :=
   (naturalDiskReparam r₀).toContinuousMap.comp (naturalDiskExtension r₀ r₁ H)
 
-theorem naturalSubspaceExtension_zero (r₀ r₁ : C(BoundaryFamily J E, X))
+theorem naturalSubspaceExtension_zero 
     (H : r₀.Homotopy r₁) (d : DiskFamily J E) :
     naturalSubspaceExtension r₀ r₁ H (0, d) =
       cell (r₀ ∘ (diskFamilyBoundaryHomeomorph J E).symm) Subtype.val d := by
-  change naturalDiskReparam r₀ (naturalDiskExtension r₀ r₁ H (0, d)) = _
+  dsimp [FiniteChains.RelativeAttachment.naturalSubspaceExtension]
   rw [naturalDiskExtension_zero]
   exact attachmentBoundaryReparam_cell ..
 
-theorem naturalSubspaceExtension_side (r₀ r₁ : C(BoundaryFamily J E, X))
+theorem naturalSubspaceExtension_side 
     (H : r₀.Homotopy r₁) (t : I) (a : diskFamilyBoundarySet J E) :
     naturalSubspaceExtension r₀ r₁ H (t, a.val) =
       old (r₀ ∘ (diskFamilyBoundaryHomeomorph J E).symm) Subtype.val
@@ -40,12 +37,12 @@ theorem naturalSubspaceExtension_side (r₀ r₁ : C(BoundaryFamily J E, X))
   let b := diskFamilyBoundaryHomeomorph J E
   have ha : boundaryFamilyInclusion J E (b.symm a) = a.val :=
     congrArg Subtype.val (b.apply_symm_apply a)
-  change naturalDiskReparam r₀ (naturalDiskExtension r₀ r₁ H (t, a.val)) = _
+  dsimp [FiniteChains.RelativeAttachment.naturalSubspaceExtension]
   rw [← ha, naturalDiskExtension_boundary]
   rfl
 
-def naturalDiskAttachingEquiv (r₀ r₁ : C(BoundaryFamily J E, X))
-    (H : r₀.Homotopy r₁) : DiskAttachment r₀ ≃ₕ DiskAttachment r₁ :=
+def naturalDiskAttachingEquiv 
+    (H : r₀.Homotopy r₁)  :=
   let b := diskFamilyBoundaryHomeomorph J E
   let e := attachingHomotopyEquivOfExtensions (diskFamilyBoundarySet J E)
     (r₀.comp b.symm.toContinuousMap) (r₁.comp b.symm.toContinuousMap)
@@ -57,7 +54,7 @@ def naturalDiskAttachingEquiv (r₀ r₁ : C(BoundaryFamily J E, X))
   ((naturalDiskReparam r₀).toHomotopyEquiv.trans e).trans
     (naturalDiskReparam r₁).symm.toHomotopyEquiv
 
-theorem naturalDiskAttachingEquiv_toFun (r₀ r₁ : C(BoundaryFamily J E, X))
+theorem naturalDiskAttachingEquiv_toFun 
     (H : r₀.Homotopy r₁) :
     (naturalDiskAttachingEquiv r₀ r₁ H).toFun = naturalDiskBackward r₁ r₀ H.symm := by
   apply hom_ext r₀ (boundaryFamilyInclusion J E)
@@ -81,11 +78,7 @@ theorem naturalDiskAttachingEquiv_toFun (r₀ r₁ : C(BoundaryFamily J E, X))
       (naturalDiskReparam r₁ (naturalDiskExtension r₁ r₀ H.symm (1, d))) = _
     rw [Homeomorph.symm_apply_apply, naturalDiskBackward_cell]
 
-@[simp] theorem naturalDiskAttachingEquiv_old (r₀ r₁ : C(BoundaryFamily J E, X))
-    (H : r₀.Homotopy r₁) (x : X) :
-    naturalDiskAttachingEquiv r₀ r₁ H (old r₀ (boundaryFamilyInclusion J E) x) =
-      old r₁ (boundaryFamilyInclusion J E) x := by
-  rw [naturalDiskAttachingEquiv_toFun, naturalDiskBackward_old]
+
 
 theorem naturalDiskAttachingEquiv_natural
     {K Y : Type} [TopologicalSpace Y]

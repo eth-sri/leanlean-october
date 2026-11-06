@@ -1,3 +1,2 @@
-module
-public import RequestProject.GenusCappedSpine
-public import RequestProject.TreeUnivCoverIso
+import RequestProject.GenusCappedSpine
+import RequestProject.TreeUnivCoverIso

@@ -1,16 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberQuotientOldGeneration
-public import RequestProject.ChamberQuotientStarOneFillings
-public import RequestProject.NerveRelativeIntersection
-public import RequestProject.NerveBoundaryReflection
-
-@[expose] public section
+import RequestProject.ChamberQuotientOldGeneration
+import RequestProject.ChamberQuotientStarOneFillings
+import RequestProject.NerveRelativeIntersection
+import RequestProject.NerveBoundaryReflection
 
 /-! Actual relative degree-two vanishing for the old/attaching pair in the Q cover. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

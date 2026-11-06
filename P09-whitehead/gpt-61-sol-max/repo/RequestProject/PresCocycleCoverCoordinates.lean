@@ -1,30 +1,27 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderCocycleCoverPi1
-public import RequestProject.PresPosetReading
-public import RequestProject.PresCoverRelatorLetterCoefficients
-public import RequestProject.PresCoverRoseFibreEquiv
-
-@[expose] public section
+import RequestProject.OrderCocycleCoverPi1
+import RequestProject.PresPosetReading
+import RequestProject.PresCoverRelatorLetterCoefficients
+import RequestProject.PresCoverRoseFibreEquiv
 
 noncomputable section
 namespace FiniteChains.PresModel.PresCocycleCover
 open Comb
-universe u
 variable {α J G : Type u} [Group G] (w : J → List (α × Bool))
   (gen : α → G) (hrel : ∀ j, wordVal gen (w j) = 1)
 
 abbrev Coc := presCoc w gen hrel
 abbrev Space := (Coc w gen hrel).Cover
 abbrev projection : Space w gen hrel → PresPos w := OrdCocycle.Cover.point
-abbrev covering : IsPosetCover (projection w gen hrel) :=
+abbrev covering  :=
   (Coc w gen hrel).coverProjection_isPosetCover
 abbrev Cylinder := {p : Space w gen hrel //
   projection w gen hrel p ∈ coneAdjBaseSet (S := circSet w)}
 abbrev cylinderProjection := coneAdjCoverBaseEnd (projection w gen hrel)
 abbrev cylinderCovering := coneAdjCoverBaseEnd_isPosetCover
   (projection w gen hrel) (covering w gen hrel)
-abbrev RoseSpace := cylinderCoverRoseSet w (cylinderProjection w gen hrel)
+
 abbrev roseProjection := cylinderCoverRoseEnd w (cylinderProjection w gen hrel)
 abbrev roseCovering := cylinderCoverRoseEnd_isPosetCover w
   (cylinderProjection w gen hrel) (cylinderCovering w gen hrel)
@@ -38,12 +35,10 @@ def relatorEquiv : PresCoverRelator w (projection w gen hrel) ≃ G × J where
     refine Prod.ext ?_ rfl
     cases p with
     | mk p hp => cases p with
-      | mk v j => cases v with
-        | mk x g => dsimp only at hp; cases hp; rfl
+      | mk v j => cases v <;> aesop
   right_inv _ := rfl
 
-noncomputable def roseFibreEquiv (x : Rose α) :
-    {p : RoseSpace w gen hrel // roseProjection w gen hrel p = x} ≃ G :=
+def roseFibreEquiv (x : Rose α)  :=
   (presCoverRoseFibreEquiv w (projection w gen hrel) x).trans
     ((Coc w gen hrel).coverFibreEquiv (iRose w x))
 
@@ -53,16 +48,10 @@ noncomputable def midpointEquiv : roseCoverMidpoints (roseProjection w gen hrel)
   invFun p := ⟨(((roseFibreEquiv w gen hrel (Rose.mid p.2)).symm p.1).val, p.2),
     ((roseFibreEquiv w gen hrel (Rose.mid p.2)).symm p.1).property⟩
   left_inv p := by
-    apply Subtype.ext
-    refine Prod.ext ?_ rfl
-    exact congrArg Subtype.val ((roseFibreEquiv w gen hrel (Rose.mid p.val.2)).symm_apply_apply
-      ⟨p.val.1, p.property⟩)
-  right_inv p := by
-    refine Prod.ext ?_ rfl
-    exact (roseFibreEquiv w gen hrel (Rose.mid p.2)).apply_symm_apply p.1
+    aesop
+  right_inv p := rfl
 
-noncomputable def generatorEquiv :
-    roseCoverGeneratorEdges (roseProjection w gen hrel) (roseCovering w gen hrel) ≃ G × α :=
+def generatorEquiv  :=
   (roseCoverMidpointEdgeEquiv (roseProjection w gen hrel)
     (roseCovering w gen hrel)).symm.trans (midpointEquiv w gen hrel)
 
@@ -84,7 +73,7 @@ theorem cylinderCollapse_sheet (p : Cylinder w gen hrel) :
   have he := hle.2
   have hp := coneAdjCoverBaseEnd_spec (projection w gen hrel) p
   have hr := coneAdjCoverBaseEnd_spec (projection w gen hrel) r
-  change p.val.sheet * (Coc w gen hrel).val p.val.point r.val.point = r.val.sheet at he
+  
   change ConeAdj.inc (cylinderProjection w gen hrel p) = p.val.point at hp
   change ConeAdj.inc (cylinderProjection w gen hrel r) = r.val.point at hr
   have hr2 : cylinderProjection w gen hrel r =
@@ -95,10 +84,11 @@ theorem cylinderCollapse_sheet (p : Cylinder w gen hrel) :
     (cylRetr (aHom w) (cylinderProjection w gen hrel p))
     (cylRetr (aHom w) (cylCollapse (aHom w) (cylinderProjection w gen hrel p))) =
       r.val.sheet at he
-  simpa only [cylCollapse, cylRetr, cylIn, Sum.elim_inl, id_eq, roseVal_self, mul_one] using he.symm
+  aesop (add simp [cylCollapse, cylRetr, cylIn])
 
+variable (p : PresCoverRelator w (projection w gen hrel))
 /-- The actual cone trivialisation determines every lifted circle sheet. -/
-theorem circleInclusion_sheet (p : PresCoverRelator w (projection w gen hrel))
+theorem circleInclusion_sheet 
     (x : RelatorCircle w p.val.2) :
     (presCoverCircleInclusion w (projection w gen hrel) (covering w gen hrel) p x).sheet =
       p.val.1.sheet * (trivFun w gen p.val.2 (cylOuter (aHom w) x.val))⁻¹ := by
@@ -107,17 +97,17 @@ theorem circleInclusion_sheet (p : PresCoverRelator w (projection w gen hrel))
   have he := hle.2
   have hx := presCoverConeCircleOrderIso_symm_projection w (projection w gen hrel)
     (covering w gen hrel) p.val.1 p.val.2 p.property x
-  change _ * (Coc w gen hrel).val _ _ = p.val.1.sheet at he
+  
   change (presCoverCircleInclusion w (projection w gen hrel) (covering w gen hrel) p x).point =
     iCirc w x.val at hx
   have hp : p.val.1.point = apexOf w p.val.2 := p.property
   rw [hx, hp] at he
   change _ * trivFun w gen p.val.2 (cylOuter (aHom w) x.val) = p.val.1.sheet at he
   rw [← he]
-  simp only [mul_assoc, mul_inv_cancel, mul_one]
+  simp 
 
 /-- Actual midpoint sheet equals the signed-letter Fox prefix, including inverse letters. -/
-theorem relatorLetterMidpoint_sheet (p : PresCoverRelator w (projection w gen hrel))
+theorem relatorLetterMidpoint_sheet 
     (k : Fin (w p.val.2).length) :
     generatorEquiv w gen hrel
       (roseCoverMidpointEdge (roseProjection w gen hrel) (roseCovering w gen hrel)
@@ -147,11 +137,11 @@ noncomputable def relatorCoordinates :
     (PresCoverRelator w (projection w gen hrel) →₀ ℤ) ≃ₗ[ℤ] ((G × J) →₀ ℤ) :=
   Finsupp.domLCongr (relatorEquiv w gen hrel)
 
-noncomputable def generatorCoordinates :
+def generatorCoordinates :
     (roseCoverGeneratorEdges (roseProjection w gen hrel) (roseCovering w gen hrel) →₀ ℤ)
       ≃ₗ[ℤ] ((G × α) →₀ ℤ) := Finsupp.domLCongr (generatorEquiv w gen hrel)
 
-theorem relatorCoordinates_single (p : PresCoverRelator w (projection w gen hrel)) (n : ℤ) :
+theorem relatorCoordinates_single  (n : ℤ) :
     relatorCoordinates w gen hrel (Finsupp.single p n) =
       Finsupp.single (p.val.1.sheet, p.val.2) n :=
   Finsupp.domLCongr_single _ _ _

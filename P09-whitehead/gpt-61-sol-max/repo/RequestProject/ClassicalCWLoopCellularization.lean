@@ -1,12 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Statement
-public import RequestProject.ClassicalCWVertexPaths
-public import RequestProject.ClassicalCWCompactSupport
-public import RequestProject.ClassicalCWSkeletonAttachment
-public import RequestProject.DiskAttachmentRadialCore
-
-@[expose] public section
+import RequestProject.Statement
+import RequestProject.ClassicalCWVertexPaths
+import RequestProject.ClassicalCWCompactSupport
+import RequestProject.ClassicalCWSkeletonAttachment
+import RequestProject.DiskAttachmentRadialCore
 
 /-! Actual paths and loops in the given two-dimensional CW complex can be
 moved, relative to endpoints already in its one-skeleton, into that original
@@ -14,18 +12,19 @@ one-skeleton. The conclusion retains the original space and cells.
 Pending Lean verification. -/
 
 noncomputable section
-open scoped Classical
+
 open Set Topology
 
 namespace FiniteChains.ClassicalCW
 open ClassicalSkeletonAttachment RelativeAttachment
 
-def OneSkeleton (K : Whitehead.TwoComplex) := SkeletonCarrier (Set.univ : Set K) 2
+variable (K : Whitehead.TwoComplex)
+def OneSkeleton  := SkeletonCarrier (Set.univ : Set K) 2
 
 instance (K : Whitehead.TwoComplex) : TopologicalSpace (OneSkeleton K) :=
   inferInstanceAs (TopologicalSpace (SkeletonCarrier (Set.univ : Set K) 2))
 
-theorem twoComplex_mem_skeleton_three (K : Whitehead.TwoComplex) (x : K) :
+theorem twoComplex_mem_skeleton_three  (x : K) :
     x ∈ CWComplex.skeletonLT (Set.univ : Set K) (3 : ℕ∞) := by
   have hx : x ∈ ⋃ n, ⋃ j : RelCWComplex.cell (Set.univ : Set K) n,
       CWComplex.closedCell n j := by rw [CWComplex.union]; trivial
@@ -40,7 +39,7 @@ theorem twoComplex_mem_skeleton_three (K : Whitehead.TwoComplex) (x : K) :
 
 /-- Every path between original one-skeleton points is homotopic to a
 path entirely in that original one-skeleton, fixing both endpoints. -/
-theorem path_into_oneSkeleton (K : Whitehead.TwoComplex) (x y : OneSkeleton K)
+theorem path_into_oneSkeleton  (x y : OneSkeleton K)
     (p : Path x.val y.val) :
     ∃ q : Path x y, Path.Homotopic p (q.map continuous_subtype_val) := by
   let P : Path (skeletonInclusion (Set.univ : Set K) 2 x)

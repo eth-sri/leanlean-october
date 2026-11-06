@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderPosetCovering
-
-@[expose] public section
+import RequestProject.OrderPosetCovering
 
 /-! A poset covering restricts to the actual preimage of any induced subposet. -/
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q] (f : P → Q) (S : Set Q)
 
 def posetCoverRestriction : {p : P // f p ∈ S} → S := fun p => ⟨f p.1, p.2⟩

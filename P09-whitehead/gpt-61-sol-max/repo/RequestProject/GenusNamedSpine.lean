@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusSpinePresentation
-public import RequestProject.GenusCollapseLoopRepresentatives
-public import RequestProject.NamedPresentation
-
-@[expose] public section
+import RequestProject.GenusSpinePresentation
+import RequestProject.GenusCollapseLoopRepresentatives
+import RequestProject.NamedPresentation
 
 /-! The finite marked block presentation of the actual surviving genus spine. -/
 namespace FiniteChains.Davis.Genus
@@ -17,11 +15,10 @@ abbrev NamedSpineRel := SpinePresentationRel q ⊕ (Fin q × Bool)
 instance : Finite (NamedSpineGen q) := inferInstance
 instance : Finite (NamedSpineRel q) := inferInstance
 
-noncomputable def namedSpinePresentation : NamedSpineRel q → FreeGroup (NamedSpineGen q) :=
+noncomputable def namedSpinePresentation  :=
   NamedPresentation.rel (spinePresentation q) (spinePresentationMarkedWord q)
 
-noncomputable def namedSpineGroupEquiv :
-    PresGroup (spinePresentation q) ≃* PresGroup (namedSpinePresentation q) :=
+noncomputable def namedSpineGroupEquiv  :=
   NamedPresentation.groupEquiv (spinePresentation q) (spinePresentationMarkedWord q)
 
 /-- Each distinguished generator represents its actual geometric marking word. -/

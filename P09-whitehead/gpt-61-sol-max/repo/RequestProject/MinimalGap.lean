@@ -1,4 +1,3 @@
-module
-public import RequestProject.ComponentChain
-public import RequestProject.IdentityCover
-public import RequestProject.Consistency
+import RequestProject.ComponentChain
+import RequestProject.IdentityCover
+import RequestProject.Consistency

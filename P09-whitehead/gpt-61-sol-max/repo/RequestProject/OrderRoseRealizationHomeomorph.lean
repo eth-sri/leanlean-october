@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderRoseDiskHomeomorph
-public import RequestProject.OrderRoseFourVertices
-public import RequestProject.FinitePosetCycleRealization
-
-@[expose] public section
+import RequestProject.OrderRoseDiskHomeomorph
+import RequestProject.OrderRoseFourVertices
+import RequestProject.FinitePosetCycleRealization
 
 /-! The actual arbitrary order rose is homeomorphic to the actual bouquet
 of one-dimensional disks. The four-edge generator orientation is retained. -/
@@ -21,7 +19,7 @@ def roseRank : Rose PUnit → ℕ
 
 theorem roseRank_strictMono : StrictMono roseRank := by
   intro p q hpq
-  have hn := ne_of_lt hpq
+  
   have hl := hpq.le
   change Rose.le p q at hl
   cases p <;> cases q <;> simp_all [Rose.le, roseRank]
@@ -30,13 +28,11 @@ def roseFourCycle : FinitePosetCycle (Rose PUnit) 2 where
   positive := by decide
   vertex := roseFourVertexEquiv
   consecutive i := by
-    change Rose.le (roseFourVertex i.castSucc) (roseFourVertex i.succ) ∨
-      Rose.le (roseFourVertex i.succ) (roseFourVertex i.castSucc)
-    fin_cases i <;> simp [roseFourVertex, Rose.le]
+    unfold FiniteChains.PresModel.roseFourVertexEquiv
+    fin_cases i <;> simp [roseFourVertex]
   closing := by
-    change Rose.le (roseFourVertex (Fin.last 3)) (roseFourVertex 0) ∨
-      Rose.le (roseFourVertex 0) (roseFourVertex (Fin.last 3))
-    simp [roseFourVertex, Rose.le]
+    unfold FiniteChains.PresModel.roseFourVertexEquiv
+    simp [roseFourVertex]
   edges a b hne hab := by
     obtain ⟨i, rfl⟩ := roseFourVertex_surjective a
     obtain ⟨j, rfl⟩ := roseFourVertex_surjective b

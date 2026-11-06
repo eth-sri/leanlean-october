@@ -1,8 +1,4 @@
-module
-
-public import RequestProject.QCubeCubicalTwoBoundary
-
-@[expose] public section
+import RequestProject.QCubeCubicalTwoBoundary
 
 /-! Actual edges of a square in any decreasing coordinate frame. -/
 namespace FiniteChains.Davis

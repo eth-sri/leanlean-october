@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveRealizationFundamental
-public import RequestProject.OrderFunctorTrivialization
-
-@[expose] public section
+import RequestProject.OrderNerveRealizationFundamental
+import RequestProject.OrderFunctorTrivialization
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -38,7 +36,7 @@ theorem orderNerveRealization_exists_radial {P : Type} [PartialOrder P]
   obtain ⟨w, hw⟩ := orderNerveRealizationVertex_mem_simplex s.val 0
   let r₀ := (PathConnectedSpace.joined w z).somePath.map
     (orderNerveRealizationSimplex P s.val).hom.continuous
-  let r : Path (orderNerveRealizationVertex (s.val.obj 0)) x := r₀.cast hw.symm hx.symm
+  let r  := r₀.cast hw.symm hx.symm
   refine ⟨s.val.obj 0, r, ?_⟩
   intro v hv
   rw [← hx] at hv

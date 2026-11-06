@@ -1,14 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.StrictTopLinkChains
-public import RequestProject.PresConeIntervals
-public import RequestProject.PosetCoverUpTransform
-
-@[expose] public section
+import RequestProject.StrictTopLinkChains
+import RequestProject.PresConeIntervals
+import RequestProject.PosetCoverUpTransform
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
 
 theorem presPos_apex_maximal (j : J) (p : PresPos w) (hp : apexOf w j ≤ p) :
@@ -26,10 +23,9 @@ theorem presCover_apex_maximal (f : P → PresPos w) (hf : IsPosetCover f)
   exact hf.up_inj hp (le_refl v) (he.trans hv.symm)
 
 /-- The actual coefficients around every lifted relator apex form a genuine link one-cycle. -/
-theorem presCover_cone_link_cycle (f : P → PresPos w) (hf : IsPosetCover f)
+abbrev presCover_cone_link_cycle (f : P → PresPos w) (hf : IsPosetCover f)
     (v : P) (j : J) (hv : f v = apexOf w j)
-    (c : StrictOrdTri P →₀ ℤ) (hc : Comb.bdry2 (strictOrderCx P) c = 0) :
-    Comb.bdry1 (strictOrderCx (StrictBelow v)) (strictTopLinkChain v c) = 0 :=
-  strictTopLink_cycle v (presCover_apex_maximal w f hf v j hv) c hc
+    (c : StrictOrdTri P →₀ ℤ) (hc : Comb.bdry2 (strictOrderCx P) c = 0)  :=
+  FiniteChains.Comb.strictTopLink_cycle v (FiniteChains.PresModel.presCover_apex_maximal w f hf v j hv) c hc
 
 end FiniteChains.PresModel

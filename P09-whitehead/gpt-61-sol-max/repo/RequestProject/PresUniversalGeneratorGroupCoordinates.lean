@@ -1,23 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresCoverRoseFibreEquiv
-public import RequestProject.PresUniversalGroupCoordinates
-public import RequestProject.PresUniversalRelatorDeck
-public import RequestProject.RoseCoverGeneratorEquiv
-
-@[expose] public section
+import RequestProject.PresCoverRoseFibreEquiv
+import RequestProject.PresUniversalGroupCoordinates
+import RequestProject.PresUniversalRelatorDeck
+import RequestProject.RoseCoverGeneratorEquiv
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
 /-- Reading coordinates on an actual universal rose-cover midpoint fibre. -/
-noncomputable def presUniversalRoseMidpointFibreEquiv (i : α) :
-    {p : cylinderCoverRoseSet w
-      (coneAdjCoverBaseEnd (uOrderEnd (P := PresPos w) (a := ptBase w))) //
-      cylinderCoverRoseEnd w (coneAdjCoverBaseEnd uOrderEnd) p = Rose.mid i} ≃ PresGroup ρ :=
+noncomputable def presUniversalRoseMidpointFibreEquiv (i : α)  :=
   (presCoverRoseFibreEquiv w uOrderEnd (Rose.mid i)).trans
     (presUniversalFibreGroupEquiv ρ w hw hpos (iRose w (Rose.mid i)))
 
@@ -31,16 +25,9 @@ noncomputable def presUniversalMidpointGroupEquiv :
     let p := (presUniversalRoseMidpointFibreEquiv ρ w hw hpos q.2).symm q.1
     ⟨(p.val, q.2), p.property⟩
   left_inv p := by
-    apply Subtype.ext
-    apply Prod.ext
-    · exact congrArg Subtype.val
-        ((presUniversalRoseMidpointFibreEquiv ρ w hw hpos p.val.2).symm_apply_apply
-          ⟨p.val.1, p.property⟩)
-    · rfl
+    aesop
   right_inv q := by
-    apply Prod.ext
-    · exact (presUniversalRoseMidpointFibreEquiv ρ w hw hpos q.2).apply_symm_apply q.1
-    · rfl
+    grind
 
 /-- Selected actual universal rose edges have the same genuine group-generator coordinates. -/
 noncomputable def presUniversalGeneratorGroupEquiv :
@@ -55,12 +42,7 @@ noncomputable def presUniversalGeneratorGroupEquiv :
     (presUniversalMidpointGroupEquiv ρ w hw hpos)
 
 /-- Finite selected-edge coefficients in actual group-generator coordinates. -/
-noncomputable def presUniversalGeneratorGroupChainEquiv :
-    (roseCoverGeneratorEdges (cylinderCoverRoseEnd w
-      (coneAdjCoverBaseEnd (uOrderEnd (P := PresPos w) (a := ptBase w))))
-      (cylinderCoverRoseEnd_isPosetCover w _
-        (coneAdjCoverBaseEnd_isPosetCover _ (presUniversalEnd_isPosetCover w hpos))) →₀ ℤ) ≃ₗ[ℤ]
-      (PresGroup ρ × α →₀ ℤ) :=
+noncomputable def presUniversalGeneratorGroupChainEquiv  :=
   Finsupp.domLCongr (R := ℤ) (M := ℤ) (presUniversalGeneratorGroupEquiv ρ w hw hpos)
 
 end FiniteChains.PresModel

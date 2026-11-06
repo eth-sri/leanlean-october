@@ -1,12 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveRealizationContraction
-
-@[expose] public section
+import RequestProject.OrderNerveRealizationContraction
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
-open scoped Classical
+
 variable {P : Type} [PartialOrder P]
 
 /-- Two simplices whose vertices are pairwise cross-comparable lie in an actual
@@ -18,7 +16,7 @@ theorem orderNerveSimplex_common {n k : SimplexCategory}
       (a : n ⟶ m) (b : k ⟶ m),
       (nerve P).map a.op u = s ∧ (nerve P).map b.op u = t := by
   classical
-  let A : Set P := Set.range s.obj ∪ Set.range t.obj
+  let A  := Set.range s.obj ∪ Set.range t.obj
   have hA : IsChain (· ≤ ·) A := by
     intro x hx y hy _
     rcases hx with ⟨i, rfl⟩ | ⟨i, rfl⟩
@@ -32,7 +30,7 @@ theorem orderNerveSimplex_common {n k : SimplexCategory}
       · rcases le_total i j with h | h
         · exact Or.inl (leOfHom (t.map (homOfLE h)))
         · exact Or.inr (leOfHom (t.map (homOfLE h)))
-  letI : Fintype A := ((Set.finite_range s.obj).union (Set.finite_range t.obj)).fintype
+  letI  := ((Set.finite_range s.obj).union (Set.finite_range t.obj)).fintype
   letI : LinearOrder A :=
     { Subtype.partialOrder _ with
       le_total := fun x y => hA.total x.property y.property
@@ -41,14 +39,14 @@ theorem orderNerveSimplex_common {n k : SimplexCategory}
       toDecidableEq := Subtype.instDecidableEq }
   letI : Nonempty A := ⟨⟨s.obj 0, Or.inl ⟨0, rfl⟩⟩⟩
   obtain ⟨r, hr⟩ := Nat.exists_eq_succ_of_ne_zero (ne_of_gt (Fintype.card_pos (α := A)))
-  let e : A ≃o Fin (r + 1) := (Fintype.orderIsoFinOfCardEq A hr).symm
-  let u : (nerve P).obj (Opposite.op ⦋r⦌) :=
+  let e  := (Fintype.orderIsoFinOfCardEq A hr).symm
+  let u  :=
     (show Monotone (fun i : Fin (r + 1) => (e.symm i).val) from
       fun _ _ h => e.symm.monotone h).functor
-  let a : n ⟶ ⦋r⦌ := SimplexCategory.mkHom
+  let a  := SimplexCategory.mkHom
     ⟨fun i => e ⟨s.obj i, Or.inl ⟨i, rfl⟩⟩,
       fun _ _ h => e.monotone (leOfHom (s.map (homOfLE h)))⟩
-  let b : k ⟶ ⦋r⦌ := SimplexCategory.mkHom
+  let b  := SimplexCategory.mkHom
     ⟨fun i => e ⟨t.obj i, Or.inr ⟨i, rfl⟩⟩,
       fun _ _ h => e.monotone (leOfHom (t.map (homOfLE h)))⟩
   refine ⟨⦋r⦌, u, a, b, ?_, ?_⟩

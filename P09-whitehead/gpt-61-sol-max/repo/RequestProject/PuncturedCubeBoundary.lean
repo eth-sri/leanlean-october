@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CoordinateFacetContraction
-
-@[expose] public section
+import RequestProject.CoordinateFacetContraction
 
 /-! The actual proper face poset of an ordinary cube, with one facet deleted, contracts
 onto the opposite facet by an explicit zigzag of monotone coordinate maps. -/
@@ -10,36 +8,17 @@ namespace FiniteChains.Davis
 open Comb
 variable {V : Type} [DecidableEq V]
 
-def PuncturedCubeFace (t : Cube V) (j : V) (b : CubeCoord) :=
+  (t : Cube V)
+  (j : V)
+def PuncturedCubeFace   (b : CubeCoord) :=
   {c : Cube V // CoordinateFace c t ∧ c ≠ t ∧ c ≠ coordinateFix j b t}
 
-instance (t : Cube V) (j : V) (b : CubeCoord) : PartialOrder (PuncturedCubeFace t j b) where
-  le c d := CoordinateFace c.1 d.1
-  le_refl c v := Or.inr rfl
-  le_trans c d e hcd hde v := by
-    rcases hde v with he | he
-    · exact Or.inl he
-    · rcases hcd v with hd | hd
-      · exact Or.inl (he.symm.trans hd)
-      · exact Or.inr (hd.trans he)
-  le_antisymm c d hcd hdc := by
-    apply Subtype.ext
-    funext v
-    rcases hcd v with hd | hd
-    · rcases hdc v with hc | hc
-      · exact hc.trans hd.symm
-      · exact hc.symm
-    · exact hd
+instance (t : Cube V) (j : V) (b : CubeCoord) : PartialOrder (PuncturedCubeFace t j b) :=
+  @Subtype.partialOrder _ coordinateFaceOrder _
 
 omit [DecidableEq V] in
 theorem face_trans {c d e : Cube V} (hcd : CoordinateFace c d)
-    (hde : CoordinateFace d e) : CoordinateFace c e := by
-  intro v
-  rcases hde v with he | he
-  · exact Or.inl he
-  · rcases hcd v with hd | hd
-    · exact Or.inl (he.symm.trans hd)
-    · exact Or.inr (hd.trans he)
+    (hde : CoordinateFace d e) : CoordinateFace c e := coordinateFaceOrder.le_trans _ _ _ hcd hde
 
 variable (t : Cube V) (j : V) (b z : CubeCoord)
   (hb : b ≠ CubeCoord.free) (hz : z ≠ CubeCoord.free) (hbz : b ≠ z)
@@ -97,7 +76,7 @@ theorem puncturedCubeBoundary_isConnected :
   exact coordinateFix_face_opposite_facet j z c.2.1
 
 /-- Every genuine facet puncture is connected; no contraction data are assumed. -/
-theorem ordinary_puncturedCubeBoundary_connected (t : Cube V) (j : V) (b : CubeCoord)
+theorem ordinary_puncturedCubeBoundary_connected   (b : CubeCoord)
     (hb : b ≠ CubeCoord.free) (ht : t j = CubeCoord.free) :
     IsConnected (orderCx (PuncturedCubeFace t j b)) := by
   cases b with
@@ -106,7 +85,7 @@ theorem ordinary_puncturedCubeBoundary_connected (t : Cube V) (j : V) (b : CubeC
   | neg => exact puncturedCubeBoundary_isConnected t j .neg .pos hb (by decide) (by decide) ht
 
 /-- Every genuine facet puncture is simply connected; no homotopy property is assumed. -/
-theorem ordinary_puncturedCubeBoundary_simplyConnected (t : Cube V) (j : V) (b : CubeCoord)
+theorem ordinary_puncturedCubeBoundary_simplyConnected   (b : CubeCoord)
     (hb : b ≠ CubeCoord.free) (ht : t j = CubeCoord.free) :
     SimplyConnected (orderCx (PuncturedCubeFace t j b)) := by
   cases b with

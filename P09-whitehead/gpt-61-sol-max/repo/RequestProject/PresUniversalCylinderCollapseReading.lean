@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresUniversalRelatorMidpointReading
-public import RequestProject.PresCoverCylinderRelatorBoundary
-
-@[expose] public section
+import RequestProject.PresUniversalRelatorMidpointReading
+import RequestProject.PresCoverCylinderRelatorBoundary
 
 namespace FiniteChains.PresModel
 open Comb
-universe u v
 variable {α J : Type u} {G : Type v} [Group G]
   (w : J → List (α × Bool)) (hpos : ∀ j, 0 < (w j).length)
   (gen : α → G) (hrel : ∀ j, wordVal gen (w j) = 1)
@@ -25,14 +22,12 @@ theorem presUniversalCylinderCollapse_reading
   have hle : p.val ≤ q.val :=
     (coneAdjCoverBaseEnd_isPosetCover f hf).le_upTransform
       (cylCollapse (aHom w)) (le_cylIn_cylRetr (aHom w)) p
-  change (presCoc w gen hrel).readVertex (ptBase w) q.val = _
+  
   rw [(presCoc w gen hrel).readVertex_of_le (ptBase w) p.val q.val hle]
   change (presCoc w gen hrel).readVertex (ptBase w) p.val *
     (presCoc w gen hrel).val (f p.val) (f q.val) = _
   rw [← coneAdjCoverBaseEnd_spec f p, ← coneAdjCoverBaseEnd_spec f q]
-  change (presCoc w gen hrel).readVertex (ptBase w) p.val *
-    roseVal gen (cylRetr (aHom w) (coneAdjCoverBaseEnd f p))
-      (cylRetr (aHom w) (coneAdjCoverBaseEnd f q)) = _
+  
   have hq : coneAdjCoverBaseEnd f q = cylCollapse (aHom w) (coneAdjCoverBaseEnd f p) :=
     cylinderCoverCollapse_projection w (coneAdjCoverBaseEnd_isPosetCover f hf) p
   rw [hq]

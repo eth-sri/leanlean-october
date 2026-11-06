@@ -1,16 +1,15 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeCanonicalTwoCycles
-public import RequestProject.QCubeFacetIncidence
-
-@[expose] public section
+import RequestProject.QCubeCanonicalTwoCycles
+import RequestProject.QCubeFacetIncidence
 
 /-! Decreasing square frames agree with the actual ordered coordinate directions. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] [LinearOrder V] {A : CommRel V}
 
-theorem qSquare_frame_unique (c : QSquare A) {a b : V}
+  (c : QSquare A)
+theorem qSquare_frame_unique  {a b : V}
     (h : b < a) (hs : c.1.spx = {a, b}) : qSquareLeft c = a ∧ qSquareRight c = b := by
   have hl : qSquareLeft c ∈ ({a, b} : Finset V) := by
     rw [← hs, qSquare_free_directions]
@@ -21,25 +20,19 @@ theorem qSquare_frame_unique (c : QSquare A) {a b : V}
   simp only [Finset.mem_insert, Finset.mem_singleton] at hl hr
   have horder := qSquare_directions_decreasing c
   rcases hl with hl | hl <;> rcases hr with hr | hr
-  · rw [hl, hr] at horder
-    exact False.elim ((lt_irrefl a) horder)
+  · simp_all
   · exact ⟨hl, hr⟩
-  · rw [hl, hr] at horder
-    exact False.elim ((not_lt_of_ge h.le) horder)
-  · rw [hl, hr] at horder
-    exact False.elim ((lt_irrefl b) horder)
+  · grind
+  · simp_all
 
-theorem qSquare_subdivision_ordered (c : QSquare A) {a b : V}
+theorem qSquare_subdivision_ordered  {a b : V}
     (h : b < a) (hs : c.1.spx = {a, b}) :
     cubeSquareSubdivision c.1 (qSquareLeft c) (qSquareRight c)
       (qSquare_directions_ne c) (qSquare_free_directions c) =
       cubeSquareSubdivision c.1 a b (Ne.symm h.ne) hs := by
-  obtain ⟨hl, hr⟩ := qSquare_frame_unique c h hs
-  subst a
-  subst b
-  rfl
+  grind [qSquare_frame_unique]
 
-theorem qSquare_subdivision_single (c : QSquare A) (n : ℤ) {a b : V}
+theorem qSquare_subdivision_single  (n : ℤ) {a b : V}
     (h : b < a) (hs : c.1.spx = {a, b}) :
     qSquareChainSubdivision (Finsupp.single c n) =
       n • cubeSquareSubdivision c.1 a b (Ne.symm h.ne) hs := by

@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NerveIntersectionGeneration
-
-@[expose] public section
+import RequestProject.NerveIntersectionGeneration
 
 /-! Relative chains, whose boundary need only lie in the intersection. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P : Type u} [Preorder P]
 
 /-- Ambient generation and one-degree-lower fillings in the other piece give
@@ -33,12 +30,10 @@ theorem relative_filling_intersection_of_ambient {A B U : P → Prop} {n : ℕ}
     (by rw [map_sub, hd, hvd]) (by rw [map_sub, hdv, sub_self])
   obtain ⟨a, ha, b, hb, hyab⟩ := exists_split_of_unmixed hmix hy
   let t₀ := z - bdry a
-  have htA : t₀ ∈ IncOn A := AddSubgroup.sub_mem _ hz (bdry_mem_incOn ha)
+  have htA  := AddSubgroup.sub_mem _ hz (bdry_mem_incOn ha)
   have htB : t₀ ∈ IncOn B := by
     have ht : t₀ = v + c + bdry b := by
-      rw [hyab, map_add] at he
-      dsimp only [t₀]
-      linear_combination (norm := abel) he
+      grind
     rw [ht]
     exact AddSubgroup.add_mem _ (AddSubgroup.add_mem _ hv hc) (bdry_mem_incOn hb)
   have htJ : t₀ ∈ IncOn (fun p => A p ∧ B p) := by

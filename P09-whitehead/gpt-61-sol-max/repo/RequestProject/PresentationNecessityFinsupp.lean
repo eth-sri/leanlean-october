@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresentationDictionary
-public import RequestProject.HurewiczFinsupp
-
-@[expose] public section
+import RequestProject.PresentationDictionary
+import RequestProject.HurewiczFinsupp
 
 /-! The necessity dictionary for arbitrary presentations, with finitely supported chains. -/
 
@@ -60,10 +58,7 @@ theorem fs_injective_boundary_of_foxSat
   let ED := Finsupp.mapRange.addEquiv (ι := α) E.toAddEquiv
   have hcomm : ∀ c, coverSecondBoundary Nt ρ (EC c) =
       ED (boundaryMap (foxMatrixPres ρ) (foxMatrixPres_col_finite ρ) (presSub ρ Nt) c) := by
-    intro c
-    apply Finsupp.ext
-    intro i
-    exact fs_bdry2_ringEquivPres ρ Nt hR c i
+    aesop (add simp [fs_bdry2_ringEquivPres])
   have hinj := (forall_foxSat_iff_injective (foxMatrixPres ρ)
     (foxMatrixPres_col_finite ρ) (presSub ρ Nt)).mp h
   intro c d he
@@ -81,8 +76,7 @@ theorem fs_hkey_presSub
       FoxSatMod p (foxMatrixPres ρ) v (presSub ρ Nt)) (hρ : ∀ j, ρ j ∈ Nt) :
     ∀ g ∈ presSub ρ Nt, ∀ n : ℕ, n ≠ 0 →
       g ^ n ∈ ⁅presSub ρ Nt, presSub ρ Nt⁆ → g ∈ ⁅presSub ρ Nt, presSub ρ Nt⁆ := by
-  have hlift : ∀ p : ℕ, p.Prime →
-      LiftsMod (coverSecondBoundary Nt ρ).toAddMonoidHom p :=
+  have hlift  :=
     fun p hp => fs_liftsMod_of_foxSatMod ρ Nt hR p (hmod p hp)
   rintro _ ⟨w, hw, rfl⟩ n hn hpow
   have hcommmap : ⁅presSub ρ Nt, presSub ρ Nt⁆ =
@@ -120,7 +114,7 @@ theorem fs_isMulTorsionFree_of_foxSatMod_pres (N : Subgroup (PresGroup ρ)) [N.N
     exact N.one_mem
   have hNeq : presSub ρ Nt = N :=
     Subgroup.map_comap_eq_self_of_surjective (QuotientGroup.mk'_surjective _) N
-  have hρ : ∀ j, ρ j ∈ Nt := fun j =>
+  have hρ  := fun j =>
     hR (Subgroup.subset_normalClosure (Set.mem_range_self j))
   have hm : ∀ p : ℕ, p.Prime → ∀ v : J →₀ MonoidAlgebra ℤ (PresGroup ρ),
       FoxSatMod p (foxMatrixPres ρ) v (presSub ρ Nt) := by
@@ -130,9 +124,8 @@ theorem fs_isMulTorsionFree_of_foxSatMod_pres (N : Subgroup (PresGroup ρ)) [N.N
   apply isMulTorsionFree_map_commutator_of_pow N
   rwa [hNeq] at hk
 
-section Compactness
+section
 
-universe u
 
 /-- The algebraic necessity conclusion for an arbitrary presentation, with the homological
 torsion-freeness input discharged by the finitely supported Hurewicz calculation. -/
@@ -147,6 +140,6 @@ theorem fs_exists_perfect_normal_of_cellChains
   exists_perfect_normal_foxSatMod_of_finite_columns (foxMatrixPres ρ) hchains
     (foxMatrixPres_col_finite ρ) (fun N _ h => fs_isMulTorsionFree_of_foxSatMod_pres ρ N h)
 
-end Compactness
+end
 
 end FiniteChains

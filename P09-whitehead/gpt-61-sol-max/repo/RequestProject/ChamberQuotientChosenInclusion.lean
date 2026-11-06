@@ -1,3 +1,2 @@
-module
-public import RequestProject.ChamberQuotientDeckGeneration
-public import RequestProject.CoveringHomUniqueness
+import RequestProject.ChamberQuotientDeckGeneration
+import RequestProject.CoveringHomUniqueness

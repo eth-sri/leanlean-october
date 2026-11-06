@@ -1,2 +1,1 @@
-module
-public import RequestProject.TopologicalSingular.HurewiczIsomorphismConsequences
+import RequestProject.TopologicalSingular.HurewiczIsomorphismConsequences

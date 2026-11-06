@@ -1,17 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CombPi2
-public import RequestProject.CellularHomotopyChain
-
-@[expose] public section
+import RequestProject.CombPi2
+import RequestProject.CellularHomotopyChain
 
 /-! Lifted finite chain witnesses for actual path homotopies and their cellular images. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X Y : Complex2.{u}} (a : X.V) (f : Hom X Y)
 
 /-- Projection of an actual lifted two-chain agrees with the ordinary cellular image. -/

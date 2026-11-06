@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusNormalizedReferenceTransport
-public import RequestProject.GenusPolygonCoefficientGeneration
-
-@[expose] public section
+import RequestProject.GenusNormalizedReferenceTransport
+import RequestProject.GenusPolygonCoefficientGeneration
 
 /-! B2 for the actual finite genus spine, and its arbitrary-family
 finite-support consequence. All geometric reference hypotheses are discharged
@@ -13,8 +11,6 @@ This file does not assert the original topological MainClaim.
 -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
@@ -54,25 +50,15 @@ include hσ in
 /-- The concrete individual input required by the already constructed
 arbitrary-family base-change theorem, now with every geometric input proved. -/
 theorem finiteSpineIndividualB2_actual : FiniteSpineIndividualB2 σ qs us := by
-  intro s β hβ
-  have h := finiteSpineActualB2 (oneRel σ s) (qs s) (us s) (hσ s) β hβ
-  simp only [singleFiniteSpineReference_oneRel] at h
-  convert h using 1 <;> rfl
+  solve_by_elim [FiniteChains.Davis.Genus.finiteSpineActualB2]
 
 /-- Actual finite-support cycle generation for simultaneous substitution.
 The former individual-B2 assumption is discharged by the genus geometry. -/
-theorem finiteSpineFamily_fsGenerates_actual
+abbrev finiteSpineFamily_fsGenerates_actual
     (x : (Jr ⊕ (Σ s, NamedSpineRel (qs s))) →₀
       MonoidAlgebra ℤ (PresGroup (substPresF σ (familyFiniteSpineWordBlock qs us))))
     (hx : coverSecondBoundary (relSub (substPresF σ (familyFiniteSpineWordBlock qs us)))
-      (substPresF σ (familyFiniteSpineWordBlock qs us)) x = 0) :
-    x ∈ Submodule.span
-      (MonoidAlgebra ℤ (PresGroup (substPresF σ (familyFiniteSpineWordBlock qs us))))
-      {v | ∃ y : (Jr ⊕ S) →₀ MonoidAlgebra ℤ (PresGroup σ),
-        coverSecondBoundary (relSub σ) σ y = 0 ∧
-        v = fsCellsF σ (familyFiniteSpineWordBlock qs us)
-          (familyFiniteSpineWordBlock_filled σ qs us hσ)
-          (finiteSpineFamilyFilling σ qs us) y} :=
+      (substPresF σ (familyFiniteSpineWordBlock qs us)) x = 0)  :=
   finiteSpineFamily_fsGenerates σ qs us hσ (finiteSpineIndividualB2_actual σ qs us hσ) x hx
 
 end FiniteChains.Davis.Genus

@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberZPoset
-public import RequestProject.NerveRelativeGluing
-public import RequestProject.DavisChainAcyclic
-
-@[expose] public section
+import RequestProject.ChamberZPoset
+import RequestProject.NerveRelativeGluing
+import RequestProject.DavisChainAcyclic
 
 /-!
 # Chains of the complex `Z` of modified chambers: only the copies of the base survive
@@ -33,12 +31,11 @@ about `Z` itself; transporting it to the universal cover with group-ring coeffic
 separate obligation.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
+
 
 open RACG Mirror Comb Nerve
 
-universe u
 
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V} {X : Type u} [Preorder X]
   {M : CayGroup A → Prop} {att : NeSpx A →o X}
@@ -61,21 +58,21 @@ theorem not_isMarkedApex_apex {w : CayGroup A} (hw : ¬ M w) :
 noncomputable def zApex {w : CayGroup A} (hw : ¬ M w) : Zpos A X M att :=
   zOld (chamberPt w (isSimplex_empty (A := A))) (not_isMarkedApex_apex hw)
 
-omit [Fintype V] in
+section
+omit [Fintype V]
 theorem inZChamber_zApex {w : CayGroup A} (hw : ¬ M w) :
     InZChamber w (zApex (X := X) (att := att) hw) :=
   chamberPt_inChamber w (isSimplex_empty (A := A))
 
-omit [Fintype V] in
 /-- The apex is the least cell of an unmarked chamber. -/
 theorem zApex_le {w : CayGroup A} (hw : ¬ M w) {z : Zpos A X M att} (hz : InZChamber w z) :
     zApex (X := X) (att := att) hw ≤ z := by
   cases z with
   | inl p =>
-      exact le_of_inChamber (chamberPt_inChamber w (isSimplex_empty (A := A))) hz
-        (Finset.empty_subset _)
+      solve_by_elim [FiniteChains.Davis.le_of_inChamber, FiniteChains.Davis.chamberPt_inChamber, FiniteChains.Davis.isSimplex_empty, Finset.empty_subset]
   | inr wx =>
       exact absurd (hz ▸ wx.1.2) hw
+end
 
 /-! ### Modified chambers -/
 
@@ -111,21 +108,21 @@ noncomputable def zJSetOrderIso (w : CayGroup A) :
 /-! ### The filtration by word length -/
 
 /-- The union of the chambers of `Z` of length at most `n`. -/
-def ZUpto (n : ℕ) (z : Zpos A X M att) : Prop := ∃ y : CayGroup A, RACG.clen A y ≤ n ∧ InZChamber y z
+def ZUpto (n : ℕ) (z : Zpos A X M att)  := ∃ y : CayGroup A, RACG.clen A y ≤ n ∧ InZChamber y z
 
-omit [Fintype V] in
+section
+omit [Fintype V]
 theorem zUpto_up {n : ℕ} {z z' : Zpos A X M att} (h : z ≤ z') (hz : ZUpto n z) : ZUpto n z' := by
-  obtain ⟨y, hy, hyz⟩ := hz
-  exact ⟨y, hy, inZChamber_of_le h hyz⟩
+  grind [FiniteChains.Davis.ZUpto, inZChamber_of_le]
 
-omit [Fintype V] in
 theorem zUpto_zero_iff (z : Zpos A X M att) : ZUpto 0 z ↔ InZChamber (1 : CayGroup A) z := by
   constructor
   · rintro ⟨y, hy, hyz⟩
-    have : y = 1 := (RACG.clen_eq_zero_iff A).1 (Nat.le_zero.1 hy)
+    have  := (RACG.clen_eq_zero_iff A).1 (Nat.le_zero.1 hy)
     rwa [this] at hyz
   · intro h
     exact ⟨1, by simp, h⟩
+end
 
 /-! ### The whole complex -/
 
@@ -140,5 +137,5 @@ theorem zUpto_zlen (z : Zpos A X M att) : ZUpto (zlen z) z := by
   | inl p => exact ⟨p.1.rep, le_refl _, inChamber_rep p.1⟩
   | inr wx => exact ⟨wx.1.1, le_refl _, rfl⟩
 
-end Davis
-end FiniteChains
+end FiniteChains.Davis
+

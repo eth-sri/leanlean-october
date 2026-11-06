@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import Mathlib
-public import Mathlib.Topology.UnitInterval
-
-@[expose] public section
+import Mathlib
+import Mathlib.Topology.UnitInterval
 
 /-! # Finite path subdivisions subordinate to open covers
 
@@ -18,16 +16,15 @@ reverse-kernel proofs.
 
 namespace FiniteChains.PathSubdivision
 
-open Set Topology
-open scoped unitInterval
 
-universe u v
+
+
 
 noncomputable def intervalPath (a b : unitInterval) : Path a b where
   toFun s := ⟨(1 - (s : ℝ)) * a + s * b,by
-    have hs : 0 ≤ 1 - (s : ℝ) := sub_nonneg.mpr s.property.2
+    have hs  := sub_nonneg.mpr s.property.2
     constructor
-    · exact add_nonneg (mul_nonneg hs a.property.1) (mul_nonneg s.property.1 b.property.1)
+    · grind [add_nonneg, mul_nonneg]
     · have h1 := mul_le_mul_of_nonneg_left a.property.2 hs
       have h2 := mul_le_mul_of_nonneg_left b.property.2 s.property.1
       nlinarith⟩
@@ -37,7 +34,7 @@ noncomputable def intervalPath (a b : unitInterval) : Path a b where
 
 theorem intervalPath_range {a b : unitInterval} (hab : a ≤ b) (s : unitInterval) :
     intervalPath a b s ∈ Set.Icc a b := by
-  change a ≤ (intervalPath a b s) ∧ (intervalPath a b s) ≤ b
+  
   change (a : ℝ) ≤ (1 - (s : ℝ)) * a + s * b ∧
     (1 - (s : ℝ)) * a + s * b ≤ b
   have h1 := mul_nonneg s.property.1 (sub_nonneg.mpr (show (a : ℝ) ≤ b from hab))
@@ -45,13 +42,13 @@ theorem intervalPath_range {a b : unitInterval} (hab : a ≤ b) (s : unitInterva
   constructor <;> nlinarith
 
 theorem interval_simplyConnected : SimplyConnectedSpace unitInterval := by
-  letI : ContractibleSpace unitInterval := (convex_Icc (0 : ℝ) 1).contractibleSpace
+  letI  := (convex_Icc (0 : ℝ) 1).contractibleSpace
     ⟨0,by simp⟩
   infer_instance
 
 variable {X : Type u} [TopologicalSpace X] {x y : X}
 
-noncomputable def cut (p : Path x y) (a b : unitInterval) : Path (p a) (p b) :=
+noncomputable def cut (p : Path x y) (a b : unitInterval)  :=
   (intervalPath a b).map p.continuous
 
 theorem cut_range (p : Path x y) {a b : unitInterval} (hab : a ≤ b) :
@@ -64,7 +61,7 @@ theorem cut_trans_homotopic (p : Path x y) (a b c : unitInterval) :
   letI := interval_simplyConnected
   have h := (SimplyConnectedSpace.paths_homotopic
     ((intervalPath a b).trans (intervalPath b c)) (intervalPath a c)).map p.toContinuousMap
-  simpa only [Path.map_trans, Path.coe_toContinuousMap, cut] using h
+  simpa [Path.map_trans, Path.coe_toContinuousMap, cut] using h
 
 theorem cut_self_homotopic (p : Path x y) (a : unitInterval) :
     (Path.refl (p a)).Homotopic (cut p a a) := by

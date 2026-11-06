@@ -1,17 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveAffineEdgePath
-public import RequestProject.ContinuousEdgeWordHomotopies
-public import RequestProject.CombPi1
-
-@[expose] public section
+import RequestProject.OrderNerveAffineEdgePath
+import RequestProject.ContinuousEdgeWordHomotopies
+import RequestProject.CombPi1
 
 /-! Actual affine realization of composable order-edge words, with exact
 monotone-map naturality. Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -21,8 +18,7 @@ open ContinuousEdgeWords CategoryTheory Simplicial
 variable {P : Type} [PartialOrder P]
 
 def affineOrderWordPath (l : List ((orderCx P).E × Bool)) {a b : P}
-    (hl : IsPath (orderCx P).src (orderCx P).tgt l a b) :
-    Path (orderNerveRealizationVertex a) (orderNerveRealizationVertex b) :=
+    (hl : IsPath (orderCx P).src (orderCx P).tgt l a b)  :=
   realize (orderCx P).src (orderCx P).tgt (orderNerveRealizationVertex (P := P))
     (fun e => orderNerveAffineEdgePath (P := P) e.property) l hl
 
@@ -34,8 +30,7 @@ theorem affineGermPath_coordinates (g : (orderCx P).E × Bool) (t : I) (p : P) :
         (t : ℝ) * (if germTgt (orderCx P).src (orderCx P).tgt g = p then 1 else 0) := by
   rcases g with ⟨e, b⟩
   cases b
-  · simp only [germPath, Path.symm_apply, Function.comp_apply, orderNerveAffineEdgePath_coordinates,
-      unitInterval.coe_symm_eq, germSrc_false, germTgt_false]
+  · simp [germPath, orderNerveAffineEdgePath_coordinates]
     ring
   · exact orderNerveAffineEdgePath_coordinates e.property t p
 
@@ -53,19 +48,17 @@ theorem comparablePath_homotopic_single {a b : P} (h : a ≤ b ∨ b ≤ a)
     funext t
     apply orderNerveRealizationCoordinates_injective P
     funext p
-    rw (config := { transparency := .default }) [orderNerveComparablePath_coordinates, affineGermPath_coordinates]
-  rw (config := { transparency := .default }) [he]
+    rw  [orderNerveComparablePath_coordinates, affineGermPath_coordinates]
+  rw  [he]
   exact (Path.Homotopic.trans_refl _).symm
 
-theorem affineWord_map_vertex {Q : Type} [PartialOrder Q]
-    (f : P → Q) (hf : Monotone f) (p : P) :
-    orderNerveRealizationMap f hf (orderNerveRealizationVertex p) =
-      orderNerveRealizationVertex (f p) := by
-  exact congrArg (fun k : TopCat.of (SimplexCategory.toTop.obj ⦋0⦌) ⟶
+variable {Q : Type}
+abbrev affineWord_map_vertex  [PartialOrder Q]
+    (f : P → Q) (hf : Monotone f) (p : P)  := congrArg (fun k : TopCat.of (SimplexCategory.toTop.obj ⦋0⦌) ⟶
       orderNerveRealization Q => k default)
     (orderNerveRealizationSimplex_natural f hf (ComposableArrows.mk₀ p))
 
-theorem affineGermPath_map {Q : Type} [PartialOrder Q]
+theorem affineGermPath_map  [PartialOrder Q]
     (f : P → Q) (hf : Monotone f) (g : (orderCx P).E × Bool) (t : I) :
     orderNerveRealizationMap f hf
       (germPath (orderCx P).src (orderCx P).tgt (orderNerveRealizationVertex (P := P))
@@ -78,15 +71,15 @@ theorem affineGermPath_map {Q : Type} [PartialOrder Q]
   · change orderNerveRealizationMap f hf
       (orderNerveAffineEdgePath e.property (unitInterval.symm t)) =
         orderNerveAffineEdgePath (hf e.property) (unitInterval.symm t)
-    simpa only [orderNerveComparablePath, dif_pos e.property, dif_pos (hf e.property)] using
+    simpa [orderNerveComparablePath, dif_pos e.property, dif_pos (hf e.property)] using
       orderNerveComparablePath_natural f hf (Or.inl e.property)
         (Or.inl (hf e.property)) (unitInterval.symm t)
   · change orderNerveRealizationMap f hf (orderNerveAffineEdgePath e.property t) =
       orderNerveAffineEdgePath (hf e.property) t
-    simpa only [orderNerveComparablePath, dif_pos e.property, dif_pos (hf e.property)] using
+    simpa [orderNerveComparablePath, dif_pos e.property, dif_pos (hf e.property)] using
       orderNerveComparablePath_natural f hf (Or.inl e.property) (Or.inl (hf e.property)) t
 
-theorem affineOrderWordPath_map {Q : Type} [PartialOrder Q]
+theorem affineOrderWordPath_map  [PartialOrder Q]
     (f : P → Q) (hf : Monotone f) (l : List ((orderCx P).E × Bool)) {a b : P}
     (hl : IsPath (orderCx P).src (orderCx P).tgt l a b) (t : I) :
     orderNerveRealizationMap f hf (affineOrderWordPath l hl t) =
@@ -103,6 +96,6 @@ theorem affineOrderWordPath_map {Q : Type} [PartialOrder Q]
     · exact affineGermPath_map f hf g _
     · rcases g with ⟨e, direction⟩
       cases direction <;> simpa only [affineOrderWordPath, mapPath] using
-        ih ht ⟨2 * (t : ℝ) - 1, by constructor <;> linarith [t.property.1, t.property.2]⟩
+        ih ht ⟨2 * (t : ℝ) - 1, by grind⟩
 
 end FiniteChains.Comb

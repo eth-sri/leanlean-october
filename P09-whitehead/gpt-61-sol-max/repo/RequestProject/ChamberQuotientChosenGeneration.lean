@@ -1,3 +1,2 @@
-module
-public import RequestProject.ChamberQuotientComponentTranslation
-public import RequestProject.OrderLabelCycleDecomposition
+import RequestProject.ChamberQuotientComponentTranslation
+import RequestProject.OrderLabelCycleDecomposition

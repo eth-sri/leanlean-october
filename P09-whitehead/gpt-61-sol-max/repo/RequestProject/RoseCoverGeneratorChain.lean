@@ -1,38 +1,33 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RoseCoverBaseCoordinates
+import RequestProject.RoseCoverBaseCoordinates
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α P : Type u} [PartialOrder P] (f : P → Rose α) (hf : IsPosetCover f)
 
+  (p : roseCoverMidpoints f)
 /-- The actual incidence from a lifted midpoint to its chosen end. -/
-noncomputable def roseCoverMidpointEndEdge (p : roseCoverMidpoints f) (b : Bool) :
-    StrictOrdEdge P := hf.strictEdgeLiftFrom (roseMidEdge p.val.2 b) p.val.1 p.property
+noncomputable def roseCoverMidpointEndEdge  (b : Bool)  := hf.strictEdgeLiftFrom (roseMidEdge p.val.2 b) p.val.1 p.property
 
 /-- The actual incidence from a lifted base vertex to the same lifted end. -/
-noncomputable def roseCoverMidpointBaseEdge (p : roseCoverMidpoints f) (b : Bool) :
-    StrictOrdEdge P := hf.strictEdgeLiftTo (roseBaseEdge p.val.2 b)
+noncomputable def roseCoverMidpointBaseEdge  (b : Bool)  := hf.strictEdgeLiftTo (roseBaseEdge p.val.2 b)
       (roseCoverMidpointEndEdge f hf p b).val.2
       (congrArg (fun e : StrictOrdEdge (Rose α) => e.val.2)
         (hf.strictEdgeLiftFrom_projection (roseMidEdge p.val.2 b) p.val.1 p.property))
 
 /-- The genuine four-incidence lift of a rose generator. -/
-noncomputable def roseCoverGeneratorChain (p : roseCoverMidpoints f) : StrictOrdEdge P →₀ ℤ :=
+noncomputable def roseCoverGeneratorChain  : StrictOrdEdge P →₀ ℤ :=
   Finsupp.single (roseCoverMidpointBaseEdge f hf p false) 1 -
     Finsupp.single (roseCoverMidpointEndEdge f hf p false) 1 +
     Finsupp.single (roseCoverMidpointEndEdge f hf p true) 1 -
     Finsupp.single (roseCoverMidpointBaseEdge f hf p true) 1
 
 /-- The lifted generator chain has precisely the difference of its actual base endpoints as boundary. -/
-theorem roseCoverGeneratorChain_boundary (p : roseCoverMidpoints f) :
+theorem roseCoverGeneratorChain_boundary  :
     FiniteChains.Comb.bdry1 (strictOrderCx P) (roseCoverGeneratorChain f hf p) =
       Finsupp.single (roseCoverMidpointBaseEdge f hf p true).val.1 1 -
         Finsupp.single (roseCoverMidpointBaseEdge f hf p false).val.1 1 := by
@@ -52,7 +47,7 @@ theorem roseCoverGeneratorChain_boundary (p : roseCoverMidpoints f) :
   abel
 
 /-- The selected incidence coordinates of the genuine generator chain are a unit vector. -/
-theorem roseCoverGeneratorChain_coordinates (p : roseCoverMidpoints f) :
+theorem roseCoverGeneratorChain_coordinates  :
     roseCoverGeneratorCoordinates f hf (roseCoverGeneratorChain f hf p) =
       Finsupp.single (roseCoverMidpointEdge f hf p) 1 := by
   classical
@@ -72,13 +67,12 @@ theorem roseCoverGeneratorChain_coordinates (p : roseCoverMidpoints f) :
         ((congrArg ((strictOrderCxMap f hf.strictMono).onE) he).trans hi)
     have ht := congrArg (fun r : StrictOrdEdge (Rose α) => r.val.2) hp
     exact Bool.noConfusion (Rose.edg.inj ht).2
-  change (roseCoverGeneratorChain f hf p) e.val =
-    (Finsupp.single (roseCoverMidpointEdge f hf p) 1) e
+  dsimp
   unfold roseCoverGeneratorChain
   simp only [Finsupp.sub_apply, Finsupp.add_apply]
   rw [Finsupp.single_eq_of_ne (Ne.symm (hn false)), Finsupp.single_eq_of_ne (Ne.symm hm),
     Finsupp.single_eq_of_ne (Ne.symm (hn true))]
-  simp only [sub_zero, zero_add]
+  simp 
   have heq : (roseCoverMidpointEndEdge f hf p true = e.val) ↔
       (roseCoverMidpointEdge f hf p = e) := by
     constructor
@@ -86,6 +80,6 @@ theorem roseCoverGeneratorChain_coordinates (p : roseCoverMidpoints f) :
       exact Subtype.ext h
     · intro h
       exact congrArg Subtype.val h
-  simp only [Finsupp.single_apply, heq]
+  simp [Finsupp.single_apply, heq]
 
 end FiniteChains.PresModel

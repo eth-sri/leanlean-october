@@ -1,31 +1,29 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Statement
-public import RequestProject.OrderNerveRealizationCovering
-
-@[expose] public section
+import RequestProject.Statement
+import RequestProject.OrderNerveRealizationCovering
 
 /-! Regularity on actual topological fibers, deduced from order deck transformations. -/
 
-namespace FiniteChains.Comb
-open Topology
-open scoped Classical
+namespace FiniteChains.Comb.IsPosetCover
 
-namespace IsPosetCover
+
+
+
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q] {f : P → Q}
 
+  (hf : IsPosetCover f)
 /-- The realized projection is injective on each of its open-star sheets. -/
-theorem realizationMap_injOn_openStar (hf : IsPosetCover f) (v : P) :
+theorem realizationMap_injOn_openStar  (v : P) :
     (orderNerveRealizationOpenStar P v).InjOn (orderNerveRealizationMap f hf.mono) := by
   intro x hx y hy hxy
   have hh : hf.vertexOpenStarHomeomorph v ⟨x, hx⟩ =
       hf.vertexOpenStarHomeomorph v ⟨y, hy⟩ := by
-    apply Subtype.ext
-    simpa only [hf.vertexOpenStarHomeomorph_coe] using hxy
+    classical grind [FiniteChains.Comb.IsPosetCover.mono, FiniteChains.Comb.IsPosetCover.vertexOpenStarHomeomorph_coe]
   exact congrArg Subtype.val ((hf.vertexOpenStarHomeomorph v).injective hh)
 
 /-- An order deck transformation realizes to a genuine topological deck transformation. -/
-theorem realization_deck_commutes (hf : IsPosetCover f) (e : P ≃o P)
+theorem realization_deck_commutes  (e : P ≃o P)
     (he : ∀ p, f (e p) = f p) (x : orderNerveRealization P) :
     orderNerveRealizationMap f hf.mono (orderNerveRealizationOrderIso e x) =
       orderNerveRealizationMap f hf.mono x := by
@@ -33,11 +31,11 @@ theorem realization_deck_commutes (hf : IsPosetCover f) (e : P ≃o P)
     (orderNerveRealizationMap e e.monotone x) = _
   rw [orderNerveRealizationMap_comp]
   have h : (f ∘ e : P → Q) = f := funext he
-  simp only [h]
+  simp [h]
 
 /-- Transitivity of order deck transformations on vertex fibers implies regularity
 of the actual covering, on all points of all topological fibers. -/
-theorem realizationMap_regular (hf : IsPosetCover f)
+theorem realizationMap_regular 
     (hdeck : ∀ v w : P, f v = f w →
       ∃ e : P ≃o P, (∀ p, f (e p) = f p) ∧ e v = w) :
     Whitehead.Regular
@@ -45,11 +43,9 @@ theorem realizationMap_regular (hf : IsPosetCover f)
         (orderNerveRealizationMap f hf.mono).hom.continuous⟩ := by
   intro x y hxy
   obtain ⟨v, hxv⟩ := orderNerveRealizationOpenStar_cover P x
-  have hx : orderNerveRealizationMap f hf.mono x ∈
-      orderNerveRealizationOpenStar Q (f v) :=
+  have hx  :=
     (orderNerveRealizationMap_mem_openStar_iff f hf.mono x (f v)).mpr ⟨v, rfl, hxv⟩
-  have hy : orderNerveRealizationMap f hf.mono y ∈
-      orderNerveRealizationOpenStar Q (f v) := hxy ▸ hx
+  have hy  := hxy ▸ hx
   obtain ⟨w, hw, hyw⟩ :=
     (orderNerveRealizationMap_mem_openStar_iff f hf.mono y (f v)).mp hy
   obtain ⟨e, he, hev⟩ := hdeck v w hw.symm
@@ -63,5 +59,5 @@ theorem realizationMap_regular (hf : IsPosetCover f)
   exact hf.realizationMap_injOn_openStar w hxe hyw
     ((hf.realization_deck_commutes e he x).trans hxy)
 
-end IsPosetCover
-end FiniteChains.Comb
+end FiniteChains.Comb.IsPosetCover
+

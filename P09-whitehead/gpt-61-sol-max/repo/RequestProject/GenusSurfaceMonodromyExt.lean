@@ -1,18 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusSurfaceMonodromy
-public import RequestProject.OrderCocycleComparisonAction
-
-@[expose] public section
+import RequestProject.GenusSurfaceMonodromy
+import RequestProject.OrderCocycleComparisonAction
 
 /-! Agreement on the genuine genus markings determines all surface monodromy. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
-universe v
 variable (q : ℕ) [NeZero q] {G : Type v} [Group G]
   (c d : OrdCocycle (NeSpx (cmpRel (SCell (gvc q) (gec q) (gc q)))) G)
 
@@ -37,7 +31,7 @@ theorem genus_cocycle_gauge_of_marked
   refine ⟨fun a => (s a).val, congrArg OrdCocycle.ComparisonPoint.val hb, ?_⟩
   intro a b hab
   have h := congrArg OrdCocycle.ComparisonPoint.val (hs hab)
-  change c.val a b * (s b).val * (d.val a b)⁻¹ = (s a).val at h
+  
   exact (mul_inv_eq_iff_eq_mul).mp h
 
 end FiniteChains.Davis.Genus

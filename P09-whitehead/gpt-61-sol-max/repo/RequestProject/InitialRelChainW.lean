@@ -1,12 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.InitialChain
-public import RequestProject.PresCockcroftDictionary
-public import RequestProject.PresentationComplexAcyclic
-public import RequestProject.CombHurewicz1Pres
-public import RequestProject.TheoremAAcyclic
-
-@[expose] public section
+import RequestProject.InitialChain
+import RequestProject.PresCockcroftDictionary
+import RequestProject.PresentationComplexAcyclic
+import RequestProject.CombHurewicz1Pres
+import RequestProject.TheoremAAcyclic
 
 /-!
 # The initial pair of Lemma 3.1 as a map-carrying relative chain
@@ -38,13 +36,12 @@ into exactly that shape, giving **the base case, of length one, of the extension
   least one generator.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u
+
 
 variable {I J : Type u} [LinearOrder I] [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
-variable (r : J → FreeGroup I)
+  (r : J → FreeGroup I)
 
 /-! ### Acyclicity of the presentation complex, read off the exponent-sum matrix -/
 
@@ -59,5 +56,5 @@ theorem bdry2_presComplex_eq_expCol :
 
 /-! ### The hypotheses are satisfiable -/
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalSubcomplexGraphNaturality
-public import RequestProject.BoundaryWordNaturality
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalSubcomplexGraphNaturality
+import RequestProject.BoundaryWordNaturality
 
 /-! Every original two-cell has a boundary word in the exact graph of
 its subcomplex. These data can be pushed along original inclusions,
@@ -28,7 +26,8 @@ def subcomplexCellBoundary (C : CWComplex.Subcomplex (Set.univ : Set X))
   exact (skeletonAsDiskAttachment (C : Set X) 1).toContinuousMap.comp
     ((skeletonAttachingMap (C : Set X) 2).comp a)
 
-theorem subcomplexCellBoundary_natural (h : (C : Set X) ⊆ D)
+variable (h : (C : Set X) ⊆ D)
+theorem subcomplexCellBoundary_natural 
     (j : RelCWComplex.cell (C : Set X) 2) :
     (subcomplexGraphDiskMap h).comp (subcomplexCellBoundary C j) =
       subcomplexCellBoundary D (subcomplexCellInclusion h 2 j) := by
@@ -57,10 +56,8 @@ theorem subcomplexCellBoundary_word_exists
   exact boundaryMap_homotopic_boundaryWords (skeletonAttachingMap (C : Set X) 1)
     (skeletonAttachingMap (C : Set X) 1).continuous (subcomplexCellBoundary C j)
 
-theorem subcomplexBoundaryWord_map (h : (C : Set X) ⊆ D)
-    (W : BoundaryWords (skeletonAttachingMap (C : Set X) 1)) :
-    (subcomplexGraphDiskMap h).comp W.boundaryMap =
-      (W.map (subcomplexGraphInclusion h)).boundaryMap :=
+abbrev subcomplexBoundaryWord_map 
+    (W : BoundaryWords (skeletonAttachingMap (C : Set X) 1))  :=
   W.boundaryMap_map (subcomplexGraphInclusion h) (subcomplexGraphDiskMap h)
     (subcomplexGraphDiskMap_old h) (subcomplexGraphDiskMap_edge h)
 

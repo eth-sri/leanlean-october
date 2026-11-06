@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalSpanningTreeContraction
-public import RequestProject.DiskAttachmentPartition
-public import RequestProject.DiskFamilyHomotopyBaseChange
-
-@[expose] public section
+import RequestProject.ClassicalSpanningTreeContraction
+import RequestProject.DiskAttachmentPartition
+import RequestProject.DiskFamilyHomotopyBaseChange
 
 /-! Collapse an actual arbitrary spanning tree in a disk graph. The forward
 map collapses all vertices and tree disks, and retains every other disk
@@ -15,12 +13,13 @@ namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
 open scoped unitInterval Topology Classical
 
-def roseAttaching (A : Type) : C(BoundaryFamily A (Fin 1 → ℝ), PUnit) :=
+variable (A : Type)
+def roseAttaching  : C(BoundaryFamily A (Fin 1 → ℝ), PUnit) :=
   ContinuousMap.const _ PUnit.unit
 
-abbrev Rose (A : Type) := DiskAttachment (roseAttaching A)
+abbrev Rose  := DiskAttachment (roseAttaching A)
 
-def roseVertex (A : Type) : Rose A :=
+def roseVertex   :=
   old (roseAttaching A) (boundaryFamilyInclusion A _) PUnit.unit
 
 variable {V J : Type} [TopologicalSpace V] [DiscreteTopology V]
@@ -32,8 +31,7 @@ def nonTreeAttaching : C(BoundaryFamily {j : J // ¬T.isTree j} (Fin 1 → ℝ),
 
 /-- The concrete graph-to-rose equivalence. Its only combinatorial input is
 the genuine spanning tree, whose contraction is constructed above. -/
-def graphRoseHomotopyEquiv :
-    ContinuousMap.HomotopyEquiv (DiskAttachment r) (Rose {j : J // ¬T.isTree j}) :=
+def graphRoseHomotopyEquiv  :=
   (diskAttachmentPartitionHomeomorph r T.isTree).toHomotopyEquiv.trans
     (diskAttachmentBaseChangeHomotopyEquiv (nonTreeAttaching r hr T) (treeHomotopyEquivPUnit r T))
 

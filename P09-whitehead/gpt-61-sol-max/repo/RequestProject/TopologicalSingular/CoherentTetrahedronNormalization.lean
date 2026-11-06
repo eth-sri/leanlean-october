@@ -1,3 +1,2 @@
-module
-public import RequestProject.TopologicalSingular.CoherentSimplexExtension
-public import RequestProject.TopologicalSingular.CoherentTriangleNormalization
+import RequestProject.TopologicalSingular.CoherentSimplexExtension
+import RequestProject.TopologicalSingular.CoherentTriangleNormalization

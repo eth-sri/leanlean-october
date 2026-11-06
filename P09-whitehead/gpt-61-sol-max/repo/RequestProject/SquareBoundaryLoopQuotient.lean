@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.SquareSideQuotient
-public import Mathlib.Topology.Homotopy.Path
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.SquareSideQuotient
+import Mathlib.Topology.Homotopy.Path
 
 /-! A genuine once-around interval parametrization of the square boundary.
 Its only repeated point is the pair of interval endpoints, so based loop
@@ -15,16 +13,14 @@ noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 
-def squareCorner00 : SquareBoundary := squareSideMap (0, false) 0
-def squareCorner01 : SquareBoundary := squareSideMap (0, false) 1
-def squareCorner11 : SquareBoundary := squareSideMap (0, true) 1
-def squareCorner10 : SquareBoundary := squareSideMap (0, true) 0
+def squareCorner00  := squareSideMap (0, false) 0
+def squareCorner01  := squareSideMap (0, false) 1
+def squareCorner11  := squareSideMap (0, true) 1
+def squareCorner10  := squareSideMap (0, true) 0
 
 def squareTraversalLeft : Path squareCorner00 squareCorner01 where
   toContinuousMap := squareSideMap (0, false)
@@ -49,7 +45,7 @@ def squareTraversalBottom : Path squareCorner10 squareCorner00 :=
 
 /-- The balanced concatenation allocates one quarter of the interval to
 each side, in positive once-around order. -/
-def squareBoundaryTraversal : Path squareCorner00 squareCorner00 :=
+def squareBoundaryTraversal  :=
   (squareTraversalLeft.trans squareTraversalTop).trans
     (squareTraversalRight.trans squareTraversalBottom)
 
@@ -61,10 +57,8 @@ theorem squareBoundaryTraversal_surjective : Function.Surjective squareBoundaryT
   rcases s with ⟨i, b⟩
   fin_cases i <;> cases b
   · exact Or.inl (Or.inl ⟨t, rfl⟩)
-  · exact Or.inr (Or.inl ⟨unitInterval.symm t, by
-      simp [squareTraversalRight]⟩)
-  · exact Or.inr (Or.inr ⟨unitInterval.symm t, by
-      simp [squareTraversalBottom]⟩)
+  · simp_all [squareTraversalRight]
+  · simp_all [squareTraversalBottom]
   · exact Or.inl (Or.inr ⟨t, rfl⟩)
 
 /-- There is no hidden multiple traversal: only zero and one coincide. -/
@@ -99,25 +93,25 @@ theorem squareBoundaryTraversal_fiber {s t : I}
         ring
   have he := (coords s).symm.trans
     ((congrArg (fun z : SquareBoundary => ((z.val 0 : ℝ), (z.val 1 : ℝ))) h).trans (coords t))
-  have hs₀ := s.property.1
-  have hs₁ := s.property.2
-  have ht₀ := t.property.1
-  have ht₁ := t.property.2
+  
+  
+  
+  
   split_ifs at he <;> simp only [Prod.mk.injEq] at he <;> rcases he with ⟨h₀, h₁⟩ <;>
     first
     | exact Or.inl (Subtype.ext (by linarith))
-    | exact Or.inr (Or.inl ⟨Subtype.ext (show (s : ℝ) = 0 by linarith),
-        Subtype.ext (show (t : ℝ) = 1 by linarith)⟩)
+    | grind
     | exact Or.inr (Or.inr ⟨Subtype.ext (show (s : ℝ) = 1 by linarith),
         Subtype.ext (show (t : ℝ) = 0 by linarith)⟩)
 
-theorem squareBoundaryTraversal_isQuotientMap : IsQuotientMap squareBoundaryTraversal :=
+abbrev squareBoundaryTraversal_isQuotientMap  :=
   squareBoundaryTraversal.continuous.isClosedMap.isQuotientMap
     squareBoundaryTraversal.continuous squareBoundaryTraversal_surjective
 
 variable {X : Type} [TopologicalSpace X]
 
-def squareLoopDesc {x : X} (p : Path x x) : C(SquareBoundary, X) where
+  {x : X}
+def squareLoopDesc  (p : Path x x) : C(SquareBoundary, X) where
   toFun z := p (Function.surjInv squareBoundaryTraversal_surjective z)
   continuous_toFun := by
     apply squareBoundaryTraversal_isQuotientMap.continuous_iff.mpr
@@ -127,13 +121,11 @@ def squareLoopDesc {x : X} (p : Path x x) : C(SquareBoundary, X) where
       change p (Function.surjInv squareBoundaryTraversal_surjective (squareBoundaryTraversal t)) = p t
       have h := Function.surjInv_eq squareBoundaryTraversal_surjective (squareBoundaryTraversal t)
       rcases squareBoundaryTraversal_fiber h with h | ⟨h₀, h₁⟩ | ⟨h₀, h₁⟩
-      · exact congrArg p h
-      · rw [h₀, h₁, p.source, p.target]
-      · rw [h₀, h₁, p.source, p.target]
+      all_goals solve | simp_all | omega | aesop | grind
     rw [he]
     exact p.continuous
 
-@[simp] theorem squareLoopDesc_traversal {x : X} (p : Path x x) (t : I) :
+@[simp] theorem squareLoopDesc_traversal  (p : Path x x) (t : I) :
     squareLoopDesc p (squareBoundaryTraversal t) = p t := by
   have h := Function.surjInv_eq squareBoundaryTraversal_surjective (squareBoundaryTraversal t)
   rcases squareBoundaryTraversal_fiber h with h | ⟨h₀, h₁⟩ | ⟨h₀, h₁⟩
@@ -152,9 +144,9 @@ theorem squareLoopDesc_map (f : C(SquareBoundary, X)) :
 
 /-- A homotopy of based traversal loops gives a homotopy of the actual
 attaching maps; equality of group words is never used as a substitute. -/
-def squareLoopDescHomotopy {x : X} {p q : Path x x} (H : p.Homotopy q) :
+def squareLoopDescHomotopy  {p q : Path x x} (H : p.Homotopy q) :
     (squareLoopDesc p).Homotopy (squareLoopDesc q) := by
-  let F : C(I, C(I, X)) := (H.toHomotopy.toContinuousMap.comp
+  let F  := (H.toHomotopy.toContinuousMap.comp
     ⟨Prod.swap, continuous_swap⟩).curry
   let D : C(SquareBoundary, C(I, X)) := {
     toFun z := F (Function.surjInv squareBoundaryTraversal_surjective z)
@@ -168,10 +160,8 @@ def squareLoopDescHomotopy {x : X} {p q : Path x x} (H : p.Homotopy q) :
         have hs := Function.surjInv_eq squareBoundaryTraversal_surjective (squareBoundaryTraversal s)
         rcases squareBoundaryTraversal_fiber hs with hs | ⟨h₀, h₁⟩ | ⟨h₀, h₁⟩
         · exact congrArg (fun z => H (τ, z)) hs
-        · change H (τ, _) = H (τ, s)
-          rw [h₀, h₁, H.source, H.target]
-        · change H (τ, _) = H (τ, s)
-          rw [h₀, h₁, H.source, H.target]
+        · aesop
+        · aesop
       rw [he]
       exact F.continuous }
   exact {
@@ -179,7 +169,7 @@ def squareLoopDescHomotopy {x : X} {p q : Path x x} (H : p.Homotopy q) :
     map_zero_left := fun z => H.apply_zero _
     map_one_left := fun z => H.apply_one _ }
 
-theorem squareLoopDesc_homotopic {x : X} {p q : Path x x} (H : p.Homotopic q) :
+theorem squareLoopDesc_homotopic  {p q : Path x x} (H : p.Homotopic q) :
     (squareLoopDesc p).Homotopic (squareLoopDesc q) :=
   Nonempty.map squareLoopDescHomotopy H
 

@@ -1,27 +1,25 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderComponentLabels
-public import RequestProject.CellularHomotopyChain
-public import RequestProject.OrderNervePositiveFillings
-
-@[expose] public section
+import RequestProject.OrderComponentLabels
+import RequestProject.CellularHomotopyChain
+import RequestProject.OrderNervePositiveFillings
 
 /-! Finite one-cycle fillings when every component has trivial edge-path pi1. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
+variable (hsc : SimplyConnected (orderCx P))
+include hsc in
 /-- A componentwise path contraction gives actual finite cellular fillings.
 Connectedness or finiteness of the whole poset is not required. -/
-theorem order_oneCycle_filling_of_simplyConnected (hsc : SimplyConnected (orderCx P))
+theorem order_oneCycle_filling_of_simplyConnected 
     (c : OrdEdge P →₀ ℤ) (hc : bdry1 (orderCx P) c = 0) :
     ∃ y : OrdTri P →₀ ℤ, bdry2 (orderCx P) y = c := by
   classical
-  let r : P → P := fun v => Quotient.out (orderComponentLabel P v)
+  let r  := fun v => Quotient.out (orderComponentLabel P v)
   have hr (e : OrdEdge P) : r e.1.1 = r e.1.2 :=
     congrArg Quotient.out (orderComponentLabel_eq_of_le e.2)
   have hreach (v : P) : Reach (orderCx P) (r v) v :=
@@ -35,7 +33,7 @@ theorem order_oneCycle_filling_of_simplyConnected (hsc : SimplyConnected (orderC
         e.1.2 (r e.1.1) := by
       rw [hr e]
       exact isPath_revPath (hp e.1.2)
-    have hl : IsPath (orderCx P).src (orderCx P).tgt l (r e.1.1) (r e.1.1) :=
+    have hl  :=
       ((hp e.1.1).append (show IsPath (orderCx P).src (orderCx P).tgt
         [(e, true)] e.1.1 e.1.2 from ⟨rfl, rfl⟩)).append hrev
     obtain ⟨y, hy⟩ := (hsc _ l hl).exists_boundary
@@ -45,7 +43,7 @@ theorem order_oneCycle_filling_of_simplyConnected (hsc : SimplyConnected (orderC
   choose f hf using hface
   let s : (P →₀ ℤ) →ₗ[ℤ] (OrdEdge P →₀ ℤ) :=
     Finsupp.linearCombination ℤ (fun v => pathChain (p v))
-  let t : (OrdEdge P →₀ ℤ) →ₗ[ℤ] (OrdTri P →₀ ℤ) :=
+  let t  :=
     Finsupp.linearCombination ℤ f
   have hs (v : P) : s (Finsupp.single v 1) = pathChain (p v) := by
     simp [s]
@@ -63,13 +61,14 @@ theorem order_oneCycle_filling_of_simplyConnected (hsc : SimplyConnected (orderC
       abel
   exact ⟨t c, by rw [ht, hc, map_zero, sub_zero]⟩
 
-theorem nerve_oneCycle_filling_of_simplyConnected (hsc : SimplyConnected (orderCx P))
+include hsc in
+theorem nerve_oneCycle_filling_of_simplyConnected 
     (c : Nerve.Ch P) (hi : c ∈ Nerve.Inc P)
     (hd : Nerve.lengthProjection 2 c = c) (hc : Nerve.bdry c = 0) :
     ∃ y ∈ Nerve.Inc P, Nerve.bdry y = c := by
   have he : ordNerveChain1 (decodeOrdNerve1 c) = c := by
     rw [ordNerveChain1_decode hi, hd]
-  have hcyc : bdry1 (orderCx P) (decodeOrdNerve1 c) = 0 :=
+  have hcyc  :=
     (ordNerveChain1_cycle_iff _).mp (by rw [he]; exact hc)
   obtain ⟨y, hy⟩ := order_oneCycle_filling_of_simplyConnected hsc _ hcyc
   refine ⟨ordNerveChain2 y, ordNerveChain2_mem_inc y, ?_⟩

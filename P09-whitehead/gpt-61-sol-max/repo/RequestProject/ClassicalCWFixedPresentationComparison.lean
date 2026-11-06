@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalCWChainFixedInitial
-public import RequestProject.PresClassicalDiskComparison
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalCWChainFixedInitial
+import RequestProject.PresClassicalDiskComparison
 
 /-! The fixed presentation used for necessity has an actual homotopy
 equivalence with the original CW space. Its words and tree are independent
@@ -12,7 +10,6 @@ of every ambient chain, and the only stabilization is one filled loop.
 Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -22,9 +19,7 @@ open Set Topology
 open scoped Classical unitInterval ContinuousMap
 variable (K : Whitehead.TwoComplex) (T : Comb.SpanningTree (originalGraph K))
 
-def fixedGraphAttaching :
-    C(BoundaryFamily (RelCWComplex.cell (Set.univ : Set K) 2) (Fin 2 → ℝ),
-      DiskAttachment (originalGraphAttaching K)) :=
+def fixedGraphAttaching  :=
   (skeletonAsDiskAttachment (Set.univ : Set K) 1).toContinuousMap.comp
     (skeletonAttachingMap (Set.univ : Set K) 2)
 
@@ -57,32 +52,30 @@ def fixedGraphCollapse : DiskAttachment (originalGraphAttaching K) ≃ₕ
   letI := zeroSkeleton_discrete (X := K)
   exact graphRoseHomotopyEquiv (originalGraphAttaching K) (originalGraphAttaching K).continuous T
 
-def fixedRoseAttaching :
-    C(BoundaryFamily (RelCWComplex.cell (Set.univ : Set K) 2) (Fin 2 → ℝ),
-      ClassicalGraphModel.Rose (Comb.SpanningTree.NonTree T)) :=
+def fixedRoseAttaching  :=
   (fixedGraphCollapse K T).toFun.comp (fixedGraphWordAttaching K)
 
-def fixedRoseDiskEquiv : K ≃ₕ DiskAttachment (fixedRoseAttaching K T) :=
+def fixedRoseDiskEquiv  :=
   (fixedGraphWordDiskEquiv K).trans
     (diskAttachmentBaseChangeHomotopyEquiv (fixedGraphWordAttaching K) (fixedGraphCollapse K T))
 
-def fixedCanonicalWords : FixedRel K → List (FixedGen K T × Bool) :=
+def fixedCanonicalWords  :=
   presCanonicalWords (fixedRelators K T) (Sum.inr PUnit.unit)
 
-theorem fixedCanonicalWords_ne_nil (j : FixedRel K) : fixedCanonicalWords K T j ≠ [] :=
-  presCanonicalWords_ne_nil _ _ _
+variable (j : FixedRel K)
+abbrev fixedCanonicalWords_ne_nil   :=
+  FiniteChains.PresModel.presCanonicalWords_ne_nil (FiniteChains.ClassicalCW.fixedRelators K T) (Sum.inr PUnit.unit) j
 
-theorem fixedCanonicalWords_mk (j : FixedRel K) :
+theorem fixedCanonicalWords_mk  :
     FreeGroup.mk (fixedCanonicalWords K T j) = fixedRelators K T j := mk_presCanonicalWords _ _ _
 
-def fixedStabilizedBoundary (j : FixedRel K) :
-    C(UnitBoundary (Fin 2 → ℝ), ClassicalGraphModel.Rose (FixedGen K T)) :=
+def fixedStabilizedBoundary   :=
   (StabilizedDiskPresentation.attaching (fixedRoseAttaching K T)).comp
     (⟨fun a => ⟨j, a⟩, by
-      exact continuous_sigmaMk («σ» := fun _ : FixedRel K => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩ :
+      grind [continuous_sigmaMk]⟩ :
         C(UnitBoundary (Fin 2 → ℝ), BoundaryFamily (FixedRel K) (Fin 2 → ℝ)))
 
-theorem fixedStabilizedBoundary_homotopic (j : FixedRel K) :
+theorem fixedStabilizedBoundary_homotopic  :
     (fixedStabilizedBoundary K T j).Homotopic
       (classicalPresCellBoundary (fixedCanonicalWords K T) j (fixedCanonicalWords_ne_nil K T)) := by
   cases j with
@@ -94,12 +87,12 @@ theorem fixedStabilizedBoundary_homotopic (j : FixedRel K) :
       have H₁ := H₀.trans (boundaryWords_homotopic_classicalWord W)
       have H := (ContinuousMap.Homotopic.refl (diskRoseMap
         (Sum.inl : Comb.SpanningTree.NonTree T → FixedGen K T))).comp H₁
-      rw (config := { transparency := .default }) [classicalRoseWordBoundary_map] at H
+      rw  [classicalRoseWordBoundary_map] at H
       have he : FreeGroup.mk (W.loopWord.map (fun p => ((Sum.inl p.1 : FixedGen K T), p.2))) =
           FreeGroup.mk (fixedCanonicalWords K T (Sum.inl j)) := by
-        rw (config := { transparency := .default }) [fixedCanonicalWords_mk]
+        rw  [fixedCanonicalWords_mk]
         change FreeGroup.map Sum.inl (FreeGroup.mk W.loopWord) = _
-        rw (config := { transparency := .default }) [BoundaryWords.eraseTree_mk]
+        rw  [BoundaryWords.eraseTree_mk]
         rfl
       exact H.trans ((classicalRoseWordBoundary_homotopic_of_mk_eq he).trans
         (classicalPresWordAttaching_homotopic_read (fixedCanonicalWords K T) (Sum.inl j)
@@ -108,10 +101,8 @@ theorem fixedStabilizedBoundary_homotopic (j : FixedRel K) :
       cases u
       have H := (ContinuousMap.Homotopic.refl (diskRoseMap
         (Sum.inr : PUnit → FixedGen K T))).comp dummyCircleBoundaryHomeomorph_homotopic_word
-      rw (config := { transparency := .default }) [classicalRoseWordBoundary_map] at H
-      have he : FreeGroup.mk ([(PUnit.unit, true)].map
-          (fun p => ((Sum.inr p.1 : FixedGen K T), p.2))) =
-          FreeGroup.mk (fixedCanonicalWords K T (Sum.inr PUnit.unit)) :=
+      rw  [classicalRoseWordBoundary_map] at H
+      have he  :=
         (fixedCanonicalWords_mk K T (Sum.inr PUnit.unit)).symm
       exact H.trans ((classicalRoseWordBoundary_homotopic_of_mk_eq he).trans
         (classicalPresWordAttaching_homotopic_read (fixedCanonicalWords K T) (Sum.inr PUnit.unit)
@@ -130,12 +121,11 @@ def fixedCanonicalAttachingHomotopy :
     map_zero_left := fun a => (H a.1).apply_zero a.2
     map_one_left := fun a => (H a.1).apply_one a.2 }
 
-def fixedClassicalPresWordDiskEquiv : K ≃ₕ
-    ClassicalPresWordDisks (fixedCanonicalWords K T) (fixedCanonicalWords_ne_nil K T) :=
+def fixedClassicalPresWordDiskEquiv  :=
   ((fixedRoseDiskEquiv K T).trans (StabilizedDiskPresentation.homotopyEquiv (fixedRoseAttaching K T))).trans
     (diskAttachingHomotopyEquiv _ _ (fixedCanonicalAttachingHomotopy K T))
 
-def fixedCanonicalRealizationEquiv : K ≃ₕ Comb.orderNerveRealization (PresPos (fixedCanonicalWords K T)) :=
+def fixedCanonicalRealizationEquiv  :=
   (fixedClassicalPresWordDiskEquiv K T).trans
     (presClassicalDiskComparison (fixedCanonicalWords K T) (fixedCanonicalWords_ne_nil K T)).symm
 

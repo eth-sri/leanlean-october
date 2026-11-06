@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.FreshLoopTreeStrictness
-public import RequestProject.StrictOrderComplex
-public import RequestProject.OriginalCoverCellChains
-public import RequestProject.PresIdentityCoverChains
-
-@[expose] public section
+import RequestProject.FreshLoopTreeStrictness
+import RequestProject.StrictOrderComplex
+import RequestProject.OriginalCoverCellChains
+import RequestProject.PresIdentityCoverChains
 
 /-! A triangle forces a non-tree edge, independently of the chosen
 spanning tree. The canonical model always has such a triangle from its
@@ -15,7 +13,6 @@ stabilization of the descended chain. Awaiting final Lean verification. -/
 noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb.SpanningTree
-universe u
 variable {P : Type u} [PartialOrder P]
 
 theorem nonempty_nonTree_of_strictTriangle (T : SpanningTree (strictOrderCx P))

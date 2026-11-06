@@ -1,9 +1,5 @@
-module
-
-public import RequestProject.OrderCocyclePotential
-public import Mathlib.CategoryTheory.Endomorphism
-
-@[expose] public section
+import RequestProject.OrderCocyclePotential
+import Mathlib.CategoryTheory.Endomorphism
 
 namespace FiniteChains.Comb
 open CategoryTheory

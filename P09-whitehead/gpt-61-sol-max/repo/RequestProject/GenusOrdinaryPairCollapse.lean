@@ -1,20 +1,19 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusFreeFaceRetraction
-public import RequestProject.OrdinaryTruncatedBoundary
-public import RequestProject.GenusCollapseStages
-
-@[expose] public section
+import RequestProject.GenusFreeFaceRetraction
+import RequestProject.OrdinaryTruncatedBoundary
+import RequestProject.GenusCollapseStages
 
 /-! A complete elementary collapse comparison for an ordinary genus-block cube. -/
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
+variable (left right : List (GenusCollapsePair q))
 /-- An ordinary pair anywhere in the chosen collapse reflects null homotopies between
 the actual consecutive stages. Earlier deletions impose no extra boundary hypothesis. -/
 theorem genus_ordinary_pair_stage_injIn
-    (left right : List (GenusCollapsePair q))
+    
     (f t : QOld (cmpRel (GenusVertex q)))
     (hf : f.1.spx.card = 2) (ht : t.1.spx.card = 3) (hordinary : t.1.sgn ≠ 0)
     (hsplit : genusChainCollapse q = left ++
@@ -52,8 +51,7 @@ theorem genus_ordinary_pair_stage_injIn
   have htop : InjIn (fun x => genusCollapseStage q left x ∧ x ≠ Sum.inl f)
       (fun x => (genusCollapseStage q left x ∧ x ≠ Sum.inl f) ∧ x ≠ Sum.inl t) := by
     apply injIn_delete_maximal
-    · intro x _ htx
-      exact genus_top_cell_maximal q t ht x htx
+    · solve_by_elim [FiniteChains.Davis.Genus.genus_top_cell_maximal]
     · obtain ⟨x, hxf, hxt⟩ := genus_top_boundary_nonempty q (Sum.inl f) hf t ht
       exact ⟨x, (hJ x).mp ⟨hxf, hxt⟩⟩
     · exact connectedIn_congr hJ (ordinaryTruncatedBoundary_connectedIn hordinary hi)
@@ -71,7 +69,7 @@ theorem genus_ordinary_pair_stage_injIn
 /-- Every old-face pair in the chosen collapse satisfies the ordinary comparison, with
 dimension and nonpositive-corner conditions derived from the actual recorded pair. -/
 theorem genus_old_pair_stage_injIn
-    (left right : List (GenusCollapsePair q))
+    
     (f t : QOld (cmpRel (GenusVertex q)))
     (hsplit : genusChainCollapse q = left ++
       ((qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate f.1)) :: right)) :
@@ -79,17 +77,8 @@ theorem genus_old_pair_stage_injIn
       (genusCollapseStage q
         (left ++ [(qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate f.1))])) := by
   have hp : (qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate f.1)) ∈ genusChainCollapse q := by
-    rw [hsplit]
-    exact List.mem_append.mpr (Or.inr List.mem_cons_self)
-  have hf : f.1.spx.card = 2 := genus_removedFace_dimension q (Sum.inl f)
-    (List.mem_map.mpr ⟨(qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate f.1)), hp, rfl⟩)
-  have ht : t.1.spx.card = 3 := (genus_oldCell_removed_iff_dimension_three q t).mp
-    (List.mem_map.mpr ⟨(qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate f.1)), hp, rfl⟩)
-  have hordinary : t.1.sgn ≠ 0 := by
-    intro hs
-    apply genusChainCollapse_old_face_nonpositive q (qCubeToCoordinate t.1)
-      (qCubeToCoordinate f.1) hp
-    simpa only [freeSet_qCubeToCoordinate] using qCubeToCoordinate_sgn_zero t.1 hs
+    simp_all
+  obtain ⟨hf, ht, hordinary⟩ := genus_recorded_old_pair_data q f t hp
   exact genus_ordinary_pair_stage_injIn q left right f t hf ht hordinary hsplit
 
 end FiniteChains.Davis.Genus

@@ -1,14 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeCoordinateBoundaryChain
-public import RequestProject.QCubeCubicalThreeBoundary
-
-@[expose] public section
+import RequestProject.QCubeCoordinateBoundaryChain
+import RequestProject.QCubeCubicalThreeBoundary
 
 /-! The six-face coefficient orientation agrees with the collapse's actual incidences. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -48,9 +44,7 @@ theorem qThreeOrientedFaces_coordinate_apply (c : QCube A) (u v w : V)
     exact Subtype.ext (qCubeToCoordinate_injective h)
   change Finsupp.mapDomain f threeOrientedFaces g = _
   by_cases hg : g ∈ Set.range f
-  · obtain ⟨i, rfl⟩ := hg
-    rw [Finsupp.mapDomain_apply_of_injective hinj, threeOrientedFaces_apply]
-    exact (qThreeFace_coordinate_boundary_coefficient c u v w huv hvw hs i).symm
+  · aesop (add simp [threeOrientedFaces_apply, qThreeFace_coordinate_boundary_coefficient])
   · have hzero : cubeBdry (qCubeToCoordinate c) (Sum.inl g) = 0 := by
       apply cubeBdry_zero_off_actual_facets
       intro a ha s he

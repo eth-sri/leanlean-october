@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RACGDescent
-
-@[expose] public section
+import RequestProject.RACGDescent
 
 /-!
 # Medians in the Cayley graph of a right-angled Coxeter group
@@ -17,15 +15,14 @@ the paper:
 * `FiniteChains.RACG.median_unique` — the median is unique.
 -/
 
-namespace FiniteChains
-namespace RACG
+namespace FiniteChains.RACG
 
-universe u
+
 
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 
-theorem gen_inv (s : V) : (gen A s)⁻¹ = gen A s :=
-  inv_eq_of_mul_eq_one_left (gen_mul_gen A s)
+abbrev gen_inv (s : V)  :=
+  inv_eq_of_mul_eq_one_left (FiniteChains.RACG.gen_mul_gen A s)
 
-end RACG
-end FiniteChains
+end FiniteChains.RACG
+

@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PushoutActualCycleGeneration
-public import RequestProject.Pi2GenerationBaseChange
-public import RequestProject.MapChainDescent
-
-@[expose] public section
+import RequestProject.PushoutActualCycleGeneration
+import RequestProject.Pi2GenerationBaseChange
+import RequestProject.MapChainDescent
 
 /-! The geometric generation input for regular-cover descent is now a
 theorem. The explicit edge/face compatibility records actual deck maps,
@@ -13,7 +11,6 @@ Unverified source. -/
 
 noncomputable section
 namespace FiniteChains.Comb
-universe u v
 variable {D K : Complex2.{u}} {Q : Type v} [Group Q]
   (p : Hom D K) (hp : IsCovering p) (a : DeckAction D Q) (hr : IsRegular p a)
   (he : ∀ q e, p.onE (a.smulE q e) = p.onE e)

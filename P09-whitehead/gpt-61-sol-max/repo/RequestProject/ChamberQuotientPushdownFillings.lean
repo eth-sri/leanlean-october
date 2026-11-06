@@ -1,4 +1,3 @@
-module
-public import RequestProject.OrderNerveH2Maps
-public import RequestProject.ChamberQuotientConnectedGeneration
-public import RequestProject.OrderUniversalBoundaryProjection
+import RequestProject.OrderNerveH2Maps
+import RequestProject.ChamberQuotientConnectedGeneration
+import RequestProject.OrderUniversalBoundaryProjection

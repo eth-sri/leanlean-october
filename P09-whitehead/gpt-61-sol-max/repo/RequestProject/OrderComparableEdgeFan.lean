@@ -1,2 +1,1 @@
-module
-public import RequestProject.StrictOrderChains
+import RequestProject.StrictOrderChains

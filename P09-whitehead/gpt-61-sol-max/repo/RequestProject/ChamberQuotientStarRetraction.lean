@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberQuotientAttachingCover
-
-@[expose] public section
+import RequestProject.ChamberQuotientAttachingCover
 
 /-! The whole base star retracts down onto the actual inserted base. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 
@@ -45,12 +42,12 @@ theorem qBaseStarRetraction_le (p : QBaseStar (att := att)) :
     exact ⟨hp, Finset.nonempty_iff_ne_empty.mpr (fun h => c.2 ⟨h, hp⟩), le_refl _⟩
   | inr x => exact le_refl _
 
-omit [DecidableEq V] in
+section
+omit [DecidableEq V]
 theorem qBaseStarRetraction_mem_base (p : QBaseStar (att := att)) :
     InQBase (qBaseStarRetraction p) := ⟨qBaseStarToBase p, rfl⟩
 
-omit [DecidableEq V] in
-@[simp] theorem qBaseStarRetraction_new (x : X) :
-    qBaseStarRetraction (att := att) ⟨qNew x, trivial⟩ = qNew x := rfl
+
+end
 
 end FiniteChains.Davis

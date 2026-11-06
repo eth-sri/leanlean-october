@@ -1,4 +1,4 @@
-module
+import Mathlib.Tactic
 
 /-
 The horn comparison is adapted from the simplicial telescope argument of
@@ -7,10 +7,8 @@ c66523531ff172d7f41913d94e56921e790a1b47, Hurewicz/SimplicialTelescope.lean,
 released under Apache 2.0. In degree two a single telescope stage suffices.
 All fillers here are actual continuous singular simplices.
 -/
-public import RequestProject.TopologicalSingular.TetrahedronLastFaceRelation
-public import RequestProject.TopologicalSingular.PointedTriangleHorn
-
-@[expose] public section
+import RequestProject.TopologicalSingular.TetrahedronLastFaceRelation
+import RequestProject.TopologicalSingular.PointedTriangleHorn
 
 namespace FiniteChains.TopologicalSingular
 variable {X : Type} [TopologicalSpace X] {x : X}
@@ -34,7 +32,7 @@ theorem tetrahedron_relation (a b c d : PointedSingularTriangle X x)
     · rfl
     · exact hU 2 (by decide)
     · exact hU 3 (by decide)
-  have he : e.pi2 + d.pi2 = c.pi2 := first_face_constant_relation e c d U hUfaces
+  have he  := first_face_constant_relation e c d U hUfaces
   obtain ⟨W, h0, h1, h2, h3⟩ := singular_four_horn_missing_one
     (singularDegeneracy 0 a.map) tau U (singularDegeneracy 2 d.map)
     (by simp [degeneracy_zero_faces, hfaces])
@@ -47,7 +45,7 @@ theorem tetrahedron_relation (a b c d : PointedSingularTriangle X x)
       face i W = ![a.map, b.map, e.map, (constant x).map] i := by
     intro i
     fin_cases i <;> simp_all [degeneracy_zero_faces, degeneracy_two_faces]
-  have hab : a.pi2 + e.pi2 = b.pi2 := last_face_constant_relation a b e W hWfaces
+  have hab  := last_face_constant_relation a b e W hWfaces
   calc
     a.pi2 + c.pi2 = a.pi2 + (e.pi2 + d.pi2) := by rw [he]
     _ = (a.pi2 + e.pi2) + d.pi2 := (add_assoc _ _ _).symm

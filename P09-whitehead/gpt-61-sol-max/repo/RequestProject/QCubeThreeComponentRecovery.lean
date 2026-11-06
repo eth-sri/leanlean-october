@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeThreeOrientationSubdivision
-public import RequestProject.QCubeThreeBaseCycles
-
-@[expose] public section
+import RequestProject.QCubeThreeOrientationSubdivision
+import RequestProject.QCubeThreeBaseCycles
 
 /-! Recovery of the actual cubical boundary of an isolated strict three-cube component. -/
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 

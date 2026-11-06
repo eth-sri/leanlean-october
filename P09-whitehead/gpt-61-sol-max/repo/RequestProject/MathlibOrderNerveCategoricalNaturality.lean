@@ -1,20 +1,18 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MathlibOrderNerveHomology
-public import RequestProject.MathlibOrderNerveCycleNaturality
+import RequestProject.MathlibOrderNerveHomology
+import RequestProject.MathlibOrderNerveCycleNaturality
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory CategoryTheory.Limits
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q]
 
+  (f : P → Q)
+  (hf : Monotone f)
 /-- The actual monotone-map chain morphism on the degree-two differential segment. -/
-noncomputable def mathlibOrderNerveShortComplexMap (f : P → Q) (hf : Monotone f) :
+noncomputable def mathlibOrderNerveShortComplexMap   :
     mathlibOrderNerveShortComplex P ⟶ mathlibOrderNerveShortComplex Q where
   τ₁ := (mathlibOrderNerveChainMap f hf).f 3
   τ₂ := (mathlibOrderNerveChainMap f hf).f 2
@@ -27,7 +25,7 @@ noncomputable def mathlibOrderNerveShortComplexMap (f : P → Q) (hf : Monotone 
     simpa only [mathlibOrderNerveShortComplex, AlgebraicTopology.AlternatingFaceMapComplex.obj_d_eq, AlgebraicTopology.AlternatingFaceMapComplex.objD] using h
 
 /-- Actual cycle and quotient maps form Mathlib's verified homology map data. -/
-noncomputable def mathlibOrderNerveLeftHomologyMapData (f : P → Q) (hf : Monotone f) :
+noncomputable def mathlibOrderNerveLeftHomologyMapData   :
     ShortComplex.LeftHomologyMapData (mathlibOrderNerveShortComplexMap f hf)
       (mathlibOrderNerveShortComplex P).moduleCatLeftHomologyData
       (mathlibOrderNerveShortComplex Q).moduleCatLeftHomologyData where
@@ -60,7 +58,7 @@ theorem mathlibOrderNerve_homologyMap_eq (f : P → Q) (hf : Monotone f) :
   (mathlibOrderNerveLeftHomologyMapData f hf).homologyMap_eq
 
 /-- A proved zero order-homology map gives the zero actual categorical homology map. -/
-theorem mathlibOrderNerve_homologyMap_zero (f : P → Q) (hf : Monotone f)
+theorem mathlibOrderNerve_homologyMap_zero  
     (hzero : orderNerveH2Map f hf = 0) :
     ShortComplex.homologyMap (mathlibOrderNerveShortComplexMap f hf) = 0 := by
   rw [mathlibOrderNerve_homologyMap_eq,

@@ -1,23 +1,22 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.VertexPuncturedCube
-public import RequestProject.OrderComplexRetraction
-
-@[expose] public section
+import RequestProject.VertexPuncturedCube
+import RequestProject.OrderComplexRetraction
 
 namespace FiniteChains.Davis
 open Comb
 
-def vertexIntersectionCoordinates (i : Fin 7) : Cube (Fin 3) :=
+variable (i : Fin 7)
+def vertexIntersectionCoordinates   :=
   ![![CubeCoord.free, .neg, .neg], ![CubeCoord.free, .neg, .free],
     ![CubeCoord.free, .neg, .pos], ![CubeCoord.free, .pos, .neg],
     ![CubeCoord.free, .free, .neg], ![CubeCoord.free, .pos, .free],
     ![CubeCoord.free, .free, .pos]] i
 
-def vertexIntersectionCell (i : Fin 7) : VertexPuncturedCube :=
+def vertexIntersectionCell  : VertexPuncturedCube :=
   ⟨vertexIntersectionCoordinates i, by fin_cases i <;> decide⟩
 
-theorem vertexIntersectionCell_mem (i : Fin 7) :
+theorem vertexIntersectionCell_mem  :
     vertexPunctureLeft (vertexIntersectionCell i) ∧
       vertexPunctureRight (vertexIntersectionCell i) := by
   unfold vertexPunctureLeft vertexPunctureRight
@@ -45,7 +44,7 @@ theorem vertexIntersection_classify (c : VertexPuncturedCube)
   case neg.pos => exact ⟨2, Subtype.ext hv⟩
   case neg.neg => exact ⟨0, Subtype.ext hv⟩
 
-def vertexIntersectionAdjacent (i j : Fin 7) : Prop :=
+def vertexIntersectionAdjacent (i j : Fin 7)  :=
   CoordinateFace (vertexIntersectionCoordinates i) (vertexIntersectionCoordinates j) ∨
     CoordinateFace (vertexIntersectionCoordinates j) (vertexIntersectionCoordinates i)
 

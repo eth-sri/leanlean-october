@@ -1,16 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.StrictThreeBoundarySquared
-
-@[expose] public section
+import RequestProject.StrictThreeBoundarySquared
 
 /-! Actual chains in strict lower intervals and their cone fillings. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
 def strictLowerIncl (c : P) : Hom (strictOrderCx (Set.Iio c)) (strictOrderCx P) :=

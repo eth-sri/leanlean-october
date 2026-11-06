@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusOrdinaryLiftedTopHomology
-public import RequestProject.GenusFreeFaceCoverHomology
-public import RequestProject.NerveMaximalFamilyDeletion
-public import RequestProject.NerveGenerationComposition
-
-@[expose] public section
+import RequestProject.GenusOrdinaryLiftedTopHomology
+import RequestProject.GenusFreeFaceCoverHomology
+import RequestProject.NerveMaximalFamilyDeletion
+import RequestProject.NerveGenerationComposition
 
 /-! Full ordinary recorded collapse pairs preserve H2 in arbitrary covering spaces. -/
 namespace FiniteChains.Davis.Genus
@@ -29,17 +27,8 @@ theorem genus_ordinary_pair_cover_homology (hf : IsPosetCover f)
         (left ++ [(qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate s.1))]) (f p)) 3 := by
   let pair : GenusCollapsePair q := (qCubeToCoordinate t.1, Sum.inl (qCubeToCoordinate s.1))
   have hp : pair ∈ genusChainCollapse q := by
-    rw [hsplit]
-    exact List.mem_append.mpr (Or.inr List.mem_cons_self)
-  have hs : s.1.spx.card = 2 := genus_removedFace_dimension q (Sum.inl s)
-    (List.mem_map.mpr ⟨pair, hp, rfl⟩)
-  have ht : t.1.spx.card = 3 := (genus_oldCell_removed_iff_dimension_three q t).mp
-    (List.mem_map.mpr ⟨pair, hp, rfl⟩)
-  have hordinary : t.1.sgn ≠ 0 := by
-    intro he
-    apply genusChainCollapse_old_face_nonpositive q (qCubeToCoordinate t.1)
-      (qCubeToCoordinate s.1) hp
-    simpa only [freeSet_qCubeToCoordinate] using qCubeToCoordinate_sgn_zero t.1 he
+    aesop
+  obtain ⟨hs, ht, hordinary⟩ := genus_recorded_old_pair_data q s t hp
   have htail : qCubeToCoordinate t.1 ∈ (pair :: right).map Prod.fst := by simp [pair]
   have hcert := genusCollapseStage_suffix_certificate q left (pair :: right) hsplit
   have htC : genusCollapseStage q left (Sum.inl t) :=
@@ -49,17 +38,10 @@ theorem genus_ordinary_pair_cover_homology (hf : IsPosetCover f)
   let C := fun p => genusCollapseStage q left (f p) ∧ f p ≠ Sum.inl s
   let T := fun p => f p = Sum.inl t
   have hTC : ∀ p, T p → C p := by
-    intro p hpT
-    refine ⟨hpT ▸ htC, ?_⟩
-    rw [hpT]
-    intro he
-    have hdim := congrArg (fun c : QOld (cmpRel (GenusVertex q)) => c.1.spx.card)
-      (Sum.inl.inj he)
-    change t.1.spx.card = s.1.spx.card at hdim
-    omega
+    aesop
   have hmax : ∀ p, T p → ∀ x, C x → p ≤ x → x = p := by
     intro p hp x _ hpx
-    have hx : f x = Sum.inl t := genus_top_cell_maximal q t ht (f x)
+    have hx  := genus_top_cell_maximal q t ht (f x)
       (by rw [← hp]; exact hf.mono hpx)
     exact (hf.up_inj (le_refl p) hpx (hp.trans hx.symm)).symm
   have hlink₁ : ∀ v, T v → FillsDegreeIn (fun p => C p ∧ p < v) 2 := by

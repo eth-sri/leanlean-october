@@ -1,13 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.BlockFamilyB1Finsupp
-public import RequestProject.CrowellFinsupp
-public import RequestProject.GenusSpineFactorComparison
-public import RequestProject.GenusSpineSubstitutedBoundary
-public import RequestProject.PrincipalCycleBaseChange
-public import RequestProject.GenusNormalizedSpineReference
-
-@[expose] public section
+import RequestProject.BlockFamilyB1Finsupp
+import RequestProject.CrowellFinsupp
+import RequestProject.GenusSpineFactorComparison
+import RequestProject.GenusSpineSubstitutedBoundary
+import RequestProject.PrincipalCycleBaseChange
+import RequestProject.GenusNormalizedSpineReference
 
 /-!
 Finite-support generation for the actual arbitrary family of genus spines.
@@ -24,8 +22,6 @@ Written proof terms; this source has not been compiled under the current workflo
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -41,11 +37,7 @@ theorem fox_wordHom_chainRule {A B : Type*} [Fintype A] [DecidableEq A]
   | inv_of j ih =>
       rw [map_inv, fox_inv, ih]
       simp only [fox_inv, map_neg, map_mul, groupRingMap_grp]
-      rw [Finset.mul_sum, ← Finset.sum_neg_distrib]
-      apply Finset.sum_congr rfl
-      intro i hi
-      rw [map_inv]
-      simp only [neg_mul, mul_assoc]
+      simp_all
   | mul v w hv hw =>
       rw [map_mul, fox_mul, hv, hw]
       simp only [fox_mul, map_add, map_mul, groupRingMap_grp, add_mul]
@@ -97,23 +89,22 @@ namespace FiniteChains.Davis.Genus
 
 open RACG Mirror Comb PresModel BlockFamily
 
+variable (n : ℕ)
 /-- The genuine marked surface word, prior to any substitution in a core. -/
-def markedSpineSurfaceWord (n : ℕ) [NeZero n] : FreeGroup (MarkedSpineGen n) :=
+def markedSpineSurfaceWord  [NeZero n] : FreeGroup (MarkedSpineGen n) :=
   commWord (fun x : Fin n × Bool => FreeGroup.of (Sum.inl x)) (finitePairs n)
 
 /-- Choose the degree-one geometric surface class once in the genuine marked
 spine. This choice is independent of the core and all substituted words. -/
-def markedSpineFilling (n : ℕ) [NeZero n] :
-    NamedSpineRel n →₀ MonoidAlgebra ℤ (PresGroup (markedSpineBeta n)) :=
+def markedSpineFilling  [NeZero n]  :=
   normalizedMarkedSpineFilling n (normalizedSpineReference n)
 
-theorem markedSpineFilling_boundary (n : ℕ) [NeZero n] (i : MarkedSpineGen n) :
-    (∑ m, markedSpineFilling n m * foxMatrixPres (markedSpineBeta n) i m) =
-      quotRingHom ℤ (relSub (markedSpineBeta n)) (fox i (markedSpineSurfaceWord n)) := by
-  exact normalizedMarkedSpineFilling_boundary n (normalizedSpineReference n)
-    (normalizedSpineReference_boundary n) i
+abbrev markedSpineFilling_boundary :=
+  fun (n : ℕ) [NeZero n] =>
+    FiniteChains.Davis.Genus.normalizedMarkedSpineFilling_boundary n (FiniteChains.Davis.Genus.normalizedSpineReference n)
+      (FiniteChains.Davis.Genus.normalizedSpineReference_boundary n)
 
-@[simp] theorem markedSpineFilling_named_coeff (n : ℕ) [NeZero n] (m : NamedSpineRel n) :
+@[simp] theorem markedSpineFilling_named_coeff  [NeZero n] (m : NamedSpineRel n) :
     markedSpineFilling n m =
       MonoidAlgebra.mapDomainRingHom ℤ (spineReorderHom n)
         (normalizedNamedSpineVector n (normalizedSpineReference n) m) :=
@@ -124,33 +115,32 @@ variable {α Jr Sx : Type} (ρ : Jr ⊕ Sx → FreeGroup α)
   (u : ∀ s, Fin (q s) × Bool → FreeGroup α)
   (hrho : ∀ s, ρ (Sum.inr s) = commWord (u s) (finitePairs (q s)))
 
+variable (s : Sx)
 /-- The actual marked receiver in an individual substituted factor. -/
-def finiteSpineIndividualMarkedHom (s : Sx) :
+def finiteSpineIndividualMarkedHom  :
     PresGroup (markedSpineBeta (q s)) →*
       IndividualGroup ρ (familyFiniteSpineWordBlock q u) s :=
   markedBlockHom (oneRel ρ s) (fun _ : PUnit.{1} => u s)
     (fun _ : PUnit.{1} => markedSpineBeta (q s)) PUnit.unit
 
 /-- The actual marked receiver in the simultaneous substituted group. -/
-def finiteSpineFamilyMarkedHom (s : Sx) :
+def finiteSpineFamilyMarkedHom  :
     PresGroup (markedSpineBeta (q s)) →*
       PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u)) :=
   markedBlockHom ρ u (fun s => markedSpineBeta (q s)) s
 
-def finiteSpineIndividualFilling (s : Sx) : NamedSpineRel (q s) →₀
-    MonoidAlgebra ℤ (IndividualGroup ρ (familyFiniteSpineWordBlock q u) s) :=
+def finiteSpineIndividualFilling   :=
   (markedSpineFilling (q s)).mapRange
     (MonoidAlgebra.mapDomainRingHom ℤ (finiteSpineIndividualMarkedHom ρ q u s))
     (map_zero _)
 
-def finiteSpineFamilyFilling (s : Sx) : NamedSpineRel (q s) →₀
-    MonoidAlgebra ℤ (PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u))) :=
+def finiteSpineFamilyFilling   :=
   (markedSpineFilling (q s)).mapRange
     (MonoidAlgebra.mapDomainRingHom ℤ (finiteSpineFamilyMarkedHom ρ q u s))
     (map_zero _)
 
 include hrho in
-theorem finiteSpineFamily_surfaceWord (s : Sx) :
+theorem finiteSpineFamily_surfaceWord  :
     FreeGroup.map (genEmb (Zt := fun s => SpinePresentationGen (q s)) s)
       (blockSubst (Zt := fun s => SpinePresentationGen (q s)) u s
         (markedSpineSurfaceWord (q s))) =
@@ -162,7 +152,7 @@ theorem finiteSpineFamily_surfaceWord (s : Sx) :
     intro a
     simp
   rw [markedSpineSurfaceWord, map_commWord, map_commWord]
-  simp only [blockSubst_of_inl]
+  simp 
   simp_rw [← MonoidHom.comp_apply, hm]
   rw [← map_commWord, hrho s]
 
@@ -202,7 +192,7 @@ theorem finiteSpineFamilyFilling_isFilling :
       fox_map_of_not_mem_range Sum.inl (fun _ => Sum.inr_ne_inl), map_zero] at h
     exact h
 
-theorem finiteSpineFactor_marked (s : Sx) :
+theorem finiteSpineFactor_marked  :
     (finiteSpineFactorToFamily ρ q u hrho s).comp
       (finiteSpineIndividualMarkedHom ρ q u s) = finiteSpineFamilyMarkedHom ρ q u s := by
   apply MonoidHom.ext
@@ -217,7 +207,7 @@ theorem finiteSpineFactor_marked (s : Sx) :
       rfl
 
 /-- The reference family filling is the coefficient image of the individual one. -/
-theorem finiteSpineFamilyFilling_coeff (s : Sx) (m : NamedSpineRel (q s)) :
+theorem finiteSpineFamilyFilling_coeff  (m : NamedSpineRel (q s)) :
     finiteSpineFamilyFilling ρ q u s m =
       finiteSpineFactorRingHom ρ q u hrho s (finiteSpineIndividualFilling ρ q u s m) := by
   change MonoidAlgebra.mapDomainRingHom ℤ (finiteSpineFamilyMarkedHom ρ q u s)
@@ -228,7 +218,7 @@ theorem finiteSpineFamilyFilling_coeff (s : Sx) (m : NamedSpineRel (q s)) :
   rw [BlockMor.mapDomainRingHom_comp', finiteSpineFactor_marked]
 
 /-- The actual internal Fox matrix commutes with the individual factor inclusion. -/
-theorem finiteSpineFactor_internalMatrix (s : Sx) (z : SpinePresentationGen (q s))
+theorem finiteSpineFactor_internalMatrix  (z : SpinePresentationGen (q s))
     (m : NamedSpineRel (q s)) :
     foxMatrixPres (substPresF ρ (familyFiniteSpineWordBlock q u))
       (Sum.inr ⟨s, z⟩) (Sum.inr ⟨s, m⟩) =
@@ -240,15 +230,13 @@ theorem finiteSpineFactor_internalMatrix (s : Sx) (z : SpinePresentationGen (q s
       (Sum.inr ⟨s, z⟩) (Sum.inr ⟨s, m⟩) =
       MonoidAlgebra.mapDomainRingHom ℤ (finiteSpineFamilyMarkedHom ρ q u s)
         (foxMatrixPres (markedSpineBeta (q s)) (Sum.inr z) m) := by
-    convert foxMatrix_markedBlock_internal ρ u (fun t => markedSpineBeta (q t)) s z m using 1 <;> rfl
+    classical solve_by_elim (transparency := .default) (maxDepth := 10) [FiniteChains.relSub_normal, FiniteChains.BlockFamily.foxMatrix_markedBlock_internal, markedSpineBeta]
   have hi : foxMatrixPres (substPresF (oneRel ρ s)
       (fun _ : PUnit.{1} => familyFiniteSpineWordBlock q u s))
       (Sum.inr ⟨PUnit.unit, z⟩) (Sum.inr ⟨PUnit.unit, m⟩) =
       MonoidAlgebra.mapDomainRingHom ℤ (finiteSpineIndividualMarkedHom ρ q u s)
         (foxMatrixPres (markedSpineBeta (q s)) (Sum.inr z) m) := by
-    convert foxMatrix_markedBlock_internal (oneRel ρ s)
-        (fun _ : PUnit.{1} => u s) (fun _ : PUnit.{1} => markedSpineBeta (q s))
-        PUnit.unit z m using 1 <;> rfl
+    classical solve_by_elim (transparency := .default) (maxDepth := 10) [FiniteChains.relSub_normal, FiniteChains.BlockFamily.foxMatrix_markedBlock_internal, oneRel, markedSpineBeta]
   rw [hf, hi]
   change _ = MonoidAlgebra.mapDomainRingHom ℤ (finiteSpineFactorToFamily ρ q u hrho s)
     (MonoidAlgebra.mapDomainRingHom ℤ (finiteSpineIndividualMarkedHom ρ q u s) _)
@@ -256,7 +244,7 @@ theorem finiteSpineFactor_internalMatrix (s : Sx) (z : SpinePresentationGen (q s
 
 /-- The remaining geometric statement, over each actual individual substituted
 group and with the fixed genuine marked-surface coefficients. -/
-def FiniteSpineIndividualB2 : Prop :=
+def FiniteSpineIndividualB2  :=
   ∀ (s : Sx) (v : NamedSpineRel (q s) →
     MonoidAlgebra ℤ (IndividualGroup ρ (familyFiniteSpineWordBlock q u) s)),
     (∀ z : SpinePresentationGen (q s), ∑ m, v m *
@@ -280,27 +268,18 @@ theorem finiteSpineFamilyB2_of_individual (hB2 : FiniteSpineIndividualB2 ρ q u)
       (fun _ : PUnit.{1} => familyFiniteSpineWordBlock q u s))
       (Sum.inr ⟨PUnit.unit, z⟩) (Sum.inr ⟨PUnit.unit, m⟩))
     (finiteSpineIndividualFilling ρ q u s) (hB2 s) v (by
-      intro z
-      simpa only [finiteSpineFactor_internalMatrix ρ q u hrho,
-        finiteSpineFactorRingHom] using hv z)
+      simp_all [finiteSpineFactor_internalMatrix, finiteSpineFactorRingHom])
   refine ⟨r, fun m => ?_⟩
   rw [finiteSpineFamilyFilling_coeff ρ q u hrho]
   exact hr m
 
 /-- Actual arbitrary-family finite-support generation, with B1 and injection
 fully discharged. Only the concrete individual B2 remains as an input. -/
-theorem finiteSpineFamily_fsGenerates (hB2 : FiniteSpineIndividualB2 ρ q u)
+abbrev finiteSpineFamily_fsGenerates (hB2 : FiniteSpineIndividualB2 ρ q u)
     (x : (Jr ⊕ (Σ s, NamedSpineRel (q s))) →₀
       MonoidAlgebra ℤ (PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u))))
     (hx : coverSecondBoundary (relSub (substPresF ρ (familyFiniteSpineWordBlock q u)))
-      (substPresF ρ (familyFiniteSpineWordBlock q u)) x = 0) :
-    x ∈ Submodule.span
-      (MonoidAlgebra ℤ (PresGroup (substPresF ρ (familyFiniteSpineWordBlock q u))))
-      {v | ∃ y : (Jr ⊕ Sx) →₀ MonoidAlgebra ℤ (PresGroup ρ),
-        coverSecondBoundary (relSub ρ) ρ y = 0 ∧
-        v = fsCellsF ρ (familyFiniteSpineWordBlock q u)
-          (familyFiniteSpineWordBlock_filled ρ q u hrho)
-          (finiteSpineFamilyFilling ρ q u) y} :=
+      (substPresF ρ (familyFiniteSpineWordBlock q u)) x = 0)  :=
   fsGenerates_familySubst ρ (familyFiniteSpineWordBlock q u)
     (familyFiniteSpineWordBlock_filled ρ q u hrho) (finiteSpineFamilyFilling ρ q u)
     (finiteSpineFamilyFilling_isFilling ρ q u hrho)

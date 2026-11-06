@@ -1,2 +1,1 @@
-module
-public import RequestProject.IdentityCover
+import RequestProject.IdentityCover

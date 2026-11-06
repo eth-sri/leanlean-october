@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveSingularBoundaryReflection
-public import RequestProject.OrderNerveSingularH2Surjective
-public import RequestProject.TopologicalSingular.HomologyInjectivity
-
-@[expose] public section
+import RequestProject.OrderNerveSingularBoundaryReflection
+import RequestProject.OrderNerveSingularH2Surjective
+import RequestProject.TopologicalSingular.HomologyInjectivity
 
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
@@ -13,9 +11,10 @@ set_option backward.isDefEq.respectTransparency.types false
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular
 
+variable (P : Type)
 /-- The canonical realization comparison is injective on every positive
 singular homology group. -/
-theorem orderNerveExplicitSingularHomology_mono (P : Type) [PartialOrder P] (n : ℕ) :
+theorem orderNerveExplicitSingularHomology_mono  [PartialOrder P] (n : ℕ) :
     Mono (HomologicalComplex.homologyMap (orderNerveExplicitSingularMap P) (n + 1)) := by
   unfold HomologicalComplex.homologyMap HomologicalComplex.shortComplexFunctor
   apply shortComplex_homologyMap_mono_of_reflects_boundaries
@@ -39,22 +38,20 @@ theorem orderNerveExplicitSingularHomology_mono (P : Type) [PartialOrder P] (n :
   rw [AlternatingFaceMapComplex.obj_d_eq]
   exact ha
 
-theorem orderNerveSingularH2Comparison_mono (P : Type) [PartialOrder P] :
+theorem orderNerveSingularH2Comparison_mono  [PartialOrder P] :
     Mono (orderNerveSingularH2Comparison P) := by
   rw [orderNerveSingularH2Comparison_factor]
   letI := orderNerveExplicitSingularHomology_mono P 1
   infer_instance
 
-theorem orderCellSingularH2Map_injective (P : Type) [PartialOrder P] :
-    Function.Injective (orderCellSingularH2Map P) := by
-  have h := (ModuleCat.mono_iff_injective _).mp (orderNerveSingularH2Comparison_mono P)
-  exact h.comp (mathlibOrderNerveComplexH2Equiv P).injective
+abbrev orderCellSingularH2Map_injective  [PartialOrder P]  :=
+  have h :=
+    (ModuleCat.mono_iff_injective (FiniteChains.Comb.orderNerveSingularH2Comparison P)).mp
+      (FiniteChains.Comb.orderNerveSingularH2Comparison_mono P);
+  Function.Injective.comp h (LinearEquiv.injective (FiniteChains.Comb.mathlibOrderNerveComplexH2Equiv P))
 
 /-- An actual isomorphism, with the original natural comparison as forward map. -/
-noncomputable def orderCellSingularH2Equiv (P : Type) [PartialOrder P] :
-    OrderNerveH2 P ≃ₗ[ℤ]
-      (((singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj (ModuleCat.of ℤ ℤ)).obj
-        (orderNerveRealization P)) :=
+noncomputable def orderCellSingularH2Equiv  [PartialOrder P]  :=
   LinearEquiv.ofBijective (orderCellSingularH2Map P)
     ⟨orderCellSingularH2Map_injective P, orderCellSingularH2Map_surjective P⟩
 

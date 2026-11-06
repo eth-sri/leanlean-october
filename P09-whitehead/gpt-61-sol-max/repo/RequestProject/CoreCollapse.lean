@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.WedgeSigma
-public import RequestProject.GenerationStep
-
-@[expose] public section
+import RequestProject.WedgeSigma
+import RequestProject.GenerationStep
 
 /-!
 # Collapsing the acyclic core: the Hurewicz image is detected on the extra cells
@@ -41,26 +39,24 @@ matrix is injective, so the core coordinates vanish too.
 
 namespace FiniteChains
 
-open MonoidAlgebra
 
-universe u
+
 
 variable {γ δ Mc Ex : Type u} [Fintype γ] [DecidableEq γ] [Fintype δ] [DecidableEq δ]
   [Fintype Mc] [Fintype Ex]
 
 /-- A presentation containing the core `D`: the relators of the core, read in the free group on
 the core and the extra generators, together with the extra relators. -/
-def corePres (core : Mc → FreeGroup γ) (extra : Ex → FreeGroup (γ ⊕ δ)) :
-    Mc ⊕ Ex → FreeGroup (γ ⊕ δ) :=
+def corePres (core : Mc → FreeGroup γ) (extra : Ex → FreeGroup (γ ⊕ δ))  :=
   Sum.elim (fun m => FreeGroup.map Sum.inl (core m)) extra
 
-omit [Fintype γ] [DecidableEq γ] [Fintype δ] [DecidableEq δ] [Fintype Mc] [Fintype Ex] in
+section
+omit [Fintype γ] [DecidableEq γ] [Fintype δ] [DecidableEq δ] [Fintype Mc] [Fintype Ex]
 @[simp] theorem corePres_inl (core : Mc → FreeGroup γ) (extra : Ex → FreeGroup (γ ⊕ δ))
     (m : Mc) : corePres core extra (Sum.inl m) = FreeGroup.map Sum.inl (core m) := rfl
 
-omit [Fintype γ] [DecidableEq γ] [Fintype δ] [DecidableEq δ] [Fintype Mc] [Fintype Ex] in
-@[simp] theorem corePres_inr (core : Mc → FreeGroup γ) (extra : Ex → FreeGroup (γ ⊕ δ))
-    (e : Ex) : corePres core extra (Sum.inr e) = extra e := rfl
+
+end
 
 omit [Fintype γ] [Fintype δ] in
 /-- The exponent sum of a core generator in a word of the core does not change when the word is
@@ -70,23 +66,15 @@ theorem expSum_map_inl (i : γ) (w : FreeGroup γ) :
       = Multiplicative.toAdd (expSum i w) := by
   have h : (expSum (Sum.inl i : γ ⊕ δ)).comp (FreeGroup.map (Sum.inl : γ → γ ⊕ δ))
       = expSum i := by
-    refine FreeGroup.ext_hom _ _ fun k => ?_
-    have h1 : FreeGroup.map (Sum.inl : γ → γ ⊕ δ) (FreeGroup.of k)
-        = FreeGroup.of (Sum.inl k) := by simp
-    have h2 : Multiplicative.toAdd (expSum (Sum.inl i : γ ⊕ δ) (FreeGroup.of (Sum.inl k)))
-        = Multiplicative.toAdd (expSum i (FreeGroup.of k)) := by
-      rw [expSum_of, expSum_of]
-      simp
-    exact Multiplicative.toAdd.injective (by simp [h1, h2])
+    aesop
   exact congrArg Multiplicative.toAdd (DFunLike.congr_fun h w)
 
 /-! ### The collapse onto the wedge of the blocks -/
 
-section Wedge
 
-variable {S : Type u} {β K : S → Type u} [Fintype S] [DecidableEq S] [∀ s, Fintype (β s)]
-  [∀ s, DecidableEq (β s)] [∀ s, Fintype (K s)]
 
-end Wedge
+
+
+
 
 end FiniteChains

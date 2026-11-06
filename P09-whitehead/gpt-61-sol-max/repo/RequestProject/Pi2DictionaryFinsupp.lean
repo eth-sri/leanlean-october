@@ -1,22 +1,18 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Pi2Dictionary
-public import RequestProject.CycleLiftingFinsupp
-public import RequestProject.CoverComplexFinsupp
+import RequestProject.Pi2Dictionary
+import RequestProject.CycleLiftingFinsupp
+import RequestProject.CoverComplexFinsupp
 
-@[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-open MonoidAlgebra
-universe u
+
 variable {α J : Type u} {Nsub : Subgroup (FreeGroup α)} [Nsub.Normal]
 variable {Q K : Type u} [Group Q]
 
-theorem fs_mapDomain_prodMap_id_apply (Φ : (FreeGroup α ⧸ Nsub) →* Q)
+  (Φ : (FreeGroup α ⧸ Nsub) →* Q)
+theorem fs_mapDomain_prodMap_id_apply 
     (u : ((FreeGroup α ⧸ Nsub) × J) →₀ ℤ) (q : Q) (j : J) :
     Finsupp.mapDomain (Prod.map (⇑Φ) (id : J → J)) u (q, j)
       = (MonoidAlgebra.mapDomainRingHom ℤ Φ (fsCoords Nsub J u j)).coeff q := by
@@ -24,28 +20,14 @@ theorem fs_mapDomain_prodMap_id_apply (Φ : (FreeGroup α ⧸ Nsub) →* Q)
   induction u using Finsupp.induction_linear with
   | zero => simp
   | add u₁ u₂ h₁ h₂ =>
-      rw [Finsupp.mapDomain_add, Finsupp.add_apply, h₁, h₂]
-      simp [map_add]
+      simp_all [Finsupp.mapDomain_add]
   | single p n =>
-      obtain ⟨q₀, j₀⟩ := p
-      rw [Finsupp.mapDomain_single, fsCoords_single]
-      show (Finsupp.single (Φ q₀, j₀) n : ((Q × J) →₀ ℤ)) (q, j)
-        = (MonoidAlgebra.mapDomain Φ ((Finsupp.single j₀ (MonoidAlgebra.single q₀ n) : J →₀ CoverRing Nsub) j)).coeff q
-      by_cases hj : j = j₀
-      · subst hj
-        rw [Finsupp.single_eq_same, MonoidAlgebra.mapDomain_single, MonoidAlgebra.coeff_single, Finsupp.single_apply,
-          Finsupp.single_apply]
-        by_cases hq : Φ q₀ = q
-        · simp [hq]
-        · simp [hq, Prod.ext_iff]
-      · have hne : ((Φ q₀, j₀) : Q × J) ≠ (q, j) := fun hEq => hj (congrArg Prod.snd hEq).symm
-        rw [Finsupp.single_eq_of_ne hj, Finsupp.single_apply, if_neg hne]
-        simp
+      aesop (add simp [fsCoords_single, Finsupp.single_apply])
 
 /-- **Pushing a two-chain of the cover to the next stage is zero iff its Fox coordinates
 die.**  Here `Φ` is the map of deck groups and `g` the (injective) inclusion of the sets of
 two-cells. -/
-theorem fs_mapDomain_prodMap_eq_zero_iff (Φ : (FreeGroup α ⧸ Nsub) →* Q) (g : J → K)
+theorem fs_mapDomain_prodMap_eq_zero_iff  (g : J → K)
     (hg : Function.Injective g) (u : ((FreeGroup α ⧸ Nsub) × J) →₀ ℤ) :
     Finsupp.mapDomain (Prod.map (⇑Φ) g) u = 0 ↔
       ∀ j, MonoidAlgebra.mapDomainRingHom ℤ Φ (fsCoords Nsub J u j) = 0 := by
@@ -66,10 +48,7 @@ theorem fs_mapDomain_prodMap_eq_zero_iff (Φ : (FreeGroup α ⧸ Nsub) →* Q) (
     simp
   · intro h
     have h0 : Finsupp.mapDomain (Prod.map (⇑Φ) (id : J → J)) u = 0 := by
-      refine Finsupp.ext fun p => ?_
-      obtain ⟨q, j⟩ := p
-      rw [fs_mapDomain_prodMap_id_apply Φ u q j, h j]
-      simp
+      aesop (add simp [fs_mapDomain_prodMap_id_apply])
     rw [h0, Finsupp.mapDomain_zero]
 
 
@@ -96,10 +75,7 @@ theorem fs_univCover_zero_pi2_iff (ρ : J → FreeGroup α)
     let u := (fsCoords (relSub ρ) J).symm v
     have he : fsCoords (relSub ρ) J u = v := LinearEquiv.apply_symm_apply _ v
     have hc : bdry2 (univCover ρ) u = 0 := by
-      rw [hcycle, he]
-      apply Finsupp.ext
-      intro i
-      simpa only [fs_coverSecondBoundary_apply, Finsupp.zero_apply] using hv i
+      classical aesop (add simp [FiniteChains.relSub_normal, FiniteChains.fs_coverSecondBoundary_apply])
     have hz := H u hc
     rw [fs_mapDomain_prodMap_eq_zero_iff Φ g hg] at hz
     rw [mapDomain_mapRange_eq_zero_iff Φ g hg]

@@ -1,21 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NecessityLocallyFinite
-public import RequestProject.CoverChainComplex
-
-@[expose] public section
+import RequestProject.NecessityLocallyFinite
+import RequestProject.CoverChainComplex
 
 /-! Finitely supported Fox calculus for arbitrary generator sets. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
 variable {α : Type*} [DecidableEq α]
 
-noncomputable def foxGradient (w : FreeGroup α) : α →₀ FreeGroupRing α :=
+noncomputable def foxGradient (w : FreeGroup α)  :=
   Finsupp.ofSupportFinite (fun i => fox i w) (fox_generator_support_finite w)
 
 @[simp] theorem foxGradient_apply (w : FreeGroup α) (i : α) :
@@ -27,8 +23,7 @@ noncomputable def foxGradient (w : FreeGroup α) : α →₀ FreeGroupRing α :=
 
 @[simp] theorem foxGradient_of (i : α) :
     foxGradient (FreeGroup.of i) = Finsupp.single i 1 := by
-  ext j
-  simp [fox_of, Finsupp.single_apply, eq_comm]
+  aesop
 
 theorem foxGradient_mul (a b : FreeGroup α) :
     foxGradient (a * b) = foxGradient a + grp a • foxGradient b := by
@@ -47,22 +42,11 @@ noncomputable def freeFirstBoundary :
 /-- The fundamental Fox identity without a finite-generator hypothesis. -/
 theorem fox_fundamental_finsupp (w : FreeGroup α) :
     freeFirstBoundary (foxGradient w) = grp w - 1 := by
-  induction w using FreeGroup.induction_on with
-  | one => simp
-  | of k => simp [freeFirstBoundary]
-  | inv_of k hk =>
-      rw [foxGradient_inv, map_neg, map_smul, hk]
-      change -(grp (FreeGroup.of k)⁻¹ * (grp (FreeGroup.of k) - 1)) = _
-      rw [mul_sub, grp_inv_mul_grp, mul_one]
-      noncomm_ring
-  | mul a b ha hb =>
-      rw [foxGradient_mul, map_add, map_smul, ha, hb, grp_mul]
-      change (grp a - 1) + grp a * (grp b - 1) = _
-      noncomm_ring
+  induction w using FreeGroup.induction_on <;> simp_all [freeFirstBoundary, foxGradient_inv, mul_sub, foxGradient_mul, grp_mul]
 
 variable (N : Subgroup (FreeGroup α)) [N.Normal]
 
-noncomputable def coverFoxGradient (w : FreeGroup α) : α →₀ CoverRing N :=
+noncomputable def coverFoxGradient (w : FreeGroup α)  :=
   (foxGradient w).mapRange (proj N) (map_zero _)
 
 noncomputable def coverFirstBoundary :
@@ -88,7 +72,7 @@ theorem coverFirstBoundary_gradient (w : FreeGroup α) :
 
 theorem coverFoxGradient_isCycle {w : FreeGroup α} (hw : w ∈ N) :
     coverFirstBoundary N (coverFoxGradient N w) = 0 := by
-  rw [coverFirstBoundary_gradient, qgrp_eq_one_of_mem N hw, sub_self]
+  simp_all [FiniteChains.coverFirstBoundary_gradient, FiniteChains.qgrp_eq_one_of_mem]
 
 noncomputable def coverSecondBoundary {J : Type*} (ρ : J → FreeGroup α) :
     (J →₀ CoverRing N) →ₗ[CoverRing N] (α →₀ CoverRing N) :=
@@ -105,14 +89,8 @@ theorem coverFirstBoundary_coverSecondBoundary {J : Type*} (ρ : J → FreeGroup
   intro j hj
   rw [map_smul, coverFoxGradient_isCycle N (hρ j), smul_zero]
 
-noncomputable def linearFoxGradient :
-    FreeGroupRing α →ₗ[ℤ] (α →₀ FreeGroupRing α) :=
-  (Finsupp.linearCombination ℤ (fun g => foxGradient g)).comp (MonoidAlgebra.coeffLinearEquiv ℤ).toLinearMap
 
-@[simp] theorem linearFoxGradient_single (g : FreeGroup α) (n : ℤ) :
-    linearFoxGradient (MonoidAlgebra.single g n) = n • foxGradient g :=
-  by
-    change Finsupp.linearCombination ℤ (fun g => foxGradient g) (Finsupp.single g n) = _
-    exact Finsupp.linearCombination_single ℤ n g
+
+
 
 end FiniteChains

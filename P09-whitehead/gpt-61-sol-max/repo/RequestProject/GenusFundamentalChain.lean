@@ -1,3 +1,2 @@
-module
-public import RequestProject.SurfaceFundamentalChain
-public import RequestProject.GenusSurface
+import RequestProject.SurfaceFundamentalChain
+import RequestProject.GenusSurface

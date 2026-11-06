@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib
-
-@[expose] public section
+import Mathlib
 
 /-!
 # Collapsing the top cells: the spine argument of Lemma 3.2 (ii)
@@ -30,22 +28,23 @@ The main results are:
   surface), then all top cells disappear.
 -/
 
-namespace FiniteChains
-namespace Collapse
+namespace FiniteChains.Collapse
+
 
 variable {T F : Type*} [DecidableEq T]
 
-variable (inc : F → Finset T)
+  (inc : F → Finset T)
 
 /-- Two distinct top cells are adjacent if they share a codimension one face. -/
-def Adj (t t' : T) : Prop := t ≠ t' ∧ ∃ f, t ∈ inc f ∧ t' ∈ inc f
+def Adj (t t' : T)  := t ≠ t' ∧ ∃ f, t ∈ inc f ∧ t' ∈ inc f
 
+variable (S : Finset T)
 /-- The face `f` is *free* for the set `S` of remaining top cells if `t` is the only
 remaining top cell containing it. -/
-def IsFree (S : Finset T) (f : F) (t : T) : Prop := inc f ∩ S = {t}
+def IsFree  (f : F) (t : T)  := inc f ∩ S = {t}
 
 /-- `t` admits an elementary collapse in `S`: some face of `t` is free for `S`. -/
-def HasFreeFace (S : Finset T) (t : T) : Prop := ∃ f, IsFree inc S f t
+def HasFreeFace  (t : T)  := ∃ f, IsFree inc S f t
 
 /-- A sequence of elementary collapses removing exactly the top cells of `S`. -/
 def IsCollapse : List T → Finset T → Prop
@@ -54,19 +53,18 @@ def IsCollapse : List T → Finset T → Prop
 
 /-- The invariant maintained by the spanning-tree argument: every nonempty subset of the
 remaining cells which is closed under adjacency contains a cell with a free face. -/
-def Collapsible (S : Finset T) : Prop :=
+def Collapsible   :=
   ∀ C : Finset T, C ⊆ S → C.Nonempty → (∀ c ∈ C, ∀ t ∈ S, Adj inc c t → t ∈ C) →
     ∃ c ∈ C, HasFreeFace inc S c
 
 /-- Connectivity of the adjacency graph inside `S`. -/
-def Connected (S : Finset T) : Prop :=
+def Connected   :=
   ∀ t ∈ S, ∀ t' ∈ S, Relation.ReflTransGen (fun a b => a ∈ S ∧ b ∈ S ∧ Adj inc a b) t t'
 
 variable {inc}
 
 /-- A nonempty collapsible set has a cell with a free face. -/
-theorem exists_hasFreeFace {S : Finset T} (hS : Collapsible inc S) (hne : S.Nonempty) :
-    ∃ t ∈ S, HasFreeFace inc S t :=
+abbrev exists_hasFreeFace {S : Finset T} (hS : Collapsible inc S) (hne : S.Nonempty)  :=
   hS S (Finset.Subset.refl S) hne fun _ _ _ ht _ => ht
 
 /-- **Collapsibility is preserved by an elementary collapse.**  This is the step "the face
@@ -81,48 +79,21 @@ theorem collapsible_erase (hcard : ∀ f, (inc f).card ≤ 2) {S : Finset T}
     obtain ⟨c, hcC, hne', f, htf, hcf⟩ := hadj
     refine ⟨c, hcC, f, ?_⟩
     have hsub : ({t, c} : Finset T) ⊆ inc f := by
-      intro z hz
-      simp only [Finset.mem_insert, Finset.mem_singleton] at hz
-      rcases hz with rfl | rfl <;> assumption
+      grind
     have hcard2 : ({t, c} : Finset T).card = 2 := by
-      rw [Finset.card_pair]
-      exact fun hh => hne' hh.symm
-    have hfeq : inc f = {t, c} :=
+      grind
+    have hfeq  :=
       (Finset.eq_of_subset_of_card_le hsub (by rw [hcard2]; exact hcard f)).symm
-    have hcS : c ∈ S.erase t := hCS hcC
-    ext z
-    simp only [hfeq, Finset.mem_inter, Finset.mem_insert, Finset.mem_singleton,
-      Finset.mem_erase]
-    constructor
-    · rintro ⟨hz | hz, hzS⟩
-      · exact absurd hz hzS.1
-      · exact hz
-    · rintro rfl
-      exact ⟨Or.inr rfl, Finset.mem_erase.1 hcS⟩
+    grind [FiniteChains.Collapse.IsFree]
   · -- `C` was already closed in `S`, so the invariant applies directly
     push_neg at hadj
-    have hCS' : C ⊆ S := hCS.trans (Finset.erase_subset _ _)
+    have hCS'  := hCS.trans (Finset.erase_subset _ _)
     have hclosed' : ∀ c ∈ C, ∀ u ∈ S, Adj inc c u → u ∈ C := by
-      intro c hc u huS hcu
-      have hut : u ≠ t := by
-        rintro rfl
-        exact hadj c hc hcu
-      exact hclosed c hc u (Finset.mem_erase.2 ⟨hut, huS⟩) hcu
+      aesop
     obtain ⟨c, hcC, f, hf⟩ := hS C hCS' hne hclosed'
     refine ⟨c, hcC, f, ?_⟩
-    have hct : c ≠ t := (Finset.mem_erase.1 (hCS hcC)).1
-    ext z
-    constructor
-    · intro hz
-      simp only [Finset.mem_inter, Finset.mem_erase] at hz
-      have : z ∈ inc f ∩ S := Finset.mem_inter.2 ⟨hz.1, hz.2.2⟩
-      rwa [hf] at this
-    · intro hz
-      simp only [Finset.mem_singleton] at hz
-      subst hz
-      have hzf : z ∈ inc f ∩ S := by rw [hf]; simp
-      simp only [Finset.mem_inter] at hzf
-      exact Finset.mem_inter.2 ⟨hzf.1, Finset.mem_erase.2 ⟨hct, hzf.2⟩⟩
+    have hct  := (Finset.mem_erase.1 (hCS hcC)).1
+    grind [FiniteChains.Collapse.IsFree]
 
 /-- **All top cells of a collapsible set can be collapsed away.** -/
 theorem exists_isCollapse (hcard : ∀ f, (inc f).card ≤ 2) :
@@ -143,22 +114,21 @@ theorem collapsible_of_connected {S : Finset T} (hconn : Connected inc S)
     {t₀ : T} (ht₀ : t₀ ∈ S) (hfree : HasFreeFace inc S t₀) : Collapsible inc S := by
   intro C hCS hne hclosed
   obtain ⟨c, hcC⟩ := hne
-  have hcS : c ∈ S := hCS hcC
+  have hcS  := hCS hcC
   have key : ∀ x, Relation.ReflTransGen (fun a b => a ∈ S ∧ b ∈ S ∧ Adj inc a b) c x →
       x ∈ C := by
+    classical
     intro x hx
-    induction hx with
-    | refl => exact hcC
-    | tail _ hstep ih => exact hclosed _ ih _ hstep.2.1 hstep.2.2
+    induction hx <;> aesop
   exact ⟨t₀, key t₀ (hconn c hcS t₀ ht₀), hfree⟩
 
 /-- **The collapse of Lemma 3.2 (ii).**  If every codimension one face lies in at most two
 top cells, the adjacency graph of the top cells is connected, and one top cell has a free
 face, then all top cells can be removed by elementary collapses. -/
-theorem exists_isCollapse_of_connected (hcard : ∀ f, (inc f).card ≤ 2) {S : Finset T}
-    (hconn : Connected inc S) {t₀ : T} (ht₀ : t₀ ∈ S) (hfree : HasFreeFace inc S t₀) :
-    ∃ l : List T, IsCollapse inc l S :=
-  exists_isCollapse hcard S.card S rfl (collapsible_of_connected hconn ht₀ hfree)
+abbrev exists_isCollapse_of_connected (hcard : ∀ f, (inc f).card ≤ 2) {S : Finset T}
+    (hconn : Connected inc S) {t₀ : T} (ht₀ : t₀ ∈ S) (hfree : HasFreeFace inc S t₀)  :=
+  FiniteChains.Collapse.exists_isCollapse hcard S.card S rfl
+    (FiniteChains.Collapse.collapsible_of_connected hconn ht₀ hfree)
 
 /-! ### A nonempty instance -/
 
@@ -169,5 +139,5 @@ def exInc : Fin 3 → Finset (Fin 2)
   | 1 => {0, 1}
   | 2 => {1}
 
-end Collapse
-end FiniteChains
+end FiniteChains.Collapse
+

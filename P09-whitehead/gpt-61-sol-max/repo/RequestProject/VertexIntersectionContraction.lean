@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.VertexPunctureIntersection
-public import RequestProject.NerveThreeLegContraction
-public import RequestProject.NerveSupport
-
-@[expose] public section
+import RequestProject.VertexPunctureIntersection
+import RequestProject.NerveThreeLegContraction
+import RequestProject.NerveSupport
 
 /-! An explicit contraction of the actual seven-cell intersection path. -/
 namespace FiniteChains.Davis
@@ -13,7 +11,8 @@ open Comb Nerve
 abbrev VertexIntersection :=
   {c : VertexPuncturedCube // vertexPunctureLeft c ∧ vertexPunctureRight c}
 
-def vertexIntersectionPoint (i : Fin 7) : VertexIntersection :=
+variable (i : Fin 7)
+def vertexIntersectionPoint  : VertexIntersection :=
   ⟨vertexIntersectionCell i, vertexIntersectionCell_mem i⟩
 
 theorem vertexIntersectionPoint_injective : Function.Injective vertexIntersectionPoint := by
@@ -26,32 +25,32 @@ theorem vertexIntersectionPoint_surjective : Function.Surjective vertexIntersect
   obtain ⟨i, hi⟩ := vertexIntersection_classify c.1 c.2
   exact ⟨i, Subtype.ext hi.symm⟩
 
-noncomputable def vertexIntersectionIndex (c : VertexIntersection) : Fin 7 :=
+variable (c : VertexIntersection)
+noncomputable def vertexIntersectionIndex   :=
   Classical.choose (vertexIntersectionPoint_surjective c)
 
-theorem vertexIntersectionPoint_index (c : VertexIntersection) :
-    vertexIntersectionPoint (vertexIntersectionIndex c) = c :=
-  Classical.choose_spec (vertexIntersectionPoint_surjective c)
+abbrev vertexIntersectionPoint_index   :=
+  Classical.choose_spec (FiniteChains.Davis.vertexIntersectionPoint_surjective c)
 
-@[simp] theorem vertexIntersectionIndex_point (i : Fin 7) :
+@[simp] theorem vertexIntersectionIndex_point  :
     vertexIntersectionIndex (vertexIntersectionPoint i) = i :=
   vertexIntersectionPoint_injective (vertexIntersectionPoint_index (vertexIntersectionPoint i))
 
 def vertexIntersectionLowerIndex : Fin 7 → Fin 7 := ![0, 1, 2, 3, 4, 3, 2]
 def vertexIntersectionUpperIndex : Fin 7 → Fin 7 := ![0, 1, 1, 4, 4, 4, 1]
 
-noncomputable def vertexIntersectionLower (c : VertexIntersection) : VertexIntersection :=
+noncomputable def vertexIntersectionLower   :=
   vertexIntersectionPoint (vertexIntersectionLowerIndex (vertexIntersectionIndex c))
 
-noncomputable def vertexIntersectionUpper (c : VertexIntersection) : VertexIntersection :=
+noncomputable def vertexIntersectionUpper   :=
   vertexIntersectionPoint (vertexIntersectionUpperIndex (vertexIntersectionIndex c))
 
-@[simp] theorem vertexIntersectionLower_point (i : Fin 7) :
+@[simp] theorem vertexIntersectionLower_point  :
     vertexIntersectionLower (vertexIntersectionPoint i) =
       vertexIntersectionPoint (vertexIntersectionLowerIndex i) := by
   simp [vertexIntersectionLower]
 
-@[simp] theorem vertexIntersectionUpper_point (i : Fin 7) :
+@[simp] theorem vertexIntersectionUpper_point  :
     vertexIntersectionUpper (vertexIntersectionPoint i) =
       vertexIntersectionPoint (vertexIntersectionUpperIndex i) := by
   simp [vertexIntersectionUpper]
@@ -78,7 +77,7 @@ theorem vertexIntersectionUpper_monotone : Monotone vertexIntersectionUpper := b
   rw [vertexIntersectionUpper_point, vertexIntersectionUpper_point]
   exact h i j hcd
 
-theorem vertexIntersectionLower_le (c : VertexIntersection) : vertexIntersectionLower c ≤ c := by
+theorem vertexIntersectionLower_le  : vertexIntersectionLower c ≤ c := by
   have h : ∀ i : Fin 7, CoordinateFace
       (vertexIntersectionCoordinates (vertexIntersectionLowerIndex i))
       (vertexIntersectionCoordinates i) := by unfold CoordinateFace; decide
@@ -86,7 +85,7 @@ theorem vertexIntersectionLower_le (c : VertexIntersection) : vertexIntersection
   rw [vertexIntersectionLower_point]
   exact h i
 
-theorem vertexIntersectionLower_le_upper (c : VertexIntersection) :
+theorem vertexIntersectionLower_le_upper  :
     vertexIntersectionLower c ≤ vertexIntersectionUpper c := by
   have h : ∀ i : Fin 7, CoordinateFace
       (vertexIntersectionCoordinates (vertexIntersectionLowerIndex i))
@@ -95,7 +94,7 @@ theorem vertexIntersectionLower_le_upper (c : VertexIntersection) :
   rw [vertexIntersectionLower_point, vertexIntersectionUpper_point]
   exact h i
 
-theorem vertexIntersectionPoint_zero_le_upper (c : VertexIntersection) :
+theorem vertexIntersectionPoint_zero_le_upper  :
     vertexIntersectionPoint 0 ≤ vertexIntersectionUpper c := by
   have h : ∀ i : Fin 7, CoordinateFace (vertexIntersectionCoordinates 0)
       (vertexIntersectionCoordinates (vertexIntersectionUpperIndex i)) := by unfold CoordinateFace; decide

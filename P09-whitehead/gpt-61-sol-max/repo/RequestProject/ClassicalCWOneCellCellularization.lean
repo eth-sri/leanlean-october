@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalCWVertexPaths
-public import RequestProject.ClassicalCellAttachmentCW
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalCWVertexPaths
+import RequestProject.ClassicalCellAttachmentCW
 
 /-! Cellularization of the endpoints of any family of new one-cells in the
 literal original CW complex. Each endpoint is moved along an actual path to
@@ -32,7 +30,7 @@ theorem oneBoundary_finiteSet :
       _ = 1 := hx
   rcases (abs_eq zero_le_one).mp hx' with h | h
   · exact Or.inl (he.trans (by simp only [h]))
-  · exact Or.inr (Set.mem_singleton_iff.mpr (he.trans (by simp only [h])))
+  · grind
 
 instance oneBoundary_finite : Finite (UnitBoundary (Fin 1 → ℝ)) :=
   oneBoundary_finiteSet.to_subtype
@@ -41,8 +39,9 @@ instance oneBoundary_discrete : DiscreteTopology (UnitBoundary (Fin 1 → ℝ)) 
 
 variable {X J : Type} [TopologicalSpace X] [CWComplex (Set.univ : Set X)]
 
+  (r : BoundaryFamily J (Fin 1 → ℝ) → X)
 /-- The new one-cell endpoints are chosen among original zero-cells. -/
-def vertexBoundaryMap (r : BoundaryFamily J (Fin 1 → ℝ) → X) :
+def vertexBoundaryMap  :
     C(BoundaryFamily J (Fin 1 → ℝ), X) :=
   ⟨fun a => ClassicalCW.vertexPoint (ClassicalCW.pointVertex (r a)), continuous_of_discreteTopology⟩
 
@@ -59,12 +58,12 @@ def vertexBoundaryHomotopy (r : C(BoundaryFamily J (Fin 1 → ℝ), X)) :
     map_one_left := fun a => (ClassicalCW.pointVertexPath (r a)).target }
 
 theorem vertexBoundaryMap_finiteLowerBoundary
-    (r : BoundaryFamily J (Fin 1 → ℝ) → X) :
+     :
     FiniteLowerBoundary 1 (vertexBoundaryMap r) := by
   classical
   letI := Fintype.ofFinite (UnitBoundary (Fin 1 → ℝ))
   intro j
-  let V : Finset (RelCWComplex.cell (Set.univ : Set X) 0) :=
+  let V  :=
     Finset.univ.image (fun a : UnitBoundary (Fin 1 → ℝ) => ClassicalCW.pointVertex (r ⟨j, a⟩))
   let cells : ∀ m, Finset (RelCWComplex.cell (Set.univ : Set X) m)
     | 0 => V
@@ -73,7 +72,7 @@ theorem vertexBoundaryMap_finiteLowerBoundary
   intro a
   simp only [Set.mem_iUnion]
   refine ⟨0, Nat.zero_lt_one, ClassicalCW.pointVertex (r ⟨j, a⟩), ?_, ?_⟩
-  · exact Finset.mem_image.mpr ⟨a, Finset.mem_univ a, rfl⟩
+  · aesop
   · rw [RelCWComplex.closedCell_zero_eq_singleton]
     rfl
 

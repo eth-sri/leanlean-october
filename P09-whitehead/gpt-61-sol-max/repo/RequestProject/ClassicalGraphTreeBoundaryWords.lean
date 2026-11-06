@@ -1,23 +1,19 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalGraphTreeWords
-public import RequestProject.ClassicalGraphBoundaryWords
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalGraphTreeWords
+import RequestProject.ClassicalGraphBoundaryWords
 
 /-! Collapsing the graph's spanning tree changes the actual boundary
 map to the word obtained by deleting tree letters. The homotopy is
 constructed on all four sides with fixed corner values. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
-open scoped Classical unitInterval
+
 variable {V J : Type} [TopologicalSpace V] [DiscreteTopology V]
   (r : BoundaryFamily J (Fin 1 → ℝ) → V) (hr : Continuous r)
   (T : Comb.SpanningTree (graphCx r))
@@ -28,16 +24,16 @@ def BoundaryWords.eraseTree (W : BoundaryWords r) :
   word s := treeLetters r T (W.word s)
   isPath _ := rose_word_isPath _
 
-omit [TopologicalSpace V] [DiscreteTopology V] in
+section
+omit [TopologicalSpace V] [DiscreteTopology V]
 theorem BoundaryWords.eraseTree_loopWord (W : BoundaryWords r) :
     (W.eraseTree r T).loopWord = treeLetters r T W.loopWord := by
-  simp only [BoundaryWords.loopWord, BoundaryWords.eraseTree,
-    List.append_eq, treeLetters_append, treeLetters_revPath]
+  simp [BoundaryWords.loopWord, BoundaryWords.eraseTree, treeLetters_append, treeLetters_revPath]
 
-omit [TopologicalSpace V] [DiscreteTopology V] in
 theorem BoundaryWords.eraseTree_mk (W : BoundaryWords r) :
     FreeGroup.mk (W.eraseTree r T).loopWord = Comb.SpanningTree.pathWord T W.loopWord := by
   rw [W.eraseTree_loopWord, treeLetters_mk]
+end
 
 theorem BoundaryWords.collapse_homotopic_eraseTree (W : BoundaryWords r) :
     ((graphRoseHomotopyEquiv r hr T).toFun.comp W.boundaryMap).Homotopic
@@ -47,10 +43,7 @@ theorem BoundaryWords.collapse_homotopic_eraseTree (W : BoundaryWords r) :
     (collapsedWordPath_homotopic_treeWord r hr T (W.word s) (W.isPath s))
   have hend : ∀ s t u, u = 0 ∨ u = 1 →
       H s (t, u) = roseVertex {j : J // ¬T.isTree j} := by
-    intro s t u hu
-    rcases hu with rfl | rfl
-    · exact (H s).source t
-    · exact (H s).target t
+    simp_all
   let G := squareBoundaryHomotopyPasting (fun s => (H s).toHomotopy.toContinuousMap)
     (fun _ _ => roseVertex {j : J // ¬T.isTree j}) hend
   let HG : ((graphRoseHomotopyEquiv r hr T).toFun.comp W.squareMap).Homotopy W'.squareMap := {

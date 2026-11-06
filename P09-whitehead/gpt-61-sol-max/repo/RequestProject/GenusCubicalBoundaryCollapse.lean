@@ -1,13 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeTruncatedBoundaryCollapse
-public import RequestProject.GenusSpineCells
-
-@[expose] public section
+import RequestProject.QCubeTruncatedBoundaryCollapse
+import RequestProject.GenusSpineCells
 
 /-! Actual genus cube boundaries vanish under the chosen geometric collapse. -/
 namespace FiniteChains.Davis.Genus
-open RACG Mirror Comb ASC
+
 variable (q : ℕ) [NeZero q]
 
 theorem genus_threeCube_occurs_in_collapse
@@ -18,13 +16,13 @@ theorem genus_threeCube_occurs_in_collapse
   rw [freeSet_qCubeToCoordinate]
   exact ⟨genus_simplex_mem_faces q c.1.isSimplex, c.2⟩
 
-theorem genus_truncated_three_boundary_collapse_zero
-    (r : QThreeCube (cmpRel (GenusVertex q)) →₀ ℤ) :
-    CollapseChain.cmap (cubeBdry (V := GenusVertex q)) (genusChainCollapse q)
-      (qThreeTruncatedCoordinateBoundary r) = 0 := by
-  apply qThreeTruncatedBoundary_collapse_zero _ (genusChainCollapse_isChainCollapse q)
-  intro c _
-  exact genus_threeCube_occurs_in_collapse q c
+abbrev genus_truncated_three_boundary_collapse_zero
+    (r : QThreeCube (cmpRel (GenusVertex q)) →₀ ℤ)  :=
+  FiniteChains.Davis.qThreeTruncatedBoundary_collapse_zero (FiniteChains.Davis.Genus.genusChainCollapse q)
+    (FiniteChains.Davis.Genus.genusChainCollapse_isChainCollapse q) r
+    fun (c : FiniteChains.Davis.QThreeCube (FiniteChains.Davis.cmpRel (FiniteChains.Davis.Genus.GenusVertex q)))
+      (a : c ∈ r.support) =>
+    FiniteChains.Davis.Genus.genus_threeCube_occurs_in_collapse q c
 
 /-- Every cut cell surviving the actual genus collapse has at most two vertices. -/
 theorem genusSpine_cut_card_le_two (σ : CutCell (cmpRel (GenusVertex q)))

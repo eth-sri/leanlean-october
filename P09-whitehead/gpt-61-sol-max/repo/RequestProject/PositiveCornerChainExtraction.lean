@@ -1,31 +1,24 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PositiveCornerLink
-public import RequestProject.MinimalCornerChains
-public import RequestProject.SurfaceFullCubeConeChains
-
-@[expose] public section
+import RequestProject.PositiveCornerLink
+import RequestProject.MinimalCornerChains
+import RequestProject.SurfaceFullCubeConeChains
 
 /-! Actual surface chains extracted from the restored positive corner. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 
-noncomputable def cornerSurfaceMap : Hom (orderCx (Set.Ioi (positiveCorner A)))
-    (orderCx (NeSpx A)) :=
+noncomputable def cornerSurfaceMap  :=
   orderCxMap (positiveCornerLinkEquiv A) (positiveCornerLinkEquiv A).monotone
 
-noncomputable def cornerSurfaceChain2 :
-    ((orderCx (QCube A)).F →₀ ℤ) →ₗ[ℤ] ((orderCx (NeSpx A)).E →₀ ℤ) :=
+noncomputable def cornerSurfaceChain2  :=
   (chain1 (cornerSurfaceMap A)).comp (cornerChain2 (positiveCorner A))
 
-noncomputable def cornerSurfaceChain3 :
-    (OrdTet (QCube A) →₀ ℤ) →ₗ[ℤ] ((orderCx (NeSpx A)).F →₀ ℤ) :=
+noncomputable def cornerSurfaceChain3  :=
   (chain2 (cornerSurfaceMap A)).comp (cornerChain3 (positiveCorner A))
 
 /-- The extracted corner of a full-cube three-boundary is an actual surface boundary. -/

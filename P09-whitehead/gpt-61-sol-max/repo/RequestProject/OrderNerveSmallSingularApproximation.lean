@@ -1,22 +1,21 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveCellularSingularSupport
-public import RequestProject.OrderNerveCellularSingularZero
-
-@[expose] public section
+import RequestProject.OrderNerveCellularSingularSupport
+import RequestProject.OrderNerveCellularSingularZero
 
 namespace FiniteChains.Comb
 open TopologicalSingular SingularSubdivision
 
-noncomputable def orderSmallSingularApproximation1 {P : Type} [PartialOrder P] :
+variable {P : Type}
+noncomputable def orderSmallSingularApproximation1  [PartialOrder P] :
     smallChains (orderNerveRealizationOpenStar P) 1 →ₗ[ℤ] Chain (orderNerveRealization P) 1 :=
   orderCellSingularChain1.comp orderSmallCellularApproximation1
 
-noncomputable def orderSmallSingularApproximation2 {P : Type} [PartialOrder P] :
+noncomputable def orderSmallSingularApproximation2  [PartialOrder P] :
     smallChains (orderNerveRealizationOpenStar P) 2 →ₗ[ℤ] Chain (orderNerveRealization P) 2 :=
   orderCellSingularChain2.comp orderSmallCellularApproximation2
 
-theorem orderSmallSingularApproximation1_boundary {P : Type} [PartialOrder P]
+theorem orderSmallSingularApproximation1_boundary  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 1) :
     boundary 0 (orderSmallSingularApproximation1 c) =
       orderSmallSingularApproximation0 (smallBoundary (orderNerveRealizationOpenStar P) 0 c) := by
@@ -24,7 +23,7 @@ theorem orderSmallSingularApproximation1_boundary {P : Type} [PartialOrder P]
   rw [orderCellSingularChain1_boundary, orderSmallCellularApproximation1_boundary,
     orderSmallSingularApproximation0_realization]
 
-theorem orderSmallSingularApproximation2_boundary {P : Type} [PartialOrder P]
+theorem orderSmallSingularApproximation2_boundary  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 2) :
     boundary 1 (orderSmallSingularApproximation2 c) =
       orderSmallSingularApproximation1 (smallBoundary (orderNerveRealizationOpenStar P) 1 c) := by
@@ -32,22 +31,20 @@ theorem orderSmallSingularApproximation2_boundary {P : Type} [PartialOrder P]
   rw [orderCellSingularChain2_boundary, orderSmallCellularApproximation2_boundary]
   rfl
 
-theorem orderSmallSingularApproximation1_carrier {P : Type} [PartialOrder P]
+theorem orderSmallSingularApproximation1_carrier  [PartialOrder P]
     (σ : OrderSmallSimplex P 1) :
     orderSmallSingularApproximation1 (orderSmallSingle σ 1) ∈
       orderSingularCarrierChains σ.val 1 := by
-  change orderCellSingularChain1 (decodeOrdNerve1 (orderSmallToNerve1 (orderSmallSingle σ 1))) ∈ _
-  exact orderCellSingularDecode1_supported _ (orderSmallToNerve1_single_carrier σ)
+  solve_by_elim [FiniteChains.Comb.orderCellSingularDecode1_supported, FiniteChains.Comb.orderSmallToNerve1_single_carrier]
 
-theorem orderSmallSingularApproximation2_carrier {P : Type} [PartialOrder P]
+theorem orderSmallSingularApproximation2_carrier  [PartialOrder P]
     (σ : OrderSmallSimplex P 2) :
     orderSmallSingularApproximation2 (orderSmallSingle σ 1) ∈
       orderSingularCarrierChains σ.val 2 := by
-  change orderCellSingularChain2 (decodeOrdNerve2 (orderSmallToNerve2 (orderSmallSingle σ 1))) ∈ _
-  exact orderCellSingularDecode2_supported _ (orderSmallToNerve2_single_carrier σ)
+  solve_by_elim [FiniteChains.Comb.orderCellSingularDecode2_supported, FiniteChains.Comb.orderSmallToNerve2_single_carrier]
 
 /-- A carried linear map sends every simplex boundary into the parent carrier. -/
-theorem orderSmallBoundary_map_carrier {P : Type} [PartialOrder P] {n k : ℕ}
+theorem orderSmallBoundary_map_carrier  [PartialOrder P] {n k : ℕ}
     (H : smallChains (orderNerveRealizationOpenStar P) n →ₗ[ℤ] Chain (orderNerveRealization P) k)
     (hH : ∀ τ : OrderSmallSimplex P n,
       H (orderSmallSingle τ 1) ∈ orderSingularCarrierChains τ.val k)

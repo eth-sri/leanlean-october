@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresWordEmbeddingValidPi2
-public import RequestProject.Pi2DictionaryFinsupp
-public import RequestProject.PresUnivCoverIso
-
-@[expose] public section
+import RequestProject.PresWordEmbeddingValidPi2
+import RequestProject.Pi2DictionaryFinsupp
+import RequestProject.PresUnivCoverIso
 
 namespace FiniteChains
 open Comb
@@ -30,11 +28,7 @@ theorem fox_kernel_vanish_iff_univCover (ρ : J → FreeGroup α)
   · intro hz c hc
     have he := hz ⟨groupCellChainEquiv c, (hb c).mp hc⟩
     simpa only [LinearEquiv.symm_apply_apply] using he
-  · intro hz z
-    apply hz
-    apply (hb _).mpr
-    rw [LinearEquiv.apply_symm_apply]
-    exact z.property
+  · simp_all
 
 namespace PresModel.PresWordEmbedding
 variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
@@ -46,10 +40,7 @@ variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
 include hw hv in
 /-- Actual topological pi2 vanishing agrees with the algebraic universal-cover
 condition used in the presentation-chain arguments. -/
-theorem killsPi2_iff_univCover :
-    Whitehead.KillsPi2 h.realizationMap ↔
-      ∀ c : PresGroup ρ × J →₀ ℤ, Comb.bdry2 (univCover ρ) c = 0 →
-        Finsupp.mapDomain (Prod.map (h.groupHom ρ σ hwm hvm) h.cell) c = 0 :=
+abbrev killsPi2_iff_univCover  :=
   (h.killsPi2_iff_fox hw hv ρ σ hwm hvm).trans
     (fox_kernel_vanish_iff_univCover ρ (h.groupHom ρ σ hwm hvm) h.cell)
 
@@ -58,13 +49,10 @@ variable [DecidableEq β]
 include hw hv in
 /-- The previously combinatorial pi2 hypothesis now has a proved comparison
 with the actual topological pi2 of these presentation realizations. -/
-theorem killsPi2_iff_combPi2 :
-    Whitehead.KillsPi2 h.realizationMap ↔
-      Comb.ZeroPi2 (presInclHom h.gen h.gen.injective ρ σ h.cell
-        (h.relator_compat ρ σ hwm hvm)) :=
+abbrev killsPi2_iff_combPi2  :=
   (h.killsPi2_iff_univCover hw hv ρ σ hwm hvm).trans
     (zeroPi2_presInclHom_iff ρ h.gen h.gen.injective h.cell
       (h.relator_compat ρ σ hwm hvm)).symm
 
-end PresModel.PresWordEmbedding
-end FiniteChains
+end FiniteChains.PresModel.PresWordEmbedding
+

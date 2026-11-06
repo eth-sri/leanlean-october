@@ -1,16 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderConstructionPartialOrder
-public import RequestProject.OrderReflexiveConjugation
-
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+import RequestProject.OrderConstructionPartialOrder
+import RequestProject.OrderReflexiveConjugation
 
 namespace FiniteChains.Comb
-universe u
 variable {X S : Type u} [PartialOrder X] [PartialOrder S] (a : S →o X)
 
 /-- Every actual based cylinder loop is homotopic to its retraction onto the base. -/
@@ -27,8 +20,7 @@ theorem cylinder_loop_retraction (x : X)
     induction p with
     | nil => rfl
     | cons e p ih =>
-      simp only [mapPath, List.map_cons] at ih ⊢
-      exact congrArg (List.cons e) ih
+      aesop (add simp [mapPath])
   rw [hid] at h
   simpa only [mapPath, List.map_map, Function.comp_def, orderCxMap, cylCollapse, cylIn, cylRetr, id] using h
 

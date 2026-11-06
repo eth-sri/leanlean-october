@@ -1,4 +1,3 @@
-module
-public import RequestProject.NecessityAlgebraicMod
-public import RequestProject.CoverComplexPres
-public import RequestProject.PresentationConsistency
+import RequestProject.NecessityAlgebraicMod
+import RequestProject.CoverComplexPres
+import RequestProject.PresentationConsistency

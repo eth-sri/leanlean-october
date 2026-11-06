@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresPosetPartialOrder
-public import RequestProject.StrictOrderComplex
-
-@[expose] public section
+import RequestProject.PresPosetPartialOrder
+import RequestProject.StrictOrderComplex
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α : Type u}
 
 def roseBaseEdge (i : α) (b : Bool) : StrictOrdEdge (Rose α) :=
@@ -22,7 +19,7 @@ theorem rose_strict_edge_cases (e : StrictOrdEdge (Rose α)) :
   rcases e with ⟨⟨a, b⟩, h⟩
   have hl := h.le
   have hn := h.ne
-  change Rose.le a b at hl
+  
   cases a with
   | base =>
     cases b with
@@ -33,11 +30,11 @@ theorem rose_strict_edge_cases (e : StrictOrdEdge (Rose α)) :
     cases b with
     | base => exact hl.elim
     | mid k =>
-      change i = k at hl
+      
       subst k
       exact (hn rfl).elim
     | edg k b =>
-      change i = k at hl
+      
       subst k
       exact ⟨i, b, Or.inr (Subtype.ext rfl)⟩
   | edg i s =>
@@ -45,7 +42,7 @@ theorem rose_strict_edge_cases (e : StrictOrdEdge (Rose α)) :
     | base => exact hl.elim
     | mid k => exact hl.elim
     | edg k c =>
-      change i = k ∧ s = c at hl
+      
       rcases hl with ⟨rfl, rfl⟩
       exact (hn rfl).elim
 

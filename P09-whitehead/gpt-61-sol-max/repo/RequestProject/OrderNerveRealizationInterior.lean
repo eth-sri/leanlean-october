@@ -1,21 +1,18 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveAffineCoordinates
-public import Mathlib.Order.WellFounded
+import RequestProject.OrderNerveAffineCoordinates
+import Mathlib.Order.WellFounded
 
-@[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
 open scoped Classical
 
+variable {P : Type}
 /-- At a simplex point with positive barycentric coordinates, a vertex indicator
 has positive value precisely on the vertices of that simplex. -/
-theorem orderNerveAffineSimplex_indicator_pos_iff {P : Type} [PartialOrder P]
+theorem orderNerveAffineSimplex_indicator_pos_iff  [PartialOrder P]
     {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n))
     (z : SimplexCategory.toTop.obj n) (hz : ∀ i, 0 < z.down.weights i) (p : P) :
     0 < orderNerveAffineSimplex (fun q => if q = p then 1 else 0) s z ↔
@@ -37,7 +34,7 @@ theorem orderNerveAffineSimplex_indicator_pos_iff {P : Type} [PartialOrder P]
     exact (hz i).trans_le hi
 
 /-- Two actual simplex interiors meeting in the realization have the same vertex set. -/
-theorem orderNerveRealizationSimplex_interior_range_eq {P : Type} [PartialOrder P]
+theorem orderNerveRealizationSimplex_interior_range_eq  [PartialOrder P]
     {n m : SimplexCategory} (s : (nerve P).obj (Opposite.op n))
     (t : (nerve P).obj (Opposite.op m))
     (z : SimplexCategory.toTop.obj n) (w : SimplexCategory.toTop.obj m)
@@ -51,15 +48,14 @@ theorem orderNerveRealizationSimplex_interior_range_eq {P : Type} [PartialOrder 
   have hd := congrArg (fun k => k w) (orderNerveAffineRealization_simplex v t)
   change orderNerveAffineRealization v (orderNerveRealizationSimplex P s z) =
     orderNerveAffineSimplex v s z at hc
-  change orderNerveAffineRealization v (orderNerveRealizationSimplex P t w) =
-    orderNerveAffineSimplex v t w at hd
+  dsimp at *
   rw [hc, hd] at hf
   rw [← orderNerveAffineSimplex_indicator_pos_iff s z hz p,
     ← orderNerveAffineSimplex_indicator_pos_iff t w hw p]
   exact congrArg (fun r : ℝ => 0 < r) hf ▸ Iff.rfl
 
 /-- Nondegenerate simplices in the same dimension with meeting interiors are equal. -/
-theorem orderNerveRealization_nonDegenerate_interior_eq {P : Type} [PartialOrder P]
+theorem orderNerveRealization_nonDegenerate_interior_eq  [PartialOrder P]
     {n : ℕ} (s t : (nerve P).nonDegenerate n)
     (z w : SimplexCategory.toTop.obj (SimplexCategory.mk n))
     (hz : ∀ i, 0 < z.down.weights i) (hw : ∀ i, 0 < w.down.weights i)
@@ -73,7 +69,7 @@ theorem orderNerveRealization_nonDegenerate_interior_eq {P : Type} [PartialOrder
   exact CategoryTheory.Functor.ext (fun i => congrFun he i)
 
 /-- Nondegenerate simplex interiors in different dimensions cannot meet. -/
-theorem orderNerveRealization_nonDegenerate_interior_dimension_eq {P : Type}
+theorem orderNerveRealization_nonDegenerate_interior_dimension_eq 
     [PartialOrder P] {n m : ℕ} (s : (nerve P).nonDegenerate n)
     (t : (nerve P).nonDegenerate m)
     (z : SimplexCategory.toTop.obj (SimplexCategory.mk n))
@@ -86,7 +82,7 @@ theorem orderNerveRealization_nonDegenerate_interior_dimension_eq {P : Type}
   have ht := (PartialOrder.mem_nerve_nonDegenerate_iff_injective t.val).mp t.property
   have hc := Nat.card_congr ((Equiv.ofInjective s.val.obj hs).trans
     ((Set.equivOfEq hrange).trans (Equiv.ofInjective t.val.obj ht).symm))
-  simp only [Nat.card_eq_fintype_card, Fintype.card_fin, SimplexCategory.len_mk] at hc
+  simp  at hc
   omega
 
 end FiniteChains.Comb

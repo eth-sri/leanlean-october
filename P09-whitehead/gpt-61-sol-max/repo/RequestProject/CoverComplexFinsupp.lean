@@ -1,21 +1,16 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CoverComplex
-public import RequestProject.CrowellFinsupp
-public import RequestProject.PresentationNecessityFinsupp
-
-@[expose] public section
+import RequestProject.CoverComplex
+import RequestProject.CrowellFinsupp
+import RequestProject.PresentationNecessityFinsupp
 
 /-! Actual presentation covers with arbitrarily many edges and faces. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 
-open MonoidAlgebra
-universe u
+
 
 variable {α J : Type u} [DecidableEq α] (N : Subgroup (FreeGroup α)) [N.Normal]
 
@@ -25,18 +20,14 @@ noncomputable def fsCoords (β : Type u) :
     ((Finsupp.curryLinearEquiv (R := ℤ)).trans
       (Finsupp.mapRange.linearEquiv (MonoidAlgebra.coeffLinearEquiv ℤ).symm))
 
-omit [DecidableEq α] in
+section
+omit [DecidableEq α]
 theorem fsCoords_apply (β : Type u) (c : ((FreeGroup α ⧸ N) × β) →₀ ℤ)
-    (i : β) (q : FreeGroup α ⧸ N) : (fsCoords N β c i).coeff q = c (q, i) := by
-  show ((Finsupp.equivMapDomain (Equiv.prodComm _ β) c).curry i) q = c (q, i)
-  rw [Finsupp.curry_apply, Finsupp.equivMapDomain_apply]
-  rfl
+    (i : β) (q : FreeGroup α ⧸ N) : (fsCoords N β c i).coeff q = c (q, i) := rfl
 
-omit [DecidableEq α] in
 theorem fsCoords_single (β : Type u) (q : FreeGroup α ⧸ N) (i : β) (n : ℤ) :
     fsCoords N β (Finsupp.single (q, i) n) =
       Finsupp.single i (MonoidAlgebra.single q n : CoverRing N) := by
-  classical
   apply Finsupp.ext
   intro j
   apply MonoidAlgebra.coeff_injective
@@ -44,7 +35,8 @@ theorem fsCoords_single (β : Type u) (q : FreeGroup α ⧸ N) (i : β) (n : ℤ
   intro r
   rw [fsCoords_apply]
   by_cases hj : j = i <;> by_cases hr : r = q <;>
-    simp [hj, hr]
+    simp [*]
+end
 
 theorem fsCoords_pathChain_liftPath_apply (L : List (α × Bool))
     (q : FreeGroup α ⧸ N) (i : α) :
@@ -90,7 +82,7 @@ theorem fs_coverComplex_bdry2 (c : ((FreeGroup α ⧸ N) × J) →₀ ℤ) :
   classical
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw [map_add, map_add, hc, hd, map_add, map_add]
+  | add c d hc hd => simp_all
   | single f n =>
       obtain ⟨q, j⟩ := f
       rw [fsCoords_single, bdry2_single, map_smul, coverSecondBoundary_single]
@@ -102,6 +94,6 @@ theorem fs_coverComplex_bdry2 (c : ((FreeGroup α ⧸ N) × J) →₀ ℤ) :
         n • ((MonoidAlgebra.single q 1 : CoverRing N) * proj N (fox i (ρ j)))
       rw [show (MonoidAlgebra.single q n : CoverRing N) =
           n • (MonoidAlgebra.single q 1 : CoverRing N) by
-        rw [MonoidAlgebra.smul_single, smul_eq_mul, mul_one], smul_mul_assoc]
+        simp_all, smul_mul_assoc]
 
 end FiniteChains.Comb

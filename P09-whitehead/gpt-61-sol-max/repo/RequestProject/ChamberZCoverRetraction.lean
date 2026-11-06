@@ -1,16 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberZCellular
-public import RequestProject.PosetCoverDownTransform
-public import RequestProject.PosetCoverRestriction
-public import RequestProject.OrderUniversalPosetCover
-
-@[expose] public section
+import RequestProject.ChamberZCellular
+import RequestProject.PosetCoverDownTransform
+import RequestProject.PosetCoverRestriction
+import RequestProject.OrderUniversalPosetCover
 
 /-! The actual marked-chamber retraction on covering posets. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {M : CayGroup A → Prop} {att : NeSpx A →o X}
   {P : Type u} [PartialOrder P] {f : P → Zpos A X M att}
@@ -23,12 +20,12 @@ theorem acyclicRelIn_cover_marked_chamber [Nonempty X] (hf : IsPosetCover f)
     AcyclicRelIn (fun p => InZChamber w (f p)) (fun p => InZBase (f p)) := by
   let S : Set (Zpos A X M att) := {z | InZChamber w z}
   let fc := posetCoverRestriction f S
-  have hfc : IsPosetCover fc := IsPosetCover.restriction f S hf
-  let g : S → S := zChamberRetr (att := att) hw
+  have hfc  := IsPosetCover.restriction f S hf
+  let g  := zChamberRetr (att := att) hw
   have hgle : ∀ q, g q ≤ q := zChamberRetr_le hw
   let ρ := hfc.downTransform g hgle
-  have hmono : Monotone ρ := hfc.downTransform_monotone g (zChamberRetr_monotone hw) hgle
-  have hρle : ∀ q, ρ q ≤ q := hfc.downTransform_le g hgle
+  have hmono  := hfc.downTransform_monotone g (zChamberRetr_monotone hw) hgle
+  have hρle  := hfc.downTransform_le g hgle
   have hbase : ∀ q, InZBase (f (ρ q).1) := by
     intro q
     have he := congrArg Subtype.val (hfc.downTransform_spec g hgle q).2

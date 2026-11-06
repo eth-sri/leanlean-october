@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.FoxWordBoundary
-
-@[expose] public section
+import RequestProject.FoxWordBoundary
 
 namespace FiniteChains
 variable {α : Type*} [DecidableEq α]
@@ -19,8 +17,7 @@ theorem foxWordPathBoundary_prefix_sum (i : α) (g : FreeGroup α)
     rw [foxWordPathBoundary, ih]
     simp only [List.length_cons]
     rw [Fin.sum_univ_succ]
-    simp only [Fin.val_zero, List.take_zero, ← FreeGroup.one_eq_mk, mul_one,
-      List.getElem_cons_zero, Fin.val_succ, List.take_succ_cons, List.getElem_cons_succ]
+    simp only [Fin.val_zero, List.take_zero, ← FreeGroup.one_eq_mk, mul_one, Fin.val_succ, List.take_succ_cons, List.getElem_cons_succ]
     congr 1
     apply Finset.sum_congr rfl
     intro k _

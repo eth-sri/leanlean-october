@@ -1,30 +1,23 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SimplexCoordinates
-public import RequestProject.ReducedSimplexBall
-public import RequestProject.OrderNerveRealizationWeakTopology
-
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+import RequestProject.TopologicalSingular.SimplexCoordinates
+import RequestProject.ReducedSimplexBall
+import RequestProject.OrderNerveRealizationWeakTopology
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
 
-noncomputable def orderNerveSimplexClosedBallHomeomorph (n : ℕ) :
-    Convexity.StdSimplex ℝ (Fin (n + 1)) ≃ₜ (Metric.closedBall 0 1 : Set (Fin n → ℝ)) :=
+noncomputable def orderNerveSimplexClosedBallHomeomorph (n : ℕ)  :=
   (TopologicalSingular.simplexCoordinates n).trans (standardSimplexClosedBallHomeomorph n)
 
 theorem orderNerveSimplexClosedBallHomeomorph_positive_iff (n : ℕ)
     (z : Convexity.StdSimplex ℝ (Fin (n + 1))) :
-    (∀ i, 0 < z.weights i) ↔ (orderNerveSimplexClosedBallHomeomorph n z).val ∈ Metric.ball 0 1 := by
-  exact standardSimplexClosedBallHomeomorph_positive_iff n
+    (∀ i, 0 < z.weights i) ↔ (orderNerveSimplexClosedBallHomeomorph n z).val ∈ Metric.ball 0 1 := standardSimplexClosedBallHomeomorph_positive_iff n
     (TopologicalSingular.simplexCoordinates n z)
 
+variable {P : Type}
 /-- A genuine continuous closed-ball characteristic chart in the actual realization. -/
-noncomputable def orderNerveClosedBallChart {P : Type} [PartialOrder P]
+noncomputable def orderNerveClosedBallChart  [PartialOrder P]
     {n : ℕ} (s : (nerve P).nonDegenerate n) :
     C((Metric.closedBall 0 1 : Set (Fin n → ℝ)), orderNerveRealization P) where
   toFun x := orderNerveRealizationSimplex P s.val
@@ -33,7 +26,7 @@ noncomputable def orderNerveClosedBallChart {P : Type} [PartialOrder P]
     (continuous_uliftUp.comp (orderNerveSimplexClosedBallHomeomorph n).symm.continuous)
 
 /-- Closed-ball and canonical simplex charts have exactly the same actual image. -/
-theorem orderNerveClosedBallChart_range {P : Type} [PartialOrder P]
+theorem orderNerveClosedBallChart_range  [PartialOrder P]
     {n : ℕ} (s : (nerve P).nonDegenerate n) :
     Set.range (orderNerveClosedBallChart s) = Set.range (orderNerveRealizationSimplex P s.val) := by
   ext x
@@ -49,8 +42,8 @@ theorem orderNerveClosedBallChart_range {P : Type} [PartialOrder P]
     rfl
 
 /-- The closed-ball chart is injective. -/
-theorem orderNerveClosedBallChart_injective {P : Type} [PartialOrder P]
-    {n : ℕ} (s : (nerve P).nonDegenerate n) : Function.Injective (orderNerveClosedBallChart s) :=
+abbrev orderNerveClosedBallChart_injective  [PartialOrder P]
+    {n : ℕ} (s : (nerve P).nonDegenerate n)  :=
   (orderNerveRealizationSimplex_injective s.val
     ((PartialOrder.mem_nerve_nonDegenerate_iff_injective s.val).mp s.property)).comp
       (ULift.up_injective.comp (orderNerveSimplexClosedBallHomeomorph n).symm.injective)

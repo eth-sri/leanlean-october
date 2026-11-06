@@ -1,13 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SimplexCoordinates
-public import RequestProject.OrderNerveRealizationInterior
-public import RequestProject.OrderNerveRealizationNondegenerate
+import RequestProject.TopologicalSingular.SimplexCoordinates
+import RequestProject.OrderNerveRealizationInterior
+import RequestProject.OrderNerveRealizationNondegenerate
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -52,23 +48,13 @@ theorem orderNerveRealizationSimplex_interior_representative (P : Type) [Partial
         orderNerveRealizationSimplex P t.val w = orderNerveRealizationSimplex P s.val z := by
   induction n with
   | zero =>
-    refine ⟨0, le_rfl, s, z, ?_, rfl⟩
-    intro i
-    haveI : Subsingleton (Fin (⦋0⦌.len + 1)) := by
-      simpa only [SimplexCategory.len_mk] using (inferInstance : Subsingleton (Fin 1))
-    have h := z.down.total_of_fintype
-    change (∑ j : Fin 1, z.down.weights j) = 1 at h
-    simp only [Fintype.sum_unique] at h
-    have he : z.down.weights i = 1 :=
-      (congrArg z.down.weights (Subsingleton.elim i default)).trans h
-    rw [he]
-    norm_num
+    simp_all
   | succ n ih =>
     by_cases hz : ∀ i, 0 < z.down.weights i
     · exact ⟨n + 1, le_rfl, s, z, hz, rfl⟩
     · push_neg at hz
       obtain ⟨i, hi⟩ := hz
-      have hi0 : z.down.weights i = 0 := le_antisymm hi (z.down.weights_nonneg i)
+      have hi0  := le_antisymm hi (z.down.weights_nonneg i)
       obtain ⟨w, hw⟩ := topologicalSimplex_zero_coordinate_face z i hi0
       have hs := (PartialOrder.mem_nerve_nonDegenerate_iff_injective s.val).mp s.property
       have ht : (nerve P).map (SimplexCategory.δ i).op s.val ∈
@@ -95,9 +81,10 @@ theorem orderNerveRealization_interior_cover (P : Type) [PartialOrder P]
   obtain ⟨m, _, t, w, hw, he⟩ := orderNerveRealizationSimplex_interior_representative P n s z
   exact ⟨m, t, w, hw, he.trans hz⟩
 
+variable {P : Type}
 /-- Every boundary point of an actual simplex is represented in one of its finitely
 many codimension-one faces. -/
-theorem orderNerveRealizationSimplex_boundary_face {P : Type} [PartialOrder P]
+theorem orderNerveRealizationSimplex_boundary_face  [PartialOrder P]
     {n : ℕ} (s : (nerve P).obj (Opposite.op ⦋n + 1⦌))
     (z : SimplexCategory.toTop.obj ⦋n + 1⦌) (hz : ¬ ∀ i, 0 < z.down.weights i) :
     ∃ (i : Fin (n + 2)) (w : SimplexCategory.toTop.obj ⦋n⦌),
@@ -105,28 +92,25 @@ theorem orderNerveRealizationSimplex_boundary_face {P : Type} [PartialOrder P]
         orderNerveRealizationSimplex P s z := by
   push_neg at hz
   obtain ⟨i, hi⟩ := hz
-  have hi0 : z.down.weights i = 0 := le_antisymm hi (z.down.weights_nonneg i)
+  have hi0  := le_antisymm hi (z.down.weights_nonneg i)
   obtain ⟨w, hw⟩ := topologicalSimplex_zero_coordinate_face z i hi0
   refine ⟨i, w, ?_⟩
   have h := congrArg (fun k => k w)
     (orderNerveRealizationSimplex_operator P (SimplexCategory.δ i) s)
-  change orderNerveRealizationSimplex P s
-    (SimplexCategory.toTop.map (SimplexCategory.δ i) w) = _ at h
-  rw [hw] at h
-  exact h.symm
+  simp_all
 
 /-- Every face of an actual nondegenerate poset-nerve simplex remains nondegenerate. -/
-theorem orderNerve_nonDegenerate_face {P : Type} [PartialOrder P]
+theorem orderNerve_nonDegenerate_face  [PartialOrder P]
     {n : ℕ} (s : (nerve P).nonDegenerate (n + 1)) (i : Fin (n + 2)) :
     (nerve P).map (SimplexCategory.δ i).op s.val ∈ (nerve P).nonDegenerate n := by
   rw [PartialOrder.mem_nerve_nonDegenerate_iff_injective]
-  change Function.Injective (fun j => s.val.obj (i.succAbove j))
+  
   exact ((PartialOrder.mem_nerve_nonDegenerate_iff_injective s.val).mp s.property).comp
     Fin.succAbove_right_injective
 
 /-- The boundary of every nondegenerate simplex maps into a finite family of
 actual lower-dimensional closed simplex images. -/
-theorem orderNerveRealizationSimplex_boundary_finite_faces {P : Type} [PartialOrder P]
+theorem orderNerveRealizationSimplex_boundary_finite_faces  [PartialOrder P]
     {n : ℕ} (s : (nerve P).nonDegenerate (n + 1)) :
     ∃ I : Finset ((nerve P).nonDegenerate n),
       ∀ z : SimplexCategory.toTop.obj ⦋n + 1⦌,

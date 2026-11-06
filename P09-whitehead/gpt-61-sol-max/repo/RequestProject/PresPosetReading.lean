@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresPosetAlpha
-
-@[expose] public section
+import RequestProject.PresPosetAlpha
 
 /-!
 # The reading homomorphism of the poset model, and injectivity of the comparison
@@ -26,37 +24,31 @@ Composed with the comparison homomorphism of `RequestProject/PresPosetAlpha.lean
 the presentation group embeds in the fundamental group of the model, marked by the generators.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace PresModel
+namespace FiniteChains.PresModel
+
 
 open Comb
 
-universe u v
 
 variable {α J : Type u} (w : J → List (α × Bool)) {G : Type v} [Group G] (gen : α → G)
 
 /-! ### The values of letters and words -/
 
 /-- The value of a letter. -/
-def letterVal (p : α × Bool) : G := if p.2 then gen p.1 else (gen p.1)⁻¹
+def letterVal (p : α × Bool)  := if p.2 then gen p.1 else (gen p.1)⁻¹
 
 /-- The value of a word. -/
-def wordVal (l : List (α × Bool)) : G := FreeGroup.lift gen (FreeGroup.mk l)
+def wordVal (l : List (α × Bool))  := FreeGroup.lift gen (FreeGroup.mk l)
 
 @[simp] theorem wordVal_nil : wordVal (gen := gen) [] = 1 := by
   simp [wordVal]
 
 theorem wordVal_append (l l' : List (α × Bool)) :
-    wordVal gen (l ++ l') = wordVal gen l * wordVal gen l' := by
-  rw [wordVal, wordVal, wordVal, ← FreeGroup.mul_mk, map_mul]
+    wordVal gen (l ++ l') = wordVal gen l * wordVal gen l' := by simp_all [wordVal]
 
-theorem wordVal_single (p : α × Bool) : wordVal gen [p] = letterVal gen p := by
-  obtain ⟨i, b⟩ := p
-  cases b <;> simp [wordVal, letterVal, FreeGroup.lift_mk]
+theorem wordVal_single (p : α × Bool) : wordVal gen [p] = letterVal gen p := by simp_all [wordVal, letterVal]
 
 /-! ### The cocycle of the rose -/
 
@@ -89,9 +81,7 @@ def roseCoc : OrdCocycle (Rose α) G where
         cases a with
         | base => exact hab.elim
         | mid i' =>
-            have hii : i' = i := hab
-            subst hii
-            rw [roseVal_self, one_mul]
+            classical solve_by_elim (transparency := .default) [FiniteChains.PresModel.roseVal_self, one_mul]
         | edg i' b => exact hab.elim
     | edg i bb =>
         cases c with
@@ -104,26 +94,30 @@ def roseCoc : OrdCocycle (Rose α) G where
             rw [roseVal_self, mul_one]
 
 /-- The cocycle of the mapping cylinder: the cocycle of the rose read through the retraction. -/
-def cylCoc : OrdCocycle (CylBase w) G :=
+def cylCoc  :=
   (roseCoc gen).comap (cylRetr (aHom w)) (cylRetr_monotone (aHom w))
 
 /-! ### The trivialisation over a two-cell -/
 
+variable (j : J)
+include j in
 /-- The prefix product of the first `k` letters of the relator `j`. -/
-def prefixVal (j : J) (k : ℕ) : G := wordVal gen ((w j).take k)
+def prefixVal  (k : ℕ)  := wordVal gen ((w j).take k)
 
-@[simp] theorem prefixVal_zero (j : J) : prefixVal w gen j 0 = 1 := by
+include j in
+@[simp] theorem prefixVal_zero  : prefixVal w gen j 0 = 1 := by
   simp [prefixVal]
 
-theorem prefixVal_succ (j : J) {k : ℕ} (hk : k < (w j).length) :
+include j in
+theorem prefixVal_succ  {k : ℕ} (hk : k < (w j).length) :
     prefixVal w gen j (k + 1) = prefixVal w gen j k * letterVal gen (w j)[k] := by
   have hsplit : (w j).take (k + 1) = (w j).take k ++ [(w j)[k]] := by
-    rw [List.take_add_one, List.getElem?_eq_getElem hk]
-    rfl
+    simp_all
   rw [prefixVal, prefixVal, hsplit, wordVal_append, wordVal_single]
 
+include j in
 /-- The value of the trivialisation at a point of a circle. -/
-def trivVal (j : J) (k : ℕ) (t : CPos) : G :=
+def trivVal  (k : ℕ) (t : CPos)  :=
   match t with
   | CPos.cor => (prefixVal w gen j k)⁻¹
   | _ => (roseVal gen Rose.base (aFun w (j, k, CPos.cedgL)))⁻¹ * (prefixVal w gen j k)⁻¹
@@ -132,20 +126,21 @@ def trivVal (j : J) (k : ℕ) (t : CPos) : G :=
 def trivFun (_j : J) : CylBase w → G :=
   Sum.elim (fun _ => 1) (fun x => trivVal w gen x.1 x.2.1 x.2.2)
 
+variable (hrel : ∀ j : J, wordVal gen (w j) = 1)
+include hrel in
 /-- The prefix product at the cyclic successor of a position: the relator word closes up
 because it evaluates to `1`. -/
-theorem prefixVal_csucc (hrel : ∀ j : J, wordVal gen (w j) = 1) (j : J) {k : ℕ}
+theorem prefixVal_csucc  (j : J) {k : ℕ}
     (hk : k < (w j).length) :
     prefixVal w gen j (TCirc.csucc w j k) = prefixVal w gen j (k + 1) := by
   rcases lt_or_eq_of_le (Nat.succ_le_of_lt hk) with hlt | heq
   · rw [TCirc.csucc, Nat.mod_eq_of_lt hlt]
-  · have hlen : (w j).length = k + 1 := heq.symm
-    have h0 : TCirc.csucc w j k = 0 := by rw [TCirc.csucc, hlen, Nat.mod_self]
-    rw [h0, prefixVal_zero, prefixVal, ← hlen, List.take_length, hrel j]
+  simp_all [TCirc.csucc, prefixVal]
 
+include hrel in
 /-- **The trivialisation is parallel for the cocycle**: this is the cocycle identity for a
 comparability of the attaching circle and the cone point over it. -/
-theorem trivVal_step (hrel : ∀ j : J, wordVal gen (w j) = 1) {x y : TCirc w} (h : x ≤ y) :
+theorem trivVal_step  {x y : TCirc w} (h : x ≤ y) :
     roseVal gen (aFun w x) (aFun w y) * trivVal w gen y.1 y.2.1 y.2.2
       = trivVal w gen x.1 x.2.1 x.2.2 := by
   rcases h with rfl | hlt
@@ -155,27 +150,16 @@ theorem trivVal_step (hrel : ∀ j : J, wordVal gen (w j) = 1) {x y : TCirc w} (
   obtain ⟨hj, hk', hcase⟩ := hlt
   subst hj
   obtain ⟨p, hp⟩ := exists_get_of_lt w hk'
-  have hL : aFun w (j, k', CPos.cedgL) = Rose.edg p.1 (!p.2) := aFun_cedgL_of_get w hp
-  have hR : aFun w (j, k', CPos.cedgR) = Rose.edg p.1 p.2 := aFun_cedgR_of_get w hp
-  have hM : aFun w (j, k', CPos.cmid) = Rose.mid p.1 := aFun_cmid_of_get w hp
+  have hL  := aFun_cedgL_of_get w hp
+  have hR  := aFun_cedgR_of_get w hp
+  have hM  := aFun_cmid_of_get w hp
   rcases hcase with ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩
   · -- corner ≤ left half
-    show roseVal gen (aFun w (j, k, CPos.cor)) (aFun w (j, k, CPos.cedgL))
-        * trivVal w gen j k CPos.cedgL = trivVal w gen j k CPos.cor
-    show roseVal gen Rose.base (aFun w (j, k, CPos.cedgL))
-        * ((roseVal gen Rose.base (aFun w (j, k, CPos.cedgL)))⁻¹
-          * (prefixVal w gen j k)⁻¹) = (prefixVal w gen j k)⁻¹
-    rw [← mul_assoc, mul_inv_cancel, one_mul]
+    simp_all [trivVal]
   · -- midpoint ≤ left half
-    show roseVal gen (aFun w (j, k, CPos.cmid)) (aFun w (j, k, CPos.cedgL))
-        * trivVal w gen j k CPos.cedgL = trivVal w gen j k CPos.cmid
-    rw [hM, hL, roseVal_mid_edg, one_mul]
-    rfl
+    aesop
   · -- midpoint ≤ right half
-    show roseVal gen (aFun w (j, k, CPos.cmid)) (aFun w (j, k, CPos.cedgR))
-        * trivVal w gen j k CPos.cedgR = trivVal w gen j k CPos.cmid
-    rw [hM, hR, roseVal_mid_edg, one_mul]
-    rfl
+    aesop
   · -- the corner in front of the next letter ≤ right half: here the letter is read
     show roseVal gen (aFun w (j, TCirc.csucc w j k', CPos.cor)) (aFun w (j, k', CPos.cedgR))
         * trivVal w gen j k' CPos.cedgR = trivVal w gen j (TCirc.csucc w j k') CPos.cor
@@ -185,17 +169,16 @@ theorem trivVal_step (hrel : ∀ j : J, wordVal gen (w j) = 1) {x y : TCirc w} (
     rw [prefixVal_csucc w gen hrel j hk', prefixVal_succ w gen j hk', hL, hR,
       roseVal_base_edg, roseVal_base_edg]
     have hpk : (w j)[k'] = p := by
-      have := List.getElem?_eq_getElem hk'
-      rw [hp] at this
-      exact (Option.some.injEq _ _ ▸ this.symm) ▸ rfl
+      simp_all
     rw [hpk, letterVal]
     cases hp2 : p.2 with
     | true => simp [mul_inv_rev]
     | false => simp [mul_inv_rev]
 
+include hrel in
 /-- **The cocycle of the model.**  The hypothesis is that every relator word evaluates to `1`,
 which is what makes the trivialisation over a two-cell consistent. -/
-def presCoc (hrel : ∀ j : J, wordVal gen (w j) = 1) : OrdCocycle (PresPos w) G :=
+def presCoc  : OrdCocycle (PresPos w) G :=
   (cylCoc w gen).coneAdj (trivFun w gen) (by
     intro t p q hpq hq
     obtain ⟨r, hr, hqr⟩ := hq
@@ -210,13 +193,14 @@ def presCoc (hrel : ∀ j : J, wordVal gen (w j) = 1) : OrdCocycle (PresPos w) G
 
 /-! ### The reading homomorphism -/
 
+include hrel in
 /-- **The reading homomorphism** of the model: the monodromy of the cocycle. -/
-def reading (hrel : ∀ j : J, wordVal gen (w j) = 1) :
-    Pi1 (orderCx (PresPos w)) (ptBase w) →* G :=
+def reading   :=
   (presCoc w gen hrel).monodromy (ptBase w)
 
+include hrel in
 /-- **The reading homomorphism reads the generators.** -/
-theorem reading_genClass (hrel : ∀ j : J, wordVal gen (w j) = 1) (i : α) :
+theorem reading_genClass  (i : α) :
     reading w gen hrel (genClass w i) = gen i := by
   show (presCoc w gen hrel).readPath (genLoop w i) = gen i
   show roseVal gen Rose.base (Rose.edg i false) *
@@ -227,5 +211,5 @@ theorem reading_genClass (hrel : ∀ j : J, wordVal gen (w j) = 1) (i : α) :
 
 /-! ### Injectivity of the comparison -/
 
-end PresModel
-end FiniteChains
+end FiniteChains.PresModel
+

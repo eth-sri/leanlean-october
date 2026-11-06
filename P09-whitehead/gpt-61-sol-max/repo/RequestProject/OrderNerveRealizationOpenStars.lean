@@ -1,21 +1,18 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNervePosetCoverVertexStars
-
-@[expose] public section
+import RequestProject.OrderNervePosetCoverVertexStars
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology
 open scoped Classical
 
+variable (P : Type)
 /-- The actual open vertex star, defined by positivity of its global coordinate. -/
-def orderNerveRealizationOpenStar (P : Type) [PartialOrder P] (v : P) :
-    Set (orderNerveRealization P) := {x | 0 < orderNerveRealizationCoordinates P x v}
+def orderNerveRealizationOpenStar  [PartialOrder P] (v : P)  := {x | 0 < orderNerveRealizationCoordinates P x v}
 
 /-- Coordinate positivity defines an open subset of the actual realization. -/
-theorem orderNerveRealizationOpenStar_isOpen (P : Type) [PartialOrder P] (v : P) :
-    IsOpen (orderNerveRealizationOpenStar P v) := by
-  exact isOpen_Ioi.preimage ((continuous_apply v).comp
+theorem orderNerveRealizationOpenStar_isOpen  [PartialOrder P] (v : P) :
+    IsOpen (orderNerveRealizationOpenStar P v) := isOpen_Ioi.preimage ((continuous_apply v).comp
     (orderNerveRealizationCoordinates P).continuous)
 
 /-- On simplex interiors, open-star membership is exactly vertex membership. -/
@@ -28,17 +25,15 @@ theorem orderNerveRealizationSimplex_mem_openStar_iff {P : Type} [PartialOrder P
     (orderNerveAffineRealization_simplex (fun p => if p = v then 1 else 0) s)
   change orderNerveRealizationCoordinates P (orderNerveRealizationSimplex P s z) v =
     orderNerveAffineSimplex (fun p => if p = v then 1 else 0) s z at he
-  change 0 < orderNerveRealizationCoordinates P (orderNerveRealizationSimplex P s z) v ↔ _
+  dsimp [FiniteChains.Comb.orderNerveRealizationOpenStar]
   rw [he]
   exact orderNerveAffineSimplex_indicator_pos_iff s z hz v
 
 /-- Actual open vertex stars cover the whole realization. -/
-theorem orderNerveRealizationOpenStar_cover (P : Type) [PartialOrder P]
+theorem orderNerveRealizationOpenStar_cover  [PartialOrder P]
     (x : orderNerveRealization P) : ∃ v, x ∈ orderNerveRealizationOpenStar P v := by
   obtain ⟨n, s, z, hz, he⟩ := orderNerveRealization_interior_cover P x
-  refine ⟨s.val.obj 0, ?_⟩
-  rw [← he]
-  exact (orderNerveRealizationSimplex_mem_openStar_iff s.val z hz _).mpr ⟨0, rfl⟩
+  aesop (add simp [orderNerveRealizationSimplex_mem_openStar_iff])
 
 /-- Every point of an open star lies in the genuine comparable-vertex CW carrier. -/
 theorem orderNerveRealizationOpenStar_subset_subcomplex {P : Type} [PartialOrder P]
@@ -88,11 +83,7 @@ theorem orderNerveRealizationMap_mem_openStar_iff {P Q : Type}
     orderNerveRealizationSimplex Q ((nerveMap hf.functor).app _ s.val) z at hn
   rw [hn, orderNerveRealizationSimplex_mem_openStar_iff _ z hz]
   constructor
-  · rintro ⟨i, hi⟩
-    refine ⟨s.val.obj i, hi, ?_⟩
-    exact (orderNerveRealizationSimplex_mem_openStar_iff s.val z hz _).mpr ⟨i, rfl⟩
-  · rintro ⟨p, hp, hxp⟩
-    obtain ⟨i, hi⟩ := (orderNerveRealizationSimplex_mem_openStar_iff s.val z hz p).mp hxp
-    exact ⟨i, (congrArg f hi).trans hp⟩
+  · aesop (add simp [orderNerveRealizationSimplex_mem_openStar_iff])
+  · aesop (add simp [orderNerveRealizationSimplex_mem_openStar_iff])
 
 end FiniteChains.Comb

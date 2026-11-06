@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.BlockFamilySubst
-
-@[expose] public section
+import RequestProject.BlockFamilySubst
 
 /-!
 # The one-way comparison which makes the structural map of a substitution injective
@@ -39,10 +37,9 @@ marked homomorphism `bq s : FreeGroup (Su s ⊕ Zt s) →* H` of the block itsel
 two marking equalities `bq s (of (inl h)) = j [u_h]` of the surface generators.
 -/
 
-namespace FiniteChains
-namespace BlockFamily
+namespace FiniteChains.BlockFamily
 
-universe u v
+
 
 variable {α Jr Sx : Type u} {Zt Mt : Sx → Type u}
 
@@ -81,18 +78,14 @@ theorem lift_gen_map_inl (w : FreeGroup α) :
       = j (QuotientGroup.mk w) := by
   have key : (FreeGroup.lift B.gen).comp (FreeGroup.map (Sum.inl (β := Σ s : Sx, Zt s)))
       = j.comp (QuotientGroup.mk' (relSub ρ)) := by
-    refine FreeGroup.ext_hom _ _ fun a => ?_
-    simp [gen]
+    aesop
   exact DFunLike.congr_fun key w
 
 /-- On the generators of the block at `s` the lift of `gen` is `b s`. -/
 theorem lift_gen_map_genEmb (s : Sx) (w : FreeGroup (α ⊕ Zt s)) :
     FreeGroup.lift B.gen (FreeGroup.map (genEmb (Zt := Zt) s) w) = B.b s w := by
   have key : (FreeGroup.lift B.gen).comp (FreeGroup.map (genEmb (Zt := Zt) s)) = B.b s := by
-    refine FreeGroup.ext_hom _ _ ?_
-    rintro (a | z)
-    · simpa [gen] using (B.mark s a).symm
-    · simp [gen]
+    classical aesop (add simp [FiniteChains.relSub_normal, FiniteChains.BlockFamily.BlockMaps.mark, gen])
   exact DFunLike.congr_fun key w
 
 /-- Every relator of the substituted presentation dies under the lift of `gen`. -/
@@ -106,8 +99,7 @@ theorem lift_gen_relator (k : Jr ⊕ (Σ s : Sx, Mt s)) :
           (Subgroup.subset_normalClosure (Set.mem_range.2 ⟨Sum.inl i, rfl⟩))
       rw [h1, map_one]
   | inr p =>
-      rw [substPresF_inr, lift_gen_map_genEmb]
-      exact B.rel p.1 p.2
+      classical simp_all [FiniteChains.BlockFamily.substPresF_inr, FiniteChains.BlockFamily.BlockMaps.lift_gen_map_genEmb, FiniteChains.BlockFamily.BlockMaps.rel]
 
 /-- **The homomorphism `ψ` out of the substituted presentation group** produced by the
 universal property.  No injectivity or surjectivity of `ψ` is claimed. -/
@@ -124,12 +116,7 @@ def psi : PresGroup (substPresF ρ bsub) →* H :=
 `ψ` is the given homomorphism `j`. -/
 theorem psi_comp_substHomF (hfill : FilledF ρ bsub) :
     B.psi.comp (substHomF ρ bsub hfill) = j := by
-  refine MonoidHom.ext ?_
-  intro x
-  induction x using QuotientGroup.induction_on with
-  | _ w =>
-      show B.psi (substHomF ρ bsub hfill (QuotientGroup.mk w)) = j (QuotientGroup.mk w)
-      rw [substHomF_mk, psi_mk, lift_gen_map_inl]
+  aesop
 
 include B in
 /-- **The one-way comparison proves `hinj`.**  If the marked block maps exist over an injective
@@ -148,22 +135,24 @@ end BlockMaps
 
 /-! ### The marked form: the block with its own distinguished generators -/
 
-section Marked
+section
 
 variable {Su : Sx → Type u}
 
+  (u : ∀ s : Sx, Su s → FreeGroup α)
+  (s : Sx)
 /-- The substitution which reads the distinguished generators of the block at `s` as the
 prescribed words in the old generators, and is the identity on the internal generators. -/
-def blockSubst (u : ∀ s : Sx, Su s → FreeGroup α) (s : Sx) :
+def blockSubst   :
     FreeGroup (Su s ⊕ Zt s) →* FreeGroup (α ⊕ Zt s) :=
   FreeGroup.lift (Sum.elim (fun x => FreeGroup.map Sum.inl (u s x))
     (fun z => FreeGroup.of (Sum.inr z)))
 
-@[simp] theorem blockSubst_of_inl (u : ∀ s : Sx, Su s → FreeGroup α) (s : Sx) (x : Su s) :
+@[simp] theorem blockSubst_of_inl   (x : Su s) :
     blockSubst (Zt := Zt) u s (FreeGroup.of (Sum.inl x)) = FreeGroup.map Sum.inl (u s x) := by
   simp [blockSubst]
 
-@[simp] theorem blockSubst_of_inr (u : ∀ s : Sx, Su s → FreeGroup α) (s : Sx) (z : Zt s) :
+@[simp] theorem blockSubst_of_inr   (z : Zt s) :
     blockSubst (Zt := Zt) u s (FreeGroup.of (Sum.inr z)) = FreeGroup.of (Sum.inr z) := by
   simp [blockSubst]
 
@@ -198,8 +187,7 @@ theorem injective_substHomF_of_markedBlock {H : Type v} [Group H]
     · rw [MonoidHom.comp_apply, blockSubst_of_inl, hmark s x]
       have hcomp : (bb s).comp (FreeGroup.map (Sum.inl (β := Zt s)))
           = j.comp (QuotientGroup.mk' (relSub ρ)) := by
-        refine FreeGroup.ext_hom _ _ fun a => ?_
-        simp [hbb]
+        aesop
       exact DFunLike.congr_fun hcomp (u s x)
     · simp [hbb]
   have hmark' : ∀ (s : Sx) (a : α),
@@ -207,14 +195,12 @@ theorem injective_substHomF_of_markedBlock {H : Type v} [Group H]
     intro s a
     simp [hbb]
   have hrel' : ∀ (s : Sx) (m : Mt s), bb s (blockSubst (Zt := Zt) u s (beta s m)) = 1 := by
-    intro s m
-    rw [← MonoidHom.comp_apply, key s]
-    exact hrel s m
+    classical grind [MonoidHom.comp_apply]
   have hmaps : BlockMaps ρ (fun s m => blockSubst u s (beta s m)) j :=
     { b := bb, mark := hmark', rel := hrel' }
   exact BlockMaps.injective_substHomF hmaps hfill hj
 
-end Marked
+end
 
-end BlockFamily
-end FiniteChains
+end FiniteChains.BlockFamily
+

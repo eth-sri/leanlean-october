@@ -1,17 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.UniversalPathGauge
-public import RequestProject.TreePresentation
-public import RequestProject.ZeroPi2Descent
-
-@[expose] public section
+import RequestProject.UniversalPathGauge
+import RequestProject.TreePresentation
+import RequestProject.ZeroPi2Descent
 
 /-! The actual path-class cover gauge determined by a spanning tree and a cellular map. -/
 namespace FiniteChains.Comb.SpanningTree
-universe u
 variable {K Y : Complex2.{u}} (T : SpanningTree K) (f : Hom K Y)
 
-noncomputable def mappedTreeReference (a : K.V) : UV Y (f.onV T.root) :=
+noncomputable def mappedTreeReference (a : K.V)  :=
   extendList (mapPath f (T.treePath a)) (UV.base Y (f.onV T.root))
 
 theorem mappedTreeReference_end (a : K.V) :
@@ -30,7 +27,7 @@ theorem mappedTreeReference_path {a b : K.V} {p : List (K.E × Bool)}
     (isPath_mapPath f (T.treePath_isPath b))
   have he : mapPath f (conjPath T p a b) =
       mapPath f (T.treePath a) ++ mapPath f p ++ revPath (mapPath f (T.treePath b)) := by
-    rw [conjPath, mapPath_append, mapPath_append, mapPath_revPath]
+    simp_all [conjPath, mapPath_revPath]
   have hv : pi1Map f T.root (loopOf T hp) =
       Pi1.mk ⟨mapPath f (T.treePath a) ++ mapPath f p ++ revPath (mapPath f (T.treePath b)),
         ((isPath_mapPath f (T.treePath_isPath a)).append (isPath_mapPath f hp)).append

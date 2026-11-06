@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MirrorSimplyConnected
-
-@[expose] public section
+import RequestProject.MirrorSimplyConnected
 
 /-!
 # The concrete chamber model of the Davis complex, and its chamber intersections
@@ -41,12 +39,11 @@ by truncation).
   contraction `ρ(σ) = σ ∩ D(x)` of the text, applied here directly inside the model.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
+
 
 open RACG Mirror
 
-universe u
 
 variable {V : Type u} [DecidableEq V]
 
@@ -54,25 +51,26 @@ variable {V : Type u} [DecidableEq V]
 
 /-- **A spherical coset** of the right-angled Coxeter group: a simplex `T` of `L` together with
 a coset of `W_T`, represented by its unique shortest element. -/
-def Sph (A : CommRel V) : Type u :=
+def Sph (A : CommRel V)  :=
   {p : CayGroup A × Finset V // IsSimplex A p.2 ∧ ∀ s ∈ p.2, ¬ IsRDesc A p.1 s}
 
 variable {A : CommRel V}
 
+  (p : Sph A)
 /-- The shortest element of the coset. -/
-def Sph.rep (p : Sph A) : CayGroup A := p.1.1
+def Sph.rep   := p.1.1
 
 /-- The simplex of `L` carried by the coset: its mirror type. -/
-def Sph.spx (p : Sph A) : Finset V := p.1.2
+def Sph.spx   := p.1.2
 
-theorem Sph.isSimplex (p : Sph A) : IsSimplex A p.spx := p.2.1
+theorem Sph.isSimplex  : IsSimplex A p.spx := p.2.1
 
-theorem Sph.no_rdesc (p : Sph A) : ∀ s ∈ p.spx, ¬ IsRDesc A p.rep s := p.2.2
+theorem Sph.no_rdesc  : ∀ s ∈ p.spx, ¬ IsRDesc A p.rep s := p.2.2
 
 theorem Sph.ext' {p q : Sph A} (hr : p.rep = q.rep) (hs : p.spx = q.spx) : p = q := by
   obtain ⟨⟨a, s⟩, hp⟩ := p
   obtain ⟨⟨b, t⟩, hq⟩ := q
-  simp only [Sph.rep, Sph.spx] at hr hs
+  simp [Sph.spx] at hr hs
   subst hr
   subst hs
   rfl
@@ -80,7 +78,7 @@ theorem Sph.ext' {p q : Sph A} (hr : p.rep = q.rep) (hs : p.spx = q.spx) : p = q
 omit [DecidableEq V] in
 /-- A simplex of `L` is a commuting set of generators. -/
 theorem commuting_of_isSimplex {σ : Finset V} (h : IsSimplex A σ) : Commuting A (σ : Set V) :=
-  fun _ hs _ hr hne => h _ (Finset.mem_coe.1 hs) _ (Finset.mem_coe.1 hr) hne
+  by aesop
 
 theorem specialSub_mono {S T : Set V} (h : S ⊆ T) : specialSub A S ≤ specialSub A T :=
   Subgroup.closure_mono (Set.image_mono h)
@@ -88,51 +86,47 @@ theorem specialSub_mono {S T : Set V} (h : S ⊆ T) : specialSub A S ≤ special
 /-- **The order of the Davis poset**: inclusion of cosets. -/
 instance : PartialOrder (Sph A) where
   le p q := p.spx ⊆ q.spx ∧ p.rep⁻¹ * q.rep ∈ specialSub A (q.spx : Set V)
-  le_refl p := ⟨Finset.Subset.refl _, by rw [inv_mul_cancel]; exact Subgroup.one_mem _⟩
+  le_refl p := ⟨Finset.Subset.refl _, by simp_all⟩
   le_trans p q r hpq hqr := by
     refine ⟨hpq.1.trans hqr.1, ?_⟩
-    have h1 : p.rep⁻¹ * q.rep ∈ specialSub A (r.spx : Set V) :=
+    have h1  :=
       specialSub_mono (by exact_mod_cast hqr.1) hpq.2
     have h2 : p.rep⁻¹ * r.rep = (p.rep⁻¹ * q.rep) * (q.rep⁻¹ * r.rep) := by group
     rw [h2]
     exact Subgroup.mul_mem _ h1 hqr.2
   le_antisymm p q hpq hqp := by
-    have hspx : p.spx = q.spx := Finset.Subset.antisymm hpq.1 hqp.1
-    have hT : Commuting A (p.spx : Set V) := commuting_of_isSimplex p.isSimplex
+    have hspx  := Finset.Subset.antisymm hpq.1 hqp.1
+    have hT  := commuting_of_isSimplex p.isSimplex
     have huniq := existsUnique_shortest_coset A hT p.rep
     have hp : p.rep⁻¹ * p.rep ∈ specialSub A (p.spx : Set V) ∧
         ∀ s ∈ (p.spx : Set V), ¬ IsRDesc A p.rep s := by
-      refine ⟨by rw [inv_mul_cancel]; exact Subgroup.one_mem _, ?_⟩
-      intro s hs
-      exact p.no_rdesc s (Finset.mem_coe.1 hs)
+      classical simp_all [FiniteChains.Davis.Sph.no_rdesc]
     have hq : p.rep⁻¹ * q.rep ∈ specialSub A (p.spx : Set V) ∧
         ∀ s ∈ (p.spx : Set V), ¬ IsRDesc A q.rep s := by
-      refine ⟨by rw [hspx]; exact hpq.2, ?_⟩
-      intro s hs
-      exact q.no_rdesc s (hspx ▸ Finset.mem_coe.1 hs)
+      classical simp_all [FiniteChains.Davis.Sph.no_rdesc]
     have h1 := huniq.unique hp hq
     exact Sph.ext' h1 hspx
 
 /-! ### Chambers -/
 
+variable (x : CayGroup A)
 /-- The coset `p` contains the group element `x`: the corresponding cell of the Davis complex
 lies in the chamber `F_x`. -/
-def InChamber (x : CayGroup A) (p : Sph A) : Prop :=
+def InChamber  (p : Sph A)  :=
   p.rep⁻¹ * x ∈ specialSub A (p.spx : Set V)
 
 /-- **The chamber `F_x`** as a subposet of the Davis poset. -/
-def Chamber (A : CommRel V) (x : CayGroup A) : Type u := {p : Sph A // InChamber x p}
+def Chamber (A : CommRel V) (x : CayGroup A)  := {p : Sph A // InChamber x p}
 
 instance (x : CayGroup A) : PartialOrder (Chamber A x) := Subtype.partialOrder _
 
-@[simp] theorem Chamber.le_def {x : CayGroup A} (p q : Chamber A x) :
-    p ≤ q ↔ p.1 ≤ q.1 := Iff.rfl
+
 
 /-- Inside one chamber the order is just inclusion of simplices. -/
 theorem le_of_inChamber {x : CayGroup A} {p q : Sph A} (hp : InChamber x p) (hq : InChamber x q)
     (h : p.spx ⊆ q.spx) : p ≤ q := by
   refine ⟨h, ?_⟩
-  have h1 : p.rep⁻¹ * x ∈ specialSub A (q.spx : Set V) :=
+  have h1  :=
     specialSub_mono (by exact_mod_cast h) hp
   have h2 : x⁻¹ * q.rep ∈ specialSub A (q.spx : Set V) := by
     have := Subgroup.inv_mem _ hq
@@ -142,34 +136,22 @@ theorem le_of_inChamber {x : CayGroup A} {p q : Sph A} (hp : InChamber x p) (hq 
   exact Subgroup.mul_mem _ h1 h2
 
 /-- The unique cell of the chamber `F_x` with a given mirror type. -/
-noncomputable def chamberPt (x : CayGroup A) {σ : Finset V} (hσ : IsSimplex A σ) : Sph A :=
+noncomputable def chamberPt  {σ : Finset V} (hσ : IsSimplex A σ) : Sph A :=
   ⟨((existsUnique_shortest_coset A (commuting_of_isSimplex hσ) x).choose, σ),
     hσ, fun s hs => (existsUnique_shortest_coset A (commuting_of_isSimplex hσ) x).choose_spec.1.2
       s (Finset.mem_coe.2 hs)⟩
 
-@[simp] theorem chamberPt_spx (x : CayGroup A) {σ : Finset V} (hσ : IsSimplex A σ) :
+@[simp] theorem chamberPt_spx  {σ : Finset V} (hσ : IsSimplex A σ) :
     (chamberPt x hσ).spx = σ := rfl
 
-theorem chamberPt_inChamber (x : CayGroup A) {σ : Finset V} (hσ : IsSimplex A σ) :
+theorem chamberPt_inChamber  {σ : Finset V} (hσ : IsSimplex A σ) :
     InChamber x (chamberPt x hσ) := by
   have h := (existsUnique_shortest_coset A (commuting_of_isSimplex hσ) x).choose_spec.1.1
   have := Subgroup.inv_mem _ h
   rw [mul_inv_rev, inv_inv] at this
   exact this
 
-/-- **Uniqueness of the cell of a given type in a chamber.** -/
-theorem eq_chamberPt {x : CayGroup A} {p : Sph A} (hp : InChamber x p) :
-    p = chamberPt x p.isSimplex := by
-  have hT : Commuting A (p.spx : Set V) := commuting_of_isSimplex p.isSimplex
-  have huniq := existsUnique_shortest_coset A hT x
-  have h1 : x⁻¹ * p.rep ∈ specialSub A (p.spx : Set V) ∧
-      ∀ s ∈ (p.spx : Set V), ¬ IsRDesc A p.rep s := by
-    refine ⟨?_, fun s hs => p.no_rdesc s (Finset.mem_coe.1 hs)⟩
-    have := Subgroup.inv_mem _ hp
-    rwa [mul_inv_rev, inv_inv] at this
-  have h2 := (existsUnique_shortest_coset A hT x).choose_spec.1
-  refine Sph.ext' ?_ rfl
-  exact huniq.unique h1 h2
+
 
 /-! ### The chamber is a cone -/
 
@@ -179,35 +161,32 @@ theorem isSimplex_empty : IsSimplex A (∅ : Finset V) := by
   exact absurd hs (by simp)
 
 /-- The apex of the chamber `F_x`: the cell `x W_∅ = {x}`. -/
-noncomputable def chamberApex (x : CayGroup A) : Chamber A x :=
+noncomputable def chamberApex  : Chamber A x :=
   ⟨chamberPt x (isSimplex_empty (A := A)), chamberPt_inChamber x _⟩
 
-theorem chamberApex_le {x : CayGroup A} (p : Chamber A x) : chamberApex x ≤ p :=
+abbrev chamberApex_le {x : CayGroup A} (p : Chamber A x)  :=
   le_of_inChamber (chamberApex x).2 p.2 (Finset.empty_subset _)
 
 /-- **The chamber is simply connected**: its order complex is a cone on the apex. -/
-theorem chamber_simplyConnected (x : CayGroup A) :
-    Comb.SimplyConnected (Comb.orderCx (Chamber A x)) :=
+abbrev chamber_simplyConnected   :=
   Comb.simplyConnected_orderCx (chamberApex x) (fun _ => chamberApex x)
     (fun p => chamberApex_le p) (fun _ => le_refl _) (fun _ => le_refl _)
 
 /-- The chamber is connected. -/
-theorem chamber_isConnected (x : CayGroup A) :
-    Comb.IsConnected (Comb.orderCx (Chamber A x)) :=
+abbrev chamber_isConnected   :=
   Comb.isConnected_orderCx (chamberApex x) (fun _ => chamberApex x)
     (fun p => chamberApex_le p) (fun _ => le_refl _)
 
 /-- **The chamber is acyclic in all degrees**: every increasing cycle of its simplicial chain
 complex, in every degree including the augmentation degree, is a boundary. -/
-theorem chamber_exists_bdry_eq_of_cycle (x : CayGroup A) {c : Nerve.Ch (Chamber A x)}
-    (hc : c ∈ Nerve.Inc (Chamber A x)) (hcyc : Nerve.bdry c = 0) :
-    ∃ y ∈ Nerve.Inc (Chamber A x), Nerve.bdry y = c :=
+abbrev chamber_exists_bdry_eq_of_cycle  {c : Nerve.Ch (Chamber A x)}
+    (hc : c ∈ Nerve.Inc (Chamber A x)) (hcyc : Nerve.bdry c = 0)  :=
   Nerve.exists_bdry_eq_of_cycle (fun _ => chamberApex x) (chamberApex x)
     (fun _ _ _ => le_refl _) (fun p => chamberApex_le p) (fun _ => le_refl _) hc hcyc
 
 /-! ### The intersection with the earlier chambers -/
 
-section Inter
+section
 
 variable [Fintype V]
 
@@ -218,7 +197,7 @@ type meets the descent set `D(x)`; that is,
 theorem mem_earlier_chamber_iff {x : CayGroup A} {p : Sph A} (hp : InChamber x p) :
     (∃ y : CayGroup A, y ≠ x ∧ RACG.clen A y ≤ RACG.clen A x ∧ InChamber y p) ↔
       (p.spx ∩ rdescFinset A x).Nonempty := by
-  have hT : Commuting A (p.spx : Set V) := commuting_of_isSimplex p.isSimplex
+  have hT  := commuting_of_isSimplex p.isSimplex
   have hkey := exists_rdesc_iff_exists_earlier A hT x
   constructor
   · rintro ⟨y, hne, hlen, hy⟩
@@ -241,76 +220,68 @@ theorem mem_earlier_chamber_iff {x : CayGroup A} {p : Sph A} (hp : InChamber x p
 
 /-- **The attaching subcomplex of the chamber `F_x`**: the part of `F_x` contained in the union
 of the earlier chambers, by `FiniteChains.Davis.mem_earlier_chamber_iff`. -/
-def ChamberInter (A : CommRel V) (x : CayGroup A) : Type u :=
+def ChamberInter (A : CommRel V) (x : CayGroup A)  :=
   {p : Sph A // InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty}
 
 instance (x : CayGroup A) : PartialOrder (ChamberInter A x) := Subtype.partialOrder _
 
 variable {x : CayGroup A}
 
+  (hx : x ≠ 1)
 /-- The descent set itself is a cell of the attaching subcomplex: the top vertex `D(x)`. -/
-noncomputable def interTop (hx : x ≠ 1) : ChamberInter A x :=
+noncomputable def interTop  : ChamberInter A x :=
   ⟨chamberPt x (isSimplex_rdescFinset A x), chamberPt_inChamber x _, by
-    simp only [chamberPt_spx, Finset.inter_self]
+    simp 
     exact rdescFinset_nonempty A hx⟩
 
-theorem interTop_spx (hx : x ≠ 1) : (interTop hx).1.spx = rdescFinset A x := rfl
+theorem interTop_spx  : (interTop hx).1.spx = rdescFinset A x := rfl
 
+variable (p : ChamberInter A x)
 /-- The contraction `ρ(σ) = σ ∩ D(x)` of the text, inside the model. -/
-noncomputable def interRho (p : ChamberInter A x) : ChamberInter A x :=
+noncomputable def interRho  : ChamberInter A x :=
   let hsubset : p.1.spx ∩ rdescFinset A x ⊆ p.1.spx := Finset.inter_subset_left
   let hsimplex := isSimplex_subset A hsubset p.1.isSimplex
   ⟨chamberPt x hsimplex,
     chamberPt_inChamber x hsimplex, by
-      have hspx : (chamberPt x hsimplex).spx = p.1.spx ∩ rdescFinset A x :=
-        chamberPt_spx x hsimplex
-      rw [hspx]
-      rw [Finset.inter_assoc, Finset.inter_self]
-      exact p.2.2⟩
+      classical grind [FiniteChains.Davis.chamberPt_spx, Finset.inter_assoc, Finset.inter_self]⟩
 
-theorem interRho_spx (p : ChamberInter A x) :
-    (interRho p).1.spx = p.1.spx ∩ rdescFinset A x := by
-  dsimp only [interRho]
-  exact chamberPt_spx x _
+theorem interRho_spx  :
+    (interRho p).1.spx = p.1.spx ∩ rdescFinset A x := rfl
 
-theorem interRho_le (p : ChamberInter A x) : interRho p ≤ p := by
+theorem interRho_le  : interRho p ≤ p := by
   refine le_of_inChamber (interRho p).2.1 p.2.1 ?_
   rw [interRho_spx]
   exact Finset.inter_subset_left
 
-theorem interRho_le_top (hx : x ≠ 1) (p : ChamberInter A x) : interRho p ≤ interTop hx := by
+theorem interRho_le_top  (p : ChamberInter A x) : interRho p ≤ interTop hx := by
   refine le_of_inChamber (interRho p).2.1 (interTop hx).2.1 ?_
   rw [interRho_spx, interTop_spx]
   exact Finset.inter_subset_right
 
 theorem interRho_mono {p q : ChamberInter A x} (h : p ≤ q) : interRho p ≤ interRho q := by
-  have h1 : p.1.spx ⊆ q.1.spx := h.1
+  have h1  := h.1
   refine le_of_inChamber (interRho p).2.1 (interRho q).2.1 ?_
-  rw [interRho_spx, interRho_spx]
-  exact fun a ha => Finset.mem_inter.2
-    ⟨h1 (Finset.mem_inter.1 ha).1, (Finset.mem_inter.1 ha).2⟩
+  grind [interRho_spx]
 
 /-- **The attaching subcomplex of a chamber is simply connected**, proved inside the model by
 the path contraction of `RequestProject/MirrorSimplyConnected.lean`. -/
-theorem chamberInter_simplyConnected (hx : x ≠ 1) :
-    Comb.SimplyConnected (Comb.orderCx (ChamberInter A x)) :=
+abbrev chamberInter_simplyConnected   :=
   Comb.simplyConnected_orderCx (interTop hx) interRho interRho_le (interRho_le_top hx)
     (fun h => interRho_mono h)
 
 /-- The attaching subcomplex is connected. -/
-theorem chamberInter_isConnected (hx : x ≠ 1) :
-    Comb.IsConnected (Comb.orderCx (ChamberInter A x)) :=
-  Comb.isConnected_orderCx (interTop hx) interRho interRho_le (interRho_le_top hx)
+abbrev chamberInter_isConnected   :=
+  FiniteChains.Comb.isConnected_orderCx (FiniteChains.Davis.interTop hx) FiniteChains.Davis.interRho
+    FiniteChains.Davis.interRho_le (FiniteChains.Davis.interRho_le_top hx)
 
 /-- **The attaching subcomplex is acyclic in all degrees.** -/
-theorem chamberInter_exists_bdry_eq_of_cycle (hx : x ≠ 1)
+abbrev chamberInter_exists_bdry_eq_of_cycle 
     {c : Nerve.Ch (ChamberInter A x)} (hc : c ∈ Nerve.Inc (ChamberInter A x))
-    (hcyc : Nerve.bdry c = 0) :
-    ∃ y ∈ Nerve.Inc (ChamberInter A x), Nerve.bdry y = c :=
+    (hcyc : Nerve.bdry c = 0)  :=
   Nerve.exists_bdry_eq_of_cycle interRho (interTop hx) (fun _ _ h => interRho_mono h)
     interRho_le (interRho_le_top hx) hc hcyc
 
-end Inter
+end
 
-end Davis
-end FiniteChains
+end FiniteChains.Davis
+

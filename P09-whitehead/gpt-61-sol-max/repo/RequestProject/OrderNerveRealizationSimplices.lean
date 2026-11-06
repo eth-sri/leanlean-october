@@ -1,19 +1,16 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveRealizationComparison
+import RequestProject.OrderNerveRealizationComparison
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
 
+variable (P : Type)
 /-- The canonical continuous simplex in the actual geometric realization, obtained
 by realizing the Yoneda map of a nerve simplex. -/
-noncomputable def orderNerveRealizationSimplex (P : Type) [PartialOrder P]
+noncomputable def orderNerveRealizationSimplex  [PartialOrder P]
     {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n)) :
     SimplexCategory.toTop.obj n ⟶ orderNerveRealization P :=
   SSet.toTopSimplex.inv.app n ≫ SSet.toTop.map (SSet.yonedaEquiv.symm s)
@@ -40,7 +37,7 @@ theorem orderNerveRealizationSimplex_operator (P : Type) [PartialOrder P]
   congr 2
 
 /-- Every point of the actual realization lies in a canonical realized simplex. -/
-theorem orderNerveRealizationSimplex_jointly_surjective (P : Type) [PartialOrder P]
+theorem orderNerveRealizationSimplex_jointly_surjective  [PartialOrder P]
     (x : orderNerveRealization P) :
     ∃ (n : SimplexCategory) (s : (nerve P).obj (Opposite.op n))
       (z : SimplexCategory.toTop.obj n), orderNerveRealizationSimplex P s z = x := by
@@ -59,13 +56,12 @@ theorem orderNerveRealizationSimplex_jointly_surjective (P : Type) [PartialOrder
   exact hy
 
 /-- Continuity on the actual realization is detected by its canonical continuous simplices. -/
-theorem orderNerveRealization_continuous_iff (P : Type) [PartialOrder P]
+theorem orderNerveRealization_continuous_iff  [PartialOrder P]
     {X : Type*} [TopologicalSpace X] (f : orderNerveRealization P → X) :
     Continuous f ↔ ∀ (n : SimplexCategory) (s : (nerve P).obj (Opposite.op n)),
       Continuous (f ∘ orderNerveRealizationSimplex P s) := by
   constructor
-  · intro h n s
-    exact h.comp (orderNerveRealizationSimplex P s).hom.continuous
+  · fun_prop
   · intro h
     letI := sSetTopAdj.leftAdjoint_preservesColimits
     have hc := CategoryTheory.Limits.isColimitOfPreserves SSet.toTop
@@ -87,7 +83,7 @@ theorem orderNerveRealization_continuous_iff (P : Type) [PartialOrder P]
     rw [hi]
 
 /-- The actual realization has the weak topology defined by its canonical simplices. -/
-theorem orderNerveRealization_isOpen_iff (P : Type) [PartialOrder P]
+theorem orderNerveRealization_isOpen_iff  [PartialOrder P]
     (U : Set (orderNerveRealization P)) :
     IsOpen U ↔ ∀ (n : SimplexCategory) (s : (nerve P).obj (Opposite.op n)),
       IsOpen (orderNerveRealizationSimplex P s ⁻¹' U) := by
@@ -115,7 +111,7 @@ theorem orderNerveRealization_isOpen_iff (P : Type) [PartialOrder P]
     rw [hi]
 
 /-- Closedness on the actual realization is detected simplex by simplex. -/
-theorem orderNerveRealization_isClosed_iff (P : Type) [PartialOrder P]
+theorem orderNerveRealization_isClosed_iff  [PartialOrder P]
     (U : Set (orderNerveRealization P)) :
     IsClosed U ↔ ∀ (n : SimplexCategory) (s : (nerve P).obj (Opposite.op n)),
       IsClosed (orderNerveRealizationSimplex P s ⁻¹' U) := by

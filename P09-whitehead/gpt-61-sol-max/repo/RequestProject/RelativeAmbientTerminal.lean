@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RelativeAmbientReplacement
-
-@[expose] public section
+import RequestProject.RelativeAmbientReplacement
 
 /-! The appended terminal stage in the ambient indexing used for the
 next iteration. No terminal vanishing or Cockcroft hypothesis is introduced.
@@ -11,7 +9,6 @@ Awaiting final Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -41,8 +38,7 @@ theorem fullNext_rel (j : C ⊕ (Σ s, NamedSpineRel (normalizedGenus core hcore
   cases j with
   | inr m => rfl
   | inl c =>
-      change FreeGroup.map Sum.inl (core c) = FreeGroup.map (flattenBlockGen core hcore extra)
-        (FreeGroup.map Sum.inl (FreeGroup.map Sum.inl (core c)))
+      
       have h : ((FreeGroup.map (flattenBlockGen core hcore extra)).comp
           (FreeGroup.map Sum.inl)).comp (FreeGroup.map Sum.inl) = FreeGroup.map Sum.inl := by
         apply FreeGroup.ext_hom
@@ -50,13 +46,12 @@ theorem fullNext_rel (j : C ⊕ (Σ s, NamedSpineRel (normalizedGenus core hcore
         rfl
       exact (DFunLike.congr_fun h (core c)).symm
 
-def fullNextMap : PresMorFS (blockPresentation core hcore extra)
-    (nextStage core hcore extra (fun _ => True)) :=
+def fullNextMap  :=
   PresInclusionFS.mor _ _ (flattenBlockGen core hcore extra) (fullNextCell core hcore extra)
     (flattenBlockGen core hcore extra).injective (fullNextCell core hcore extra).injective
     (fullNext_rel core hcore extra)
 
-theorem fullNextMap_generates : FSGenerates (fullNextMap core hcore extra) :=
+abbrev fullNextMap_generates  :=
   PresInclusionFS.relabel_generates _ _ (flattenBlockGen core hcore extra)
     (fullNextCell core hcore extra) (fullNext_rel core hcore extra)
 
@@ -73,13 +68,12 @@ theorem terminalNext_rel
   · rfl
   · rfl
 
-def terminalNextMap : PresMorFS (terminalPresentation core hcore extra)
-    (rawPresentation core (nextExtra core hcore extra)) :=
+def terminalNextMap  :=
   PresInclusionFS.mor _ _ (flattenBlockGen core hcore extra) (terminalNextCell core hcore extra)
     (flattenBlockGen core hcore extra).injective (terminalNextCell core hcore extra).injective
     (terminalNext_rel core hcore extra)
 
-theorem terminalNextMap_generates : FSGenerates (terminalNextMap core hcore extra) :=
+abbrev terminalNextMap_generates  :=
   PresInclusionFS.relabel_generates _ _ (flattenBlockGen core hcore extra)
     (terminalNextCell core hcore extra) (terminalNext_rel core hcore extra)
 
@@ -89,8 +83,7 @@ def stageIntoFull {B T : Type} (r : T → FreeGroup (A ⊕ B)) (p : T → Prop) 
     PresMorFS (rawPresentation core (restrictedExtra r p)) (rawPresentation core r) :=
   PresInclusionFS.mor _ _ id (Sum.map id Subtype.val) Function.injective_id
     (Function.Injective.sumMap Function.injective_id Subtype.val_injective) (by
-      intro j
-      cases j <;> simp [rawPresentation, restrictedExtra])
+      aesop)
 
 theorem nextTerminal_square
     (x : (C ⊕ (Σ s, NamedSpineRel (normalizedGenus core hcore extra s))) →₀
@@ -101,19 +94,11 @@ theorem nextTerminal_square
   have hgroup : (stageIntoFull core (nextExtra core hcore extra)
       (nextPredicate core hcore extra (fun _ => True))).hom.comp (fullNextMap core hcore extra).hom =
     (terminalNextMap core hcore extra).hom.comp (relativeTerminalMap core hcore extra).hom := by
-    apply MonoidHom.ext
-    intro g
-    induction g using QuotientGroup.induction_on with
-    | H w =>
-        change QuotientGroup.mk (FreeGroup.map id (FreeGroup.map
-          (flattenBlockGen core hcore extra) w)) =
-          QuotientGroup.mk (FreeGroup.map (flattenBlockGen core hcore extra) w)
-        simp
+    aesop
   induction x using Finsupp.induction_linear with
   | zero => simp
   | add x y hx hy =>
-      rw [PresMorFS.cells_add, PresMorFS.cells_add, PresMorFS.cells_add,
-        PresMorFS.cells_add, hx, hy]
+      classical simp_all [FiniteChains.PresMorFS.cells_add]
   | single j a =>
       change PresInclusionFS.cells _ _ _ _ _
         (PresInclusionFS.cells _ _ _ _ _ (Finsupp.single j a)) =
@@ -131,11 +116,14 @@ theorem nextTerminal_square
         MonoidAlgebra.mapDomainRingHom ℤ (terminalNextMap core hcore extra).hom
           (MonoidAlgebra.mapDomainRingHom ℤ (relativeTerminalMap core hcore extra).hom a)
       erw [BlockMor.mapDomainRingHom_comp', BlockMor.mapDomainRingHom_comp', hgroup]
+      rfl
 
+variable (hinj : Function.Injective (expMatrix core))
+include hinj in
 /-- The next ambient presentation is Cockcroft and the last replaced
 stage maps to it by zero on every actual supported two-cycle. -/
 theorem nextTerminal_conclusions
-    (hinj : Function.Injective (expMatrix core))
+    
     (hP : FSIsCockcroft (rawPresentation core extra))
     (htriv : ∀ a : A,
       (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (rawPresentation core extra)) = 1) :
@@ -153,19 +141,17 @@ theorem nextTerminal_conclusions
       (nextPredicate core hcore extra (fun _ => True)))
     (nextTerminal_square core hcore extra) hz (fullNextMap_generates core hcore extra) hx
 
-theorem block_core_trivial
-    (htriv : ∀ a : A,
+variable (htriv : ∀ a : A,
       (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (rawPresentation core extra)) = 1)
+include htriv in
+theorem block_core_trivial
+    
     (a : A) :
     (QuotientGroup.mk (FreeGroup.of (Sum.inl (Sum.inl a))) :
       PresGroup (blockPresentation core hcore extra)) = 1 := by
   have hn := normalized_core_trivial core hcore extra htriv a
   have h := congrArg (blockStructuralMap core hcore extra).hom hn
-  change (QuotientGroup.mk (FreeGroup.map Sum.inl (FreeGroup.of (Sum.inl a))) :
-      PresGroup (blockPresentation core hcore extra)) =
-    (blockStructuralMap core hcore extra).hom 1 at h
-  simp only [FreeGroup.map.of, map_one] at h
-  convert h using 1 <;> rfl
+  assumption
 
 theorem nextStage_core_trivial (p : S → Prop)
     (htriv : ∀ a : A,
@@ -174,27 +160,22 @@ theorem nextStage_core_trivial (p : S → Prop)
     (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (nextStage core hcore extra p)) = 1 := by
   have h := congrArg (stageNextMap core hcore extra p).hom
     (block_core_trivial core hcore (restrictedExtra extra p) htriv a)
-  change QuotientGroup.mk (FreeGroup.map (stageNextGen core hcore extra p)
-    (FreeGroup.of (Sum.inl (Sum.inl a)))) = (stageNextMap core hcore extra p).hom 1 at h
-  simpa only [FreeGroup.map.of, stageNextGen, map_one] using h
+  assumption
 
+include htriv in
 theorem nextFull_core_trivial
-    (htriv : ∀ a : A,
-      (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (rawPresentation core extra)) = 1)
+    
     (a : A) :
     (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) :
       PresGroup (rawPresentation core (nextExtra core hcore extra))) = 1 := by
   have h := congrArg ((terminalNextMap core hcore extra).hom.comp
     (relativeTerminalMap core hcore extra).hom) (block_core_trivial core hcore extra htriv a)
-  change QuotientGroup.mk (FreeGroup.map (flattenBlockGen core hcore extra)
-    (FreeGroup.of (Sum.inl (Sum.inl a)))) =
-      ((terminalNextMap core hcore extra).hom.comp (relativeTerminalMap core hcore extra).hom) 1 at h
-  simp only [FreeGroup.map.of, map_one] at h
-  convert h using 1 <;> rfl
+  assumption
 
+include hinj in
 /-- Acyclicity of the core is used through its actual supported exponent
 matrix. It does not assert that the core has trivial second homotopy group. -/
-theorem core_fsIsCockcroft (hinj : Function.Injective (expMatrix core)) : FSIsCockcroft core := by
+theorem core_fsIsCockcroft  : FSIsCockcroft core := by
   intro x hx
   have h : x.mapRange (augPres core) (map_zero _) = 0 := by
     apply hinj
@@ -206,15 +187,12 @@ theorem core_fsIsCockcroft (hinj : Function.Injective (expMatrix core)) : FSIsCo
 def coreIntoRaw : PresMorFS core (rawPresentation core extra) :=
   PresInclusionFS.mor _ _ Sum.inl Sum.inl Sum.inl_injective Sum.inl_injective (fun _ => rfl)
 
-theorem coreIntoRaw_zero (hinj : Function.Injective (expMatrix core))
+include hinj in
+theorem coreIntoRaw_zero 
     (htriv : ∀ a : A,
       (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (rawPresentation core extra)) = 1)
     (x : C →₀ MonoidAlgebra ℤ (PresGroup core)) (hx : FSIsFoxCycle core x) :
     (coreIntoRaw core extra).cells x = 0 := by
-  apply fsCells_eq_zero_of_isCockcroft_of_hom_trivial (coreIntoRaw core extra)
-    (core_fsIsCockcroft core hinj) ?_ x hx
-  apply hom_eq_one_of_gens
-  intro a
-  exact htriv a
+  classical apply_rules [FiniteChains.fsCells_eq_zero_of_isCockcroft_of_hom_trivial, FiniteChains.RelativeNormalForm.core_fsIsCockcroft, FiniteChains.hom_eq_one_of_gens]
 
 end FiniteChains.RelativeNormalForm

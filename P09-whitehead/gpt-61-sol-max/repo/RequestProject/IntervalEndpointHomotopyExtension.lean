@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.SquareBoundaryNormHomeomorph
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.SquareBoundaryNormHomeomorph
 
 /-! Move both endpoints of a path along prescribed paths, extending the
 motion continuously over the whole interval by the actual disk HEP. -/
@@ -32,17 +30,15 @@ def intervalEndpointExtension (f : C(I, X)) {x₀ x₁ : X}
     simp [P, oneBoundaryPoint]
   have hP₁ : P (oneBoundaryPoint true) = p₁.toContinuousMap := by
     norm_num [P, oneBoundaryPoint]
-  let H : C(I × UnitBoundary (Fin 1 → ℝ), X) :=
+  let H  :=
     P.uncurry.comp ⟨Prod.swap, continuous_swap⟩
   let F := f.comp e.toContinuousMap
   have h₀ : ∀ a, H (0, a) = F (unitBoundaryInclusion _ a) := by
     intro a
     change P a 0 = f (oneBallIntervalHomeomorph (unitBoundaryInclusion _ a))
     rcases oneBoundary_eq a with rfl | rfl
-    · rw [hP₀, oneBallIntervalHomeomorph_boundary]
-      exact p₀.source
-    · rw [hP₁, oneBallIntervalHomeomorph_boundary]
-      exact p₁.source
+    · aesop
+    · aesop
   let G := ballHomotopyExtension F H h₀
   have he (b : Bool) : e.symm (boolEndpoint b) =
       unitBoundaryInclusion _ (oneBoundaryPoint b) := by
@@ -55,21 +51,10 @@ def intervalEndpointExtension (f : C(I, X)) {x₀ x₁ : X}
     zero := ?_
     side_zero := ?_
     side_one := ?_ }
-  · intro t
-    change G (0, e.symm t) = f t
-    rw [ballHomotopyExtension_zero]
-    exact congrArg f (e.apply_symm_apply t)
-  · intro τ
-    change G (τ, e.symm (boolEndpoint false)) = p₀ τ
-    rw [he, ballHomotopyExtension_boundary]
-    change P (oneBoundaryPoint false) τ = p₀ τ
-    rw [hP₀]
-    rfl
+  · aesop
+  · aesop (add simp [boolEndpoint])
   · intro τ
     change G (τ, e.symm (boolEndpoint true)) = p₁ τ
-    rw [he, ballHomotopyExtension_boundary]
-    change P (oneBoundaryPoint true) τ = p₁ τ
-    rw [hP₁]
-    rfl
+    aesop
 
 end FiniteChains.RelativeAttachment

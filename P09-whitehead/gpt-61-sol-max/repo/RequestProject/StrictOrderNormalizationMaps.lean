@@ -1,15 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNormalizationNaturality
+import RequestProject.OrderNormalizationNaturality
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 /-- For an actual strict map, the normalized map is its genuine strict cellular chain map. -/

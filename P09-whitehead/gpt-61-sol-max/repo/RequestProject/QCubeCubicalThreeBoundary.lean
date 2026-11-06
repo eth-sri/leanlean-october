@@ -1,15 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeThreeBoundaryRecovery
-
-@[expose] public section
+import RequestProject.QCubeThreeBoundaryRecovery
 
 /-! Actual cubical three-to-two boundary and its finite strict subdivision dictionary. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] [LinearOrder V] {A : CommRel V}
 
-noncomputable def qThreeCubicalFaceBoundary (c : QThreeCube A) : QSquare A →₀ ℤ :=
+noncomputable def qThreeCubicalFaceBoundary (c : QThreeCube A)  :=
   Finsupp.lmapDomain ℤ ℤ
     (qThreeFaceSquare c.1 (qThreeUpper c) (qThreeMiddle c) (qThreeLower c)
       (Ne.symm (qThree_middle_lt_upper c).ne)
@@ -26,13 +24,7 @@ theorem qThreeCubicalFaceBoundary_subdivision (c : QThreeCube A) :
 
 theorem qThreeCubicalBoundary_subdivision (r : QThreeCube A →₀ ℤ) :
     qSquareChainSubdivision (qThreeCubicalBoundary r) = qThreeChainBoundary r := by
-  induction r using Finsupp.induction_linear with
-  | zero => simp
-  | add r s hr hs => rw [map_add, map_add, hr, hs, map_add]
-  | single c n =>
-      rw [qThreeCubicalBoundary, Finsupp.linearCombination_single, map_smul,
-        qThreeCubicalFaceBoundary_subdivision, qThreeChainBoundary,
-        Finsupp.linearCombination_single]
+  induction r using Finsupp.induction_linear <;> simp_all [qThreeCubicalBoundary, qThreeCubicalFaceBoundary_subdivision, qThreeChainBoundary]
 
 /-- Every strict three-boundary with the stated actual dimension bounds is the subdivision
 of an actual finite cubical three-boundary, and coefficient recovery gives that boundary. -/

@@ -1,27 +1,24 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.StrictTopConeChains
-
-@[expose] public section
+import RequestProject.StrictTopConeChains
 
 /-! Genuine strict tetrahedron fans, with their alternating boundary. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
   (f : P → Q) (hf : StrictMono f) (c : Q) (hc : ∀ x, f x < c)
 
-def strictTopConeTriangleTetrahedron (t : (strictOrderCx P).F) : StrictOrdTet Q :=
+variable (t : (strictOrderCx P).F)
+def strictTopConeTriangleTetrahedron  : StrictOrdTet Q :=
   ⟨(f t.1.1, f t.1.2.1, f t.1.2.2, c), hf t.2.1, hf t.2.2, hc _⟩
 
-noncomputable def strictTopConeTriangleChain : ((strictOrderCx P).F →₀ ℤ) →ₗ[ℤ] (StrictOrdTet Q →₀ ℤ) :=
+noncomputable def strictTopConeTriangleChain  :=
   Finsupp.lmapDomain ℤ ℤ (strictTopConeTriangleTetrahedron f hf c hc)
 
 /-- The sign of the upper cone is fixed by the actual alternating tetrahedron boundary. -/
-theorem strictTopConeTriangleTetrahedron_boundary (t : (strictOrderCx P).F) :
+theorem strictTopConeTriangleTetrahedron_boundary  :
     strictOrdTetBoundary (strictTopConeTriangleTetrahedron f hf c hc t) =
       strictTopConeEdgeChain f hf c hc (bdry2 (strictOrderCx P) (Finsupp.single t 1)) -
         Finsupp.single ((strictOrderCxMap f hf).onF t) 1 := by

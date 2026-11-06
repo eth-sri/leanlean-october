@@ -1,19 +1,16 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveRealizationSimplices
+import RequestProject.OrderNerveRealizationSimplices
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
 open scoped Classical
 
+variable {P : Type}
 /-- Affine interpolation of vertex values on a genuine topological nerve simplex. -/
-noncomputable def orderNerveAffineSimplex {P : Type} [PartialOrder P] (v : P → ℝ)
+noncomputable def orderNerveAffineSimplex  [PartialOrder P] (v : P → ℝ)
     {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n)) :
     C(SimplexCategory.toTop.obj n, ℝ) where
   toFun z := ∑ i, z.down.weights i * v (s.obj i)
@@ -24,7 +21,7 @@ noncomputable def orderNerveAffineSimplex {P : Type} [PartialOrder P] (v : P →
       continuous_const
 
 /-- Affine interpolation respects every actual topological simplex operator. -/
-theorem orderNerveAffineSimplex_operator {P : Type} [PartialOrder P] (v : P → ℝ)
+theorem orderNerveAffineSimplex_operator  [PartialOrder P] (v : P → ℝ)
     {m n : SimplexCategory} (a : m ⟶ n) (s : (nerve P).obj (Opposite.op n))
     (z : SimplexCategory.toTop.obj m) :
     orderNerveAffineSimplex v s (SimplexCategory.toTop.map a z) =
@@ -47,7 +44,7 @@ theorem orderNerveAffineSimplex_operator {P : Type} [PartialOrder P] (v : P → 
   intro j _
   apply Finset.sum_congr rfl
   intro i hi
-  have ha : a.toOrderHom i = j := (Finset.mem_filter.mp hi).2
+  have ha  := (Finset.mem_filter.mp hi).2
   rw [ha]
 
 /-- The compatible affine functions form an actual cocone on the realized
@@ -77,7 +74,7 @@ noncomputable def orderNerveAffineCocone {P : Type} [PartialOrder P] (v : P → 
         exact congrArg (orderNerveAffineSimplex v) a.unop.2 }
 
 /-- Continuous affine interpolation of arbitrary vertex values on the actual realization. -/
-noncomputable def orderNerveAffineRealization {P : Type} [PartialOrder P] (v : P → ℝ) :
+noncomputable def orderNerveAffineRealization  [PartialOrder P] (v : P → ℝ) :
     orderNerveRealization P ⟶ TopCat.of ℝ := by
   letI := sSetTopAdj.leftAdjoint_preservesColimits
   exact (CategoryTheory.Limits.isColimitOfPreserves SSet.toTop
@@ -99,19 +96,17 @@ theorem orderNerveAffineRealization_simplex {P : Type} [PartialOrder P] (v : P �
     SSet.toTopSimplex.inv_hom_id_app, Category.id_comp]
 
 /-- A vertex indicator recovers each barycentric coordinate of a nondegenerate simplex. -/
-theorem orderNerveAffineSimplex_indicator {P : Type} [PartialOrder P]
+theorem orderNerveAffineSimplex_indicator  [PartialOrder P]
     {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n))
     (hs : Function.Injective s.obj) (i : Fin (n.len + 1))
     (z : SimplexCategory.toTop.obj n) :
     orderNerveAffineSimplex (fun p => if p = s.obj i then 1 else 0) s z = z.down.weights i := by
-  classical
   simp [orderNerveAffineSimplex, hs.eq_iff]
 
 /-- Every simplex with distinct vertices is injectively realized, including its boundary. -/
-theorem orderNerveRealizationSimplex_injective {P : Type} [PartialOrder P]
+theorem orderNerveRealizationSimplex_injective  [PartialOrder P]
     {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n))
     (hs : Function.Injective s.obj) : Function.Injective (orderNerveRealizationSimplex P s) := by
-  classical
   intro z w h
   apply ULift.ext
   apply Convexity.StdSimplex.ext
@@ -123,8 +118,7 @@ theorem orderNerveRealizationSimplex_injective {P : Type} [PartialOrder P]
   have hd := congrArg (fun k => k w) (orderNerveAffineRealization_simplex v s)
   change orderNerveAffineRealization v (orderNerveRealizationSimplex P s z) =
     orderNerveAffineSimplex v s z at hc
-  change orderNerveAffineRealization v (orderNerveRealizationSimplex P s w) =
-    orderNerveAffineSimplex v s w at hd
+  dsimp at *
   rw [hc, hd] at hf
   exact (orderNerveAffineSimplex_indicator s hs i z).symm.trans
     (hf.trans (orderNerveAffineSimplex_indicator s hs i w))

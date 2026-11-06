@@ -1,16 +1,12 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.PrismIndices
-
-@[expose] public section
+import RequestProject.TopologicalSingular.PrismIndices
 
 /-! # Continuous prism simplices and all their face identities -/
 
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.SingularPrism
@@ -19,14 +15,7 @@ open Set Topology TopologicalSingular
 
 theorem stdMap_const {m n : ℕ} (b : Fin n) (z : stdSimplex ℝ (Fin m)) :
     stdSimplex.map (fun _ : Fin m => b) z = stdSimplex.vertex b := by
-  classical
-  apply Subtype.ext
-  funext j
-  simp only [stdSimplex.map, FunOnFinite.linearMap_apply_apply]
-  by_cases h : b = j
-  · subst j
-    simp
-  · simp [h]
+  aesop (add simp [FunOnFinite.linearMap_apply_apply])
 
 noncomputable def prismMap {n : ℕ} (i : Fin (n + 1)) : C(Domain (n + 1), unitInterval × Domain n) :=
   ⟨fun z => (stdSimplexHomeomorphUnitInterval (stdSimplex.map (cut i.val) z),
@@ -87,11 +76,10 @@ theorem prismMap_last (n : ℕ) (z : Domain n) :
     change stdSimplex.map ((Fin.last n).predAbove ∘ (Fin.last n).succ.succAbove) z = z
     rw [base_next, stdSimplex.map_id_apply]
 
-universe u v
 variable {X : Type u} {Y : Type v} [TopologicalSpace X] [TopologicalSpace Y]
-variable {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g)
+  {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g)
 
-noncomputable def simplex {n : ℕ} (σ : Simplex X n) (i : Fin (n + 1)) : Simplex Y (n + 1) :=
+noncomputable def simplex {n : ℕ} (σ : Simplex X n) (i : Fin (n + 1))  :=
   H.toContinuousMap.comp ⟨fun z => ((prismMap i z).1, σ (prismMap i z).2),
     (prismMap i).continuous.fst.prodMk (σ.continuous.comp (prismMap i).continuous.snd)⟩
 

@@ -1,5 +1,4 @@
-module
-public import RequestProject.PresValidFinite
-public import RequestProject.OrderNerveContiguousHomotopy
-public import RequestProject.OrderNervePosetCoverVertexStars
-public import RequestProject.TopologicalSingular.MathlibComparison
+import RequestProject.PresValidFinite
+import RequestProject.OrderNerveContiguousHomotopy
+import RequestProject.OrderNervePosetCoverVertexStars
+import RequestProject.TopologicalSingular.MathlibComparison

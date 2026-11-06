@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RelativeNormalizedWords
-
-@[expose] public section
+import RequestProject.RelativeNormalizedWords
 
 /-! Restrictions of the single ambient normalization. No correction or
 commutator factorization is re-chosen when a stage is restricted.
@@ -21,36 +19,31 @@ variable {A C Z S : Type} (core : C → FreeGroup A)
   (hcore : Function.Surjective (expMatrix core))
   (extra : S → FreeGroup (A ⊕ Z))
 
-def restrictedPresentation (p : S → Prop) : C ⊕ {s // p s} → FreeGroup (PairGen A Z) :=
+variable (p : S → Prop)
+def restrictedPresentation  : C ⊕ {s // p s} → FreeGroup (PairGen A Z) :=
   Sum.elim (fun c => FreeGroup.map Sum.inl (core c))
     (fun s => normalizedWord core hcore (extra s.val))
 
-def restrictedGenus (p : S → Prop) (s : {s // p s}) : ℕ :=
+variable (s : {s // p s})
+def restrictedGenus    :=
   normalizedGenus core hcore extra s.val
 
 instance restrictedGenus_neZero (p : S → Prop) (s : {s // p s}) :
     NeZero (restrictedGenus core hcore extra p s) :=
   normalizedGenus_neZero core hcore extra s.val
 
-def restrictedLoops (p : S → Prop) (s : {s // p s}) :
-    Fin (restrictedGenus core hcore extra p s) × Bool → FreeGroup (PairGen A Z) :=
+def restrictedLoops    :=
   normalizedLoops core hcore extra s.val
 
-theorem restrictedPresentation_surface (p : S → Prop) (s : {s // p s}) :
-    restrictedPresentation core hcore extra p (Sum.inr s) =
-      commWord (restrictedLoops core hcore extra p s)
-        (finitePairs (restrictedGenus core hcore extra p s)) :=
+abbrev restrictedPresentation_surface    :=
   normalizedPresentation_surface core hcore extra s.val
 
-def restrictedBlockPresentation (p : S → Prop) :
-    C ⊕ (Σ s : {s // p s}, NamedSpineRel (restrictedGenus core hcore extra p s)) →
-      FreeGroup (PairGen A Z ⊕
-        (Σ s : {s // p s}, SpinePresentationGen (restrictedGenus core hcore extra p s))) :=
+def restrictedBlockPresentation   :=
   substPresF (restrictedPresentation core hcore extra p)
     (familyFiniteSpineWordBlock (restrictedGenus core hcore extra p)
       (restrictedLoops core hcore extra p))
 
-def restrictedStructuralMap (p : S → Prop) :
+def restrictedStructuralMap  :
     PresMorFS (restrictedPresentation core hcore extra p)
       (restrictedBlockPresentation core hcore extra p) := by
   let dSrc : DecidableEq (PairGen A Z) := inferInstance
@@ -66,7 +59,7 @@ def restrictedStructuralMap (p : S → Prop) :
     (restrictedGenus core hcore extra p) (restrictedLoops core hcore extra p)
     (restrictedPresentation_surface core hcore extra p)) dSrc dTgt
 
-theorem restrictedStructuralMap_generates (p : S → Prop) :
+theorem restrictedStructuralMap_generates  :
     FSGenerates (restrictedStructuralMap core hcore extra p) := by
   let dSrc : DecidableEq (PairGen A Z) := inferInstance
   let dTgt : DecidableEq (PairGen A Z ⊕ (Σ s : {s // p s},
@@ -83,7 +76,8 @@ theorem restrictedStructuralMap_generates (p : S → Prop) :
 
 variable {p t : S → Prop} (hpt : ∀ s, p s → t s)
 
-def labelIncl (s : {s // p s}) : {s // t s} := ⟨s.val, hpt s.val s.property⟩
+  (s : {s // p s})
+def labelIncl  : {s // t s} := ⟨s.val, hpt s.val s.property⟩
 
 theorem labelIncl_injective : Function.Injective (labelIncl hpt) := by
   intro s s' h
@@ -126,24 +120,16 @@ theorem blockCellIncl_injective :
     (sigma_labelIncl_injective (F := fun s => NamedSpineRel
       (normalizedGenus core hcore extra s)) hpt)
 
-/-- Literal compatibility of the corrected relators, with the core fixed. -/
-theorem restrictedPresentation_incl (c : C ⊕ {s // p s}) :
-    restrictedPresentation core hcore extra t (oldCellIncl hpt c) =
-      restrictedPresentation core hcore extra p c := by
-  cases c <;> rfl
 
-theorem blockGenIncl_genEmb (s : {s // p s}) :
+
+theorem blockGenIncl_genEmb  :
     (FreeGroup.map (blockGenIncl core hcore extra hpt)).comp
       (FreeGroup.map (genEmb (α := PairGen A Z)
         (Zt := fun r => SpinePresentationGen (restrictedGenus core hcore extra p r)) s)) =
     FreeGroup.map (genEmb (α := PairGen A Z)
       (Zt := fun r => SpinePresentationGen (restrictedGenus core hcore extra t r))
       (labelIncl hpt s)) := by
-  apply FreeGroup.ext_hom
-  intro x
-  rw [MonoidHom.comp_apply, FreeGroup.map.of, FreeGroup.map.of]
-  erw [FreeGroup.map.of]
-  cases x <;> rfl
+  aesop
 
 /-- Actual genus relators, not an abstract presentation assignment, respect
 the same ambient-label inclusion. -/
@@ -154,9 +140,7 @@ theorem restrictedBlockPresentation_incl
         (restrictedBlockPresentation core hcore extra p m) := by
   cases m with
   | inl c =>
-      change FreeGroup.map Sum.inl (FreeGroup.map Sum.inl (core c)) =
-        FreeGroup.map (blockGenIncl core hcore extra hpt)
-          (FreeGroup.map Sum.inl (FreeGroup.map Sum.inl (core c)))
+      
       have h : (FreeGroup.map (blockGenIncl core hcore extra hpt)).comp
           (FreeGroup.map Sum.inl) = FreeGroup.map Sum.inl := by
         apply FreeGroup.ext_hom

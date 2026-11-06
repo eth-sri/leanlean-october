@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveSimplicialCarriers
-
-@[expose] public section
+import RequestProject.OrderNerveSimplicialCarriers
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular
@@ -32,8 +30,7 @@ theorem orderReturnHomotopyZero_fill (s : ComposableArrows P 0) :
       Nerve.lengthProjection 2 b = b ∧ Nerve.bdry b =
         orderNerveGradedEncode 0 (Finsupp.single s 1) - orderNerveRoundTrip P 0 (Finsupp.single s 1) := by
   apply orderNerveCarriedFill s
-  · exact AddSubgroup.sub_mem _ (orderNerveGradedEncode_single_supported 0 s)
-      (orderNerveRoundTrip_supported 0 s)
+  · simp_all [AddSubgroup.sub_mem, FiniteChains.Comb.orderNerveGradedEncode_single_supported, FiniteChains.Comb.orderNerveRoundTrip_supported]
   · rw [map_sub, orderNerveGradedEncode_length]
     congr 1
     exact orderSingularToNerve_length 0 _

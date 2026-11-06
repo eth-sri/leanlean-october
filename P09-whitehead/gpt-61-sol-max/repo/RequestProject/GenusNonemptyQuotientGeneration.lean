@@ -1,3 +1,2 @@
-module
-public import RequestProject.GenusNonemptyWords
-public import RequestProject.PresentationQuotientCycleGeneration
+import RequestProject.GenusNonemptyWords
+import RequestProject.PresentationQuotientCycleGeneration

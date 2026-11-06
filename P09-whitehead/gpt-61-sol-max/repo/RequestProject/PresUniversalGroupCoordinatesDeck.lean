@@ -1,3 +1,2 @@
-module
-public import RequestProject.PresUniversalRelatorGroupCoordinates
-public import RequestProject.PresUniversalRelatorDeck
+import RequestProject.PresUniversalRelatorGroupCoordinates
+import RequestProject.PresUniversalRelatorDeck

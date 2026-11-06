@@ -1,3 +1,2 @@
-module
-public import RequestProject.ChamberZStrictCellular
-public import RequestProject.StrictSubposetChains
+import RequestProject.ChamberZStrictCellular
+import RequestProject.StrictSubposetChains

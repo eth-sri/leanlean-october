@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.SingularChainMaps
-public import Mathlib.LinearAlgebra.Quotient.Basic
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SingularChainMaps
+import Mathlib.LinearAlgebra.Quotient.Basic
 
 /-! # Relative singular chains of an actual topological pair
 
@@ -16,15 +14,16 @@ are constructed directly. No excision or homotopy comparison is assumed.
 
 namespace FiniteChains.TopologicalSingular
 
-open Set Topology
 
-universe u
+
 
 variable {X : Type u} [TopologicalSpace X]
 
-def inclusion (A : Set X) : C(A, X) := ⟨Subtype.val, continuous_subtype_val⟩
+  (A : Set X)
+def inclusion  : C(A, X) := ⟨Subtype.val, continuous_subtype_val⟩
 
-theorem simplexMap_inclusion_injective (A : Set X) (n : ℕ) :
+variable (n : ℕ)
+theorem simplexMap_inclusion_injective   :
     Function.Injective (simplexMap (inclusion A) n) := by
   intro σ τ he
   apply ContinuousMap.ext
@@ -32,13 +31,12 @@ theorem simplexMap_inclusion_injective (A : Set X) (n : ℕ) :
   apply Subtype.ext
   exact DFunLike.congr_fun he z
 
-theorem map_inclusion_injective (A : Set X) (n : ℕ) : Function.Injective (map (inclusion A) n) := by
-  exact Finsupp.mapDomain_injective (simplexMap_inclusion_injective A n)
+theorem map_inclusion_injective   : Function.Injective (map (inclusion A) n) := Finsupp.mapDomain_injective (simplexMap_inclusion_injective A n)
 
-noncomputable def subChains (A : Set X) (n : ℕ) : Submodule ℤ (Chain X n) :=
+noncomputable def subChains   : Submodule ℤ (Chain X n) :=
   LinearMap.range (map (inclusion A) n)
 
-theorem boundary_mem_subChains (A : Set X) (n : ℕ) {c : Chain X (n + 1)}
+theorem boundary_mem_subChains   {c : Chain X (n + 1)}
     (hc : c ∈ subChains A (n + 1)) : boundary n c ∈ subChains A n := by
   obtain ⟨b, rfl⟩ := hc
   exact ⟨boundary n b, map_boundary (inclusion A) n b⟩

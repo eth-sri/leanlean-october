@@ -1,2 +1,1 @@
-module
-public import RequestProject.PosetCoverStrictEdgeLift
+import RequestProject.PosetCoverStrictEdgeLift

@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.EmbeddedAcyclicUnion
-
-@[expose] public section
+import RequestProject.EmbeddedAcyclicUnion
 
 /-! The inverse image of an acyclic subcomplex whose fundamental group is
 killed has vanishing H1 and H2 in an actual universal cover.  The proof
@@ -10,33 +8,33 @@ constructs all its deck translates and decomposes finite-support chains.
 Unverified source. -/
 
 noncomputable section
-open scoped Classical
+
 namespace FiniteChains.Comb.AcyclicLiftedSubcomplex
-universe u
 variable {D X : Complex2.{u}} (i : Hom D X)
   (hiV : Function.Injective i.onV) (hiE : Function.Injective i.onE)
   (hiF : Function.Injective i.onF) (hconn : IsConnected D) (d₀ : D.V) (ht : Pi1Trivial i)
   (hX : IsConnected X)
 
-def lift : Hom D (uCover X (i.onV d₀)) := liftHom (f := i) (d₀ := d₀) hconn ht
-def copy (g : Pi1 X (i.onV d₀)) : Hom D (uCover X (i.onV d₀)) :=
+def lift  := liftHom (f := i) (d₀ := d₀) hconn ht
+variable (g : Pi1 X (i.onV d₀))
+def copy   :=
   ((univDeck X (i.onV d₀)).cellHom g).comp (lift i hconn d₀ ht)
 
-theorem projection_V (g : Pi1 X (i.onV d₀)) (d : D.V) :
+theorem projection_V  (d : D.V) :
     endV ((copy i hconn d₀ ht g).onV d) = i.onV d := by
   change endV (deckV g (liftV i hconn d₀ d)) = _
   rw [endV_deckV, endV_liftV]
 
 include hiV in
-theorem copy_injective_V (g : Pi1 X (i.onV d₀)) :
+theorem copy_injective_V  :
     Function.Injective (copy i hconn d₀ ht g).onV := by
   intro d e h
   apply hiV
   have h' := congrArg endV h
-  simpa only [projection_V] using h'
+  simpa [projection_V] using h'
 
 include hiE in
-theorem copy_injective_E (g : Pi1 X (i.onV d₀)) :
+theorem copy_injective_E  :
     Function.Injective (copy i hconn d₀ ht g).onE := by
   intro d e h
   exact hiE (congrArg (fun e : UE X (i.onV d₀) => e.val.2) h)
@@ -48,9 +46,7 @@ theorem copy_ranges_eq_of_meet (g h : Pi1 X (i.onV d₀)) (d e : D.V)
     Set.range (copy i hconn d₀ ht g).onE = Set.range (copy i hconn d₀ ht h).onE ∧
     Set.range (copy i hconn d₀ ht g).onF = Set.range (copy i hconn d₀ ht h).onF := by
   have hde : d = e := by
-    apply hiV
-    have h' := congrArg endV hm
-    simpa only [projection_V] using h'
+    grind [projection_V]
   subst e
   have hE : ∀ e, (univProj X (i.onV d₀)).onE ((copy i hconn d₀ ht g).onE e) =
       (univProj X (i.onV d₀)).onE ((copy i hconn d₀ ht h).onE e) := fun _ => rfl
@@ -86,10 +82,7 @@ theorem one_cycle_filling (hD : IsAcyclic D) (z : UE X (i.onV d₀) →₀ ℤ)
     ∃ y : UF X (i.onV d₀) →₀ ℤ,
       (∀ f ∈ y.support, f.val.2 ∈ Set.range i.onF) ∧ bdry2 (uCover X (i.onV d₀)) y = z := by
   have hs' : ∀ e ∈ z.support, AcyclicCopies.oldEdge (copy i hconn d₀ ht) e := by
-    intro e he
-    obtain ⟨d, hd⟩ := hs e he
-    obtain ⟨g, hg⟩ := edges_covered i hconn d₀ ht e d hd.symm
-    exact ⟨g, d, hg⟩
+    grind [FiniteChains.Comb.AcyclicCopies.oldEdge, edges_covered]
   obtain ⟨y, hy, hb⟩ := AcyclicCopies.one_cycle_filling (copy i hconn d₀ ht)
     (copy_injective_V i hiV hconn d₀ ht) (copy_injective_E i hiE hconn d₀ ht) hD
     (copy_ranges_eq_of_meet i hiV hconn d₀ ht hX) z hs' hz

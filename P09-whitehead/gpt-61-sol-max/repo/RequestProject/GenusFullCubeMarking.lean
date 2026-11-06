@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.SurfaceFullCubeFilling
-public import RequestProject.GenusSpinePresentation
-public import RequestProject.ZeroPi2Descent
-
-@[expose] public section
+import RequestProject.SurfaceFullCubeFilling
+import RequestProject.GenusSpinePresentation
+import RequestProject.ZeroPi2Descent
 
 /-! The actual surviving-spine marking contracts in the full cube quotient. -/
 set_option backward.defeqAttrib.useBackward true
@@ -46,10 +44,7 @@ theorem markedSpineToFullCube_mark_null (x : Fin q × Bool) :
   rw (config := { transparency := .default }) [← mapPath_comp, ← mapPath_comp, markedSpineLoop_inclusion]
   exact hh
 
-noncomputable def spineFreeToFullCube :
-    FreeGroup (SpinePresentationGen q) →*
-      Pi1 (orderCx (QCube (cmpRel (GenusVertex q))))
-        ((markedSpineToFullCube q).onV (markedSpineTree q).root) :=
+noncomputable def spineFreeToFullCube  :=
   (pi1Map (markedSpineToFullCube q) (markedSpineTree q).root).comp
     (SpanningTree.freeToPi1 (markedSpineTree q))
 

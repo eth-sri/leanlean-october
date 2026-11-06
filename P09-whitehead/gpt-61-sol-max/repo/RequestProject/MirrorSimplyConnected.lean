@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MirrorContraction
-public import RequestProject.CombPi1
-
-@[expose] public section
+import RequestProject.MirrorContraction
+import RequestProject.CombPi1
 
 /-!
 # Simple connectivity of the attaching subcomplex, by paths and triangular relations
@@ -39,26 +37,23 @@ of `L`.  In the right-angled Coxeter model of this project `L` is the clique com
 simplex; for a general `L` this is the flagness hypothesis and it may not be dropped.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u
+
 
 /-! ### The order complex of a preorder -/
 
-section OrderComplex
+section
 
 variable (P : Type u) [Preorder P]
 
 /-- Oriented edges of the order complex: comparable ordered pairs. -/
-def OrdEdge : Type u := {p : P × P // p.1 ≤ p.2}
+def OrdEdge  := {p : P × P // p.1 ≤ p.2}
 
 /-- Two-cells of the order complex: chains `a ≤ b ≤ c`. -/
-def OrdTri : Type u := {t : P × P × P // t.1 ≤ t.2.1 ∧ t.2.1 ≤ t.2.2}
+def OrdTri  := {t : P × P × P // t.1 ≤ t.2.1 ∧ t.2.1 ≤ t.2.2}
 
 /-- The two-skeleton of the order complex of a preorder: vertices are elements, edges are
 comparable pairs, and every chain `a ≤ b ≤ c` carries a triangle attached along
@@ -78,46 +73,55 @@ def orderCx : Complex2.{u} where
 
 variable {P}
 
+variable {a b : P}
+  (h : a ≤ b)
+include h in
 /-- The edge `a → b` attached to `a ≤ b`. -/
-def ordPos {a b : P} (h : a ≤ b) : (orderCx P).E × Bool := ((⟨(a, b), h⟩ : OrdEdge P), true)
+def ordPos   : (orderCx P).E × Bool := ((⟨(a, b), h⟩ : OrdEdge P), true)
 
+include h in
 /-- The edge `a ≤ b` traversed backwards, from `b` to `a`. -/
-def ordNeg {a b : P} (h : a ≤ b) : (orderCx P).E × Bool := ((⟨(a, b), h⟩ : OrdEdge P), false)
+def ordNeg   : (orderCx P).E × Bool := ((⟨(a, b), h⟩ : OrdEdge P), false)
 
-@[simp] theorem revGerm_ordPos {a b : P} (h : a ≤ b) : revGerm (ordPos h) = ordNeg h := rfl
+include h in
+@[simp] theorem revGerm_ordPos   : revGerm (ordPos h) = ordNeg h := rfl
 
-@[simp] theorem revGerm_ordNeg {a b : P} (h : a ≤ b) : revGerm (ordNeg h) = ordPos h := rfl
+include h in
+@[simp] theorem revGerm_ordNeg   : revGerm (ordNeg h) = ordPos h := rfl
 
-theorem isPath_ordPos {a b : P} (h : a ≤ b) :
+include h in
+theorem isPath_ordPos   :
     IsPath (orderCx P).src (orderCx P).tgt [ordPos h] a b := ⟨rfl, rfl⟩
 
-theorem isPath_ordNeg {a b : P} (h : a ≤ b) :
+include h in
+theorem isPath_ordNeg   :
     IsPath (orderCx P).src (orderCx P).tgt [ordNeg h] b a := ⟨rfl, rfl⟩
 
 theorem isPath_nil' (a : P) :
     IsPath (orderCx P).src (orderCx P).tgt ([] : List ((orderCx P).E × Bool)) a a := rfl
 
+include h in
 /-- Backtrack cancellation for an edge traversed forwards and then backwards. -/
-theorem htpy_ordPos_ordNeg {a b : P} (h : a ≤ b) :
+theorem htpy_ordPos_ordNeg   :
     Htpy (orderCx P) a a [ordPos h, ordNeg h] [] := by
   have := htpy_append_revPath (X := orderCx P) (isPath_single (X := orderCx P) (ordPos h))
-  simpa [revPath, revGerm, Bool.not, Bool.not_true, Bool.not_false, ordPos, ordNeg, germSrc, germTgt, orderCx] using this
+  assumption
 
+include h in
 /-- Backtrack cancellation for an edge traversed backwards and then forwards. -/
-theorem htpy_ordNeg_ordPos {a b : P} (h : a ≤ b) :
+theorem htpy_ordNeg_ordPos   :
     Htpy (orderCx P) b b [ordNeg h, ordPos h] [] := by
   have := htpy_append_revPath (X := orderCx P) (isPath_single (X := orderCx P) (ordNeg h))
-  simpa [revPath, revGerm, Bool.not, Bool.not_true, Bool.not_false, ordPos, ordNeg, germSrc, germTgt, orderCx] using this
+  assumption
 
 /-- **The triangular relation**: `[a,b][b,c] ≃ [a,c]` for a chain `a ≤ b ≤ c`. -/
 theorem htpy_orderCx_tri {a b c : P} (hab : a ≤ b) (hbc : b ≤ c) :
     Htpy (orderCx P) a c [ordPos hab, ordPos hbc] [ordPos (hab.trans hbc)] := by
-  have hac : a ≤ c := hab.trans hbc
+  have hac  := hab.trans hbc
   have hp : IsPath (orderCx P).src (orderCx P).tgt [ordPos hab, ordPos hbc] a c :=
     ⟨rfl, rfl, rfl⟩
   have hq : IsPath (orderCx P).src (orderCx P).tgt ([] : List ((orderCx P).E × Bool)) c c := rfl
-  have h1 : Htpy (orderCx P) a c ([ordPos hab, ordPos hbc] ++ [])
-      ([ordPos hab, ordPos hbc] ++ [ordNeg hac, ordPos hac]) :=
+  have h1  :=
     Htpy.append_congr hp hq (Htpy.refl _) (htpy_ordNeg_ordPos hac).symm
   have hfull : IsPath (orderCx P).src (orderCx P).tgt
       [ordPos hab, ordPos hbc, ordNeg hac, ordPos hac] a c := ⟨rfl, rfl, rfl, rfl, rfl⟩
@@ -127,30 +131,39 @@ theorem htpy_orderCx_tri {a b c : P} (hab : a ≤ b) (hbc : b ≤ c) :
     exact ⟨[], [ordPos hac], (⟨(a, b, c), hab, hbc⟩ : OrdTri P), rfl, rfl⟩
   simpa using h1.trans h2
 
-end OrderComplex
+end
 
 /-! ### The explicit contraction of edge paths -/
 
-section Contraction
+section
 
 variable {P : Type u} [Preorder P]
 
+  (d : P)
+  (rho : P → P)
+  (hle : ∀ x, rho x ≤ x)
+variable (htop : ∀ x, rho x ≤ d)
+include htop in
+include hle in
 /-- The path `p_σ = [σ,ρσ]⁻¹[ρσ,d]` of the text: from `σ` down to `ρσ` and up to `d`. -/
-def ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x) (htop : ∀ x, rho x ≤ d) (x : P) :
-    List ((orderCx P).E × Bool) := [ordNeg (hle x), ordPos (htop x)]
+def ordPth     (x : P)  := [ordNeg (hle x), ordPos (htop x)]
 
-theorem isPath_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x) (htop : ∀ x, rho x ≤ d)
+include htop in
+include hle in
+theorem isPath_ordPth    
     (x : P) :
     IsPath (orderCx P).src (orderCx P).tgt (ordPth d rho hle htop x) x d := ⟨rfl, rfl, rfl⟩
 
+include htop in
+include hle in
 /-- **The key identity** `[σ,τ] p_τ ≃ p_σ` for `σ ≤ τ`, obtained from the three triangular
 relations for the chains `ρσ ≤ σ ≤ τ`, `ρσ ≤ ρτ ≤ τ` and `ρσ ≤ ρτ ≤ d`. -/
-theorem htpy_ordPos_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
-    (htop : ∀ x, rho x ≤ d) (hmono : ∀ {x y : P}, x ≤ y → rho x ≤ rho y) {a b : P}
+theorem htpy_ordPos_ordPth   
+     (hmono : ∀ {x y : P}, x ≤ y → rho x ≤ rho y) {a b : P}
     (hab : a ≤ b) :
     Htpy (orderCx P) a d (ordPos hab :: ordPth d rho hle htop b) (ordPth d rho hle htop a) := by
-  have hrs : rho a ≤ rho b := hmono hab
-  have hrb : rho a ≤ b := hrs.trans (hle b)
+  have hrs  := hmono hab
+  have hrb  := hrs.trans (hle b)
   have pa2 : IsPath (orderCx P).src (orderCx P).tgt [ordNeg (hle a), ordPos hrs] a (rho b) :=
     ⟨rfl, rfl, rfl⟩
   have pb2 : IsPath (orderCx P).src (orderCx P).tgt
@@ -158,62 +171,49 @@ theorem htpy_ordPos_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
   have p3 : IsPath (orderCx P).src (orderCx P).tgt
       [ordPos hab, ordNeg (hle b), ordPos (htop b)] a d := ⟨rfl, rfl, rfl, rfl⟩
   -- Step 1: expand `[ρa,d]` as `[ρa,ρb][ρb,d]`.
-  have s1 : Htpy (orderCx P) a d ([ordNeg (hle a)] ++ [ordPos (htop a)])
-      ([ordNeg (hle a)] ++ [ordPos hrs, ordPos (htop b)]) :=
+  have s1  :=
     Htpy.append_congr (isPath_ordNeg (hle a)) (isPath_ordPos (htop a)) (Htpy.refl _)
       (htpy_orderCx_tri hrs (htop b)).symm
   -- Step 2: insert the backtrack `[ρb,b][ρb,b]⁻¹`.
-  have s2 : Htpy (orderCx P) a d
-      ([ordNeg (hle a), ordPos hrs] ++ [] ++ [ordPos (htop b)])
-      ([ordNeg (hle a), ordPos hrs] ++ [ordPos (hle b), ordNeg (hle b)] ++
-        [ordPos (htop b)]) :=
+  have s2  :=
     (htpy_ordPos_ordNeg (hle b)).symm.congr_append (c := a) (d := d) pa2
       (isPath_ordPos (htop b))
   -- Step 3: contract `[ρa,ρb][ρb,b]` to `[ρa,b]`.
-  have s3 : Htpy (orderCx P) a d
-      ([ordNeg (hle a)] ++ [ordPos hrs, ordPos (hle b)] ++ [ordNeg (hle b), ordPos (htop b)])
-      ([ordNeg (hle a)] ++ [ordPos hrb] ++ [ordNeg (hle b), ordPos (htop b)]) :=
+  have s3  :=
     (htpy_orderCx_tri hrs (hle b)).congr_append (c := a) (d := d) (isPath_ordNeg (hle a)) pb2
   -- Step 4: expand `[ρa,b]` as `[ρa,a][a,b]`.
-  have s4 : Htpy (orderCx P) a d
-      ([ordNeg (hle a)] ++ [ordPos hrb] ++ [ordNeg (hle b), ordPos (htop b)])
-      ([ordNeg (hle a)] ++ [ordPos (hle a), ordPos hab] ++
-        [ordNeg (hle b), ordPos (htop b)]) :=
+  have s4  :=
     (htpy_orderCx_tri (hle a) hab).symm.congr_append (c := a) (d := d)
       (isPath_ordNeg (hle a)) pb2
   -- Step 5: cancel the backtrack `[ρa,a]⁻¹[ρa,a]`.
-  have s5 : Htpy (orderCx P) a d
-      ([] ++ [ordNeg (hle a), ordPos (hle a)] ++ [ordPos hab, ordNeg (hle b), ordPos (htop b)])
-      ([] ++ [] ++ [ordPos hab, ordNeg (hle b), ordPos (htop b)]) :=
+  have s5  :=
     (htpy_ordNeg_ordPos (hle a)).congr_append (c := a) (d := d) (isPath_nil' a) p3
   have chain : Htpy (orderCx P) a d (ordPth d rho hle htop a)
       (ordPos hab :: ordPth d rho hle htop b) := by
-    simp only [ordPth]
-    simp only [List.nil_append, List.cons_append] at s1 s2 s3 s4 s5 ⊢
-    exact ((((s1.trans s2).trans s3).trans s4).trans s5)
+    classical grind [FiniteChains.Comb.Htpy.trans, FiniteChains.Comb.Htpy, ordPth]
   exact chain.symm
 
+include htop in
+include hle in
 /-- The reversed form of the key identity: `[σ,τ]⁻¹ p_σ ≃ p_τ`. -/
-theorem htpy_ordNeg_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
-    (htop : ∀ x, rho x ≤ d) (hmono : ∀ {x y : P}, x ≤ y → rho x ≤ rho y) {a b : P}
-    (hab : a ≤ b) :
-    Htpy (orderCx P) b d (ordNeg hab :: ordPth d rho hle htop a) (ordPth d rho hle htop b) := by
-  have h1 : Htpy (orderCx P) b d ([ordNeg hab] ++ ordPth d rho hle htop a)
-      ([ordNeg hab] ++ (ordPos hab :: ordPth d rho hle htop b)) :=
-    Htpy.append_congr (isPath_ordNeg hab) (isPath_ordPth d rho hle htop a) (Htpy.refl _)
-      (htpy_ordPos_ordPth d rho hle htop hmono hab).symm
-  have h2 : Htpy (orderCx P) b d
-      ([] ++ [ordNeg hab, ordPos hab] ++ ordPth d rho hle htop b)
-      ([] ++ [] ++ ordPth d rho hle htop b) :=
-    (htpy_ordNeg_ordPos hab).congr_append (c := b) (d := d) (isPath_nil' b)
-      (isPath_ordPth d rho hle htop b)
-  simp only [List.nil_append, List.cons_append] at h1 h2 ⊢
-  exact h1.trans h2
+abbrev htpy_ordNeg_ordPth   
+     (hmono : ∀ {x y : P}, x ≤ y → rho x ≤ rho y) {a b : P}
+    (hab : a ≤ b)  :=
+  have h1 :=
+    FiniteChains.Comb.Htpy.append_congr (FiniteChains.Comb.isPath_ordNeg hab)
+      (FiniteChains.Comb.isPath_ordPth d rho hle htop a) (FiniteChains.Comb.Htpy.refl [FiniteChains.Comb.ordNeg hab])
+      (FiniteChains.Comb.Htpy.symm (FiniteChains.Comb.htpy_ordPos_ordPth d rho hle htop (fun {x y : P} => hmono) hab));
+  have h2 :=
+    FiniteChains.Comb.Htpy.congr_append (FiniteChains.Comb.htpy_ordNeg_ordPos hab) (FiniteChains.Comb.isPath_nil' b)
+      (FiniteChains.Comb.isPath_ordPth d rho hle htop b);
+  FiniteChains.Comb.Htpy.trans h1 h2
 
+include htop in
+include hle in
 /-- **Every edge path is the standard one**: for a path `p` from `σ` to `τ` one has
 `p · p_τ ≃ p_σ`; in particular every path `σ → τ` is homotopic to `p_σ p_τ⁻¹`. -/
-theorem htpy_path_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
-    (htop : ∀ x, rho x ≤ d) (hmono : ∀ {x y : P}, x ≤ y → rho x ≤ rho y) :
+theorem htpy_path_ordPth   
+     (hmono : ∀ {x y : P}, x ≤ y → rho x ≤ rho y) :
     ∀ (p : List ((orderCx P).E × Bool)) {x y : P},
       IsPath (orderCx P).src (orderCx P).tgt p x y →
       Htpy (orderCx P) x d (p ++ ordPth d rho hle htop y) (ordPth d rho hle htop x) := by
@@ -228,87 +228,87 @@ theorem htpy_path_ordPth (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
       obtain ⟨⟨⟨a, b⟩, hab⟩, tag⟩ := eb
       cases tag with
       | false =>
-          have hxb : x = b := hx
-          have hrest' : IsPath (orderCx P).src (orderCx P).tgt p a y := hrest
+          have hxb  := hx
+          have hrest'  := hrest
           have hih := ih hrest'
-          have h1 : Htpy (orderCx P) b d
-              ([ordNeg hab] ++ (p ++ ordPth d rho hle htop y))
-              ([ordNeg hab] ++ ordPth d rho hle htop a) :=
+          have h1  :=
             Htpy.append_congr (isPath_ordNeg hab)
               (isPath_append_iff.mpr ⟨y, hrest', isPath_ordPth d rho hle htop y⟩)
               (Htpy.refl _) hih
           have h2 := htpy_ordNeg_ordPth d rho hle htop hmono hab
           have hgoal : Htpy (orderCx P) b d ((ordNeg hab :: p) ++ ordPth d rho hle htop y)
               (ordPth d rho hle htop b) := by
-            simp only [List.cons_append] at h1 ⊢
+            simp  at h1 ⊢
             exact h1.trans h2
           rw [hxb]
           exact hgoal
       | true =>
-          have hxa : x = a := hx
-          have hrest' : IsPath (orderCx P).src (orderCx P).tgt p b y := hrest
+          have hxa  := hx
+          have hrest'  := hrest
           have hih := ih hrest'
-          have h1 : Htpy (orderCx P) a d
-              ([ordPos hab] ++ (p ++ ordPth d rho hle htop y))
-              ([ordPos hab] ++ ordPth d rho hle htop b) :=
+          have h1  :=
             Htpy.append_congr (isPath_ordPos hab)
               (isPath_append_iff.mpr ⟨y, hrest', isPath_ordPth d rho hle htop y⟩)
               (Htpy.refl _) hih
           have h2 := htpy_ordPos_ordPth d rho hle htop hmono hab
           have hgoal : Htpy (orderCx P) a d ((ordPos hab :: p) ++ ordPth d rho hle htop y)
               (ordPth d rho hle htop a) := by
-            simp only [List.cons_append] at h1 ⊢
+            simp  at h1 ⊢
             exact h1.trans h2
           rw [hxa]
           exact hgoal
 
+include htop in
+include hle in
 /-- **Simple connectivity of the order complex** of a preorder carrying an order map
 `ρ ≤ id` with `ρ ≤ c_d`.  This is proved with edges and triangular relations alone; it is not
 inferred from acyclicity of the chain complex. -/
-theorem simplyConnected_orderCx (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
-    (htop : ∀ x, rho x ≤ d) (hmono : ∀ {x y : P}, x ≤ y → rho x ≤ rho y) :
+theorem simplyConnected_orderCx   
+     (hmono : ∀ {x y : P}, x ≤ y → rho x ≤ rho y) :
     SimplyConnected (orderCx P) := by
   intro a p hp
-  have hq : IsPath (orderCx P).src (orderCx P).tgt (ordPth d rho hle htop (a : P)) (a : P) d :=
+  have hq  :=
     isPath_ordPth d rho hle htop a
   set q := ordPth d rho hle htop (a : P) with hqdef
   have h := htpy_path_ordPth d rho hle htop hmono p hp
-  have h3 : Htpy (orderCx P) a a (q ++ revPath q) [] := htpy_append_revPath hq
-  have h1 : Htpy (orderCx P) a a (p ++ (q ++ revPath q)) (p ++ []) :=
+  have h3  := htpy_append_revPath hq
+  have h1  :=
     Htpy.append_congr hp (isPath_append_iff.mpr ⟨d, hq, isPath_revPath hq⟩) (Htpy.refl _) h3
-  have h2 : Htpy (orderCx P) a a ((p ++ q) ++ revPath q) (q ++ revPath q) :=
+  have h2  :=
     Htpy.append_congr (isPath_append_iff.mpr ⟨a, hp, hq⟩) (isPath_revPath hq) h (Htpy.refl _)
   have h1' : Htpy (orderCx P) a a p ((p ++ q) ++ revPath q) := by
     simpa [List.append_assoc] using h1.symm
   exact (h1'.trans h2).trans h3
 
+include htop in
+include hle in
 /-- The order complex of a preorder with such a contraction is connected. -/
-theorem isConnected_orderCx (d : P) (rho : P → P) (hle : ∀ x, rho x ≤ x)
-    (htop : ∀ x, rho x ≤ d) : IsConnected (orderCx P) := by
+theorem isConnected_orderCx   
+     : IsConnected (orderCx P) := by
   intro a b
   exact ⟨ordPth d rho hle htop (a : P) ++ revPath (ordPth d rho hle htop (b : P)),
     isPath_append_iff.mpr ⟨d, isPath_ordPth d rho hle htop (a : P),
       isPath_revPath (isPath_ordPth d rho hle htop (b : P))⟩⟩
 
-end Contraction
+end
 
 end Comb
 
 /-! ### The attaching subcomplex of a chamber is simply connected -/
 
-namespace Mirror
 
-universe u
 
-variable {V : Type u} [DecidableEq V]
 
-section RACG
 
-open RACG
 
-variable [Fintype V] (A : CommRel V)
 
-end RACG
 
-end Mirror
+
+
+
+
+
+
+
+
 end FiniteChains

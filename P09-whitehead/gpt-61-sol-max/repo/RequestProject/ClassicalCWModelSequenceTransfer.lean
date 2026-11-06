@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalCWOneTwoDiskTransfer
-public import RequestProject.ClassicalCWSequentialChains
-
-@[expose] public section
+import RequestProject.ClassicalCWOneTwoDiskTransfer
+import RequestProject.ClassicalCWSequentialChains
 
 /-! Transfer a whole sequence of relative one/two-cell models to the
 literal original CW complex. Each stage is constructed from the preceding
@@ -13,7 +11,7 @@ ambient complex. -/
 noncomputable section
 namespace Whitehead
 open FiniteChains.RelativeAttachment
-open scoped Topology Classical
+
 
 structure DiskExtensionModel (P Q : Type) [TopologicalSpace P] [TopologicalSpace Q] where
   oneCells : Type
@@ -26,10 +24,10 @@ namespace DiskExtensionModel
 
 variable {P Q : Type} [TopologicalSpace P] [TopologicalSpace Q] (M : DiskExtensionModel P Q)
 
-def map : C(P, Q) := M.comparison.toFun.comp (oneTwoAttachmentMap M.oneAttaching M.twoAttaching)
+def map  := M.comparison.toFun.comp (oneTwoAttachmentMap M.oneAttaching M.twoAttaching)
 
-theorem killsPi2_iff : KillsPi2 M.map ↔ KillsPi2 (oneTwoAttachmentMap M.oneAttaching M.twoAttaching) :=
-  killsPi2_homotopyEquiv_postcomp_iff M.comparison _
+abbrev killsPi2_iff  :=
+  Whitehead.killsPi2_homotopyEquiv_postcomp_iff M.comparison (Whitehead.oneTwoAttachmentMap M.oneAttaching M.twoAttaching)
 
 end DiskExtensionModel
 
@@ -48,41 +46,31 @@ def transferredModelStage : (i : ℕ) → TransferredModelStage (P i)
     let T := oneTwoDiskTransfer R.complex R.comparison (M i).oneAttaching (M i).twoAttaching
     ⟨T.target, (M i).comparison.symm.trans T.comparison⟩
 
-def transferredModelStep (i : ℕ) :
-    CWCellEmbedding (transferredModelStage M K e₀ i).complex
-      (transferredModelStage M K e₀ (i + 1)).complex :=
+variable (i : ℕ)
+def transferredModelStep   :=
   (oneTwoDiskTransfer (transferredModelStage M K e₀ i).complex
     (transferredModelStage M K e₀ i).comparison (M i).oneAttaching (M i).twoAttaching).oldEmbedding
 
-theorem transferredModelStep_killsPi2 (i : ℕ) (h : KillsPi2 (M i).map) :
+theorem transferredModelStep_killsPi2  (h : KillsPi2 (M i).map) :
     KillsPi2 (transferredModelStep M K e₀ i).map := by
   apply (OneTwoDiskTransfer.killsPi2_iff _ _ _ _
     (oneTwoDiskTransfer (transferredModelStage M K e₀ i).complex
       (transferredModelStage M K e₀ i).comparison (M i).oneAttaching (M i).twoAttaching)).mpr
   exact ((M i).killsPi2_iff).mp h
 
-theorem transferredModelStep_proper (i : ℕ)
-    (h : Nonempty (M i).oneCells ∨ Nonempty (M i).twoCells) :
-    ∃ z : (transferredModelStage M K e₀ (i + 1)).complex,
-      z ∉ Set.range (transferredModelStep M K e₀ i).map :=
-  (oneTwoDiskTransfer (transferredModelStage M K e₀ i).complex
-    (transferredModelStage M K e₀ i).comparison
-    (M i).oneAttaching (M i).twoAttaching).proper h
+abbrev transferredModelStep_proper 
+    (h : Nonempty (M i).oneCells ∨ Nonempty (M i).twoCells)  :=
+  (Whitehead.oneTwoDiskTransfer (Whitehead.transferredModelStage M K e₀ i).complex
+        (Whitehead.transferredModelStage M K e₀ i).comparison (M i).oneAttaching (M i).twoAttaching).proper
+    h
 
 theorem transferredModelStage_finite (n : ℕ) (hK : FiniteCells K)
     (hfin : ∀ i, i < n → Finite (M i).oneCells ∧ Finite (M i).twoCells) :
     FiniteCells (transferredModelStage M K e₀ n).complex := by
   have h : ∀ m, m ≤ n → FiniteCells (transferredModelStage M K e₀ m).complex := by
+    classical
     intro m
-    induction m with
-    | zero => exact fun _ => hK
-    | succ m ih =>
-        intro hm
-        have hc := hfin m (by omega)
-        exact (oneTwoDiskTransfer (transferredModelStage M K e₀ m).complex
-          (transferredModelStage M K e₀ m).comparison
-          (M m).oneAttaching (M m).twoAttaching).finite
-            (ih (by omega)) hc.1 hc.2
+    induction m <;> grind [oneTwoDiskTransfer, transferredModelStage]
   exact h n le_rfl
 
 include e₀ in
@@ -96,7 +84,7 @@ theorem hasChain_of_diskExtensionModels (n : ℕ)
     (hfin : finite = true → FiniteCells K ∧
       ∀ i, i < n → Finite (M i).oneCells ∧ Finite (M i).twoCells) :
     HasChain K n finite := by
-  change HasChain (transferredModelStage M K e₀ 0).complex n finite
+  
   apply hasChain_of_successive_cellEmbeddings (transferredModelStep M K e₀) n
     (fun i hi => transferredModelStep_proper M K e₀ i (hp i hi))
     (fun i hi => transferredModelStep_killsPi2 M K e₀ i (hz i hi)) finite

@@ -1,14 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.OrderTriangleBoundaryWords
-public import RequestProject.ClassicalGraphTreeBoundaryWords
-public import RequestProject.ClassicalRoseWordNaturality
-public import RequestProject.ClassicalRoseWordReduction
-public import RequestProject.PresCircleWordParametrization
-public import RequestProject.PresCanonicalWords
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.OrderTriangleBoundaryWords
+import RequestProject.ClassicalGraphTreeBoundaryWords
+import RequestProject.ClassicalRoseWordNaturality
+import RequestProject.ClassicalRoseWordReduction
+import RequestProject.PresCircleWordParametrization
+import RequestProject.PresCanonicalWords
 
 /-! The canonical presentation of a strict order complex is an actual
 homotopy model of its realization. The prescribed spanning tree is
@@ -17,7 +15,6 @@ Pending the final Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology ContinuousMap
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -33,14 +30,12 @@ local instance : DiscreteTopology (Vertices P) :=
 theorem graph_germSrc (g : StrictOrdEdge P × Bool) :
     germSrc (graphSrc (graphAttaching P)) (graphTgt (graphAttaching P)) g =
       vertexEquiv P (germSrc (strictOrderCx P).src (strictOrderCx P).tgt g) := by
-  rcases g with ⟨e, b⟩
-  cases b <;> simp only [germSrc, graphAttaching_source, graphAttaching_target] <;> rfl
+  aesop (add simp [germSrc, graphAttaching_source, graphAttaching_target])
 
 theorem graph_germTgt (g : StrictOrdEdge P × Bool) :
     germTgt (graphSrc (graphAttaching P)) (graphTgt (graphAttaching P)) g =
       vertexEquiv P (germTgt (strictOrderCx P).src (strictOrderCx P).tgt g) := by
-  rcases g with ⟨e, b⟩
-  cases b <;> simp only [germTgt, graphAttaching_source, graphAttaching_target] <;> rfl
+  aesop (add simp [germTgt, graphAttaching_source, graphAttaching_target])
 
 variable (T : SpanningTree (strictOrderCx P))
 
@@ -51,13 +46,11 @@ def graphTree : SpanningTree (graphCx (graphAttaching P)) where
   ht v := T.ht ((vertexEquiv P).symm v)
   isTree := T.isTree
   up v hv := T.up ((vertexEquiv P).symm v) (by
-    intro h
-    apply hv
-    simpa only [Equiv.apply_symm_apply] using congrArg (vertexEquiv P) h)
-  ht_root := by simpa only [Equiv.symm_apply_apply] using T.ht_root
+    grind)
+  ht_root := by classical simp_all [FiniteChains.Comb.SpanningTree.ht_root]
   ht_eq_zero := by
     intro v hv
-    simpa only [Equiv.apply_symm_apply] using
+    simpa [Equiv.apply_symm_apply] using
       congrArg (vertexEquiv P) (T.ht_eq_zero _ hv)
   up_src := by
     intro v hv
@@ -73,60 +66,56 @@ def graphTree : SpanningTree (graphCx (graphAttaching P)) where
       obtain ⟨v, hv, he⟩ := (T.isTree_iff e).mp he
       refine ⟨vertexEquiv P v, (fun h => hv ((vertexEquiv P).injective h)), ?_⟩
       simpa only [Equiv.symm_apply_apply] using he
-    · rintro ⟨v, hv, he⟩
-      refine (T.isTree_iff e).mpr ⟨(vertexEquiv P).symm v, ?_, he⟩
-      intro h
-      apply hv
-      simpa only [Equiv.apply_symm_apply] using congrArg (vertexEquiv P) h
+    · classical aesop (add simp [FiniteChains.Comb.orderNerveRealization_t2Space, FiniteChains.Comb.SpanningTree.isTree_iff, vertexEquiv])
 
-theorem graphTree_pathWord (l : List (StrictOrdEdge P × Bool)) :
-    pathWord (graphTree P T) l = pathWord T l := rfl
 
-def collapsedWords (t : StrictOrdTri P) : BoundaryWords (roseAttaching (NonTree T)) :=
+
+def collapsedWords (t : StrictOrdTri P)  :=
   (words P t).eraseTree (graphAttaching P) (graphTree P T)
 
 theorem collapsedWords_mk (t : StrictOrdTri P) :
     FreeGroup.mk (collapsedWords P T t).loopWord = treeRel T t := by
-  change FreeGroup.mk ((words P t).eraseTree (graphAttaching P) (graphTree P T)).loopWord = _
-  rw [BoundaryWords.eraseTree_mk, graphTree_pathWord, words_loopWord]
-  rfl
+  solve_by_elim [FiniteChains.ClassicalGraphModel.BoundaryWords.eraseTree_mk]
 
-def oneSkeletonRoseEquiv : OneSkeleton P ≃ₕ ClassicalGraphModel.Rose (NonTree T) :=
+def oneSkeletonRoseEquiv  :=
   (graphHomeomorph P).symm.toHomotopyEquiv.trans
     (graphRoseHomotopyEquiv (graphAttaching P) (graphAttaching P).continuous (graphTree P T))
 
-def collapsedAttaching :
-    C(BoundaryFamily (StrictOrdTri P) (Fin 2 → ℝ), ClassicalGraphModel.Rose (NonTree T)) :=
+def collapsedAttaching  :=
   (oneSkeletonRoseEquiv P T).toFun.comp (triangleAttaching P)
 
-def collapsedCellBoundary (t : StrictOrdTri P) :
-    C(UnitBoundary (Fin 2 → ℝ), ClassicalGraphModel.Rose (NonTree T)) :=
-  (collapsedAttaching P T).comp
-    ⟨Sigma.mk (β := fun _ : StrictOrdTri P => UnitBoundary (Fin 2 → ℝ)) t,
-      by exact continuous_sigmaMk⟩
 
-theorem collapsedCellBoundary_homotopic_words (t : StrictOrdTri P) :
-    (collapsedCellBoundary P T t).Homotopic (collapsedWords P T t).boundaryMap := by
-  have H := (ContinuousMap.Homotopic.refl
-    (graphRoseHomotopyEquiv (graphAttaching P) (graphAttaching P).continuous
-      (graphTree P T)).toFun).comp (graphBoundary_homotopic_words P t)
-  exact H.trans ((words P t).collapse_homotopic_eraseTree
-    (graphAttaching P) (graphAttaching P).continuous (graphTree P T))
+
+abbrev collapsedCellBoundary_homotopic_words (t : StrictOrdTri P)  :=
+  have H :=
+    ContinuousMap.Homotopic.comp
+      (ContinuousMap.Homotopic.refl
+        (FiniteChains.ClassicalGraphModel.graphRoseHomotopyEquiv
+            (⇑(FiniteChains.Comb.OrderEdgeAttachment.graphAttaching P))
+            (ContinuousMap.continuous (FiniteChains.Comb.OrderEdgeAttachment.graphAttaching P))
+            (FiniteChains.Comb.OrderTriangleWords.graphTree P T)).toFun)
+      (FiniteChains.Comb.OrderTriangleWords.graphBoundary_homotopic_words P t);
+  ContinuousMap.Homotopic.trans H
+    (FiniteChains.ClassicalGraphModel.BoundaryWords.collapse_homotopic_eraseTree
+      (⇑(FiniteChains.Comb.OrderEdgeAttachment.graphAttaching P))
+      (ContinuousMap.continuous (FiniteChains.Comb.OrderEdgeAttachment.graphAttaching P))
+      (FiniteChains.Comb.OrderTriangleWords.graphTree P T) (FiniteChains.Comb.OrderTriangleWords.words P t))
 
 variable (a : NonTree T)
 
-theorem collapsedCellBoundary_homotopic_canonical (t : StrictOrdTri P) :
-    (collapsedCellBoundary P T t).Homotopic
-      (classicalPresCellBoundary (presCanonicalWords (treeRel T) a) t
-        (presCanonicalWords_ne_nil (treeRel T) a)) := by
-  have he : FreeGroup.mk (collapsedWords P T t).loopWord =
-      FreeGroup.mk (presCanonicalWords (treeRel T) a t) :=
-    (collapsedWords_mk P T t).trans (mk_presCanonicalWords (treeRel T) a t).symm
-  exact (collapsedCellBoundary_homotopic_words P T t).trans
-    ((boundaryWords_homotopic_classicalWord (collapsedWords P T t)).trans
-      ((classicalRoseWordBoundary_homotopic_of_mk_eq he).trans
-        (classicalPresWordAttaching_homotopic_read (presCanonicalWords (treeRel T) a) t
-          (presCanonicalWords_ne_nil (treeRel T) a)).symm))
+abbrev collapsedCellBoundary_homotopic_canonical (t : StrictOrdTri P)  :=
+  have he :=
+    Eq.trans (FiniteChains.Comb.OrderTriangleWords.collapsedWords_mk P T t)
+      (Eq.symm (FiniteChains.PresModel.mk_presCanonicalWords T.treeRel a t));
+  ContinuousMap.Homotopic.trans (FiniteChains.Comb.OrderTriangleWords.collapsedCellBoundary_homotopic_words P T t)
+    (ContinuousMap.Homotopic.trans
+      (FiniteChains.PresModel.boundaryWords_homotopic_classicalWord
+        (FiniteChains.Comb.OrderTriangleWords.collapsedWords P T t))
+      (ContinuousMap.Homotopic.trans (FiniteChains.PresModel.classicalRoseWordBoundary_homotopic_of_mk_eq he)
+        (ContinuousMap.Homotopic.symm
+          (FiniteChains.PresModel.classicalPresWordAttaching_homotopic_read
+            (FiniteChains.PresModel.presCanonicalWords T.treeRel a) t
+            (FiniteChains.PresModel.presCanonicalWords_ne_nil T.treeRel a)))))
 
 def collapsedAttachingCanonicalHomotopy :
     (collapsedAttaching P T).Homotopy

@@ -1,20 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeSquareBoundary
-public import RequestProject.StrictTopConeChains
-
-@[expose] public section
+import RequestProject.QCubeSquareBoundary
+import RequestProject.StrictTopConeChains
 
 /-! Actual strict barycentric subdivisions of quotient two-cubes. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] {A : CommRel V}
 
-def cubeLowerIncl (c : QCube A) :
+  (c : QCube A)
+def cubeLowerIncl  :
     Hom (strictOrderCx (Set.Iio c)) (strictOrderCx (QCube A)) :=
   strictOrderCxMap Subtype.val (fun _ _ h => h)
 
@@ -29,57 +26,58 @@ theorem lowerFacetEdgeChain_projection (c d : QCube A) (hd : d < c)
     (v : V) (hv : v ∈ d.spx) :
     chain1 (cubeLowerIncl c) (lowerFacetEdgeChain c d hd v hv) =
       cubeEdgeSubdivision d v hv := by
-  rw (config := { transparency := .default }) [lowerFacetEdgeChain, map_sub]
+  rw  [lowerFacetEdgeChain, map_sub]
   simp [chain1, cubeLowerIncl, strictOrderCxMap, cubeEdgeSubdivision, Finsupp.lmapDomain_apply]
 
-noncomputable def lowerSquareEdgeBoundary (c : QCube A) (v w : V) (hne : v ≠ w)
-    (hs : c.spx = {v, w}) : (strictOrderCx (Set.Iio c)).E →₀ ℤ :=
+variable (v w : V)
+noncomputable def lowerSquareEdgeBoundary   (hne : v ≠ w)
+    (hs : c.spx = {v, w})  :=
   lowerFacetEdgeChain c (qCubeFacet c w 0)
-    (qCubeFacet_lt c w 0 (by rw (config := { transparency := .default }) [hs]; simp)) v
-    (by rw (config := { transparency := .default }) [squareFacet_v_spx c hne hs 0]; simp) -
+    (qCubeFacet_lt c w 0 (by simp_all)) v
+    (by rw  [squareFacet_v_spx c hne hs 0]; simp) -
   lowerFacetEdgeChain c (qCubeFacet c w 1)
-    (qCubeFacet_lt c w 1 (by rw (config := { transparency := .default }) [hs]; simp)) v
-    (by rw (config := { transparency := .default }) [squareFacet_v_spx c hne hs 1]; simp) -
+    (qCubeFacet_lt c w 1 (by simp_all)) v
+    (by rw  [squareFacet_v_spx c hne hs 1]; simp) -
   lowerFacetEdgeChain c (qCubeFacet c v 0)
-    (qCubeFacet_lt c v 0 (by rw (config := { transparency := .default }) [hs]; simp)) w
-    (by rw (config := { transparency := .default }) [squareFacet_w_spx c hne hs 0]; simp) +
+    (qCubeFacet_lt c v 0 (by simp_all)) w
+    (by grind [FiniteChains.Davis.squareFacet_w_spx]) +
   lowerFacetEdgeChain c (qCubeFacet c v 1)
-    (qCubeFacet_lt c v 1 (by rw (config := { transparency := .default }) [hs]; simp)) w
-    (by rw (config := { transparency := .default }) [squareFacet_w_spx c hne hs 1]; simp)
+    (qCubeFacet_lt c v 1 (by simp_all)) w
+    (by grind [FiniteChains.Davis.squareFacet_w_spx])
 
-theorem lowerSquareEdgeBoundary_projection (c : QCube A) (v w : V) (hne : v ≠ w)
+theorem lowerSquareEdgeBoundary_projection   (hne : v ≠ w)
     (hs : c.spx = {v, w}) :
     chain1 (cubeLowerIncl c) (lowerSquareEdgeBoundary c v w hne hs) =
       cubeSquareEdgeBoundary c v w hne hs := by
   simp only [lowerSquareEdgeBoundary, map_add, map_sub, lowerFacetEdgeChain_projection]
   rfl
 
-theorem lowerSquareEdgeBoundary_cycle (c : QCube A) (v w : V) (hne : v ≠ w)
+theorem lowerSquareEdgeBoundary_cycle   (hne : v ≠ w)
     (hs : c.spx = {v, w}) :
     Comb.bdry1 (strictOrderCx (Set.Iio c)) (lowerSquareEdgeBoundary c v w hne hs) = 0 := by
   apply Finsupp.mapDomain_injective (f := fun x : Set.Iio c => x.val) Subtype.val_injective
   change chain0 (cubeLowerIncl c) (Comb.bdry1 (strictOrderCx (Set.Iio c))
     (lowerSquareEdgeBoundary c v w hne hs)) = chain0 (cubeLowerIncl c) 0
-  rw (config := { transparency := .default }) [← bdry1_chain1, lowerSquareEdgeBoundary_projection, cubeSquareEdgeBoundary_cycle,
+  rw  [← bdry1_chain1, lowerSquareEdgeBoundary_projection, cubeSquareEdgeBoundary_cycle,
     map_zero]
 
 /-- The actual two-cube is filled by its eight nondegenerate barycentric triangles. -/
-noncomputable def cubeSquareSubdivision (c : QCube A) (v w : V) (hne : v ≠ w)
-    (hs : c.spx = {v, w}) : (strictOrderCx (QCube A)).F →₀ ℤ :=
+noncomputable def cubeSquareSubdivision   (hne : v ≠ w)
+    (hs : c.spx = {v, w})  :=
   strictTopConeEdgeChain Subtype.val (fun _ _ h => h) c (fun x : Set.Iio c => x.2)
     (lowerSquareEdgeBoundary c v w hne hs)
 
 /-- Its actual strict cellular boundary is precisely the oriented four-facet edge chain. -/
-theorem cubeSquareSubdivision_boundary (c : QCube A) (v w : V) (hne : v ≠ w)
+theorem cubeSquareSubdivision_boundary   (hne : v ≠ w)
     (hs : c.spx = {v, w}) :
     Comb.bdry2 (strictOrderCx (QCube A)) (cubeSquareSubdivision c v w hne hs) =
       cubeSquareEdgeBoundary c v w hne hs := by
-  rw (config := { transparency := .default }) [cubeSquareSubdivision, strictTopConeEdgeChain_cycle_boundary _ _ _ _ _
+  rw  [cubeSquareSubdivision, strictTopConeEdgeChain_cycle_boundary _ _ _ _ _
     (lowerSquareEdgeBoundary_cycle c v w hne hs)]
   exact lowerSquareEdgeBoundary_projection c v w hne hs
 
 /-- The square subdivision uses only triangles whose largest cell is that square. -/
-theorem cubeSquareSubdivision_eq_zero_off_top (c : QCube A) (v w : V) (hne : v ≠ w)
+theorem cubeSquareSubdivision_eq_zero_off_top   (hne : v ≠ w)
     (hs : c.spx = {v, w}) (t : (strictOrderCx (QCube A)).F) (ht : t.1.2.2 ≠ c) :
     cubeSquareSubdivision c v w hne hs t = 0 :=
   strictTopConeEdgeChain_eq_zero_off_top _ _ _ _ _ t ht

@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Pi2GenerationDescent
-
-@[expose] public section
+import RequestProject.Pi2GenerationDescent
 
 /-!
 # The copies of `L̃` cover the universal cover of the pushout
@@ -33,14 +31,11 @@ lower degrees) in the combinatorial model, from scratch:
   pushout of Proposition 3.11.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u
+
 
 /-! ### Maps out of a simply connected complex -/
 
@@ -52,7 +47,7 @@ theorem pi1Trivial_of_simplyConnected {X Y : Complex2.{u}} (hX : SimplyConnected
 
 /-! ### Lifting a cellular map to the universal covers, with a prescribed base image -/
 
-section Lifts
+section
 
 variable {L E : Complex2.{u}}
 
@@ -70,7 +65,7 @@ theorem exists_lift_univCover (ι : Hom L E) {x₀ : E.V} (l₀ : L.V) (c : UV E
       φ.onV (UV.base L l₀) = c := by
   classical
   set f : Hom (uCover L l₀) E := ι.comp (univProj L l₀)
-  have htriv : Pi1Trivial f := pi1Trivial_of_simplyConnected simplyConnected_univCover f
+  have htriv  := pi1Trivial_of_simplyConnected simplyConnected_univCover f
   set psi : Hom (uCover L l₀) (uCover E (ι.onV l₀)) :=
     liftHom (f := f) (d₀ := UV.base L l₀) isConnected_univCover htriv
   -- a path representing `c`
@@ -84,12 +79,8 @@ theorem exists_lift_univCover (ι : Hom L E) {x₀ : E.V} (l₀ : L.V) (c : UV E
     show endV (shiftV hq (psi.onV v)) = ι.onV (endV v)
     rw [endV_shiftV]
     exact univProj_liftHom_onV (f := f) (d₀ := UV.base L l₀) isConnected_univCover htriv v
-  · intro e
-    show ((shiftE hq (psi.onE e)).1).2 = ι.onE (e.1.2)
-    exact univProj_liftHom_onE (f := f) (d₀ := UV.base L l₀) isConnected_univCover htriv e
-  · intro g
-    show ((shiftF hq (psi.onF g)).1).2 = ι.onF (g.1.2)
-    exact univProj_liftHom_onF (f := f) (d₀ := UV.base L l₀) isConnected_univCover htriv g
+  · aesop
+  · aesop
   · show shiftV hq (psi.onV (UV.base L l₀)) = c
     have h1 : psi.onV (UV.base L l₀) = UV.base E (ι.onV l₀) :=
       liftHom_base (f := f) (d₀ := UV.base L l₀) isConnected_univCover htriv
@@ -98,25 +89,23 @@ theorem exists_lift_univCover (ι : Hom L E) {x₀ : E.V} (l₀ : L.V) (c : UV E
 
 /-! ### The degree-two chains coming from the copies -/
 
-end Lifts
+end
 
 /-! ### Coverings are onto on cells -/
 
-section Covering
 
-variable {D K : Complex2.{u}} {p : Hom D K}
 
-end Covering
+
+
+
 
 /-! ### The map `L → K ∪_p L` of Proposition 3.11 is onto on cells -/
 
-section Pushout
 
-variable {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
-  (hiV : Function.Injective i.onV) (hiE : Function.Injective i.onE)
-  (hiF : Function.Injective i.onF)
 
-end Pushout
 
-end Comb
-end FiniteChains
+
+
+
+end FiniteChains.Comb
+

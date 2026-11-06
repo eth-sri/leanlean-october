@@ -1,12 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Cockcroft
-public import RequestProject.AbelianElimination
-public import RequestProject.FoxNaturality
-public import RequestProject.InitialPair
-public import RequestProject.Pi2Dictionary
-
-@[expose] public section
+import RequestProject.Cockcroft
+import RequestProject.AbelianElimination
+import RequestProject.FoxNaturality
+import RequestProject.InitialPair
+import RequestProject.Pi2Dictionary
 
 /-!
 # The initial Cockcroft pair `D ⊂ Y_D` of Lemma 3.1
@@ -35,30 +33,27 @@ augmentation, and the cycle equations at the generators `x_i` then say that the 
 augmentation vector is killed by `M`, hence is zero because `D` is acyclic.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
-open MonoidAlgebra
+
 open scoped commutatorElement IsMulCommutative
 
-universe u
 
 variable {I J : Type u}
 
 /-- The generators of `Y_D`: the generators `x_i` of `D` (`Sum.inl i`) and the two added
 generators `a_i = y_{i,false}`, `b_i = y_{i,true}` (`Sum.inr (i, s)`). -/
-abbrev GenY (I : Type u) : Type u := I ⊕ (I × Bool)
+abbrev GenY (I : Type u)  := I ⊕ (I × Bool)
 
 /-- The index set of the cross-commutators `[y_{i,s}, y_{k,t}]`, one for each pair `i < k`
 and each pair of signs. -/
-abbrev CrossY (I : Type u) [LinearOrder I] : Type u := {p : I × I // p.1 < p.2} × Bool × Bool
+abbrev CrossY (I : Type u) [LinearOrder I]  := {p : I × I // p.1 < p.2} × Bool × Bool
 
 /-- The two-cells of `Y_D`: the relators `r_j` of `D`, the new relators `x_i[a_i,b_i]⁻¹`,
 and the cross-commutators. -/
-abbrev CellY (I J : Type u) [LinearOrder I] : Type u := J ⊕ (I ⊕ CrossY I)
+abbrev CellY (I J : Type u) [LinearOrder I]  := J ⊕ (I ⊕ CrossY I)
 
 /-- The generator `x_i` of `Y_D`. -/
 def xGen (i : I) : FreeGroup (GenY I) := FreeGroup.of (Sum.inl i)
@@ -77,7 +72,7 @@ def relY (r : J → FreeGroup I) : CellY I J → FreeGroup (GenY I)
 variable [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] (r : J → FreeGroup I)
 
 /-- The fundamental group `G(Y_D)` of the complex `Y_D`. -/
-abbrev GroupY : Type u := PresGroup (relY r)
+abbrev GroupY  := PresGroup (relY r)
 
 /-- The image of `x_i` in `G(Y_D)`. -/
 def xEl (i : I) : GroupY r := QuotientGroup.mk (xGen i)
@@ -85,12 +80,12 @@ def xEl (i : I) : GroupY r := QuotientGroup.mk (xGen i)
 /-- The image of `a_i`, `b_i` in `G(Y_D)`. -/
 def yEl (i : I) (s : Bool) : GroupY r := QuotientGroup.mk (yGen i s)
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
+section
+omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
 theorem mk_relY (c : CellY I J) : (QuotientGroup.mk (relY r c) : GroupY r) = 1 := by
   rw [QuotientGroup.eq_one_iff]
   exact Subgroup.subset_normalClosure ⟨c, rfl⟩
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
 /-- The cross-commutators: generators with a smaller and a larger index commute. -/
 theorem commute_yEl_of_lt {i k : I} (hik : i < k) (s t : Bool) :
     Commute (yEl r i s) (yEl r k t) := by
@@ -100,19 +95,15 @@ theorem commute_yEl_of_lt {i k : I} (hik : i < k) (s t : Bool) :
   rw [hrel] at h
   have hmap : (QuotientGroup.mk ⁅yGen i s, yGen k t⁆ : GroupY r)
       = ⁅yEl r i s, yEl r k t⁆ :=
-    map_commutatorElement (QuotientGroup.mk' (relSub (relY r))) _ _
+    rfl
   rw [hmap] at h
   exact commutatorElement_eq_one_iff_commute.1 h
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
 /-- The cross-commutators: generators with different indices commute in `G(Y_D)`. -/
 theorem commute_yEl_of_ne {i k : I} (hik : i ≠ k) (s t : Bool) :
     Commute (yEl r i s) (yEl r k t) := by
-  rcases lt_or_gt_of_ne hik with h | h
-  · exact commute_yEl_of_lt r h s t
-  · exact (commute_yEl_of_lt r h t s).symm
+  grind [commute_yEl_of_lt]
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
 /-- The relator `x_i[a_i,b_i]⁻¹`: in `G(Y_D)` one has `x_i = [a_i, b_i]`. -/
 theorem xEl_eq_commutator (i : I) : xEl r i = ⁅yEl r i false, yEl r i true⁆ := by
   have h : (QuotientGroup.mk' (relSub (relY r))) (xGen i * ⁅yGen i false, yGen i true⁆⁻¹) = 1 :=
@@ -120,48 +111,45 @@ theorem xEl_eq_commutator (i : I) : xEl r i = ⁅yEl r i false, yEl r i true⁆ 
   rw [map_mul, map_inv, map_commutatorElement] at h
   exact mul_inv_eq_one.1 h
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
 /-- The homomorphism `π₁(D) → G(Y_D)` induced by the inclusion, on the level of free
 groups. -/
 theorem lift_xEl (w : FreeGroup I) :
     FreeGroup.lift (fun i => xEl r i) w = (QuotientGroup.mk (FreeGroup.map Sum.inl w) : GroupY r) := by
   have h : FreeGroup.lift (fun i => xEl r i)
       = ((QuotientGroup.mk' (relSub (relY r))).comp (FreeGroup.map Sum.inl)) := by
-    refine FreeGroup.ext_hom _ _ fun i => ?_
-    simp [FreeGroup.lift_apply_of, xEl, xGen]
+    aesop
   exact congrArg (fun f : FreeGroup I →* GroupY r => f w) h
+end
 
 /-- Surjectivity of the exponent-sum matrix of `D` — part of the acyclicity of `D`. -/
-def ExpSurjective : Prop := Function.Surjective (Finsupp.linearCombination ℤ (expCol r))
+def ExpSurjective  := Function.Surjective (Finsupp.linearCombination ℤ (expCol r))
 
 variable {r}
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
+section
+omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
 /-- **The elimination step of Lemma 3.1.**  If the exponent-sum matrix of `D` is surjective,
 then `[a_i, b_i] = 1` in `G(Y_D)`. -/
 theorem commutator_yEl_eq_one (hM : ExpSurjective r) (i : I) :
     ⁅yEl r i false, yEl r i true⁆ = 1 := by
   have hab : CrossCommuting (fun i => yEl r i false) (fun i => yEl r i true) := by
-    intro i k hik
-    exact ⟨commute_yEl_of_ne r hik false false, commute_yEl_of_ne r hik false true,
-      commute_yEl_of_ne r hik true false, commute_yEl_of_ne r hik true true⟩
-  have hu : ∀ i k : I, Commute (⁅yEl r i false, yEl r i true⁆) (⁅yEl r k false, yEl r k true⁆) :=
+    simp_all [FiniteChains.CrossCommuting, commute_yEl_of_ne]
+  have hu  :=
     fun i k => commute_pairComm _ _ hab i k
   have hlift : FreeGroup.lift (fun i => ⁅yEl r i false, yEl r i true⁆)
       = FreeGroup.lift (fun i => xEl r i) := by
-    refine congrArg _ (funext fun i => ?_)
-    exact (xEl_eq_commutator r i).symm
+    simp_all [xEl_eq_commutator]
   have hrel : ∀ j, FreeGroup.lift (fun i => ⁅yEl r i false, yEl r i true⁆) (r j) = 1 := by
     intro j
     rw [hlift, lift_xEl r]
     exact mk_relY r (Sum.inl j)
   exact eq_one_of_expCol_surjective _ hu r hrel hM i
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
 /-- **The inclusion `D ⊂ Y_D` kills `π₁(D)`**: every generator `x_i` of `D` becomes trivial
 in `G(Y_D)`. -/
 theorem xEl_eq_one (hM : ExpSurjective r) (i : I) : xEl r i = 1 := by
   rw [xEl_eq_commutator, commutator_yEl_eq_one hM]
+end
 
 omit [Fintype I] [Fintype J] [DecidableEq J] in
 /-- **All added generators commute** in `G(Y_D)`. -/
@@ -180,7 +168,7 @@ theorem commute_yEl (hM : ExpSurjective r) (i k : I) (s t : Bool) :
 /-! ### The Fox matrix of `Y_D` -/
 
 /-- The image of the group element `y_{i,s}` in the group ring `ℤ[G(Y_D)]`. -/
-noncomputable def yRing (i : I) (s : Bool) : MonoidAlgebra ℤ (GroupY r) :=
+noncomputable def yRing (i : I) (s : Bool)  :=
   MonoidAlgebra.of ℤ (GroupY r) (yEl r i s)
 
 /-- The Fox derivative of a commutator of two free generators. -/
@@ -191,10 +179,7 @@ theorem fox_commutator_free {β : Type*} [DecidableEq β] (A B g : β) :
         + (if g = B then grp (FreeGroup.of A)
             - grp ⁅FreeGroup.of A, FreeGroup.of B⁆ else 0) := by
   rcases eq_or_ne A B with rfl | hAB
-  · have h1 : ⁅FreeGroup.of A, FreeGroup.of A⁆ = 1 := by simp
-    have h2 : FreeGroup.of A * FreeGroup.of A * (FreeGroup.of A)⁻¹ = FreeGroup.of A := by group
-    rw [h1, h2, fox_one]
-    by_cases hA : g = A <;> simp [hA]
+  · aesop
   · show fox g (FreeGroup.of A * FreeGroup.of B * (FreeGroup.of A)⁻¹ * (FreeGroup.of B)⁻¹) = _
     rw [fox_mul, fox_mul, fox_mul, fox_inv, fox_inv, fox_of, fox_of]
     by_cases hA : g = A <;> by_cases hB : g = B <;>
@@ -231,12 +216,12 @@ theorem proj_fox_commutator {β : Type*} [DecidableEq β] (Nsub : Subgroup (Free
   rw [fox_commutator_free, map_add, apply_ite (proj Nsub), apply_ite (proj Nsub),
     map_zero, map_sub, map_sub, map_one, proj_grp, proj_grp, proj_grp, hq1, hq2]
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
+section
+omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
 theorem yRing_eq_qgrp (i : I) (s : Bool) :
     yRing (r := r) i s
       = qgrp (relSub (relY r)) (FreeGroup.of (Sum.inr (i, s)) : FreeGroup (GenY I)) := rfl
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
 /-- In `G(Y_D)` the generators `x_k` are trivial, so they are trivial in the group ring. -/
 theorem qgrp_xGen (hM : ExpSurjective r) (k : I) :
     qgrp (relSub (relY r)) (FreeGroup.of (Sum.inl k) : FreeGroup (GenY I)) = 1 := by
@@ -246,7 +231,6 @@ theorem qgrp_xGen (hM : ExpSurjective r) (k : I) :
   rw [h]
   rfl
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
 /-- The commutator `[a_k, b_k]` is trivial in `G(Y_D)`. -/
 theorem qgrp_comm_inv (hM : ExpSurjective r) (k : I) :
     qgrp (relSub (relY r)) (⁅(FreeGroup.of (Sum.inr (k, false)) : FreeGroup (GenY I)),
@@ -261,15 +245,16 @@ theorem qgrp_comm_inv (hM : ExpSurjective r) (k : I) :
   unfold qgrp
   rw [h]
   rfl
+end
 
-omit [Fintype I] [Fintype J] [DecidableEq J] in
+section
+omit [Fintype I] [Fintype J] [DecidableEq J]
 /-- The Fox matrix of `Y_D` at a new generator and an old two-cell vanishes. -/
 theorem foxMatrix_inr_inl (i : I) (s : Bool) (j : J) :
     foxMatrixPres (relY r) (Sum.inr (i, s)) (Sum.inl j) = 0 := by
   show proj (relSub (relY r)) (fox (Sum.inr (i, s)) (FreeGroup.map Sum.inl (r j))) = 0
   rw [fox_map_of_not_mem_range Sum.inl (fun k => by simp), map_zero]
 
-omit [Fintype I] [Fintype J] [DecidableEq J] in
 /-- The Fox matrix of `Y_D` at a new generator and a cell `x_k[a_k,b_k]⁻¹`. -/
 theorem foxMatrix_inr_mid (hM : ExpSurjective r) (i k : I) (s : Bool) :
     foxMatrixPres (relY r) (Sum.inr (i, s)) (Sum.inr (Sum.inl k))
@@ -288,14 +273,8 @@ theorem foxMatrix_inr_mid (hM : ExpSurjective r) (i k : I) (s : Bool) :
   by_cases hik : k = i
   · subst hik
     cases s <;> simp
-  · have hne : ∀ b : Bool, (Sum.inr (i, s) : GenY I) ≠ Sum.inr (k, b) := by
-      intro b h
-      rw [Sum.inr.injEq, Prod.mk.injEq] at h
-      exact hik h.1.symm
-    rw [if_neg hik, if_neg (hne false), if_neg (hne true)]
-    simp
+  · aesop
 
-omit [Fintype I] [Fintype J] [DecidableEq J] in
 /-- The Fox matrix of `Y_D` at a new generator and a cross-commutator. -/
 theorem foxMatrix_inr_cross (hM : ExpSurjective r) (i : I) (s : Bool) (c : CrossY I) :
     foxMatrixPres (relY r) (Sum.inr (i, s)) (Sum.inr (Sum.inr c))
@@ -306,7 +285,8 @@ theorem foxMatrix_inr_cross (hM : ExpSurjective r) (i : I) (s : Bool) (c : Cross
     ⁅(FreeGroup.of (Sum.inr (p, u)) : FreeGroup (GenY I)), FreeGroup.of (Sum.inr (q, v))⁆) = _
   rw [proj_fox_commutator (relSub (relY r)) (Sum.inr (p, u)) (Sum.inr (q, v))
     (Sum.inr (i, s)) (commute_yEl hM p q u v), ← yRing_eq_qgrp, ← yRing_eq_qgrp]
-  simp [Prod.ext_iff]
+  simp 
+end
 
 /-! ### The evaluation homomorphism -/
 
@@ -326,9 +306,7 @@ theorem thetaFree_map_inl (w : FreeGroup I) :
     thetaFree (FreeGroup.map Sum.inl w) = 1 := by
   have h : thetaFree.comp (FreeGroup.map (Sum.inl : I → GenY I))
       = (1 : FreeGroup I →* Multiplicative (I × Bool →₀ ℤ)) := by
-    refine FreeGroup.ext_hom _ _ fun i => ?_
-    show thetaFree (FreeGroup.of (Sum.inl i)) = 1
-    rw [thetaFree, FreeGroup.lift_apply_of]
+    aesop
   exact congrArg (fun f : FreeGroup I →* Multiplicative (I × Bool →₀ ℤ) => f w) h
 
 omit [Fintype J] [DecidableEq J] in
@@ -349,7 +327,7 @@ theorem thetaFree_relY (c : CellY I J) : thetaFree (relY r c) = 1 := by
       exact commutatorElement_eq_one_iff_commute.2 (Commute.all _ _)
 
 /-- The homomorphism `G(Y_D) → ⊕_i (ℤ a_i ⊕ ℤ b_i)` of Lemma 3.1. -/
-noncomputable def thetaY : GroupY r →* Multiplicative (I × Bool →₀ ℤ) :=
+noncomputable def thetaY  :=
   QuotientGroup.lift (relSub (relY r)) thetaFree
     (by
       have hsub : relSub (relY r) ≤ thetaFree.ker := by
@@ -361,26 +339,21 @@ noncomputable def thetaY : GroupY r →* Multiplicative (I × Bool →₀ ℤ) :
 omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
 theorem thetaY_yEl (i : I) (s : Bool) :
     Multiplicative.toAdd (thetaY r (yEl r i s)) = Finsupp.single (i, s) 1 := by
-  show Multiplicative.toAdd (thetaFree (FreeGroup.of (Sum.inr (i, s)) : FreeGroup (GenY I)))
-    = Finsupp.single (i, s) 1
-  rw [thetaFree, FreeGroup.lift_apply_of]
-  rfl
+  solve_by_elim [FreeGroup.lift_apply_of, FreeGroup.lift_apply_of]
 
 /-- The coordinate functional `ℤ[G(Y_D)] → ℤ` attached to a generator `y_P`: the
 composition of `thetaY` with the `P`-th coordinate.  It kills products of two elements of
 the augmentation ideal, which is what makes the cycle equations computable. -/
-noncomputable def psiY (P : I × Bool) : MonoidAlgebra ℤ (GroupY r) →ₗ[ℤ] ℤ :=
+noncomputable def psiY (P : I × Bool)  :=
   (Finsupp.linearCombination ℤ fun g : GroupY r => (Multiplicative.toAdd (thetaY r g)) P).comp
     (MonoidAlgebra.coeffLinearEquiv ℤ).toLinearMap
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
+section
+omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
 theorem psiY_single (P : I × Bool) (g : GroupY r) (n : ℤ) :
     psiY r P (MonoidAlgebra.single g n) = n * (Multiplicative.toAdd (thetaY r g)) P := by
-  show Finsupp.linearCombination ℤ
-      (fun g : GroupY r => (Multiplicative.toAdd (thetaY r g)) P) (Finsupp.single g n) = _
-  rw [Finsupp.linearCombination_single, smul_eq_mul]
+  solve_by_elim [Finsupp.linearCombination_single, Finsupp.linearCombination_single]
 
-omit [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] in
 /-- **The key computation.**  Evaluating `z · (g - 1)` returns the augmentation of `z`
 times the `P`-th coordinate of the image of `g`; in particular products of two elements of
 the augmentation ideal are killed. -/
@@ -391,35 +364,24 @@ theorem psiY_mul_group_sub_one (P : I × Bool) (g : GroupY r)
   induction z using MonoidAlgebra.induction_linear with
   | zero => simp
   | add z₁ z₂ h₁ h₂ =>
-      rw [add_mul, map_add, h₁, h₂, map_add, add_mul]
+      simp_all [add_mul]
   | single h n =>
-      have hmul : (MonoidAlgebra.single h n : MonoidAlgebra ℤ (GroupY r)) *
-          (MonoidAlgebra.of ℤ (GroupY r) g - 1)
-          = MonoidAlgebra.single (h * g) n - MonoidAlgebra.single h n := by
-        rw [mul_sub, mul_one]
-        congr 1
-        show MonoidAlgebra.single h n * MonoidAlgebra.single g 1 = _
-        rw [MonoidAlgebra.single_mul_single, mul_one]
-      rw [hmul, map_sub, psiY_single, psiY_single, augQ_single]
-      have hhom : Multiplicative.toAdd (thetaY r (h * g))
-          = Multiplicative.toAdd (thetaY r h) + Multiplicative.toAdd (thetaY r g) := by
-        rw [map_mul]
-        rfl
-      rw [hhom]
-      simp [mul_add]
+      simp_all [mul_sub, psiY_single, mul_add]
+end
 
-omit [Fintype I] [Fintype J] [DecidableEq J] in
+section
+omit [Fintype I] [Fintype J] [DecidableEq J]
 theorem psiY_mul_sub_one (P Q : I × Bool) (z : MonoidAlgebra ℤ (GroupY r)) :
     psiY r P (z * (yRing (r := r) Q.1 Q.2 - 1)) = augPres (relY r) z * (if Q = P then 1 else 0) := by
   rw [show yRing (r := r) Q.1 Q.2 = MonoidAlgebra.of ℤ (GroupY r) (yEl r Q.1 Q.2) from rfl,
     psiY_mul_group_sub_one, thetaY_yEl]
   simp [Finsupp.single_apply]
 
-omit [Fintype I] [Fintype J] [DecidableEq J] in
 theorem psiY_mul_one_sub (P Q : I × Bool) (z : MonoidAlgebra ℤ (GroupY r)) :
     psiY r P (z * (1 - yRing (r := r) Q.1 Q.2)) = -(augPres (relY r) z * (if Q = P then 1 else 0)) := by
   have h : z * (1 - yRing (r := r) Q.1 Q.2) = -(z * (yRing (r := r) Q.1 Q.2 - 1)) := by noncomm_ring
   rw [h, map_neg, psiY_mul_sub_one]
+end
 
 /-! ### Lemma 3.1 -/
 
@@ -448,9 +410,9 @@ theorem psiY_cross_term (hM : ExpSurjective r) (P : I × Bool) (i : I) (s : Bool
 
 /-! ### The inclusion `D ⊂ Y_D` -/
 
-variable (r)
 
-variable {r}
+
+
 
 /-! ### The fundamental group of `Y_D` -/
 

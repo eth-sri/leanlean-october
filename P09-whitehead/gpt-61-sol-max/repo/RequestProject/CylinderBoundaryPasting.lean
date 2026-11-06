@@ -1,22 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.AttachmentHomotopyExtension
-
-@[expose] public section
+import RequestProject.AttachmentHomotopyExtension
 
 /-! Continuous pasting on the two ends and the side of a cylinder.
 The side is any closed subspace, including an arbitrary disjoint family of
 disk boundaries. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u v
 variable {D : Type u} [TopologicalSpace D] (S : Set D)
 
 abbrev FullCylinderBoundary :=
@@ -25,35 +20,29 @@ abbrev FullCylinderBoundary :=
 variable {Z : Type v} [TopologicalSpace Z]
 
 def fullCylinderPastingFun (f₀ f₁ : C(D, Z)) (H : C(I × S, Z))
-    (z : FullCylinderBoundary S) : Z :=
+    (z : FullCylinderBoundary S)  :=
   if h₀ : z.val.1 = 0 then f₀ z.val.2
   else if h₁ : z.val.1 = 1 then f₁ z.val.2
   else H (z.val.1, ⟨z.val.2, (z.property.resolve_left h₀).resolve_left h₁⟩)
 
 theorem fullCylinderPastingFun_zero (f₀ f₁ : C(D, Z)) (H : C(I × S, Z))
     (z : FullCylinderBoundary S) (hz : z.val.1 = 0) :
-    fullCylinderPastingFun S f₀ f₁ H z = f₀ z.val.2 := by
-  simp only [fullCylinderPastingFun, dif_pos hz]
+    fullCylinderPastingFun S f₀ f₁ H z = f₀ z.val.2 := by simp_all [fullCylinderPastingFun]
 
 theorem fullCylinderPastingFun_one (f₀ f₁ : C(D, Z)) (H : C(I × S, Z))
     (z : FullCylinderBoundary S) (hz : z.val.1 = 1) :
-    fullCylinderPastingFun S f₀ f₁ H z = f₁ z.val.2 := by
-  have hzero : z.val.1 ≠ 0 := by rw [hz]; exact one_ne_zero
-  simp only [fullCylinderPastingFun, dif_neg hzero, dif_pos hz]
+    fullCylinderPastingFun S f₀ f₁ H z = f₁ z.val.2 := by simp_all [fullCylinderPastingFun]
 
 theorem fullCylinderPastingFun_side (f₀ f₁ : C(D, Z)) (H : C(I × S, Z))
     (h₀ : ∀ x, H (0, x) = f₀ x.val) (h₁ : ∀ x, H (1, x) = f₁ x.val)
     (z : FullCylinderBoundary S) (hz : z.val.2 ∈ S) :
     fullCylinderPastingFun S f₀ f₁ H z = H (z.val.1, ⟨z.val.2, hz⟩) := by
-  by_cases ht₀ : z.val.1 = 0
-  · rw [fullCylinderPastingFun_zero S f₀ f₁ H z ht₀, ht₀, h₀]
-  by_cases ht₁ : z.val.1 = 1
-  · rw [fullCylinderPastingFun_one S f₀ f₁ H z ht₁, ht₁, h₁]
-  simp only [fullCylinderPastingFun, dif_neg ht₀, dif_neg ht₁]
+  classical grind [fullCylinderPastingFun]
 
+variable (hS : IsClosed S)
 /-- Pasting on the full cylinder boundary, with exact formulas on each of
 the three closed pieces. -/
-def fullCylinderPasting (hS : IsClosed S) (f₀ f₁ : C(D, Z)) (H : C(I × S, Z))
+def fullCylinderPasting  (f₀ f₁ : C(D, Z)) (H : C(I × S, Z))
     (h₀ : ∀ x, H (0, x) = f₀ x.val) (h₁ : ∀ x, H (1, x) = f₁ x.val) :
     C(FullCylinderBoundary S, Z) where
   toFun := fullCylinderPastingFun S f₀ f₁ H
@@ -90,19 +79,19 @@ def fullCylinderPasting (hS : IsClosed S) (f₀ f₁ : C(D, Z)) (H : C(I × S, Z
     rw [← continuousOn_univ, ← hcover]
     exact (hf₀.union_of_isClosed hf₁ hb₀ hb₁).union_of_isClosed hh (hb₀.union hb₁) hc
 
-@[simp] theorem fullCylinderPasting_zero (hS : IsClosed S) (f₀ f₁ : C(D, Z))
+@[simp] theorem fullCylinderPasting_zero  (f₀ f₁ : C(D, Z))
     (H : C(I × S, Z)) (h₀ : ∀ x, H (0, x) = f₀ x.val)
     (h₁ : ∀ x, H (1, x) = f₁ x.val) (d : D) :
     fullCylinderPasting S hS f₀ f₁ H h₀ h₁ ⟨(0, d), Or.inl rfl⟩ = f₀ d :=
   fullCylinderPastingFun_zero S f₀ f₁ H _ rfl
 
-@[simp] theorem fullCylinderPasting_one (hS : IsClosed S) (f₀ f₁ : C(D, Z))
+@[simp] theorem fullCylinderPasting_one  (f₀ f₁ : C(D, Z))
     (H : C(I × S, Z)) (h₀ : ∀ x, H (0, x) = f₀ x.val)
     (h₁ : ∀ x, H (1, x) = f₁ x.val) (d : D) :
     fullCylinderPasting S hS f₀ f₁ H h₀ h₁ ⟨(1, d), Or.inr (Or.inl rfl)⟩ = f₁ d :=
   fullCylinderPastingFun_one S f₀ f₁ H _ rfl
 
-@[simp] theorem fullCylinderPasting_side (hS : IsClosed S) (f₀ f₁ : C(D, Z))
+@[simp] theorem fullCylinderPasting_side  (f₀ f₁ : C(D, Z))
     (H : C(I × S, Z)) (h₀ : ∀ x, H (0, x) = f₀ x.val)
     (h₁ : ∀ x, H (1, x) = f₁ x.val) (t : I) (x : S) :
     fullCylinderPasting S hS f₀ f₁ H h₀ h₁

@@ -1,4 +1,3 @@
-module
-public import RequestProject.GenusFundamentalChain
-public import RequestProject.OrderNerveDecoding
-public import RequestProject.StrictChainCoefficients
+import RequestProject.GenusFundamentalChain
+import RequestProject.OrderNerveDecoding
+import RequestProject.StrictChainCoefficients

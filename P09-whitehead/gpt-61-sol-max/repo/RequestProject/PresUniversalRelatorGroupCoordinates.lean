@@ -1,14 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresUniversalGroupCoordinates
-public import RequestProject.PresCoverRelatorChains
-public import RequestProject.OrderUniversalPoset
-
-@[expose] public section
+import RequestProject.PresUniversalGroupCoordinates
+import RequestProject.PresCoverRelatorChains
+import RequestProject.OrderUniversalPoset
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
@@ -32,9 +29,7 @@ noncomputable def presUniversalRelatorGroupEquiv :
     · rfl
 
 /-- Finite actual relator coefficients expressed in actual presentation-group coordinates. -/
-noncomputable def presUniversalRelatorGroupChainEquiv :
-    (PresCoverRelator w (uOrderEnd (P := PresPos w) (a := ptBase w)) →₀ ℤ) ≃ₗ[ℤ]
-      (PresGroup ρ × J →₀ ℤ) :=
+noncomputable def presUniversalRelatorGroupChainEquiv  :=
   Finsupp.domLCongr (R := ℤ) (M := ℤ) (presUniversalRelatorGroupEquiv ρ w hw hpos)
 
 end FiniteChains.PresModel

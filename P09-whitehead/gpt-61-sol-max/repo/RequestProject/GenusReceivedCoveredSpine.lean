@@ -1,19 +1,15 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusQuotientRelativeSupport
-public import RequestProject.GenusOldCoverSpineFaithfulness
-public import RequestProject.ChamberQuotientOldCover
-public import RequestProject.StrictOrderPullbackHom
-public import RequestProject.OrderCxRestriction
-public import RequestProject.UniversalCoverPi1Injection
-
-@[expose] public section
+import RequestProject.GenusQuotientRelativeSupport
+import RequestProject.GenusOldCoverSpineFaithfulness
+import RequestProject.ChamberQuotientOldCover
+import RequestProject.StrictOrderPullbackHom
+import RequestProject.OrderCxRestriction
+import RequestProject.UniversalCoverPi1Injection
 
 /-! The received spine is mapped into the genuine pulled-back old-cover spine.
 
 -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -37,7 +33,7 @@ theorem uOrderHomInv_projection_square {P : Type} [PartialOrder P] (a : P) :
   apply Hom.ext'
   · funext x
     change uOrderEnd (uOrderHomInv.onV x) = endV x
-    rw (config := { transparency := .default }) [uOrderHomInv_vertex]
+    rw  [uOrderHomInv_vertex]
     rfl
   · funext e
     exact uOrderHomInv_edge_projection e
@@ -64,31 +60,20 @@ theorem qOldCover_projection_square (a : Qpos A X att)
       (orderCxMap (qOldCoverEnd a) hf) =
       (orderCxMap uOrderEnd uOrderEnd_monotone).comp
         (orderCxMap (Subtype.val : QLiftedOld a → UOrder (Qpos A X att) a)
-          (fun _ _ h => h)) := by
-  apply Hom.ext'
-  · funext p
-    exact qOldCoverEnd_spec a p
-  · funext e
-    apply Subtype.ext
-    exact Prod.ext (qOldCoverEnd_spec a e.1.1) (qOldCoverEnd_spec a e.1.2)
-  · funext t
-    apply Subtype.ext
-    exact Prod.ext (qOldCoverEnd_spec a t.1.1)
-      (Prod.ext (qOldCoverEnd_spec a t.1.2.1) (qOldCoverEnd_spec a t.1.2.2))
+          (fun _ _ h => h)) := by apply Hom.ext' <;> funext x <;> solve_by_elim (maxDepth := 10) [Subtype.ext, Prod.ext, qOldCoverEnd_spec]
 
 end FiniteChains.Davis
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily Nerve
-open scoped Classical
+
 variable (q : ℕ) [NeZero q] {α Jr : Type}
   (ρ : Jr ⊕ PUnit.{1} → FreeGroup α) (u : Fin q × Bool → FreeGroup α)
   (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
 
 noncomputable abbrev namedOldCover := QLiftedOld (namedQuotientBase ρ q u)
 
-noncomputable def namedOldCoverProjection :
-    namedOldCover q ρ u → QOld (cmpRel (GenusVertex q)) :=
+noncomputable def namedOldCoverProjection  :=
   qOldCoverEnd (namedQuotientBase ρ q u)
 
 theorem namedOldCoverProjection_isPosetCover : IsPosetCover (namedOldCoverProjection q ρ u) :=
@@ -110,14 +95,12 @@ end FiniteChains.Davis.Genus
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily Nerve
-open scoped Classical
+
 variable (q : ℕ) [NeZero q] {α Jr : Type}
   (ρ : Jr ⊕ PUnit.{1} → FreeGroup α) (u : Fin q × Bool → FreeGroup α)
   (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
 
-noncomputable def coveredSpineToStrictSpine :
-    Hom (strictOrderCx (OldCoveredSpine q (namedOldCoverProjection q ρ u)))
-      (strictOrderCx (GenusSpineCell q)) :=
+noncomputable def coveredSpineToStrictSpine  :=
   (strictPullbackProjection (namedOldCoverProjection q ρ u)
     (namedOldCoverProjection_isPosetCover q ρ u) (genusSpineCellToOld q)
     (genusSpineCellToOld_monotone q)).comp

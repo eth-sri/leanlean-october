@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalCWCellularDiskTransfer
-
-@[expose] public section
+import RequestProject.ClassicalCWCellularDiskTransfer
 
 /-! Transfer a whole relative presentation extension: first its new
 one-cells, then its new two-cells. The zero-on-pi2 condition is required
@@ -10,7 +8,7 @@ only for the whole model extension, not for either intermediate map. -/
 
 noncomputable section
 namespace Whitehead
-open scoped Topology Classical
+
 open FiniteChains.RelativeAttachment
 
 variable (K : TwoComplex) {P J₁ J₂ : Type} [TopologicalSpace P]
@@ -18,7 +16,7 @@ variable (K : TwoComplex) {P J₁ J₂ : Type} [TopologicalSpace P]
   (r₁ : C(BoundaryFamily J₁ (Fin 1 → ℝ), P))
   (r₂ : C(BoundaryFamily J₂ (Fin 2 → ℝ), DiskAttachment r₁))
 
-def oneTwoAttachmentMap : C(P, DiskAttachment r₂) :=
+def oneTwoAttachmentMap  :=
   (⟨old r₂ (boundaryFamilyInclusion J₂ (Fin 2 → ℝ)), old_continuous _ _⟩ :
     C(DiskAttachment r₁, DiskAttachment r₂)).comp
       ⟨old r₁ (boundaryFamilyInclusion J₁ (Fin 1 → ℝ)), old_continuous _ _⟩
@@ -42,12 +40,7 @@ def oneTwoDiskTransfer : OneTwoDiskTransfer K e r₁ r₂ := by
     square := ?_
     finite := fun hK hJ₁ hJ₂ => T₂.finite (T₁.finite hK hJ₁) hJ₂
     proper := ?_ }
-  · apply ContinuousMap.ext
-    intro p
-    have h₂ := congrArg (fun f : C(DiskAttachment r₁, T₂.target) =>
-      f (old r₁ (boundaryFamilyInclusion J₁ (Fin 1 → ℝ)) p)) T₂.square
-    have h₁ := congrArg (fun f : C(P, T₁.target) => f p) T₁.square
-    exact h₂.trans (congrArg T₂.oldEmbedding.map h₁)
+  · rfl
   · intro hJ
     rcases hJ with hJ | hJ
     · obtain ⟨z, hz⟩ := T₁.proper hJ
@@ -66,5 +59,5 @@ theorem killsPi2_iff (T : OneTwoDiskTransfer K e r₁ r₂) :
   apply killsPi2_homotopyEquiv_square_iff e T.comparison
   rw [T.square]
 
-end OneTwoDiskTransfer
-end Whitehead
+end Whitehead.OneTwoDiskTransfer
+

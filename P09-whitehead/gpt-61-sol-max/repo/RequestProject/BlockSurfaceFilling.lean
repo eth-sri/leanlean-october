@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.BlockSpineSubst
-
-@[expose] public section
+import RequestProject.BlockSpineSubst
 
 /-!
 # From a surface filling to the hypothesis `hfill` of the substitution
@@ -36,21 +34,17 @@ its boundary being that product of commutators.
   attaching map and the filling of the surface relator.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
-open RACG Mirror Comb PresModel BlockFamily
 
-universe u v
+
+
 
 /-! ### Products of commutators -/
 
 /-- The product of the commutators `[f x, f y]` over a list of pairs `(x, y)`. -/
-def commWord {ι : Type*} {G : Type*} [Group G] (f : ι → G) (ps : List (ι × ι)) : G :=
+def commWord {ι : Type*} {G : Type*} [Group G] (f : ι → G) (ps : List (ι × ι))  :=
   (ps.map fun p => f p.1 * f p.2 * (f p.1)⁻¹ * (f p.2)⁻¹).prod
 
 @[simp] theorem commWord_nil {ι : Type*} {G : Type*} [Group G] (f : ι → G) :
@@ -65,9 +59,7 @@ theorem commWord_cons {ι : Type*} {G : Type*} [Group G] (f : ι → G) (p : ι 
 images. -/
 theorem map_commWord {ι : Type*} {G H : Type*} [Group G] [Group H] (φ : G →* H) (f : ι → G)
     (ps : List (ι × ι)) : φ (commWord f ps) = commWord (fun i => φ (f i)) ps := by
-  induction ps with
-  | nil => simp
-  | cons p ps ih => rw [commWord_cons, map_mul, ih, commWord_cons]; simp
+  induction ps <;> simp_all [commWord_cons]
 
 theorem commWord_congr {ι : Type*} {G : Type*} [Group G] {f g : ι → G} (h : ∀ i, f i = g i)
     (ps : List (ι × ι)) : commWord f ps = commWord g ps := by
@@ -86,11 +78,11 @@ theorem map_mem_normalClosure {G H : Type*} [Group G] [Group H] (φ : G →* H) 
 
 /-! ### The surface word is a consequence of the block relators -/
 
-variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
+
 
 /-! ### The hypothesis (B1), derived -/
 
 /-! ### The application -/
 
-end Davis
-end FiniteChains
+end FiniteChains.Davis
+

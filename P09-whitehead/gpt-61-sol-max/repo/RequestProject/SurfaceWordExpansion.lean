@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.BlockSurfaceFilling
-
-@[expose] public section
+import RequestProject.BlockSurfaceFilling
 
 /-!
 Naming arbitrary words in a surface relation. The named presentation retains the old
@@ -11,10 +9,9 @@ by the same product of commutators in the new generators. Its group is isomorphi
 original presentation group. No finiteness of the index sets is needed.
 -/
 
-namespace FiniteChains
-namespace SurfaceWordExpansion
+namespace FiniteChains.SurfaceWordExpansion
 
-universe u
+
 
 variable {α Jr I : Type u}
   (ρ : Jr ⊕ PUnit.{u + 1} → FreeGroup α) (w : I → FreeGroup α) (ps : List (I × I))
@@ -30,23 +27,18 @@ def expandedRel : (Jr ⊕ I) ⊕ PUnit.{u + 1} → FreeGroup (α ⊕ I)
   | Sum.inr _ => formalSurface (α := α) ps
 
 /-- Eliminate each new name by substituting the word it names. -/
-def foldNames : FreeGroup (α ⊕ I) →* FreeGroup α :=
+def foldNames  :=
   FreeGroup.lift (Sum.elim FreeGroup.of w)
 
  theorem foldNames_map_inl (v : FreeGroup α) :
     foldNames w (FreeGroup.map (Sum.inl (β := I)) v) = v := by
   have h : (foldNames w).comp (FreeGroup.map (Sum.inl (β := I))) = MonoidHom.id _ := by
-    apply FreeGroup.ext_hom
-    intro a
-    simp [foldNames]
+    aesop
   exact DFunLike.congr_fun h v
 
  theorem foldNames_formalSurface :
     foldNames w (formalSurface (α := α) ps) = Davis.commWord w ps := by
-  rw [formalSurface, Davis.map_commWord]
-  apply Davis.commWord_congr
-  intro i
-  simp [foldNames]
+  simp_all [formalSurface, Davis.map_commWord, foldNames]
 
 /-- The defining relators identify each new name with the prescribed old word. -/
  theorem name_eq_word (i : I) :
@@ -79,8 +71,7 @@ include hrho
     rw [Davis.map_commWord, Davis.map_commWord]
     have he : Davis.commWord (fun i => q (FreeGroup.map Sum.inl (w i))) ps =
         q (formalSurface (α := α) ps) := by
-      rw [formalSurface, Davis.map_commWord]
-      exact Davis.commWord_congr (fun i => (name_eq_word ρ w ps i).symm) ps
+      aesop (add simp [formalSurface, Davis.map_commWord, name_eq_word])
     rw [he]
     exact (QuotientGroup.eq_one_iff _).2
       (Subgroup.subset_normalClosure ⟨Sum.inr PUnit.unit, rfl⟩)
@@ -131,10 +122,7 @@ def elimination : PresGroup (expandedRel ρ w ps) →* PresGroup ρ :=
   have h : ((QuotientGroup.mk' (relSub (expandedRel ρ w ps))).comp
       (FreeGroup.map (Sum.inl (β := I)))).comp (foldNames w) =
         QuotientGroup.mk' (relSub (expandedRel ρ w ps)) := by
-    apply FreeGroup.ext_hom
-    rintro (a | i)
-    · simp [foldNames]
-    · simpa [foldNames] using (name_eq_word ρ w ps i).symm
+    aesop (add simp [foldNames, name_eq_word])
   induction g using QuotientGroup.induction_on with
   | H v => exact DFunLike.congr_fun h v
 
@@ -146,5 +134,5 @@ def groupEquiv : PresGroup ρ ≃* PresGroup (expandedRel ρ w ps) where
   right_inv := inclusion_elimination ρ w ps hrho
   map_mul' := map_mul _
 
-end SurfaceWordExpansion
-end FiniteChains
+end FiniteChains.SurfaceWordExpansion
+

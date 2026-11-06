@@ -1,14 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MathlibOrderNerveCells
-public import RequestProject.OrderComplexSurface
-public import Mathlib.AlgebraicTopology.SimplicialSet.Dimension
-
-@[expose] public section
+import RequestProject.MathlibOrderNerveCells
+import RequestProject.OrderComplexSurface
+import Mathlib.AlgebraicTopology.SimplicialSet.Dimension
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
-universe u
 
 /-- A bounded strictly increasing rank bounds the dimension of every actual
 nondegenerate simplex of the poset nerve. -/
@@ -22,7 +19,7 @@ theorem orderNerve_nonDegenerate_dimension_le {P : Type u} [PartialOrder P]
     apply hstrict.injective
     exact congrArg Fin.val hij
   have hcard := Fintype.card_le_of_injective g hg
-  simp only [Fintype.card_fin] at hcard
+  simp  at hcard
   omega
 
 /-- The actual Mathlib nerve of a bounded ranked poset has the asserted dimension. -/

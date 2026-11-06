@@ -1,22 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NamedPresentation
-public import RequestProject.FoxNaturality
-public import RequestProject.PresentationDictionary
-
-@[expose] public section
+import RequestProject.NamedPresentation
+import RequestProject.FoxNaturality
+import RequestProject.PresentationDictionary
 
 /-! The actual Fox matrix after adjoining names for the marked words. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.NamedPresentation
 variable {α J I : Type} [DecidableEq α] [DecidableEq I]
   (ρ : J → FreeGroup α) (w : I → FreeGroup α)
 
-noncomputable def wordCoefficientMap :
-    FreeGroupRing α →+* MonoidAlgebra ℤ (PresGroup (rel ρ w)) :=
+noncomputable def wordCoefficientMap  :=
   (quotRingHom ℤ (relSub (rel ρ w))).comp (freeRingMap Sum.inl)
 
 theorem matrix_internal_relator (a : α) (j : J) :
@@ -54,8 +49,7 @@ theorem matrix_marked_name (i k : I) :
   have hz : fox (Sum.inr i) (FreeGroup.map Sum.inl (w k)) = 0 :=
     fox_map_of_not_mem_range Sum.inl (fun _ => Sum.inr_ne_inl) _
   by_cases h : i = k
-  · subst k
-    simp [foxMatrixPres, rel, fox_mul, fox_inv, hz]
-  · simp [foxMatrixPres, rel, fox_mul, fox_inv, hz, h]
+  · simp_all [foxMatrixPres, rel, fox_mul, fox_inv]
+  · simp_all [foxMatrixPres, rel, fox_mul, fox_inv]
 
 end FiniteChains.NamedPresentation

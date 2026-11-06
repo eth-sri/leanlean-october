@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalCellAttachmentMaps
-public import Mathlib.Topology.MetricSpace.ProperSpace
-public import Mathlib.Tactic
-
-@[expose] public section
+import RequestProject.ClassicalCellAttachmentMaps
+import Mathlib.Topology.MetricSpace.ProperSpace
+import Mathlib.Tactic
 
 /-! The original cells identify consecutive classical CW skeleta with an
 actual disk attachment. Cell families may be infinite, and the statement
@@ -12,11 +10,9 @@ also includes dimension zero. The topology is proved from the CW weak
 topology and compactness of each individual characteristic disk. -/
 
 noncomputable section
-open scoped Classical
+
 open Set Topology Metric
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalSkeletonAttachment
@@ -25,74 +21,73 @@ open RelativeAttachment
 variable {X : Type} [TopologicalSpace X] [T2Space X]
   (C : Set X) [CWComplex C]
 
-abbrev SkeletonCarrier (n : ℕ) :=
+variable (n : ℕ)
+abbrev SkeletonCarrier  :=
   {x : X // x ∈ CWComplex.skeletonLT C (n : ℕ∞)}
 
 /-- The literal inclusion of consecutive original skeleta. -/
-def skeletonInclusion (n : ℕ) : C(SkeletonCarrier C n, SkeletonCarrier C (n + 1)) where
+def skeletonInclusion  : C(SkeletonCarrier C n, SkeletonCarrier C (n + 1)) where
   toFun x := ⟨x.val, CWComplex.skeletonLT_mono (C := C)
     (by exact_mod_cast Nat.le_succ n) x.property⟩
   continuous_toFun := continuous_subtype_val.subtype_mk _
 
+variable (j : RelCWComplex.cell C n)
 /-- The original characteristic map restricted to its genuine closed disk. -/
-def characteristicDisk (n : ℕ) (j : RelCWComplex.cell C n) :
+def characteristicDisk   :
     C(ClosedUnitBall (Fin n → ℝ), X) where
   toFun x := RelCWComplex.map n j x.val
   continuous_toFun := (RelCWComplex.continuousOn n j).comp_continuous
     continuous_subtype_val (fun x => by
-      simpa only [Metric.mem_closedBall, dist_zero_right] using x.property)
+      aesop)
 
-def characteristicDiskFamily (n : ℕ) :
+def characteristicDiskFamily  :
     C(DiskFamily (RelCWComplex.cell C n) (Fin n → ℝ), X) where
   toFun d := characteristicDisk C n d.1 d.2
   continuous_toFun := continuous_sigma (fun j => (characteristicDisk C n j).continuous)
 
 /-- The attaching map is exactly the restriction of the original CW maps. -/
-def skeletonAttachingMap (n : ℕ) :
+def skeletonAttachingMap  :
     C(BoundaryFamily (RelCWComplex.cell C n) (Fin n → ℝ), SkeletonCarrier C n) where
   toFun a := ⟨RelCWComplex.map n a.1 a.2.val,
     CWComplex.cellFrontier_subset_skeletonLT n a.1
-      ⟨a.2.val, by simpa only [Metric.mem_sphere, dist_zero_right] using a.2.property, rfl⟩⟩
+      ⟨a.2.val, by aesop, rfl⟩⟩
   continuous_toFun := by
     apply Continuous.subtype_mk
     exact (characteristicDiskFamily C n).continuous.comp
       (boundaryFamilyInclusion_isClosedEmbedding (RelCWComplex.cell C n) (Fin n → ℝ)).continuous
 
 /-- Evaluation of the literal attachment into the original ambient CW space. -/
-def skeletonAttachmentOrigin (n : ℕ) : C(DiskAttachment (skeletonAttachingMap C n), X) :=
+def skeletonAttachmentOrigin   :=
   desc (skeletonAttachingMap C n)
     (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ))
     ⟨Subtype.val, continuous_subtype_val⟩ (characteristicDiskFamily C n) (fun _ => rfl)
 
-@[simp] theorem skeletonAttachmentOrigin_old (n : ℕ) (x : SkeletonCarrier C n) :
-    skeletonAttachmentOrigin C n
-      (old (skeletonAttachingMap C n)
-        (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) x) = x.val := rfl
 
-@[simp] theorem skeletonAttachmentOrigin_cell (n : ℕ)
-    (j : RelCWComplex.cell C n) (x : ClosedUnitBall (Fin n → ℝ)) :
+
+@[simp] theorem skeletonAttachmentOrigin_cell 
+     (x : ClosedUnitBall (Fin n → ℝ)) :
     skeletonAttachmentOrigin C n
       (cell (skeletonAttachingMap C n)
         (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) ⟨j, x⟩) =
       RelCWComplex.map n j x.val := desc_cell ..
 
-omit [T2Space X] in
-theorem disk_interior_norm (n : ℕ)
+section
+omit [T2Space X]
+abbrev disk_interior_norm (n : ℕ)
     (d : DiskFamily (RelCWComplex.cell C n) (Fin n → ℝ))
-    (hd : d ∉ range (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ))) :
-    ‖d.2.val‖ < 1 :=
+    (hd : d ∉ range (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)))  :=
   lt_of_le_of_ne d.2.property (fun h => hd
     ((boundaryFamilyInclusion_range (RelCWComplex.cell C n) (Fin n → ℝ) d).mpr h))
 
-omit [T2Space X] in
 theorem characteristic_mem_open (n : ℕ) (j : RelCWComplex.cell C n)
     (x : Fin n → ℝ) (hx : ‖x‖ < 1) :
     RelCWComplex.map n j x ∈ CWComplex.openCell n j :=
-  ⟨x, by simpa only [Metric.mem_ball, dist_zero_right] using hx, rfl⟩
+  ⟨x, by simp_all, rfl⟩
+end
 
 /-- No new interior point is identified with an old point, or with a
 different original open cell. -/
-theorem skeletonAttachmentOrigin_injective (n : ℕ) :
+theorem skeletonAttachmentOrigin_injective  :
     Function.Injective (skeletonAttachmentOrigin C n) := by
   rintro (x | ⟨⟨j, x⟩, hx⟩) (y | ⟨⟨k, y⟩, hy⟩) h
   · apply congrArg Sum.inl
@@ -116,21 +111,17 @@ theorem skeletonAttachmentOrigin_injective (n : ℕ) :
     have hylt := disk_interior_norm C n ⟨k, y⟩ hy
     have hxopen := characteristic_mem_open C n j x.val hxlt
     have hyopen : RelCWComplex.map n j x.val ∈ CWComplex.openCell n k := by
-      rw [h]
-      exact characteristic_mem_open C n k y.val hylt
-    have hlabels : (⟨n, j⟩ : Σ m, RelCWComplex.cell C m) = ⟨n, k⟩ :=
+      grind [characteristic_mem_open]
+    have hlabels  :=
       RelCWComplex.eq_of_not_disjoint_openCell (fun hd => Set.disjoint_left.mp hd hxopen hyopen)
-    have hjk : j = k := eq_of_heq (Sigma.mk.inj_iff.mp hlabels).2
+    have hjk  := eq_of_heq (Sigma.mk.inj_iff.mp hlabels).2
     subst k
-    have hxy : x.val = y.val := (RelCWComplex.map n j).injOn
+    have hxy  := (RelCWComplex.map n j).injOn
       (by rw [RelCWComplex.source_eq]; simpa only [Metric.mem_ball, dist_zero_right] using hxlt)
       (by rw [RelCWComplex.source_eq]; simpa only [Metric.mem_ball, dist_zero_right] using hylt) h
-    apply congrArg Sum.inr
-    apply Subtype.ext
-    change (⟨j, x⟩ : DiskFamily (RelCWComplex.cell C n) (Fin n → ℝ)) = ⟨j, y⟩
-    exact congrArg (Sigma.mk j) (Subtype.ext hxy)
+    aesop
 
-theorem skeletonAttachmentOrigin_mem (n : ℕ)
+theorem skeletonAttachmentOrigin_mem 
     (z : DiskAttachment (skeletonAttachingMap C n)) :
     skeletonAttachmentOrigin C n z ∈ CWComplex.skeletonLT C (n + 1) := by
   obtain ⟨w, rfl⟩ := quotientMap_surjective (skeletonAttachingMap C n)
@@ -147,25 +138,24 @@ theorem skeletonAttachmentOrigin_mem (n : ℕ)
     rcases d with ⟨j, x⟩
     rw [skeletonAttachmentOrigin_cell]
     exact CWComplex.closedCell_subset_skeletonLT n j
-      ⟨x.val, by simpa only [Metric.mem_closedBall, dist_zero_right] using x.property, rfl⟩
+      ⟨x.val, by aesop, rfl⟩
 
 /-- The evaluation with codomain the next skeleton. -/
-def skeletonAttachmentMap (n : ℕ) :
+def skeletonAttachmentMap  :
     C(DiskAttachment (skeletonAttachingMap C n), SkeletonCarrier C (n + 1)) := by
   have hm : ∀ z, skeletonAttachmentOrigin C n z ∈
       CWComplex.skeletonLT C ((n + 1 : ℕ) : ℕ∞) := by
-    intro z
-    simpa only [Nat.cast_add, Nat.cast_one] using skeletonAttachmentOrigin_mem C n z
+    classical simp_all [Nat.cast_add, Nat.cast_one, FiniteChains.ClassicalSkeletonAttachment.skeletonAttachmentOrigin_mem]
   exact ⟨fun z => ⟨skeletonAttachmentOrigin C n z, hm z⟩,
     (skeletonAttachmentOrigin C n).continuous.subtype_mk hm⟩
 
-theorem skeletonAttachmentMap_surjective (n : ℕ) :
+theorem skeletonAttachmentMap_surjective  :
     Function.Surjective (skeletonAttachmentMap C n) := by
   intro x
   have hx : x.val ∈ (CWComplex.skeletonLT C n : Set X) ∪
       ⋃ j : RelCWComplex.cell C n, CWComplex.closedCell n j := by
     rw [CWComplex.skeletonLT_union_iUnion_closedCell_eq_skeletonLT_succ]
-    simpa only [Nat.cast_add, Nat.cast_one] using (show x.val ∈ (CWComplex.skeletonLT C (n + 1) : Set X) from x.property)
+    simp_all
   rcases hx with hx | hx
   · refine ⟨old (skeletonAttachingMap C n)
       (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) ⟨x.val, hx⟩, ?_⟩
@@ -173,7 +163,7 @@ theorem skeletonAttachmentMap_surjective (n : ℕ) :
   · obtain ⟨j, hx⟩ := Set.mem_iUnion.mp hx
     obtain ⟨y, hy, hyx⟩ := hx
     let d : ClosedUnitBall (Fin n → ℝ) :=
-      ⟨y, by simpa only [Metric.mem_closedBall, dist_zero_right] using hy⟩
+      ⟨y, by simp_all⟩
     refine ⟨cell (skeletonAttachingMap C n)
       (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) ⟨j, d⟩, ?_⟩
     apply Subtype.ext
@@ -199,10 +189,9 @@ theorem origin_image_inter_lower_cell (n m : ℕ) (hmn : m < n)
     change old _ _ b ∈ A
     rw [← hzb]
     exact hz
-  · rintro ⟨⟨b, hb, rfl⟩, hx⟩
-    exact ⟨⟨old _ _ b, hb, rfl⟩, hx⟩
+  · aesop
 
-theorem origin_image_inter_top_cell (n : ℕ) (j : RelCWComplex.cell C n)
+theorem origin_image_inter_top_cell  
     (A : Set (DiskAttachment (skeletonAttachingMap C n))) :
     skeletonAttachmentOrigin C n '' A ∩ CWComplex.closedCell n j =
       characteristicDisk C n j '' ((fun x : ClosedUnitBall (Fin n → ℝ) =>
@@ -212,9 +201,8 @@ theorem origin_image_inter_top_cell (n : ℕ) (j : RelCWComplex.cell C n)
   constructor
   · rintro ⟨⟨z, hz, hzx⟩, ⟨y, hy, hyx⟩⟩
     let d : ClosedUnitBall (Fin n → ℝ) :=
-      ⟨y, by simpa only [Metric.mem_closedBall, dist_zero_right] using hy⟩
-    have hdz : cell (skeletonAttachingMap C n)
-        (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) ⟨j, d⟩ = z :=
+      ⟨y, by simp_all⟩
+    have hdz  :=
       skeletonAttachmentOrigin_injective C n
         ((skeletonAttachmentOrigin_cell C n j d).trans (hyx.trans hzx.symm))
     refine ⟨d, ?_, hyx⟩
@@ -223,11 +211,11 @@ theorem origin_image_inter_top_cell (n : ℕ) (j : RelCWComplex.cell C n)
     exact hz
   · rintro ⟨d, hd, hdx⟩
     exact ⟨⟨cell _ _ ⟨j, d⟩, hd, (skeletonAttachmentOrigin_cell C n j d).trans hdx⟩,
-      ⟨d.val, by simpa only [Metric.mem_closedBall, dist_zero_right] using d.property, hdx⟩⟩
+      ⟨d.val, by aesop, hdx⟩⟩
 
 /-- Weak topology is checked cell by cell; no compactness of the family
 or finiteness of either skeleton is used. -/
-theorem skeletonAttachmentOrigin_isClosedMap (n : ℕ) :
+theorem skeletonAttachmentOrigin_isClosedMap  :
     IsClosedMap (skeletonAttachmentOrigin C n) := by
   intro A hA
   have hupper : skeletonAttachmentOrigin C n '' A ⊆ CWComplex.skeletonLT C (n + 1) := by
@@ -260,7 +248,7 @@ theorem skeletonAttachmentOrigin_isClosedMap (n : ℕ) :
     exact (CWComplex.disjoint_skeletonLT_openCell (C := C) (j := j)
       (show (n : ℕ∞) + 1 ≤ m by exact_mod_cast Nat.succ_le_of_lt hnm)).mono_left hupper
 
-theorem skeletonAttachmentMap_isClosedMap (n : ℕ) :
+theorem skeletonAttachmentMap_isClosedMap  :
     IsClosedMap (skeletonAttachmentMap C n) := by
   intro A hA
   have he : skeletonAttachmentMap C n '' A =
@@ -269,44 +257,38 @@ theorem skeletonAttachmentMap_isClosedMap (n : ℕ) :
     constructor
     · rintro ⟨z, hz, rfl⟩
       exact ⟨z, hz, rfl⟩
-    · rintro ⟨z, hz, hzx⟩
-      exact ⟨z, hz, Subtype.ext hzx⟩
+    · aesop
   rw [he]
   exact (skeletonAttachmentOrigin_isClosedMap C n A hA).preimage continuous_subtype_val
 
 /-- The actual attachment is homeomorphic to the next original skeleton. -/
-def skeletonAttachmentHomeomorph (n : ℕ) :
-    DiskAttachment (skeletonAttachingMap C n) ≃ₜ SkeletonCarrier C (n + 1) :=
+def skeletonAttachmentHomeomorph   :=
   (Equiv.ofBijective (skeletonAttachmentMap C n)
     ⟨fun _ _ h => skeletonAttachmentOrigin_injective C n (congrArg Subtype.val h),
       skeletonAttachmentMap_surjective C n⟩).toHomeomorphOfContinuousClosed
     (skeletonAttachmentMap C n).continuous (skeletonAttachmentMap_isClosedMap C n)
 
 /-- The same identification in the skeleton-to-attachment direction. -/
-def skeletonAsDiskAttachment (n : ℕ) :
-    SkeletonCarrier C (n + 1) ≃ₜ DiskAttachment (skeletonAttachingMap C n) :=
+def skeletonAsDiskAttachment   :=
   (skeletonAttachmentHomeomorph C n).symm
 
-@[simp] theorem skeletonAttachmentHomeomorph_old_eq (n : ℕ) (x : SkeletonCarrier C n) :
+@[simp] theorem skeletonAttachmentHomeomorph_old_eq  (x : SkeletonCarrier C n) :
     skeletonAttachmentHomeomorph C n
       (old (skeletonAttachingMap C n)
         (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) x) =
       skeletonInclusion C n x := rfl
 
-@[simp] theorem skeletonAsDiskAttachment_inclusion (n : ℕ) (x : SkeletonCarrier C n) :
+@[simp] theorem skeletonAsDiskAttachment_inclusion  (x : SkeletonCarrier C n) :
     skeletonAsDiskAttachment C n (skeletonInclusion C n x) =
       old (skeletonAttachingMap C n)
         (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) x := by
   rw [← skeletonAttachmentHomeomorph_old_eq C n x]
   exact (skeletonAttachmentHomeomorph C n).symm_apply_apply _
 
-@[simp] theorem skeletonAttachmentHomeomorph_old (n : ℕ) (x : SkeletonCarrier C n) :
-    (skeletonAttachmentHomeomorph C n
-      (old (skeletonAttachingMap C n)
-        (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) x)).val = x.val := rfl
 
-@[simp] theorem skeletonAttachmentHomeomorph_cell (n : ℕ)
-    (j : RelCWComplex.cell C n) (x : ClosedUnitBall (Fin n → ℝ)) :
+
+@[simp] theorem skeletonAttachmentHomeomorph_cell 
+     (x : ClosedUnitBall (Fin n → ℝ)) :
     (skeletonAttachmentHomeomorph C n
       (cell (skeletonAttachingMap C n)
         (boundaryFamilyInclusion (RelCWComplex.cell C n) (Fin n → ℝ)) ⟨j, x⟩)).val =

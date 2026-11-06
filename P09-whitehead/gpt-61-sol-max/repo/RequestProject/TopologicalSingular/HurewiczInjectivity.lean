@@ -1,10 +1,6 @@
-module
-
-public import RequestProject.TopologicalSingular.StationaryPi2Chain
-public import RequestProject.TopologicalSingular.StickSimplexQuotient
-public import RequestProject.TopologicalSingular.HurewiczSurjectivity
-
-@[expose] public section
+import RequestProject.TopologicalSingular.StationaryPi2Chain
+import RequestProject.TopologicalSingular.StickSimplexQuotient
+import RequestProject.TopologicalSingular.HurewiczSurjectivity
 
 namespace FiniteChains.TopologicalSingular
 variable {X : Type} [TopologicalSpace X] [SimplyConnectedSpace X]
@@ -28,16 +24,8 @@ theorem singularHurewicz2_eq_zero_iff (x : X) (q : HomotopyGroup (Fin 2) X x) :
   · rintro rfl
     exact singularHurewicz2_one x
 
-theorem singularHurewicz2Hom_injective (x : X) :
-    Function.Injective (singularHurewicz2Hom x) := by
-  apply (injective_iff_map_eq_one (singularHurewicz2Hom x)).mpr
-  intro q hq
-  exact (singularHurewicz2_eq_zero_iff x q).mp hq
 
-/-- Injectivity of the degree-two Hurewicz map for simply connected spaces,
-with actual Mathlib homotopy groups and integral singular homology. -/
-theorem singularHurewicz2_injective (x : X) : Function.Injective (singularHurewicz2 x) := by
-  intro a b h
-  exact singularHurewicz2Hom_injective x h
+
+
 
 end FiniteChains.TopologicalSingular

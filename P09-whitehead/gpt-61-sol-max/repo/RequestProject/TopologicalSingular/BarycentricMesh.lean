@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.AffineSubdivisionGeometry
-
-@[expose] public section
+import RequestProject.TopologicalSingular.AffineSubdivisionGeometry
 
 /-! # Barycentric subdivision strictly decreases mesh
 
@@ -16,22 +14,22 @@ namespace FiniteChains.AffineVertexChains
 
 open Set Topology VertexChains
 
-universe u
 variable {E : Type u} [NormedAddCommGroup E] [NormedSpace ℝ E]
-variable {A : Set E} (hA : Convex ℝ A)
+  {A : Set E} (hA : Convex ℝ A)
 
-def MeshBound {n : ℕ} (v : Vertices A n) (D : ℝ) : Prop :=
+def MeshBound {n : ℕ} (v : Vertices A n) (D : ℝ)  :=
   ∀ i j, dist (v i).val (v j).val ≤ D
 
-noncomputable def meshChains (n : ℕ) (D : ℝ) : Submodule ℤ (VertexChains.Chain A n) :=
+variable (n : ℕ)
+noncomputable def meshChains  (D : ℝ) : Submodule ℤ (VertexChains.Chain A n) :=
   Finsupp.supported ℤ ℤ {v | MeshBound v D}
 
-theorem shrink_le_succ (n : ℕ) : shrink n ≤ shrink (n + 1) := by
-  simp only [shrink, Nat.cast_add, Nat.cast_one]
+theorem shrink_le_succ  : shrink n ≤ shrink (n + 1) := by
+  simp only [shrink, Nat.cast_add]
   apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
   nlinarith
 
-theorem subdivide_single_mem_mesh (n : ℕ) (v : Vertices A n) (D : ℝ) (hD₀ : 0 ≤ D)
+theorem subdivide_single_mem_mesh  (v : Vertices A n) (D : ℝ) (hD₀ : 0 ≤ D)
     (hD : MeshBound v D) :
     subdivide (center hA) n (Finsupp.single v 1) ∈ meshChains n (shrink n * D) := by
   induction n generalizing D with
@@ -57,7 +55,7 @@ theorem subdivide_single_mem_mesh (n : ℕ) (v : Vertices A n) (D : ℝ) (hD₀ 
       intro a b
       refine Fin.cases ?_ (fun a => ?_) a
       · refine Fin.cases ?_ (fun b => ?_) b
-        · simpa only [dist_self] using mul_nonneg (shrink_nonneg (n + 1)) hD₀
+        · grind [dist_self, mul_nonneg, FiniteChains.AffineVertexChains.shrink_nonneg]
         · exact center_dist_convexHull_le hA v D hD (hw.1 b)
       · refine Fin.cases ?_ (fun b => ?_) b
         · rw [dist_comm]
@@ -70,7 +68,7 @@ theorem subdivide_single_mem_mesh (n : ℕ) (v : Vertices A n) (D : ℝ) (hD₀ 
       rintro x ⟨k, rfl⟩
       exact ⟨i.succAbove k, rfl⟩
 
-theorem subdivide_mem_mesh (n : ℕ) (D : ℝ) (hD₀ : 0 ≤ D) {c : VertexChains.Chain A n}
+theorem subdivide_mem_mesh  (D : ℝ) (hD₀ : 0 ≤ D) {c : VertexChains.Chain A n}
     (hc : c ∈ meshChains n D) : subdivide (center hA) n c ∈ meshChains n (shrink n * D) :=
   map_mem_of_supported _ _ (subdivide (center hA) n)
     (fun v hv => subdivide_single_mem_mesh hA n v D hD₀ hv) hc
@@ -81,9 +79,6 @@ theorem iterated_subdivide_mem_mesh (k n : ℕ) (D : ℝ) (hD₀ : 0 ≤ D) {c :
   induction k with
   | zero => simpa using hc
   | succ k ih =>
-    rw [Function.iterate_succ_apply']
-    have he := subdivide_mem_mesh hA n ((shrink n) ^ k * D)
-      (mul_nonneg (pow_nonneg (shrink_nonneg n) k) hD₀) ih
-    simpa only [pow_succ', mul_assoc] using he
+    grind [Function.iterate_succ_apply', FiniteChains.AffineVertexChains.subdivide_mem_mesh, mul_nonneg, pow_nonneg, FiniteChains.AffineVertexChains.shrink_nonneg, pow_succ', mul_assoc]
 
 end FiniteChains.AffineVertexChains

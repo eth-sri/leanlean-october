@@ -1,27 +1,26 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeThreeSubdivision
-public import RequestProject.MomentAngle
-
-@[expose] public section
+import RequestProject.QCubeThreeSubdivision
+import RequestProject.MomentAngle
 
 /-! Actual quotient facets have the cubical collapse's coordinate incidence signs. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] [Fintype V] [LinearOrder V] {A : CommRel V}
 
-theorem qCubeFacet_incidence_zero (c : QCube A) (v : V) :
+  (c : QCube A)
+theorem qCubeFacet_incidence_zero  (v : V) :
     incid (qCubeToCoordinate (qCubeFacet c v 0)) v =
       (-1 : ℤ) ^ ((c.spx.erase v).filter (fun i => i < v)).card := by
-  simp [incid, freeSet_qCubeToCoordinate, qCubeToCoordinate, qCubeFacet, CubeCoord.sgn]
+  simp [incid, qCubeToCoordinate, qCubeFacet, CubeCoord.sgn]
 
-theorem qCubeFacet_incidence_one (c : QCube A) (v : V) :
+theorem qCubeFacet_incidence_one  (v : V) :
     incid (qCubeToCoordinate (qCubeFacet c v 1)) v =
       -((-1 : ℤ) ^ ((c.spx.erase v).filter (fun i => i < v)).card) := by
-  simp [incid, freeSet_qCubeToCoordinate, qCubeToCoordinate, qCubeFacet, CubeCoord.sgn]
+  simp_all [incid, qCubeToCoordinate, qCubeFacet, CubeCoord.sgn]
 
 /-- The six signs of an actual three-cube in decreasing coordinate order. -/
-theorem threeFacet_incidence_zero (c : QCube A) {u v w : V}
+theorem threeFacet_incidence_zero  {u v w : V}
     (huv : v < u) (hvw : w < v) (hs : c.spx = {u, v, w}) :
     incid (qCubeToCoordinate (qCubeFacet c w 0)) w = 1 ∧
     incid (qCubeToCoordinate (qCubeFacet c v 0)) v = -1 ∧
@@ -33,7 +32,7 @@ theorem threeFacet_incidence_zero (c : QCube A) {u v w : V}
     huv, hvw, huw, not_lt_of_ge huv.le, not_lt_of_ge hvw.le, not_lt_of_ge huw.le,
     he, Ne.symm hvw.ne]
 
-theorem threeFacet_incidence_one (c : QCube A) {u v w : V}
+theorem threeFacet_incidence_one  {u v w : V}
     (huv : v < u) (hvw : w < v) (hs : c.spx = {u, v, w}) :
     incid (qCubeToCoordinate (qCubeFacet c w 1)) w = -1 ∧
     incid (qCubeToCoordinate (qCubeFacet c v 1)) v = 1 ∧

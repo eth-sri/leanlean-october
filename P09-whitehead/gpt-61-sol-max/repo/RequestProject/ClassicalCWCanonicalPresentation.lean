@@ -1,13 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalCWWordDiskModel
-public import RequestProject.ClassicalRoseWordNaturality
-public import RequestProject.PresCircleWordParametrization
-public import RequestProject.PresCanonicalWords
-public import RequestProject.StabilizedDiskPresentation
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalCWWordDiskModel
+import RequestProject.ClassicalRoseWordNaturality
+import RequestProject.PresCircleWordParametrization
+import RequestProject.PresCanonicalWords
+import RequestProject.StabilizedDiskPresentation
 
 /-! Every original connected two-dimensional CW complex has an actual
 homotopy equivalence to the canonical nonempty-word presentation model.
@@ -36,35 +34,44 @@ construction, including its final cancelling pair. -/
 def canonicalWords : CanonicalRel K → List (CanonicalGen K × Bool) :=
   presCanonicalWords (canonicalRelators K) (canonicalDummy K)
 
-theorem canonicalWords_ne_nil (j : CanonicalRel K) : canonicalWords K j ≠ [] :=
-  presCanonicalWords_ne_nil (canonicalRelators K) (canonicalDummy K) j
+variable (j : CanonicalRel K)
+abbrev canonicalWords_ne_nil   :=
+  FiniteChains.PresModel.presCanonicalWords_ne_nil (FiniteChains.ClassicalCW.canonicalRelators K)
+    (FiniteChains.ClassicalCW.canonicalDummy K) j
 
-theorem canonicalWords_mk (j : CanonicalRel K) :
-    FreeGroup.mk (canonicalWords K j) = canonicalRelators K j :=
-  mk_presCanonicalWords (canonicalRelators K) (canonicalDummy K) j
+abbrev canonicalWords_mk   :=
+  FiniteChains.PresModel.mk_presCanonicalWords (FiniteChains.ClassicalCW.canonicalRelators K)
+    (FiniteChains.ClassicalCW.canonicalDummy K) j
 
-def stabilizedOriginalCellBoundary (j : CanonicalRel K) :
-    C(UnitBoundary (Fin 2 → ℝ), ClassicalGraphModel.Rose (CanonicalGen K)) :=
+def stabilizedOriginalCellBoundary   :=
   (StabilizedDiskPresentation.attaching (originalRoseWordAttaching K)).comp
     ⟨Sigma.mk (β := fun _ : CanonicalRel K => UnitBoundary (Fin 2 → ℝ)) j,
-      by exact continuous_sigmaMk⟩
+      continuous_sigmaMk⟩
 
-theorem stabilizedOriginalCellBoundary_old (j : OriginalRoseRel K) :
-    (stabilizedOriginalCellBoundary K (Sum.inl j)).Homotopic
-      (classicalPresCellBoundary (canonicalWords K) (Sum.inl j) (canonicalWords_ne_nil K)) := by
-  let f : OriginalRoseGen K → CanonicalGen K := Sum.inl
-  have H := (ContinuousMap.Homotopic.refl (diskRoseMap f)).comp
-    (boundaryWords_homotopic_classicalWord (originalRoseWords K j))
-  rw [classicalRoseWordBoundary_map] at H
-  have he : FreeGroup.mk (((originalRoseWords K j).loopWord).map (fun p => (f p.1, p.2))) =
-      FreeGroup.mk (canonicalWords K (Sum.inl j)) := by
-    calc
-      _ = canonicalRelators K (Sum.inl j) := rfl
-      _ = _ := (canonicalWords_mk K (Sum.inl j)).symm
-  have Hword := classicalRoseWordBoundary_homotopic_of_mk_eq he
-  have Hcanonical := classicalPresWordAttaching_homotopic_read
-    (canonicalWords K) (Sum.inl j) (canonicalWords_ne_nil K)
-  exact H.trans (Hword.trans Hcanonical.symm)
+abbrev stabilizedOriginalCellBoundary_old (j : OriginalRoseRel K)  :=
+  let f := Sum.inl;
+  have H :=
+    ContinuousMap.Homotopic.comp (ContinuousMap.Homotopic.refl (FiniteChains.ClassicalGraphModel.diskRoseMap f))
+      (FiniteChains.PresModel.boundaryWords_homotopic_classicalWord (FiniteChains.ClassicalCW.originalRoseWords K j));
+  have he := Trans.trans rfl (Eq.symm (FiniteChains.ClassicalCW.canonicalWords_mk K (Sum.inl j)));
+  have Hword := FiniteChains.PresModel.classicalRoseWordBoundary_homotopic_of_mk_eq he;
+  have Hcanonical :=
+    FiniteChains.PresModel.classicalPresWordAttaching_homotopic_read (FiniteChains.ClassicalCW.canonicalWords K)
+      (Sum.inl j) (FiniteChains.ClassicalCW.canonicalWords_ne_nil K);
+  ContinuousMap.Homotopic.trans
+    (Eq.mp
+      (congrArg
+        (fun
+            (_a :
+              C(FiniteChains.RelativeAttachment.UnitBoundary (Fin 2 → ℝ),
+                FiniteChains.ClassicalGraphModel.Rose (FiniteChains.ClassicalCW.CanonicalGen K))) =>
+          ((FiniteChains.ClassicalGraphModel.diskRoseMap f).comp
+                (FiniteChains.ClassicalCW.originalRoseWords K j).boundaryMap).Homotopic
+            _a)
+        (FiniteChains.PresModel.classicalRoseWordBoundary_map f
+          (FiniteChains.ClassicalCW.originalRoseWords K j).loopWord))
+      H)
+    (ContinuousMap.Homotopic.trans Hword (ContinuousMap.Homotopic.symm Hcanonical))
 
 theorem stabilizedOriginalCellBoundary_dummy (u : PUnit) :
     (stabilizedOriginalCellBoundary K (Sum.inr u)).Homotopic
@@ -82,7 +89,7 @@ theorem stabilizedOriginalCellBoundary_dummy (u : PUnit) :
     (canonicalWords K) (Sum.inr PUnit.unit) (canonicalWords_ne_nil K)
   exact H.trans (Hword.trans Hcanonical.symm)
 
-theorem stabilizedOriginalCellBoundary_homotopic (j : CanonicalRel K) :
+theorem stabilizedOriginalCellBoundary_homotopic  :
     (stabilizedOriginalCellBoundary K j).Homotopic
       (classicalPresCellBoundary (canonicalWords K) j (canonicalWords_ne_nil K)) := by
   cases j with
@@ -107,10 +114,7 @@ def originalCanonicalAttachingHomotopy :
 
 /-- The original space itself, with no replacement hypothesis, is
 homotopy equivalent to the literal canonical rose-and-word-disks model. -/
-def originalClassicalPresWordDiskEquiv :
-    ContinuousMap.HomotopyEquiv K
-      (ClassicalPresWordDisks (presCanonicalWords (canonicalRelators K) (canonicalDummy K))
-        (presCanonicalWords_ne_nil (canonicalRelators K) (canonicalDummy K))) :=
+def originalClassicalPresWordDiskEquiv  :=
   ((originalWordDiskHomotopyEquiv K).trans
     (StabilizedDiskPresentation.homotopyEquiv (originalRoseWordAttaching K))).trans
       (diskAttachingHomotopyEquiv
@@ -118,8 +122,7 @@ def originalClassicalPresWordDiskEquiv :
         (classicalPresWordAttaching (canonicalWords K) (canonicalWords_ne_nil K))
         (originalCanonicalAttachingHomotopy K))
 
-def originalCanonicalRealizationEquiv :
-    ContinuousMap.HomotopyEquiv K (Comb.orderNerveRealization (PresPos (canonicalWords K))) :=
+def originalCanonicalRealizationEquiv  :=
   (originalClassicalPresWordDiskEquiv K).trans
     (presClassicalDiskComparison (canonicalWords K) (canonicalWords_ne_nil K)).symm
 

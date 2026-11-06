@@ -1,19 +1,18 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberZPi1Base
-public import RequestProject.OrderComponentLabels
-
-@[expose] public section
+import RequestProject.ChamberZPi1Base
+import RequestProject.OrderComponentLabels
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [Preorder X] [Nonempty X] {M : CayGroup A → Prop}
   {att : NeSpx A →o X}
 
+variable (hc : IsConnected (orderCx X))
+include hc in
 omit [Fintype V] [Nonempty X] in
-theorem zChamber_reachable (hc : IsConnected (orderCx X)) (w : CayGroup A)
+theorem zChamber_reachable  (w : CayGroup A)
     {p q : Zpos A X M att} (hp : InZChamber w p) (hq : InZChamber w q) :
     Reach (orderCx (Zpos A X M att)) p q := by
   classical
@@ -36,11 +35,7 @@ theorem zChamber_reachable (hc : IsConnected (orderCx X)) (w : CayGroup A)
         (zNew (att := att) ⟨w, hw⟩ x) (zNew (att := att) ⟨w, hw⟩ y) :=
       ⟨_, isPath_mapPath (orderCxMap _ hm) hl⟩
     have hxy := (orderComponentLabel_eq_iff _ _).mpr hr
-    have hx' : rp.1 = zNew (att := att) ⟨w, hw⟩ x := hx
-    have hy' : rq.1 = zNew (att := att) ⟨w, hw⟩ y := hy
-    rw [hx'] at hpx
-    rw [hy'] at hqy
-    exact hpx.symm.trans (hxy.trans hqy)
+    aesop
   · exact (orderComponentLabel_eq_of_le (zApex_le hw hp)).symm.trans
       (orderComponentLabel_eq_of_le (zApex_le hw hq))
 
@@ -50,11 +45,12 @@ theorem exists_zChamber_vertex (w : CayGroup A) :
   classical
   by_cases hw : M w
   · exact ⟨zNew ⟨w, hw⟩ (Classical.choice inferInstance), rfl⟩
-  · exact ⟨zApex (X := X) (att := att) hw, inZChamber_zApex hw⟩
+  · solve_by_elim [zApex, inZChamber_zApex]
 
+include hc in
 /-- Connectivity follows from the connected base and the actual nonempty attaching
 intersections, by induction on chamber word length. -/
-theorem zpos_isConnected (hc : IsConnected (orderCx X)) :
+theorem zpos_isConnected  :
     IsConnected (orderCx (Zpos A X M att)) := by
   classical
   obtain ⟨b, hb⟩ := exists_zChamber_vertex (A := A) (X := X) (M := M) (att := att) 1
@@ -65,8 +61,7 @@ theorem zpos_isConnected (hc : IsConnected (orderCx X)) :
     | h n ih =>
       intro w hw p hp
       by_cases hw1 : w = 1
-      · subst w
-        exact (orderComponentLabel_eq_iff _ _).mpr (zChamber_reachable hc 1 hp hb)
+      · grind [FiniteChains.Comb.orderComponentLabel_eq_iff, FiniteChains.Davis.zChamber_reachable]
       · obtain ⟨j, hj⟩ := exists_zJSet (X := X) (M := M) (att := att) hw1
         have hjw := zJSet_imp_inZChamber hj
         obtain ⟨y, hy, hjy⟩ := (mem_shorter_zchamber_iff hjw).2 hj

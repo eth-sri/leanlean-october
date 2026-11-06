@@ -1,18 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalGraphBoundaryWords
-public import RequestProject.ComponentComplex
-public import Mathlib.Topology.Connected.TotallyDisconnected
-
-@[expose] public section
+import RequestProject.ClassicalGraphBoundaryWords
+import RequestProject.ComponentComplex
+import Mathlib.Topology.Connected.TotallyDisconnected
 
 /-! Attaching word disks cannot connect distinct graph components.
 Thus connectedness of an actual word-disk model supplies connectedness
 of its labelled combinatorial graph. No finiteness is required. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
@@ -36,7 +32,7 @@ abbrev GraphComponents := Quotient (graphComponentSetoid r)
 local instance : TopologicalSpace (GraphComponents r) := ⊥
 local instance : DiscreteTopology (GraphComponents r) := ⟨rfl⟩
 
-def graphComponentMap : C(DiskAttachment r, GraphComponents r) :=
+def graphComponentMap  :=
   desc r (boundaryFamilyInclusion J (Fin 1 → ℝ))
     ⟨Quotient.mk _, continuous_of_discreteTopology⟩
     ⟨fun d => Quotient.mk _ (graphSrc r d.1),
@@ -65,8 +61,7 @@ theorem graphComponentMap_boundaryWord (W : BoundaryWords r)
       Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap (0, false) 0)) := by
   have hedge (s : SquareSide) :
       Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap s 0)) =
-        Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap s 1)) := by
-    exact Quotient.sound ⟨W.word s, W.isPath s⟩
+        Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap s 1)) := Quotient.sound ⟨W.word s, W.isPath s⟩
   have hcorner (s : SquareSide) :
       Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap s 0)) =
         Quotient.mk (graphComponentSetoid r) (W.vertex (squareSideMap (0, false) 0)) := by
@@ -106,7 +101,7 @@ variable (W : M → BoundaryWords r)
 def boundaryWordsAttaching : C(BoundaryFamily M (Fin 2 → ℝ), DiskAttachment r) :=
   ⟨fun a => (W a.1).boundaryMap a.2, continuous_sigma (fun m => (W m).boundaryMap.continuous)⟩
 
-def wordDiskComponentMap : C(DiskAttachment (boundaryWordsAttaching r W), GraphComponents r) :=
+def wordDiskComponentMap  :=
   desc (boundaryWordsAttaching r W) (boundaryFamilyInclusion M (Fin 2 → ℝ))
     (graphComponentMap r)
     ⟨fun d => Quotient.mk _ ((W d.1).vertex (squareSideMap (0, false) 0)),

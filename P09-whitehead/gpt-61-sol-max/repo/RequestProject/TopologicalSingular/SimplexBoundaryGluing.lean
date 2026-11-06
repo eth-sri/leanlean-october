@@ -1,26 +1,22 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SimplexHomotopyExtension
-public import RequestProject.TopologicalSingular.TriangleSquareGeometry
+import RequestProject.TopologicalSingular.SimplexHomotopyExtension
+import RequestProject.TopologicalSingular.TriangleSquareGeometry
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 
-theorem simplex_face_coordinate_zero (i : Fin (n + 2)) (z : Domain n) :
+  (i : Fin (n + 2))
+theorem simplex_face_coordinate_zero  (z : Domain n) :
     (stdSimplex.map (SimplexCategory.δ i) z).val i = 0 := by
   change (FunOnFinite.linearMap ℝ ℝ i.succAbove z.val) i = 0
   rw [FunOnFinite.linearMap_apply_apply]
-  simp [Fin.succAbove_ne]
+  simp 
 
-noncomputable def simplexFaceBoundary (i : Fin (n + 2)) : C(Domain n, simplexBoundary (n + 1)) where
+noncomputable def simplexFaceBoundary  : C(Domain n, simplexBoundary (n + 1)) where
   toFun z := ⟨stdSimplex.map (SimplexCategory.δ i) z, ⟨i, simplex_face_coordinate_zero i z⟩⟩
   continuous_toFun := (stdSimplex.continuous_map _).subtype_mk _
 
@@ -50,9 +46,9 @@ theorem simplex_boundary_glue (H : Fin (n + 2) → C(I × Domain n, X))
       ∀ (i : Fin (n + 2)) (t : I) (z : Domain n), F (t, simplexFaceBoundary i z) = H i (t, z) := by
   classical
   let q := simplexBoundaryPrismCover n
-  have hq : Function.Surjective q := simplexBoundaryPrismCover_surjective n
+  have hq  := simplexBoundaryPrismCover_surjective n
   obtain ⟨r, hr⟩ := hq.hasRightInverse
-  let F : I × simplexBoundary (n + 1) → X := fun w => H (r w).1 (r w).2
+  let F  := fun w => H (r w).1 (r w).2
   have he : ∀ w : (Σ _ : Fin (n + 2), I × Domain n), F (q w) = H w.1 w.2 := by
     intro w
     have htime := congrArg Prod.fst (hr (q w))

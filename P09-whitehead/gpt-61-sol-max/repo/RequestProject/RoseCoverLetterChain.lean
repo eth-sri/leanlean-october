@@ -1,30 +1,27 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CellularChainMapZero
-public import RequestProject.RoseCoverGeneratorChain
-public import RequestProject.RelatorCircleFundamentalChain
+import RequestProject.CellularChainMapZero
+import RequestProject.RoseCoverGeneratorChain
+import RequestProject.RelatorCircleFundamentalChain
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool)) (j : J)
   (f : P → Rose α) (hf : IsPosetCover f) (m : RelatorCircle w j → P)
   (hm : StrictMono m) (hp : ∀ x, f (m x) = aFun w x.val)
 
+variable (k : Fin (w j).length)
 /-- The actual lifted midpoint belonging to a specified actual attaching letter. -/
-def roseCoverLetterMidpoint (k : Fin (w j).length) (a : α × Bool)
+def roseCoverLetterMidpoint  (a : α × Bool)
     (ha : (w j)[k.val]? = some a) : roseCoverMidpoints f :=
   ⟨(m (relatorCirclePoint w j k CPos.cmid), a.1),
     (hp _).trans (aFun_pt_cmid_of_get w ha)⟩
 
 /-- Each actual lifted letter chain is the appropriately signed genuine generator chain. -/
-theorem roseCoverLetterChain_map (k : Fin (w j).length) (a : α × Bool)
+theorem roseCoverLetterChain_map  (a : α × Bool)
     (ha : (w j)[k.val]? = some a) :
     chain1 (strictOrderCxMap m hm) (relatorCircleLetterChain w j k) =
       (if a.2 then (1 : ℤ) else -1) •
@@ -49,23 +46,19 @@ theorem roseCoverLetterChain_map (k : Fin (w j).length) (a : α × Bool)
     · apply Subtype.ext
       exact Prod.ext ((hp _).trans (aFun_pt_cor w j k.val))
         ((hp _).trans (aFun_pt_cedgL_of_get w ha))
-    · simpa only [M, strictOrderCxMap, relatorCircleEdge0, relatorCircleEdge1] using
-        congrArg (fun e : StrictOrdEdge P => e.val.2) h1
+    grind [strictOrderCxMap, relatorCircleEdge0, relatorCircleEdge1]
   have h3 : M.onE (relatorCircleEdge3 w j k) = roseCoverMidpointBaseEdge f hf p a.2 := by
     apply hf.strictEdgeLiftTo_unique
-    · apply Subtype.ext
-      exact Prod.ext ((hp _).trans (aFun_pt_cor w j (relatorCircleNext w j k).val))
-        ((hp _).trans (aFun_pt_cedgR_of_get w ha))
-    · simpa only [M, strictOrderCxMap, relatorCircleEdge2, relatorCircleEdge3] using
-        congrArg (fun e : StrictOrdEdge P => e.val.2) h2
+    · classical solve_by_elim (transparency := .default) (maxDepth := 10) [Subtype.ext, FiniteChains.Comb.IsPosetCover.strictMono, Prod.ext, Eq.trans, FiniteChains.PresModel.aFun_pt_cor, FiniteChains.PresModel.aFun_pt_cedgR_of_get, Subtype.ext, Prod.ext]
+    grind [strictOrderCxMap, relatorCircleEdge2, relatorCircleEdge3]
   change chain1 M (relatorCircleLetterChain w j k) = _
   unfold relatorCircleLetterChain
-  rw (config := { transparency := .default }) [map_sub, map_add, map_sub]
+  rw  [map_sub, map_add, map_sub]
   change Finsupp.mapDomain M.onE (Finsupp.single _ 1) -
     Finsupp.mapDomain M.onE (Finsupp.single _ 1) +
     Finsupp.mapDomain M.onE (Finsupp.single _ 1) -
     Finsupp.mapDomain M.onE (Finsupp.single _ 1) = _
-  rw (config := { transparency := .default }) [Finsupp.mapDomain_single, Finsupp.mapDomain_single,
+  rw  [Finsupp.mapDomain_single, Finsupp.mapDomain_single,
     Finsupp.mapDomain_single, Finsupp.mapDomain_single, h0, h1, h2, h3]
   change _ = (if a.2 then (1 : ℤ) else -1) • roseCoverGeneratorChain f hf p
   cases hb : a.2 <;> simp only [Bool.not_false, Bool.not_true, Bool.false_eq_true,
@@ -80,10 +73,9 @@ theorem roseCoverFundamentalChain_map :
             (roseCoverLetterMidpoint w j f m hp k ((w j)[k.val])
               (List.getElem?_eq_getElem k.isLt)) := by
   classical
-  rw (config := { transparency := .default }) [relatorCircleFundamentalChain, map_sum]
+  rw  [relatorCircleFundamentalChain, map_sum]
   apply Finset.sum_congr rfl
-  intro k _
-  exact roseCoverLetterChain_map w j f hf m hm hp k _ (List.getElem?_eq_getElem k.isLt)
+  grind [roseCoverLetterChain_map]
 
 /-- The actual generator coefficients of the attaching circle are the signed sum of its lifted letters. -/
 theorem roseCoverFundamentalChain_coordinates :
@@ -95,9 +87,9 @@ theorem roseCoverFundamentalChain_coordinates :
             (roseCoverLetterMidpoint w j f m hp k ((w j)[k.val])
               (List.getElem?_eq_getElem k.isLt))) 1 := by
   classical
-  rw (config := { transparency := .default }) [roseCoverFundamentalChain_map w j f hf m hm hp, map_sum]
+  rw  [roseCoverFundamentalChain_map w j f hf m hm hp, map_sum]
   apply Finset.sum_congr rfl
   intro k _
-  rw (config := { transparency := .default }) [map_smul, roseCoverGeneratorChain_coordinates]
+  rw  [map_smul, roseCoverGeneratorChain_coordinates]
 
 end FiniteChains.PresModel

@@ -1,22 +1,19 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberQuotientCover
-public import RequestProject.OrderPosetCoverThree
-
-@[expose] public section
+import RequestProject.ChamberQuotientCover
+import RequestProject.OrderPosetCoverThree
 
 /-! The full Davis nerve covers the quotient cube poset, including its three-cells. -/
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
 omit [Fintype V] in
 theorem qProjCube_monotone : Monotone (qProjCube (A := A)) := by
   intro p q h
   refine ⟨h.1, fun w hw => ?_⟩
-  have hwp : w ∉ p.spx := fun hc => hw (h.1 hc)
+  have hwp  := fun hc => hw (h.1 hc)
   rw [qProjCube_sgn_of_not_mem hwp, qProjCube_sgn_of_not_mem hw]
   exact (phi_rep_eq_of_inChamber (inChamber_rep_of_le h) hw).symm
 

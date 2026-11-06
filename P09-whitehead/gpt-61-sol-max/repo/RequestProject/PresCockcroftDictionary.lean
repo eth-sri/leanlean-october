@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresUnivCoverIso
-public import RequestProject.Cockcroft
-public import RequestProject.CockcroftExtension
-
-@[expose] public section
+import RequestProject.PresUnivCoverIso
+import RequestProject.Cockcroft
+import RequestProject.CockcroftExtension
 
 /-!
 # The Cockcroft property: the topological definition and the Fox one agree
@@ -23,19 +21,16 @@ Using the identification of the two models of the universal cover
 presentation the two agree: `FiniteChains.Comb.isCockcroft_presComplex_iff`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Comb
 
-open MonoidAlgebra
+namespace FiniteChains.Comb
 
-universe u
+
+
+
 
 variable {α J : Type u} [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J]
-variable (ρ : J → FreeGroup α)
+  (ρ : J → FreeGroup α)
 
 omit [Fintype α] [DecidableEq α] in
 /-- **The augmentation of the coordinates is the pushforward to the base.**  Summing the
@@ -47,16 +42,9 @@ theorem augQ_coords (v : ((FreeGroup α ⧸ relSub ρ) × J) →₀ ℤ) (j : J)
   induction v using Finsupp.induction_linear with
   | zero => simp
   | add v w hv hw =>
-      rw [map_add, Finsupp.mapDomain_add]
-      simp only [Finsupp.add_apply, Pi.add_apply, map_add] at *
-      rw [hv, hw]
+      simp_all [Finsupp.mapDomain_add]
   | single qj n =>
-      obtain ⟨q, j₀⟩ := qj
-      rw [coords_single, Finsupp.mapDomain_single]
-      by_cases h : j = j₀
-      · subst h
-        simp
-      · rw [Pi.single_eq_of_ne h, Finsupp.single_apply, if_neg (Ne.symm h), map_zero]
+      aesop (add simp [coords_single, Finsupp.single_apply])
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

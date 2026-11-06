@@ -1,13 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveRealizationFaceReduction
-public import Mathlib.Topology.Separation.Hausdorff
-
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+import RequestProject.OrderNerveRealizationFaceReduction
+import Mathlib.Topology.Separation.Hausdorff
 
 namespace FiniteChains.Comb
 open CategoryTheory

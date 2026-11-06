@@ -1,13 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalOrderCoverHomeomorph
-public import RequestProject.OrderNerveConnectedReflection
-public import RequestProject.OrderNerveCoverDimension
-public import RequestProject.OrderNerveTwoComplex
-public import RequestProject.OrderStrictAcyclicityComparison
-public import RequestProject.TopologicalSingular.MathlibComparison
-
-@[expose] public section
+import RequestProject.TopologicalOrderCoverHomeomorph
+import RequestProject.OrderNerveConnectedReflection
+import RequestProject.OrderNerveCoverDimension
+import RequestProject.OrderNerveTwoComplex
+import RequestProject.OrderStrictAcyclicityComparison
+import RequestProject.TopologicalSingular.MathlibComparison
 
 /-! Reverse cover dictionary for the original topological definition.
 The total space, projection, and deck action are constructed from the
@@ -17,14 +15,13 @@ Unverified source. -/
 noncomputable section
 namespace FiniteChains.Comb.TopologicalOrderCover
 open CategoryTheory Topology
-open scoped Classical
+
 variable {P : Type} [PartialOrder P] {E : Type} [TopologicalSpace E]
   (p : C(E, orderNerveRealization P)) (hp : IsCoveringMap p)
   (hs : Function.Surjective p)
 
 include hs in
-theorem realization_connected [ConnectedSpace E] :
-    ConnectedSpace (orderNerveRealization (Cover p hp)) :=
+abbrev realization_connected [ConnectedSpace E]  :=
   (realizationHomeomorph p hp hs).symm.surjective.connectedSpace
     (realizationHomeomorph p hp hs).symm.continuous
 
@@ -34,8 +31,8 @@ theorem orderCover_connected [ConnectedSpace E] : IsConnected (orderCx (Cover p 
   exact orderCx_isConnected_of_realization
 
 include hs in
-theorem strictCover_connected [ConnectedSpace E] : IsConnected (strictOrderCx (Cover p hp)) :=
-  strictOrderCx_isConnected (orderCover_connected p hp hs)
+abbrev strictCover_connected [ConnectedSpace E]  :=
+  FiniteChains.Comb.strictOrderCx_isConnected (FiniteChains.Comb.TopologicalOrderCover.orderCover_connected p hp hs)
 
 include hs in
 theorem strictCover_acyclic [ConnectedSpace E] [(nerve P).HasDimensionLE 2]
@@ -66,8 +63,8 @@ theorem reconstructed_cover_conclusions [ConnectedSpace E] [(nerve P).HasDimensi
     strictCover_connected p hp hs, strictCover_acyclic p hp hs hac,
     strictDeck_edges p hp hs, strictDeck_faces p hp hs⟩
 
-end TopologicalOrderCover
+end FiniteChains.Comb.TopologicalOrderCover
 
-open CategoryTheory Topology
 
-end FiniteChains.Comb
+
+

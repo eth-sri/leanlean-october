@@ -1,13 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.NormalizedTwoCycles
-public import RequestProject.TopologicalSingular.CycleClassModule
-
-@[expose] public section
+import RequestProject.TopologicalSingular.NormalizedTwoCycles
+import RequestProject.TopologicalSingular.CycleClassModule
 
 namespace FiniteChains.TopologicalSingular
-open CategoryTheory AlgebraicTopology
-open scoped Topology
+
+
 variable {X : Type} [TopologicalSpace X]
 
 noncomputable def pi2CycleClassAddHom (x : X) :
@@ -20,8 +18,7 @@ noncomputable def pi2CycleClassLinear (x : X) :
     Additive (HomotopyGroup (Fin 2) X x) →ₗ[ℤ] (complex X).homology 2 where
   toFun := pi2CycleClassAddHom x
   map_add' := (pi2CycleClassAddHom x).map_add
-  map_smul' r a := by
-    exact (map_zsmul (pi2CycleClassAddHom x) r a).trans
+  map_smul' r a := (map_zsmul (pi2CycleClassAddHom x) r a).trans
       (int_smul_eq_zsmul (inferInstance : Module ℤ ((complex X).homology 2)) r _).symm
 
 variable [SimplyConnectedSpace X]
@@ -52,8 +49,7 @@ theorem normalizedPi2Chain_class_linear (x : X) :
 theorem normalizedPi2Chain_class (x : X) (c : Chain X 2) (hc : boundary 1 c = 0) :
     pi2CycleClass x (normalizedPi2Chain x c).toMul = singularCycleClass 1 c hc := by
   have he := DFunLike.congr_fun (normalizedPi2Chain_class_linear x) c
-  change pi2CycleClass x (normalizedPi2Chain x c).toMul =
-    singularCycleClass 1 (normalizedCycleMap x c).val (normalizedCycleMap x c).property at he
+  
   exact he.trans (normalizedCycleMap_class x c hc)
 
 theorem pi2CycleClass_surjective (x : X) : Function.Surjective (pi2CycleClass x) := by
@@ -72,9 +68,6 @@ theorem singularHurewicz2_surjective (x : X) : Function.Surjective (singularHure
   change (homologyMathlibIso (TopCat.of X) 2).hom (pi2CycleClass x a) = q
   rw [ha, hh]
 
-theorem singularHurewicz2Hom_surjective (x : X) : Function.Surjective (singularHurewicz2Hom x) := by
-  intro q
-  obtain ⟨a, ha⟩ := singularHurewicz2_surjective x q.toAdd
-  exact ⟨a, ha⟩
+
 
 end FiniteChains.TopologicalSingular

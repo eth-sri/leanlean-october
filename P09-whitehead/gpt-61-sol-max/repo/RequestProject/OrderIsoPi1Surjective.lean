@@ -1,11 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderComplexPi1Transfer
-
-@[expose] public section
+import RequestProject.OrderComplexPi1Transfer
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [Preorder P] [Preorder Q]
 
 /-- An actual order isomorphism is surjective on based fundamental groups. -/
@@ -16,7 +13,7 @@ theorem orderIso_pi1_surjective (e : P ≃o Q) (a : P) :
   | h p =>
     have hp : IsPath (orderCx P).src (orderCx P).tgt
         (mapPath (orderCxMap e.symm e.symm.monotone) p.val) a a := by
-      simpa only [orderCxMap, e.symm_apply_apply] using
+      simpa [orderCxMap, e.symm_apply_apply] using
         isPath_mapPath (orderCxMap e.symm e.symm.monotone) p.property
     refine ⟨Pi1.mk ⟨_, hp⟩, Quotient.sound ?_⟩
     change Htpy (orderCx Q) (e a) (e a)

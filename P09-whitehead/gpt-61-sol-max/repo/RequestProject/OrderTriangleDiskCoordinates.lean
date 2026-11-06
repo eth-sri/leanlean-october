@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.SquareBoundaryNormHomeomorph
-public import Mathlib.Analysis.Convex.StdSimplex
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.SquareBoundaryNormHomeomorph
+import Mathlib.Analysis.Convex.StdSimplex
 
 /-! Explicit disk coordinates for strict order triangles. The bottom
 edge of the square is collapsed to vertex 0, while its other three sides
@@ -33,12 +31,9 @@ def parametrization : C(Square, Triangle) where
       dsimp
       ring⟩
   continuous_toFun := by
-    apply Continuous.subtype_mk
-    apply continuous_pi
-    intro i
-    fin_cases i <;> dsimp <;> fun_prop
+    fun_prop
 
-theorem coordinate_sum (z : Triangle) : z.val 0 + z.val 1 + z.val 2 = 1 :=
+abbrev coordinate_sum (z : Triangle)  :=
   (Fin.sum_univ_three z.val).symm.trans z.property.2
 
 theorem remaining_nonneg (z : Triangle) : 0 ≤ 1 - z.val 0 := by
@@ -75,17 +70,16 @@ theorem parametrization_section (z : Triangle) : parametrization (sectionPoint z
     · change (1 - z.val 0) * (1 - z.val 2 / (1 - z.val 0)) = z.val 1
       rw [mul_sub, mul_one, mul_div_cancel₀ _ h]
       linarith
-    · change (1 - z.val 0) * (z.val 2 / (1 - z.val 0)) = z.val 2
-      exact mul_div_cancel₀ _ h
+    · solve_by_elim [mul_div_cancel₀]
 
 theorem parametrization_surjective : Function.Surjective parametrization :=
   fun z => ⟨sectionPoint z, parametrization_section z⟩
 
-theorem parametrization_isQuotientMap : IsQuotientMap parametrization :=
+abbrev parametrization_isQuotientMap  :=
   parametrization.continuous.isClosedMap.isQuotientMap
     parametrization.continuous parametrization_surjective
 
-def SquareInterior (z : Square) : Prop := ∀ i, 0 < (z i : ℝ) ∧ (z i : ℝ) < 1
+def SquareInterior (z : Square)  := ∀ i, 0 < (z i : ℝ) ∧ (z i : ℝ) < 1
 
 theorem parametrization_positive_iff (z : Square) :
     (∀ i, 0 < (parametrization z).val i) ↔ SquareInterior z := by
@@ -93,15 +87,11 @@ theorem parametrization_positive_iff (z : Square) :
   · intro h
     have h₀ : 0 < 1 - (z 1 : ℝ) := h 0
     have h₁ : 0 < (z 1 : ℝ) * (1 - (z 0 : ℝ)) := h 1
-    have h₂ : 0 < (z 1 : ℝ) * (z 0 : ℝ) := h 2
-    have hxy : 0 < (z 1 : ℝ) ∧ 0 < (z 0 : ℝ) :=
+    have h₂  := h 2
+    have hxy  :=
       (mul_pos_iff.mp h₂).resolve_right
         (fun hneg => (not_lt_of_ge (z 1).property.1) hneg.1)
-    have hy := hxy.1
-    have hx := hxy.2
-    have hx' : 0 < 1 - (z 0 : ℝ) := (mul_pos_iff_of_pos_left hy).mp h₁
-    intro i
-    fin_cases i <;> dsimp <;> constructor <;> linarith
+    simp_all [FiniteChains.OrderTriangleDisk.SquareInterior]
   · intro h i
     fin_cases i
     · exact sub_pos.mpr (h 1).2
@@ -128,16 +118,11 @@ theorem parametrization_injective_off_collapsed_side {z w : Square}
 def squareBallHomeomorph : ClosedUnitBall (Fin 2 → ℝ) ≃ₜ Square where
   toFun x i := ⟨(x.val i + 1) / 2, by
     have hi : |x.val i| ≤ 1 := by
-      simpa only [Real.norm_eq_abs] using (norm_le_pi_norm x.val i).trans x.property
+      simpa [Real.norm_eq_abs] using (norm_le_pi_norm x.val i).trans x.property
     obtain ⟨hl, hu⟩ := abs_le.mp hi
     constructor <;> linarith⟩
   invFun z := ⟨fun i => 2 * (z i : ℝ) - 1, by
-    apply (pi_norm_le_iff_of_nonneg zero_le_one).mpr
-    intro i
-    rw [Real.norm_eq_abs]
-    apply abs_le.mpr
-    have hi := (z i).property
-    constructor <;> linarith [hi.1, hi.2]⟩
+    grind [pi_norm_le_iff_of_nonneg, Real.norm_eq_abs]⟩
   left_inv x := by
     apply Subtype.ext
     funext i
@@ -155,7 +140,8 @@ def squareBallHomeomorph : ClosedUnitBall (Fin 2 → ℝ) ≃ₜ Square where
     exact (((continuous_apply i).comp continuous_subtype_val).add continuous_const).div_const 2
   continuous_invFun := by fun_prop
 
-theorem squareBallHomeomorph_interior (x : ClosedUnitBall (Fin 2 → ℝ)) :
+variable (x : ClosedUnitBall (Fin 2 → ℝ))
+theorem squareBallHomeomorph_interior  :
     SquareInterior (squareBallHomeomorph x) ↔ ‖x.val‖ < 1 := by
   rw [pi_norm_lt_iff zero_lt_one]
   constructor
@@ -174,14 +160,13 @@ theorem squareBallHomeomorph_boundary (z : UnitBoundary (Fin 2 → ℝ)) :
     squareBallHomeomorph (unitBoundaryInclusion _ z) =
       (unitBoundarySquareHomeomorph z).val := rfl
 
-def disk : C(ClosedUnitBall (Fin 2 → ℝ), Triangle) :=
+def disk  :=
   parametrization.comp squareBallHomeomorph.toContinuousMap
 
-theorem disk_positive_iff (x : ClosedUnitBall (Fin 2 → ℝ)) :
-    (∀ i, 0 < (disk x).val i) ↔ ‖x.val‖ < 1 :=
+abbrev disk_positive_iff   :=
   (parametrization_positive_iff _).trans (squareBallHomeomorph_interior x)
 
-theorem disk_isQuotientMap : IsQuotientMap disk :=
+abbrev disk_isQuotientMap  :=
   parametrization_isQuotientMap.comp squareBallHomeomorph.isQuotientMap
 
 theorem disk_injOn_interior : Set.InjOn disk {x | ‖x.val‖ < 1} := by

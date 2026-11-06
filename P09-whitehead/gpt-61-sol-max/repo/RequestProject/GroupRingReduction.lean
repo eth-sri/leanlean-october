@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib
-public import RequestProject.GroupRingFree
-
-@[expose] public section
+import Mathlib
+import RequestProject.GroupRingFree
 
 /-!
 # Reduction of group-ring coefficients along `Q → Q/H`
@@ -14,8 +12,6 @@ augmentation `k[H] → k`, of the same matrix written over the commutative ring
 `k[H]` in the basis of coset representatives.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -25,11 +21,11 @@ open MonoidAlgebra
 variable (k : Type*) [CommRing k] {Q : Type*} [Group Q] (H : Subgroup Q)
 
 /-- The augmentation `k[H] → k`. -/
-noncomputable def augH [IsMulCommutative H] : MonoidAlgebra k H →+* k :=
+noncomputable def augH [IsMulCommutative H]  :=
   (MonoidAlgebra.lift k k H (1 : H →* k)).toRingHom
 
 /-- The reduction map of group rings `k[Q] → k[Q/H]`. -/
-noncomputable def quotRingHom [H.Normal] : MonoidAlgebra k Q →+* MonoidAlgebra k (Q ⧸ H) :=
+noncomputable def quotRingHom [H.Normal]  :=
   MonoidAlgebra.mapDomainRingHom k (QuotientGroup.mk' H)
 
 variable {k H}
@@ -39,8 +35,7 @@ variable {k H}
   simp [augH]
 
 @[simp] theorem quotRingHom_single [H.Normal] (q : Q) (a : k) :
-    quotRingHom k H (single q a) = single (q : Q ⧸ H) a := by
-  exact MonoidAlgebra.mapDomain_single
+    quotRingHom k H (single q a) = single (q : Q ⧸ H) a := MonoidAlgebra.mapDomain_single
 
 variable (H) in
 /-- For a normal subgroup the right cosets are the elements of the quotient group. -/
@@ -69,7 +64,7 @@ noncomputable def cosetQuotEquiv [H.Normal] : RightCosets H ≃ Q ⧸ H where
 theorem cosetBasis_repr_cosetCombination [IsMulCommutative H]
     (F : RightCosets H →₀ MonoidAlgebra k H) :
     (cosetBasis (k := k) (H := H)).repr (cosetCombination F) = F := by
-  simp [cosetBasis, cosetCombination]
+  simp [cosetBasis]
 
 theorem cosetCombination_single_single [IsMulCommutative H] (q : Q) (a : k) :
     cosetCombination (Finsupp.single (Quotient.mk (QuotientGroup.rightRel H) q)
@@ -94,8 +89,7 @@ theorem augH_cosetBasis_repr_single [H.Normal] [IsMulCommutative H] (q : Q) (a :
   classical
   rw [cosetBasis_repr_single (k := k) (H := H) q a, quotRingHom_single (k := k) (H := H) q a]
   by_cases hc : c = Quotient.mk (QuotientGroup.rightRel H) q
-  · subst hc
-    rw [Finsupp.single_eq_same, augH_single, cosetQuotEquiv_mk, MonoidAlgebra.coeff_single, Finsupp.single_eq_same]
+  · simp_all
   · rw [Finsupp.single_apply, if_neg (fun h => hc h.symm), map_zero, MonoidAlgebra.coeff_single, Finsupp.single_apply,
       if_neg]
     intro h
@@ -117,12 +111,7 @@ theorem augH_cosetBasis_repr [H.Normal] [IsMulCommutative H] (x : MonoidAlgebra 
     (Finsupp.applyAddHom (cosetQuotEquiv H c)).comp
       ((MonoidAlgebra.coeffAddEquiv).toAddMonoidHom.comp (quotRingHom k H).toAddMonoidHom) with hM
   have hLM : L = M := by
-    refine MonoidAlgebra.addMonoidHom_ext ?_
-    intro q a
-    simp only [hL, hM, AddMonoidHom.coe_comp, Function.comp_apply,
-      LinearMap.toAddMonoidHom_coe, LinearEquiv.coe_coe, Finsupp.applyAddHom_apply,
-      RingHom.toAddMonoidHom_eq_coe]
-    exact augH_cosetBasis_repr_single q a c
+    aesop (add simp [augH_cosetBasis_repr_single])
   have := congrArg (fun g : MonoidAlgebra k Q →+ k => g x) hLM
   simpa [hL, hM] using this
 
@@ -150,17 +139,11 @@ variable {k H}
 
 @[simp] theorem vecCoords_apply [IsMulCommutative H] {ι : Type*} (u : ι →₀ MonoidAlgebra k Q)
     (i : ι) (c : RightCosets H) :
-    vecCoords k H ι u (i, c) = (cosetBasis (k := k) (H := H)).repr (u i) c := by
-  simp [vecCoords, Finsupp.curryLinearEquiv]
+    vecCoords k H ι u (i, c) = (cosetBasis (k := k) (H := H)).repr (u i) c := rfl
 
 @[simp] theorem redCoords_apply [H.Normal] {ι : Type*} (w : ι →₀ MonoidAlgebra k (Q ⧸ H))
     (i : ι) (c : RightCosets H) :
-    redCoords k H ι w (i, c) = (w i).coeff (cosetQuotEquiv H c) := by
-  have h1 : ∀ g : ι →₀ (RightCosets H →₀ k),
-      (Finsupp.curryLinearEquiv k).symm g (i, c) = g i c := by
-    intro g; simp [Finsupp.curryLinearEquiv]
-  simp only [redCoords, LinearEquiv.trans_apply, h1]
-  simp [Finsupp.mapRange.linearEquiv, Finsupp.domLCongr, Finsupp.equivMapDomain_apply]
+    redCoords k H ι w (i, c) = (w i).coeff (cosetQuotEquiv H c) := rfl
 
 /-- **The commuting square.**  Reducing a vector over `k[Q]` to `k[Q/H]` is the same as
 applying the augmentation `k[H] → k` to all its coordinates in the basis of coset
@@ -169,9 +152,6 @@ theorem mapRange_augH_vecCoords [H.Normal] [IsMulCommutative H] {ι : Type*}
     (u : ι →₀ MonoidAlgebra k Q) :
     Finsupp.mapRange (augH k H) (map_zero _) (vecCoords k H ι u) =
       redCoords k H ι (Finsupp.mapRange (quotRingHom k H) (map_zero _) u) := by
-  ext ⟨i, c⟩
-  by_cases hi : u i = 0
-  · simp [hi]
-  · simpa using augH_cosetBasis_repr (u i) c
+  aesop (add simp [augH_cosetBasis_repr])
 
 end FiniteChains

@@ -1,12 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusCollapse
-public import RequestProject.CutSurfaceSpine
-public import Mathlib.Order.Extension.Linear
-public import RequestProject.GeometricChainCollapse
-public import RequestProject.CutFacetCollapse
-
-@[expose] public section
+import RequestProject.GenusCollapse
+import RequestProject.CutSurfaceSpine
+import Mathlib.Order.Extension.Linear
+import RequestProject.GeometricChainCollapse
+import RequestProject.CutFacetCollapse
 
 /-! Integral chain collapse of the actual genus block, chosen independently of a cycle. -/
 
@@ -16,9 +14,7 @@ variable (q : ℕ) [NeZero q]
 
 abbrev GenusVertex := SCell (gvc q) (gec q) (gc q)
 
-noncomputable instance genusVertexLinearOrder : LinearOrder (GenusVertex q) := by
-  classical
-  exact LinearOrder.lift' (toLinearExtension : GenusVertex q → LinearExtension (GenusVertex q))
+noncomputable instance genusVertexLinearOrder : LinearOrder (GenusVertex q) := LinearOrder.lift' (toLinearExtension : GenusVertex q → LinearExtension (GenusVertex q))
     (fun _ _ h => h)
 
 /-- The actual sequence of oriented cellular cancellation pairs. -/
@@ -72,22 +68,18 @@ theorem genusChainCollapse_isPairCollapse :
       (topCubes (orderComplex (GenusVertex q))) :=
   (Classical.choose_spec (exists_genus_cut_geometric_chainCollapse q)).1
 
-theorem genusChainCollapse_isChainCollapse :
-    CollapseChain.IsChainCollapse (cubeBdry (V := GenusVertex q)) (genusChainCollapse q) :=
+abbrev genusChainCollapse_isChainCollapse  :=
   (Classical.choose_spec (exists_genus_cut_geometric_chainCollapse q)).2.1
 
-theorem genusChainCollapse_cutSurface_eq_zero
+abbrev genusChainCollapse_cutSurface_eq_zero
     (o : Finset (GenusVertex q) → ℤ) (hcyc : simpBdry o = 0)
     (hsupp : ∀ σ, σ.card ≠ 3 → o σ = 0)
-    (hfaces : ∀ σ, σ ∉ (orderComplex (GenusVertex q)).faces → o σ = 0) :
-    CollapseChain.cmap (cubeBdry (V := GenusVertex q)) (genusChainCollapse q)
-      (Sum.elim 0 (fun τ => -o τ)) = 0 :=
+    (hfaces : ∀ σ, σ ∉ (orderComplex (GenusVertex q)).faces → o σ = 0)  :=
   (Classical.choose_spec (exists_genus_cut_geometric_chainCollapse q)).2.2.1 o hcyc hsupp hfaces
 
-theorem genusChainCollapse_positive_pair
+abbrev genusChainCollapse_positive_pair
     (p : Cube (GenusVertex q) × (Cube (GenusVertex q) ⊕ Finset (GenusVertex q)))
-    (hp : p ∈ genusChainCollapse q) (hpos : p.1 = posCube (freeSet p.1)) :
-    p.2 = Sum.inr (freeSet p.1) :=
+    (hp : p ∈ genusChainCollapse q) (hpos : p.1 = posCube (freeSet p.1))  :=
   (Classical.choose_spec (exists_genus_cut_geometric_chainCollapse q)).2.2.2 p hp hpos
 
 theorem genusChainCollapse_old_face_nonpositive

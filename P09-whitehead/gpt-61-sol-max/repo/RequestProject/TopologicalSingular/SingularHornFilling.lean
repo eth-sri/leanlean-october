@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SimplexHornFiller
-public import RequestProject.TopologicalSingular.StickTriangleComparison
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SimplexHornFiller
+import RequestProject.TopologicalSingular.StickTriangleComparison
 
 namespace FiniteChains.TopologicalSingular
 variable {X : Type} [TopologicalSpace X] {n : ℕ}
@@ -17,13 +15,13 @@ theorem singular_horn_filler_exists (i : Fin (n + 2))
       stdSimplex.map (SimplexCategory.δ j) z = stdSimplex.map (SimplexCategory.δ k) w →
       g j hj z = g k hk w) :
     ∃ tau : Simplex X (n + 1), ∀ (j : Fin (n + 2)) (hj : j ≠ i), face j tau = g j hj := by
-  let faces : Fin (n + 1) → Simplex X n :=
+  let faces  :=
     fun k => g (i.succAbove k) (Fin.succAbove_ne i k)
   have hfaces : SimplexHornFaceCompatible i faces := by
     intro j k z w h
     apply hg (i.succAbove j) (i.succAbove k)
     simpa only [simplex_face_eq_faceMap] using h
-  let tau : Simplex X (n + 1) := simplexHornFiller i faces hfaces
+  let tau  := simplexHornFiller i faces hfaces
   refine ⟨tau, ?_⟩
   intro j hj
   obtain ⟨k, rfl⟩ := Fin.exists_succAbove_eq hj

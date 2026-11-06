@@ -1,2 +1,1 @@
-module
-public import RequestProject.PresentationInclusionFinsupp
+import RequestProject.PresentationInclusionFinsupp

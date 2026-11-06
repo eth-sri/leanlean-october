@@ -1,30 +1,31 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveSingularCarriers
-public import RequestProject.TopologicalSingular.SupportedFillings
-
-@[expose] public section
+import RequestProject.OrderNerveSingularCarriers
+import RequestProject.TopologicalSingular.SupportedFillings
 
 namespace FiniteChains.Comb
 open TopologicalSingular
 
-noncomputable def orderSingularCarrierChains {P : Type} [PartialOrder P] {n : ℕ}
+variable {P : Type}
+noncomputable def orderSingularCarrierChains  [PartialOrder P] {n : ℕ}
     (σ : Simplex (orderNerveRealization P) n) (k : ℕ) :
     Submodule ℤ (Chain (orderNerveRealization P) k) :=
   subChains (orderNerveRealizationSubcomplex P (orderNerveSingularCarrier σ) :
     Set (orderNerveRealization P)) k
 
-theorem orderSingularCarrierChains_face {P : Type} [PartialOrder P] {n : ℕ}
-    (σ : Simplex (orderNerveRealization P) (n + 1)) (i : Fin (n + 2)) (k : ℕ) :
-    orderSingularCarrierChains (face i σ) k ≤ orderSingularCarrierChains σ k :=
-  subChains_mono (orderNerveRealizationSubcomplex_mono (orderNerveSingularCarrier_face σ i)) k
+abbrev orderSingularCarrierChains_face :=
+  fun {P : Type} [PartialOrder P] {n : ℕ}
+      (σ : FiniteChains.TopologicalSingular.Simplex (↑(FiniteChains.Comb.orderNerveRealization P)) (n + 1))
+      (i : Fin (n + 2)) =>
+    FiniteChains.TopologicalSingular.subChains_mono
+      (FiniteChains.Comb.orderNerveRealizationSubcomplex_mono (FiniteChains.Comb.orderNerveSingularCarrier_face σ i))
 
-theorem orderSingularCarrierChains_single {P : Type} [PartialOrder P] {n : ℕ}
+theorem orderSingularCarrierChains_single  [PartialOrder P] {n : ℕ}
     (σ : Simplex (orderNerveRealization P) n) (r : ℤ) :
     Finsupp.single σ r ∈ orderSingularCarrierChains σ n :=
   single_mem_subChains _ n σ r (orderNerveSingularSimplex_mem_carrier σ)
 
-theorem orderSingularCarrierChains_cycle_bounds {P : Type} [PartialOrder P] {n : ℕ}
+theorem orderSingularCarrierChains_cycle_bounds  [PartialOrder P] {n : ℕ}
     (σ : Simplex (orderNerveRealization P) n)
     (hσ : (orderNerveSingularStarIndices σ).Nonempty) (k : ℕ)
     (c : Chain (orderNerveRealization P) (k + 1))
@@ -34,7 +35,7 @@ theorem orderSingularCarrierChains_cycle_bounds {P : Type} [PartialOrder P] {n :
   letI := orderNerveSingularCarrier_subcomplex_contractible σ hσ
   exact contractible_supported_cycle_bounds _ k c hc hz
 
-theorem orderSingularCarrierChains_zero_bounds {P : Type} [PartialOrder P] {n : ℕ}
+theorem orderSingularCarrierChains_zero_bounds  [PartialOrder P] {n : ℕ}
     (σ : Simplex (orderNerveRealization P) n)
     (hσ : (orderNerveSingularStarIndices σ).Nonempty)
     (c : Chain (orderNerveRealization P) 0)

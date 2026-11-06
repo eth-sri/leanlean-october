@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MomentAngle
-
-@[expose] public section
+import RequestProject.MomentAngle
 
 /-!
 # The truncated complex `M_q` and Lemma 3.2 (iii)
@@ -41,20 +39,17 @@ open Finset
 
 variable {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
 
+  (σ : Finset V)
 /-- The cube with free set `σ` all of whose remaining coordinates are `+1`; it is the unique
 cube of `C(L)` with free set `σ` that is truncated along the cut cell `Δ_σ`. -/
-def posCube (σ : Finset V) : Cube V := fun v => if v ∈ σ then CubeCoord.free else CubeCoord.pos
+def posCube   := fun v => if v ∈ σ then CubeCoord.free else CubeCoord.pos
 
 omit [LinearOrder V] in
-@[simp] theorem freeSet_posCube (σ : Finset V) : freeSet (posCube σ) = σ := by
-  ext v
-  by_cases hv : v ∈ σ <;> simp [posCube, hv]
+@[simp] theorem freeSet_posCube  : freeSet (posCube σ) = σ := by aesop (add simp [posCube])
 
 omit [Fintype V] [LinearOrder V] in
-theorem update_posCube (σ : Finset V) (j : V) :
-    Function.update (posCube σ) j CubeCoord.free = posCube (insert j σ) := by
-  funext v
-  by_cases hv : v = j <;> simp [posCube, hv, Function.update_apply]
+theorem update_posCube  (j : V) :
+    Function.update (posCube σ) j CubeCoord.free = posCube (insert j σ) := by aesop (add simp [posCube, Function.update_apply])
 
 omit [LinearOrder V] in
 @[simp] theorem cubeChain_posCube (o : Finset V → ℤ) (σ : Finset V) :
@@ -62,19 +57,19 @@ omit [LinearOrder V] in
   have : ∏ h ∈ univ \ σ, ((posCube σ) h).sgn = 1 := by
     refine Finset.prod_eq_one ?_
     intro h hh
-    have : h ∉ σ := (Finset.mem_sdiff.mp hh).2
+    have  := (Finset.mem_sdiff.mp hh).2
     simp [posCube, this, CubeCoord.sgn]
   simp [cubeChain, this]
 
 /-- The sign with which the cut cell `Δ_σ` occurs in the boundary of the truncated cube
 with free set `σ` and remaining coordinates `+1`. -/
-def cutSign (σ : Finset V) : ℤ := (-1) ^ σ.card
+def cutSign   := (-1) ^ σ.card
 
 /-- A chain of the truncated complex: coefficients on the cubes and on the cut cells. -/
 abbrev TChain (V : Type) := (Cube V → ℤ) × (Finset V → ℤ)
 
 /-- The boundary operator of the truncated complex. -/
-def bdryT (x : TChain V) : TChain V :=
+def bdryT (x : TChain V)  :=
   (bdry x.1, fun τ => cutSign τ * x.1 (posCube τ) + simpBdry x.2 τ)
 
 /-- The cubical boundary of the cube `posCube τ`, written out. -/

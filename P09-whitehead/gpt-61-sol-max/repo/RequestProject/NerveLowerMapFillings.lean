@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NerveDegreeTransfer
-
-@[expose] public section
+import RequestProject.NerveDegreeTransfer
 
 /-! Actual fillings transferred by a lower order homotopy. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P Q : Type u} [Preorder P] [Preorder Q]
 
 theorem filling_of_lower_composite (r : P → Q) (s : Q → P)

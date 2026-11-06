@@ -1,2 +1,1 @@
-module
-public import RequestProject.OrderUniversalChainNormalization
+import RequestProject.OrderUniversalChainNormalization

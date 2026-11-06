@@ -1,25 +1,19 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ReceivedTreeGauge
-public import RequestProject.CellularHomotopyChain
-public import RequestProject.ComponentComplex
-
-@[expose] public section
+import RequestProject.ReceivedTreeGauge
+import RequestProject.CellularHomotopyChain
+import RequestProject.ComponentComplex
 
 /-! A constructed cellular comparison, including the lifted attaching paths. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
-universe u
 variable {K Y : Complex2.{u}} (T : SpanningTree K) (f : Hom K Y)
   {G : Type u} [Group G] (φ : PresGroup (treeRel T) →* G)
   (ψ : G →* Pi1 Y (f.onV T.root))
   (hψ : ψ.comp φ = (pi1Map f T.root).comp (SpanningTree.presToPi1 T))
 
-noncomputable def receiverGerm (e : (G × K.E) × Bool) : UE Y (f.onV T.root) × Bool :=
+noncomputable def receiverGerm (e : (G × K.E) × Bool)  :=
   (receiverEdge T f ψ e.1.1 e.1.2, e.2)
 
 include hψ in
@@ -34,13 +28,9 @@ theorem comparison_liftGerm (g : G) (e : K.E × Bool) :
     have h := receiverVertex_path T f φ ψ hψ g (isPath_single (X := K) (e, false))
     have he : extend (f.onE e, false) (receiverVertex T f ψ g (K.tgt e)) =
         receiverVertex T f ψ (g * germValue T φ (e, false)) (K.src e) := by
-      simpa only [mapPath, List.map_cons, List.map_nil, extendList_cons, extendList_nil,
-        wordValue_cons, wordValue_nil, mul_one, germSrc, germTgt, Bool.false_eq_true, if_false] using h
+      aesop (add simp [FiniteChains.Comb.ReceivedTree.wordValue_cons])
     apply Prod.ext
-    · apply Subtype.ext
-      apply Prod.ext
-      · exact he.symm
-      · rfl
+    · aesop
     · rfl
 
 include hψ in
@@ -61,7 +51,7 @@ theorem comparison_liftPath (g : G) {a b : K.V} {p : List (K.E × Bool)}
         (receiverVertex T f ψ g (germSrc K.src K.tgt e)) =
         receiverVertex T f ψ (g * germValue T φ e) (germTgt K.src K.tgt e) := by
       have h := receiverVertex_path T f φ ψ hψ g (isPath_single (X := K) e)
-      simpa only [mapPath, List.map_cons, List.map_nil, extendList_cons, extendList_nil,
+      simpa [mapPath, List.map_cons, List.map_nil, extendList_cons, extendList_nil,
         wordValue_cons, wordValue_nil, mul_one, germSrc, germTgt, Bool.false_eq_true, if_false] using h
     rw [liftPath_cons, List.map_cons]
     change receiverGerm T f ψ (liftGerm T φ g e) :: _ =
@@ -85,14 +75,12 @@ noncomputable def comparison : Hom (cover T φ) (uCover Y (f.onV T.root)) where
     rw [f.att_onF]
     exact (comparison_liftPath T f φ ψ hψ x.1 (K.att_isLoop x.2)).symm
 
-theorem comparison_bdry2 (c : (G × K.F) →₀ ℤ) :
-    bdry2 (uCover Y (f.onV T.root)) (chain2 (comparison T f φ ψ hψ) c) =
-      chain1 (comparison T f φ ψ hψ) (bdry2 (cover T φ) c) :=
-  bdry2_chain2 (comparison T f φ ψ hψ) c
+abbrev comparison_bdry2 (c : (G × K.F) →₀ ℤ)  :=
+  FiniteChains.Comb.bdry2_chain2 (FiniteChains.Comb.ReceivedTree.comparison T f φ ψ hψ) c
 
 /-- For the receiving group pi1(Y), the compatibility triangle is an identity.
 This gives the genuine comparison without an extra mathematical assumption. -/
-noncomputable def canonicalReceiver : PresGroup (treeRel T) →* Pi1 Y (f.onV T.root) :=
+noncomputable def canonicalReceiver  :=
   (pi1Map f T.root).comp (SpanningTree.presToPi1 T)
 
 end FiniteChains.Comb.ReceivedTree

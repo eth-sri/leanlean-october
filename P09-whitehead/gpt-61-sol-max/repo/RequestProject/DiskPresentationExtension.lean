@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.DiskRoseMaps
-public import RequestProject.ClassicalCWModelSequenceTransfer
-
-@[expose] public section
+import RequestProject.DiskRoseMaps
+import RequestProject.ClassicalCWModelSequenceTransfer
 
 /-! A literal inclusion of disk presentations is a relative one-cell
 attachment followed by a relative two-cell attachment. The cell sets are
@@ -23,7 +21,7 @@ variable {A B J K : Type} (f : A ↪ B) (c : J ↪ K)
 abbrev NewGenerators := {b : B // b ∉ Set.range f}
 abbrev NewRelators := {k : K // k ∉ Set.range c}
 
-def sourceMap : C(DiskAttachment r, DiskAttachment s) :=
+def sourceMap  :=
   desc r (boundaryFamilyInclusion J _)
     ((⟨old s (boundaryFamilyInclusion K _), old_continuous _ _⟩ : C(Rose B, _)).comp
       (diskRoseMap f))
@@ -31,8 +29,7 @@ def sourceMap : C(DiskAttachment r, DiskAttachment s) :=
       continuous_sigma (fun j => (cell_continuous s _).comp
         (continuous_sigmaMk (σ := fun _ : K => ClosedUnitBall (Fin 2 → ℝ)) (i := c j)))⟩
     (fun z => by
-      change old s (boundaryFamilyInclusion K (Fin 2 → ℝ)) (diskRoseMap f (r z)) =
-        cell s (boundaryFamilyInclusion K (Fin 2 → ℝ)) ⟨c z.1, unitBoundaryInclusion _ z.2⟩
+      dsimp
       rw [h z]
       exact (cell_boundary s _ (boundaryFamilyInclusion_isClosedEmbedding K _).injective
         ⟨c z.1, z.2⟩).symm)
@@ -68,13 +65,13 @@ def roseDiskIntoOne : C(DiskFamily B (Fin 1 → ℝ), DiskAttachment (oneAttachi
         (continuous_sigmaMk (σ := fun _ : NewGenerators f => ClosedUnitBall (Fin 1 → ℝ))
           (i := ⟨b, hb⟩))
 
-def roseIntoOne : C(Rose B, DiskAttachment (oneAttaching f r)) :=
+def roseIntoOne  :=
   desc (roseAttaching B) (boundaryFamilyInclusion B _)
     (ContinuousMap.const _ (old (oneAttaching f r) (boundaryFamilyInclusion (NewGenerators f) _)
       (old r (boundaryFamilyInclusion J _) (roseVertex A))))
     (roseDiskIntoOne f r) (by
       rintro ⟨b, x⟩
-      change _ = if hb : b ∈ Set.range f then _ else _
+      dsimp [FiniteChains.RelativeAttachment.DiskPresentationExtension.roseDiskIntoOne]
       split_ifs with hb
       · exact congrArg (fun y => old (oneAttaching f r) _ (old r _ y))
           (cell_boundary (roseAttaching A) _
@@ -93,7 +90,7 @@ theorem roseIntoOne_cell_image (a : A) (d : ClosedUnitBall (Fin 1 → ℝ)) :
       old (oneAttaching f r) (boundaryFamilyInclusion (NewGenerators f) _)
         (old r (boundaryFamilyInclusion J _)
           (cell (roseAttaching A) (boundaryFamilyInclusion A _) ⟨a, d⟩)) := by
-  change desc _ _ _ _ _ (cell _ _ _) = _
+  unfold FiniteChains.RelativeAttachment.DiskPresentationExtension.roseIntoOne
   rw [desc_cell]
   have hb : f a ∈ Set.range f := ⟨a, rfl⟩
   have ha : Classical.choose hb = a := f.injective (Classical.choose_spec hb)
@@ -102,7 +99,7 @@ theorem roseIntoOne_cell_image (a : A) (d : ClosedUnitBall (Fin 1 → ℝ)) :
 theorem roseIntoOne_cell_new (b : NewGenerators f) (d : ClosedUnitBall (Fin 1 → ℝ)) :
     roseIntoOne f r (cell (roseAttaching B) (boundaryFamilyInclusion B _) ⟨b.val, d⟩) =
       cell (oneAttaching f r) (boundaryFamilyInclusion (NewGenerators f) _) ⟨b, d⟩ := by
-  change desc _ _ _ _ _ (cell _ _ _) = _
+  unfold FiniteChains.RelativeAttachment.DiskPresentationExtension.roseIntoOne
   rw [desc_cell]
   simp only [roseDiskIntoOne, ContinuousMap.coe_mk, dif_neg b.property]
 
@@ -123,7 +120,7 @@ def twoAttaching : C(BoundaryFamily (NewRelators c) (Fin 2 → ℝ),
     continuous_sigma (fun k => s.continuous.comp
       (continuous_sigmaMk (σ := fun _ : K => UnitBoundary (Fin 2 → ℝ)) (i := k.val)))⟩
 
-def oneToTarget : C(DiskAttachment (oneAttaching f r), DiskAttachment s) :=
+def oneToTarget  :=
   desc (oneAttaching f r) (boundaryFamilyInclusion (NewGenerators f) _)
     (sourceMap f c r s h)
     ⟨fun d => old s (boundaryFamilyInclusion K _)
@@ -151,9 +148,6 @@ theorem oneToTarget_rose (x : Rose B) :
   obtain ⟨z, rfl⟩ := quotientMap_surjective (roseAttaching B) (boundaryFamilyInclusion B _) x
   cases z with
   | inl a =>
-      cases a
-      change oneToTarget f c r s h (roseIntoOne f r (roseVertex B)) = _
-      rw [roseIntoOne_vertex, oneToTarget_old, sourceMap_old, diskRoseMap_vertex]
       rfl
   | inr d =>
       rcases d with ⟨b, d⟩
@@ -166,7 +160,7 @@ theorem oneToTarget_rose (x : Rose B) :
         rw [roseIntoOne_cell_new f r ⟨b, hb⟩ d, oneToTarget_cell]
         rfl
 
-def extensionToTarget : C(DiskAttachment (twoAttaching f c r s), DiskAttachment s) :=
+def extensionToTarget  :=
   desc (twoAttaching f c r s) (boundaryFamilyInclusion (NewRelators c) _)
     (oneToTarget f c r s h)
     ⟨fun d => cell s (boundaryFamilyInclusion K _) ⟨d.1.val, d.2⟩,

@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusCutLiftedLinkFillings
-public import RequestProject.GenusFreeFaceCoverHomology
-public import RequestProject.NerveMaximalFamilyDeletion
-public import RequestProject.NerveGenerationComposition
-
-@[expose] public section
+import RequestProject.GenusCutLiftedLinkFillings
+import RequestProject.GenusFreeFaceCoverHomology
+import RequestProject.NerveMaximalFamilyDeletion
+import RequestProject.NerveGenerationComposition
 
 /-! Both cells of a recorded cut pair may be deleted in every covering sheet. -/
 namespace FiniteChains.Davis.Genus
@@ -35,11 +33,10 @@ theorem genus_cut_pair_cover_homology (hf : IsPosetCover f)
   let C := fun p => genusCollapseStage q left (f p) ∧ f p ≠ Sum.inr (fullCutCell t hne)
   let T := fun p => f p = Sum.inl t
   have hTC : ∀ p, T p → C p := by
-    intro p hp
-    exact ⟨hp ▸ htC, by rw [hp]; exact Sum.inl_ne_inr⟩
+    aesop
   have hmax : ∀ p, T p → ∀ x, C x → p ≤ x → x = p := by
     intro p hp x _ hpx
-    have hx : f x = Sum.inl t := genus_top_cell_maximal q t ht (f x)
+    have hx  := genus_top_cell_maximal q t ht (f x)
       (by rw [← hp]; exact hf.mono hpx)
     exact (hf.up_inj (le_refl p) hpx (hp.trans hx.symm)).symm
   have hlink₁ : ∀ v, T v → FillsDegreeIn (fun p => C p ∧ p < v) 2 := by
@@ -71,38 +68,8 @@ theorem genus_recorded_cut_pair_cover_homology (hf : IsPosetCover f)
       (fun p => genusCollapseStage q (left ++ [(qCubeToCoordinate t.1, Sum.inr σ.1)]) (f p)) 3 ∧
     ReflectsBoundsIn (fun p => genusCollapseStage q left (f p))
       (fun p => genusCollapseStage q (left ++ [(qCubeToCoordinate t.1, Sum.inr σ.1)]) (f p)) 3 := by
-  classical
-  have hp : (qCubeToCoordinate t.1, Sum.inr σ.1) ∈ genusChainCollapse q := by
-    rw [hsplit]
-    exact List.mem_append.mpr (Or.inr List.mem_cons_self)
-  have ht : t.1.spx.card = 3 := (genus_oldCell_removed_iff_dimension_three q t).mp
-    (List.mem_map.mpr ⟨(qCubeToCoordinate t.1, Sum.inr σ.1), hp, rfl⟩)
-  have hc := genusCollapseStage_suffix_certificate q left
-    ((qCubeToCoordinate t.1, Sum.inr σ.1) :: right) hsplit
-  have hi : qCubeToCoordinate t.1 ∈ spineInc (ASC.orderComplex (GenusVertex q))
-      (Sum.inr σ.1) := by
-    have hm : qCubeToCoordinate t.1 ∈ spineInc (ASC.orderComplex (GenusVertex q))
-        (Sum.inr σ.1) ∩
-        Collapse.remainingTops (topCubes (ASC.orderComplex (GenusVertex q))) left := by
-      rw [hc.2.1]
-      exact Finset.mem_singleton_self _
-    exact (Finset.mem_inter.mp hm).1
-  have he : qCubeToCoordinate t.1 = posCube σ.1 := by
-    simp only [spineInc] at hi
-    split at hi
-    · exact Finset.mem_singleton.mp hi
-    · simp at hi
-  have hs : t.1.spx = σ.1 := by
-    have hh := congrArg freeSet he
-    simpa using hh
-  have hpositive : t.1.sgn = 0 := by
-    funext v
-    have hh := qCubeToCoordinate_parity t.1 v
-    rw [he] at hh
-    by_cases hv : v ∈ σ.1
-    · simpa [posCube, hv] using hh.symm
-    · simpa [posCube, hv] using hh.symm
-  have hne : t.1.spx.Nonempty := hs.symm ▸ σ.2.1
+  obtain ⟨ht, hs, hpositive⟩ := genus_recorded_cut_pair_data q left right σ t hsplit
+  have hne  := hs.symm ▸ σ.2.1
   have hstep := genus_cut_pair_cover_homology q hf left right t hne ht hpositive
     (by simpa only [hs] using hsplit)
   simpa only [hs] using hstep

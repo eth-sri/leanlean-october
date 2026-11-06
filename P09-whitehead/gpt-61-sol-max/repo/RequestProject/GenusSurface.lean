@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.SurfaceLink
-public import RequestProject.GenusLoops
-
-@[expose] public section
+import RequestProject.SurfaceLink
+import RequestProject.GenusLoops
 
 /-!
 # The nerve of the block of genus `q` is a closed surface
@@ -34,22 +32,21 @@ of the corner `8h` is glued to the side coming into the corner `8h + 6`, then `8
 commutator.  So all `4q` corners lie on one cycle.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
+
 
 open Cell ASC Relation Genus
 
-section GenusSurface
+section
 
 variable (q : ℕ) [NeZero q]
 
 /-! ### Reading the labels -/
 
-omit [NeZero q] in
+section
+omit [NeZero q]
 /-- Two positions of the boundary carry the same edge of the surface exactly when they agree on
 the commutator, on the letter, and on the half of the side. -/
 theorem gec_eq_iff' (m n : Fin (8 * q)) :
@@ -64,16 +61,15 @@ theorem gec_eq_iff' (m n : Fin (8 * q)) :
     rcases hm2 with h1 | h1 <;> rcases hn2 with h3 | h3 <;>
     simp [gec, Prod.ext_iff, Fin.ext_iff, decide_eq_decide, h1, h2, h3, h4] <;> omega
 
-omit [NeZero q] in
 /-- An even position of the boundary is a corner of the polygon. -/
 theorem gvc_even {p : Fin (8 * q)} (h : p.val % 2 = 0) : gvc q p = none := by
   rw [gvc, if_pos h]
 
-omit [NeZero q] in
 /-- An odd position of the boundary is the midpoint of a side. -/
 theorem gvc_odd {p : Fin (8 * q)} (h : p.val % 2 ≠ 0) :
     gvc q p = some (⟨p.val / 2 / 4, genus_hlt q p⟩, decide (p.val / 2 % 4 % 2 = 1)) := by
   rw [gvc, if_neg h]
+end
 
 theorem fpred_val_pos {n : Fin (8 * q)} {a : ℕ} (hv : n.val = a) (hpos : 0 < a) :
     (fpred n).val = a - 1 := by
@@ -83,31 +79,22 @@ theorem fpred_val_pos {n : Fin (8 * q)} {a : ℕ} (hv : n.val = a) (hpos : 0 < a
 
 theorem genus_pairs : EdgePairs (gec q) := by
   intro i
-  have hq := Nat.pos_of_neZero q
-  have hi := i.isLt
-  have hh : i.val / 2 / 4 < q := by omega
+  
+  
+  
   have hmlt : 8 * (i.val / 2 / 4) + 2 * (if i.val / 2 % 4 < 2 then i.val / 2 % 4 + 2
       else i.val / 2 % 4 - 2) + (1 - i.val % 2) < 8 * q := by
     split_ifs <;> omega
   refine ⟨⟨_, hmlt⟩, ?_, ?_, ?_⟩
-  · rw [Ne, Fin.ext_iff]
-    simp only []
-    split_ifs <;> omega
-  · rw [gec_eq_iff']
-    refine ⟨?_, ?_, ?_⟩ <;> simp only [] <;> split_ifs <;> omega
-  · intro k hk
-    rw [gec_eq_iff'] at hk
-    obtain ⟨h1, h2, h3⟩ := hk
-    have hk8 := k.isLt
-    rw [Fin.ext_iff, Fin.ext_iff]
-    simp only []
-    split_ifs at h3 ⊢ <;> omega
+  · grind
+  · grind [gec_eq_iff']
+  · grind [gec_eq_iff']
 
 theorem genus_noLoop : NoLoopSide (gvc q) := by
   intro p
-  have hq := Nat.pos_of_neZero q
-  have hp := p.isLt
-  have hs : (p + 1).val = (p.val + 1) % (8 * q) := fin_succ_val p
+  
+  
+  have hs  := fin_succ_val p
   have hpar : (p + 1).val % 2 = (p.val + 1) % 2 := by
     rw [hs]
     rcases Nat.lt_or_ge (p.val + 1) (8 * q) with h | h
@@ -125,27 +112,20 @@ theorem genus_vc_surj : Function.Surjective (gvc q) := by
   have hq := Nat.pos_of_neZero q
   rintro (_ | ⟨h, i⟩)
   · exact ⟨⟨0, by omega⟩, by rw [gvc]; simp⟩
-  · have hh := h.isLt
+  · 
     refine ⟨⟨2 * (4 * h.val + (if i then 1 else 0)) + 1, by split_ifs <;> omega⟩, ?_⟩
     have hval : (⟨2 * (4 * h.val + (if i then 1 else 0)) + 1, by split_ifs <;> omega⟩ :
         Fin (8 * q)).val = 2 * (4 * h.val + (if i then 1 else 0)) + 1 := rfl
     rw [gvc, if_neg (by rw [hval]; split_ifs <;> omega)]
     simp only [Option.some.injEq, Prod.mk.injEq]
     constructor
-    · apply Fin.ext
-      show (2 * (4 * h.val + (if i then 1 else 0)) + 1) / 2 / 4 = h.val
-      split_ifs <;> omega
-    · have e2 : (2 * (4 * h.val + (if i then 1 else 0)) + 1) / 2 % 4 % 2
-          = (if i then 1 else 0) := by
-        split_ifs <;> omega
-      show decide ((2 * (4 * h.val + (if i then 1 else 0)) + 1) / 2 % 4 % 2 = 1) = i
-      rw [e2]
-      cases i <;> simp
+    · grind
+    · grind
 
 theorem genus_ec_surj : Function.Surjective (gec q) := by
-  have hq := Nat.pos_of_neZero q
+  
   rintro ⟨h, i, b⟩
-  have hh := h.isLt
+  
   refine ⟨⟨2 * (4 * h.val + (if i then 1 else 0)) + (if b then 1 else 0), by
     split_ifs <;> omega⟩, ?_⟩
   have e1 : (2 * (4 * h.val + (if i then 1 else 0)) + (if b then 1 else 0)) / 2 / 4 = h.val := by
@@ -158,16 +138,9 @@ theorem genus_ec_surj : Function.Surjective (gec q) := by
     split_ifs <;> omega
   simp only [gec, Prod.mk.injEq]
   refine ⟨Fin.ext ?_, ?_, ?_⟩
-  · show (2 * (4 * h.val + (if i then 1 else 0)) + (if b then 1 else 0)) / 2 / 4 = h.val
-    exact e1
-  · show decide ((2 * (4 * h.val + (if i then 1 else 0)) + (if b then 1 else 0)) / 2 % 4 % 2 = 1)
-      = i
-    rw [e2]
-    cases i <;> simp
-  · show (decide ((2 * (4 * h.val + (if i then 1 else 0)) + (if b then 1 else 0)) % 2 = 1) ^^
-      decide (2 ≤ (2 * (4 * h.val + (if i then 1 else 0)) + (if b then 1 else 0)) / 2 % 4)) = b
-    rw [e2, e3]
-    cases i <;> cases b <;> simp
+  · assumption
+  · aesop
+  · aesop
 
 /-- **The identification of the boundary of the `4q`-gon is a polygon gluing**: the sides are
 glued in pairs, no side becomes a loop, and every vertex and every edge occurs. -/
@@ -188,14 +161,12 @@ theorem cornerAdj_of_vals {m n : Fin (8 * q)} {a b : ℕ} (hvc : gvc q m = gvc q
     (h3 : (a % 2 + (if 2 ≤ a / 2 % 4 then 1 else 0)) % 2
         = (b % 2 + (if 2 ≤ b / 2 % 4 then 1 else 0)) % 2) :
     CornerAdj (gvc q) (gec q) m n := by
-  refine ⟨hvc, Or.inr (Or.inl ((gec_eq_iff' q m (fpred n)).2 ?_))⟩
-  rw [ha, hb]
-  exact ⟨h1, h2, h3⟩
+  simp_all [FiniteChains.Davis.CornerAdj, gec_eq_iff', fpred]
 
 theorem cornerAdj_step1 (h : ℕ) (hh : h < q) :
     CornerAdj (gvc q) (gec q) ⟨8 * h, by omega⟩ ⟨8 * h + 6, by omega⟩ := by
   refine cornerAdj_of_vals q (a := 8 * h) (b := 8 * h + 5)
-    (by rw [gvc_even q (by simp; omega), gvc_even q (by simp; omega)]) rfl
+    (by grind [gvc_even]) rfl
     (fpred_val_pos q (a := 8 * h + 6) rfl (by omega)) (by omega) (by omega) ?_
   rw [if_neg (by omega), if_pos (by omega)]
   omega
@@ -203,7 +174,7 @@ theorem cornerAdj_step1 (h : ℕ) (hh : h < q) :
 theorem cornerAdj_step2 (h : ℕ) (hh : h < q) :
     CornerAdj (gvc q) (gec q) ⟨8 * h + 6, by omega⟩ ⟨8 * h + 4, by omega⟩ := by
   refine cornerAdj_of_vals q (a := 8 * h + 6) (b := 8 * h + 3)
-    (by rw [gvc_even q (by simp; omega), gvc_even q (by simp; omega)]) rfl
+    (by grind [gvc_even]) rfl
     (fpred_val_pos q (a := 8 * h + 4) rfl (by omega)) (by omega) (by omega) ?_
   rw [if_pos (by omega), if_neg (by omega)]
   omega
@@ -211,7 +182,7 @@ theorem cornerAdj_step2 (h : ℕ) (hh : h < q) :
 theorem cornerAdj_step3 (h : ℕ) (hh : h < q) :
     CornerAdj (gvc q) (gec q) ⟨8 * h + 4, by omega⟩ ⟨8 * h + 2, by omega⟩ := by
   refine cornerAdj_of_vals q (a := 8 * h + 4) (b := 8 * h + 1)
-    (by rw [gvc_even q (by simp; omega), gvc_even q (by simp; omega)]) rfl
+    (by grind [gvc_even]) rfl
     (fpred_val_pos q (a := 8 * h + 2) rfl (by omega)) (by omega) (by omega) ?_
   rw [if_pos (by omega), if_neg (by omega)]
   omega
@@ -219,7 +190,7 @@ theorem cornerAdj_step3 (h : ℕ) (hh : h < q) :
 theorem cornerAdj_step4 (h : ℕ) (hh : h + 1 < q) :
     CornerAdj (gvc q) (gec q) ⟨8 * h + 2, by omega⟩ ⟨8 * (h + 1), by omega⟩ := by
   refine cornerAdj_of_vals q (a := 8 * h + 2) (b := 8 * h + 7)
-    (by rw [gvc_even q (by simp; omega), gvc_even q (by simp; omega)]) rfl
+    (by grind [gvc_even]) rfl
     (fpred_val_pos q (a := 8 * (h + 1)) rfl (by omega)) (by omega) (by omega) ?_
   rw [if_neg (by omega), if_pos (by omega)]
   omega
@@ -254,8 +225,8 @@ theorem conn_block_zero (h : ℕ) (hh : h < q) :
 /-- Every corner of the polygon is joined to the corner `0`. -/
 theorem conn_even_zero (p : Fin (8 * q)) (hp : p.val % 2 = 0) :
     ReflTransGen (CornerAdj (gvc q) (gec q)) ⟨0, by have := Nat.pos_of_neZero q; omega⟩ p := by
-  have hq := Nat.pos_of_neZero q
-  have hlt := p.isLt
+  
+  
   have hh : p.val / 8 < q := by omega
   have hblock := conn_block_zero q (p.val / 8) hh
   have hwithin := conn_within_block q (p.val / 8) hh (p.val % 8 / 2) (by omega)
@@ -269,50 +240,40 @@ theorem conn_even_zero (p : Fin (8 * q)) (hp : p.val % 2 = 0) :
 /-- **The corners of the `4q`-gon are glued in a single cycle**, and the two midpoints of a pair
 of identified sides are glued to each other. -/
 theorem genus_cornersConnected : CornersConnected (gvc q) (gec q) := by
-  have hq := Nat.pos_of_neZero q
+  
   intro i j hij
-  have hi8 := i.isLt
-  have hj8 := j.isLt
+  
+  
   by_cases hi : i.val % 2 = 0
   · -- both positions are corners of the polygon
     have hj : j.val % 2 = 0 := by
-      by_contra hj
-      rw [gvc_even q hi, gvc_odd q hj] at hij
-      simp at hij
+      classical grind [gvc_even, gvc_odd]
     letI : Std.Symm (CornerAdj (gvc q) (gec q)) := ⟨fun _ _ h => cornerAdj_symm h⟩
     exact (ReflTransGen.stdSymm.symm _ _ (conn_even_zero q i hi)).trans
       (conn_even_zero q j hj)
   · -- both positions are midpoints of sides
     have hj : j.val % 2 ≠ 0 := by
-      intro hj
-      rw [gvc_even q hj, gvc_odd q hi] at hij
-      simp at hij
+      grind [gvc_even, gvc_odd]
     rw [gvc_odd q hi, gvc_odd q hj] at hij
     simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide] at hij
     obtain ⟨h1, h2⟩ := hij
-    have h2' : i.val / 2 % 4 % 2 = j.val / 2 % 4 % 2 := by
-      by_cases ha : i.val / 2 % 4 % 2 = 1 <;> by_cases hb : j.val / 2 % 4 % 2 = 1 <;>
-        simp [ha, hb] at h2 ⊢ <;> omega
+    
     by_cases heq : i.val = j.val
-    · have hijeq : i = j := Fin.ext heq
+    · have hijeq  := Fin.ext heq
       rw [hijeq]
     -- the two positions are the midpoints of a pair of glued sides
     rcases Nat.lt_or_ge (i.val / 2 % 4) 2 with hr | hr
     · have hjv : j.val = i.val + 4 := by omega
       refine ReflTransGen.single ?_
       refine cornerAdj_of_vals q (a := i.val) (b := i.val + 3)
-        (by rw [gvc_odd q hi, gvc_odd q hj]
-            simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide]
-            exact ⟨h1, by omega⟩) rfl
-        (by rw [fpred_val_pos q (a := j.val) rfl (by omega)]; omega) (by omega) (by omega) ?_
+        (by simp_all [gvc_odd]) rfl
+        (by simp_all [fpred_val_pos]) (by omega) (by omega) ?_
       rw [if_neg (by omega), if_pos (by omega)]
       omega
-    · have hjv : j.val = i.val - 4 := by omega
+    · 
       refine ReflTransGen.single (cornerAdj_symm ?_)
       refine cornerAdj_of_vals q (a := j.val) (b := j.val + 3)
-        (by rw [gvc_odd q hi, gvc_odd q hj]
-            simp only [Option.some.injEq, Prod.mk.injEq, Fin.mk.injEq, decide_eq_decide]
-            exact ⟨h1.symm, by omega⟩) rfl
+        (by simp_all [gvc_odd]) rfl
         (by rw [fpred_val_pos q (a := i.val) rfl (by omega)]; omega) (by omega) (by omega) ?_
       rw [if_neg (by omega), if_pos (by omega)]
       omega
@@ -320,15 +281,15 @@ theorem genus_cornersConnected : CornersConnected (gvc q) (gec q) := by
 /-! ### The closed surface -/
 
 /-- **The nerve of the block of genus `q` is a closed surface.** -/
-def genusClosedSurface : ClosedSurfacePoset (SCell (gvc q) (gec q) (gc q)) :=
+def genusClosedSurface  :=
   closedSurfacePoset_SCell (gc q) (genus_polygonData q) (genus_cornersConnected q)
 
 /-- The triangulation of the surface of genus `q` is two-dimensional. -/
-theorem genus_chain_card_le_three {s : Finset (SCell (gvc q) (gec q) (gc q))}
-    (hs : s ∈ (orderComplex (SCell (gvc q) (gec q) (gc q))).faces) : s.card ≤ 3 :=
+abbrev genus_chain_card_le_three {s : Finset (SCell (gvc q) (gec q) (gc q))}
+    (hs : s ∈ (orderComplex (SCell (gvc q) (gec q) (gc q))).faces)  :=
   (genusClosedSurface q).toSurfaceRank.chain_card_le_three hs
 
-end GenusSurface
+end
 
-end Davis
-end FiniteChains
+end FiniteChains.Davis
+

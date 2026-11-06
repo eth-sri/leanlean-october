@@ -1,22 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresentationChain
-public import RequestProject.Pi2DictionaryFinsupp
-
-@[expose] public section
+import RequestProject.PresentationChain
+import RequestProject.Pi2DictionaryFinsupp
 
 /-! Chains of presentation complexes with arbitrary generator and relator sets.
 The two-cycle condition is imposed on actual cellular universal-cover chains. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
-open MonoidAlgebra
 
-universe u
+
 
 variable {α J : Type u}
 
@@ -61,7 +56,7 @@ structure PresChainFS (ρ : J → FreeGroup α) (n : ℕ) where
               refine Subgroup.normalClosure_le_normal ?_
               rintro _ ⟨c, rfl⟩
               refine Subgroup.mem_comap.2 ?_
-              have : FreeGroup.map (genIncl r) (rel r c) = rel (r + 1) (cellIncl r c) :=
+              have  :=
                 (rel_incl r c).symm
               rw [this]
               exact Subgroup.subset_normalClosure (Set.mem_range_self _))))
@@ -78,7 +73,8 @@ def gmap (h : PresChainFS ρ n) : ∀ r, α → h.gen r
 
 @[simp] theorem gmap_zero : h.gmap 0 = h.baseGen := by simp [gmap]
 
-@[simp] theorem gmap_succ (r : ℕ) (i : α) : h.gmap (r + 1) i = h.genIncl r (h.gmap r i) := by
+variable (r : ℕ)
+@[simp] theorem gmap_succ  (i : α) : h.gmap (r + 1) i = h.genIncl r (h.gmap r i) := by
   simp [gmap]
 
 /-- The inclusion of the two-cells of `K` into those of `X_r`. -/
@@ -88,21 +84,21 @@ def cmap (h : PresChainFS ρ n) : ∀ r, J → h.cell r
 
 @[simp] theorem cmap_zero : h.cmap 0 = h.baseCell := by simp [cmap]
 
-@[simp] theorem cmap_succ (r : ℕ) (j : J) : h.cmap (r + 1) j = h.cellIncl r (h.cmap r j) := by
+@[simp] theorem cmap_succ  (j : J) : h.cmap (r + 1) j = h.cellIncl r (h.cmap r j) := by
   simp [cmap]
 
 theorem gmap_injective (h : PresChainFS ρ n) : ∀ r, Function.Injective (h.gmap r)
   | 0 => by simpa using h.baseGen_injective
   | r + 1 => by
       intro i i' hii
-      simp only [gmap_succ] at hii
+      simp  at hii
       exact gmap_injective h r (h.genIncl_injective r hii)
 
 theorem cmap_injective (h : PresChainFS ρ n) : ∀ r, Function.Injective (h.cmap r)
   | 0 => by simpa using h.baseCell_injective
   | r + 1 => by
       intro j j' hjj
-      simp only [cmap_succ] at hjj
+      simp  at hjj
       exact cmap_injective h r (h.cellIncl_injective r hjj)
 
 /-- The two-cells of `K` are attached, in `X_r`, along the relators of the presentation. -/
@@ -115,7 +111,7 @@ theorem rel_cmap (h : PresChainFS ρ n) : ∀ (r : ℕ) (j : J),
 
 /-- The relators of `X_r` generate its relator subgroup, so an inclusion of generating sets
 that carries relators to relators induces a map of the presented groups. -/
-theorem relSub_le_comap_step (r : ℕ) :
+theorem relSub_le_comap_step  :
     relSub (h.rel r) ≤ (relSub (h.rel (r + 1))).comap (FreeGroup.map (h.genIncl r)) := by
   refine Subgroup.normalClosure_le_normal ?_
   rintro _ ⟨c, rfl⟩
@@ -124,7 +120,7 @@ theorem relSub_le_comap_step (r : ℕ) :
     (h.rel_incl r c).symm]
   exact Subgroup.subset_normalClosure (Set.mem_range_self _)
 
-theorem relSub_le_comap_base (r : ℕ) :
+theorem relSub_le_comap_base  :
     relSub ρ ≤ (relSub (h.rel r)).comap (FreeGroup.map (h.gmap r)) := by
   refine Subgroup.normalClosure_le_normal ?_
   rintro _ ⟨j, rfl⟩
@@ -133,32 +129,28 @@ theorem relSub_le_comap_base (r : ℕ) :
   exact Subgroup.subset_normalClosure (Set.mem_range_self _)
 
 /-- The map `π₁(X_r) → π₁(X_{r+1})` induced by the inclusion. -/
-def psi (r : ℕ) : PresGroup (h.rel r) →* PresGroup (h.rel (r + 1)) :=
+def psi   :=
   QuotientGroup.map _ _ (FreeGroup.map (h.genIncl r)) (h.relSub_le_comap_step r)
 
 /-- The map `π₁(K) → π₁(X_r)` induced by the inclusion. -/
-def phi (r : ℕ) : PresGroup ρ →* PresGroup (h.rel r) :=
+def phi   :=
   QuotientGroup.map _ _ (FreeGroup.map (h.gmap r)) (h.relSub_le_comap_base r)
 
-@[simp] theorem phi_mk (r : ℕ) (w : FreeGroup α) :
+@[simp] theorem phi_mk  (w : FreeGroup α) :
     h.phi r (QuotientGroup.mk w) = QuotientGroup.mk (FreeGroup.map (h.gmap r) w) := rfl
 
-@[simp] theorem psi_mk (r : ℕ) (w : FreeGroup (h.gen r)) :
+@[simp] theorem psi_mk  (w : FreeGroup (h.gen r)) :
     h.psi r (QuotientGroup.mk w) = QuotientGroup.mk (FreeGroup.map (h.genIncl r) w) := rfl
 
-theorem psi_comp_phi (r : ℕ) : (h.psi r).comp (h.phi r) = h.phi (r + 1) := by
-  ext w
-  show h.psi r (h.phi r (QuotientGroup.mk (FreeGroup.of w)))
-    = h.phi (r + 1) (QuotientGroup.mk (FreeGroup.of w))
-  rw [phi_mk, psi_mk, phi_mk, FreeGroup.map.comp]
-  rfl
+theorem psi_comp_phi  : (h.psi r).comp (h.phi r) = h.phi (r + 1) := by
+  aesop
 
 /-- **The `π₂`-condition in Fox coordinates.**  The topological hypothesis of the
 chain — the inclusion is zero on `π₂` — says, in the coordinates used throughout
 Section 2, that a Fox cycle over `ℤ[π₁(X_r)]` has zero image in the chain module of
 `X_{r+1}`.  The two forms are equivalent by
 `FiniteChains.Comb.fs_univCover_zero_pi2_iff`. -/
-theorem zero_pi2_coords (r : ℕ) (hr : r < n)
+theorem zero_pi2_coords  (hr : r < n)
     (u : h.cell r →₀ MonoidAlgebra ℤ (PresGroup (h.rel r)))
     (hu : ∀ a : h.gen r, ∑ c ∈ u.support, u c *
         quotRingHom ℤ (relSub (h.rel r)) (@fox _ (h.decGen r) a (h.rel r c)) = 0) :
@@ -170,13 +162,12 @@ theorem zero_pi2_coords (r : ℕ) (hr : r < n)
     (h.cellIncl_injective r)).1 (h.zero_pi2 r hr) u hu
 
 /-- The Fox boundary matrix of the stage `X_r`. -/
-noncomputable def bdry (r : ℕ) (a : h.gen r) (c : h.cell r) :
-    MonoidAlgebra ℤ (PresGroup (h.rel r)) :=
+noncomputable def bdry  (a : h.gen r) (c : h.cell r)  :=
   quotRingHom ℤ (relSub (h.rel r)) (@fox _ (h.decGen r) a (h.rel r c))
 
 /-- Reading a group-ring element of `ℤ[F]` in `ℤ[π₁(X_r)]` through the inclusion of
 generating sets agrees with pushing it to `ℤ[π₁(K)]` and then along `π₁(K) → π₁(X_r)`. -/
-theorem quot_freeRingMap (r : ℕ) (x : FreeGroupRing α) :
+theorem quot_freeRingMap  (x : FreeGroupRing α) :
     letI := h.decGen r
     quotRingHom ℤ (relSub (h.rel r)) (freeRingMap (h.gmap r) x)
       = MonoidAlgebra.mapDomainRingHom ℤ (h.phi r) (quotRingHom ℤ (relSub ρ) x) := by
@@ -187,9 +178,7 @@ theorem quot_freeRingMap (r : ℕ) (x : FreeGroupRing α) :
   | single w m =>
       show quotRingHom ℤ (relSub (h.rel r))
           (MonoidAlgebra.mapDomain (FreeGroup.map (h.gmap r)) (MonoidAlgebra.single w m)) = _
-      rw [MonoidAlgebra.mapDomain_single, quotRingHom_single]
-      show _ = MonoidAlgebra.mapDomain (h.phi r) (quotRingHom ℤ (relSub ρ) (MonoidAlgebra.single w m))
-      rw [quotRingHom_single, MonoidAlgebra.mapDomain_single, phi_mk]
+      simp_all
 
 variable [DecidableEq α]
 
@@ -225,7 +214,7 @@ theorem cycleLiftsMod_toChainInput (m : ℕ) : CycleLiftsMod h.toChainInput m :=
   intro r _ u hu
   letI := h.decGen r
   obtain ⟨v, hv, z, hz⟩ := fs_exists_cycle_of_boundary_nsmul (h.rel r) m u
-    (fun i => by simpa only [fs_coverSecondBoundary_apply, toChainInput, bdry, foxMatrixPres] using hu i)
+    (fun i => by classical simp_all [fs_coverSecondBoundary_apply, toChainInput, bdry, foxMatrixPres])
   refine ⟨v, ?_, z, hz⟩
   intro i
   have hi := congrArg (fun c => c i) hv

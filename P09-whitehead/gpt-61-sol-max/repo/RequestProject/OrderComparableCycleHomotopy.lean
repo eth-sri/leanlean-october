@@ -1,16 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderComparableCollapse
-
-@[expose] public section
+import RequestProject.OrderComparableCollapse
 
 /-! Finite strict three-chains witnessing a pointwise order homotopy. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
 theorem strict_cycle_comparable_boundary (g h : P → P)
@@ -23,7 +19,7 @@ theorem strict_cycle_comparable_boundary (g h : P → P)
   have hw : bdry2 (orderCx P) w = 0 := by
     rw [bdry2_chain2, hc, map_zero]
   let p := Nerve.prism g h (ordNerveChain2 w)
-  have hp : p ∈ Nerve.Inc P :=
+  have hp  :=
     Nerve.prism_mem_inc hg hh hgh (ordNerveChain2_mem_inc w)
   have hd := (ordNerveChain2_cycle_iff w).mpr hw
   have hb : Nerve.bdry p = Nerve.cmap h (ordNerveChain2 w) -

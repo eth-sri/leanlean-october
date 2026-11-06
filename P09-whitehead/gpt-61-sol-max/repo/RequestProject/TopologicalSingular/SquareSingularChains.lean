@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.SquareBoundary
-public import RequestProject.TopologicalSingular.SingularPathHomotopy
-public import RequestProject.TopologicalSingular.RelativeSingularMaps
-
-@[expose] public section
+import RequestProject.SquareBoundary
+import RequestProject.TopologicalSingular.SingularPathHomotopy
+import RequestProject.TopologicalSingular.RelativeSingularMaps
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -13,14 +11,10 @@ open scoped unitInterval Topology
 def squareCoordinates : C(I × I, Fin 2 → I) where
   toFun z := ![z.1, z.2]
   continuous_toFun := by
-    apply continuous_pi
-    intro i
-    fin_cases i
-    · exact continuous_fst
-    · exact continuous_snd
+    fun_prop
 
-noncomputable def cubeTriangle0 : Simplex (Fin 2 → I) 2 := squareCoordinates.comp squareTriangle0
-noncomputable def cubeTriangle1 : Simplex (Fin 2 → I) 2 := squareCoordinates.comp squareTriangle1
+noncomputable def cubeTriangle0  := squareCoordinates.comp squareTriangle0
+noncomputable def cubeTriangle1  := squareCoordinates.comp squareTriangle1
 
 noncomputable def cubeEdge (i : Fin 2) (v : I) : Simplex (Fin 2 → I) 1 :=
   ⟨fun z => Whitehead.squareEdge i v (stdSimplexHomeomorphUnitInterval z),
@@ -80,27 +74,18 @@ theorem squareFundamentalChain_boundary : boundary 1 squareFundamentalChain =
 
 theorem squareFundamentalChain_boundary_supported :
     boundary 1 squareFundamentalChain ∈ subChains (Cube.boundary (Fin 2)) 1 := by
-  rw [squareFundamentalChain_boundary]
-  apply Submodule.sub_mem
-  · apply Submodule.sub_mem
-    · apply Submodule.add_mem
-      · exact single_mem_subChains _ 1 _ 1 (cubeEdge_boundary 0 1 (Or.inr rfl))
-      · exact single_mem_subChains _ 1 _ 1 (cubeEdge_boundary 1 0 (Or.inl rfl))
-    · exact single_mem_subChains _ 1 _ 1 (cubeEdge_boundary 1 1 (Or.inr rfl))
-  · exact single_mem_subChains _ 1 _ 1 (cubeEdge_boundary 0 0 (Or.inl rfl))
+  aesop (add simp [squareFundamentalChain_boundary, single_mem_subChains, cubeEdge_boundary])
 
-universe u v
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
-noncomputable def squareCycle (p : GenLoop (Fin 2) X x) : Chain X 2 :=
+variable (p : GenLoop (Fin 2) X x)
+noncomputable def squareCycle   :=
   map p.val 2 squareFundamentalChain
 
-theorem squareCycle_boundary (p : GenLoop (Fin 2) X x) : boundary 1 (squareCycle p) = 0 := by
+theorem squareCycle_boundary  : boundary 1 (squareCycle p) = 0 := by
   have he (i : Fin 2) (v : I) (hv : v = 0 ∨ v = 1) :
       simplexMap p.val 1 (cubeEdge i v) = ContinuousMap.const (Domain 1) x := by
-    apply ContinuousMap.ext
-    intro z
-    exact GenLoop.boundary p _ (cubeEdge_boundary i v hv z)
+    aesop (add simp [cubeEdge_boundary])
   rw [squareCycle, ← map_boundary, squareFundamentalChain_boundary, map_sub, map_sub, map_add,
     map_single, map_single, map_single, map_single,
     he 0 1 (Or.inr rfl), he 1 0 (Or.inl rfl), he 1 1 (Or.inr rfl), he 0 0 (Or.inl rfl)]

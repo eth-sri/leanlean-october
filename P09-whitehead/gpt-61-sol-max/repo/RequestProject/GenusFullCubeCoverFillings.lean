@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusFullCubeMarking
-public import RequestProject.CombUniversalCover
-public import RequestProject.CellularHomotopyChain
-
-@[expose] public section
+import RequestProject.GenusFullCubeMarking
+import RequestProject.CombUniversalCover
+import RequestProject.CellularHomotopyChain
 
 /-! Genuine cap fillings in the path-class universal cover of the full cube quotient. -/
 set_option backward.defeqAttrib.useBackward true
@@ -12,7 +10,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X : Complex2.{u}} {a : X.V}
 
 /-- A null-homotopic loop has a finite chain filling after lifting at any cover vertex. -/
@@ -35,28 +32,27 @@ namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
+variable {a : QCube (cmpRel (GenusVertex q))}
+variable (x : Fin q × Bool)
 /-- Every exact marked cap loop has a filling at every vertex over its base point. -/
-theorem fullCubeCover_cap_filling {a : QCube (cmpRel (GenusVertex q))}
-    (x : Fin q × Bool) (v : UV (orderCx (QCube (cmpRel (GenusVertex q)))) a)
+theorem fullCubeCover_cap_filling 
+     (v : UV (orderCx (QCube (cmpRel (GenusVertex q)))) a)
     (hv : endV v = (markedSpineToFullCube q).onV (markedSpineBase q)) :
     ∃ c : (uCover (orderCx (QCube (cmpRel (GenusVertex q)))) a).F →₀ ℤ,
       Comb.bdry2 _ c = pathChain
         (uLiftPath (mapPath (markedSpineToFullCube q) (markedSpineLoop q x).1) v) := by
   apply exists_lifted_boundary_of_null
-  · rw [hv]
-    exact isPath_mapPath (markedSpineToFullCube q) (markedSpineLoop q x).2
-  · rw [hv]
-    exact markedSpineToFullCube_mark_null q x
+  · grind [FiniteChains.Comb.isPath_mapPath]
+  · simp_all [FiniteChains.Davis.Genus.markedSpineToFullCube_mark_null]
 
 /-- A chosen filling uses actual universal-cover faces and their actual cellular boundary. -/
-noncomputable def fullCubeCoverCapChain {a : QCube (cmpRel (GenusVertex q))}
-    (x : Fin q × Bool) (v : UV (orderCx (QCube (cmpRel (GenusVertex q)))) a)
-    (hv : endV v = (markedSpineToFullCube q).onV (markedSpineBase q)) :
-    (uCover (orderCx (QCube (cmpRel (GenusVertex q)))) a).F →₀ ℤ :=
+noncomputable def fullCubeCoverCapChain 
+     (v : UV (orderCx (QCube (cmpRel (GenusVertex q)))) a)
+    (hv : endV v = (markedSpineToFullCube q).onV (markedSpineBase q))  :=
   Classical.choose (fullCubeCover_cap_filling q x v hv)
 
-theorem fullCubeCoverCapChain_boundary {a : QCube (cmpRel (GenusVertex q))}
-    (x : Fin q × Bool) (v : UV (orderCx (QCube (cmpRel (GenusVertex q)))) a)
+theorem fullCubeCoverCapChain_boundary 
+     (v : UV (orderCx (QCube (cmpRel (GenusVertex q)))) a)
     (hv : endV v = (markedSpineToFullCube q).onV (markedSpineBase q)) :
     Comb.bdry2 _ (fullCubeCoverCapChain q x v hv) = pathChain
       (uLiftPath (mapPath (markedSpineToFullCube q) (markedSpineLoop q x).1) v) :=

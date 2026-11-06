@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MonoidAlgebraMapDomain
-public import RequestProject.FoxLinear
-
-@[expose] public section
+import RequestProject.MonoidAlgebraMapDomain
+import RequestProject.FoxLinear
 
 /-!
 # The chain complex of the cover `K_N` and the Crowell exact sequence
@@ -36,10 +34,8 @@ This is the algebraic content of the passage "`N` perfect and `ker ∂_{2,N} = 0
 `K_N` acyclic" used in the proof of `(1) ⇒ (2)` of Theorem A.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-open scoped commutatorElement
+
 
 namespace FiniteChains
 
@@ -49,10 +45,10 @@ variable {α : Type*} [Fintype α] [DecidableEq α]
 variable (Nsub : Subgroup (FreeGroup α)) [Nsub.Normal]
 
 /-- The group ring `ℤ[Q]` of the deck group `Q = F/Ñ` of the cover. -/
-abbrev CoverRing : Type _ := MonoidAlgebra ℤ (FreeGroup α ⧸ Nsub)
+abbrev CoverRing  := MonoidAlgebra ℤ (FreeGroup α ⧸ Nsub)
 
 /-- The projection `π : ℤ[F] → ℤ[Q]`. -/
-noncomputable def proj : FreeGroupRing α →+* CoverRing Nsub :=
+noncomputable def proj  :=
   MonoidAlgebra.mapDomainRingHom ℤ (QuotientGroup.mk' Nsub)
 
 /-- The image of a word in `ℤ[Q]`. -/
@@ -60,61 +56,49 @@ noncomputable def qgrp (g : FreeGroup α) : CoverRing Nsub :=
   MonoidAlgebra.single (QuotientGroup.mk g) 1
 
 /-- The augmentation `ℤ[Q] → ℤ`. -/
-noncomputable def augQ : CoverRing Nsub →+* ℤ :=
+noncomputable def augQ  :=
   (MonoidAlgebra.lift ℤ ℤ (FreeGroup α ⧸ Nsub) 1).toRingHom
 
 /-- A set-theoretic lift `ℤ[Q] → ℤ[F]` of the projection. -/
-noncomputable def liftQ (z : CoverRing Nsub) : FreeGroupRing α :=
+noncomputable def liftQ (z : CoverRing Nsub)  :=
   MonoidAlgebra.mapDomain (fun q => Quotient.out q) z
 
-omit [Fintype α] [DecidableEq α] in
+section
+omit [Fintype α] [DecidableEq α]
 theorem proj_apply (b : FreeGroupRing α) :
     proj Nsub b = MonoidAlgebra.mapDomain (fun g => (QuotientGroup.mk g : FreeGroup α ⧸ Nsub)) b := rfl
 
-omit [Fintype α] [DecidableEq α] in
 @[simp] theorem proj_single (g : FreeGroup α) (n : ℤ) :
-    proj Nsub (single g n) = single (QuotientGroup.mk g : FreeGroup α ⧸ Nsub) n := by
-  rw [proj_apply]
-  exact MonoidAlgebra.mapDomain_single
+    proj Nsub (single g n) = single (QuotientGroup.mk g : FreeGroup α ⧸ Nsub) n := by simp_all [proj_apply]
 
-omit [Fintype α] [DecidableEq α] in
 theorem proj_grp (g : FreeGroup α) : proj Nsub (grp g) = qgrp Nsub g := by
   rw [grp_eq_single, proj_single, qgrp]
 
-omit [Fintype α] [DecidableEq α] in
 theorem qgrp_eq_one_of_mem {g : FreeGroup α} (hg : g ∈ Nsub) : qgrp Nsub g = 1 := by
-  have h : (QuotientGroup.mk g : FreeGroup α ⧸ Nsub) = 1 := (QuotientGroup.eq_one_iff g).2 hg
+  have h  := (QuotientGroup.eq_one_iff g).2 hg
   rw [qgrp, h]
   rfl
 
-omit [Fintype α] [DecidableEq α] in
 theorem proj_grp_of_mem {g : FreeGroup α} (hg : g ∈ Nsub) : proj Nsub (grp g) = 1 := by
   rw [proj_grp, qgrp_eq_one_of_mem Nsub hg]
 
-omit [Fintype α] [DecidableEq α] in
 @[simp] theorem augQ_single (q : FreeGroup α ⧸ Nsub) (n : ℤ) : augQ Nsub (single q n) = n := by
   simp [augQ]
 
-omit [Fintype α] [DecidableEq α] in
 theorem augQ_proj (b : FreeGroupRing α) : augQ Nsub (proj Nsub b) = aug b := by
-  induction b using MonoidAlgebra.induction_linear with
-  | zero => simp
-  | add b₁ b₂ h₁ h₂ => rw [map_add, map_add, h₁, h₂, map_add]
-  | single g n => rw [proj_single, augQ_single, aug_single]
+  induction b using MonoidAlgebra.induction_linear <;> simp_all [proj_single, aug_single]
 
-omit [Fintype α] [DecidableEq α] in
 theorem proj_liftQ (z : CoverRing Nsub) : proj Nsub (liftQ Nsub z) = z := by
   have hcomp : (fun q : FreeGroup α ⧸ Nsub => (QuotientGroup.mk (Quotient.out q) : FreeGroup α ⧸ Nsub))
       = id := funext fun q => QuotientGroup.out_eq' q
   rw [proj_apply, liftQ, ← MonoidAlgebra.mapDomain_comp]
-  show MonoidAlgebra.mapDomain (fun q : FreeGroup α ⧸ Nsub =>
-    (QuotientGroup.mk (Quotient.out q) : FreeGroup α ⧸ Nsub)) z = z
-  rw [hcomp, MonoidAlgebra.mapDomain_id]
+  aesop
+end
 
 /-! ### The Fox vector of a word -/
 
 /-- The Fox vector `(π(∂w/∂x_i))_i ∈ ℤ[Q]^n` of a word. -/
-noncomputable def foxVec (w : FreeGroup α) : α → CoverRing Nsub :=
+noncomputable def foxVec (w : FreeGroup α)  :=
   fun i => proj Nsub (fox i w)
 
 omit [Fintype α] in
@@ -123,21 +107,19 @@ omit [Fintype α] in
 
 variable {Nsub}
 
-omit [Fintype α] in
+section
+omit [Fintype α]
 theorem foxVec_mul {v : FreeGroup α} (hv : v ∈ Nsub) (w : FreeGroup α) :
     foxVec Nsub (v * w) = foxVec Nsub v + foxVec Nsub w := by
-  funext i
-  simp only [foxVec, fox_mul, map_add, map_mul, proj_grp_of_mem Nsub hv, one_mul, Pi.add_apply]
+  classical ext <;> simp_all [foxVec, fox_mul, proj_grp_of_mem]
 
-omit [Fintype α] in
 theorem foxVec_inv {v : FreeGroup α} (hv : v ∈ Nsub) :
     foxVec Nsub v⁻¹ = - foxVec Nsub v := by
   have h := foxVec_mul (Subgroup.inv_mem _ hv) v
   rw [inv_mul_cancel, foxVec_one] at h
-  have h' : foxVec Nsub v⁻¹ + foxVec Nsub v = 0 := h.symm
+  have h'  := h.symm
   exact eq_neg_of_add_eq_zero_left h'
 
-omit [Fintype α] in
 theorem foxVec_conj {r : FreeGroup α} (hr : r ∈ Nsub) (f : FreeGroup α) :
     foxVec Nsub (f * r * f⁻¹) = proj Nsub (grp f) • foxVec Nsub r := by
   funext i
@@ -151,7 +133,6 @@ theorem foxVec_conj {r : FreeGroup α} (hr : r ∈ Nsub) (f : FreeGroup α) :
   rw [mul_neg, ← mul_assoc, hff, one_mul]
   abel
 
-omit [Fintype α] in
 theorem foxVec_zpow {r : FreeGroup α} (hr : r ∈ Nsub) (n : ℤ) :
     foxVec Nsub (r ^ n) = n • foxVec Nsub r := by
   induction n using Int.induction_on with
@@ -162,6 +143,7 @@ theorem foxVec_zpow {r : FreeGroup α} (hr : r ∈ Nsub) (n : ℤ) :
   | pred k ih =>
       have hmem : r ^ (-(k : ℤ)) ∈ Nsub := Subgroup.zpow_mem _ hr _
       rw [zpow_sub_one, foxVec_mul hmem, foxVec_inv hr, ih, sub_smul, one_smul, sub_eq_add_neg]
+end
 
 /-! ### The module of Fox vectors -/
 
@@ -184,7 +166,7 @@ noncomputable def foxMod : Submodule (CoverRing Nsub) (α → CoverRing Nsub) wh
         rw [foxVec_mul hr₁, ← e₁, ← e₂, add_smul]
     | single q n =>
         obtain ⟨f, rfl⟩ := Quotient.exists_rep q
-        have hconj : f * r * f⁻¹ ∈ Nsub := Subgroup.Normal.conj_mem ‹Nsub.Normal› r hr f
+        have hconj  := Subgroup.Normal.conj_mem ‹Nsub.Normal› r hr f
         refine ⟨(f * r * f⁻¹) ^ n, Subgroup.zpow_mem _ hconj n, ?_⟩
         have hsingle : (single (QuotientGroup.mk f : FreeGroup α ⧸ Nsub) n : CoverRing Nsub)
             = n • proj Nsub (grp f) := by
@@ -194,21 +176,22 @@ noncomputable def foxMod : Submodule (CoverRing Nsub) (α → CoverRing Nsub) wh
 /-! ### The kernel of the projection `ℤ[F] → ℤ[Q]` -/
 
 /-- Reindexing of a group-ring element along a map of the free group, viewed on `ℤ[F]`. -/
-noncomputable def mapDom (φ : FreeGroup α → FreeGroup α) (c : FreeGroupRing α) :
-    FreeGroupRing α := MonoidAlgebra.mapDomain φ c
+noncomputable def mapDom (φ : FreeGroup α → FreeGroup α) (c : FreeGroupRing α)  := MonoidAlgebra.mapDomain φ c
 
-omit [Fintype α] [DecidableEq α] in
-theorem mapDom_add (φ : FreeGroup α → FreeGroup α) (c d : FreeGroupRing α) :
+section
+omit [Fintype α] [DecidableEq α]
+variable (φ : FreeGroup α → FreeGroup α)
+theorem mapDom_add  (c d : FreeGroupRing α) :
     mapDom φ (c + d) = mapDom φ c + mapDom φ d := MonoidAlgebra.mapDomain_add φ c d
 
-omit [Fintype α] [DecidableEq α] in
-theorem mapDom_single (φ : FreeGroup α → FreeGroup α) (g : FreeGroup α) (n : ℤ) :
+theorem mapDom_single  (g : FreeGroup α) (n : ℤ) :
     mapDom φ (single g n) = single (φ g) n := MonoidAlgebra.mapDomain_single
+end
 
 variable (Nsub)
 
 /-- The left ideal of `ℤ[F]` generated by the elements `r - 1` with `r ∈ Ñ`. -/
-noncomputable def relIdeal : Submodule (FreeGroupRing α) (FreeGroupRing α) :=
+noncomputable def relIdeal  :=
   Submodule.span (FreeGroupRing α) {y | ∃ r ∈ Nsub, y = grp r - 1}
 
 omit [Fintype α] [DecidableEq α] in
@@ -228,10 +211,7 @@ theorem mem_relIdeal_of_proj_eq_zero (b : FreeGroupRing α) (hb : proj Nsub b = 
     intro c
     induction c using MonoidAlgebra.induction_linear with
     | zero =>
-        have hz : (0 : FreeGroupRing α) - mapDom φ 0 = 0 := by
-          rw [show mapDom φ (0 : FreeGroupRing α) = 0 from MonoidAlgebra.mapDomain_zero φ, sub_zero]
-        rw [hz]
-        exact Submodule.zero_mem _
+        simp_all [mapDom]
     | add c₁ c₂ h₁ h₂ =>
         have hsplit : (c₁ + c₂) - mapDom φ (c₁ + c₂)
             = (c₁ - mapDom φ c₁) + (c₂ - mapDom φ c₂) := by
@@ -241,8 +221,8 @@ theorem mem_relIdeal_of_proj_eq_zero (b : FreeGroupRing α) (hb : proj Nsub b = 
     | single g n =>
         have hmk : (QuotientGroup.mk (φ g) : FreeGroup α ⧸ Nsub) = QuotientGroup.mk g :=
           QuotientGroup.out_eq' _
-        have hmem : (φ g)⁻¹ * g ∈ Nsub := QuotientGroup.eq.1 hmk
-        have hmapd : mapDom φ (single g n : FreeGroupRing α) = single (φ g) n :=
+        have hmem  := QuotientGroup.eq.1 hmk
+        have hmapd  :=
           mapDom_single φ g n
         have hgrp : grp (φ g) * (grp ((φ g)⁻¹ * g) - 1) = grp g - grp (φ g) := by
           rw [mul_sub, ← grp_mul, mul_inv_cancel_left, mul_one]
@@ -253,7 +233,7 @@ theorem mem_relIdeal_of_proj_eq_zero (b : FreeGroupRing α) (hb : proj Nsub b = 
         have hgen : grp ((φ g)⁻¹ * g) - 1 ∈ relIdeal Nsub :=
           Submodule.subset_span ⟨_, hmem, rfl⟩
         have h1 : grp (φ g) * (grp ((φ g)⁻¹ * g) - 1) ∈ relIdeal Nsub := by
-          simpa [smul_eq_mul] using Submodule.smul_mem (relIdeal Nsub) (grp (φ g)) hgen
+          classical solve_by_elim (transparency := .default) [smul_eq_mul, Submodule.smul_mem]
         simpa [smul_eq_mul] using
           Submodule.smul_mem (relIdeal Nsub) (((n : ℤ) : FreeGroupRing α)) h1
   have hb' := key b
@@ -263,25 +243,22 @@ theorem mem_relIdeal_of_proj_eq_zero (b : FreeGroupRing α) (hb : proj Nsub b = 
 
 /-- The Fox vector of an element of `ℤ[F]`, i.e. the vector of the linearly extended Fox
 derivatives, projected to `ℤ[Q]`. -/
-noncomputable def foxProj (b : FreeGroupRing α) : α → CoverRing Nsub :=
+noncomputable def foxProj (b : FreeGroupRing α)  :=
   fun i => proj Nsub (foxLin i b)
 
-omit [Fintype α] in
-@[simp] theorem foxProj_zero : foxProj Nsub 0 = 0 := by
-  funext i; simp [foxProj]
+section
+omit [Fintype α]
 
-omit [Fintype α] in
+
 theorem foxProj_add (b₁ b₂ : FreeGroupRing α) :
     foxProj Nsub (b₁ + b₂) = foxProj Nsub b₁ + foxProj Nsub b₂ := by
   funext i; simp [foxProj]
 
-omit [Fintype α] in
 theorem foxProj_mul_of_aug_zero (u b : FreeGroupRing α) (hb : aug b = 0) :
     foxProj Nsub (u * b) = proj Nsub u • foxProj Nsub b := by
   funext i
-  simp only [foxProj, foxLin_mul, hb, zero_smul, zero_add, map_mul, Pi.smul_apply, smul_eq_mul]
+  simp_all [foxProj, foxLin_mul]
 
-omit [Fintype α] in
 theorem foxProj_mem_foxMod (b : FreeGroupRing α) (hb : proj Nsub b = 0) :
     foxProj Nsub b ∈ foxMod (Nsub := Nsub) := by
   have hmem := mem_relIdeal_of_proj_eq_zero Nsub b hb
@@ -297,13 +274,9 @@ theorem foxProj_mem_foxMod (b : FreeGroupRing α) (hb : proj Nsub b = 0) :
     rw [hval]
     exact ⟨r, hr, rfl⟩
   · exact ⟨by simp, Submodule.zero_mem _⟩
-  · rintro x y hx hy ⟨hx1, hx2⟩ ⟨hy1, hy2⟩
-    exact ⟨by rw [map_add, hx1, hy1, add_zero], by
-      rw [foxProj_add]; exact Submodule.add_mem _ hx2 hy2⟩
-  · rintro a x hx ⟨hx1, hx2⟩
-    refine ⟨by rw [smul_eq_mul, map_mul, hx1, mul_zero], ?_⟩
-    rw [smul_eq_mul, foxProj_mul_of_aug_zero Nsub a x hx1]
-    exact Submodule.smul_mem _ _ hx2
+  · classical aesop (add simp [map_add, add_zero, foxProj_add])
+  · aesop (add simp [foxProj_mul_of_aug_zero])
+end
 
 /-! ### The boundary maps of the cover -/
 
@@ -312,17 +285,18 @@ theorem foxProj_mem_foxMod (b : FreeGroupRing α) (hb : proj Nsub b = 0) :
 variable {J : Type*} [Fintype J] (ρ : J → FreeGroup α)
 
 /-- The boundary `∂₂ : ℤ[Q]^m → ℤ[Q]^n`, `∂₂(e_j) = (π(∂r_j/∂x_i))_i`. -/
-noncomputable def bdry2 (u : J → CoverRing Nsub) : α → CoverRing Nsub :=
+noncomputable def bdry2 (u : J → CoverRing Nsub)  :=
   fun i => ∑ j : J, u j * proj Nsub (fox i (ρ j))
 
-omit [Fintype α] in
+section
+omit [Fintype α]
 theorem bdry2_add (u v : J → CoverRing Nsub) :
     bdry2 Nsub ρ (u + v) = bdry2 Nsub ρ u + bdry2 Nsub ρ v := by
   funext i
   simp [bdry2, add_mul, Finset.sum_add_distrib]
 
-omit [Fintype α] in
 theorem bdry2_zero : bdry2 Nsub ρ 0 = 0 := by
   funext i; simp [bdry2]
+end
 
 end FiniteChains

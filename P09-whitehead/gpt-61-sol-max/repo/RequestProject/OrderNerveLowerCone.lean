@@ -1,17 +1,15 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveConeBall
-public import RequestProject.OrderNervePosetCoverVertexStars
-public import RequestProject.PosetCoverLowerInterval
-
-@[expose] public section
+import RequestProject.OrderNerveConeBall
+import RequestProject.OrderNervePosetCoverVertexStars
+import RequestProject.PosetCoverLowerInterval
 
 /-! A closed principal lower ideal is literally the order cone on its strict
 lower interval. The realized identification respects the boundary inclusion. -/
 
 noncomputable section
 namespace FiniteChains.Comb
-open scoped Classical
+
 
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q] (v : Q)
     (e : P ≃o StrictBelow v)
@@ -19,9 +17,8 @@ variable {P Q : Type} [PartialOrder P] [PartialOrder Q] (v : Q)
 def lowerConeMap : WithTop P → Set.Iic v := WithTop.recTopCoe
   ⟨v, le_rfl⟩ (fun p => ⟨(e p).val, (e p).property.le⟩)
 
-@[simp] theorem lowerConeMap_top : lowerConeMap v e ⊤ = ⟨v, le_rfl⟩ := rfl
-@[simp] theorem lowerConeMap_coe (p : P) :
-    lowerConeMap v e (p : WithTop P) = ⟨(e p).val, (e p).property.le⟩ := rfl
+
+
 
 theorem lowerConeMap_bijective : Function.Bijective (lowerConeMap v e) := by
   constructor
@@ -54,13 +51,13 @@ def lowerConeOrderIso : WithTop P ≃o Set.Iic v where
         induction b using WithTop.recTopCoe with
         | top => exact iff_of_true le_rfl le_rfl
         | coe b =>
-            change v ≤ (e b).val ↔ (⊤ : WithTop P) ≤ b
+            
             exact iff_of_false (not_le_of_gt (e b).property) (not_le_of_gt (WithTop.coe_lt_top b))
     | coe a =>
         induction b using WithTop.recTopCoe with
         | top => exact iff_of_true (e a).property.le le_top
         | coe b =>
-            change (e a).val ≤ (e b).val ↔ (a : WithTop P) ≤ b
+            
             exact e.map_rel_iff.trans WithTop.coe_le_coe.symm
 
 def lowerConeBoundary : P →o Set.Iic v where
@@ -70,8 +67,7 @@ def lowerConeBoundary : P →o Set.Iic v where
 theorem lowerConeRealization_boundary (x : orderNerveRealization P) :
     orderNerveRealizationOrderIso (lowerConeOrderIso v e) (orderNerveConeBase P x) =
       orderNerveRealizationMap (lowerConeBoundary v e) (lowerConeBoundary v e).monotone x := by
-  change orderNerveRealizationMap (lowerConeOrderIso v e) (lowerConeOrderIso v e).monotone
-      (orderNerveRealizationMap (fun p : P => (p : WithTop P)) WithTop.coe_mono x) = _
+  dsimp [FiniteChains.Comb.orderNerveRealizationOrderIso, FiniteChains.Comb.orderNerveConeBase]
   rw [orderNerveRealizationMap_comp]
   rfl
 
@@ -79,8 +75,7 @@ variable [Fintype P] [Nonempty P]
     {E : Type} [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
     (b : orderNerveRealization P ≃ₜ RelativeAttachment.UnitBoundary E)
 
-def lowerConeBallHomeomorph :
-    orderNerveRealization (Set.Iic v) ≃ₜ RelativeAttachment.ClosedUnitBall E :=
+def lowerConeBallHomeomorph  :=
   (orderNerveRealizationOrderIso (lowerConeOrderIso v e)).symm.trans
     (orderNerveWithTopBallHomeomorph b)
 
@@ -89,9 +84,7 @@ theorem lowerConeBallHomeomorph_boundary (x : orderNerveRealization P) :
       (orderNerveRealizationMap (lowerConeBoundary v e) (lowerConeBoundary v e).monotone x) =
       RelativeAttachment.unitBoundaryInclusion E (b x) := by
   rw [← lowerConeRealization_boundary]
-  change orderNerveWithTopBallHomeomorph b
-      ((orderNerveRealizationOrderIso (lowerConeOrderIso v e)).symm
-        (orderNerveRealizationOrderIso (lowerConeOrderIso v e) (orderNerveConeBase P x))) = _
+  dsimp [FiniteChains.Comb.lowerConeBallHomeomorph]
   rw [Homeomorph.symm_apply_apply, orderNerveWithTopBallHomeomorph_boundary]
 
 end FiniteChains.Comb

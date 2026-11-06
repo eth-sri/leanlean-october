@@ -1,17 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PosetCoverLowerInterval
-public import RequestProject.PosetCoverTargetIso
-
-@[expose] public section
+import RequestProject.PosetCoverLowerInterval
+import RequestProject.PosetCoverTargetIso
 
 /-! A punctured lower link stays in the sheet of its specified lifted top cell. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.IsPosetCover
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q] {f : P → Q}
   (hf : IsPosetCover f)
 

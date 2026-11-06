@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NerveSupport
-public import RequestProject.NervePrism
-
-@[expose] public section
+import RequestProject.NerveSupport
+import RequestProject.NervePrism
 
 /-!
 # Relative chain gluing: pieces that are acyclic only relative to a fixed subcomplex
@@ -29,10 +27,9 @@ The proofs run through the coefficients exactly as in the absolute case; no long
 is used.
 -/
 
-namespace FiniteChains
-namespace Nerve
+namespace FiniteChains.Nerve
 
-universe u
+
 
 variable {P : Type u} [Preorder P] {Q : Type u} [Preorder Q]
 
@@ -43,7 +40,7 @@ theorem cmap_comp (f : P → Q) {R : Type u} (g : Q → R) (x : Ch P) :
     cmap g (cmap f x) = cmap (g ∘ f) x := by
   refine ext_apply (F := (cmap g).comp (cmap f)) (G := cmap (g ∘ f)) ?_ x
   intro l
-  simp [Function.comp_def]
+  simp 
 
 /-- The image of an increasing chain under a monotone map all of whose values satisfy `B` is
 supported on `B`. -/
@@ -57,15 +54,12 @@ theorem cmap_mem_incOn_of_maps {f : P → Q} (hf : Monotone f) {B : Q → Prop}
     obtain ⟨b, -, rfl⟩ := List.mem_map.1 ha
     exact hB b
   · simp
-  · intro y z _ _ hy hz
-    simpa using AddSubgroup.add_mem _ hy hz
-  · intro y _ hy
-    simpa using AddSubgroup.neg_mem _ hy
+  · aesop
+  · simp_all
 
 /-- Pushforward along a monotone map of (possibly different) posets preserves increasing
 chains. -/
-theorem cmap_mem_inc_of_monotone {f : P → Q} (hf : Monotone f) {x : Ch P} (hx : x ∈ Inc P) :
-    cmap f x ∈ Inc Q :=
+abbrev cmap_mem_inc_of_monotone {f : P → Q} (hf : Monotone f) {x : Ch P} (hx : x ∈ Inc P)  :=
   incOn_le_inc _
     (cmap_mem_incOn_of_maps (B := fun _ : Q => True) hf (fun _ => trivial) hx)
 
@@ -74,7 +68,7 @@ theorem exists_bdry_eq_of_cycle_of_orderIso (e : P ≃o Q)
     (h : ∀ x ∈ Inc Q, bdry x = 0 → ∃ y ∈ Inc Q, bdry y = x) :
     ∀ x ∈ Inc P, bdry x = 0 → ∃ y ∈ Inc P, bdry y = x := by
   intro x hx hcyc
-  have hx' : cmap e x ∈ Inc Q := cmap_mem_inc_of_monotone (f := (e : P → Q)) e.monotone hx
+  have hx'  := cmap_mem_inc_of_monotone (f := (e : P → Q)) e.monotone hx
   have hcyc' : bdry (cmap e x) = 0 := by rw [← cmap_bdry, hcyc, map_zero]
   obtain ⟨y, hy, hdy⟩ := h _ hx' hcyc'
   refine ⟨cmap e.symm y,
@@ -90,7 +84,7 @@ theorem exists_bdry_eq_of_cycle_of_orderIso (e : P ≃o Q)
 /-- **Acyclicity of `U` relative to `B`**: every increasing cycle supported on `U` differs, by
 the boundary of an increasing chain supported on `U`, from an increasing cycle supported on
 `B`. -/
-def AcyclicRelIn (U B : P → Prop) : Prop :=
+def AcyclicRelIn (U B : P → Prop)  :=
   ∀ z ∈ IncOn U, bdry z = 0 →
     ∃ c ∈ IncOn B, ∃ y ∈ IncOn U, bdry c = 0 ∧ z = c + bdry y
 
@@ -114,12 +108,12 @@ theorem acyclicRelIn_of_retraction {U Base : P → Prop} (hne : ∃ p : P, U p)
   have hcyc' : bdry z' = 0 := by
     refine cmap_val_injective U hne ?_
     rw [cmap_bdry, hcyc, map_zero]
-  have hid : bdry (prism ρ id z') + prism ρ id (bdry z') = cmap id z' - cmap ρ z' :=
+  have hid  :=
     bdry_prism_add_prism_bdry ρ id z'
   rw [hcyc', map_zero, add_zero, cmap_id] at hid
-  have hyInc : prism ρ id z' ∈ Inc {p : P // U p} :=
+  have hyInc  :=
     prism_mem_inc hmono monotone_id hρle hz'
-  have hcInc : cmap ρ z' ∈ Inc {p : P // U p} := cmap_mem_inc hmono hz'
+  
   refine ⟨cmap Subtype.val (cmap ρ z'), ?_, cmap Subtype.val (prism ρ id z'),
     cmap_val_mem_incOn U hyInc, ?_, ?_⟩
   · rw [cmap_comp]
@@ -133,5 +127,5 @@ theorem acyclicRelIn_of_retraction {U Base : P → Prop} (hne : ∃ p : P, U p)
     rw [← cmap_bdry]
     rw [← map_add, ← h]
 
-end Nerve
-end FiniteChains
+end FiniteChains.Nerve
+

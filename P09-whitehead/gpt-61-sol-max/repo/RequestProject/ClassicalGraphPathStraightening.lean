@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalGraphModel
-public import RequestProject.ContinuousEdgeWords
-public import RequestProject.DiskAttachmentVertexStars
-
-@[expose] public section
+import RequestProject.ClassicalGraphModel
+import RequestProject.ContinuousEdgeWords
+import RequestProject.DiskAttachmentVertexStars
 
 /-! Every continuous path between vertices of the literal graph attachment
 is homotopic relative endpoints to a finite word in its original edges.
@@ -13,10 +11,8 @@ Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval
-open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
+
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
@@ -27,8 +23,8 @@ abbrev GraphBall := ClosedUnitBall (Fin 1 → ℝ)
 def graphBallSegment (x y : GraphBall) : Path x y where
   toFun t := ⟨Path.segment x.val y.val t, by
     have h := (convex_closedBall (0 : Fin 1 → ℝ) 1).segment_subset
-      (by simpa only [Metric.mem_closedBall, dist_zero_right] using x.property)
-      (by simpa only [Metric.mem_closedBall, dist_zero_right] using y.property)
+      (by aesop)
+      (by aesop)
       (show Path.segment x.val y.val t ∈ segment ℝ x.val y.val by
         rw [← Path.range_segment]; exact ⟨t, rfl⟩)
     simpa only [Metric.mem_closedBall, dist_zero_right] using h⟩
@@ -39,30 +35,30 @@ def graphBallSegment (x y : GraphBall) : Path x y where
 theorem graphBall_simplyConnected : SimplyConnectedSpace GraphBall := by
   letI := Metric.contractibleSpace_closedBall (E := Fin 1 → ℝ) (x := 0) zero_le_one
   let e : Metric.closedBall (0 : Fin 1 → ℝ) 1 ≃ₜ GraphBall := Homeomorph.setCongr (by
-    ext x
-    change dist x 0 ≤ 1 ↔ ‖x‖ ≤ 1
-    rw [dist_zero_right])
+    aesop)
   exact e.symm.toHomotopyEquiv.simplyConnectedSpace
 
-def graphSnapBoundary (x : GraphBall) : UnitBoundary (Fin 1 → ℝ) :=
+def graphSnapBoundary (x : GraphBall)  :=
   if h : 0 < ‖x.val‖ then annulusBoundary 0 le_rfl ⟨x, h⟩ else graphBoundaryNeg
 
 variable {V J : Type} [TopologicalSpace V]
   (r : BoundaryFamily J (Fin 1 → ℝ) → V)
 
-def graphCellMap (j : J) : C(GraphBall, DiskAttachment r) :=
+variable (j : J)
+include j in
+def graphCellMap  : C(GraphBall, DiskAttachment r) :=
   ⟨fun x => cell r (boundaryFamilyInclusion J (Fin 1 → ℝ)) ⟨j, x⟩,
     (cell_continuous r _).comp continuous_sigmaMk⟩
 
-theorem graphCellMap_interior (j : J) (x : OpenNormBall (Fin 1 → ℝ)) :
+include j in
+theorem graphCellMap_interior  (x : OpenNormBall (Fin 1 → ℝ)) :
     graphCellMap r j ⟨x.val, x.property.le⟩ = openDiskMap r j x := by
-  exact cell_of_not_mem r _ ⟨j, ⟨x.val, x.property.le⟩⟩
-    (fun h => (ne_of_lt x.property)
-      ((boundaryFamilyInclusion_range J (Fin 1 → ℝ) _).mp h))
+  classical solve_by_elim (transparency := .default) [FiniteChains.RelativeAttachment.cell_of_not_mem, ne_of_lt, FiniteChains.RelativeAttachment.boundaryFamilyInclusion_range]
 
-def graphOpenPath (j : J) (x y : OpenNormBall (Fin 1 → ℝ))
-    (P : Path (⟨x.val, x.property.le⟩ : GraphBall) ⟨y.val, y.property.le⟩) :
-    Path (openDiskMap r j x) (openDiskMap r j y) :=
+variable (x y : OpenNormBall (Fin 1 → ℝ))
+include j in
+def graphOpenPath  
+    (P : Path (⟨x.val, x.property.le⟩ : GraphBall) ⟨y.val, y.property.le⟩)  :=
   (P.map (graphCellMap r j).continuous).cast (graphCellMap_interior r j x).symm
     (graphCellMap_interior r j y).symm
 
@@ -88,9 +84,11 @@ theorem graphSnap_of_mem_vertexStar {v : V} {z : DiskAttachment r}
   | inl w => exact hz
   | inr d =>
     obtain ⟨hx, hv⟩ := hz
-    simpa only [graphSnap, graphSnapBoundary, dif_pos hx] using (Set.mem_singleton_iff.mp hv)
+    simp_all [graphSnap, graphSnapBoundary]
 
-theorem graphConnector_eq_radial (hr : Continuous r)
+variable (hr : Continuous r)
+include hr in
+theorem graphConnector_eq_radial 
     (z : puncturedAttachment r) :
     ∀ t : I, graphConnector r z.val t = radialCoreHomotopy r hr (t, z) := by
   rcases z with ⟨v | d, hz⟩
@@ -98,11 +96,7 @@ theorem graphConnector_eq_radial (hr : Continuous r)
     rfl
   · obtain ⟨hx, _⟩ := hz
     intro t
-    change cell r (boundaryFamilyInclusion J (Fin 1 → ℝ))
-        ⟨d.val.1, graphBallSegment d.val.2
-          (unitBoundaryInclusion _ (graphSnapBoundary d.val.2)) t⟩ =
-      cell r (boundaryFamilyInclusion J (Fin 1 → ℝ))
-        ⟨d.val.1, ⟨((1 - (t : ℝ)) + (t : ℝ) / ‖d.val.2.val‖) • d.val.2.val, _⟩⟩
+    
     apply congrArg (cell r (boundaryFamilyInclusion J (Fin 1 → ℝ)))
     apply congrArg (Sigma.mk d.val.1)
     apply Subtype.ext
@@ -114,17 +108,18 @@ theorem graphConnector_eq_radial (hr : Continuous r)
       (t : ℝ) • (‖d.val.2.val‖⁻¹ • d.val.2.val) = _
     rw [smul_smul, add_smul, div_eq_mul_inv]
 
-theorem graphConnector_range_vertexStar (hr : Continuous r) {v : V}
+include hr in
+theorem graphConnector_range_vertexStar  {v : V}
     {z : DiskAttachment r} (hz : z ∈ vertexStar r v) :
     Set.range (graphConnector r z) ⊆ vertexStar r v := by
   rintro _ ⟨t, rfl⟩
   rw [graphConnector_eq_radial r hr ⟨z, vertexStar_subset_core r v hz⟩ t]
   exact radialCoreHomotopy_mem_oldCollar r hr t _ {v} hz
 
-def graphBoundaryPath (j : J) (a b : UnitBoundary (Fin 1 → ℝ))
-    (p : Path (unitBoundaryInclusion _ a) (unitBoundaryInclusion _ b)) :
-    Path (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)) (r ⟨j, a⟩))
-      (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)) (r ⟨j, b⟩)) :=
+variable (a b : UnitBoundary (Fin 1 → ℝ))
+include j in
+def graphBoundaryPath  
+    (p : Path (unitBoundaryInclusion _ a) (unitBoundaryInclusion _ b))  :=
   (p.map (graphCellMap r j).continuous).cast
     (cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J _).injective ⟨j, a⟩).symm
     (cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J _).injective ⟨j, b⟩).symm
@@ -136,14 +131,16 @@ def graphClosedEdgePath :
   source' := graphDiskHomeomorph_zero
   target' := graphDiskHomeomorph_one
 
-theorem graphBoundaryPath_refl (j : J) (a : UnitBoundary (Fin 1 → ℝ)) :
+include j in
+theorem graphBoundaryPath_refl  (a : UnitBoundary (Fin 1 → ℝ)) :
     graphBoundaryPath r j a a (Path.refl _) =
       Path.refl (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)) (r ⟨j, a⟩)) := by
   apply Path.ext
   funext t
   exact cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J _).injective ⟨j, a⟩
 
-theorem graphBoundaryPath_isWord (j : J) (a b : UnitBoundary (Fin 1 → ℝ))
+include j in
+theorem graphBoundaryPath_isWord  
     (p : Path (unitBoundaryInclusion _ a) (unitBoundaryInclusion _ b)) :
     IsWord (graphSrc r) (graphTgt r) (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)))
       (graphEdgePath r) (graphBoundaryPath r j a b p) := by
@@ -173,7 +170,8 @@ theorem graphBoundaryPath_isWord (j : J) (a b : UnitBoundary (Fin 1 → ℝ))
     rw [graphBoundaryPath_refl] at h'
     exact h'
 
-theorem lift_openDisk_path (j : J) (x y : OpenNormBall (Fin 1 → ℝ))
+include j in
+theorem lift_openDisk_path  
     (p : Path (openDiskMap r j x) (openDiskMap r j y))
     (hp : Set.range p ⊆ openDisk r j) :
     ∃ P : Path (⟨x.val, x.property.le⟩ : GraphBall) ⟨y.val, y.property.le⟩,
@@ -195,7 +193,8 @@ theorem lift_openDisk_path (j : J) (x y : OpenNormBall (Fin 1 → ℝ))
   rw [graphCellMap_interior]
   exact congrArg Subtype.val (e.apply_symm_apply (Q t))
 
-theorem graph_isWord_local_edge (j : J) {x y : DiskAttachment r}
+include j in
+theorem graph_isWord_local_edge  {x y : DiskAttachment r}
     (p : Path x y) (hp : Set.range p ⊆ openDisk r j) :
     IsWord (graphSrc r) (graphTgt r) (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)))
       (graphEdgePath r) (((graphConnector r x).symm.trans p).trans (graphConnector r y)) := by
@@ -209,17 +208,10 @@ theorem graph_isWord_local_edge (j : J) {x y : DiskAttachment r}
   let Q := ((graphBallSegment a (unitBoundaryInclusion _ A)).symm.trans P).trans
     (graphBallSegment b (unitBoundaryInclusion _ B))
   have h := graphBoundaryPath_isWord r j A B Q
-  have he : graphBoundaryPath r j A B Q =
-      (((graphConnector r (openDiskMap r j x)).symm.trans (graphOpenPath r j x y P)).trans
-        (graphConnector r (openDiskMap r j y))) := by
-    apply Path.ext
-    funext t
-    simp only [graphBoundaryPath, Q, graphOpenPath, Path.cast_coe,
-      Path.map_coe, Function.comp_apply, Path.trans_apply, Path.symm_apply]
-    split_ifs <;> rfl
-  rwa [he] at h
+  aesop (add simp [graphBoundaryPath])
 
-theorem graph_isWord_local_vertex (hr : Continuous r) (v : V) {x y : DiskAttachment r}
+include hr in
+theorem graph_isWord_local_vertex  (v : V) {x y : DiskAttachment r}
     (p : Path x y) (hp : Set.range p ⊆ vertexStar r v) :
     IsWord (graphSrc r) (graphTgt r) (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)))
       (graphEdgePath r) (((graphConnector r x).symm.trans p).trans (graphConnector r y)) := by
@@ -228,11 +220,9 @@ theorem graph_isWord_local_vertex (hr : Continuous r) (v : V) {x y : DiskAttachm
   have hxy := (graphSnap_of_mem_vertexStar r hx).trans (graphSnap_of_mem_vertexStar r hy).symm
   refine ⟨[], hxy, ?_⟩
   apply homotopic_of_within_simplyConnected (vertexStar r v) (vertexStar_simplyConnected r hr v)
-  · exact range_trans_subset _ _
-      (range_trans_subset _ _ (range_symm_subset _ (graphConnector_range_vertexStar r hr hx)) hp)
-      (graphConnector_range_vertexStar r hr hy)
+  · classical aesop (add unsafe apply [FiniteChains.PathReplacement.range_trans_subset, FiniteChains.PathReplacement.range_symm_subset, FiniteChains.ClassicalGraphModel.graphConnector_range_vertexStar])
   · rintro _ ⟨t, rfl⟩
-    change graphSnap r x = v
+    
     exact graphSnap_of_mem_vertexStar r hx
 
 /-- Every path between actual vertices is represented by a finite list of
@@ -242,23 +232,21 @@ theorem graph_path_isWord [DiscreteTopology V] (hr : Continuous r) (v w : V)
       (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)) w)) :
     IsWord (graphSrc r) (graphTgt r) (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)))
       (graphEdgePath r) p := by
-  let U : V ⊕ J → Set (DiskAttachment r) := Sum.elim (vertexStar r) (openDisk r)
+  let U  := Sum.elim (vertexStar r) (openDisk r)
   have hU : ∀ i, IsOpen (U i) := by
     rintro (v | j)
     · exact vertexStar_isOpen r hr v
     · exact openDisk_isOpen r j
   have hcover : Set.univ ⊆ ⋃ i, U i := by
     rintro (v | d) _
-    · exact Set.mem_iUnion.mpr ⟨Sum.inl v, rfl⟩
-    · have hd : ‖d.val.2.val‖ < 1 := lt_of_le_of_ne d.val.2.property
+    · aesop
+    · have hd  := lt_of_le_of_ne d.val.2.property
         (fun h => d.property ((boundaryFamilyInclusion_range J _ _).mpr h))
       exact Set.mem_iUnion.mpr ⟨Sum.inr d.val.1, ⟨⟨d.val.2.val, hd⟩, rfl⟩⟩
   have hlocal : ∀ i {x y : DiskAttachment r} (p : Path x y), Set.range p ⊆ U i →
       IsWord (graphSrc r) (graphTgt r) (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)))
         (graphEdgePath r) (((graphConnector r x).symm.trans p).trans (graphConnector r y)) := by
-    rintro (v | j) x y p hp
-    · exact graph_isWord_local_vertex r hr v p hp
-    · exact graph_isWord_local_edge r j p hp
+    grind [graph_isWord_local_vertex, graph_isWord_local_edge]
   have h := isWord_of_open_cover (graphSrc r) (graphTgt r)
     (old r (boundaryFamilyInclusion J (Fin 1 → ℝ))) (graphEdgePath r)
     U hU hcover (graphSnap r) (graphConnector r) hlocal p

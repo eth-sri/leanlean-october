@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.CylinderBoundaryPasting
-public import RequestProject.BallCylinderHomotopyExtension
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.CylinderBoundaryPasting
+import RequestProject.BallCylinderHomotopyExtension
 
 /-! Turn a homotopy with a contractible boundary track into a homotopy
 relative to that boundary. Endpoint maps are retained exactly. -/
@@ -13,7 +11,6 @@ noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u
 variable {D Z : Type u} [TopologicalSpace D] [TopologicalSpace Z]
 
 theorem homotopyRel_of_boundaryContraction (S : Set D) (hS : IsClosed S)
@@ -32,32 +29,25 @@ theorem homotopyRel_of_boundaryContraction (S : Set D) (hS : IsClosed S)
   let P₁ : C(D, C(I, Z)) := {
     toFun := fun d => ContinuousMap.const I (f₁ d)
     continuous_toFun := ContinuousMap.continuous_const'.comp f₁.continuous }
-  let PS : C(I × S, C(I, Z)) :=
+  let PS  :=
     (J.comp ⟨fun z : (I × S) × I => (z.2, z.1), continuous_swap⟩).curry
   have hP₀ : ∀ a, PS (0, a) = P₀ a.val := by
-    intro a
-    apply ContinuousMap.ext
-    exact fun s => hJl s a
+    solve_by_elim [ContinuousMap.ext]
   have hP₁ : ∀ a, PS (1, a) = P₁ a.val := by
-    intro a
-    apply ContinuousMap.ext
-    exact fun s => hJr s a
-  let PB : C(FullCylinderBoundary S, C(I, Z)) :=
+    solve_by_elim [ContinuousMap.ext]
+  let PB  :=
     fullCylinderPasting S hS P₀ P₁ PS hP₀ hP₁
-  let HB : C(I × FullCylinderBoundary S, Z) :=
+  let HB  :=
     PB.uncurry.comp ⟨Prod.swap, continuous_swap⟩
   have hBleft (s : I) (d : D) :
       HB (s, ⟨(0, d), Or.inl rfl⟩) = f₀ d := by
-    exact congrArg (fun f : C(I, Z) => f s)
-      (fullCylinderPasting_zero S hS P₀ P₁ PS hP₀ hP₁ d)
+    aesop
   have hBright (s : I) (d : D) :
       HB (s, ⟨(1, d), Or.inr (Or.inl rfl)⟩) = f₁ d := by
-    exact congrArg (fun f : C(I, Z) => f s)
-      (fullCylinderPasting_one S hS P₀ P₁ PS hP₀ hP₁ d)
+    aesop
   have hBside (s t : I) (a : S) :
       HB (s, ⟨(t, a.val), Or.inr (Or.inr a.property)⟩) = J (s, (t, a)) := by
-    exact congrArg (fun f : C(I, Z) => f s)
-      (fullCylinderPasting_side S hS P₀ P₁ PS hP₀ hP₁ t a)
+    aesop
   have hB₀ : ∀ b : FullCylinderBoundary S, HB (0, b) = F b.val := by
     intro b
     rcases b.property with hb | hb | hb

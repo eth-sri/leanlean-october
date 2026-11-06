@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresCoverRelatorGeneratorBoundary
-
-@[expose] public section
+import RequestProject.PresCoverRelatorGeneratorBoundary
 
 /-! Cone-coordinate reduction for chains whose boundary lies in the cylinder.
 This is a relative statement: the chain itself need not be a cycle. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -14,12 +11,12 @@ set_option maxHeartbeats 1600000
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → PresPos w) (hf : IsPosetCover f) (hpos : ∀ j, 0 < (w j).length)
 
+variable (c : StrictOrdTri P →₀ ℤ)
 theorem presCoverConeCircleChain_cycle_of_cylinder_boundary
-    (c : StrictOrdTri P →₀ ℤ)
+    
     (b : StrictOrdEdge {p : P // f p ∈ coneAdjBaseSet (S := circSet w)} →₀ ℤ)
     (hb : Comb.bdry2 (strictOrderCx P) c =
       chain1 (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}) b)
@@ -37,19 +34,19 @@ theorem presCoverConeCircleChain_cycle_of_cylinder_boundary
       have hn : e.1.2.val ≠ p.1.1 := by
         intro he
         have hm := e.1.2.property
-        rw (config := { transparency := .default }) [he, p.2] at hm
+        rw  [he, p.2] at hm
         rcases hm with ⟨a, ha⟩
         cases ha
       simp [chain1, strictSubposetIncl, strictOrderCxMap, strictRayChain, strictRayEdge, hn]
   change Comb.bdry1 _ (chain1 (presCoverConeCircleHom w f hf p.1.1 p.1.2 p.2)
     (strictTopLinkChain p.1.1 c)) = 0
-  rw (config := { transparency := .default }) [bdry1_chain1, ← strictTopLink_boundary p.1.1
+  rw  [bdry1_chain1, ← strictTopLink_boundary p.1.1
     (presCover_apex_maximal w f hf p.1.1 p.1.2 p.2), hb, hr, map_zero]
 
 /-- A chain with boundary in the cylinder has exactly one coefficient at each
 actual relator apex, just as an absolute two-cycle does. -/
 theorem presCover_relative_fan_circle
-    (c : StrictOrdTri P →₀ ℤ)
+    
     (b : StrictOrdEdge {p : P // f p ∈ coneAdjBaseSet (S := circSet w)} →₀ ℤ)
     (hb : Comb.bdry2 (strictOrderCx P) c =
       chain1 (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}) b)
@@ -63,14 +60,14 @@ theorem presCover_relative_fan_circle
 
 /-- Subtracting the actual coordinate fans leaves an actual finite cylinder chain. -/
 theorem exists_presCover_relative_cone_cylinder_decomposition
-    (c : StrictOrdTri P →₀ ℤ)
+    
     (b : StrictOrdEdge {p : P // f p ∈ coneAdjBaseSet (S := circSet w)} →₀ ℤ)
     (hb : Comb.bdry2 (strictOrderCx P) c =
       chain1 (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}) b) :
     ∃ d : StrictOrdTri {p : P // f p ∈ coneAdjBaseSet (S := circSet w)} →₀ ℤ,
       chain2 (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}) d =
         c - presCoverRelatorFanChain w f hf (presCoverRelatorChain w f hf hpos c) := by
-  let S : Set P := {p | f p ∈ coneAdjBaseSet (S := circSet w)}
+  let S  := {p | f p ∈ coneAdjBaseSet (S := circSet w)}
   let r := c - presCoverRelatorFanChain w f hf (presCoverRelatorChain w f hf hpos c)
   have hs : ∀ t ∈ r.support, t.1.1 ∈ S ∧ t.1.2.1 ∈ S ∧ t.1.2.2 ∈ S := by
     intro t ht
@@ -85,7 +82,7 @@ theorem exists_presCover_relative_cone_cylinder_decomposition
         have he := congrArg
           (fun z => z ((presCoverConeCircleHom w f hf p.1.1 p.1.2 p.2).onE e))
           (presCover_relative_fan_circle w f hf hpos c b hb p)
-        rw (config := { transparency := .default }) [presCoverConeCircleChain_apply, presCoverConeCircleChain_apply] at he
+        rw  [presCoverConeCircleChain_apply, presCoverConeCircleChain_apply] at he
         exact (Finsupp.mem_support_iff.mp ht) (sub_eq_zero.mpr he)
     exact ⟨coneAdjBaseSet_down_closed hlast (hf.mono (t.2.1.le.trans t.2.2.le)),
       coneAdjBaseSet_down_closed hlast (hf.mono t.2.2.le), hlast⟩
@@ -97,7 +94,7 @@ theorem exists_presCover_relative_cone_cylinder_decomposition
 /-- Relative fillings recover exactly the collapsed attaching boundary of their
 actual relator coefficients. -/
 theorem presCover_relative_collapsed_boundary
-    (c : StrictOrdTri P →₀ ℤ)
+    
     (b : StrictOrdEdge {p : P // f p ∈ coneAdjBaseSet (S := circSet w)} →₀ ℤ)
     (hb : Comb.bdry2 (strictOrderCx P) c =
       chain1 (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}) b) :
@@ -119,7 +116,7 @@ theorem presCover_relative_collapsed_boundary
           (chain2 (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}) d) :=
         (bdry2_chain2 (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}) d).symm
       _ = _ := by
-        rw [hd, map_sub, hb, map_sub, presCoverCylinderRelatorBoundaryChain_inclusion]
+        simp_all [presCoverCylinderRelatorBoundaryChain_inclusion]
   have hz := cylinderCover_collapse_boundary_zero w (coneAdjCoverBaseEnd_isPosetCover f hf) d
   rw [he, map_sub] at hz
   exact sub_eq_zero.mp hz

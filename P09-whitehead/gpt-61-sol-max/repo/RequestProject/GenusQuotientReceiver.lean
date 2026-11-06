@@ -1,25 +1,20 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberQuotientCocycleGluing
-public import RequestProject.GenusReceivedSpineCover
-public import RequestProject.PresUniversalGroupCoordinates
-public import RequestProject.GenusNonemptyMarkedReading
-
-@[expose] public section
+import RequestProject.ChamberQuotientCocycleGluing
+import RequestProject.GenusReceivedSpineCover
+import RequestProject.PresUniversalGroupCoordinates
+import RequestProject.GenusNonemptyMarkedReading
 
 /-! Construct the old-piece cocycle from the actual finite-spine receiver,
 then glue it to a base receiver using only the genuine marked readings.
 This source is part of the pending reverse-comparison proof.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
 open SpanningTree
 open scoped Classical
-universe u v
 variable {P : Type u} [Preorder P] {G : Type v} [Group G]
   (T : SpanningTree (orderCx P)) (φ : PresGroup (treeRel T) →* G)
 
@@ -27,7 +22,7 @@ noncomputable def fromTreeReceiver : OrdCocycle P G where
   val a b := if hab : a ≤ b then φ (wordClass T [ordPos hab]) else 1
   comp := by
     intro a b c hab hbc
-    simp only [dif_pos hab, dif_pos hbc, dif_pos (hab.trans hbc)]
+    simp [dif_pos hab, dif_pos hbc, dif_pos (hab.trans hbc)]
     rw [← map_mul, ← wordClass_append]
     exact congrArg φ (wordClass_htpy T (htpy_orderCx_tri hab hbc))
 
@@ -39,8 +34,7 @@ theorem fromTreeReceiver_readGerm (e : (orderCx P).E × Bool) :
       φ (wordClass T [ordNeg hab])
     rw [dif_pos hab]
     have hr : wordClass T [ordNeg hab] = (wordClass T [ordPos hab])⁻¹ := by
-      change QuotientGroup.mk (pathWord T [ordNeg hab]) =
-        (QuotientGroup.mk (pathWord T [ordPos hab]))⁻¹
+      unfold FiniteChains.Comb.SpanningTree.wordClass
       rw [← QuotientGroup.mk_inv, ← pathWord_revPath]
       rfl
     rw [hr, map_inv]
@@ -51,7 +45,7 @@ theorem fromTreeReceiver_readGerm (e : (orderCx P).E × Bool) :
 theorem fromTreeReceiver_readPath (p : List ((orderCx P).E × Bool)) :
     (fromTreeReceiver T φ).readPath p = φ (wordClass T p) := by
   induction p with
-  | nil => simp [wordClass, pathWord_nil]
+  | nil => simp [wordClass]
   | cons e p ih =>
     rw [readPath_cons, fromTreeReceiver_readGerm, ih, ← map_mul, ← wordClass_append]
     rfl
@@ -74,12 +68,10 @@ end FiniteChains.Comb.OrdCocycle
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb BlockFamily
-universe v
 variable (q₀ : ℕ) [NeZero q₀] {G : Type v} [Group G]
   (φ : PresGroup (namedSpinePresentation q₀) →* G)
 
-noncomputable def oldSpineReceiver :
-    Pi1 (orderCx (QOld (cmpRel (GenusVertex q₀)))) (posQCube (gBase q₀)) →* G :=
+noncomputable def oldSpineReceiver  :=
   φ.comp (namedSpineToOldEquiv q₀).symm.toMonoidHom
 
 theorem oldSpineReceiver_marked (x : Fin q₀ × Bool) :
@@ -135,14 +127,12 @@ theorem exists_quotientReceiver {X : Type} [Preorder X]
   rw [← OrdCocycle.comap_readPath, he]
   exact hread p
 
-variable {A Jr S : Type} (ρ : Jr ⊕ S → FreeGroup A)
-  (q : S → ℕ) [∀ s, NeZero (q s)] (u : ∀ s, Fin (q s) × Bool → FreeGroup A)
+
 
 end FiniteChains.Davis.Genus
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily
-universe v
 variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (q : ℕ) [NeZero q] (u : Fin q × Bool → FreeGroup α)
   (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
@@ -150,7 +140,7 @@ variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
 
 /-- The receiver on the named base presentation is the original receiver
 after the proved elimination of the auxiliary names. -/
-noncomputable def namedBaseReceiver : PresGroup (namedPres ρ q u) →* G :=
+noncomputable def namedBaseReceiver  :=
   j.comp (SurfaceWordExpansion.elimination ρ u (finitePairs q) hrho)
 
 omit [NeZero q] in
@@ -159,11 +149,9 @@ theorem namedBaseReceiver_marked (x : Fin q × Bool) :
       j (QuotientGroup.mk (u x)) := by
   change j (QuotientGroup.mk
     (SurfaceWordExpansion.foldNames u (FreeGroup.of (Sum.inr x)))) = _
-  simp only [SurfaceWordExpansion.foldNames, FreeGroup.lift_apply_of, Sum.elim_inr]
+  simp [SurfaceWordExpansion.foldNames]
 
-noncomputable def namedBaseCocycle :
-    OrdCocycle (PresPos (genusNonemptyW (namedPres ρ q u) (namedA (α := α) q)
-      (namedB (α := α) q) q)) G :=
+noncomputable def namedBaseCocycle  :=
   (presGroupCocycle (namedPres ρ q u)
     (genusNonemptyW (namedPres ρ q u) (namedA (α := α) q) (namedB (α := α) q) q)
     (mk_genusNonemptyW _ _ _ _ (namedPres_surface ρ q u))).postcompose
@@ -181,12 +169,12 @@ theorem namedBaseCocycle_marked (x : Fin q × Bool) :
   let w := genusNonemptyW ep aa bb q
   have hh := (namedBaseCocycle ρ q u hrho j).readPath_htpy
     (genusNonempty_hread ep aa bb q PUnit.unit.{1} (x.1.val, x.2))
-  simp only [List.nil_append, revPath_nil, List.append_nil] at hh
+  simp  at hh
   rw [hh]
   have hl : genusLw aa bb q PUnit.unit.{1} (x.1.val, x.2) = [(Sum.inr x, true)] :=
     namedLw_eq q PUnit.unit x
   rw [hl]
-  change (namedBaseCocycle ρ q u hrho j).readPath (genLoop w (Sum.inr x)) = _
+  
   rw [namedBaseCocycle, OrdCocycle.postcompose_readPath]
   change namedBaseReceiver ρ q u hrho j
     (reading w (fun a => (QuotientGroup.mk (FreeGroup.of a) : PresGroup ep))
@@ -195,13 +183,16 @@ theorem namedBaseCocycle_marked (x : Fin q × Bool) :
   rw [reading_genClass]
   exact namedBaseReceiver_marked ρ q u hrho j x
 
+variable (φ : PresGroup (namedSpinePresentation q) →* G)
+variable (hm : ∀ x : Fin q × Bool,
+      φ (QuotientGroup.mk (FreeGroup.of (Sum.inr x))) = j (QuotientGroup.mk (u x)))
+include hm in
 /-- Concrete gluing over the prescribed word model. All base relators and
 the surface comparison are discharged by the original word relation and
 the exact distinguished-name agreement, rather than assumed presentations. -/
 theorem exists_namedQuotientReceiver
-    (φ : PresGroup (namedSpinePresentation q) →* G)
-    (hm : ∀ x : Fin q × Bool,
-      φ (QuotientGroup.mk (FreeGroup.of (Sum.inr x))) = j (QuotientGroup.mk (u x))) :
+    
+     :
     ∃ c : OrdCocycle (Qpos (cmpRel (GenusVertex q))
         (PresPos (genusNonemptyW (namedPres ρ q u) (namedA (α := α) q) (namedB (α := α) q) q))
         (genusNonemptyAtt (namedPres ρ q u) (namedA (α := α) q) (namedB (α := α) q) q)) G,
@@ -214,9 +205,7 @@ theorem exists_namedQuotientReceiver
           (orderCxMap (qOldIncl (att := genusNonemptyAtt (namedPres ρ q u)
             (namedA (α := α) q) (namedB (α := α) q) q)) qOldIncl_monotone) p.1) =
           oldSpineReceiver q φ (Pi1.mk p) := by
-  apply exists_quotientReceiver q φ _ (namedBaseCocycle ρ q u hrho j)
-  intro x
-  exact (namedBaseCocycle_marked ρ q u hrho j x).trans (hm x).symm
+  simp_all [FiniteChains.Davis.Genus.exists_quotientReceiver, FiniteChains.Davis.Genus.namedBaseCocycle_marked]
 
 noncomputable abbrev namedQuotientPos :=
   Qpos (cmpRel (GenusVertex q))
@@ -232,13 +221,13 @@ noncomputable def namedSpineIntoQuotient :
       Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) :=
   (quotientOldBasedInclusion (gBase q)).comp (namedSpineToOldEquiv q).toMonoidHom
 
+include hm in
 /-- A reverse homomorphism on the actual geometric fundamental group, with
 its full action on the named spine and on the base proved simultaneously.
 This is stronger than agreement merely on distinguished marked generators. -/
 theorem exists_namedQuotientReading
-    (φ : PresGroup (namedSpinePresentation q) →* G)
-    (hm : ∀ x : Fin q × Bool,
-      φ (QuotientGroup.mk (FreeGroup.of (Sum.inr x))) = j (QuotientGroup.mk (u x))) :
+    
+     :
     ∃ ψ : Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) →* G,
       ψ.comp (namedSpineIntoQuotient ρ q u) = φ ∧
       ψ.comp
@@ -260,6 +249,6 @@ theorem exists_namedQuotientReading
     intro z
     change φ ((namedSpineToOldEquiv q).symm ((namedSpineToOldEquiv q) z)) = φ z
     rw [MulEquiv.symm_apply_apply]
-  · exact monodromy_quotientBaseInclusion _ c (namedBaseCocycle ρ q u hrho j) hb
+  · classical grind [FiniteChains.Davis.monodromy_quotientBaseInclusion]
 
 end FiniteChains.Davis.Genus

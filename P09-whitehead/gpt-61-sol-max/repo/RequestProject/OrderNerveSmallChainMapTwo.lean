@@ -1,21 +1,20 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveSmallChainMapLow
-public import RequestProject.OrderNerveDecoding
-
-@[expose] public section
+import RequestProject.OrderNerveSmallChainMapLow
+import RequestProject.OrderNerveDecoding
 
 namespace FiniteChains.Comb
 open TopologicalSingular SingularSubdivision
-open scoped Classical
 
-theorem orderSmallToNerve1_single_carrier {P : Type} [PartialOrder P]
+
+variable {P : Type}
+theorem orderSmallToNerve1_single_carrier  [PartialOrder P]
     (σ : OrderSmallSimplex P 1) :
     orderSmallToNerve1 (orderSmallSingle σ 1) ∈ Nerve.IncOn (orderNerveSingularCarrier σ.val) := by
   rw [orderSmallToNerve1_single, one_smul]
   exact (orderSmallOneFill_exists σ).choose_spec.1
 
-theorem orderSmallToNerve1_length {P : Type} [PartialOrder P]
+theorem orderSmallToNerve1_length  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 1) :
     Nerve.lengthProjection 2 (orderSmallToNerve1 c) = orderSmallToNerve1 c := by
   have he : (Nerve.lengthProjection 2).toIntLinearMap.comp orderSmallToNerve1 =
@@ -29,7 +28,7 @@ theorem orderSmallToNerve1_length {P : Type} [PartialOrder P]
 
 /-- The boundary assigned to a small two-simplex has an actual triangle
 filling in its own carrier. -/
-theorem orderSmallTwoFill_exists {P : Type} [PartialOrder P]
+theorem orderSmallTwoFill_exists  [PartialOrder P]
     (σ : OrderSmallSimplex P 2) :
     ∃ b : Nerve.Ch P, b ∈ Nerve.IncOn (orderNerveSingularCarrier σ.val) ∧
       Nerve.lengthProjection 3 b = b ∧ Nerve.bdry b =
@@ -58,21 +57,19 @@ theorem orderSmallTwoFill_exists {P : Type} [PartialOrder P]
   rw [← Nerve.lengthProjection_bdry, he]
   exact orderSmallToNerve1_length _
 
-noncomputable def orderSmallTwoFill {P : Type} [PartialOrder P]
-    (σ : OrderSmallSimplex P 2) : Nerve.Ch P := (orderSmallTwoFill_exists σ).choose
+noncomputable def orderSmallTwoFill  [PartialOrder P]
+    (σ : OrderSmallSimplex P 2)  := (orderSmallTwoFill_exists σ).choose
 
-noncomputable def orderSmallToNerve2 {P : Type} [PartialOrder P] :
-    smallChains (orderNerveRealizationOpenStar P) 2 →ₗ[ℤ] Nerve.Ch P :=
+noncomputable def orderSmallToNerve2  [PartialOrder P]  :=
   (Finsupp.linearCombination ℤ orderSmallTwoFill).comp (orderSmallChainEquiv P 2).toLinearMap
 
-theorem orderSmallToNerve2_single {P : Type} [PartialOrder P]
+theorem orderSmallToNerve2_single  [PartialOrder P]
     (σ : OrderSmallSimplex P 2) (r : ℤ) :
     orderSmallToNerve2 (orderSmallSingle σ r) = r • orderSmallTwoFill σ := by
   rw [← orderSmallChainEquiv_symm_single]
-  simp only [orderSmallToNerve2, LinearMap.comp_apply, LinearEquiv.coe_coe,
-    LinearEquiv.apply_symm_apply, Finsupp.linearCombination_single]
+  simp [orderSmallToNerve2]
 
-theorem orderSmallToNerve2_boundary {P : Type} [PartialOrder P]
+theorem orderSmallToNerve2_boundary  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 2) :
     Nerve.bdry (orderSmallToNerve2 c) =
       orderSmallToNerve1 (smallBoundary (orderNerveRealizationOpenStar P) 1 c) := by
@@ -85,37 +82,36 @@ theorem orderSmallToNerve2_boundary {P : Type} [PartialOrder P]
     exact (orderSmallTwoFill_exists σ).choose_spec.2.2
   exact DFunLike.congr_fun he c
 
-theorem orderSmallToNerve2_length {P : Type} [PartialOrder P]
+theorem orderSmallToNerve2_length  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 2) :
     Nerve.lengthProjection 3 (orderSmallToNerve2 c) = orderSmallToNerve2 c := by
   have he : (Nerve.lengthProjection 3).toIntLinearMap.comp orderSmallToNerve2 =
       (orderSmallToNerve2 : smallChains (orderNerveRealizationOpenStar P) 2 →ₗ[ℤ] Nerve.Ch P) := by
     apply orderSmallSingle_spans
     intro σ
-    simp only [LinearMap.comp_apply, AddMonoidHom.coe_toIntLinearMap,
-      orderSmallToNerve2_single, one_smul]
+    simp only [LinearMap.comp_apply, orderSmallToNerve2_single, one_smul]
     exact (orderSmallTwoFill_exists σ).choose_spec.2.1
   exact DFunLike.congr_fun he c
 
-theorem orderSmallToNerve2_mem_inc {P : Type} [PartialOrder P]
+theorem orderSmallToNerve2_mem_inc  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 2) : orderSmallToNerve2 c ∈ Nerve.Inc P := by
   obtain ⟨d, rfl⟩ := (orderSmallChainEquiv P 2).symm.surjective c
   induction d using Finsupp.induction_linear with
   | zero => simp
-  | add d e hd he => simpa only [map_add] using (Nerve.Inc P).add_mem hd he
+  | add d e hd he => aesop
   | single σ r =>
     rw [orderSmallChainEquiv_symm_single, orderSmallToNerve2_single]
     exact (Nerve.Inc P).zsmul_mem
       (Nerve.incOn_le_inc _ (orderSmallTwoFill_exists σ).choose_spec.1) r
 
 /-- A concrete order-cell two-chain assigned to each star-small singular chain. -/
-noncomputable def orderSmallCellularApproximation2 {P : Type} [PartialOrder P] :
+noncomputable def orderSmallCellularApproximation2  [PartialOrder P] :
     smallChains (orderNerveRealizationOpenStar P) 2 →ₗ[ℤ] (OrdTri P →₀ ℤ) :=
   decodeOrdNerve2.toIntLinearMap.comp orderSmallToNerve2
 
 /-- The assigned order-cell chain is a cycle whenever the original small
 singular chain is a cycle. Homological comparison still requires a homotopy. -/
-theorem orderSmallCellularApproximation2_cycle {P : Type} [PartialOrder P]
+theorem orderSmallCellularApproximation2_cycle  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 2)
     (hc : smallBoundary (orderNerveRealizationOpenStar P) 1 c = 0) :
     bdry2 (orderCx P) (orderSmallCellularApproximation2 c) = 0 := by

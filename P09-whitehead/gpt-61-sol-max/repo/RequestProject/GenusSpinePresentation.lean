@@ -1,15 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusSpineSurfaceFilling
-public import RequestProject.GenusSpineComponent
-public import RequestProject.TreePresentation
-
-@[expose] public section
+import RequestProject.GenusSpineSurfaceFilling
+import RequestProject.GenusSpineComponent
+import RequestProject.TreePresentation
 
 /-! A finite presentation read from the actual connected marked genus spine. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -23,9 +19,7 @@ theorem markedSpineLoop_hfilling :
     commWord_congr (markedSpineLoop_inclusion_class q)]
   exact spineMarkedLoop_hfilling q
 
-theorem markedSpineSurfacePath_nullhomotopic :
-    Htpy (markedSpineCx q) (markedSpineBase q) (markedSpineBase q)
-      (surfacePath (markedSpineLoop q) (finitePairs q)) [] :=
+abbrev markedSpineSurfacePath_nullhomotopic  :=
   surfacePath_nullhomotopic _ _ (markedSpineLoop_hfilling q)
 
 noncomputable def markedSpineTree : SpanningTree (markedSpineCx q) :=
@@ -40,15 +34,14 @@ abbrev SpinePresentationRel := (markedSpineCx q).F
 instance : Finite (SpinePresentationGen q) := inferInstance
 instance : Finite (SpinePresentationRel q) := inferInstance
 
-noncomputable def spinePresentation : SpinePresentationRel q → FreeGroup (SpinePresentationGen q) :=
+noncomputable def spinePresentation  :=
   SpanningTree.treeRel (markedSpineTree q)
 
 noncomputable def spinePresentationPi1Equiv :
     Pi1 (markedSpineCx q) (markedSpineTree q).root ≃* PresGroup (spinePresentation q) :=
   SpanningTree.pi1EquivPres (markedSpineTree q)
 
-noncomputable def spinePresentationMarkedWord (x : Fin q × Bool) :
-    FreeGroup (SpinePresentationGen q) :=
+noncomputable def spinePresentationMarkedWord (x : Fin q × Bool)  :=
   SpanningTree.pathWord (markedSpineTree q) (markedSpineLoop q x).1
 
 /-- Reading a surface path in the genuine spanning-tree presentation preserves its word. -/
@@ -59,8 +52,7 @@ theorem pathWord_surfacePath {X : Complex2} {a : X.V} {ι : Type}
   induction ps with
   | nil => rfl
   | cons p ps ih =>
-    simp only [surfacePath, SpanningTree.pathWord_append, SpanningTree.pathWord_revPath,
-      ih, commWord_cons]
+    grind [surfacePath, SpanningTree.pathWord_append, SpanningTree.pathWord_revPath, commWord_cons]
 
 /-- The marked relation holds in this actual finite cell presentation. -/
 theorem spinePresentationMarkedWord_hfilling :

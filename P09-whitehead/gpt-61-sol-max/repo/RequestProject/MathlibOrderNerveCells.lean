@@ -1,17 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNormalizationHomotopy
-public import Mathlib.AlgebraicTopology.SimplicialSet.NerveNondegenerate
+import RequestProject.OrderNormalizationHomotopy
+import Mathlib.AlgebraicTopology.SimplicialSet.NerveNondegenerate
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
-universe u
 variable (P : Type u) [PartialOrder P]
 
 /-- The project's actual weak edges are precisely Mathlib poset-nerve one-simplices. -/
@@ -19,8 +15,7 @@ def ordEdgeNerveEquiv : OrdEdge P ≃ ComposableArrows P 1 where
   toFun e := ComposableArrows.mk₁ (homOfLE e.2)
   invFun s := ⟨(s.obj 0, s.obj 1), s.monotone (by decide : (0 : Fin 2) ≤ 1)⟩
   left_inv e := Subtype.ext rfl
-  right_inv s := by
-    apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
+  right_inv s := CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
 
 /-- The project's actual weak triangles are precisely Mathlib poset-nerve two-simplices. -/
 def ordTriNerveEquiv : OrdTri P ≃ ComposableArrows P 2 where
@@ -40,8 +35,7 @@ def ordTetNerveEquiv : OrdTet P ≃ ComposableArrows P 3 where
     s.monotone (by decide : (1 : Fin 4) ≤ 2),
     s.monotone (by decide : (2 : Fin 4) ≤ 3)⟩
   left_inv t := Subtype.ext rfl
-  right_inv s := by
-    apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
+  right_inv s := CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
 
 /-- The actual alternating tetrahedron boundary is Mathlib's four nerve faces. -/
 theorem ordTetBoundary_nerve_faces (t : OrdTet P) :
@@ -56,7 +50,7 @@ theorem ordTetBoundary_nerve_faces (t : OrdTet P) :
   have h0 : ordTriNerveEquiv P
       ⟨(t.1.2.1, t.1.2.2.1, t.1.2.2.2), t.2.2⟩ =
       (nerve P).δ (0 : Fin 4) (ordTetNerveEquiv P t) := by
-    apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
+    rfl
   have h1 : ordTriNerveEquiv P
       ⟨(t.1.1, t.1.2.2.1, t.1.2.2.2), t.2.1.trans t.2.2.1, t.2.2.2⟩ =
       (nerve P).δ (1 : Fin 4) (ordTetNerveEquiv P t) := by
@@ -80,7 +74,7 @@ theorem ordTriangleBoundary_nerve_faces (t : OrdTri P) :
       Finsupp.single ((nerve P).δ (2 : Fin 3) (ordTriNerveEquiv P t)) 1 := by
   have h0 : ordEdgeNerveEquiv P ⟨(t.1.2.1, t.1.2.2), t.2.2⟩ =
       (nerve P).δ (0 : Fin 3) (ordTriNerveEquiv P t) := by
-    apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)
+    rfl
   have h1 : ordEdgeNerveEquiv P ⟨(t.1.1, t.1.2.2), t.2.1.trans t.2.2⟩ =
       (nerve P).δ (1 : Fin 3) (ordTriNerveEquiv P t) := by
     apply CategoryTheory.Functor.ext (fun i => by fin_cases i <;> rfl)

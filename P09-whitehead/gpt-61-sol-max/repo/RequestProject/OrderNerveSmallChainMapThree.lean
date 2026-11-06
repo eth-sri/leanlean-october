@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveSmallChainMapTwo
-
-@[expose] public section
+import RequestProject.OrderNerveSmallChainMapTwo
 
 namespace FiniteChains.Comb
-open TopologicalSingular SingularSubdivision
+
 
 theorem orderSmallToNerve2_single_carrier {P : Type} [PartialOrder P]
     (σ : OrderSmallSimplex P 2) :

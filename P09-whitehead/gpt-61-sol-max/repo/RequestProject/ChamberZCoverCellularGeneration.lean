@@ -1,18 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberZCoverDegreeGeneration
-public import RequestProject.OrderNormalizationSupport
-
-@[expose] public section
+import RequestProject.ChamberZCoverDegreeGeneration
+import RequestProject.OrderNormalizationSupport
 
 /-! Genuine finite cellular two-cycle generation in the actual covering poset. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] [Nonempty X]
   {M : CayGroup A → Prop} {att : NeSpx A →o X}

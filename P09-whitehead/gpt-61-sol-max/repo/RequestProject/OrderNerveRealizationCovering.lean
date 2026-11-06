@@ -1,15 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveRealizationStarSheets
-public import Mathlib.Topology.Covering.Basic
-
-@[expose] public section
+import RequestProject.OrderNerveRealizationStarSheets
+import Mathlib.Topology.Covering.Basic
 
 /-! Actual topological coverings obtained from the already constructed open-star sheets. -/
 
 namespace FiniteChains.Comb
-open Topology
-open scoped Classical
+
+
 
 theorem open_iff_of_sheet {E X : Type*}
     [TopologicalSpace E] [TopologicalSpace X] (f : C(E, X))
@@ -24,10 +22,7 @@ theorem open_iff_of_sheet {E X : Type*}
     have hp : IsOpen (e ⁻¹' ((Subtype.val : V → X) ⁻¹' W)) := by
       have hh := h.preimage (continuous_subtype_val : Continuous (Subtype.val : U → E))
       convert hh using 1
-      ext z
-      change (e z).val ∈ W ↔ f z.val ∈ W ∧ z.val ∈ U
-      rw [he z]
-      simp only [z.property, and_true]
+      grind
     have hv := e.isOpen_preimage.mp hp
     have hi := hV.isOpenMap_subtype_val _ hv
     have hr : (Subtype.val : V → X) '' (Subtype.val ⁻¹' W) = W := by
@@ -42,21 +37,21 @@ theorem open_iff_of_sheet {E X : Type*}
 namespace IsPosetCover
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q] {f : P → Q}
 
+  (hf : IsPosetCover f)
+  (q : Q)
 /-- A sheet over a chosen lifted vertex, with its target identified with the chosen base star. -/
-noncomputable def realizationSheetHomeomorph (hf : IsPosetCover f) (q : Q)
-    (v : {p : P // f p = q}) :
-    orderNerveRealizationOpenStar P v.val ≃ₜ orderNerveRealizationOpenStar Q q :=
+noncomputable def realizationSheetHomeomorph  
+    (v : {p : P // f p = q})  :=
   (hf.vertexOpenStarHomeomorph v.val).trans
     (Homeomorph.setCongr (congrArg (orderNerveRealizationOpenStar Q) v.property))
 
-theorem realizationSheetHomeomorph_coe (hf : IsPosetCover f) (q : Q)
-    (v : {p : P // f p = q}) (z : orderNerveRealizationOpenStar P v.val) :
-    (hf.realizationSheetHomeomorph q v z).val = orderNerveRealizationMap f hf.mono z.val :=
+abbrev realizationSheetHomeomorph_coe  
+    (v : {p : P // f p = q}) (z : orderNerveRealizationOpenStar P v.val)  :=
   hf.vertexOpenStarHomeomorph_coe v.val z
 
 set_option maxHeartbeats 600000 in
 /-- Every actual open vertex star is an evenly covered neighborhood. -/
-theorem realizationMap_evenlyCovered (hf : IsPosetCover f) (q : Q)
+theorem realizationMap_evenlyCovered  
     (x : orderNerveRealization Q) (hx : x ∈ orderNerveRealizationOpenStar Q q) :
     IsEvenlyCovered (orderNerveRealizationMap f hf.mono) x
       (orderNerveRealizationMap f hf.mono ⁻¹' {x}) := by
@@ -70,7 +65,7 @@ theorem realizationMap_evenlyCovered (hf : IsPosetCover f) (q : Q)
     ⟨orderNerveRealizationMap f hf.mono, (orderNerveRealizationMap f hf.mono).hom.continuous⟩
   let U : I → Set (orderNerveRealization P) := fun i => orderNerveRealizationOpenStar P i.val
   let V := orderNerveRealizationOpenStar Q q
-  let e : ∀ i : I, U i ≃ₜ V := hf.realizationSheetHomeomorph q
+  let e  := hf.realizationSheetHomeomorph q
   have he : ∀ (i : I) (z : U i), (e i z).val = F z.val :=
     hf.realizationSheetHomeomorph_coe q
   let t := IsOpen.trivializationDiscrete (f := F) U V
@@ -79,7 +74,7 @@ theorem realizationMap_evenlyCovered (hf : IsPosetCover f) (q : Q)
       (orderNerveRealizationOpenStar_isOpen Q q) (e i) (he i) hW)
     (by
       intro i a ha b hb hab
-      have hh : e i ⟨a, ha⟩ = e i ⟨b, hb⟩ :=
+      have hh  :=
         Subtype.ext ((he i ⟨a, ha⟩).trans (hab.trans (he i ⟨b, hb⟩).symm))
       exact congrArg Subtype.val ((e i).injective hh))
     (by
@@ -97,11 +92,11 @@ theorem realizationMap_evenlyCovered (hf : IsPosetCover f) (q : Q)
   exact (IsEvenlyCovered.of_trivialization (t := t) hx).to_isEvenlyCovered_preimage
 
 /-- The realization of every poset covering is a genuine Mathlib covering map. -/
-theorem realizationMap_isCoveringMap (hf : IsPosetCover f) :
+theorem realizationMap_isCoveringMap  :
     IsCoveringMap (orderNerveRealizationMap f hf.mono) := by
   intro x
   obtain ⟨q, hq⟩ := orderNerveRealizationOpenStar_cover Q x
   exact hf.realizationMap_evenlyCovered q x hq
 
-end IsPosetCover
-end FiniteChains.Comb
+end FiniteChains.Comb.IsPosetCover
+

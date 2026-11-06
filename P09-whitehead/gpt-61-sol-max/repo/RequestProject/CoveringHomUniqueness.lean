@@ -1,3 +1,2 @@
-module
-public import RequestProject.CombCoveringLift
-public import RequestProject.CombData
+import RequestProject.CombCoveringLift
+import RequestProject.CombData

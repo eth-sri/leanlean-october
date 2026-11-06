@@ -1,15 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberZCoverIntersectionCycles
-public import RequestProject.OrderNervePositiveFillings
-public import RequestProject.NerveDegreeTransfer
-
-@[expose] public section
+import RequestProject.ChamberZCoverIntersectionCycles
+import RequestProject.OrderNervePositiveFillings
+import RequestProject.NerveDegreeTransfer
 
 /-! Local degree-two generation and degree-one intersection fillings on actual covers. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {M : CayGroup A → Prop} {att : NeSpx A →o X}
   {P : Type u} [PartialOrder P] {f : P → Zpos A X M att}
@@ -47,7 +44,7 @@ theorem generatesDegreeIn_cover_chamber [Nonempty X] (hf : IsPosetCover f)
       (fun p => InZBase (f p)) 3 := by
   classical
   by_cases hw : M w
-  · exact generatesDegreeIn_of_acyclicRelIn (acyclicRelIn_cover_marked_chamber hf w hw)
-  · exact generatesDegreeIn_of_fillsDegreeIn (fillsDegreeIn_cover_unmarked_chamber hf w hw)
+  · simp_all [FiniteChains.Nerve.generatesDegreeIn_of_acyclicRelIn, FiniteChains.Davis.acyclicRelIn_cover_marked_chamber]
+  · simp_all [FiniteChains.Nerve.generatesDegreeIn_of_fillsDegreeIn, FiniteChains.Davis.fillsDegreeIn_cover_unmarked_chamber]
 
 end FiniteChains.Davis

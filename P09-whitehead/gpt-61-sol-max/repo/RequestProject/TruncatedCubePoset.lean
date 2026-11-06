@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeCoordinateEquiv
-public import RequestProject.NerveDegree
-
-@[expose] public section
+import RequestProject.QCubeCoordinateEquiv
+import RequestProject.NerveDegree
 
 /-! Face incidences of the truncated complex, including its new cut cells. -/
 
@@ -33,18 +31,11 @@ theorem qCube_sgn_zero_of_face {c d : QCube A} (h : c ≤ d) (hc : c.sgn = 0) :
 instance : PartialOrder (TruncatedCell A) where
   le := TruncatedFace
   le_refl c := by
-    cases c with
-    | inl c => exact le_refl c.1
-    | inr c => exact Finset.Subset.refl c.1
+    aesop (add simp [FiniteChains.Davis.TruncatedFace])
   le_trans c d e hcd hde := by
     cases c with
     | inl c =>
-      cases d with
-      | inl d =>
-        cases e with
-        | inl e => exact le_trans hcd hde
-        | inr e => exact False.elim hde
-      | inr d => exact False.elim hcd
+      grind [FiniteChains.Davis.TruncatedFace]
     | inr c =>
       cases d with
       | inl d =>
@@ -52,15 +43,11 @@ instance : PartialOrder (TruncatedCell A) where
         | inl e => exact ⟨hcd.1.trans hde.1, qCube_sgn_zero_of_face hde hcd.2⟩
         | inr e => exact False.elim hde
       | inr d =>
-        cases e with
-        | inl e => exact ⟨hcd.trans hde.1, hde.2⟩
-        | inr e => exact hcd.trans hde
+        grind [FiniteChains.Davis.TruncatedFace]
   le_antisymm c d hcd hdc := by
     cases c with
     | inl c =>
-      cases d with
-      | inl d => exact congrArg Sum.inl (Subtype.ext (le_antisymm hcd hdc))
-      | inr d => exact False.elim hcd
+      aesop (add unsafe apply [le_antisymm])
     | inr c =>
       cases d with
       | inl d => exact False.elim hdc
@@ -94,7 +81,7 @@ theorem truncatedCellRetraction_monotone : Monotone (truncatedCellRetraction (A 
     | inl d =>
       refine ⟨h.1, ?_⟩
       intro v _
-      change (0 : ZMod 2) = d.1.sgn v
+      dsimp!
       rw [h.2]
       rfl
     | inr τ => exact posQCube_monotone h
@@ -120,8 +107,7 @@ theorem cut_le_old_coordinate_iff (σ : CutCell A) (c : QOld A) :
         qCubeToCoordinate c.1 = posCube c.1.spx := by
   rw [cut_le_old_iff, freeSet_qCubeToCoordinate]
   constructor
-  · rintro ⟨hs, hz⟩
-    exact ⟨hs, qCubeToCoordinate_sgn_zero c.1 hz⟩
+  · simp_all [FiniteChains.Davis.qCubeToCoordinate_sgn_zero]
   · rintro ⟨hs, hz⟩
     refine ⟨hs, ?_⟩
     funext v

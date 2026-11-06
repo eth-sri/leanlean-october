@@ -1,5 +1,3 @@
-module
-
 /-
 The explicit four-horn index shift is adapted from the simplicial index-shift
 argument of Vasily Ilin, homotopy-groups-lean commit
@@ -7,10 +5,8 @@ c66523531ff172d7f41913d94e56921e790a1b47, Hurewicz/SimplicialIndexShift.lean,
 released under Apache 2.0. Here it is specialized to actual singular triangles
 and to the previously checked cubical model of pi2.
 -/
-public import RequestProject.TopologicalSingular.SingularFourHorn
-public import RequestProject.TopologicalSingular.PointedSingularTriangle
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SingularFourHorn
+import RequestProject.TopologicalSingular.PointedSingularTriangle
 
 namespace FiniteChains.TopologicalSingular.PointedSingularTriangle
 variable {X : Type} [TopologicalSpace X] {x : X}

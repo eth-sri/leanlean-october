@@ -1,9 +1,5 @@
-module
-
-public import RequestProject.GenusSpineFullCubeDimension
-public import RequestProject.GenusOldAugmentationReduction
-
-@[expose] public section
+import RequestProject.GenusSpineFullCubeDimension
+import RequestProject.GenusOldAugmentationReduction
 
 /-! Actual capped-cover cycles recover finite ordinary cubical boundaries on old spine images. -/
 namespace FiniteChains.Davis.Genus

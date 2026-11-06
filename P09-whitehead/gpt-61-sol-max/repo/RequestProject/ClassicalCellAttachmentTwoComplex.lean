@@ -1,21 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Statement
-public import RequestProject.ClassicalCellAttachmentCW
-public import Mathlib.Analysis.Normed.Module.Connected
-
-@[expose] public section
+import RequestProject.Statement
+import RequestProject.ClassicalCellAttachmentCW
+import Mathlib.Analysis.Normed.Module.Connected
 
 /-! Disk attachments as the actual two-complexes of the challenge. The
 old space is a closed subcomplex retaining precisely its original cells.
 Finiteness is asserted only when both the old cells and new labels are finite. -/
 
 noncomputable section
-open scoped Classical Topology
+
 open Set Topology Metric
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
@@ -25,7 +21,7 @@ theorem closedUnitBall_connectedSpace {E : Type*} [NormedAddCommGroup E]
   apply isConnected_iff_connectedSpace.mp
   convert isConnected_closedBall (E := E) (x := (0 : E)) (r := (1 : ℝ)) zero_le_one using 1
   ext x
-  simp only [Metric.mem_closedBall, dist_zero_right]
+  simp 
   rfl
 
 /-- Every new disk meets the old connected space along its nonempty
@@ -44,13 +40,13 @@ theorem diskAttachment_connectedSpace {X J E : Type}
   refine ⟨o x₀, Set.eq_univ_of_forall ?_⟩
   rintro (x | d)
   · exact ho ⟨x, rfl⟩
-  · let f : ClosedUnitBall E → DiskAttachment r :=
+  · let f  :=
       fun v => cell r (boundaryFamilyInclusion J E) ⟨d.val.1, v⟩
     have hf : Continuous f := (cell_continuous r _).comp continuous_sigmaMk
-    have hb : f (unitBoundaryInclusion E a) = o (r ⟨d.val.1, a⟩) :=
+    have hb  :=
       cell_boundary r _ (boundaryFamilyInclusion_isClosedEmbedding J E).injective
         ⟨d.val.1, a⟩
-    have hc : Sum.inr d ∈ connectedComponent (o (r ⟨d.val.1, a⟩)) :=
+    have hc  :=
       (isConnected_range hf).subset_connectedComponent
         ⟨unitBoundaryInclusion E a, hb⟩
         ⟨d.val.2, cell_of_not_mem r _ d.val d.property⟩
@@ -103,7 +99,7 @@ def diskAttachmentTwoComplex : TwoComplex where
   connected := diskAttachment_connectedSpace r (positiveDiskBoundaryPoint n hn)
   dimension m hm := ⟨by
     intro j
-    change AttachmentCell (X := K) (J := J) n m at j
+    
     rcases j with j | ⟨j, h⟩
     · exact (K.dimension m hm).false j
     · omega⟩
@@ -115,7 +111,7 @@ def diskAttachmentOldSubcomplex :
 theorem diskAttachment_finiteCells (hK : FiniteCells K) [Finite J] :
     FiniteCells (diskAttachmentTwoComplex K n hn hn₂ r x₀ hb) := by
   letI : Finite (Σ m, RelCWComplex.cell (Set.univ : Set K) m) := hK
-  change Finite (Σ m, AttachmentCell (X := K) (J := J) n m)
+  
   exact Finite.of_injective (attachmentTotalCellEquiv (X := K) (J := J) n)
     (attachmentTotalCellEquiv (X := K) (J := J) n).injective
 

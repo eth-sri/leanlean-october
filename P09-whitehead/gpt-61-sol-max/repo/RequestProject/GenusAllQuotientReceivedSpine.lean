@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusReceivedCoveredSpine
-
-@[expose] public section
+import RequestProject.GenusReceivedCoveredSpine
 
 /-! The received spine on every sheet of the actual quotient group.
 The change of coefficient group is a cellular map, and old-cover
@@ -10,14 +8,12 @@ three-boundaries are reflected before restricting coefficients again.
  -/
 
 noncomputable section
-open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
+
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
-universe u
 variable {K : Complex2.{u}} (T : SpanningTree K)
   {G H : Type u} [Group G] [Group H]
   (φ : PresGroup (SpanningTree.treeRel T) →* G) (η : G →* H)
@@ -26,18 +22,7 @@ variable {K : Complex2.{u}} (T : SpanningTree K)
 theorem liftPath_map_group (p : List (K.E × Bool)) (g : G) :
     (liftPath T φ p g).map (fun eb => ((η eb.1.1, eb.1.2), eb.2)) =
       liftPath T (η.comp φ) p (η g) := by
-  induction p generalizing g with
-  | nil => rfl
-  | cons e p ih =>
-      rw (config := { transparency := .default }) [liftPath_cons, List.map_cons, liftPath_cons]
-      have he : ((η (liftGerm T φ g e).1.1, (liftGerm T φ g e).1.2),
-          (liftGerm T φ g e).2) = liftGerm T (η.comp φ) (η g) e := by
-        obtain ⟨e, b⟩ := e
-        cases b <;> simp [liftGerm, germValue, map_mul]
-      rw (config := { transparency := .default }) [he, ih]
-      apply congrArg (List.cons (liftGerm T (η.comp φ) (η g) e))
-      apply congrArg (liftPath T (η.comp φ) p)
-      exact map_mul η g (germValue T φ e)
+  induction p generalizing g <;> aesop (add simp [liftGerm])
 
 /-- An actual cellular map, retaining the original cell in each dimension. -/
 def changeGroup : Hom (cover T φ) (cover T (η.comp φ)) where
@@ -46,8 +31,7 @@ def changeGroup : Hom (cover T φ) (cover T (η.comp φ)) where
   onF x := (η x.1, x.2)
   src_onE _ := rfl
   tgt_onE x := by
-    change (η x.1 * η (germValue T φ (x.2, true)), _) =
-      (η (x.1 * germValue T φ (x.2, true)), _)
+    
     rw (config := { transparency := .default }) [map_mul]
     rfl
   base_onF _ := rfl
@@ -61,47 +45,33 @@ variable (q : ℕ) [NeZero q] {α Jr : Type}
   (ρ : Jr ⊕ PUnit.{1} → FreeGroup α) (u : Fin q × Bool → FreeGroup α)
   (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
 
-def allQuotientSpineReceiver : PresGroup (spinePresentation q) →*
-    Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) :=
+def allQuotientSpineReceiver  :=
   (finiteSpineToQuotient ρ q u hrho).comp
     (receivedSpineWordReceiver ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit)
 
-abbrev allQuotientReceivedSpineCover : Complex2 :=
+abbrev allQuotientReceivedSpineCover  :=
   ReceivedTree.cover (markedSpineTree q) (allQuotientSpineReceiver q ρ u hrho)
 
-def allQuotientReceivedSpineProjection :
-    Hom (allQuotientReceivedSpineCover q ρ u hrho) (markedSpineCx q) :=
+def allQuotientReceivedSpineProjection  :=
   ReceivedTree.projection (markedSpineTree q) (allQuotientSpineReceiver q ρ u hrho)
 
-def receivedSpineChangeToAllQuotient :
-    Hom (singleReceivedSpineCover q ρ u) (allQuotientReceivedSpineCover q ρ u hrho) :=
+def receivedSpineChangeToAllQuotient  :=
   ReceivedTree.changeGroup (markedSpineTree q)
     (receivedSpineWordReceiver ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit)
     (finiteSpineToQuotient ρ q u hrho)
 
-def allQuotientSpineOldRootReceiver :
-    Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u) →*
-      Pi1 (orderCx (namedQuotientPos ρ q u))
-        ((markedSpineToNamedQuotient q ρ u).onV (markedSpineTree q).root) :=
+def allQuotientSpineOldRootReceiver  :=
   pi1Conj (isPath_revPath (spineQuotientCylinderPath_isPath q ρ u))
 
-theorem allQuotientSpineOldRootReceiver_compatible :
-    (allQuotientSpineOldRootReceiver q ρ u).comp (allQuotientSpineReceiver q ρ u hrho) =
-      (pi1Map (markedSpineToNamedQuotient q ρ u) (markedSpineTree q).root).comp
-        (SpanningTree.presToPi1 (markedSpineTree q)) := by
-  exact finiteSpineOldRootReceiver_compatible q ρ u hrho
+abbrev allQuotientSpineOldRootReceiver_compatible :=
+  FiniteChains.Davis.Genus.finiteSpineOldRootReceiver_compatible
 
-def allQuotientReceivedSpineToQuotientOldRoot :
-    Hom (allQuotientReceivedSpineCover q ρ u hrho)
-      (uCover (orderCx (namedQuotientPos ρ q u))
-        ((markedSpineToNamedQuotient q ρ u).onV (markedSpineTree q).root)) :=
+def allQuotientReceivedSpineToQuotientOldRoot  :=
   ReceivedTree.comparison (markedSpineTree q) (markedSpineToNamedQuotient q ρ u)
     (allQuotientSpineReceiver q ρ u hrho) (allQuotientSpineOldRootReceiver q ρ u)
     (allQuotientSpineOldRootReceiver_compatible q ρ u hrho)
 
-def allQuotientReceivedSpineToQuotient :
-    Hom (allQuotientReceivedSpineCover q ρ u hrho)
-      (uCover (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)) :=
+def allQuotientReceivedSpineToQuotient  :=
   (uCoverPathTransport (spineQuotientCylinderPath_isPath q ρ u)).comp
     (allQuotientReceivedSpineToQuotientOldRoot q ρ u hrho)
 
@@ -115,7 +85,7 @@ theorem allQuotientReceivedSpineToQuotient_projects :
     change endV (pathTransportV (spineQuotientCylinderPath_isPath q ρ u)
       (ReceivedTree.receiverVertex (markedSpineTree q) (markedSpineToNamedQuotient q ρ u)
         (allQuotientSpineOldRootReceiver q ρ u) x.1 x.2)) = _
-    rw (config := { transparency := .default }) [endV_pathTransportV, ReceivedTree.receiverVertex_end]
+    rw  [endV_pathTransportV, ReceivedTree.receiverVertex_end]
     rfl
   · rfl
   · rfl
@@ -136,8 +106,10 @@ theorem allQuotientReceivedSpineToQuotient_chain2_changeGroup
     (chain2 (receivedSpineChangeToAllQuotient q ρ u hrho) c) = _
   rw (config := { transparency := .default }) [← chain2_comp_apply, allQuotientReceivedSpineToQuotient_changeGroup]
 
+variable (g h : Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u))
+include g h in
 theorem allQuotientReceivedSpineToQuotient_deckV
-    (g h : Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u))
+    
     (a : (markedSpineCx q).V) :
     (allQuotientReceivedSpineToQuotient q ρ u hrho).onV (g * h, a) =
       deckV g ((allQuotientReceivedSpineToQuotient q ρ u hrho).onV (h, a)) := by
@@ -150,44 +122,41 @@ theorem allQuotientReceivedSpineToQuotient_deckV
   change (uCoverPathTransport (spineQuotientCylinderPath_isPath q ρ u)).onV
     (ReceivedTree.receiverVertex (markedSpineTree q) (markedSpineToNamedQuotient q ρ u)
       (allQuotientSpineOldRootReceiver q ρ u) (g * h) a) = _
-  rw (config := { transparency := .default }) [hs, uCoverPathTransport_deckV]
-  change deckV (pi1Conj (spineQuotientCylinderPath_isPath q ρ u)
-    (pi1Conj (isPath_revPath (spineQuotientCylinderPath_isPath q ρ u)) g)) _ = _
+  rw  [hs, uCoverPathTransport_deckV]
+  
   rw (config := { transparency := .default }) [pi1Conj_cancel_reverse]
   rfl
 
+include g h in
 theorem allQuotientReceivedSpineToQuotient_deckF
-    (g h : Pi1 (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u))
+    
     (f : (markedSpineCx q).F) :
     (allQuotientReceivedSpineToQuotient q ρ u hrho).onF (g * h, f) =
       deckF g ((allQuotientReceivedSpineToQuotient q ρ u hrho).onF (h, f)) := by
   apply Subtype.ext
   exact Prod.ext (allQuotientReceivedSpineToQuotient_deckV q ρ u hrho g h _) rfl
 
-noncomputable def allQuotientReceivedSpineOrderMap :
-    Hom (allQuotientReceivedSpineCover q ρ u hrho)
-      (orderCx (UOrder (namedQuotientPos ρ q u) (namedQuotientBase ρ q u))) :=
+def allQuotientReceivedSpineOrderMap  :=
   uOrderHomInv.comp (allQuotientReceivedSpineToQuotient q ρ u hrho)
 
-theorem allQuotientReceivedSpineOrderMap_old (a : (allQuotientReceivedSpineCover q ρ u hrho).V) :
+variable (a : (allQuotientReceivedSpineCover q ρ u hrho).V)
+theorem allQuotientReceivedSpineOrderMap_old  :
     InQOld (uOrderEnd ((allQuotientReceivedSpineOrderMap q ρ u hrho).onV a)) := by
   change InQOld (endV (uOrderHomInv.onV ((allQuotientReceivedSpineToQuotient q ρ u hrho).onV a)))
-  rw (config := { transparency := .default }) [uOrderHomInv_vertex]
+  rw  [uOrderHomInv_vertex]
   have h := congrArg
     (fun k : Hom (allQuotientReceivedSpineCover q ρ u hrho) (orderCx (namedQuotientPos ρ q u)) => k.onV a)
     (allQuotientReceivedSpineToQuotient_projects q ρ u hrho)
   change endV ((allQuotientReceivedSpineToQuotient q ρ u hrho).onV a) =
     (markedSpineToNamedQuotient q ρ u).onV a.2 at h
-  rw (config := { transparency := .default }) [h]
+  rw  [h]
   trivial
 
-noncomputable def allQuotientReceivedSpineToOldCover :
-    Hom (allQuotientReceivedSpineCover q ρ u hrho) (orderCx (namedOldCover q ρ u)) :=
+def allQuotientReceivedSpineToOldCover  :=
   orderCxRestrict (allQuotientReceivedSpineOrderMap q ρ u hrho)
     (fun p => InQOld (uOrderEnd p)) (allQuotientReceivedSpineOrderMap_old q ρ u hrho)
 
-noncomputable def allQuotientReceivedSpineToStrictSpine :
-    Hom (allQuotientReceivedSpineCover q ρ u hrho) (strictOrderCx (GenusSpineCell q)) :=
+def allQuotientReceivedSpineToStrictSpine  :=
   (componentIncl (genusSpineCx q) (spineBase q)).comp
     (allQuotientReceivedSpineProjection q ρ u hrho)
 
@@ -218,45 +187,34 @@ theorem allQuotientReceivedSpine_old_square :
       change (j.comp (orderCxMap (namedOldCoverProjection q ρ u)
         (namedOldCoverProjection_isPosetCover q ρ u).mono)).comp _ = _
       dsimp only [j, namedOldCoverProjection]
-      rw (config := { transparency := .default }) [qOldCover_projection_square]
+      rw  [qOldCover_projection_square]
       rfl
     _ = (orderCxMap uOrderEnd uOrderEnd_monotone).comp
         (allQuotientReceivedSpineOrderMap q ρ u hrho) := by
-      rw (config := { transparency := .default }) [allQuotientReceivedSpineToOldCover, orderCxRestrict_projects]
+      rfl
     _ = (univProj (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)).comp
         (allQuotientReceivedSpineToQuotient q ρ u hrho) := by
       change ((orderCxMap uOrderEnd uOrderEnd_monotone).comp uOrderHomInv).comp _ = _
-      rw (config := { transparency := .default }) [uOrderHomInv_projection_square]
+      rw  [uOrderHomInv_projection_square]
     _ = _ := allQuotientReceivedSpineToQuotient_projects q ρ u hrho
 
-noncomputable def allQuotientReceivedSpineToPullback :
-    Hom (allQuotientReceivedSpineCover q ρ u hrho)
-      (strictOrderCx (PosetCoverPullback (namedOldCoverProjection q ρ u) (genusSpineCellToOld q))) :=
+def allQuotientReceivedSpineToPullback  :=
   strictOrderPullbackHom (namedOldCoverProjection q ρ u)
     (namedOldCoverProjection_isPosetCover q ρ u) (genusSpineCellToOld q)
     (genusSpineCellToOld_monotone q) (allQuotientReceivedSpineToOldCover q ρ u hrho)
     (allQuotientReceivedSpineToStrictSpine q ρ u hrho) (allQuotientReceivedSpine_old_square q ρ u hrho)
 
-noncomputable def allQuotientReceivedSpineToCoveredSpine :
-    Hom (allQuotientReceivedSpineCover q ρ u hrho)
-      (strictOrderCx (OldCoveredSpine q (namedOldCoverProjection q ρ u))) :=
+def allQuotientReceivedSpineToCoveredSpine  :=
   (strictOrderCxMap (spinePullbackOldCoverOrderIso q (namedOldCoverProjection q ρ u))
     (spinePullbackOldCoverOrderIso q (namedOldCoverProjection q ρ u)).strictMono).comp
       (allQuotientReceivedSpineToPullback q ρ u hrho)
 
-theorem allQuotientReceivedSpineToCoveredSpine_first :
-    (orderCxMap (oldCoveredSpineToOld q (namedOldCoverProjection q ρ u))
-      (oldCoveredSpineToOld_monotone q (namedOldCoverProjection q ρ u))).comp
-      ((strictOrderIncl _).comp (allQuotientReceivedSpineToCoveredSpine q ρ u hrho)) =
-      allQuotientReceivedSpineToOldCover q ρ u hrho := by
-  apply Hom.ext' <;> rfl
 
-theorem allQuotientReceivedSpineToCoveredSpine_vertex_old (a : (allQuotientReceivedSpineCover q ρ u hrho).V) :
+
+theorem allQuotientReceivedSpineToCoveredSpine_vertex_old  :
     (oldCoveredSpineToOld q (namedOldCoverProjection q ρ u)
       ((allQuotientReceivedSpineToCoveredSpine q ρ u hrho).onV a)).1 =
-      (allQuotientReceivedSpineToQuotient q ρ u hrho).onV a := by
-  change uOrderHomInv.onV ((allQuotientReceivedSpineToQuotient q ρ u hrho).onV a) = _
-  exact uOrderHomInv_vertex _
+      (allQuotientReceivedSpineToQuotient q ρ u hrho).onV a := uOrderHomInv_vertex _
 
 /-- Faithfulness of the group receiver preserves the individual sheets over
 every spine vertex, including vertices away from the chosen root. -/
@@ -269,8 +227,7 @@ theorem allQuotientReceivedSpineToQuotient_sheet_injective (a : (markedSpineCx q
     ((allQuotientReceivedSpineToQuotient q ρ u hrho).onV (1, a))
   have hg := allQuotientReceivedSpineToQuotient_deckV q ρ u hrho g 1 a
   have hh := allQuotientReceivedSpineToQuotient_deckV q ρ u hrho h 1 a
-  rw (config := { transparency := .default }) [mul_one] at hg hh
-  exact hg.symm.trans (hgh.trans hh)
+  simp_all
 
 /-- The actual map into the pullback spine is injective on faces: its
 spine projection retains the original face, and its old-cover projection
@@ -287,12 +244,12 @@ theorem allQuotientReceivedSpineToCoveredSpine_onF_injective :
       ((allQuotientReceivedSpineCover q ρ u hrho).base (g, t)) =
       (allQuotientReceivedSpineToCoveredSpine q ρ u hrho).onV
         ((allQuotientReceivedSpineCover q ρ u hrho).base (h, t)) := by
-    rw (config := { transparency := .default }) [← (allQuotientReceivedSpineToCoveredSpine q ρ u hrho).base_onF,
+    rw  [← (allQuotientReceivedSpineToCoveredSpine q ρ u hrho).base_onF,
       ← (allQuotientReceivedSpineToCoveredSpine q ρ u hrho).base_onF, he]
   have hv' := congrArg (fun a =>
     (oldCoveredSpineToOld q (namedOldCoverProjection q ρ u) a).1) hv
-  rw (config := { transparency := .default }) [allQuotientReceivedSpineToCoveredSpine_vertex_old, allQuotientReceivedSpineToCoveredSpine_vertex_old] at hv'
-  have hg : g = h := allQuotientReceivedSpineToQuotient_sheet_injective q ρ u hrho
+  rw  [allQuotientReceivedSpineToCoveredSpine_vertex_old, allQuotientReceivedSpineToCoveredSpine_vertex_old] at hv'
+  have hg  := allQuotientReceivedSpineToQuotient_sheet_injective q ρ u hrho
     ((markedSpineCx q).base t) hv'
   exact Prod.ext hg rfl
 
@@ -300,12 +257,15 @@ theorem allQuotientReceivedSpineToCoveredSpine_chain2_injective :
     Function.Injective (chain2 (allQuotientReceivedSpineToCoveredSpine q ρ u hrho)) :=
   Finsupp.mapDomain_injective (allQuotientReceivedSpineToCoveredSpine_onF_injective q ρ u hrho)
 
+variable (c : (allQuotientReceivedSpineCover q ρ u hrho).F →₀ ℤ)
+variable (hc : Comb.bdry2 (allQuotientReceivedSpineCover q ρ u hrho) c = 0)
+include hc in
 /-- A received spine cycle which bounds in the actual old cover is zero
 already in the original group-indexed face chain. No abstract identification
 of covered chains or extra injectivity hypothesis is used. -/
 theorem allQuotientReceivedSpine_cycle_zero_of_old_boundary
-    (c : (allQuotientReceivedSpineCover q ρ u hrho).F →₀ ℤ)
-    (hc : Comb.bdry2 (allQuotientReceivedSpineCover q ρ u hrho) c = 0)
+    
+    
     (hbound : ∃ y ∈ Inc (namedOldCover q ρ u), Nerve.bdry y =
       cmap (oldCoveredSpineToOld q (namedOldCoverProjection q ρ u))
         (ordNerveChain2 (ordStrictInclusion2
@@ -313,12 +273,12 @@ theorem allQuotientReceivedSpine_cycle_zero_of_old_boundary
   have hz : chain2 (allQuotientReceivedSpineToCoveredSpine q ρ u hrho) c = 0 := by
     apply genus_old_cover_spine_chain_zero_of_boundary q (namedOldCoverProjection q ρ u)
       (namedOldCoverProjection_isPosetCover q ρ u) _ _ hbound
-    rw (config := { transparency := .default }) [bdry2_chain2, hc, map_zero]
+    rw  [bdry2_chain2, hc, map_zero]
   apply allQuotientReceivedSpineToCoveredSpine_chain2_injective q ρ u hrho
   simpa only [map_zero] using hz
 
 theorem allQuotientReceivedSpineCoveredChain_nerve_image
-    (c : (allQuotientReceivedSpineCover q ρ u hrho).F →₀ ℤ) :
+     :
     cmap (Subtype.val : namedOldCover q ρ u →
       UOrder (namedQuotientPos ρ q u) (namedQuotientBase ρ q u))
       (cmap (oldCoveredSpineToOld q (namedOldCoverProjection q ρ u))
@@ -331,29 +291,21 @@ theorem allQuotientReceivedSpineCoveredChain_nerve_image
         (chain2 (allQuotientReceivedSpineToCoveredSpine q ρ u hrho) c)))) =
     ordNerveChain2 (chain2 uOrderHomInv
       (chain2 (allQuotientReceivedSpineToQuotient q ρ u hrho) c))
-  rw (config := { transparency := .default }) [← ordNerveChain2_chain2 _ (oldCoveredSpineToOld_monotone q
+  rw  [← ordNerveChain2_chain2 _ (oldCoveredSpineToOld_monotone q
     (namedOldCoverProjection q ρ u))]
-  rw (config := { transparency := .default }) [← ordNerveChain2_chain2
+  rw  [← ordNerveChain2_chain2
     (Subtype.val : namedOldCover q ρ u →
       UOrder (namedQuotientPos ρ q u) (namedQuotientBase ρ q u))
     (fun _ _ h => h)]
-  apply congrArg ordNerveChain2
-  have hfirst := congrArg (fun k => chain2 k c)
-    (allQuotientReceivedSpineToCoveredSpine_first q ρ u hrho)
-  simp only [chain2_comp_apply] at hfirst
-  rw (config := { transparency := .default }) [hfirst]
-  have hrestrict := congrArg (fun k => chain2 k c)
-    (orderCxRestrict_projects (allQuotientReceivedSpineOrderMap q ρ u hrho)
-      (fun p => InQOld (uOrderEnd p)) (allQuotientReceivedSpineOrderMap_old q ρ u hrho))
-  simp only [allQuotientReceivedSpineOrderMap, chain2_comp_apply] at hrestrict
-  exact hrestrict
+  aesop (add simp [ordNerveChain2])
 
+include hc in
 /-- This is the precise reflection needed after the old/star relative
 filling: a three-boundary supported on actual old cells forces the original
 received two-cycle, with its individual sheet coefficients, to vanish. -/
 theorem allQuotientReceivedSpine_cycle_zero_of_quotient_old_boundary
-    (c : (allQuotientReceivedSpineCover q ρ u hrho).F →₀ ℤ)
-    (hc : Comb.bdry2 (allQuotientReceivedSpineCover q ρ u hrho) c = 0)
+    
+    
     (hbound : ∃ y ∈ IncOn (fun p : UOrder (namedQuotientPos ρ q u)
         (namedQuotientBase ρ q u) => InQOld (uOrderEnd p)),
       Nerve.bdry y = universalNerveChain2 (chain2 (allQuotientReceivedSpineToQuotient q ρ u hrho) c)) :
@@ -369,7 +321,7 @@ theorem allQuotientReceivedSpine_cycle_zero_of_quotient_old_boundary
     ⟨(allQuotientReceivedSpineOrderMap q ρ u hrho).onV (1, (markedSpineTree q).root),
       allQuotientReceivedSpineOrderMap_old q ρ u hrho _⟩
   apply cmap_val_injective _ hne
-  rw (config := { transparency := .default }) [cmap_bdry, hby, hdy]
+  rw  [cmap_bdry, hby, hdy]
   exact (allQuotientReceivedSpineCoveredChain_nerve_image q ρ u hrho c).symm
 
 end FiniteChains.Davis.Genus

@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.FoxCommutator
-
-@[expose] public section
+import RequestProject.FoxCommutator
 
 /-!
 # Formula (2.3): a chain of two-complexes produces normal subgroups of `G = π₁(K)`
@@ -41,15 +39,11 @@ requirements that hypothesis is now a theorem about the cell-level data of the
 chain.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
-open MonoidAlgebra
 
-universe u
+
 
 variable {G : Type u} [Group G] {I J : Type u}
 
@@ -59,11 +53,7 @@ variable {G : Type u} [Group G] {I J : Type u}
 theorem mapDomainRingHom_comp_apply {A B C : Type*} [Group A] [Group B] [Group C]
     (f : A →* B) (g : B →* C) (x : MonoidAlgebra ℤ A) :
     MonoidAlgebra.mapDomainRingHom ℤ g (MonoidAlgebra.mapDomainRingHom ℤ f x)
-      = MonoidAlgebra.mapDomainRingHom ℤ (g.comp f) x := by
-  apply MonoidAlgebra.coeff_injective
-  change Finsupp.mapDomain _ (Finsupp.mapDomain _ x.coeff) = Finsupp.mapDomain _ x.coeff
-  rw [← Finsupp.mapDomain_comp]
-  rfl
+      = MonoidAlgebra.mapDomainRingHom ℤ (g.comp f) x := by simp_all
 
 /-! ### The cell-level data of a chain of two-complexes -/
 
@@ -112,23 +102,23 @@ namespace ChainInput
 
 variable (h : ChainInput b n Fund Gen Cell)
 
+  (r : ℕ)
+  (v : J →₀ MonoidAlgebra ℤ G)
 /-- A coefficient vector of `K`, pushed to `ℤ[π₁(X_r)]` and extended by zero over the
 two-cells of `X_r` that do not come from `K`. -/
-noncomputable def oldVec (r : ℕ) (v : J →₀ MonoidAlgebra ℤ G) :
-    Cell r →₀ MonoidAlgebra ℤ (Fund r) :=
+noncomputable def oldVec    :=
   Finsupp.mapDomain (h.cellIncl r)
     (Finsupp.mapRange (MonoidAlgebra.mapDomainRingHom ℤ (h.phi r)) (map_zero _) v)
 
-theorem oldVec_apply_cellIncl (r : ℕ) (v : J →₀ MonoidAlgebra ℤ G) (j : J) :
+theorem oldVec_apply_cellIncl   (j : J) :
     h.oldVec r v (h.cellIncl r j) = MonoidAlgebra.mapDomainRingHom ℤ (h.phi r) (v j) :=
   Finsupp.mapDomain_apply_of_injective (h.cellIncl_injective r) _ j
 
-theorem oldVec_support_subset (r : ℕ) [DecidableEq (Cell r)] (v : J →₀ MonoidAlgebra ℤ G) :
+theorem oldVec_support_subset  [DecidableEq (Cell r)] (v : J →₀ MonoidAlgebra ℤ G) :
     (h.oldVec r v).support ⊆ v.support.image (h.cellIncl r) := by
-  classical
   refine Finsupp.mapDomain_support.trans ?_
   exact Finset.image_subset_image (Finsupp.support_mapRange)
 
-end ChainInput
+end FiniteChains.ChainInput
 
-end FiniteChains
+

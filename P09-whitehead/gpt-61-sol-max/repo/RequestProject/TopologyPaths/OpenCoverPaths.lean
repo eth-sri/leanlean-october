@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologyPaths.PathSubdivision
-
-@[expose] public section
+import RequestProject.TopologyPaths.PathSubdivision
 
 /-! # Induction over paths subordinate to an open cover
 
@@ -16,10 +14,9 @@ claim about the relations between those generators.
 
 namespace FiniteChains.OpenCoverPaths
 
-open Set Topology CategoryTheory
-open scoped unitInterval
 
-universe u v
+
+
 
 variable {X : Type u} [TopologicalSpace X]
 

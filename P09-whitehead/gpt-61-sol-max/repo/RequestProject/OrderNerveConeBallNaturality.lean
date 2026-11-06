@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveLowerCone
-public import Mathlib.Order.Hom.WithTopBot
-
-@[expose] public section
+import RequestProject.OrderNerveLowerCone
+import Mathlib.Order.Hom.WithTopBot
 
 /-! The actual radial cone/disk identification commutes with a relabelling
 of its boundary poset when the boundary parametrizations agree. -/
@@ -27,14 +25,10 @@ theorem orderNerveRadialCone_natural (r : I) (x : orderNerveRealization P) :
   rw [orderNerveRealizationCoordinates_map_injective _ _ e.withTopCongr.injective]
   induction p using WithTop.recTopCoe with
   | top =>
-      change orderNerveRealizationCoordinates (WithTop P) (orderNerveRadialCone P (r, x)) ⊤ =
-        orderNerveRealizationCoordinates (WithTop Q)
-          (orderNerveRadialCone Q (r, orderNerveRealizationOrderIso e x)) ⊤
+      dsimp
       rw [orderNerveRadialCone_top, orderNerveRadialCone_top]
   | coe p =>
-      change orderNerveRealizationCoordinates (WithTop P) (orderNerveRadialCone P (r, x)) p =
-        orderNerveRealizationCoordinates (WithTop Q)
-          (orderNerveRadialCone Q (r, orderNerveRealizationOrderIso e x)) (e p)
+      dsimp
       rw [orderNerveRadialCone_coordinate, orderNerveRadialCone_coordinate]
       exact congrArg ((r : ℝ) * ·)
         (orderNerveRealizationCoordinates_map_injective e e.monotone e.injective x p).symm

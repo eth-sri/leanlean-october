@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusLoops
-public import RequestProject.BlockSurfaceApplyW
-
-@[expose] public section
+import RequestProject.GenusLoops
+import RequestProject.BlockSurfaceApplyW
 
 /-!
 # The theorem applied to the block of the article, over the closed surface of genus `q`
@@ -30,12 +28,10 @@ side `4h+1` reads `b_h`; the polygon itself is filled by the triangles of the su
   injective.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
+
 
 open RACG Mirror Comb PresModel BlockFamily
 
@@ -48,35 +44,34 @@ word of genus `q` for the relator of the block. -/
 noncomputable def genusW : Jr ⊕ PUnit → List (α × Bool) :=
   Sum.elim (fun jr => presWords ρ (Sum.inl jr)) (fun _ => surfWord a b q)
 
-omit [NeZero q] in
+section
+omit [NeZero q]
 theorem genusW_inr (s : PUnit) : genusW ρ a b q (Sum.inr s) = surfWord a b q := rfl
 
-omit [NeZero q] in
 theorem mk_genusW (hrho : ρ (Sum.inr PUnit.unit) = FreeGroup.mk (surfWord a b q)) :
     ∀ j, FreeGroup.mk (genusW ρ a b q j) = ρ j := by
   rintro (jr | s)
   · exact mk_presWords ρ (Sum.inl jr)
   · cases s
     exact hrho.symm
+end
 
 /-- **The attaching map of the block**: the marking of the surface of genus `q`, which sends the
 boundary of the polygon onto the attaching circle of the relator of the block. -/
-noncomputable abbrev genusAtt :
-    NeSpx (cmpRel (SCell (gvc q) (gec q) (gc q))) →o PresPos (genusW ρ a b q) :=
+noncomputable abbrev genusAtt  :=
   surfAtt (w := genusW ρ a b q) (j₀ := Sum.inr PUnit.unit) (genus_hM a b q)
     (genus_hvlab a b q) (genus_helb a b q) (gc q)
 
 /-- The word read by the loop of the distinguished generator `x = (h, i)`: the letter `a_h` for
 `i = false`, the letter `b_h` for `i = true`. -/
-def genusLw (_ : PUnit) (x : ℕ × Bool) : List (α × Bool) :=
+def genusLw (_ : PUnit) (x : ℕ × Bool)  :=
   [sLet a b (4 * (x.1 % q) + (if x.2 then 1 else 0))]
 
 /-! ### The base point -/
 
 theorem genusAtt_base :
     genusAtt ρ a b q (gBase q) = ptBase (genusW ρ a b q) := by
-  rw (config := { transparency := .default }) [gBase, att_V, vertLab_of_even (by rw [cyc_mod_two])]
-  rfl
+  solve_by_elim [FiniteChains.Davis.att_V]
 
 theorem genus_hcb :
     IsPath (orderCx (PresPos (genusW ρ a b q))).src (orderCx (PresPos (genusW ρ a b q))).tgt []
@@ -89,12 +84,7 @@ omit [NeZero q] in
 theorem genus_index (x : ℕ × Bool) :
     8 * (x.1 % q) + (if x.2 then 2 else 0)
       = 2 * (4 * (x.1 % q) + (if x.2 then 1 else 0)) := by
-  rcases x with ⟨n, i⟩
-  cases i
-  · show 8 * (n % q) + 0 = 2 * (4 * (n % q) + 0)
-    ring
-  · show 8 * (n % q) + 2 = 2 * (4 * (n % q) + 1)
-    ring
+  grind
 
 theorem genus_index_lt (x : ℕ × Bool) :
     4 * (x.1 % q) + (if x.2 then 1 else 0) < (surfWord a b q).length := by
@@ -117,21 +107,18 @@ theorem genus_hread (s : PUnit) (x : ℕ × Bool) :
         ++ revPath [])
       (wordLoop (genusW ρ a b q) (genusLw a b q s x)) := by
   set k : ℕ := 4 * (x.1 % q) + (if x.2 then 1 else 0) with hkdef
-  have hk : k < (genusW ρ a b q (Sum.inr PUnit.unit)).length := genus_index_lt a b q x
+  have hk  := genus_index_lt a b q x
   -- the loop of the generator is the side of the polygon carrying the letter `k`
   have hsig : gSig q x
       = bdEdge (gc q) (cyc (8 * q) (2 * k)) ++ bdEdge (gc q) (cyc (8 * q) (2 * k + 1)) := by
-    have h1 : gSig q x = gPath q (2 * k) := by
-      rw [gSig_eq, genus_index]
-    rw [h1]
-    exact pPath_eq (gc q) (2 * k)
+    simp_all [FiniteChains.Davis.Genus.gSig_eq, FiniteChains.Davis.Genus.genus_index, FiniteChains.Davis.pPath_eq]
   -- the letter read is the letter `k` of the surface word
   have hlet : (genusW ρ a b q (Sum.inr PUnit.unit))[k]'hk = sLet a b k := by
     have h := surfWord_getElem? a b q k (by
       have := genus_index_lt a b q x
       rw [surfWord_length] at this
       exact this)
-    have h' : (genusW ρ a b q (Sum.inr PUnit.unit))[k]? = some (sLet a b k) := h
+    have h'  := h
     rw [List.getElem?_eq_getElem hk] at h'
     exact Option.some.inj h'
   have hmain := htpy_mapPath_letter (w := genusW ρ a b q) (j₀ := Sum.inr PUnit.unit)
@@ -150,7 +137,7 @@ theorem genus_hread (s : PUnit) (x : ℕ × Bool) :
 
 /-! ### Simultaneous substitutions for an arbitrary family of relators -/
 
-end Genus
+end FiniteChains.Davis.Genus
 
-end Davis
-end FiniteChains
+
+

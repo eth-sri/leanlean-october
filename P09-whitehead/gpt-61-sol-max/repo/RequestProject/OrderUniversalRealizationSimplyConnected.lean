@@ -1,9 +1,5 @@
-module
-
-public import RequestProject.OrderNerveRealizationSimplyConnected
-public import RequestProject.OrderUniversalPosetConnected
-
-@[expose] public section
+import RequestProject.OrderNerveRealizationSimplyConnected
+import RequestProject.OrderUniversalPosetConnected
 
 namespace FiniteChains.Comb
 

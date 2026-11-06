@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderConstructionConnected
-public import RequestProject.PresPosetNonemptyWords
-
-@[expose] public section
+import RequestProject.OrderConstructionConnected
+import RequestProject.PresPosetNonemptyWords
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u}
 
 theorem rose_isConnected : IsConnected (orderCx (Rose α)) := by
@@ -23,12 +20,13 @@ theorem rose_isConnected : IsConnected (orderCx (Rose α)) := by
   exact (orderComponentLabel_eq_iff _ _).mp ((h x).trans (h y).symm)
 
 /-- Nonempty attaching words give connected genuine presentation poset models. -/
-theorem presPos_isConnected (w : J → List (α × Bool)) (hw : ∀ j, w j ≠ []) :
-    IsConnected (orderCx (PresPos w)) := by
-  apply coneAdj_isConnected (circSet w)
-    (cylP_isConnected (aHom w) rose_isConnected)
-  intro j
-  exact ⟨cylOuter (aHom w) (TCirc.pt w j 0 CPos.cor),
-    0, CPos.cor, List.length_pos_iff.mpr (hw j), rfl⟩
+abbrev presPos_isConnected (w : J → List (α × Bool)) (hw : ∀ j, w j ≠ [])  :=
+  FiniteChains.Comb.coneAdj_isConnected (FiniteChains.PresModel.circSet w)
+    (FiniteChains.Comb.cylP_isConnected (FiniteChains.PresModel.aHom w) FiniteChains.PresModel.rose_isConnected)
+    fun (j : J) =>
+    Exists.intro
+      (FiniteChains.Comb.cylOuter (FiniteChains.PresModel.aHom w)
+        (FiniteChains.PresModel.TCirc.pt w j 0 FiniteChains.PresModel.CPos.cor))
+      (Exists.intro 0 (Exists.intro FiniteChains.PresModel.CPos.cor ⟨List.length_pos_iff.mpr (hw j), rfl⟩))
 
 end FiniteChains.PresModel

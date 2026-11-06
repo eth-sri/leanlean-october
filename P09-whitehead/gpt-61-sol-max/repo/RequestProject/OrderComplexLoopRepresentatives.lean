@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderComplexFreeFace
-public import RequestProject.OrderCxNatHtpy
-
-@[expose] public section
+import RequestProject.OrderComplexFreeFace
+import RequestProject.OrderCxNatHtpy
 
 /-! Constructed loop representatives under the first elementary collapse deletion. -/
 namespace FiniteChains.Comb
@@ -20,7 +18,7 @@ theorem loop_representative_of_monotone_map {C B : P → Prop}
       Htpy (orderCx P) a a p l := by
   let aC : {x : P // C x} := ⟨a, hBC a ha⟩
   let l := mapPath (orderCxMap r hr) (liftPathIn p hC)
-  have hl : IsPath (orderCx P).src (orderCx P).tgt l (r aC) (r aC) :=
+  have hl  :=
     isPath_mapPath (orderCxMap r hr) (isPath_liftPathIn p hC aC.2 aC.2 hp)
   have hlB : PathIn B l := by
     intro e he
@@ -43,7 +41,7 @@ theorem loop_representative_of_monotone_map {C B : P → Prop}
   refine ⟨e ++ l ++ en, (he.append hl).append hen,
     pathIn_append (pathIn_append heB hlB) henB, ?_⟩
   have hstrip : Htpy (orderCx P) a a p ((p ++ e) ++ en) := by
-    simpa [e, en, List.append_assoc] using hkill.symm
+    classical grind [FiniteChains.Comb.Htpy.symm, FiniteChains.Comb.Htpy]
   exact hstrip.trans (by simpa only [List.nil_append] using hpush)
 
 /-- Deleting an actual free face preserves representatives of all loops based away from it. -/
@@ -61,20 +59,13 @@ theorem loop_representative_delete_free_face {C : P → Prop} {f t a : P}
     by_cases hx : x.1 = f
     · by_cases hy : y.1 = f
       · simp [r, hx, hy]
-      · have hyt : y.1 = t := hunique y.1 y.2 (hx ▸ hxy) hy
-        simp [r, hx, hyt]
+      · aesop
     · by_cases hy : y.1 = f
       · have hxf : x.1 ≤ f := hy ▸ hxy
         simpa [r, hx, hy] using hxf.trans hft
       · simpa [r, hx, hy] using hxy
   apply loop_representative_of_monotone_map (fun _ h => h.1) r hr ?_ ?_ ha hp hC
-  · intro x
-    by_cases hx : x.1 = f
-    · simpa [r, hx] using And.intro ht hne
-    · simpa [r, hx] using And.intro x.2 hx
-  · intro x
-    by_cases hx : x.1 = f
-    · simpa [r, hx] using hft
-    · simp [r, hx]
+  · grind
+  · grind
 
 end FiniteChains.Comb

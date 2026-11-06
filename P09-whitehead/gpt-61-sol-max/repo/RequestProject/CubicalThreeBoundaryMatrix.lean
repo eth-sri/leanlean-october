@@ -1,20 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeThreeFacetCoordinates
-
-@[expose] public section
+import RequestProject.QCubeThreeFacetCoordinates
 
 /-! Integral coefficient calculation for the six oriented faces of an ordered three-cube.
 The separate geometric comparison must identify this matrix with actual cube edge cells. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 
-def fixedCoordinateSign (s : ZMod 2) : ℤ := if s = 0 then 1 else -1
+def fixedCoordinateSign (s : ZMod 2)  := if s = 0 then 1 else -1
 
-noncomputable def threeFacetBoundaryColumn (i : Fin 3 × ZMod 2) :
+variable (i : Fin 3 × ZMod 2)
+noncomputable def threeFacetBoundaryColumn  :
     (Fin 3 × ZMod 2 × ZMod 2) →₀ ℤ :=
   if i.1 = 0 then
     -Finsupp.single (0, i.2, 0) 1 + Finsupp.single (0, i.2, 1) 1 +
@@ -26,42 +23,42 @@ noncomputable def threeFacetBoundaryColumn (i : Fin 3 × ZMod 2) :
     -Finsupp.single (1, 0, i.2) 1 + Finsupp.single (1, 1, i.2) 1 +
       Finsupp.single (2, 0, i.2) 1 - Finsupp.single (2, 1, i.2) 1
 
-noncomputable def threeFacetBoundaryMatrix : ((Fin 3 × ZMod 2) →₀ ℤ) →ₗ[ℤ]
-    ((Fin 3 × ZMod 2 × ZMod 2) →₀ ℤ) :=
+noncomputable def threeFacetBoundaryMatrix  :=
   Finsupp.linearCombination ℤ threeFacetBoundaryColumn
 
 set_option maxHeartbeats 1000000
 
-theorem threeFacetBoundaryMatrix_row0 (r : (Fin 3 × ZMod 2) →₀ ℤ) (s t : ZMod 2) :
+variable (r : (Fin 3 × ZMod 2) →₀ ℤ)
+theorem threeFacetBoundaryMatrix_row0  (s t : ZMod 2) :
     threeFacetBoundaryMatrix r (0, s, t) =
       -fixedCoordinateSign t * r (0, s) - fixedCoordinateSign s * r (1, t) := by
   classical
   induction r using Finsupp.induction_linear with
   | zero => simp
-  | add r q hr hq => simp only [map_add, Finsupp.add_apply, hr, hq]; ring
+  | add r q hr hq => grind [Finsupp.add_apply]
   | single i n =>
       obtain ⟨e, u⟩ := i
       fin_cases e <;> fin_cases u <;> fin_cases s <;> fin_cases t <;>
         norm_num [threeFacetBoundaryMatrix, threeFacetBoundaryColumn, fixedCoordinateSign,
           Finsupp.single_apply, Prod.mk.injEq]
 
-theorem threeFacetBoundaryMatrix_row1 (r : (Fin 3 × ZMod 2) →₀ ℤ) (s t : ZMod 2) :
+theorem threeFacetBoundaryMatrix_row1  (s t : ZMod 2) :
     threeFacetBoundaryMatrix r (1, s, t) =
       fixedCoordinateSign t * r (0, s) - fixedCoordinateSign s * r (2, t) := by
   classical
   induction r using Finsupp.induction_linear with
   | zero => simp
-  | add r q hr hq => simp only [map_add, Finsupp.add_apply, hr, hq]; ring
+  | add r q hr hq => grind [Finsupp.add_apply]
   | single i n =>
       obtain ⟨e, u⟩ := i
       fin_cases e <;> fin_cases u <;> fin_cases s <;> fin_cases t <;>
         norm_num [threeFacetBoundaryMatrix, threeFacetBoundaryColumn, fixedCoordinateSign,
           Finsupp.single_apply, Prod.mk.injEq]
 
-def threeFacetOrientation (i : Fin 3 × ZMod 2) : ℤ :=
+def threeFacetOrientation   :=
   (if i.1 = 1 then -1 else 1) * fixedCoordinateSign i.2
 
-theorem threeFacetBoundaryMatrix_kernel (r : (Fin 3 × ZMod 2) →₀ ℤ)
+theorem threeFacetBoundaryMatrix_kernel 
     (hr : threeFacetBoundaryMatrix r = 0) :
     ∀ i, r i = r (0, 0) * threeFacetOrientation i := by
   have h00 := congrArg (fun z : (Fin 3 × ZMod 2 × ZMod 2) →₀ ℤ => z (0, 0, 0)) hr

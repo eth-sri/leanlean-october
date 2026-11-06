@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresSubcomplex
-
-@[expose] public section
+import RequestProject.PresSubcomplex
 
 /-!
 # The inclusion of two universal covers, and the chain map it induces
@@ -21,19 +19,19 @@ two-cycle, i.e. the inclusion is zero on `π₂ = ker ∂₂`
 (`FiniteChains.PresChain.zero_pi2_chain2`).
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-open MonoidAlgebra
 
-universe u
+
+
 
 /-! ### The chain map induced by a cellular map -/
 
 variable {X Y : Complex2.{u}}
 
+variable (p : Hom X Y)
 /-- The one-chains carried by the image of an edge path. -/
-theorem pathChain_map (p : Hom X Y) (l : List (X.E × Bool)) :
+theorem pathChain_map  (l : List (X.E × Bool)) :
     pathChain (l.map (fun eb => (p.onE eb.1, eb.2)))
       = Finsupp.mapDomain p.onE (pathChain l) := by
   induction l with
@@ -42,35 +40,32 @@ theorem pathChain_map (p : Hom X Y) (l : List (X.E × Bool)) :
       rw [List.map_cons, pathChain_cons, pathChain_cons, ih, Finsupp.mapDomain_add]
       congr 1
       by_cases hb : e.2
-      · simp [hb]
+      · simp [*]
       · have hneg : Finsupp.mapDomain p.onE (-Finsupp.single e.1 (1 : ℤ))
             = -Finsupp.mapDomain p.onE (Finsupp.single e.1 (1 : ℤ)) := by
           simpa using (Finsupp.lmapDomain ℤ ℤ p.onE).map_neg (Finsupp.single e.1 (1 : ℤ))
-        simp [hb, hneg]
+        simp [*]
 
 /-- The map of one-chains induced by a cellular map. -/
-noncomputable def chain1 (p : Hom X Y) : (X.E →₀ ℤ) →ₗ[ℤ] (Y.E →₀ ℤ) :=
+noncomputable def chain1   :=
   Finsupp.lmapDomain ℤ ℤ p.onE
 
 /-- The map of two-chains induced by a cellular map. -/
-noncomputable def chain2 (p : Hom X Y) : (X.F →₀ ℤ) →ₗ[ℤ] (Y.F →₀ ℤ) :=
+noncomputable def chain2   :=
   Finsupp.lmapDomain ℤ ℤ p.onF
 
-@[simp] theorem chain2_apply (p : Hom X Y) (u : X.F →₀ ℤ) :
+@[simp] theorem chain2_apply  (u : X.F →₀ ℤ) :
     chain2 p u = Finsupp.mapDomain p.onF u := rfl
 
 /-- **A cellular map is a chain map**: it commutes with the second boundary. -/
-theorem bdry2_chain2 (p : Hom X Y) (u : X.F →₀ ℤ) :
+theorem bdry2_chain2  (u : X.F →₀ ℤ) :
     bdry2 Y (chain2 p u) = chain1 p (bdry2 X u) := by
   classical
   induction u using Finsupp.induction_linear with
   | zero => simp
-  | add u₁ u₂ h₁ h₂ => rw [map_add, map_add, h₁, h₂, map_add, map_add]
+  | add u₁ u₂ h₁ h₂ => grind
   | single f n =>
-      show bdry2 Y (Finsupp.mapDomain p.onF (Finsupp.single f n))
-        = Finsupp.mapDomain p.onE (bdry2 X (Finsupp.single f n))
-      rw [Finsupp.mapDomain_single, bdry2_single, bdry2_single, p.att_onF f, pathChain_map,
-        Finsupp.mapDomain_smul]
+      classical aesop (add simp [FiniteChains.Comb.bdry2_single, FiniteChains.Comb.Hom.att_onF, FiniteChains.Comb.pathChain_map, bdry2])
 
 /-! ### The lift of an inclusion of presentations to the universal covers -/
 
@@ -90,16 +85,12 @@ theorem liftPath_map {Nsub : Subgroup (FreeGroup α)} [Nsub.Normal]
   | cons a L ih =>
       obtain ⟨i, b⟩ := a
       cases b
-      · have hq : Ψ (q * (qof Nsub i)⁻¹) = Ψ q * (qof Msub (f i))⁻¹ := by
-          rw [map_mul, map_inv, hΨ]
-        simp only [List.map_cons, liftPath_cons_false]
-        rw [← hq, ih (q * (qof Nsub i)⁻¹)]
-      · have hq : Ψ (q * qof Nsub i) = Ψ q * qof Msub (f i) := by rw [map_mul, hΨ]
-        simp only [List.map_cons, liftPath_cons_true]
-        rw [← hq, ih (q * qof Nsub i)]
+      · grind [liftPath_cons_false]
+      · grind [FiniteChains.Comb.liftPath_cons_true]
 
+variable (f : α → β)
 /-- The map of fundamental groups induced by an inclusion of presentations. -/
-def presInclGroupHom (f : α → β) (ρ : J → FreeGroup α) (σ : K → FreeGroup β) (g : J → K)
+def presInclGroupHom  (ρ : J → FreeGroup α) (σ : K → FreeGroup β) (g : J → K)
     (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) : PresGroup ρ →* PresGroup σ :=
   QuotientGroup.map _ _ (FreeGroup.map f) (by
     refine Subgroup.normalClosure_le_normal ?_
@@ -109,14 +100,14 @@ def presInclGroupHom (f : α → β) (ρ : J → FreeGroup α) (σ : K → FreeG
     exact Subgroup.subset_normalClosure (Set.mem_range_self _))
 
 omit [DecidableEq α] [DecidableEq β] in
-@[simp] theorem presInclGroupHom_mk (f : α → β) (ρ : J → FreeGroup α) (σ : K → FreeGroup β)
+@[simp] theorem presInclGroupHom_mk  (ρ : J → FreeGroup α) (σ : K → FreeGroup β)
     (g : J → K) (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) (w : FreeGroup α) :
     presInclGroupHom f ρ σ g hg (QuotientGroup.mk w) =
       QuotientGroup.mk (FreeGroup.map f w) := rfl
 
 /-- **The inclusion of presentations lifts to the universal covers**: the cellular map of
 the universal covers whose action on cells is `(q, c) ↦ (Ψ q, c)`. -/
-def univCoverInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGroup α)
+def univCoverInclHom  (hf : Function.Injective f) (ρ : J → FreeGroup α)
     (σ : K → FreeGroup β) (g : J → K) (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) :
     Hom (univCover ρ) (univCover σ) where
   onV := presInclGroupHom f ρ σ g hg
@@ -124,10 +115,7 @@ def univCoverInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → Fre
   onF := Prod.map (presInclGroupHom f ρ σ g hg) g
   src_onE _ := rfl
   tgt_onE e := by
-    show (presInclGroupHom f ρ σ g hg) e.1 * qof (relSub σ) (f e.2)
-      = presInclGroupHom f ρ σ g hg (e.1 * qof (relSub ρ) e.2)
-    rw [map_mul]
-    rfl
+    aesop
   base_onF _ := rfl
   att_onF c := by
     obtain ⟨q, j⟩ := c
@@ -137,18 +125,18 @@ def univCoverInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → Fre
     rw [hg j, toWord_map f hf]
     exact liftPath_map f (presInclGroupHom f ρ σ g hg) (fun _ => rfl) _ q
 
-@[simp] theorem univCoverInclHom_onF (f : α → β) (hf : Function.Injective f)
+@[simp] theorem univCoverInclHom_onF  (hf : Function.Injective f)
     (ρ : J → FreeGroup α) (σ : K → FreeGroup β) (g : J → K)
     (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) :
     (univCoverInclHom f hf ρ σ g hg).onF = Prod.map (presInclGroupHom f ρ σ g hg) g := rfl
 
-end Comb
+end FiniteChains.Comb
 
-namespace PresChain
 
-universe u
 
-variable {α J : Type u} {ρ : J → FreeGroup α} {n : ℕ} (h : PresChain ρ n)
 
-end PresChain
-end FiniteChains
+
+
+
+
+

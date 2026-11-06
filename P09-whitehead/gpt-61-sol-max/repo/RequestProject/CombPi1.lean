@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CellComplex
-
-@[expose] public section
+import RequestProject.CellComplex
 
 /-!
 # The edge-path fundamental group of a combinatorial two-complex
@@ -27,42 +25,41 @@ Everything is elementary: paths are lists, so concatenation is strictly associat
 group axioms for `Pi1` reduce to the cancellation of backtracks.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u v
+
 
 variable {X Y Z : Complex2.{u}}
 
 /-! ### Edge paths -/
 
+variable (eb : X.E × Bool)
 /-- The reverse of an oriented edge. -/
-def revGerm (eb : X.E × Bool) : X.E × Bool := (eb.1, !eb.2)
+def revGerm   := (eb.1, !eb.2)
 
-@[simp] theorem revGerm_revGerm (eb : X.E × Bool) : revGerm (X := X) (revGerm eb) = eb := by
+@[simp] theorem revGerm_revGerm  : revGerm (X := X) (revGerm eb) = eb := by
   cases eb with
   | mk e b => cases b <;> rfl
 
-@[simp] theorem germSrc_revGerm (eb : X.E × Bool) :
+@[simp] theorem germSrc_revGerm  :
     germSrc X.src X.tgt (revGerm (X := X) eb) = germTgt X.src X.tgt eb := by
   cases eb with
   | mk e b => cases b <;> rfl
 
-@[simp] theorem germTgt_revGerm (eb : X.E × Bool) :
+@[simp] theorem germTgt_revGerm  :
     germTgt X.src X.tgt (revGerm (X := X) eb) = germSrc X.src X.tgt eb := by
   cases eb with
   | mk e b => cases b <;> rfl
 
+variable (p : List (X.E × Bool))
 /-- The reverse of an edge path. -/
-def revPath (p : List (X.E × Bool)) : List (X.E × Bool) := (p.map revGerm).reverse
+def revPath   := (p.map revGerm).reverse
 
 @[simp] theorem revPath_nil : revPath ([] : List (X.E × Bool)) = [] := rfl
 
-@[simp] theorem revPath_cons (eb : X.E × Bool) (p : List (X.E × Bool)) :
+@[simp] theorem revPath_cons  (p : List (X.E × Bool)) :
     revPath (eb :: p) = revPath p ++ [revGerm eb] := by
   simp [revPath]
 
@@ -70,54 +67,41 @@ theorem revPath_append (p q : List (X.E × Bool)) :
     revPath (p ++ q) = revPath q ++ revPath p := by
   simp [revPath]
 
-@[simp] theorem revPath_revPath (p : List (X.E × Bool)) : revPath (revPath p) = p := by
-  induction p with
-  | nil => rfl
-  | cons eb p ih => simp [revPath_append, ih]
+@[simp] theorem revPath_revPath  : revPath (revPath p) = p := by
+  induction p <;> simp_all [revPath_append]
 
 /-- Paths split along a concatenation. -/
 theorem isPath_append_iff {p q : List (X.E × Bool)} {a c : X.V} :
     IsPath X.src X.tgt (p ++ q) a c ↔
       ∃ b, IsPath X.src X.tgt p a b ∧ IsPath X.src X.tgt q b c := by
-  induction p generalizing a with
-  | nil => exact ⟨fun h => ⟨a, rfl, h⟩, fun ⟨b, hb, h⟩ => by cases hb; exact h⟩
-  | cons eb p ih =>
-      constructor
-      · rintro ⟨ha, hrest⟩
-        obtain ⟨b, hb1, hb2⟩ := ih.mp hrest
-        exact ⟨b, ⟨ha, hb1⟩, hb2⟩
-      · rintro ⟨b, ⟨ha, hb1⟩, hb2⟩
-        exact ⟨ha, ih.mpr ⟨b, hb1, hb2⟩⟩
+  induction p generalizing a <;> aesop
 
-theorem isPath_single (eb : X.E × Bool) :
-    IsPath X.src X.tgt [eb] (germSrc X.src X.tgt eb) (germTgt X.src X.tgt eb) := ⟨rfl, rfl⟩
+theorem isPath_single  :
+    IsPath X.src X.tgt [eb] (germSrc X.src X.tgt eb) (germTgt X.src X.tgt eb) := by simp_all
 
-theorem isPath_revPath {p : List (X.E × Bool)} {a b : X.V}
+variable {p : List (X.E × Bool)}
+theorem isPath_revPath  {a b : X.V}
     (hp : IsPath X.src X.tgt p a b) : IsPath X.src X.tgt (revPath p) b a := by
   induction p generalizing a with
   | nil => cases hp; exact rfl
   | cons eb p ih =>
-      obtain ⟨ha, hrest⟩ := hp
-      subst ha
-      rw [revPath_cons]
-      refine isPath_append_iff.mpr ⟨germTgt X.src X.tgt eb, ih hrest, ?_⟩
-      refine ⟨?_, ?_⟩ <;> simp
+      grind [FiniteChains.Comb.revPath_cons, FiniteChains.Comb.isPath_append_iff, FiniteChains.Comb.germSrc_revGerm, FiniteChains.Comb.germTgt_revGerm, FiniteChains.Comb.IsPath]
 
 /-! ### Elementary cancellations and homotopy -/
 
 /-- The elementary cancellations of edge paths: deleting a backtrack `e e⁻¹`, and deleting
 the attaching loop of a two-cell.  Both are allowed at an arbitrary position. -/
-def Cancels (X : Complex2.{u}) (l l' : List (X.E × Bool)) : Prop :=
+def Cancels (X : Complex2.{u}) (l l' : List (X.E × Bool))  :=
   (∃ (p q : List (X.E × Bool)) (eb : X.E × Bool),
       l = p ++ eb :: revGerm eb :: q ∧ l' = p ++ q) ∨
   (∃ (p q : List (X.E × Bool)) (f : X.F), l = p ++ X.att f ++ q ∧ l' = p ++ q)
 
 /-- One elementary homotopy between two edge paths with the same endpoints. -/
-def Step (X : Complex2.{u}) (a b : X.V) (l l' : List (X.E × Bool)) : Prop :=
+def Step (X : Complex2.{u}) (a b : X.V) (l l' : List (X.E × Bool))  :=
   IsPath X.src X.tgt l a b ∧ IsPath X.src X.tgt l' a b ∧ Cancels X l l'
 
 /-- **Combinatorial homotopy** of edge paths from `a` to `b`. -/
-def Htpy (X : Complex2.{u}) (a b : X.V) (p q : List (X.E × Bool)) : Prop :=
+def Htpy (X : Complex2.{u}) (a b : X.V) (p q : List (X.E × Bool))  :=
   Relation.ReflTransGen (fun l l' => Step X a b l l' ∨ Step X a b l' l) p q
 
 namespace Htpy
@@ -129,17 +113,18 @@ theorem refl (p : List (X.E × Bool)) : Htpy X a b p p := Relation.ReflTransGen.
 theorem trans {p q r : List (X.E × Bool)} (h : Htpy X a b p q) (h' : Htpy X a b q r) :
     Htpy X a b p r := Relation.ReflTransGen.trans h h'
 
-theorem symm {p q : List (X.E × Bool)} (h : Htpy X a b p q) : Htpy X a b q p := by
+variable {p q : List (X.E × Bool)}
+theorem symm  (h : Htpy X a b p q) : Htpy X a b q p := by
   induction h with
   | refl => exact Relation.ReflTransGen.refl
   | tail _ hstep ih =>
       exact Relation.ReflTransGen.trans (Relation.ReflTransGen.single hstep.symm) ih
 
-theorem of_step {p q : List (X.E × Bool)} (h : Step X a b p q) : Htpy X a b p q :=
+theorem of_step  (h : Step X a b p q) : Htpy X a b p q :=
   Relation.ReflTransGen.single (Or.inl h)
 
 /-- Homotopy preserves the property of being a path with the given endpoints. -/
-theorem isPath {p q : List (X.E × Bool)} (h : Htpy X a b p q)
+theorem isPath  (h : Htpy X a b p q)
     (hp : IsPath X.src X.tgt p a b) : IsPath X.src X.tgt q a b := by
   induction h with
   | refl => exact hp
@@ -153,40 +138,24 @@ end Htpy
 /-- Elementary cancellations survive inside a longer path. -/
 theorem Cancels.append {l l' : List (X.E × Bool)} (h : Cancels X l l')
     (r s : List (X.E × Bool)) : Cancels X (r ++ l ++ s) (r ++ l' ++ s) := by
-  rcases h with ⟨p, q, eb, hl, hl'⟩ | ⟨p, q, f, hl, hl'⟩
-  · refine Or.inl ⟨r ++ p, q ++ s, eb, ?_, ?_⟩
-    · rw [hl]; simp
-    · rw [hl']; simp
-  · refine Or.inr ⟨r ++ p, q ++ s, f, ?_, ?_⟩
-    · rw [hl]; simp
-    · rw [hl']; simp
+  grind [FiniteChains.Comb.Cancels]
 
 theorem Step.append {a b c d : X.V} {l l' : List (X.E × Bool)} (h : Step X a b l l')
     {r s : List (X.E × Bool)} (hr : IsPath X.src X.tgt r c a) (hs : IsPath X.src X.tgt s b d) :
     Step X c d (r ++ l ++ s) (r ++ l' ++ s) := by
-  refine ⟨?_, ?_, h.2.2.append r s⟩
-  · rw [List.append_assoc]
-    exact isPath_append_iff.mpr ⟨a, hr, isPath_append_iff.mpr ⟨b, h.1, hs⟩⟩
-  · rw [List.append_assoc]
-    exact isPath_append_iff.mpr ⟨a, hr, isPath_append_iff.mpr ⟨b, h.2.1, hs⟩⟩
+  grind [FiniteChains.Comb.isPath_append_iff, FiniteChains.Comb.Cancels.append, FiniteChains.Comb.Step]
 
 theorem Htpy.congr_append {a b c d : X.V} {p q : List (X.E × Bool)} (h : Htpy X a b p q)
     {r s : List (X.E × Bool)} (hr : IsPath X.src X.tgt r c a) (hs : IsPath X.src X.tgt s b d) :
     Htpy X c d (r ++ p ++ s) (r ++ q ++ s) := by
-  induction h with
-  | refl => exact Relation.ReflTransGen.refl
-  | tail _ hstep ih =>
-      refine Relation.ReflTransGen.tail ih ?_
-      rcases hstep with h | h
-      · exact Or.inl (h.append hr hs)
-      · exact Or.inr (h.append hr hs)
+  induction h <;> grind [FiniteChains.Comb.Step.append, FiniteChains.Comb.Htpy]
 
 /-- Homotopies may be concatenated. -/
 theorem Htpy.append_congr {a b c : X.V} {p p' q q' : List (X.E × Bool)}
     (hp : IsPath X.src X.tgt p a b) (hq : IsPath X.src X.tgt q b c)
     (h : Htpy X a b p p') (h' : Htpy X b c q q') :
     Htpy X a c (p ++ q) (p' ++ q') := by
-  have hp' : IsPath X.src X.tgt p' a b := h.isPath hp
+  have hp'  := h.isPath hp
   have h1 : Htpy X a c (p ++ q) (p' ++ q) := by
     simpa using h.congr_append (r := ([] : List (X.E × Bool))) (s := q) rfl hq
   have h2 : Htpy X a c (p' ++ q) (p' ++ q') := by
@@ -195,7 +164,7 @@ theorem Htpy.append_congr {a b c : X.V} {p p' q q' : List (X.E × Bool)}
 
 /-! ### Cancelling a path against its reverse -/
 
-theorem htpy_append_revPath {p : List (X.E × Bool)} {a b : X.V}
+theorem htpy_append_revPath  {a b : X.V}
     (hp : IsPath X.src X.tgt p a b) : Htpy X a a (p ++ revPath p) [] := by
   induction p generalizing a with
   | nil => cases hp; exact Relation.ReflTransGen.refl
@@ -204,20 +173,20 @@ theorem htpy_append_revPath {p : List (X.E × Bool)} {a b : X.V}
       subst ha
       set s := germSrc X.src X.tgt eb with hs
       set t := germTgt X.src X.tgt eb with ht
-      have hih : Htpy X t t (p ++ revPath p) [] := ih hrest
+      have hih  := ih hrest
       have hcongr : Htpy X s s ([eb] ++ (p ++ revPath p) ++ [revGerm eb])
           ([eb] ++ [] ++ [revGerm eb]) :=
-        hih.congr_append (isPath_single eb) (by refine ⟨?_, ?_⟩ <;> simp [hs, ht])
+        hih.congr_append (isPath_single eb) (by refine ⟨?_, ?_⟩ <;> simp [*])
       have hrw : (eb :: p) ++ revPath (eb :: p) = [eb] ++ (p ++ revPath p) ++ [revGerm eb] := by
         simp
       have hlast : Htpy X s s [eb, revGerm eb] [] := by
         refine Htpy.of_step ⟨?_, rfl, Or.inl ⟨[], [], eb, rfl, rfl⟩⟩
-        exact ⟨rfl, by simp, by simp [hs]⟩
+        exact ⟨rfl, by simp, by simp [*]⟩
       rw [hrw]
       refine hcongr.trans ?_
       simpa using hlast
 
-theorem htpy_revPath_append {p : List (X.E × Bool)} {a b : X.V}
+theorem htpy_revPath_append  {a b : X.V}
     (hp : IsPath X.src X.tgt p a b) : Htpy X b b (revPath p ++ p) [] := by
   have h := htpy_append_revPath (isPath_revPath hp)
   simpa using h
@@ -225,28 +194,26 @@ theorem htpy_revPath_append {p : List (X.E × Bool)} {a b : X.V}
 /-- Homotopy is compatible with reversal of paths. -/
 theorem htpy_revPath {p q : List (X.E × Bool)} {a b : X.V} (hp : IsPath X.src X.tgt p a b)
     (h : Htpy X a b p q) : Htpy X b a (revPath p) (revPath q) := by
-  have hq : IsPath X.src X.tgt q a b := h.isPath hp
-  have hrp : IsPath X.src X.tgt (revPath p) b a := isPath_revPath hp
-  have hrq : IsPath X.src X.tgt (revPath q) b a := isPath_revPath hq
+  have hq  := h.isPath hp
+  have hrp  := isPath_revPath hp
+  have hrq  := isPath_revPath hq
   have hnil : IsPath X.src X.tgt ([] : List (X.E × Bool)) a a := rfl
   -- `revPath p ++ [] ~ revPath p ++ (q ++ revPath q)`
-  have h1 : Htpy X b a (revPath p ++ []) (revPath p ++ (q ++ revPath q)) :=
+  have h1  :=
     Htpy.append_congr hrp hnil (Htpy.refl _) (htpy_append_revPath hq).symm
   -- `revPath p ++ q ~ revPath p ++ p ~ []`
-  have h3 : Htpy X b b (revPath p ++ q) [] :=
+  have h3  :=
     (Htpy.append_congr hrp hq (Htpy.refl _) h.symm).trans (htpy_revPath_append hp)
-  have h2 : Htpy X b a ((revPath p ++ q) ++ revPath q) (([] : List (X.E × Bool)) ++ revPath q) :=
+  have h2  :=
     Htpy.append_congr (isPath_append_iff.mpr ⟨a, hrp, hq⟩) hrq h3 (Htpy.refl _)
   have hfinal : Htpy X b a (revPath p ++ []) (revPath q) := by
-    refine h1.trans ?_
-    rw [← List.append_assoc]
-    simpa using h2
+    grind [FiniteChains.Comb.Htpy.trans]
   simpa using hfinal
 
 /-! ### The fundamental group -/
 
 /-- Edge loops at a vertex. -/
-def Loop (X : Complex2.{u}) (a : X.V) : Type u :=
+def Loop (X : Complex2.{u}) (a : X.V)  :=
   {p : List (X.E × Bool) // IsPath X.src X.tgt p a a}
 
 instance loopSetoid (X : Complex2.{u}) (a : X.V) : Setoid (Loop X a) where
@@ -255,7 +222,7 @@ instance loopSetoid (X : Complex2.{u}) (a : X.V) : Setoid (Loop X a) where
 
 /-- The **fundamental group** of a combinatorial two-complex at a vertex: edge loops modulo
 combinatorial homotopy. -/
-def Pi1 (X : Complex2.{u}) (a : X.V) : Type u := Quotient (loopSetoid X a)
+def Pi1 (X : Complex2.{u}) (a : X.V)  := Quotient (loopSetoid X a)
 
 namespace Pi1
 
@@ -278,9 +245,7 @@ instance : Group (Pi1 X a) where
   mul_assoc := by
     rintro ⟨p⟩ ⟨q⟩ ⟨r⟩
     apply Quotient.sound
-    change Htpy X a a ((p.1 ++ q.1) ++ r.1) (p.1 ++ (q.1 ++ r.1))
-    rw [List.append_assoc]
-    exact Htpy.refl _
+    simp_all
   one_mul := by
     rintro ⟨p⟩
     exact Quotient.sound (Htpy.refl _)
@@ -297,27 +262,27 @@ instance : Group (Pi1 X a) where
 end Pi1
 
 /-- A complex is **simply connected** if every edge loop is null-homotopic. -/
-def SimplyConnected (X : Complex2.{u}) : Prop :=
+def SimplyConnected (X : Complex2.{u})  :=
   ∀ (a : X.V) (p : List (X.E × Bool)), IsPath X.src X.tgt p a a → Htpy X a a p []
 
 /-! ### Functoriality -/
 
+variable (h : Hom X Y)
 /-- The image of an edge path under a cellular map. -/
-def mapPath (h : Hom X Y) (p : List (X.E × Bool)) : List (Y.E × Bool) :=
+def mapPath  (p : List (X.E × Bool))  :=
   p.map (fun eb => (h.onE eb.1, eb.2))
 
-@[simp] theorem mapPath_nil (h : Hom X Y) : mapPath h ([] : List (X.E × Bool)) = [] := rfl
+@[simp] theorem mapPath_nil  : mapPath h ([] : List (X.E × Bool)) = [] := rfl
 
-@[simp] theorem mapPath_append (h : Hom X Y) (p q : List (X.E × Bool)) :
+@[simp] theorem mapPath_append  (p q : List (X.E × Bool)) :
     mapPath h (p ++ q) = mapPath h p ++ mapPath h q := by
   simp [mapPath]
 
-theorem germTgt_onE (h : Hom X Y) (eb : X.E × Bool) :
+theorem germTgt_onE  (eb : X.E × Bool) :
     germTgt Y.src Y.tgt (h.onE eb.1, eb.2) = h.onV (germTgt X.src X.tgt eb) := by
-  obtain ⟨e, b⟩ := eb
-  cases b <;> simp [germTgt, h.src_onE, h.tgt_onE]
+  aesop (add simp [FiniteChains.Comb.Hom.src_onE, FiniteChains.Comb.Hom.tgt_onE, germTgt])
 
-theorem isPath_mapPath (h : Hom X Y) {p : List (X.E × Bool)} {a b : X.V}
+theorem isPath_mapPath  {p : List (X.E × Bool)} {a b : X.V}
     (hp : IsPath X.src X.tgt p a b) : IsPath Y.src Y.tgt (mapPath h p) (h.onV a) (h.onV b) := by
   induction p generalizing a with
   | nil => cases hp; exact rfl
@@ -328,7 +293,7 @@ theorem isPath_mapPath (h : Hom X Y) {p : List (X.E × Bool)} {a b : X.V}
       have := ih hrest
       rwa [germTgt_onE h eb]
 
-theorem mapPath_htpy (h : Hom X Y) {a b : X.V} {p q : List (X.E × Bool)}
+theorem mapPath_htpy  {a b : X.V} {p q : List (X.E × Bool)}
     (hpq : Htpy X a b p q) :
     Htpy Y (h.onV a) (h.onV b) (mapPath h p) (mapPath h q) := by
   have hstep : ∀ l l' : List (X.E × Bool), Step X a b l l' →
@@ -340,36 +305,42 @@ theorem mapPath_htpy (h : Hom X Y) {a b : X.V} {p q : List (X.E × Bool)}
       · rw [hlEq]; simp [mapPath, revGerm]
       · rw [hl'Eq]; simp
     · refine Or.inr ⟨mapPath h p', mapPath h q', h.onF f, ?_, ?_⟩
-      · rw [hlEq]
-        have hatt : mapPath h (X.att f) = Y.att (h.onF f) := by
-          rw [h.att_onF f]; rfl
-        simp [hatt]
+      · simp_all [FiniteChains.Comb.Hom.att_onF, mapPath]
       · rw [hl'Eq]; simp
-  induction hpq with
-  | refl => exact Relation.ReflTransGen.refl
-  | tail _ hs ih =>
-      rcases hs with hel | hel
-      · exact ih.trans (Htpy.of_step (hstep _ _ hel))
-      · exact ih.trans (Htpy.of_step (hstep _ _ hel)).symm
+  induction hpq <;> grind [FiniteChains.Comb.Htpy]
 
 /-- The homomorphism induced by a cellular map on fundamental groups. -/
-def pi1Map (h : Hom X Y) (a : X.V) : Pi1 X a →* Pi1 Y (h.onV a) where
+def pi1Map  (a : X.V) : Pi1 X a →* Pi1 Y (h.onV a) where
   toFun := Quotient.map (fun p => ⟨mapPath h p.1, isPath_mapPath h p.2⟩)
     (fun _ _ hpq => mapPath_htpy h hpq)
-  map_one' := Quotient.sound (Htpy.refl (X := Y) (a := h.onV a) (b := h.onV a) [])
+  map_one' := rfl
   map_mul' := by
     rintro ⟨p⟩ ⟨q⟩
     apply Quotient.sound
-    change Htpy Y (h.onV a) (h.onV a) (mapPath h (p.1 ++ q.1))
-      (mapPath h p.1 ++ mapPath h q.1)
-    rw [mapPath_append]
-    exact Htpy.refl _
+    simp_all
 
 /-- The map induced on fundamental groups by a cellular map is **trivial**: every loop of `X`
 becomes null-homotopic in `Y`. -/
-def Pi1Trivial (h : Hom X Y) : Prop :=
+def Pi1Trivial   :=
   ∀ (a : X.V) (p : List (X.E × Bool)), IsPath X.src X.tgt p a a →
     Htpy Y (h.onV a) (h.onV a) (mapPath h p) []
 
-end Comb
-end FiniteChains
+/-- Null homotopy is reflected by a change of base point. -/
+theorem htpy_nil_of_conjugate {X : Complex2.{u}} {a b : X.V}
+    {e p : List (X.E × Bool)} (he : IsPath X.src X.tgt e a b)
+    (hp : IsPath X.src X.tgt p a a)
+    (h : Htpy X b b (revPath e ++ p ++ e) []) : Htpy X a a p [] := by
+  have hc := htpy_append_revPath he
+  have hA := hc.congr_append (show IsPath X.src X.tgt [] a a from rfl)
+    (hp.append (he.append (isPath_revPath he)))
+  have hB := hc.congr_append hp (show IsPath X.src X.tgt [] a a from rfl)
+  have hstrip : Htpy X a a (e ++ (revPath e ++ p ++ e) ++ revPath e) p := by
+    simpa [List.append_assoc] using hA.trans (by simpa using hB)
+  have hstep := h.congr_append he (isPath_revPath he)
+  have hkill : Htpy X a a (e ++ (revPath e ++ p ++ e) ++ revPath e) [] :=
+    hstep.trans (by simpa using hc)
+  exact hstrip.symm.trans hkill
+
+
+end FiniteChains.Comb
+

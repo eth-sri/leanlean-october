@@ -1,23 +1,16 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderCxNatHtpy
-public import RequestProject.StrictOrderComplex
-
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+import RequestProject.OrderCxNatHtpy
+import RequestProject.StrictOrderComplex
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
 /-- The reversed actual reflexive order edge is null-homotopic. -/
 theorem htpy_ordNegSelf_nil (a : P) :
     Htpy (orderCx P) a a [ordNeg (le_refl a)] [] := by
   have h := htpy_revPath (isPath_ordPos (le_refl a)) (htpy_ordSelf_nil a)
-  simpa only [revPath, List.reverse_cons, List.reverse_nil, List.nil_append,
+  simpa [revPath, List.reverse_cons, List.reverse_nil, List.nil_append,
     List.map_cons, List.map_nil, revGerm, ordPos, ordNeg, Bool.not] using h
 
 /-- Reflexive edge conjugation does not alter the actual based loop class. -/
@@ -29,7 +22,7 @@ theorem htpy_reflexive_conjugation {a : P} (p : List ((orderCx P).E × Bool))
   have h2 := (htpy_ordSelf_nil a).congr_append hp (isPath_nil' a)
   have h1' : Htpy (orderCx P) a a
       ([ordNeg (le_refl a)] ++ p ++ [ordPos (le_refl a)]) (p ++ [ordPos (le_refl a)]) := by
-    simpa only [List.nil_append, List.append_assoc] using h1
+    assumption
   have h2' : Htpy (orderCx P) a a (p ++ [ordPos (le_refl a)]) p := by
     simpa only [List.append_nil] using h2
   exact h1'.trans h2'

@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalGraphPathStraightening
-public import RequestProject.IntervalEndpointHomotopyExtension
-public import RequestProject.SquareBoundaryNormHomeomorph
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalGraphPathStraightening
+import RequestProject.IntervalEndpointHomotopyExtension
+import RequestProject.SquareBoundaryNormHomeomorph
 
 /-! Genuine attaching-circle maps into a graph can be replaced by finite
 words in its actual edges, through homotopies entirely in that graph. Four
@@ -14,7 +12,7 @@ verification. -/
 
 noncomputable section
 open scoped Classical unitInterval
-open Set Topology
+
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment ContinuousEdgeWords
@@ -33,34 +31,31 @@ namespace BoundaryWords
 
 variable {r} (W : BoundaryWords r)
 
-def sidePath (s : SquareSide) :
-    Path (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)) (W.vertex (squareSideMap s 0)))
-      (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)) (W.vertex (squareSideMap s 1))) :=
+variable (s : SquareSide)
+def sidePath   :=
   realize (graphSrc r) (graphTgt r) (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)))
     (graphEdgePath r) (W.word s) (W.isPath s)
 
-theorem sidePath_endpoint (s : SquareSide) (t : I) (ht : t = 0 ∨ t = 1) :
+theorem sidePath_endpoint  (t : I) (ht : t = 0 ∨ t = 1) :
     W.sidePath s t = old r (boundaryFamilyInclusion J (Fin 1 → ℝ))
       (W.vertex (squareSideMap s t)) := by
-  rcases ht with rfl | rfl
-  · exact (W.sidePath s).source
-  · exact (W.sidePath s).target
+  aesop
 
-def squareMap : C(SquareBoundary, DiskAttachment r) :=
+def squareMap  :=
   squareBoundaryPasting (fun s => (W.sidePath s).toContinuousMap)
     (fun z => old r (boundaryFamilyInclusion J (Fin 1 → ℝ)) (W.vertex z))
     W.sidePath_endpoint
 
-@[simp] theorem squareMap_side (s : SquareSide) (t : I) :
+@[simp] theorem squareMap_side  (t : I) :
     W.squareMap (squareSideMap s t) = W.sidePath s t :=
   squareBoundaryPasting_side _ _ _ s t
 
-def boundaryMap : C(UnitBoundary (Fin 2 → ℝ), DiskAttachment r) :=
+def boundaryMap  :=
   W.squareMap.comp unitBoundarySquareHomeomorph.toContinuousMap
 
 /-- The based combinatorial word obtained by travelling around the four
 sides, reversing the two sides whose coordinate direction opposes travel. -/
-def loopWord : List (J × Bool) :=
+def loopWord  :=
   List.append (α := J × Bool)
     (List.append (α := J × Bool)
       (List.append (W.word (0, false)) (W.word (1, true)))
@@ -106,18 +101,15 @@ actual four-side quotient. No cellular approximation premise is assumed. -/
 theorem squareMap_homotopic_boundaryWords [DiscreteTopology V] (hr : Continuous r)
     (f : C(SquareBoundary, DiskAttachment r)) :
     ∃ W : BoundaryWords r, f.Homotopic W.squareMap := by
-  let v : SquareBoundary → V := fun z => graphSnap r (f z)
+  let v  := fun z => graphSnap r (f z)
   let p (z : SquareBoundary) := graphConnector r (f z)
   let E (s : SquareSide) := intervalEndpointExtension (f.comp (squareSideMap s))
     (p (squareSideMap s 0)) (p (squareSideMap s 1))
   have hE : ∀ s τ t, t = 0 ∨ t = 1 →
       (E s).map (τ, t) = p (squareSideMap s t) τ := by
-    intro s τ t ht
-    rcases ht with rfl | rfl
-    · exact (E s).side_zero τ
-    · exact (E s).side_one τ
+    classical simp_all [FiniteChains.RelativeAttachment.IntervalEndpointExtension.side_zero, FiniteChains.RelativeAttachment.IntervalEndpointExtension.side_one]
   let G := squareBoundaryHomotopyPasting (fun s => (E s).map) (fun τ z => p z τ) hE
-  let f₁ : C(SquareBoundary, DiskAttachment r) :=
+  let f₁  :=
     G.comp ⟨fun z => (1, z), continuous_const.prodMk continuous_id⟩
   let H₀ : f.Homotopy f₁ := {
     toContinuousMap := G
@@ -142,10 +134,7 @@ theorem squareMap_homotopic_boundaryWords [DiscreteTopology V] (hr : Continuous 
   have hHV : ∀ s τ t, t = 0 ∨ t = 1 →
       H s (τ, t) = old r (boundaryFamilyInclusion J (Fin 1 → ℝ))
         (v (squareSideMap s t)) := by
-    intro s τ t ht
-    rcases ht with rfl | rfl
-    · exact (H s).source τ
-    · exact (H s).target τ
+    simp_all
   let G₁ := squareBoundaryHomotopyPasting (fun s => (H s).toHomotopy.toContinuousMap)
     (fun _ z => old r (boundaryFamilyInclusion J (Fin 1 → ℝ)) (v z)) hHV
   let H₁ : f₁.Homotopy W.squareMap := {
@@ -154,14 +143,12 @@ theorem squareMap_homotopic_boundaryWords [DiscreteTopology V] (hr : Continuous 
       intro z
       obtain ⟨⟨s, t⟩, rfl⟩ := squareSideQuotient_surjective z
       change G₁ (0, squareSideMap s t) = G (1, squareSideMap s t)
-      rw [squareBoundaryHomotopyPasting_side, squareBoundaryHomotopyPasting_side]
-      exact (H s).apply_zero t
+      aesop
     map_one_left := by
       intro z
       obtain ⟨⟨s, t⟩, rfl⟩ := squareSideQuotient_surjective z
       change G₁ (1, squareSideMap s t) = W.squareMap (squareSideMap s t)
-      rw [squareBoundaryHomotopyPasting_side, BoundaryWords.squareMap_side]
-      exact (H s).apply_one t }
+      aesop }
   exact ⟨W, ⟨H₀.trans H₁⟩⟩
 
 theorem boundaryMap_homotopic_boundaryWords [DiscreteTopology V] (hr : Continuous r)
@@ -171,10 +158,6 @@ theorem boundaryMap_homotopic_boundaryWords [DiscreteTopology V] (hr : Continuou
   obtain ⟨W, hW⟩ := squareMap_homotopic_boundaryWords r hr (f.comp e.symm.toContinuousMap)
   refine ⟨W, ?_⟩
   have H := hW.comp (ContinuousMap.Homotopic.refl e.toContinuousMap)
-  have he : (f.comp e.symm.toContinuousMap).comp e.toContinuousMap = f := by
-    apply ContinuousMap.ext
-    intro a
-    exact congrArg f (e.symm_apply_apply a)
-  rwa [he] at H
+  aesop
 
 end FiniteChains.ClassicalGraphModel

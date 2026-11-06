@@ -1,16 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MathlibOrderNerveCycles
-public import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
-
-@[expose] public section
+import RequestProject.MathlibOrderNerveCycles
+import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
 
 namespace FiniteChains.Comb
 open CategoryTheory
 variable (P : Type) [PartialOrder P]
 
 /-- The actual degree-three to degree-one segment of Mathlib's alternating-face complex. -/
-noncomputable def mathlibOrderNerveShortComplex : ShortComplex (ModuleCat ℤ) :=
+noncomputable def mathlibOrderNerveShortComplex  :=
   ShortComplex.mk
     (AlgebraicTopology.AlternatingFaceMapComplex.objD (mathlibOrderNerveModule P) 2)
     (AlgebraicTopology.AlternatingFaceMapComplex.objD (mathlibOrderNerveModule P) 1)
@@ -21,8 +19,7 @@ noncomputable def mathlibOrderNerveShortComplex : ShortComplex (ModuleCat ℤ) :
 
 /-- The genuine order-cell quotient is linearly equivalent to Mathlib's
 categorical homology of its actual alternating-face differential segment. -/
-noncomputable def mathlibOrderNerveCategoricalH2Equiv :
-    OrderNerveH2 P ≃ₗ[ℤ] (mathlibOrderNerveShortComplex P).homology :=
+noncomputable def mathlibOrderNerveCategoricalH2Equiv  :=
   (mathlibOrderNerveH2Equiv P).trans
     ((mathlibOrderNerveShortComplex P).moduleCatHomologyIso.symm.toLinearEquiv)
 
@@ -53,9 +50,7 @@ noncomputable def mathlibOrderNerveShortComplexIso :
 
 /-- The order-cell quotient is the actual degree-two categorical homology of
 Mathlib's alternating-face chain complex. -/
-noncomputable def mathlibOrderNerveComplexH2Equiv :
-    OrderNerveH2 P ≃ₗ[ℤ]
-      (AlgebraicTopology.AlternatingFaceMapComplex.obj (mathlibOrderNerveModule P)).homology 2 :=
+noncomputable def mathlibOrderNerveComplexH2Equiv  :=
   (mathlibOrderNerveCategoricalH2Equiv P).trans
     (((ShortComplex.homologyFunctor (ModuleCat ℤ)).mapIso
       (mathlibOrderNerveShortComplexIso P)).toLinearEquiv)

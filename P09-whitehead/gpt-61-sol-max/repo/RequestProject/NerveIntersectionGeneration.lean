@@ -1,2 +1,1 @@
-module
-public import RequestProject.NerveDegreeGluing
+import RequestProject.NerveDegreeGluing

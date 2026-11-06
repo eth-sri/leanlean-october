@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.IntervalEndpointHomotopyExtension
-public import RequestProject.ClassicalCWLoopCellularization
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.IntervalEndpointHomotopyExtension
+import RequestProject.ClassicalCWLoopCellularization
 
 /-! Cellular representatives for actual attaching circle maps, including
 maps whose chosen starting point is not in the one-skeleton. Four endpoint
@@ -14,14 +12,13 @@ and corner-compatible homotopy pasting finish the construction. -/
 noncomputable section
 open scoped Topology unitInterval Classical
 open Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW
 open RelativeAttachment
 
-def pointVertexInOneSkeleton (K : Whitehead.TwoComplex) (x : K) : OneSkeleton K :=
+variable (K : Whitehead.TwoComplex)
+def pointVertexInOneSkeleton  (x : K) : OneSkeleton K :=
   ⟨vertexPoint (pointVertex x), by
     apply CWComplex.skeletonLT_mono (C := (Set.univ : Set K))
       (show (0 : ℕ∞) + 1 ≤ 2 by norm_num)
@@ -31,22 +28,19 @@ def pointVertexInOneSkeleton (K : Whitehead.TwoComplex) (x : K) : OneSkeleton K 
 
 /-- Any continuous square-boundary map can be moved into the original
 one-skeleton, without any initial condition on its corner values. -/
-theorem squareBoundary_into_oneSkeleton (K : Whitehead.TwoComplex)
+theorem squareBoundary_into_oneSkeleton 
     (r : C(SquareBoundary, K)) :
     ∃ q : C(SquareBoundary, OneSkeleton K),
       r.Homotopic ((⟨Subtype.val, continuous_subtype_val⟩ : C(OneSkeleton K, K)).comp q) := by
-  let v : SquareBoundary → OneSkeleton K := fun z => pointVertexInOneSkeleton K (r z)
-  let p (z : SquareBoundary) : Path (r z) (v z).val := pointVertexPath (r z)
+  let v  := fun z => pointVertexInOneSkeleton K (r z)
+  let p (z : SquareBoundary)  := pointVertexPath (r z)
   let E (s : SquareSide) := intervalEndpointExtension (r.comp (squareSideMap s))
     (p (squareSideMap s 0)) (p (squareSideMap s 1))
   have hE : ∀ s τ t, t = 0 ∨ t = 1 →
       (E s).map (τ, t) = p (squareSideMap s t) τ := by
-    intro s τ t ht
-    rcases ht with rfl | rfl
-    · exact (E s).side_zero τ
-    · exact (E s).side_one τ
+    classical simp_all [Whitehead.TwoComplex.hausdorff, FiniteChains.RelativeAttachment.IntervalEndpointExtension.side_zero, FiniteChains.RelativeAttachment.IntervalEndpointExtension.side_one]
   let G := squareBoundaryHomotopyPasting (fun s => (E s).map) (fun τ z => p z τ) hE
-  let r₁ : C(SquareBoundary, K) := G.comp ⟨fun z => (1, z), continuous_const.prodMk continuous_id⟩
+  let r₁  := G.comp ⟨fun z => (1, z), continuous_const.prodMk continuous_id⟩
   have hG₀ : ∀ z, G (0, z) = r z := by
     intro z
     obtain ⟨⟨s, t⟩, rfl⟩ := squareSideQuotient_surjective z
@@ -68,18 +62,12 @@ theorem squareBoundary_into_oneSkeleton (K : Whitehead.TwoComplex)
     exact path_into_oneSkeleton K _ _ (l s)
   choose q hq using hl
   have hqV : ∀ s t, t = 0 ∨ t = 1 → q s t = v (squareSideMap s t) := by
-    intro s t ht
-    rcases ht with rfl | rfl
-    · exact (q s).source
-    · exact (q s).target
+    simp_all
   let Q := squareBoundaryPasting (fun s => (q s).toContinuousMap) v hqV
   let H (s : SquareSide) := Classical.choice (hq s)
   have hHV : ∀ s τ t, t = 0 ∨ t = 1 →
       H s (τ, t) = (v (squareSideMap s t)).val := by
-    intro s τ t ht
-    rcases ht with rfl | rfl
-    · exact (H s).source τ
-    · exact (H s).target τ
+    simp_all
   let G₁ := squareBoundaryHomotopyPasting (fun s => (H s).toHomotopy.toContinuousMap)
     (fun _ z => (v z).val) hHV
   let ι : C(OneSkeleton K, K) := ⟨Subtype.val, continuous_subtype_val⟩
@@ -89,19 +77,17 @@ theorem squareBoundary_into_oneSkeleton (K : Whitehead.TwoComplex)
       intro z
       obtain ⟨⟨s, t⟩, rfl⟩ := squareSideQuotient_surjective z
       change G₁ (0, squareSideMap s t) = G (1, squareSideMap s t)
-      rw [squareBoundaryHomotopyPasting_side, squareBoundaryHomotopyPasting_side]
-      exact (H s).apply_zero t
+      aesop
     map_one_left := by
       intro z
       obtain ⟨⟨s, t⟩, rfl⟩ := squareSideQuotient_surjective z
       change G₁ (1, squareSideMap s t) = (Q (squareSideMap s t)).val
-      rw [squareBoundaryHomotopyPasting_side, squareBoundaryPasting_side]
-      exact (H s).apply_one t }
+      aesop }
   exact ⟨Q, ⟨H₀.trans H₁⟩⟩
 
 /-- This is the actual normed circle used by classical CW attachments,
 not a replacement of the attaching domain by a combinatorial loop. -/
-theorem boundary_into_oneSkeleton (K : Whitehead.TwoComplex)
+theorem boundary_into_oneSkeleton 
     (r : C(UnitBoundary (Fin 2 → ℝ), K)) :
     ∃ q : C(UnitBoundary (Fin 2 → ℝ), OneSkeleton K),
       r.Homotopic ((⟨Subtype.val, continuous_subtype_val⟩ : C(OneSkeleton K, K)).comp q) := by
@@ -109,23 +95,18 @@ theorem boundary_into_oneSkeleton (K : Whitehead.TwoComplex)
   obtain ⟨q, hq⟩ := squareBoundary_into_oneSkeleton K (r.comp e.symm.toContinuousMap)
   refine ⟨q.comp e.toContinuousMap, ?_⟩
   have h := hq.comp (ContinuousMap.Homotopic.refl e.toContinuousMap)
-  have he : (r.comp e.symm.toContinuousMap).comp e.toContinuousMap = r := by
-    apply ContinuousMap.ext
-    intro a
-    exact congrArg r (e.symm_apply_apply a)
-  rw [he] at h
-  exact h
+  simp_all
 
 /-- Arbitrary families are cellularized simultaneously. Each new boundary
 has finite support in the original lower-dimensional cells; the whole
 family and the old CW complex may both be infinite. -/
-theorem boundaryFamily_into_oneSkeleton (K : Whitehead.TwoComplex) {J : Type}
+theorem boundaryFamily_into_oneSkeleton  {J : Type}
     (r : C(BoundaryFamily J (Fin 2 → ℝ), K)) :
     ∃ q : C(BoundaryFamily J (Fin 2 → ℝ), K),
       r.Homotopic q ∧ FiniteLowerBoundary 2 q := by
-  let rj (j : J) : C(UnitBoundary (Fin 2 → ℝ), K) :=
+  let rj (j : J)  :=
     r.comp (⟨fun a : UnitBoundary (Fin 2 → ℝ) => ⟨j, a⟩, by
-      exact continuous_sigmaMk («σ» := fun _ : J => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩ :
+      grind [continuous_sigmaMk]⟩ :
         C(UnitBoundary (Fin 2 → ℝ), BoundaryFamily J (Fin 2 → ℝ)))
   have hj := fun j => boundary_into_oneSkeleton K (rj j)
   choose q hq using hj

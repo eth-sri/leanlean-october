@@ -1,30 +1,30 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveSmallChainMapAll
-
-@[expose] public section
+import RequestProject.OrderNerveSmallChainMapAll
 
 namespace FiniteChains.Comb
 open TopologicalSingular SingularSubdivision
 variable {P : Type} [PartialOrder P]
 
+  {n : ℕ}
+variable (σ : Simplex (orderNerveRealization P) n)
 /-- Restrict the comparable-vertex carrier to vertices that actually occur
 at some point of the singular simplex. This restriction preserves acyclicity
 and makes the carrier respect every vertex subcomplex. -/
-def orderNerveTightCarrier {n : ℕ} (σ : Simplex (orderNerveRealization P) n) : Set P :=
+def orderNerveTightCarrier    :=
   {p | (∃ z, σ z ∈ orderNerveRealizationOpenStar P p) ∧ p ∈ orderNerveSingularCarrier σ}
 
-theorem orderNerveTightCarrier_face {n : ℕ} (σ : Simplex (orderNerveRealization P) (n + 1))
+theorem orderNerveTightCarrier_face  (σ : Simplex (orderNerveRealization P) (n + 1))
     (i : Fin (n + 2)) : orderNerveTightCarrier (face i σ) ⊆ orderNerveTightCarrier σ := by
   rintro p ⟨⟨z, hz⟩, hp⟩
   exact ⟨⟨_, hz⟩, orderNerveSingularCarrier_face σ i hp⟩
 
-theorem orderNerveStarIndices_subset_tight {n : ℕ} (σ : Simplex (orderNerveRealization P) n) :
+theorem orderNerveStarIndices_subset_tight   :
     orderNerveSingularStarIndices σ ⊆ orderNerveTightCarrier σ := by
   intro p hp
   exact ⟨⟨stdSimplex.vertex 0, hp _⟩, orderNerveSingularStarIndices_subset_carrier σ hp⟩
 
-theorem orderNerveTightCarrier_acyclic {n : ℕ} (σ : OrderSmallSimplex P n) :
+theorem orderNerveTightCarrier_acyclic  (σ : OrderSmallSimplex P n) :
     Nerve.AcyclicIn (orderNerveTightCarrier σ.val) := by
   obtain ⟨v, hv⟩ := σ.property
   have hv' := orderNerveStarIndices_subset_tight σ.val hv
@@ -33,7 +33,7 @@ theorem orderNerveTightCarrier_acyclic {n : ℕ} (σ : OrderSmallSimplex P n) :
   exact orderNerve_cycle_bounds_of_comparable
     (⟨v, hv'⟩ : orderNerveTightCarrier σ.val) (fun p => p.property.2 v hv) hc hz
 
-theorem orderNerveTightCarrier_subset {n : ℕ} (σ : Simplex (orderNerveRealization P) n)
+theorem orderNerveTightCarrier_subset  
     (A : Set P) (hσ : ∀ z, σ z ∈ orderNerveRealizationSubcomplex P A) :
     orderNerveTightCarrier σ ⊆ A := by
   rintro p ⟨⟨z, hz⟩, _⟩

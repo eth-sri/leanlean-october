@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeSquareCycleRecovery
-public import RequestProject.QCubeSquareChainBoundary
-
-@[expose] public section
+import RequestProject.QCubeSquareCycleRecovery
+import RequestProject.QCubeSquareChainBoundary
 
 /-! Global recovery of actual two-dimensional strict cycles as finite cubical square chains. -/
 namespace FiniteChains.Davis
@@ -12,17 +10,20 @@ variable {V C : Type} [DecidableEq V] {A : CommRel V}
   (cell : C → QCube A) (left right : C → V)
   (hne : ∀ i, left i ≠ right i) (hspx : ∀ i, (cell i).spx = {left i, right i})
 
-def squareCoefficientFlag (i : C) : (strictOrderCx (QCube A)).F :=
+def squareCoefficientFlag (i : C)  :=
   squareFlag (cell i) (left i) (right i) (hne i) (hspx i) (false, 0, false)
 
-theorem squareCoefficientFlag_injective (hcell : Function.Injective cell) :
+variable (hcell : Function.Injective cell)
+include hcell in
+theorem squareCoefficientFlag_injective  :
     Function.Injective (squareCoefficientFlag cell left right hne hspx) := by
   intro i j h
   have ht := congrArg (fun t : (strictOrderCx (QCube A)).F => t.1.2.2) h
-  simp only [squareCoefficientFlag, squareFlag_top] at ht
+  simp [squareCoefficientFlag] at ht
   exact hcell ht
 
-noncomputable def squareCycleCoefficients (hcell : Function.Injective cell) :
+include hcell in
+noncomputable def squareCycleCoefficients  :
     ((strictOrderCx (QCube A)).F →₀ ℤ) →ₗ[ℤ] (C →₀ ℤ) :=
   Finsupp.lcomapDomain (squareCoefficientFlag cell left right hne hspx)
     (squareCoefficientFlag_injective cell left right hne hspx hcell)
@@ -30,17 +31,15 @@ noncomputable def squareCycleCoefficients (hcell : Function.Injective cell) :
 theorem squareChainSubdivision_off_cells (r : C →₀ ℤ)
     (t : (strictOrderCx (QCube A)).F) (ht : ∀ i, t.1.2.2 ≠ cell i) :
     squareChainSubdivision cell left right hne hspx r t = 0 := by
-  induction r using Finsupp.induction_linear with
-  | zero => simp
-  | add r s hr hs => simp only [map_add, Finsupp.add_apply, hr, hs, add_zero]
-  | single i n =>
-      rw [squareChainSubdivision, Finsupp.linearCombination_single, Finsupp.smul_apply,
-        cubeSquareSubdivision_eq_zero_off_top _ _ _ _ _ _ (ht i), smul_zero]
+  induction r using Finsupp.induction_linear <;> simp_all [squareChainSubdivision, cubeSquareSubdivision_eq_zero_off_top]
 
+variable (hcover : ∀ c : QCube A, c.spx.card = 2 → ∃ i, cell i = c)
+include hcover in
+include hcell in
 /-- Every actual strict two-cycle of dimension at most two is the subdivision of its
 finite recovered cubical coefficient chain. -/
-theorem cubeTwoCycle_is_squareSubdivision (hcell : Function.Injective cell)
-    (hcover : ∀ c : QCube A, c.spx.card = 2 → ∃ i, cell i = c)
+theorem cubeTwoCycle_is_squareSubdivision 
+    
     (z : (strictOrderCx (QCube A)).F →₀ ℤ)
     (hz : ∀ t ∈ z.support, t.1.2.2.spx.card ≤ 2)
     (hcycle : Comb.bdry2 (strictOrderCx (QCube A)) z = 0) :
@@ -50,7 +49,7 @@ theorem cubeTwoCycle_is_squareSubdivision (hcell : Function.Injective cell)
   ext t
   by_cases hdim : t.1.2.2.spx.card = 2
   · obtain ⟨i, hi⟩ := hcover t.1.2.2 hdim
-    have hti : t.1.2.2 = cell i := hi.symm
+    have hti  := hi.symm
     have hl := congrArg (fun w : (strictOrderCx (QCube A)).F →₀ ℤ => w t)
       (cubeTwoCycle_square_component (cell i) (left i) (right i) (hne i) (hspx i)
         z hz hcycle)
@@ -59,20 +58,13 @@ theorem cubeTwoCycle_is_squareSubdivision (hcell : Function.Injective cell)
         (squareCycleCoefficients cell left right hne hspx hcell z) i)
     simp only [Finsupp.filter_apply, hti, Finsupp.smul_apply] at hl hr
     exact hl.trans hr.symm
-  · have hzt : z t = 0 := by
-      by_contra hzt
-      exact hdim (qCube_triangle_dimensions t (hz t (Finsupp.mem_support_iff.mpr hzt))).2.2
-    rw [hzt]
-    symm
-    apply squareChainSubdivision_off_cells
-    intro i he
-    apply hdim
-    rw [he, hspx i]
-    simp [hne i]
+  · grind [FiniteChains.Davis.qCube_triangle_dimensions, FiniteChains.Davis.squareChainSubdivision_off_cells]
 
+include hcover in
+include hcell in
 /-- The recovered cubical coefficients are genuine cycles for the facet boundary map. -/
-theorem cubeTwoCycle_coefficients_cycle (hcell : Function.Injective cell)
-    (hcover : ∀ c : QCube A, c.spx.card = 2 → ∃ i, cell i = c)
+theorem cubeTwoCycle_coefficients_cycle 
+    
     (z : (strictOrderCx (QCube A)).F →₀ ℤ)
     (hz : ∀ t ∈ z.support, t.1.2.2.spx.card ≤ 2)
     (hcycle : Comb.bdry2 (strictOrderCx (QCube A)) z = 0) :

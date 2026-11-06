@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresUniversalFoxColumns
-
-@[expose] public section
+import RequestProject.PresUniversalFoxColumns
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} [DecidableEq α] (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
@@ -53,9 +50,7 @@ noncomputable def presUniversalGeneratorFoxKernelEquiv :
   map_smul' n c := Subtype.ext (map_smul _ n c.val)
 
 /-- Actual strict universal presentation two-cycles have the genuine algebraic Fox kernel coordinates. -/
-noncomputable def presUniversalTwoCycleFoxKernelEquiv :
-    LinearMap.ker (Comb.bdry2 (strictOrderCx (UOrder (PresPos w) (ptBase w)))) ≃ₗ[ℤ]
-      LinearMap.ker ((coverSecondBoundary (relSub ρ) ρ).restrictScalars ℤ) :=
+noncomputable def presUniversalTwoCycleFoxKernelEquiv  :=
   (presCoverCycleRelatorGeneratorKernelEquiv w uOrderEnd
     (presUniversalEnd_isPosetCover w hpos) hpos).trans
       (presUniversalGeneratorFoxKernelEquiv ρ w hw hpos)

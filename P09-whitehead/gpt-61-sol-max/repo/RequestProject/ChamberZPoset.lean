@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberAttachingJ
-public import RequestProject.CylinderPoset
-
-@[expose] public section
+import RequestProject.ChamberAttachingJ
+import RequestProject.CylinderPoset
 
 /-!
 # The complex `Z` of modified chambers, as an explicit poset
@@ -56,12 +54,11 @@ Proved here, for these actual subposets:
   `FiniteChains.Comb.CylP`.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
+
 
 open RACG Mirror Comb Nerve
 
-universe u
 
 variable {V : Type u} [DecidableEq V] {A : CommRel V} {X : Type u} [Preorder X]
 
@@ -75,22 +72,22 @@ an upper bound, namely their union), so an attaching map defined on it would be 
 on every loop of the boundary of a chamber and could never realise a nontrivial attaching word.
 This is `FiniteChains.Davis.pi1_trivial_of_directed_domain` in
 `RequestProject/ChamberAttachingTrivial.lean`. -/
-abbrev NeSpx (A : CommRel V) : Type u := {σ : Finset V // σ.Nonempty ∧ IsSimplex A σ}
+abbrev NeSpx (A : CommRel V)  := {σ : Finset V // σ.Nonempty ∧ IsSimplex A σ}
 
 /-- A cell of the model is a **marked apex** if it is the apex `{w}` of a chamber that is to be
 modified. -/
-def IsMarkedApex (M : CayGroup A → Prop) (p : Sph A) : Prop := p.spx = ∅ ∧ M p.rep
+def IsMarkedApex (M : CayGroup A → Prop) (p : Sph A)  := p.spx = ∅ ∧ M p.rep
 
 /-- The cells of the model that are retained: everything but the marked apexes. -/
-def Zold (A : CommRel V) (M : CayGroup A → Prop) : Type u := {p : Sph A // ¬ IsMarkedApex M p}
+def Zold (A : CommRel V) (M : CayGroup A → Prop)  := {p : Sph A // ¬ IsMarkedApex M p}
 
 /-- The adjoined copies of the base poset, one for each marked chamber. -/
-def Znew (A : CommRel V) (M : CayGroup A → Prop) (X : Type u) : Type u :=
+def Znew (A : CommRel V) (M : CayGroup A → Prop) (X : Type u)  :=
   {w : CayGroup A // M w} × X
 
 /-- **The poset `Z` of modified chambers.** -/
 def Zpos (A : CommRel V) (X : Type u) [Preorder X] (M : CayGroup A → Prop)
-    (_att : NeSpx A →o X) : Type u :=
+    (_att : NeSpx A →o X)  :=
   Zold A M ⊕ Znew A M X
 
 variable {M : CayGroup A → Prop} {att : NeSpx A →o X}
@@ -113,17 +110,13 @@ protected def Zle : Zpos A X M att → Zpos A X M att → Prop
 instance zposPreorder : Preorder (Zpos A X M att) where
   le := Davis.Zle
   le_refl z := by
-    cases z with
-    | inl p => exact le_refl p.1
-    | inr wx => exact ⟨rfl, le_refl wx.2⟩
+    aesop (add simp [FiniteChains.Davis.Zle])
   le_trans z z' z'' hzz' hz'z'' := by
     cases z with
     | inl p =>
         cases z' with
         | inl q =>
-            cases z'' with
-            | inl r => exact le_trans hzz' hz'z''
-            | inr wy => exact hz'z''.elim
+            cases z'' <;> grind [FiniteChains.Davis.Zle]
         | inr wy => exact hzz'.elim
     | inr wx =>
         cases z' with
@@ -137,16 +130,11 @@ instance zposPreorder : Preorder (Zpos A X M att) where
                   ⟨r.1.spx, Finset.Nonempty.mono hz'z''.1 hne, r.1.isSimplex⟩ from hz'z''.1))
             | inr wy => exact hz'z''.elim
         | inr wy =>
-            cases z'' with
-            | inl r =>
-                obtain ⟨hne, hy⟩ := hz'z''.2
-                exact ⟨hzz'.1 ▸ hz'z''.1, hne, le_trans hzz'.2 hy⟩
-            | inr wz =>
-                exact ⟨hzz'.1.trans hz'z''.1, le_trans hzz'.2 hz'z''.2⟩
+            cases z'' <;> grind [FiniteChains.Davis.Zle]
 
-section Order
 
-end Order
+
+
 
 /-! ### The chambers of `Z` -/
 
@@ -200,7 +188,7 @@ theorem eq_of_inZChamber_new {w v : CayGroup A} {u : {w : CayGroup A // M w}} {x
     w = v := by
   rw [← hw, ← hv]
 
-section Fintype
+section
 
 variable [Fintype V]
 
@@ -210,7 +198,9 @@ def ZJSet (w : CayGroup A) : Zpos A X M att → Prop
   | Sum.inl p => JSet w p.1
   | Sum.inr _ => False
 
-theorem zJSet_imp_inZChamber {w : CayGroup A} {z : Zpos A X M att} (h : ZJSet w z) :
+variable {w : CayGroup A}
+  {z : Zpos A X M att}
+theorem zJSet_imp_inZChamber   (h : ZJSet w z) :
     InZChamber w z := by
   cases z with
   | inl p => exact h.choose_spec.2.1
@@ -220,15 +210,11 @@ theorem zJSet_imp_inZChamber {w : CayGroup A} {z : Zpos A X M att} (h : ZJSet w 
 some other chamber of `Z` of length at most that of `w` exactly when it is an old cell of
 `J_w = ⋃_{s ∈ D(w)} (F_s)_w`.  In particular the new cells — the copy of `X` — are attached
 along nothing but `J_w`, and the intersection is the already-studied contractible subcomplex. -/
-theorem mem_earlier_zchamber_iff {w : CayGroup A} {z : Zpos A X M att} (hz : InZChamber w z) :
+theorem mem_earlier_zchamber_iff   (hz : InZChamber w z) :
     (∃ v : CayGroup A, v ≠ w ∧ RACG.clen A v ≤ RACG.clen A w ∧ InZChamber v z) ↔ ZJSet w z := by
   cases z with
   | inl p =>
-      constructor
-      · rintro ⟨v, hvw, hlen, hv⟩
-        exact (mem_earlier_chamber_iff_jSet hz).1 ⟨v, hvw, hlen, hv⟩
-      · intro hJ
-        exact (mem_earlier_chamber_iff_jSet hz).2 hJ
+      classical solve_by_elim (transparency := .default) [FiniteChains.Davis.mem_earlier_chamber_iff_jSet]
   | inr wx =>
       constructor
       · rintro ⟨v, hvw, -, hv⟩
@@ -237,52 +223,49 @@ theorem mem_earlier_zchamber_iff {w : CayGroup A} {z : Zpos A X M att} (hz : InZ
         exact h.elim
 
 /-- The same intersection formula with strictly shorter chambers. -/
-theorem mem_shorter_zchamber_iff {w : CayGroup A} {z : Zpos A X M att} (hz : InZChamber w z) :
+theorem mem_shorter_zchamber_iff   (hz : InZChamber w z) :
     (∃ v : CayGroup A, RACG.clen A v < RACG.clen A w ∧ InZChamber v z) ↔ ZJSet w z := by
   cases z with
   | inl p =>
-      constructor
-      · rintro ⟨v, hlen, hv⟩
-        exact (mem_shorter_chamber_iff_jSet hz).1 ⟨v, hlen, hv⟩
-      · intro hJ
-        exact (mem_shorter_chamber_iff_jSet hz).2 hJ
+      classical solve_by_elim (transparency := .default) [FiniteChains.Davis.mem_shorter_chamber_iff_jSet]
   | inr wx =>
       constructor
       · rintro ⟨v, hlen, hv⟩
-        have : v = w := eq_of_inZChamber_new hv hz
+        have  := eq_of_inZChamber_new hv hz
         subst this
         omega
       · intro h
         exact h.elim
 
-end Fintype
+end
 
 /-! ### Collapsing the copies of the base -/
 
 /-! ### The modified chamber is the mapping cylinder of `att` -/
 
-section ModifiedChamber
+section
 
 variable (M att) (w : CayGroup A)
 
 /-- The modified chamber of `w`, as a subposet of `Z`. -/
-abbrev ZChamber : Type u := {z : Zpos A X M att // InZChamber w z}
+abbrev ZChamber  := {z : Zpos A X M att // InZChamber w z}
 
 variable {M att w}
 
+variable (hw : M w)
 /-- The retraction of the modified chamber onto its copy of `X`: an old cell of type `σ` goes to
 `att σ`, a new cell stays where it is. -/
-def zChamberRetr (hw : M w) : ZChamber M att w → ZChamber M att w := fun z =>
+def zChamberRetr  : ZChamber M att w → ZChamber M att w := fun z =>
   match z with
   | ⟨Sum.inl p, hp⟩ =>
       ⟨zNew ⟨w, hw⟩ (att ⟨p.1.spx, spx_nonempty_of_marked hw p.2 hp, p.1.isSimplex⟩), rfl⟩
   | ⟨Sum.inr wx, hwx⟩ => ⟨Sum.inr wx, hwx⟩
 
 /-- The retraction lands in the copy of `X`. -/
-theorem zChamberRetr_mem (hw : M w) (z : ZChamber M att w) :
+theorem zChamberRetr_mem  (z : ZChamber M att w) :
     ∃ x : X, (zChamberRetr hw z).1 = zNew (att := att) ⟨w, hw⟩ x := by
   rcases z with ⟨p | ⟨u, x⟩, hz⟩
-  · exact ⟨att ⟨p.1.spx, spx_nonempty_of_marked hw p.2 hz, p.1.isSimplex⟩, rfl⟩
+  · aesop
   · refine ⟨x, ?_⟩
     show Sum.inr (u, x) = Sum.inr ((⟨w, hw⟩ : {w : CayGroup A // M w}), x)
     have hu : u = (⟨w, hw⟩ : {w : CayGroup A // M w}) := Subtype.ext hz
@@ -290,24 +273,22 @@ theorem zChamberRetr_mem (hw : M w) (z : ZChamber M att w) :
 
 /-- **The retraction lies below the identity**: this is the mapping cylinder identity `i r ≤ id`
 of the chosen orientation, and it turns the prism operator into a chain homotopy. -/
-theorem zChamberRetr_le (hw : M w) (z : ZChamber M att w) : zChamberRetr hw z ≤ z := by
+theorem zChamberRetr_le  (z : ZChamber M att w) : zChamberRetr hw z ≤ z := by
   rcases z with ⟨p | wx, hz⟩
   · exact ⟨hz, spx_nonempty_of_marked hw p.2 hz, le_refl _⟩
   · exact ⟨rfl, le_refl _⟩
 
 /-- The retraction is monotone. -/
-theorem zChamberRetr_monotone (hw : M w) :
+theorem zChamberRetr_monotone  :
     Monotone (zChamberRetr (att := att) hw) := by
   rintro ⟨p | ⟨u, x⟩, hz⟩ ⟨q | ⟨v, y⟩, hz'⟩ h
-  · exact ⟨rfl, att.monotone (show (⟨p.1.spx, spx_nonempty_of_marked hw p.2 hz,
-      p.1.isSimplex⟩ : NeSpx A) ≤
-      ⟨q.1.spx, spx_nonempty_of_marked hw q.2 hz', q.1.isSimplex⟩ from h.1)⟩
+  · classical solve_by_elim (transparency := .default) (maxDepth := 10) [And.intro, rfl, OrderHom.monotone, FiniteChains.Davis.spx_nonempty_of_marked, Subtype.property, FiniteChains.Davis.Sph.isSimplex, And.left, rfl]
   · exact h.elim
   · obtain ⟨hne, hx⟩ := h.2
     exact ⟨Subtype.ext hz, hx⟩
   · exact h
 
-end ModifiedChamber
+end
 
-end Davis
-end FiniteChains
+end FiniteChains.Davis
+

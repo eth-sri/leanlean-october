@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.TopologicalOrderCoverDeck
-public import RequestProject.OrderNerveRealizationStarContractible
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.TopologicalOrderCoverDeck
+import RequestProject.OrderNerveRealizationStarContractible
 
 /-! Actual continuous covering lifts over each closed vertex star. They
 are obtained by lifting its explicit contraction, so no local path
@@ -19,8 +17,7 @@ open scoped unitInterval Classical
 theorem orderNerveRealizationMap_vertex {P Q : Type} [PartialOrder P] [PartialOrder Q]
     (f : P → Q) (hf : Monotone f) (v : P) :
     orderNerveRealizationMap f hf (orderNerveRealizationVertex v) =
-      orderNerveRealizationVertex (f v) := by
-  exact congrArg (fun k : TopCat.of (SimplexCategory.toTop.obj ⦋0⦌) ⟶
+      orderNerveRealizationVertex (f v) := congrArg (fun k : TopCat.of (SimplexCategory.toTop.obj ⦋0⦌) ⟶
       orderNerveRealization Q => k default)
     (orderNerveRealizationSimplex_natural f hf (ComposableArrows.mk₀ v))
 
@@ -37,17 +34,18 @@ namespace TopologicalOrderCover
 variable {P : Type} [PartialOrder P] {E : Type} [TopologicalSpace E]
   (p : C(E, orderNerveRealization P)) (hp : IsCoveringMap p)
 
-def starCenter (q : P) : orderNerveVertexStar P q := ⟨q, Or.inl le_rfl⟩
+variable (q : P)
+def starCenter  : orderNerveVertexStar P q := ⟨q, Or.inl le_rfl⟩
 
-theorem star_comparable (q : P) (v : orderNerveVertexStar P q) :
+theorem star_comparable  (v : orderNerveVertexStar P q) :
     v ≤ starCenter q ∨ starCenter q ≤ v := v.property
 
-def starBaseMap (q : P) : C(orderNerveRealization (orderNerveVertexStar P q), orderNerveRealization P) :=
+def starBaseMap  : C(orderNerveRealization (orderNerveVertexStar P q), orderNerveRealization P) :=
   ⟨orderNerveRealizationMap Subtype.val (fun _ _ h => h),
     (orderNerveRealizationMap (Subtype.val : orderNerveVertexStar P q → P)
       (fun _ _ h => h)).hom.continuous⟩
 
-def starContraction (q : P) :
+def starContraction  :
     (ContinuousMap.const (orderNerveRealization (orderNerveVertexStar P q))
       (orderNerveRealizationVertex q)).Homotopy (starBaseMap q) where
   toFun tx := starBaseMap q
@@ -58,34 +56,35 @@ def starContraction (q : P) :
   map_zero_left x := by
     rw [unitInterval.symm_zero, orderNerveRealizationCone_one]
     exact orderNerveRealizationMap_vertex _ _ _
-  map_one_left x := by rw [unitInterval.symm_one, orderNerveRealizationCone_zero]
+  map_one_left x := by simp_all
 
-def starLiftHomotopy (v : Cover p hp) :
-    C(I × orderNerveRealization (orderNerveVertexStar P v.1), E) :=
+variable (v : Cover p hp)
+def starLiftHomotopy   :=
   hp.liftHomotopy (starContraction v.1).toContinuousMap (ContinuousMap.const _ (point p hp v))
     (fun x => ((starContraction v.1).apply_zero x).trans (point_projection p hp v).symm)
 
-theorem starLiftHomotopy_projection (v : Cover p hp) (t : I)
+theorem starLiftHomotopy_projection  (t : I)
     (x : orderNerveRealization (orderNerveVertexStar P v.1)) :
     p (starLiftHomotopy p hp v (t, x)) = starContraction v.1 (t, x) :=
   congrFun (hp.liftHomotopy_lifts _ _ _) (t, x)
 
-theorem starLiftHomotopy_zero (v : Cover p hp)
-    (x : orderNerveRealization (orderNerveVertexStar P v.1)) :
+variable (x : orderNerveRealization (orderNerveVertexStar P v.1))
+theorem starLiftHomotopy_zero 
+     :
     starLiftHomotopy p hp v (0, x) = point p hp v := hp.liftHomotopy_zero _ _ _ x
 
-def starLift (v : Cover p hp) : C(orderNerveRealization (orderNerveVertexStar P v.1), E) :=
+def starLift   :=
   (starLiftHomotopy p hp v).comp ⟨fun x => (1, x), continuous_const.prodMk continuous_id⟩
 
-theorem starLift_projection (v : Cover p hp)
-    (x : orderNerveRealization (orderNerveVertexStar P v.1)) :
+theorem starLift_projection 
+     :
     p (starLift p hp v x) = starBaseMap v.1 x :=
   (starLiftHomotopy_projection p hp v 1 x).trans ((starContraction v.1).apply_one x)
 
-theorem starLift_center (v : Cover p hp) :
+theorem starLift_center  :
     starLift p hp v (orderNerveRealizationVertex (starCenter v.1)) = point p hp v := by
   let c := orderNerveRealizationVertex (starCenter v.1)
-  let L : C(I, E) := (starLiftHomotopy p hp v).comp
+  let L  := (starLiftHomotopy p hp v).comp
     ⟨fun t => (t, c), continuous_id.prodMk continuous_const⟩
   have hproj : ∀ t t', p (L t) = p (L t') := by
     intro t t'
@@ -97,5 +96,5 @@ theorem starLift_center (v : Cover p hp) :
     rw [orderNerveRealizationCone_vertex, orderNerveRealizationCone_vertex]
   exact (hp.const_of_comp L.continuous hproj 1 0).trans (starLiftHomotopy_zero p hp v c)
 
-end TopologicalOrderCover
-end FiniteChains.Comb
+end FiniteChains.Comb.TopologicalOrderCover
+

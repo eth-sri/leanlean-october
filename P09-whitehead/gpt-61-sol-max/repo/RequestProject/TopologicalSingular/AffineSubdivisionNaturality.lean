@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.AffineVertexChains
-public import RequestProject.TopologicalSingular.VertexSubdivisionHomotopy
-
-@[expose] public section
+import RequestProject.TopologicalSingular.AffineVertexChains
+import RequestProject.TopologicalSingular.VertexSubdivisionHomotopy
 
 /-! # Naturality of affine subdivision and its homotopy -/
 
@@ -13,12 +11,12 @@ namespace FiniteChains.AffineVertexChains
 
 open Set Topology VertexChains
 
-universe u v
 variable {E : Type u} {F : Type v}
-variable [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
-variable {A : Set E} {B : Set F} (hA : Convex ℝ A) (hB : Convex ℝ B)
+  [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
+  {A : Set E} {B : Set F} (hA : Convex ℝ A) (hB : Convex ℝ B)
 
-theorem realize_subdivide_naturality (f : E →L[ℝ] F) (hf : MapsTo f A B) (n : ℕ)
+  (f : E →L[ℝ] F)
+theorem realize_subdivide_naturality  (hf : MapsTo f A B) (n : ℕ)
     (c : VertexChains.Chain A n) :
     TopologicalSingular.map (restriction f hf) n (realize hA n (subdivide (center hA) n c)) =
       realize hB n (subdivide (center hB) n (VertexChains.map (restriction f hf) n c)) := by
@@ -26,10 +24,10 @@ theorem realize_subdivide_naturality (f : E →L[ℝ] F) (hf : MapsTo f A B) (n 
   have he := DFunLike.congr_fun
     (subdivide_naturality (center hA) (center hB) (restriction f hf)
       (center_naturality hA hB f hf) n) c
-  dsimp only [LinearMap.comp_apply] at he
+  dsimp  at he
   rw [he]
 
-theorem realize_subdivideHomotopy_naturality (f : E →L[ℝ] F) (hf : MapsTo f A B) (n : ℕ)
+theorem realize_subdivideHomotopy_naturality  (hf : MapsTo f A B) (n : ℕ)
     (c : VertexChains.Chain A n) :
     TopologicalSingular.map (restriction f hf) (n + 1)
         (realize hA (n + 1) (subdivideHomotopy (center hA) n c)) =
@@ -38,23 +36,24 @@ theorem realize_subdivideHomotopy_naturality (f : E →L[ℝ] F) (hf : MapsTo f 
   have he := DFunLike.congr_fun
     (subdivideHomotopy_naturality (center hA) (center hB) (restriction f hf)
       (center_naturality hA hB f hf) n) c
-  dsimp only [LinearMap.comp_apply] at he
+  dsimp  at he
   rw [he]
 
-noncomputable def standardMap {m n : ℕ} (f : Fin (m + 1) → Fin (n + 1)) :
+variable {m n : ℕ}
+noncomputable def standardMap  (f : Fin (m + 1) → Fin (n + 1)) :
     C(TopologicalSingular.Domain m, TopologicalSingular.Domain n) :=
   ⟨stdSimplex.map f, stdSimplex.continuous_map f⟩
 
-noncomputable def standardLinearMap {m n : ℕ} (f : Fin (m + 1) → Fin (n + 1)) :
+noncomputable def standardLinearMap  (f : Fin (m + 1) → Fin (n + 1)) :
     (Fin (m + 1) → ℝ) →L[ℝ] (Fin (n + 1) → ℝ) :=
   ⟨FunOnFinite.linearMap ℝ ℝ f, FunOnFinite.continuous_linearMap ℝ ℝ f⟩
 
-theorem standardLinearMap_mapsTo {m n : ℕ} (f : Fin (m + 1) → Fin (n + 1)) :
+theorem standardLinearMap_mapsTo  (f : Fin (m + 1) → Fin (n + 1)) :
     MapsTo (standardLinearMap f) (TopologicalSingular.Domain m) (TopologicalSingular.Domain n) := by
   intro z hz
   exact (stdSimplex.map f ⟨z, hz⟩).property
 
-theorem standardMap_vertices {m n : ℕ} (f : Fin (m + 1) → Fin (n + 1)) :
+theorem standardMap_vertices  (f : Fin (m + 1) → Fin (n + 1)) :
     standardMap f ∘ standardVertices m = standardVertices n ∘ f := by
   funext i
   exact stdSimplex.map_vertex f i

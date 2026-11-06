@@ -1,2 +1,1 @@
-module
-public import RequestProject.QCubeFacetIndex
+import RequestProject.QCubeFacetIndex

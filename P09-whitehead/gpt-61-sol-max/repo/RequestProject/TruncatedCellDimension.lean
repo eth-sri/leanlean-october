@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TruncatedCubePoset
-
-@[expose] public section
+import RequestProject.TruncatedCubePoset
 
 /-! Dimension and coordinate indices of the actual truncated-cell incidence model. -/
 
@@ -23,8 +21,8 @@ theorem truncatedCellDimension_strictMono : StrictMono (truncatedCellDimension (
   | inl c =>
     cases d with
     | inl d =>
-      change c.1.spx.card < d.1.spx.card
-      change c.1 ≤ d.1 at hle
+      dsimp!
+      
       have hc := Finset.card_le_card hle.1
       by_contra hnot
       have hs : c.1.spx = d.1.spx :=
@@ -34,17 +32,17 @@ theorem truncatedCellDimension_strictMono : StrictMono (truncatedCellDimension (
   | inr σ =>
     cases d with
     | inl d =>
-      change σ.1.card - 1 < d.1.spx.card
-      change σ.1 ⊆ d.1.spx ∧ d.1.sgn = 0 at hle
+      dsimp!
+      
       have hc := Finset.card_le_card hle.1
       have hp := Finset.card_pos.mpr σ.2.1
       omega
     | inr τ =>
-      change σ.1.card - 1 < τ.1.card - 1
-      change σ.1 ⊆ τ.1 at hle
-      have hc := Finset.card_le_card hle
+      dsimp!
+      
+      
       have hσ := Finset.card_pos.mpr σ.2.1
-      have hτ := Finset.card_pos.mpr τ.2.1
+      
       by_contra hnot
       have hs : σ.1 = τ.1 := Finset.eq_of_subset_of_card_le hle (by omega)
       exact hne (congrArg Sum.inr (Subtype.ext hs))
@@ -71,8 +69,8 @@ theorem truncatedFaceIndex_injective : Function.Injective (truncatedFaceIndex (A
   | inl c =>
     cases d with
     | inl d =>
-      have hcoord : qCubeToCoordinate c.1 = qCubeToCoordinate d.1 := Sum.inl.inj he
-      have hcube : c.1 = d.1 := qCubeCoordinateEquiv.injective (Subtype.ext hcoord)
+      have hcoord  := Sum.inl.inj he
+      have hcube  := qCubeCoordinateEquiv.injective (Subtype.ext hcoord)
       exact congrArg Sum.inl (Subtype.ext hcube)
     | inr σ => cases he
   | inr σ =>

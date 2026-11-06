@@ -1,14 +1,12 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.SingularPrism
-public import Mathlib.Algebra.Homology.Homotopy
-public import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
-public import Mathlib.Topology.Homotopy.Equiv
-public import Mathlib.CategoryTheory.Whiskering
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SingularPrism
+import Mathlib.Algebra.Homology.Homotopy
+import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
+import Mathlib.Topology.Homotopy.Equiv
+import Mathlib.CategoryTheory.Whiskering
 
 /-! # Continuous homotopies induce actual chain homotopies
 
@@ -25,17 +23,17 @@ namespace FiniteChains.TopologicalSingular
 
 open CategoryTheory AlgebraicTopology
 
-universe u
 variable {X Y Z : Type u} [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]
 
-noncomputable def simplicesMap (f : C(X, Y)) : simplices X ⟶ simplices Y where
+  (f : C(X, Y))
+noncomputable def simplicesMap  : simplices X ⟶ simplices Y where
   app n := TypeCat.ofHom (simplexMap f n.unop.len)
   naturality _ _ _ := rfl
 
-noncomputable def chainMap (f : C(X, Y)) : complex X ⟶ complex Y :=
+noncomputable def chainMap  : complex X ⟶ complex Y :=
   AlternatingFaceMapComplex.map (Functor.whiskerRight (simplicesMap f) freeZ)
 
-theorem chainMap_f (f : C(X, Y)) (n : ℕ) :
+theorem chainMap_f  (n : ℕ) :
     (chainMap f).f n = ModuleCat.ofHom (map f n) := rfl
 
 theorem chainMap_id : chainMap (ContinuousMap.id X) = 𝟙 (complex X) := by
@@ -51,24 +49,20 @@ theorem chainMap_comp (f : C(X, Y)) (g : C(Y, Z)) :
   apply ModuleCat.hom_ext
   exact map_comp f g n
 
-noncomputable def prismComponent {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g)
+variable {f g : C(X, Y)}
+noncomputable def prismComponent  (H : ContinuousMap.Homotopy f g)
     (i j : ℕ) : (complex X).X i ⟶ (complex Y).X j :=
   if h : j = i + 1 then h ▸ ModuleCat.ofHom (SingularPrism.prism H i) else 0
 
-theorem prismComponent_succ {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g) (i : ℕ) :
+theorem prismComponent_succ  (H : ContinuousMap.Homotopy f g) (i : ℕ) :
     prismComponent H i (i + 1) = ModuleCat.ofHom (SingularPrism.prism H i) := by
   simp [prismComponent]
 
-noncomputable def chainHomotopy {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g) :
+noncomputable def chainHomotopy  (H : ContinuousMap.Homotopy f g) :
     _root_.Homotopy (chainMap g) (chainMap f) where
   hom := prismComponent H
   zero i j hij := by
-    have hne : j ≠ i + 1 := by
-      intro he
-      apply hij
-      subst j
-      exact rfl
-    simp only [prismComponent, dif_neg hne]
+    aesop (add simp [prismComponent])
   comm i := by
     cases i with
     | zero =>
@@ -103,8 +97,7 @@ noncomputable def chainHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y) :
     rw [← chainMap_comp, ← chainMap_id]
     exact (chainHomotopy e.right_inv.some).symm
 
-noncomputable def homologyIsoOfHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y) (n : ℕ) :
-    (complex X).homology n ≅ (complex Y).homology n :=
+noncomputable def homologyIsoOfHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y) (n : ℕ)  :=
   (chainHomotopyEquiv e).toHomologyIso n
 
 end FiniteChains.TopologicalSingular

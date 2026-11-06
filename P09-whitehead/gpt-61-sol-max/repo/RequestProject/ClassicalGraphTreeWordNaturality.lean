@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ClassicalGraphTreeBoundaryWords
-public import RequestProject.BoundaryWordNaturality
-
-@[expose] public section
+import RequestProject.ClassicalGraphTreeBoundaryWords
+import RequestProject.BoundaryWordNaturality
 
 /-! Tree deletion commutes literally with compatible graph inclusions.
 Thus the resulting rose relators retain their original cell labels and
@@ -13,7 +11,7 @@ Unverified source. -/
 noncomputable section
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
-open scoped Classical
+
 variable {V W J K : Type} [TopologicalSpace V] [TopologicalSpace W]
   [DiscreteTopology V] [DiscreteTopology W]
   (r : BoundaryFamily J (Fin 1 → ℝ) → V)
@@ -32,9 +30,8 @@ theorem treeLetters_map (l : List (J × Bool)) :
   | cons g l ih =>
     change treeLetters s U ((h.onE g.1, g.2) :: Comb.mapPath h l) = _
     by_cases hg : T.isTree g.1
-    · have hu := (ht g.1).mpr hg
-      simpa only [treeLetters, dif_pos hg, dif_pos hu] using ih
-    · have hu : ¬U.isTree (h.onE g.1) := fun hu => hg ((ht g.1).mp hu)
+    · grind [treeLetters]
+    · have hu  := fun hu => hg ((ht g.1).mp hu)
       simp only [treeLetters, dif_neg hg, dif_neg hu, List.map_cons]
       rw [ih]
       rfl
@@ -42,8 +39,7 @@ theorem treeLetters_map (l : List (J × Bool)) :
 theorem BoundaryWords.eraseTree_natural (b : BoundaryWords r) :
     (b.map h).eraseTree s U =
       (b.eraseTree r T).map (graphRoseCombinatorialMap r s T U h ht) := by
-  have hw : ∀ i, ((b.map h).eraseTree s U).word i =
-      ((b.eraseTree r T).map (graphRoseCombinatorialMap r s T U h ht)).word i :=
+  have hw  :=
     fun i => treeLetters_map r s T U h ht (b.word i)
   have extWords (x y : BoundaryWords (roseAttaching {k : K // ¬U.isTree k}))
       (hv : x.vertex = y.vertex) (hw : x.word = y.word) : x = y := by

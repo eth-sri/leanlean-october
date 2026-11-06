@@ -1,23 +1,19 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SquareSubdivisionGeometry
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SquareSubdivisionGeometry
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
-noncomputable def leftSquareSweep (p : GenLoop (Fin 2) X x) :
-    ContinuousMap.Homotopy (p.val.comp (leftRectangle 0)) (p.val.comp (leftRectangle squareHalf)) :=
+variable (p : GenLoop (Fin 2) X x)
+noncomputable def leftSquareSweep   :=
   (ContinuousMap.Homotopy.refl p.val).comp leftRectangleSweep
 
-noncomputable def rightSquareSweep (p : GenLoop (Fin 2) X x) :
-    ContinuousMap.Homotopy (p.val.comp (rightRectangle 0)) (p.val.comp (rightRectangle squareHalf)) :=
+noncomputable def rightSquareSweep   :=
   (ContinuousMap.Homotopy.refl p.val).comp rightRectangleSweep
 
-theorem squareSweep_common_prism (p : GenLoop (Fin 2) X x) :
+theorem squareSweep_common_prism  :
     SingularPrism.prism (leftSquareSweep p) 1 (Finsupp.single (cubeEdge 0 1) 1) =
       SingularPrism.prism (rightSquareSweep p) 1 (Finsupp.single (cubeEdge 0 0) 1) := by
   rw [SingularPrism.prism_single, SingularPrism.prism_single, SingularPrism.altSum]
@@ -35,7 +31,7 @@ theorem squareSweep_common_prism (p : GenLoop (Fin 2) X x) :
 
 /-- All six outer-edge prisms vanish. The two copies of the moving internal
 edge are equal and have opposite signs. -/
-theorem squareSweep_boundary_prisms_cancel (p : GenLoop (Fin 2) X x) :
+theorem squareSweep_boundary_prisms_cancel  :
     SingularPrism.prism (leftSquareSweep p) 1 (boundary 1 squareFundamentalChain) +
       SingularPrism.prism (rightSquareSweep p) 1 (boundary 1 squareFundamentalChain) = 0 := by
   have hlh (v : I) (hv : v = 0 ∨ v = 1) :
@@ -57,7 +53,7 @@ theorem squareSweep_boundary_prisms_cancel (p : GenLoop (Fin 2) X x) :
   rw [squareSweep_common_prism]
   abel
 
-theorem squareSweep_left_start (p : GenLoop (Fin 2) X x) :
+theorem squareSweep_left_start  :
     map (p.val.comp (leftRectangle 0)) 2 squareFundamentalChain = 0 := by
   have he : p.val.comp (leftRectangle 0) = ContinuousMap.const _ x := by
     apply ContinuousMap.ext
@@ -68,7 +64,7 @@ theorem squareSweep_left_start (p : GenLoop (Fin 2) X x) :
 
 /-- Splitting the parameter square into two rectangles changes its pushed
 fundamental chain by an explicit singular boundary. -/
-theorem squareCycle_rectangle_sum_difference_bounds (p : GenLoop (Fin 2) X x) :
+theorem squareCycle_rectangle_sum_difference_bounds  :
     map (p.val.comp (leftRectangle squareHalf)) 2 squareFundamentalChain +
       map (p.val.comp (rightRectangle squareHalf)) 2 squareFundamentalChain - squareCycle p ∈
         LinearMap.range (boundary 2) := by

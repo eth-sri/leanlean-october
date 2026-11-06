@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusSpineCells
-public import RequestProject.TruncatedCellIncidence
-public import RequestProject.OrderComplexFreeFace
-
-@[expose] public section
+import RequestProject.GenusSpineCells
+import RequestProject.TruncatedCellIncidence
+import RequestProject.OrderComplexFreeFace
 
 /-! Homotopy reflection for deletion of an actual free face at a genus collapse stage. -/
 namespace FiniteChains.Davis.Genus
@@ -19,8 +17,7 @@ theorem genus_top_cell_maximal (t : QOld (cmpRel (GenusVertex q)))
   change t.1.spx.card ≤ truncatedCellDimension x at hmono
   have he : truncatedCellDimension (Sum.inl t : GenusTruncatedCell q) =
       truncatedCellDimension x := by
-    change t.1.spx.card = truncatedCellDimension x
-    omega
+    grind [truncatedCellDimension]
   exact (truncatedCell_eq_of_le_of_dimension_eq htx he).symm
 
 /-- A top cube has a genuine old vertex on its boundary different from any deleted two-face.
@@ -50,13 +47,8 @@ theorem genus_top_boundary_nonempty (f : GenusTruncatedCell q)
     simp [w, v, hk]
   have hdim : truncatedCellDimension (Sum.inl w : GenusTruncatedCell q) = 0 := rfl
   refine ⟨Sum.inl w, ?_, lt_of_le_of_ne hw ?_⟩
-  · intro he
-    have hh := congrArg truncatedCellDimension he
-    omega
-  · intro he
-    have hh := congrArg truncatedCellDimension he
-    change truncatedCellDimension (Sum.inl w : GenusTruncatedCell q) = t.1.spx.card at hh
-    omega
+  · aesop
+  · grind
 
 theorem genus_free_face_deletion_injIn
     (C : GenusTruncatedCell q → Prop) (S : Finset (Cube (GenusVertex q)))
@@ -77,10 +69,7 @@ theorem genus_free_face_deletion_injIn
     exact (Finset.mem_inter.mp hm).1
   have hft := truncatedCell_le_of_inc f t hinc
   have hne : (Sum.inl t : GenusTruncatedCell q) ≠ f := by
-    intro he
-    have hh := congrArg truncatedCellDimension he
-    change t.1.spx.card = truncatedCellDimension f at hh
-    omega
+    aesop (add simp [truncatedCellDimension])
   apply injIn_delete_free_face htC hft hne
   intro x hx hfx hxf
   have hdim : truncatedCellDimension x = 3 := by
@@ -92,16 +81,16 @@ theorem genus_free_face_deletion_injIn
     have hh := genus_cutCell_dimension_le_two q σ
     omega
   | inl d =>
-    have hd : d.1.spx.card = 3 := hdim
+    have hd  := hdim
     have hL : d.1.spx ∈ (ASC.orderComplex (GenusVertex q)).faces := by
       intro a ha b hb _
       exact (isSimplex_cmpRel_iff.mp d.1.isSimplex) a ha b hb
     have hi := truncatedCell_inc_of_le f d hfx hf hd hL
     have hm := Finset.mem_inter.mpr ⟨hi, hactive d hx hd⟩
     rw [hfree] at hm
-    have he : qCubeToCoordinate d.1 = qCubeToCoordinate t.1 :=
+    have he  :=
       Finset.mem_singleton.mp hm
-    have hc : d.1 = t.1 := qCubeCoordinateEquiv.injective (Subtype.ext he)
+    have hc  := qCubeCoordinateEquiv.injective (Subtype.ext he)
     exact congrArg Sum.inl (Subtype.ext hc)
 
 /-- The boundary of a later cube contains no face deleted in the prefix of the actual
@@ -117,13 +106,11 @@ theorem genus_later_top_boundary_avoids_prefix_faces
   obtain ⟨p, hp, hpf⟩ := List.mem_map.mp hf
   obtain ⟨r, hr, hrt⟩ := List.mem_map.mp ht
   have hfullf : truncatedFaceIndex f ∈ (genusChainCollapse q).map Prod.snd := by
-    rw [hl]
-    exact List.mem_map.mpr ⟨p, List.mem_append.mpr (Or.inl hp), hpf⟩
+    aesop
   have hfullt : qCubeToCoordinate t.1 ∈ (genusChainCollapse q).map Prod.fst := by
-    rw [hl]
-    exact List.mem_map.mpr ⟨r, List.mem_append.mpr (Or.inr hr), hrt⟩
+    grind
   have hdimf := genus_removedFace_dimension q f hfullf
-  have hdimt : t.1.spx.card = 3 :=
+  have hdimt  :=
     (genus_oldCell_removed_iff_dimension_three q t).mp hfullt
   have hL : t.1.spx ∈ (ASC.orderComplex (GenusVertex q)).faces := by
     intro a ha b hb _

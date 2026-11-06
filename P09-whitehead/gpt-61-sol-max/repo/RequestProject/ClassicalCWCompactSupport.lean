@@ -1,17 +1,15 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib.Topology.CWComplex.Classical.Basic
-public import Mathlib.Topology.Compactness.Compact
-public import Mathlib.Data.Set.Finite.Lattice
-
-@[expose] public section
+import Mathlib.Topology.CWComplex.Classical.Basic
+import Mathlib.Topology.Compactness.Compact
+import Mathlib.Data.Set.Finite.Lattice
 
 /-! Compact subsets of an original classical Hausdorff CW complex meet only
 finitely many original open cells. The proof uses the actual weak topology
 and closure-finiteness axioms. Pending Lean verification. -/
 
 noncomputable section
-open scoped Classical
+
 open Set Topology
 
 namespace FiniteChains.ClassicalCW
@@ -20,17 +18,17 @@ variable {X : Type} [TopologicalSpace X] [T2Space X]
   [CWComplex (Set.univ : Set X)]
 
 /-- At most one selected point lies in each original open cell. -/
-def CellSeparated (S : Set X) : Prop :=
+def CellSeparated (S : Set X)  :=
   ∀ n (j : RelCWComplex.cell (Set.univ : Set X) n),
     (S ∩ RelCWComplex.openCell n j).Subsingleton
 
-omit [T2Space X] in
+section
+omit [T2Space X]
 theorem CellSeparated.mono {S T : Set X} (hS : CellSeparated S) (hTS : T ⊆ S) :
     CellSeparated T := by
   intro n j x hx y hy
   exact hS n j ⟨hTS hx.1, hx.2⟩ ⟨hTS hy.1, hy.2⟩
 
-omit [T2Space X] in
 theorem CellSeparated.finite_inter_closedCell {S : Set X} (hS : CellSeparated S)
     (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set X) n) :
     (S ∩ RelCWComplex.closedCell n j).Finite := by
@@ -48,6 +46,7 @@ theorem CellSeparated.finite_inter_closedCell {S : Set X} (hS : CellSeparated S)
       Set.mem_iUnion.mpr ⟨k, Set.mem_iUnion.mpr ⟨hk, hx.1, hcell⟩⟩⟩
   rw [← RelCWComplex.cellFrontier_union_openCell_eq_closedCell, Set.inter_union_distrib_left]
   exact hfront.union (hS n j).finite
+end
 
 theorem CellSeparated.isClosed {S : Set X} (hS : CellSeparated S) : IsClosed S := by
   apply (CWComplex.closed (Set.univ : Set X) S (Set.subset_univ _)).mpr
@@ -64,8 +63,8 @@ theorem CellSeparated.isDiscrete {S : Set X} (hS : CellSeparated S) : IsDiscrete
   have hc := hT.isClosed.preimage (continuous_subtype_val : Continuous (Subtype.val : S → X))
   simpa only [Set.preimage_image_eq _ Subtype.val_injective] using hc
 
-theorem CellSeparated.finite_of_subset_compact {S K : Set X} (hS : CellSeparated S)
-    (hK : IsCompact K) (hSK : S ⊆ K) : S.Finite :=
+abbrev CellSeparated.finite_of_subset_compact {S K : Set X} (hS : CellSeparated S)
+    (hK : IsCompact K) (hSK : S ⊆ K)  :=
   (hK.of_isClosed_subset hS.isClosed hSK).finite hS.isDiscrete
 
 def touchedCells (K : Set X) : Set (Σ n, RelCWComplex.cell (Set.univ : Set X) n) :=
@@ -82,26 +81,19 @@ theorem IsCompact.finite_touchedCells {K : Set X} (hK : IsCompact K) :
       {j : RelCWComplex.cell (Set.univ : Set X) m} {x : X}
       (hi : x ∈ RelCWComplex.openCell n i) (hj : x ∈ RelCWComplex.openCell m j) :
       (⟨n, i⟩ : Σ n, RelCWComplex.cell (Set.univ : Set X) n) = ⟨m, j⟩ := by
-    apply RelCWComplex.eq_of_not_disjoint_openCell
-    intro hd
-    exact Set.disjoint_left.mp hd hi hj
+    grind [Topology.RelCWComplex.eq_of_not_disjoint_openCell]
   have hinj : Function.Injective p := by
     intro c d h
     apply Subtype.ext
     exact heq (hp c).2 (by simpa only [h] using (hp d).2)
   have hs : CellSeparated (Set.range p) := by
     intro n j x hx y hy
-    obtain ⟨c, rfl⟩ := hx.1
-    obtain ⟨d, rfl⟩ := hy.1
-    have hc := heq (hp c).2 hx.2
-    have hd := heq (hp d).2 hy.2
-    have hcd : c = d := Subtype.ext (hc.trans hd.symm)
-    exact congrArg p hcd
+    grind
   have hpK : Set.range p ⊆ K := by
     rintro _ ⟨c, rfl⟩
     exact (hp c).1
   have hf := hs.finite_of_subset_compact hK hpK
-  letI : Finite (touchedCells K) := (Set.finite_range_iff hinj).mp hf
+  letI  := (Set.finite_range_iff hinj).mp hf
   exact Set.toFinite _
 
 /-- A compact subset of a lower skeleton has genuine finite support by
@@ -117,7 +109,7 @@ theorem IsCompact.finite_lower_support {K : Set X} (hK : IsCompact K) (d : ℕ)
   refine ⟨I, ?_⟩
   intro x hx
   have hxall : x ∈ ⋃ m, ⋃ j : RelCWComplex.cell (Set.univ : Set X) m,
-      RelCWComplex.openCell m j := by rw [CWComplex.iUnion_openCell_eq_complex]; trivial
+      RelCWComplex.openCell m j := by simp_all [Topology.CWComplex.iUnion_openCell_eq_complex]
   obtain ⟨m, j, hj⟩ := by simpa only [Set.mem_iUnion] using hxall
   have hmd : m < d := by
     by_contra h

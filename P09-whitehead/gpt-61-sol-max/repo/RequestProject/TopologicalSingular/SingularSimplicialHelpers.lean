@@ -1,35 +1,29 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SingularHornFilling
-public import RequestProject.TopologicalSingular.SimplexFaceIntersections
+import RequestProject.TopologicalSingular.SingularHornFilling
+import RequestProject.TopologicalSingular.SimplexFaceIntersections
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
-universe u
 variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 
-noncomputable def singularDegeneracy (i : Fin (n + 1)) (tau : Simplex X n) :
-    Simplex X (n + 1) := (simplices X).σ i tau
+  (i : Fin (n + 1))
+  (tau : Simplex X n)
+noncomputable def singularDegeneracy    := (simplices X).σ i tau
 
 @[simp] theorem singular_face_const (i : Fin (n + 2)) (x : X) :
     face i (ContinuousMap.const (Domain (n + 1)) x) =
       ContinuousMap.const (Domain n) x := rfl
 
-@[simp] theorem singular_degeneracy_const (i : Fin (n + 1)) (x : X) :
+@[simp] theorem singular_degeneracy_const  (x : X) :
     singularDegeneracy i (ContinuousMap.const (Domain n) x) =
       ContinuousMap.const (Domain (n + 1)) x := rfl
 
-@[simp] theorem singular_face_degeneracy_self (i : Fin (n + 1)) (tau : Simplex X n) :
-    face i.castSucc (singularDegeneracy i tau) = tau :=
+@[simp] abbrev singular_face_degeneracy_self    :=
   CategoryTheory.ConcreteCategory.congr_hom ((simplices X).δ_comp_σ_self (i := i)) tau
 
-@[simp] theorem singular_face_degeneracy_succ (i : Fin (n + 1)) (tau : Simplex X n) :
-    face i.succ (singularDegeneracy i tau) = tau :=
+@[simp] abbrev singular_face_degeneracy_succ    :=
   CategoryTheory.ConcreteCategory.congr_hom ((simplices X).δ_comp_σ_succ (i := i)) tau
 
 theorem singular_face_degeneracy_le (i : Fin (n + 2)) (j : Fin (n + 1))
@@ -61,8 +55,7 @@ theorem singular_horn_filler_of_face_compatible {Y : Type} [TopologicalSpace Y]
     rfl
   obtain ⟨a, ha⟩ := Fin.exists_succAbove_eq (Ne.symm hjk)
   have hz : z.val a = 0 := by
-    rw [← simplex_face_coordinate_succAbove j z a, ha, h]
-    exact simplex_face_coordinate_zero k w
+    grind [FiniteChains.TopologicalSingular.simplex_face_coordinate_succAbove, FiniteChains.TopologicalSingular.simplex_face_coordinate_zero]
   obtain ⟨q, hq⟩ := domain_zero_coordinate_face z a hz
   have hw : w = stdSimplex.map (SimplexCategory.δ (a.predAbove j)) q := by
     apply simplex_face_injective k

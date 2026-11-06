@@ -1,18 +1,16 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Fox
-
-@[expose] public section
+import RequestProject.Fox
 
 namespace FiniteChains
 variable {α : Type*} [DecidableEq α]
 
 /-- The group element read by one oriented letter. -/
-def foxWordLetter (p : α × Bool) : FreeGroup α :=
+def foxWordLetter (p : α × Bool)  :=
   if p.2 then FreeGroup.of p.1 else (FreeGroup.of p.1)⁻¹
 
 /-- The signed contribution of an oriented generator edge to its Fox coordinate. -/
-noncomputable def foxWordIncidence (i : α) (p : α × Bool) : FreeGroupRing α :=
+noncomputable def foxWordIncidence (i : α) (p : α × Bool)  :=
   if i = p.1 then (if p.2 then 1 else -grp (FreeGroup.of p.1)⁻¹) else 0
 
 omit [DecidableEq α] in
@@ -20,16 +18,12 @@ theorem fox_mk_single_letter (p : α × Bool) :
     FreeGroup.mk [p] = foxWordLetter p := by
   obtain ⟨a, b⟩ := p
   cases b
-  · change FreeGroup.mk [(a, false)] = (FreeGroup.of a)⁻¹
-    rw [show FreeGroup.of a = FreeGroup.mk [(a, true)] from rfl, FreeGroup.inv_mk]
-    rfl
+  · rfl
   · rfl
 
 theorem fox_letter_incidence (i : α) (p : α × Bool) :
     fox i (foxWordLetter p) = foxWordIncidence i p := by
-  obtain ⟨a, b⟩ := p
-  cases b <;> by_cases h : i = a <;>
-    simp [foxWordLetter, foxWordIncidence, fox_inv, h]
+  aesop (add simp [foxWordLetter, foxWordIncidence, fox_inv])
 
 /-- The actual signed edge sum of a word path, starting at the translate `g`.
 Negative letters contribute at the terminal generator coordinate. -/

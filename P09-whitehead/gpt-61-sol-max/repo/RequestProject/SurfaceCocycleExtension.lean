@@ -1,14 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.SurfaceCocycleFan
-public import RequestProject.BarycentricCocycleDescent
-
-@[expose] public section
+import RequestProject.SurfaceCocycleFan
+import RequestProject.BarycentricCocycleDescent
 
 /-! Boundary flat sections extend across the actual closed polygon surface. -/
 namespace FiniteChains.Davis.SurfaceSection
 open RACG Mirror Comb Cell
-universe u v w
 variable {κ ι : Type u} {M : ℕ} [NeZero M]
   {vc : Fin M → κ} {ec : Fin M → ι} (hc : Compat vc ec)
   {G : Type v} [Group G] {Ω : Type w} [MulAction G Ω]
@@ -42,8 +39,7 @@ theorem section_flat : c.IsFlatSection (surfaceSection hc c rv re (centreValue h
     · subst x; exact w_f hc c rv re (centreValue hc c rv) p
     · subst x; exact w1_f hc c rv re (centreValue hc c rv) hb p
   case cvx.dia x p =>
-    subst x
-    exact w_d hc c rv re (centreValue hc c rv) p
+    aesop
   case cvx.gdi x p =>
     subst x
     exact w1_g hc c rv re (centreValue hc c rv) hb p
@@ -108,13 +104,9 @@ theorem exists_flat_section : ∃ s : SCell vc ec hc → Ω,
 
 end FiniteChains.Davis.SurfaceSection
 
-namespace FiniteChains.Davis
-open RACG Mirror Comb Cell
-universe u v w
-variable {κ ι : Type u} {M : ℕ} [NeZero M] [DecidableEq κ] [DecidableEq ι]
-  {vc : Fin M → κ} {ec : Fin M → ι} (hc : Compat vc ec)
-  {G : Type v} [Group G] {Ω : Type w} [MulAction G Ω]
-  (c : OrdCocycle (NeSpx (cmpRel (SCell vc ec hc))) G)
-  (rv : κ → Ω) (re : ι → Ω)
 
-end FiniteChains.Davis
+
+
+
+
+

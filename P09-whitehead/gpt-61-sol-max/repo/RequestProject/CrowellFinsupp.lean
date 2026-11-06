@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.FoxFinsupp
-public import RequestProject.CoverHomologyOne
-public import RequestProject.MagnusKernel
-
-@[expose] public section
+import RequestProject.FoxFinsupp
+import RequestProject.CoverHomologyOne
+import RequestProject.MagnusKernel
 
 /-! The Crowell sequence with finite chains and arbitrary cell-index types. -/
 
@@ -15,19 +13,27 @@ variable {α : Type*} [DecidableEq α] (N : Subgroup (FreeGroup α)) [N.Normal]
 @[simp] theorem coe_coverFoxGradient (w : FreeGroup α) :
     (coverFoxGradient N w : α → CoverRing N) = foxVec N w := rfl
 
-theorem coverFoxGradient_mul {v : FreeGroup α} (hv : v ∈ N) (w : FreeGroup α) :
+variable {v : FreeGroup α}
+  (hv : v ∈ N)
+include hv in
+include v in
+theorem coverFoxGradient_mul   (w : FreeGroup α) :
     coverFoxGradient N (v * w) = coverFoxGradient N v + coverFoxGradient N w := by
   apply Finsupp.ext
   intro i
   exact congrFun (foxVec_mul hv w) i
 
-theorem coverFoxGradient_inv {v : FreeGroup α} (hv : v ∈ N) :
+include hv in
+include v in
+theorem coverFoxGradient_inv   :
     coverFoxGradient N v⁻¹ = -coverFoxGradient N v := by
   apply Finsupp.ext
   intro i
   exact congrFun (foxVec_inv hv) i
 
-theorem coverFoxGradient_zpow {v : FreeGroup α} (hv : v ∈ N) (n : ℤ) :
+include hv in
+include v in
+theorem coverFoxGradient_zpow   (n : ℤ) :
     coverFoxGradient N (v ^ n) = n • coverFoxGradient N v := by
   apply Finsupp.ext
   intro i
@@ -37,12 +43,12 @@ theorem coverFoxGradient_conj {r : FreeGroup α} (hr : r ∈ N) (f : FreeGroup �
     coverFoxGradient N (f * r * f⁻¹) = qgrp N f • coverFoxGradient N r := by
   apply Finsupp.ext
   intro i
-  change foxVec N (f * r * f⁻¹) i = qgrp N f * foxVec N r i
-  simpa only [proj_grp, Pi.smul_apply, smul_eq_mul] using congrFun (foxVec_conj hr f) i
+  dsimp
+  simpa [proj_grp, Pi.smul_apply, smul_eq_mul] using congrFun (foxVec_conj hr f) i
 
 @[simp] theorem coverFoxGradient_one : coverFoxGradient N (1 : FreeGroup α) = 0 := by
   ext i
-  simp [coverFoxGradient]
+  simp 
 
 theorem coverFoxGradient_eq_zero_iff {w : FreeGroup α} (hw : w ∈ N) :
     coverFoxGradient N w = 0 ↔ w ∈ ⁅N, N⁆ := by
@@ -56,20 +62,11 @@ theorem exists_mem_of_coverFirstBoundary_eq_zero (c : α →₀ CoverRing N)
     (hc : coverFirstBoundary N c = 0) :
     ∃ r ∈ N, c = coverFoxGradient N r := by
   classical
-  let a : α → FreeGroupRing α := fun i => liftQ N (c i)
-  let b : FreeGroupRing α := ∑ i ∈ c.support, a i * (grp (FreeGroup.of i) - 1)
-  have hproja : ∀ i, proj N (a i) = c i := fun i => proj_liftQ N (c i)
+  let a  := fun i => liftQ N (c i)
+  let b  := ∑ i ∈ c.support, a i * (grp (FreeGroup.of i) - 1)
+  have hproja  := fun i => proj_liftQ N (c i)
   have hprojb : proj N b = 0 := by
-    change proj N (∑ i ∈ c.support, a i * (grp (FreeGroup.of i) - 1)) = 0
-    rw [map_sum]
-    change (∑ i ∈ c.support, proj N (a i * (grp (FreeGroup.of i) - 1))) = 0
-    have he : ∑ i ∈ c.support, proj N (a i * (grp (FreeGroup.of i) - 1)) =
-        coverFirstBoundary N c := by
-      change _ = ∑ i ∈ c.support, c i * (qgrp N (FreeGroup.of i) - 1)
-      apply Finset.sum_congr rfl
-      intro i hi
-      rw [map_mul, map_sub, proj_grp, map_one, hproja]
-    rw [he, hc]
+    aesop (add simp [proj_grp])
   have hfoxb : foxProj N b = (c : α → CoverRing N) := by
     funext j
     have hterm : ∀ i, foxLin j (a i * (grp (FreeGroup.of i) - 1)) =
@@ -87,8 +84,7 @@ theorem exists_mem_of_coverFirstBoundary_eq_zero (c : α →₀ CoverRing N)
     simp_rw [hterm]
     by_cases hj : j ∈ c.support
     · simpa [mul_ite, Finset.sum_ite_eq', hj] using hproja j
-    · have hz : c j = 0 := by simpa using hj
-      simp [mul_ite, hj, hz]
+    · simp_all
   obtain ⟨r, hr, he⟩ := foxProj_mem_foxMod N b hprojb
   refine ⟨r, hr, ?_⟩
   apply Finsupp.ext
@@ -101,8 +97,10 @@ variable {J : Type*} (ρ : J → FreeGroup α)
     coverSecondBoundary N ρ (Finsupp.single j x) = x • coverFoxGradient N (ρ j) :=
   Finsupp.linearCombination_single _ x j
 
+variable (hρ : ∀ j, ρ j ∈ N)
+include hρ in
 /-- The Fox vector of every consequence of the relators is a finite two-boundary. -/
-theorem exists_coverSecondBoundary_of_mem_normalClosure (hρ : ∀ j, ρ j ∈ N)
+theorem exists_coverSecondBoundary_of_mem_normalClosure 
     {w : FreeGroup α} (hw : w ∈ Subgroup.normalClosure (Set.range ρ)) :
     ∃ c : J →₀ CoverRing N, coverSecondBoundary N ρ c = coverFoxGradient N w := by
   classical
@@ -113,7 +111,7 @@ theorem exists_coverSecondBoundary_of_mem_normalClosure (hρ : ∀ j, ρ j ∈ N
       mul_mem' := by
         rintro v w ⟨hv, c, hc⟩ ⟨hw, d, hd⟩
         exact ⟨N.mul_mem hv hw, c + d, by
-          rw [map_add, hc, hd, coverFoxGradient_mul N hv]⟩
+          simp_all [coverFoxGradient_mul]⟩
       inv_mem' := by
         rintro w ⟨hw, c, hc⟩
         exact ⟨N.inv_mem hw, -c, by rw [map_neg, hc, coverFoxGradient_inv N hw]⟩ }
@@ -127,12 +125,12 @@ theorem exists_coverSecondBoundary_of_mem_normalClosure (hρ : ∀ j, ρ j ∈ N
     exact ⟨hρ j, Finsupp.single j 1, by rw [coverSecondBoundary_single, one_smul]⟩
   exact ((Subgroup.normalClosure_le_normal hrange) hw).2
 
+include hρ in
 /-- Every finite two-boundary is the Fox vector of a consequence of the relators. -/
-theorem exists_mem_normalClosure_of_coverSecondBoundary (hρ : ∀ j, ρ j ∈ N)
+theorem exists_mem_normalClosure_of_coverSecondBoundary 
     (c : J →₀ CoverRing N) :
     ∃ w ∈ Subgroup.normalClosure (Set.range ρ),
       coverSecondBoundary N ρ c = coverFoxGradient N w := by
-  classical
   have hRle : Subgroup.normalClosure (Set.range ρ) ≤ N := by
     apply Subgroup.normalClosure_le_normal
     rintro _ ⟨j, rfl⟩
@@ -153,8 +151,9 @@ theorem exists_mem_normalClosure_of_coverSecondBoundary (hρ : ∀ j, ρ j ∈ N
       intro i
       exact congrFun he i
 
+include hρ in
 /-- The integral Hurewicz membership calculation for arbitrary presentations. -/
-theorem coverFoxGradient_mem_range_iff (hρ : ∀ j, ρ j ∈ N)
+theorem coverFoxGradient_mem_range_iff 
     {w : FreeGroup α} (hw : w ∈ N) :
     (∃ c : J →₀ CoverRing N, coverSecondBoundary N ρ c = coverFoxGradient N w) ↔
       w ∈ Subgroup.normalClosure (Set.range ρ) ⊔ ⁅N, N⁆ := by
@@ -183,9 +182,10 @@ theorem coverFoxGradient_mem_range_iff (hρ : ∀ j, ρ j ∈ N)
       (coverFoxGradient_eq_zero_iff N (Subgroup.commutator_le_left N N ht)).mpr ht, add_zero]
     exact hc
 
+include hρ in
 /-- Perfectness of the quotient covering subgroup gives exactness in degree one,
 without any finite-presentation restriction. -/
-theorem exists_coverSecondBoundary_preimage (hρ : ∀ j, ρ j ∈ N)
+theorem exists_coverSecondBoundary_preimage 
     (hperfect : N ≤ Subgroup.normalClosure (Set.range ρ) ⊔ ⁅N, N⁆)
     (c : α →₀ CoverRing N) (hc : coverFirstBoundary N c = 0) :
     ∃ d : J →₀ CoverRing N, coverSecondBoundary N ρ d = c := by

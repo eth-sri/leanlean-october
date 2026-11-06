@@ -1,14 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RelativeTreeExtension
-
-@[expose] public section
+import RequestProject.RelativeTreeExtension
 
 /-! Cell inclusions between relative tree extensions with the same
 extra generators. Pending final Lean verification. -/
 
 noncomputable section
-open scoped Classical
+
 namespace FiniteChains.Comb.RelativeTreeExtension
 open SpanningTree
 variable {D : Complex2} (T : SpanningTree D) {Z S R : Type}

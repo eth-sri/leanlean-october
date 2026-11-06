@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.VertexChains
-
-@[expose] public section
+import RequestProject.TopologicalSingular.VertexChains
 
 /-! # Recursive subdivision of vertex chains
 
@@ -16,9 +14,8 @@ requires that the vertex map carry the chosen centers to chosen centers.
 
 namespace FiniteChains.VertexChains
 
-universe u v
 variable {V : Type u} {W : Type v}
-variable (center : ∀ n, Vertices V n → V)
+  (center : ∀ n, Vertices V n → V)
 
 noncomputable def subdivide : (n : ℕ) → Chain V n →ₗ[ℤ] Chain V n
   | 0 => LinearMap.id
@@ -27,19 +24,17 @@ noncomputable def subdivide : (n : ℕ) → Chain V n →ₗ[ℤ] Chain V n
 
 theorem subdivide_zero (c : Chain V 0) : subdivide center 0 c = c := rfl
 
-theorem subdivide_succ_single (n : ℕ) (v : Vertices V (n + 1)) (r : ℤ) :
+variable (n : ℕ)
+theorem subdivide_succ_single  (v : Vertices V (n + 1)) (r : ℤ) :
     subdivide center (n + 1) (Finsupp.single v r) =
       r • cone (center (n + 1) v) n (subdivide center n (boundary n (Finsupp.single v 1))) := by
-  simp only [subdivide, Finsupp.linearCombination_single]
+  simp [subdivide]
 
-theorem boundary_subdivide (n : ℕ) :
+theorem boundary_subdivide  :
     (boundary n).comp (subdivide center (n + 1)) = (subdivide center n).comp (boundary n) := by
   induction n with
   | zero =>
-    apply linearMap_ext_basis
-    intro v
-    simp only [LinearMap.comp_apply, subdivide_succ_single, one_smul, subdivide_zero]
-    rw [boundary_cone_zero, augmentation_boundary, zero_smul, sub_zero]
+    aesop (add simp [subdivide_succ_single, subdivide_zero, boundary_cone_zero, augmentation_boundary])
   | succ n ih =>
     apply linearMap_ext_basis
     intro v
@@ -50,7 +45,7 @@ theorem boundary_subdivide (n : ℕ) :
       rw [← LinearMap.comp_apply, ih, LinearMap.comp_apply, boundary_boundary, map_zero]
     rw [hz, map_zero, sub_zero]
 
-theorem subdivide_boundary (n : ℕ) (c : Chain V (n + 1)) :
+theorem subdivide_boundary  (c : Chain V (n + 1)) :
     subdivide center n (boundary n c) = boundary n (subdivide center (n + 1) c) :=
   (DFunLike.congr_fun (boundary_subdivide center n) c).symm
 
@@ -62,10 +57,10 @@ theorem subdivide_naturality (other : ∀ n, Vertices W n → W) (f : V → W)
   | succ n ih =>
     apply linearMap_ext_basis
     intro v
-    simp only [LinearMap.comp_apply, subdivide_succ_single, one_smul, map_single]
+    simp [subdivide_succ_single]
     rw [map_cone, hf]
     have he := DFunLike.congr_fun ih (boundary n (Finsupp.single v 1))
-    dsimp only [LinearMap.comp_apply] at he
+    dsimp [LinearMap.comp_apply] at he
     rw [he, map_boundary, map_single]
 
 end FiniteChains.VertexChains

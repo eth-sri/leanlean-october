@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Cockcroft
-public import RequestProject.FoxNaturality
-
-@[expose] public section
+import RequestProject.Cockcroft
+import RequestProject.FoxNaturality
 
 /-!
 # Adding one generator and one relator: no new elements of `π₂`
@@ -39,15 +37,13 @@ of `π₂` at all: every Fox cycle of the enlarged presentation is a Fox cycle o
 presentation with coefficients in the bigger group ring.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
 
 namespace FiniteChains
 
 open MonoidAlgebra
 
-section Regular
+section
 
 variable {k G : Type*} [Ring k] [Group G]
 
@@ -59,7 +55,7 @@ theorem mul_one_sub_single_eq_zero {t : G} (ht : ¬ IsOfFinOrder t)
     (x : MonoidAlgebra k G) (hx : x * (1 - single t 1) = 0) : x = 0 := by
   have hstep : ∀ h : G, x.coeff h = x.coeff (h * t⁻¹) := by
     intro h
-    have hxt : x * single t (1 : k) = x := (sub_eq_zero.mp (by simpa [mul_sub] using hx)).symm
+    have hxt  := (sub_eq_zero.mp (by simpa [mul_sub] using hx)).symm
     have h2 := DFunLike.congr_fun (congrArg (fun f : MonoidAlgebra k G => f.coeff) hxt) h
     simpa [MonoidAlgebra.mul_single_apply] using h2.symm
   by_contra hne
@@ -76,52 +72,33 @@ theorem mul_one_sub_single_eq_zero {t : G} (ht : ¬ IsOfFinOrder t)
         rw [hrw, ← hstep (g * (t ^ m)⁻¹)]
         exact ih
   have hsub : Set.range (fun n : ℕ => g * (t ^ n)⁻¹) ⊆ (x.coeff.support : Set G) := by
-    rintro _ ⟨n, rfl⟩
-    exact Finsupp.mem_support_iff.mpr (key n)
+    grind
   have hinj : Function.Injective (fun n : ℕ => g * (t ^ n)⁻¹) := by
     intro a b hab
     simp only [mul_right_inj, inv_inj] at hab
     exact injective_pow_iff_not_isOfFinOrder.mpr ht hab
   exact (Set.infinite_range_of_injective hinj) (Set.Finite.subset x.coeff.support.finite_toSet hsub)
 
-end Regular
+end
 
-universe u
 
-variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
-variable (ρ : J → FreeGroup α) (w₀ : FreeGroup (Option α))
 
-/-- The presentation obtained from `⟨x_i | r_j⟩` by adjoining one new generator (the element
-`none`) and one new relator `w₀`. -/
-def extRel : Option J → FreeGroup (Option α)
-  | none => w₀
-  | some j => FreeGroup.map Option.some (ρ j)
 
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] in
-@[simp] theorem extRel_none : extRel ρ w₀ none = w₀ := rfl
 
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] in
-@[simp] theorem extRel_some (j : J) :
-    extRel ρ w₀ (some j) = FreeGroup.map Option.some (ρ j) := rfl
 
-/-- The map `π₁(K) → π₁(K')` induced by the extension. -/
-def extHom : PresGroup ρ →* PresGroup (extRel ρ w₀) :=
-  QuotientGroup.map _ _ (FreeGroup.map Option.some) (by
-    refine Subgroup.normalClosure_le_normal ?_
-    rintro _ ⟨j, rfl⟩
-    refine Subgroup.mem_comap.2 ?_
-    have : FreeGroup.map Option.some (ρ j) = extRel ρ w₀ (some j) := rfl
-    rw [this]
-    exact Subgroup.subset_normalClosure (Set.mem_range_self _))
 
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] in
-@[simp] theorem extHom_mk (w : FreeGroup α) :
-    extHom ρ w₀ (QuotientGroup.mk w) = QuotientGroup.mk (FreeGroup.map Option.some w) := rfl
 
-/-- The ring map of group rings induced by `extHom`. -/
-noncomputable def extRingHom :
-    MonoidAlgebra ℤ (PresGroup ρ) →+* MonoidAlgebra ℤ (PresGroup (extRel ρ w₀)) :=
-  MonoidAlgebra.mapDomainRingHom ℤ (extHom ρ w₀)
+
+
+
+
+
+
+
+
+
+
+
 
 /-! ### The two relators used in rule 1 -/
 

@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveOneDecoding
-
-@[expose] public section
+import RequestProject.OrderNerveOneDecoding
 
 namespace FiniteChains.Comb
 open FreeAbelianGroup
-universe u
 variable {P : Type u}
 
 @[simp] theorem decodeOrdNerve0_of (l : List P) :
@@ -21,8 +18,6 @@ theorem ordNerveChain0_decode (c : Nerve.Ch P) :
   cases l with
   | nil => simp [decodeOrdVertexList]
   | cons a l =>
-    cases l with
-    | nil => simp [decodeOrdVertexList, ordNerveChain0]
-    | cons b l => simp [decodeOrdVertexList]
+    cases l <;> simp_all [decodeOrdVertexList, ordNerveChain0]
 
 end FiniteChains.Comb

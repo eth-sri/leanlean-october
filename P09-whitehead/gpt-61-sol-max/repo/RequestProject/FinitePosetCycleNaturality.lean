@@ -1,16 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.FinitePosetCycleRealization
-public import RequestProject.OrderNerveRealizationMapCoordinates
-
-@[expose] public section
+import RequestProject.FinitePosetCycleRealization
+import RequestProject.OrderNerveRealizationMapCoordinates
 
 /-! The explicit cycle boundary parametrization is natural under a map
 preserving the ordered vertex enumeration. Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval
-open Set Topology
+
 
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
@@ -27,7 +25,7 @@ theorem arcConcat_natural {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
   induction n generalizing t with
   | zero => exact h 0 t
   | succ n ih =>
-    simp only [arcConcat, Path.trans_apply]
+    simp [arcConcat, Path.trans_apply]
     split_ifs
     · exact ih (v ∘ Fin.castSucc) (w ∘ Fin.castSucc)
         (fun i => F i.castSucc) (fun i => G i.castSucc)
@@ -49,7 +47,7 @@ theorem orderNerveComparablePath_natural_bijective {P Q : Type}
   funext q
   obtain ⟨p, rfl⟩ := hb.2 q
   rw [orderNerveRealizationCoordinates_map_injective f hf hb.1]
-  simp only [orderNerveComparablePath_coordinates, hb.1.eq_iff]
+  simp [orderNerveComparablePath_coordinates, hb.1.eq_iff]
 
 namespace FinitePosetCycle
 
@@ -72,8 +70,7 @@ theorem vertex_map_bijective : Function.Bijective f := by
 include hv in
 theorem edge_natural (i : Fin (n + 1)) (t : I) :
     orderNerveRealizationMap f hf (C.edge i t) = D.edge i t := by
-  have h' : f (C.vertex i.castSucc) ≤ f (C.vertex i.succ) ∨
-      f (C.vertex i.succ) ≤ f (C.vertex i.castSucc) :=
+  have h'  :=
     (C.consecutive i).imp (fun h => hf h) (fun h => hf h)
   have h := orderNerveComparablePath_natural_bijective f hf
     (C.vertex_map_bijective D f hv) (C.consecutive i) h' t
@@ -82,11 +79,11 @@ theorem edge_natural (i : Fin (n + 1)) (t : I) :
   funext q
   simp only [edge, orderNerveComparablePath_coordinates, hv]
 
+variable (t : I)
 include hv in
-theorem lastEdge_natural (t : I) :
+theorem lastEdge_natural  :
     orderNerveRealizationMap f hf (C.lastEdge t) = D.lastEdge t := by
-  have h' : f (C.vertex (Fin.last (n + 1))) ≤ f (C.vertex 0) ∨
-      f (C.vertex 0) ≤ f (C.vertex (Fin.last (n + 1))) :=
+  have h'  :=
     C.closing.imp (fun h => hf h) (fun h => hf h)
   have h := orderNerveComparablePath_natural_bijective f hf
     (C.vertex_map_bijective D f hv) C.closing h' t
@@ -96,17 +93,17 @@ theorem lastEdge_natural (t : I) :
   simp only [lastEdge, orderNerveComparablePath_coordinates, hv]
 
 include hv in
-theorem traversal_natural (t : I) :
+theorem traversal_natural  :
     orderNerveRealizationMap f hf (C.traversal t) = D.traversal t := by
   have hp := arcConcat_natural (orderNerveRealizationMap f hf) n
     (orderNerveRealizationVertex ∘ C.vertex) (orderNerveRealizationVertex ∘ D.vertex)
     C.edge D.edge (C.edge_natural D f hf hv)
-  simp only [traversal, Path.trans_apply]
+  simp [traversal, Path.trans_apply]
   split_ifs
   · exact hp _
   · exact C.lastEdge_natural D f hf hv _
 
-theorem boundaryHomeomorph_traversal (t : I) :
+theorem boundaryHomeomorph_traversal  :
     C.boundaryHomeomorph (C.traversal t) =
       unitBoundarySquareHomeomorph.symm (squareBoundaryTraversal t) := by
   apply C.boundaryHomeomorph.symm.injective
@@ -132,5 +129,5 @@ theorem boundaryHomeomorph_natural_cast {m : ℕ} (D' : FinitePosetCycle Q m)
   subst m
   exact C.boundaryHomeomorph_natural D' f' hf' hv' x
 
-end FinitePosetCycle
-end FiniteChains.Comb
+end FiniteChains.Comb.FinitePosetCycle
+

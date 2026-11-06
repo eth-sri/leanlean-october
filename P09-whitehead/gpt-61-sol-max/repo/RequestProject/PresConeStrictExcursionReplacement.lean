@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresConeStrictGerms
-
-@[expose] public section
+import RequestProject.PresConeStrictGerms
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 /-- An actual strict-edge excursion through a relator apex has a genuine cylinder path replacement. -/
@@ -17,8 +14,8 @@ theorem exists_presCone_strictEdge_excursion_replacement (hpos : 0 < (w j).lengt
       PathIn (fun p => p ∈ coneAdjBaseSet (S := circSet w)) l ∧
       Htpy (orderCx (PresPos w)) e.val.1 d.val.1
         (mapPath (strictOrderIncl (PresPos w)) [(e, true), (d, false)]) l := by
-  have hx : e.val.1 < apexOf w j := he ▸ e.property
-  have hy : d.val.1 < apexOf w j := hd ▸ d.property
+  have hx  := he ▸ e.property
+  have hy  := hd ▸ d.property
   obtain ⟨l, hl, hc, hh⟩ := exists_presCone_strict_excursion_replacement w j hpos e.val.1 d.val.1 hx hy
   refine ⟨l, hl, hc, ?_⟩
   have hE : (strictOrderIncl (PresPos w)).onE e =

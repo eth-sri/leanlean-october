@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresCocyclePerfectCover
-public import RequestProject.OrderAcyclicRegularCover
-public import RequestProject.PresPosetDimension
-public import RequestProject.PresentationChainFinsupp
-
-@[expose] public section
+import RequestProject.PresCocyclePerfectCover
+import RequestProject.OrderAcyclicRegularCover
+import RequestProject.PresPosetDimension
+import RequestProject.PresentationChainFinsupp
 
 /-! Realization of the explicit perfect-subgroup cocycle cover. All covering,
 regularity and singular-acyclicity data are constructed, not additional inputs.
@@ -18,20 +16,23 @@ variable {α J : Type} [DecidableEq α] (w : J → List (α × Bool))
 
 def coveredPresentationTwoComplex : Whitehead.TwoComplex := by
   letI : Nonempty (PresPos w) := ⟨ptBase w⟩
-  letI : (nerve (PresPos w)).HasDimensionLE 2 :=
+  letI  :=
     orderNerve_hasDimensionLE (presPosDimension w) (presPosDimension_strictMono w) 2
       (presPosDimension_le_two w)
   exact orderNerveTwoComplex (PresPos w)
     (presPos_isConnected w (fun j => List.length_pos_iff.mp (hpos j)))
 
+variable (ρ : J → FreeGroup α)
+variable (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
+include hw in
 theorem coveredPresentation_hasAcyclicRegularCover_of_perfect
-    (ρ : J → FreeGroup α) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
+     
     (H : Subgroup (PresGroup ρ)) [H.Normal]
     (hsat : ∀ v : J →₀ MonoidAlgebra ℤ (PresGroup ρ), FoxSat (foxMatrixPres ρ) v H)
     (hperf : ⁅H, H⁆ = H) :
     Whitehead.HasAcyclicRegularCover (coveredPresentationTwoComplex w hpos) := by
   letI : Nonempty (PresPos w) := ⟨ptBase w⟩
-  letI : (nerve (PresPos w)).HasDimensionLE 2 :=
+  letI  :=
     orderNerve_hasDimensionLE (presPosDimension w) (presPosDimension_strictMono w) 2
       (presPosDimension_le_two w)
   let N := subgroupPreimage ρ H
@@ -42,21 +43,20 @@ theorem coveredPresentation_hasAcyclicRegularCover_of_perfect
     ((subgroupCoc w ρ hw H).cover_deck_transitive)
     (subgroupCover_isAcyclic w ρ hw hpos H hsat hperf)
 
+include hw in
 /-- The compactness necessity argument produces an actual connected regular
 topological cover with vanishing genuine singular homology. -/
 theorem coveredPresentation_hasAcyclicRegularCover_of_cellChains
-    (ρ : J → FreeGroup α) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
+     
     (hchains : HasCellChainsLift (foxMatrixPres ρ)) :
     Whitehead.HasAcyclicRegularCover (coveredPresentationTwoComplex w hpos) := by
-  obtain ⟨H, hn, _, hs, hp⟩ := fs_exists_perfect_normal_of_cellChains ρ hchains
-  letI := hn
-  exact coveredPresentation_hasAcyclicRegularCover_of_perfect w hpos ρ hw H hs hp
+  grind [FiniteChains.fs_exists_perfect_normal_of_cellChains, FiniteChains.PresModel.coveredPresentation_hasAcyclicRegularCover_of_perfect]
 
-theorem coveredPresentation_hasAcyclicRegularCover_of_presChains
-    (ρ : J → FreeGroup α) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
-    (hchains : ∀ n, Nonempty (PresChainFS ρ n)) :
-    Whitehead.HasAcyclicRegularCover (coveredPresentationTwoComplex w hpos) :=
-  coveredPresentation_hasAcyclicRegularCover_of_cellChains w hpos ρ hw
-    (hasCellChainsLift_of_presChainsFS ρ hchains)
+include hw in
+abbrev coveredPresentation_hasAcyclicRegularCover_of_presChains
+     
+    (hchains : ∀ n, Nonempty (PresChainFS ρ n))  :=
+  FiniteChains.PresModel.coveredPresentation_hasAcyclicRegularCover_of_cellChains w hpos ρ hw
+    (FiniteChains.hasCellChainsLift_of_presChainsFS ρ hchains)
 
 end FiniteChains.PresModel

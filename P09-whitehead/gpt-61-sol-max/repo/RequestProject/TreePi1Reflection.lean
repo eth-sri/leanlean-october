@@ -1,14 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TreeChainTopological
-
-@[expose] public section
+import RequestProject.TreeChainTopological
 
 /-! Triviality on pi1 reflects across a compatible spanning-tree
 collapse, at every original vertex. Pending final Lean verification. -/
 
 namespace FiniteChains.Comb.SpanningTree
-universe u
 variable {X Y : Complex2.{u}} {TX : SpanningTree X} {TY : SpanningTree Y}
   [DecidableEq (NonTree TX)] [DecidableEq (NonTree TY)]
   {h : Hom X Y} (hiff : ∀ e : X.E, TY.isTree (h.onE e) ↔ TX.isTree e)
@@ -28,11 +25,10 @@ theorem pi1Trivial_of_pi1Trivial_presInclHom
     apply (pi1EquivPres TY).injective
     rw [map_one]
     exact (uvQ_conjPath (isPath_mapPath h hp)).trans hword
-  have H : Htpy Y TY.root TY.root
-      (conjPath TY (mapPath h p) (h.onV a) (h.onV a)) [] := Quotient.exact hlo
+  have H  := Quotient.exact hlo
   have Hnil : Htpy Y TY.root TY.root
       (conjPath TY [] (h.onV a) (h.onV a)) [] := by
-    simpa only [conjPath, List.append_nil] using htpy_append_revPath (TY.treePath_isPath (h.onV a))
+    classical grind [FiniteChains.Comb.htpy_append_revPath, FiniteChains.Comb.SpanningTree.treePath_isPath, FiniteChains.Comb.Htpy, conjPath]
   exact htpy_of_congr_append (TY.treePath_isPath (h.onV a))
     (isPath_revPath (TY.treePath_isPath (h.onV a)))
     (isPath_mapPath h hp) rfl (H.trans Hnil.symm)

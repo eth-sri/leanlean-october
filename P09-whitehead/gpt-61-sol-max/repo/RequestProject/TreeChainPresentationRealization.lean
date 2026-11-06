@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TreeChainFinsupp
-public import RequestProject.FreshLoopTreeStrictness
-public import RequestProject.PresWordDiskTopologicalChains
-
-@[expose] public section
+import RequestProject.TreeChainFinsupp
+import RequestProject.FreshLoopTreeStrictness
+import RequestProject.PresWordDiskTopologicalChains
 
 /-! Collapse a chain along compatible spanning trees, preserving the
 initial tree literally and retaining strictness from fresh loops/faces.
@@ -23,9 +21,7 @@ def stageTree (i : ℕ) : SpanningTree (c.X i) :=
     (exists_extension (c.inc i) (c.conn (i + 1)) U.root U
       (c.incV i) (c.incE i)).choose) i
 
-theorem stageTree_compatible (i : ℕ) (e : (c.X i).E) :
-    (c.stageTree T₀ (i + 1)).isTree ((c.inc i).onE e) ↔
-      (c.stageTree T₀ i).isTree e :=
+abbrev stageTree_compatible (i : ℕ) (e : (c.X i).E)  :=
   (exists_extension (c.inc i) (c.conn (i + 1)) (c.stageTree T₀ i).root
     (c.stageTree T₀ i) (c.incV i) (c.incE i)).choose_spec.2 e
 
@@ -52,23 +48,18 @@ def treePresentationTopChain : PresChainTopFS (treeRel T₀) n where
 def treePresentationChain : PresChainFS (treeRel T₀) n :=
   (c.treePresentationTopChain T₀).toPresChainFS
 
-theorem treePresentationChain_proper
-    (hp : ∀ i, i < n → FreshLoopOrFace (c.inc i)) (i : ℕ) (hi : i < n) :
-    (∃ a : (c.treePresentationChain T₀).gen (i + 1),
-      a ∉ Set.range ((c.treePresentationChain T₀).genIncl i)) ∨
-    ∃ f : (c.treePresentationChain T₀).cell (i + 1),
-      f ∉ Set.range ((c.treePresentationChain T₀).cellIncl i) :=
+abbrev treePresentationChain_proper
+    (hp : ∀ i, i < n → FreshLoopOrFace (c.inc i)) (i : ℕ) (hi : i < n)  :=
   nonTree_or_face_fresh (c.stageTree_compatible T₀ i) (hp i hi)
 
 /-- All stages and their vanishing maps are now actual relative word-disk
 extensions. Only the initial topological comparison remains to instantiate. -/
-theorem hasOriginalChain_of_initial_tree_comparison (X : Whitehead.TwoComplex)
+abbrev hasOriginalChain_of_initial_tree_comparison (X : Whitehead.TwoComplex)
     (a : NonTree T₀)
     (e₀ : ContinuousMap.HomotopyEquiv
       (PresModel.ClassicalPresWordDisks (PresModel.presCanonicalWords (treeRel T₀) a)
         (PresModel.presCanonicalWords_ne_nil (treeRel T₀) a)) X)
-    (hp : ∀ i, i < n → FreshLoopOrFace (c.inc i)) :
-    Whitehead.HasChain X n false :=
+    (hp : ∀ i, i < n → FreshLoopOrFace (c.inc i))  :=
   (c.treePresentationChain T₀).hasOriginalTopologicalChain X a e₀
     (c.treePresentationChain_proper T₀ hp) false (by simp)
 

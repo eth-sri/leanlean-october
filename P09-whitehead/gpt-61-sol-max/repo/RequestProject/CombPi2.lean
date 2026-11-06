@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CombUniversalCover
-public import RequestProject.UnivCoverIncl
-
-@[expose] public section
+import RequestProject.CombUniversalCover
+import RequestProject.UnivCoverIncl
 
 /-!
 # `π₂` of a combinatorial two-complex, the Hurewicz map and the Cockcroft property
@@ -27,10 +25,9 @@ condition (1) of Theorem A.
 * `FiniteChains.Comb.ZeroPi2` — a cellular map is zero on `π₂`.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u
+
 
 variable {X Y Z : Complex2.{u}}
 
@@ -38,22 +35,16 @@ variable {X Y Z : Complex2.{u}}
 
 theorem endpt_mapPath (h : Hom X Y) : ∀ (q : List (X.E × Bool)) (a : X.V),
     endpt Y (h.onV a) (mapPath h q) = h.onV (endpt X a q) := by
+  classical
   intro q
-  induction q with
-  | nil => intro a; rfl
-  | cons eb t ih =>
-      intro a
-      show endpt Y (germTgt Y.src Y.tgt (h.onE eb.1, eb.2)) (mapPath h t) = _
-      rw [germTgt_onE h eb]
-      exact ih (germTgt X.src X.tgt eb)
+  induction q <;> grind [endpt, mapPath, germTgt_onE]
 
 variable (x₀ : X.V)
 
 /-- The image of a path from `x₀` under a cellular map. -/
 def mapPathFrom (h : Hom X Y) (p : PathFrom X x₀) : PathFrom Y (h.onV x₀) :=
   ⟨mapPath h p.1, by
-    rw [endpt_mapPath h p.1 x₀]
-    exact isPath_mapPath h p.2⟩
+    grind [FiniteChains.Comb.endpt_mapPath, FiniteChains.Comb.isPath_mapPath]⟩
 
 theorem endpt_mapPathFrom (h : Hom X Y) (p : PathFrom X x₀) :
     endpt Y (h.onV x₀) (mapPathFrom x₀ h p).1 = h.onV (endpt X x₀ p.1) :=
@@ -83,7 +74,7 @@ theorem univLiftV_extend (h : Hom X Y) {eb : X.E × Bool} {c : UV X x₀}
   induction c using UV.ind with
   | h p =>
       have hpos : endpt X x₀ p.1 = germSrc X.src X.tgt eb := hc
-      have hgerm : germSrc Y.src Y.tgt (h.onE eb.1, eb.2) = h.onV (germSrc X.src X.tgt eb) :=
+      have hgerm  :=
         germSrc_onE h eb
       have hpos' : endpt Y (h.onV x₀) (mapPathFrom x₀ h p).1
           = germSrc Y.src Y.tgt (h.onE eb.1, eb.2) := by
@@ -119,28 +110,15 @@ theorem univLiftV_liftGerm (h : Hom X Y) {c : UV X x₀} {eb : X.E × Bool}
   cases b with
   | true => rfl
   | false =>
-      refine Prod.ext ?_ rfl
-      refine Subtype.ext (Prod.ext ?_ rfl)
-      exact (univLiftV_extend x₀ h (eb := (e, false)) hc).symm
+      apply_rules [Prod.ext, rfl, Subtype.ext, FiniteChains.Comb.univLiftV_extend, symm]
 
 theorem uLiftPath_univLiftV (h : Hom X Y) : ∀ (q : List (X.E × Bool)) (c : UV X x₀) (w : X.V),
     IsPath X.src X.tgt q (endV c) w →
       uLiftPath (mapPath h q) (univLiftV x₀ h c)
         = (uLiftPath q c).map (fun Eb => (univLiftE x₀ h Eb.1, Eb.2)) := by
+  classical
   intro q
-  induction q with
-  | nil => intro c w _; rfl
-  | cons eb t ih =>
-      intro c w hq
-      have hc : endV c = germSrc X.src X.tgt eb := hq.1
-      have hc' : endV (univLiftV x₀ h c) = germSrc Y.src Y.tgt (h.onE eb.1, eb.2) := by
-        rw [endV_univLiftV, germSrc_onE h eb, hc]
-      have hnext : IsPath X.src X.tgt t (endV (extend eb c)) w := by
-        rw [endV_extend hc]; exact hq.2
-      show uLiftPath ((h.onE eb.1, eb.2) :: mapPath h t) (univLiftV x₀ h c) = _
-      rw [uLiftPath_cons hc', uLiftPath_cons hc, List.map_cons,
-        univLiftV_liftGerm x₀ h hc hc', ← univLiftV_extend x₀ h hc,
-        ih (extend eb c) w hnext]
+  induction q <;> grind [endV_univLiftV, germSrc_onE, IsPath, endV_extend, uLiftPath, mapPath, univLiftV_liftGerm, univLiftV_extend]
 
 variable (X) in
 /-- **The lift of a cellular map to the universal covers.** -/
@@ -158,7 +136,7 @@ noncomputable def univLift (h : Hom X Y) (x₀ : X.V) :
   base_onF := fun _ => rfl
   att_onF := by
     intro F
-    have hbase : endV F.1.1 = X.base F.1.2 := F.2
+    have hbase  := F.2
     have hatt : IsPath X.src X.tgt (X.att F.1.2) (endV F.1.1) (X.base F.1.2) := by
       rw [hbase]; exact X.att_isLoop F.1.2
     show uLiftPath (Y.att (h.onF F.1.2)) (univLiftV x₀ h F.1.1) = _
@@ -171,32 +149,32 @@ variable (X) in
 /-- **The second homotopy module** of a two-complex at a base vertex: the two-cycles of its
 universal cover.  (A two-complex has no three-cells, so `π₂ = H₂` of the universal cover is
 the kernel of `∂₂`.) -/
-noncomputable def Pi2 (x₀ : X.V) : Submodule ℤ ((uCover X x₀).F →₀ ℤ) :=
+noncomputable def Pi2 (x₀ : X.V)  :=
   LinearMap.ker (bdry2 (uCover X x₀))
 
 variable (X) in
 /-- **The Hurewicz map** `π₂(X) → H₂(X)`: push a two-cycle of the universal cover down to the
 complex. -/
-noncomputable def hurewicz (x₀ : X.V) : ((uCover X x₀).F →₀ ℤ) →ₗ[ℤ] (X.F →₀ ℤ) :=
+noncomputable def hurewicz (x₀ : X.V)  :=
   chain2 (univProj X x₀)
 
 variable (X) in
 /-- **The Cockcroft property**: the Hurewicz map `π₂(X) → H₂(X)` vanishes. -/
-def IsCockcroft : Prop :=
+def IsCockcroft  :=
   ∀ (x₀ : X.V) (c : (uCover X x₀).F →₀ ℤ), c ∈ Pi2 X x₀ → hurewicz X x₀ c = 0
 
 /-- **A cellular map is zero on `π₂`**: the induced map of two-chains of the universal covers
 kills every two-cycle. -/
-def ZeroPi2 (h : Hom X Y) : Prop :=
+def ZeroPi2 (h : Hom X Y)  :=
   ∀ (x₀ : X.V) (c : (uCover X x₀).F →₀ ℤ), c ∈ Pi2 X x₀ → chain2 (univLift X h x₀) c = 0
 
 /-- The lift of a cellular map carries `π₂` into `π₂`. -/
 theorem mem_pi2_chain2_univLift (h : Hom X Y) {x₀ : X.V} {c : (uCover X x₀).F →₀ ℤ}
     (hc : c ∈ Pi2 X x₀) : chain2 (univLift X h x₀) c ∈ Pi2 Y (h.onV x₀) := by
   have hchain := bdry2_chain2 (univLift X h x₀) c
-  have hzero : bdry2 (uCover X x₀) c = 0 := hc
+  have hzero  := hc
   show bdry2 (uCover Y (h.onV x₀)) (chain2 (univLift X h x₀) c) = 0
   rw [hchain, hzero, map_zero]
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

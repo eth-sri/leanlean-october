@@ -1,21 +1,15 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CellularChainMapZero
-
-@[expose] public section
+import RequestProject.CellularChainMapZero
 
 /-! Acyclicity is preserved and reflected by bijections on actual
 cell labels. Pending final Lean verification. -/
 
 namespace FiniteChains.Comb
-universe u
 variable {X Y : Complex2.{u}} (f : Hom X Y)
 
 theorem augC_chain0 (z : X.V →₀ ℤ) : augC Y (chain0 f z) = augC X z := by
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [map_add, map_add, map_add, hz, hw]
-  | single v n => simp [chain0, augC_single]
+  induction z using Finsupp.induction_linear <;> simp_all [map_add, chain0]
 
 theorem isAcyclic_iff_of_cell_bijections
     (hV : Function.Bijective f.onV) (hE : Function.Bijective f.onE)

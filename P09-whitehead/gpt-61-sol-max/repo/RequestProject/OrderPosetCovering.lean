@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderComplexGluing
-public import RequestProject.CombCoveringLift
-
-@[expose] public section
+import RequestProject.OrderComplexGluing
+import RequestProject.CombCoveringLift
 
 /-!
 # A combinatorial criterion for a monotone map to induce a covering of order complexes
@@ -23,10 +21,9 @@ Both the germ condition and the two-cell condition of `Comb.IsCovering` are veri
 interval bijections; no finiteness, connectivity or freeness of a group action is used.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u
+
 
 variable {P Q : Type u} [Preorder P] [Preorder Q]
 
@@ -69,24 +66,24 @@ theorem isCovering_orderCxMap {f : P → Q} (hf : IsPosetCover f) :
     intro a
     constructor
     · rintro ⟨⟨e, b⟩, he⟩ ⟨⟨e', b'⟩, he'⟩ hEq
-      have hb : b = b' := congrArg (fun g : Germ (orderCx Q) _ => g.1.2) hEq
+      have hb  := congrArg (fun g : Germ (orderCx Q) _ => g.1.2) hEq
       subst hb
-      have hE : ((f e.1.1, f e.1.2) : Q × Q) = (f e'.1.1, f e'.1.2) :=
+      have hE  :=
         congrArg (fun g : Germ (orderCx Q) _ => (g.1.1.1.1, g.1.1.1.2)) hEq
-      have h1 : f e.1.1 = f e'.1.1 := congrArg Prod.fst hE
-      have h2 : f e.1.2 = f e'.1.2 := congrArg Prod.snd hE
+      have h1  := congrArg Prod.fst hE
+      have h2  := congrArg Prod.snd hE
       refine Subtype.ext (Prod.ext ?_ rfl)
       cases b with
       | false =>
           -- both edges end at `a`
-          have hae : e.1.2 = a := he
-          have hae' : e'.1.2 = a := he'
+          have hae  := he
+          have hae'  := he'
           have hfst : e.1.1 = e'.1.1 :=
             hf.down_inj (a := a) (by rw [← hae]; exact e.2) (by rw [← hae']; exact e'.2) h1
           exact Subtype.ext (Prod.ext hfst (hae.trans hae'.symm))
       | true =>
-          have hae : e.1.1 = a := he
-          have hae' : e'.1.1 = a := he'
+          have hae  := he
+          have hae'  := he'
           have hsnd : e.1.2 = e'.1.2 :=
             hf.up_inj (a := a) (by rw [← hae]; exact e.2) (by rw [← hae']; exact e'.2) h2
           exact Subtype.ext (Prod.ext (hae.trans hae'.symm) hsnd)
@@ -112,15 +109,14 @@ theorem isCovering_orderCxMap {f : P → Q} (hf : IsPosetCover f) :
       have hbase : t.1.1 = t'.1.1 :=
         congrArg (fun g : {gv : (orderCx Q).F × (orderCx P).V //
           (orderCx Q).base gv.1 = f gv.2} => g.1.2) hEq
-      have hT : ((f t.1.1, f t.1.2.1, f t.1.2.2) : Q × Q × Q)
-          = (f t'.1.1, f t'.1.2.1, f t'.1.2.2) :=
+      have hT  :=
         congrArg (fun g : {gv : (orderCx Q).F × (orderCx P).V //
           (orderCx Q).base gv.1 = f gv.2} => g.1.1.1) hEq
-      have h2 : f t.1.2.1 = f t'.1.2.1 := congrArg (fun z : Q × Q × Q => z.2.1) hT
-      have h3 : f t.1.2.2 = f t'.1.2.2 := congrArg (fun z : Q × Q × Q => z.2.2) hT
-      have hmid : t.1.2.1 = t'.1.2.1 :=
+      have h2  := congrArg (fun z : Q × Q × Q => z.2.1) hT
+      have h3  := congrArg (fun z : Q × Q × Q => z.2.2) hT
+      have hmid  :=
         hf.up_inj t.2.1 (by rw [hbase]; exact t'.2.1) h2
-      have htop : t.1.2.2 = t'.1.2.2 :=
+      have htop  :=
         hf.up_inj (t.2.1.trans t.2.2) (by rw [hbase]; exact t'.2.1.trans t'.2.2) h3
       exact Subtype.ext (Prod.ext hbase (Prod.ext hmid htop))
     · rintro ⟨⟨s, a⟩, hs⟩
@@ -131,5 +127,5 @@ theorem isCovering_orderCxMap {f : P → Q} (hf : IsPosetCover f) :
       refine Subtype.ext (Prod.ext ?_ rfl)
       exact Subtype.ext (Prod.ext hfa (Prod.ext hfb hfc))
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

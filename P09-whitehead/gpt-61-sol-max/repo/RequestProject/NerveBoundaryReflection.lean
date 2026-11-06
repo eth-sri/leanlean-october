@@ -1,16 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NerveDegreeTransfer
-
-@[expose] public section
+import RequestProject.NerveDegreeTransfer
 
 /-! Reflection of actual fillings under deletion of an acyclic attaching piece. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P : Type u} [Preorder P]
 
 /-- A homogeneous chain in `B` that bounds in `U` already bounds in `B`. -/
-def ReflectsBoundsIn (U B : P → Prop) (n : ℕ) : Prop :=
+def ReflectsBoundsIn (U B : P → Prop) (n : ℕ)  :=
   ∀ c ∈ IncOn B, lengthProjection n c = c →
     (∃ y ∈ IncOn U, bdry y = c) → ∃ y ∈ IncOn B, bdry y = c
 
@@ -27,7 +24,7 @@ theorem reflectsBoundsIn_union_of_unmixed {A B U : P → Prop} {n : ℕ}
   have ha : a ∈ IncOn A := lengthProjection_mem_incOn _ ha₀
   have hb : b ∈ IncOn B := lengthProjection_mem_incOn _ hb₀
   have hsum : bdry a + bdry b = c := by
-    rw [← map_add, ← map_add, ← hsplit, ← lengthProjection_bdry, hdy, hd]
+    aesop (add simp [lengthProjection_bdry])
   have hdbA : bdry b ∈ IncOn A := by
     have he : bdry b = c - bdry a := by rw [← hsum]; abel
     rw [he]
@@ -36,8 +33,7 @@ theorem reflectsBoundsIn_union_of_unmixed {A B U : P → Prop} {n : ℕ}
     rw [← incOn_inf]
     exact ⟨hdbA, bdry_mem_incOn hb⟩
   have hdbd : lengthProjection n (bdry b) = bdry b := by
-    rw [lengthProjection_bdry]
-    exact congrArg bdry (lengthProjection_idempotent _ _)
+    aesop (add simp [lengthProjection_bdry])
   obtain ⟨z, hz, hdz⟩ := hJ (bdry b) hdbJ hdbd (by simp [bdry_bdry])
   refine ⟨a + z, AddSubgroup.add_mem _ ha (incOn_mono (fun _ h => h.1) hz), ?_⟩
   rw [map_add, hdz, hsum]

@@ -1,14 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusBoundaryCoordinates
-public import RequestProject.SurfaceCocycleExtension
-
-@[expose] public section
+import RequestProject.GenusBoundaryCoordinates
+import RequestProject.SurfaceCocycleExtension
 
 /-! The actual marked loops control all nonabelian surface monodromy. -/
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb Cell
-universe v w
 variable (q : ℕ) [NeZero q] {G : Type v} [Group G]
   {Ω : Type w} [MulAction G Ω]
   (d : OrdCocycle (SCell (gvc q) (gec q) (gc q)) G) (x₀ : Ω)
@@ -18,15 +15,17 @@ def boundaryVertexSection : KVtx q → Ω
   | some x => d.val (.vtx (some x)) (.bed (x.1, x.2, false)) •
       ((d.val (.vtx none) (.bed (x.1, x.2, false)))⁻¹ • x₀)
 
-def boundaryEdgeSection (e : IEdg q) : Ω := (d.val (.vtx none) (.bed e))⁻¹ • x₀
+def boundaryEdgeSection (e : IEdg q)  := (d.val (.vtx none) (.bed e))⁻¹ • x₀
 
 theorem boundarySection_none (e : IEdg q) :
     d.val (.vtx none) (.bed e) • boundaryEdgeSection q d x₀ e =
       boundaryVertexSection q d x₀ none :=
   smul_inv_smul _ _
 
+variable (hm : ∀ x : Fin q × Bool, boundaryMarkValue q d x • x₀ = x₀)
+include hm in
 theorem boundarySection_midpoint
-    (hm : ∀ x : Fin q × Bool, boundaryMarkValue q d x • x₀ = x₀) (e : IEdg q) :
+     (e : IEdg q) :
     d.val (.vtx (some (e.1, e.2.1))) (.bed e) • boundaryEdgeSection q d x₀ e =
       boundaryVertexSection q d x₀ (some (e.1, e.2.1)) := by
   obtain ⟨h, b, t⟩ := e
@@ -38,16 +37,16 @@ theorem boundarySection_midpoint
     simpa only [boundaryMarkValue, boundaryVertexSection, boundaryEdgeSection,
       mul_smul, inv_smul_smul, smul_inv_smul] using he
 
+include hm in
 theorem boundarySection_incident
-    (hm : ∀ x : Fin q × Bool, boundaryMarkValue q d x • x₀ = x₀)
+    
     (v : KVtx q) (e : IEdg q) (hv : v = none ∨ v = some (e.1, e.2.1)) :
     d.val (.vtx v) (.bed e) • boundaryEdgeSection q d x₀ e = boundaryVertexSection q d x₀ v := by
-  rcases hv with rfl | rfl
-  · exact boundarySection_none q d x₀ e
-  · exact boundarySection_midpoint q d x₀ hm e
+  grind [boundarySection_none, boundarySection_midpoint]
 
+include hm in
 theorem boundarySection_compatible
-    (hm : ∀ x : Fin q × Bool, boundaryMarkValue q d x • x₀ = x₀) (p : Fin (8 * q)) :
+     (p : Fin (8 * q)) :
     d.val (cV (gc q) p) (cE (gc q) p) • boundaryEdgeSection q d x₀ (gec q p) =
       boundaryVertexSection q d x₀ (gvc q p) ∧
     d.val (cV (gc q) (p + 1)) (cE (gc q) p) • boundaryEdgeSection q d x₀ (gec q p) =

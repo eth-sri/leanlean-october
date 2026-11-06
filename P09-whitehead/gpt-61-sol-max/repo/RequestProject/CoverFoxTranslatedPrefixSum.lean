@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CoverFoxPrefixSum
-
-@[expose] public section
+import RequestProject.CoverFoxPrefixSum
 
 namespace FiniteChains
 variable {α : Type*} [DecidableEq α]
@@ -20,11 +18,6 @@ theorem coverFox_translated_prefix_sum (g : FreeGroup α ⧸ N)
                 (QuotientGroup.mk (FreeGroup.of l[k.val].1) : FreeGroup α ⧸ N)⁻¹)))
             (if l[k.val].2 then (1 : ℤ) else -1)
         else 0 := by
-  classical
-  rw [coverFox_mk_prefix_sum, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro k _
-  by_cases h : i = l[k.val].1 <;>
-    simp [h, MonoidAlgebra.single_mul_single]
+  simp_all [coverFox_mk_prefix_sum, Finset.mul_sum]
 
 end FiniteChains

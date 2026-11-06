@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NerveSupport
-
-@[expose] public section
+import RequestProject.NerveSupport
 
 /-!
 # The combinatorial mapping cylinder of a map of posets, with its outer end
@@ -33,17 +31,16 @@ where the gluing to the rest of the object happens.  Nothing here constructs a c
 computes `π₁`.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u
 
-open Nerve
+
+
 
 variable {X Sg : Type u} [Preorder X] [Preorder Sg]
 
 /-- The poset underlying the mapping cylinder of a monotone map `a : Σ →o X`. -/
-def CylP (_a : Sg →o X) : Type u := X ⊕ Sg
+def CylP (_a : Sg →o X)  := X ⊕ Sg
 
 namespace CylP
 
@@ -60,24 +57,18 @@ protected def le : CylP a → CylP a → Prop
 instance : Preorder (CylP a) where
   le := CylP.le a
   le_refl p := by
-    cases p with
-    | inl x => exact le_refl x
-    | inr s => exact le_refl s
+    aesop (add simp [FiniteChains.Comb.CylP.le])
   le_trans p q r hpq hqr := by
     cases p with
     | inl x =>
         cases q with
         | inl y =>
-            cases r with
-            | inl z => exact le_trans hpq hqr
-            | inr t => exact hqr.elim
+            cases r <;> grind [FiniteChains.Comb.CylP.le]
         | inr t => exact hpq.elim
     | inr s =>
         cases q with
         | inl y =>
-            cases r with
-            | inl z => exact le_trans hpq hqr
-            | inr t => exact hqr.elim
+            cases r <;> grind [FiniteChains.Comb.CylP.le]
         | inr t =>
             cases r with
             | inl z => exact le_trans (a.monotone hpq) hqr
@@ -96,9 +87,9 @@ def cylOuter (s : Sg) : CylP a := Sum.inr s
 /-- The retraction of the cylinder onto its base. -/
 def cylRetr : CylP a → X := Sum.elim id a
 
-@[simp] theorem cylRetr_cylIn (x : X) : cylRetr a (cylIn a x) = x := rfl
 
-@[simp] theorem cylRetr_cylOuter (s : Sg) : cylRetr a (cylOuter a s) = a s := rfl
+
+
 
 theorem cylIn_injective : Function.Injective (cylIn a) := fun _ _ h => Sum.inl_injective h
 
@@ -117,7 +108,7 @@ theorem cylRetr_monotone : Monotone (cylRetr a) := by
       | inr t => exact a.monotone hpq
 
 /-- The composite `ι ∘ r`, the "collapse the cylinder onto its base" map. -/
-def cylCollapse : CylP a → CylP a := fun p => cylIn a (cylRetr a p)
+def cylCollapse  := fun p => cylIn a (cylRetr a p)
 
 theorem cylCollapse_monotone : Monotone (cylCollapse a) :=
   (cylIn_monotone a).comp (cylRetr_monotone a)
@@ -125,11 +116,9 @@ theorem cylCollapse_monotone : Monotone (cylCollapse a) :=
 /-- The identity lies below the collapse: this is what makes the prism operator a chain
 homotopy between them. -/
 theorem le_cylIn_cylRetr (p : CylP a) : p ≤ cylCollapse a p := by
-  cases p with
-  | inl x => exact le_refl x
-  | inr s => exact le_refl (a s)
+  cases p <;> aesop (add unsafe apply [le_refl])
 
 /-! ### The chain homotopy -/
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

@@ -1,19 +1,18 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderConePathReplacement
-public import RequestProject.RelatorCircleConnected
-public import RequestProject.RelatorConeFundamentalChain
-public import RequestProject.ConeAdjBaseCover
-
-@[expose] public section
+import RequestProject.OrderConePathReplacement
+import RequestProject.RelatorCircleConnected
+import RequestProject.RelatorConeFundamentalChain
+import RequestProject.ConeAdjBaseCover
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
+variable (l : List ((orderCx (RelatorCircle w j)).E × Bool))
+include l in
 /-- Actual mapped circle paths remain below their actual presentation apex. -/
-theorem relatorCirclePath_below_apex (l : List ((orderCx (RelatorCircle w j)).E × Bool)) :
+theorem relatorCirclePath_below_apex  :
     PathIn (fun p => p ≤ apexOf w j)
       (mapPath (orderCxMap (relatorCirclePresInclusion w j)
         (relatorCirclePresInclusion_strictMono w j).monotone) l) := by
@@ -22,8 +21,9 @@ theorem relatorCirclePath_below_apex (l : List ((orderCx (RelatorCircle w j)).E 
   exact ⟨(relatorCirclePresInclusion_lt_apex w j r.1.val.1).le,
     (relatorCirclePresInclusion_lt_apex w j r.1.val.2).le⟩
 
+include l in
 /-- Actual mapped circle paths stay in the actual cylinder part of the presentation poset. -/
-theorem relatorCirclePath_in_cylinder (l : List ((orderCx (RelatorCircle w j)).E × Bool)) :
+theorem relatorCirclePath_in_cylinder  :
     PathIn (fun p => p ∈ coneAdjBaseSet (S := circSet w))
       (mapPath (orderCxMap (relatorCirclePresInclusion w j)
         (relatorCirclePresInclusion_strictMono w j).monotone) l) := by
@@ -32,8 +32,10 @@ theorem relatorCirclePath_in_cylinder (l : List ((orderCx (RelatorCircle w j)).E
   exact ⟨⟨cylOuter (aHom w) r.1.val.1.val, rfl⟩,
     ⟨cylOuter (aHom w) r.1.val.2.val, rfl⟩⟩
 
+variable (hpos : 0 < (w j).length)
+include hpos in
 /-- An actual two-edge apex excursion can be replaced by an actual path in the cylinder. -/
-theorem exists_presCone_excursion_replacement (hpos : 0 < (w j).length)
+theorem exists_presCone_excursion_replacement 
     (x y : RelatorCircle w j) :
     ∃ l : List ((orderCx (PresPos w)).E × Bool),
       IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt l (iCirc w x.val) (iCirc w y.val) ∧
@@ -50,8 +52,9 @@ theorem exists_presCone_excursion_replacement (hpos : 0 < (w j).length)
     (relatorCirclePresInclusion_lt_apex w j y).le
     (isPath_mapPath I hl) (relatorCirclePath_below_apex w j l)).symm
 
+include hpos in
 /-- Every genuine apex excursion, with arbitrary actual strict lower endpoints, has a cylinder replacement. -/
-theorem exists_presCone_strict_excursion_replacement (hpos : 0 < (w j).length)
+theorem exists_presCone_strict_excursion_replacement 
     (x y : PresPos w) (hx : x < apexOf w j) (hy : y < apexOf w j) :
     ∃ l : List ((orderCx (PresPos w)).E × Bool),
       IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt l x y ∧

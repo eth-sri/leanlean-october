@@ -1,18 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NerveUpperRetraction
-public import RequestProject.PosetCoverUpTransform
-public import RequestProject.PosetCoverRestriction
-
-@[expose] public section
+import RequestProject.NerveUpperRetraction
+import RequestProject.PosetCoverUpTransform
+import RequestProject.PosetCoverRestriction
 
 /-! Deleting the whole inverse image of a free face preserves finite chain homology. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 theorem exists_freeFace_upper_retraction {C : Q → Prop} {s t : Q}
@@ -28,20 +23,13 @@ theorem exists_freeFace_upper_retraction {C : Q → Prop} {s t : Q}
     by_cases hx : x.1 = s
     · by_cases hy : y.1 = s
       · simp [r, hx, hy]
-      · have hyt : y.1 = t := hunique y.1 y.2 (hx ▸ hxy) hy
-        change (r x).1 ≤ (r y).1
-        simp only [r, if_pos hx, if_neg hy]
-        exact hyt.ge
+      · aesop
     · by_cases hy : y.1 = s
       · have hxs : x.1 ≤ s := hy ▸ hxy
         change (r x).1 ≤ (r y).1
         simpa [r, hx, hy] using hxs.trans hst
       · simpa [r, hx, hy] using hxy
-  · intro x
-    by_cases hx : x.1 = s
-    · change x.1 ≤ (r x).1
-      simpa [r, hx] using hst
-    · simp [r, hx]
+  · aesop
   · intro x
     by_cases hx : x.1 = s <;> simp [r, hx, hne]
   · intro x hx
@@ -57,8 +45,8 @@ theorem cover_freeFace_homology {f : P → Q} (hf : IsPosetCover f)
   obtain ⟨r, hr, hir, hav, hfix⟩ := exists_freeFace_upper_retraction ht hst hne hunique
   let hfc := IsPosetCover.restriction f {x | C x} hf
   let ρ := hfc.upTransform r hir
-  have hρ : Monotone ρ := hfc.upTransform_monotone r hr hir
-  have hρge : ∀ p, p ≤ ρ p := hfc.le_upTransform r hir
+  have hρ  := hfc.upTransform_monotone r hr hir
+  have hρge  := hfc.le_upTransform r hir
   have hbase : ∀ p, C (f (ρ p).1) ∧ f (ρ p).1 ≠ s := by
     intro p
     refine ⟨(ρ p).2, ?_⟩

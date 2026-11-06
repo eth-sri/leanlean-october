@@ -1,15 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.DavisChainAcyclic
-public import RequestProject.OrderNerveDecoding
-
-@[expose] public section
+import RequestProject.DavisChainAcyclic
+import RequestProject.OrderNerveDecoding
 
 /-! Exactness in degree two of the full cellular nerve of the actual Davis poset. -/
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V]
 
 /-- Every cellular two-cycle in the actual Davis complex is the boundary of a finitely

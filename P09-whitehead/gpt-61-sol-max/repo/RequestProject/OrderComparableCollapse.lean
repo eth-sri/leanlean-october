@@ -1,17 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderDownwardCycleHomotopy
-public import RequestProject.OrderNormalizationNaturality
-
-@[expose] public section
+import RequestProject.OrderDownwardCycleHomotopy
+import RequestProject.OrderNormalizationNaturality
 
 /-! Actual strict cycle fillings from a componentwise downward collapse. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P]
 
 theorem normalizedStrictChain2_zero_of_comparable_equal (g : P → P) (hg : Monotone g)
@@ -22,7 +17,7 @@ theorem normalizedStrictChain2_zero_of_comparable_equal (g : P → P) (hg : Mono
   | add c d hc hd => rw [map_add, hc, hd, add_zero]
   | single t n =>
     rw [normalizedStrictChain2_single]
-    have ht : g t.1.1 = g t.1.2.1 := he t.2.1.le
+    have ht  := he t.2.1.le
     simp [normalizeOrdTriangle, orderCxMap, strictOrderIncl, ht]
 
 /-- A downward monotone map that identifies comparable vertices gives genuine finite
@@ -37,8 +32,7 @@ theorem strict_cycle_boundary_of_downward_collapse (g : P → P) (hg : Monotone 
   obtain ⟨y, hy⟩ := ordCycle_downward_boundary g hg hle w hw
   have hn : normalizeOrdChain2 w = c := normalizeOrdChain2_inclusion c
   have hz : normalizeOrdChain2 (Finsupp.mapDomain (downwardOrdTriangleMap g hg) w) = 0 := by
-    change normalizedStrictChain2 g hg c = 0
-    exact normalizedStrictChain2_zero_of_comparable_equal g hg he c
+    solve_by_elim [FiniteChains.Comb.normalizedStrictChain2_zero_of_comparable_equal]
   have h := congrArg normalizeOrdChain2 hy
   rw [normalizeOrdChain2_ordBoundary3, map_sub, hn, hz, sub_zero] at h
   exact ⟨normalizeOrdChain3 y, h⟩

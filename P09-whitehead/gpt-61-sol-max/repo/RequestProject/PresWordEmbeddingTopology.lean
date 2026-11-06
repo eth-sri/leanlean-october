@@ -1,4 +1,3 @@
-module
-public import RequestProject.PresCanonicalWords
-public import RequestProject.PresValidFinite
-public import RequestProject.OrderNerveEmbeddingCells
+import RequestProject.PresCanonicalWords
+import RequestProject.PresValidFinite
+import RequestProject.OrderNerveEmbeddingCells

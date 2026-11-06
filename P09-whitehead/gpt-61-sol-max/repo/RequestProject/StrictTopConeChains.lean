@@ -1,21 +1,18 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CellularChainMapZero
-public import RequestProject.OrderThreeNormalization
-
-@[expose] public section
+import RequestProject.CellularChainMapZero
+import RequestProject.OrderThreeNormalization
 
 /-! Upper cones in the genuine strict simplicial cell model. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
   (f : P → Q) (hf : StrictMono f) (c : Q) (hc : ∀ x, f x < c)
 
-def strictTopConeEdgeTriangle (e : (strictOrderCx P).E) : (strictOrderCx Q).F :=
+variable (e : (strictOrderCx P).E)
+def strictTopConeEdgeTriangle  : (strictOrderCx Q).F :=
   ⟨(f e.1.1, f e.1.2, c), hf e.2, hc _⟩
 
 noncomputable def strictTopConeEdgeChain : ((strictOrderCx P).E →₀ ℤ) →ₗ[ℤ]
@@ -28,7 +25,7 @@ noncomputable def strictTopConeRadialChain : (P →₀ ℤ) →ₗ[ℤ]
     ((strictOrderCx Q).E →₀ ℤ) :=
   Finsupp.linearCombination ℤ (fun x => Finsupp.single (strictTopConeRadialEdge f c hc x) 1)
 
-theorem strictTopConeEdgeTriangle_boundary (e : (strictOrderCx P).E) :
+theorem strictTopConeEdgeTriangle_boundary  :
     bdry2 (strictOrderCx Q) (Finsupp.single (strictTopConeEdgeTriangle f hf c hc e) 1) =
       Finsupp.single ((strictOrderCxMap f hf).onE e) 1 +
         Finsupp.single (strictTopConeRadialEdge f c hc e.1.2) 1 -
@@ -37,7 +34,8 @@ theorem strictTopConeEdgeTriangle_boundary (e : (strictOrderCx P).E) :
     strictOrderCx, strictOrderCxMap, pathChain]
   abel
 
-theorem strictTopConeEdgeChain_boundary (z : (strictOrderCx P).E →₀ ℤ) :
+variable (z : (strictOrderCx P).E →₀ ℤ)
+theorem strictTopConeEdgeChain_boundary  :
     bdry2 (strictOrderCx Q) (strictTopConeEdgeChain f hf c hc z) =
       chain1 (strictOrderCxMap f hf) z +
         strictTopConeRadialChain f c hc (bdry1 (strictOrderCx P) z) := by
@@ -53,20 +51,19 @@ theorem strictTopConeEdgeChain_boundary (z : (strictOrderCx P).E →₀ ℤ) :
       abel
 
 /-- Every mapped strict edge cycle has an explicit nondegenerate upper-cone filling. -/
-theorem strictTopConeEdgeChain_cycle_boundary (z : (strictOrderCx P).E →₀ ℤ)
+theorem strictTopConeEdgeChain_cycle_boundary 
     (hz : bdry1 (strictOrderCx P) z = 0) :
     bdry2 (strictOrderCx Q) (strictTopConeEdgeChain f hf c hc z) =
-      chain1 (strictOrderCxMap f hf) z := by
-  rw [strictTopConeEdgeChain_boundary, hz, map_zero, add_zero]
+      chain1 (strictOrderCxMap f hf) z := by simp_all [strictTopConeEdgeChain_boundary]
 
 /-- Every triangle of the upper fan ends at its actual cone vertex. -/
-theorem strictTopConeEdgeChain_eq_zero_off_top (z : (strictOrderCx P).E →₀ ℤ)
+theorem strictTopConeEdgeChain_eq_zero_off_top 
     (t : (strictOrderCx Q).F) (ht : t.1.2.2 ≠ c) :
     strictTopConeEdgeChain f hf c hc z t = 0 := by
   classical
   induction z using Finsupp.induction_linear with
   | zero => simp
-  | add z w hz hw => simp only [map_add, Finsupp.add_apply, hz, hw, add_zero]
+  | add z w hz hw => simp_all
   | single e n =>
       have hne : strictTopConeEdgeTriangle f hf c hc e ≠ t := by
         intro h

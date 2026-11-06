@@ -1,14 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TruncatedCubePoset
-public import RequestProject.OrderCxNatHtpy
-public import RequestProject.StrictOrderComplex
-
-@[expose] public section
+import RequestProject.TruncatedCubePoset
+import RequestProject.OrderCxNatHtpy
+import RequestProject.StrictOrderComplex
 
 /-! Based path comparison for the actual truncated face poset, before collapse. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
@@ -33,14 +29,12 @@ theorem truncatedRetraction_pi1_injective_at (a : TruncatedCell A) :
   have hg : Monotone g := oldCellIncl_monotone.comp truncatedCellRetraction_monotone
   have hnat := htpy_loop_mapPath_le (f := id) monotone_id hg
     truncatedCell_le_retraction p.2
-  have hnull : Htpy (orderCx (QOld A)) (truncatedCellRetraction a)
-      (truncatedCellRetraction a) (mapPath truncatedRetractionHom p.1) [] :=
+  have hnull  :=
     Quotient.exact hp
   have hsec := mapPath_htpy truncatedSectionHom hnull
   have hgnil : Htpy (orderCx (TruncatedCell A)) (g a) (g a)
       (mapPath (orderCxMap g hg) p.1) [] := by
-    simpa [g, truncatedSectionHom, truncatedRetractionHom, mapPath, orderCxMap,
-      List.map_map, Function.comp_def] using hsec
+    aesop (add simp [mapPath])
   have hconj : Htpy (orderCx (TruncatedCell A)) (g a) (g a)
       ([ordNeg (truncatedCell_le_retraction a)] ++ p.1 ++
         [ordPos (truncatedCell_le_retraction a)]) [] := by
@@ -59,13 +53,12 @@ theorem truncatedRetraction_pi1_injective_at (a : TruncatedCell A) :
         ([ordNeg (truncatedCell_le_retraction a)] ++ p.1 ++
           [ordPos (truncatedCell_le_retraction a)]) ++
         [ordNeg (truncatedCell_le_retraction a)]) p.1 := by
-    simpa [List.append_assoc] using hA.trans (by simpa using hB)
+    classical grind [FiniteChains.Davis.truncatedCell_le_retraction, FiniteChains.Comb.Htpy.trans, FiniteChains.Comb.Htpy]
   have hkill : Htpy (orderCx (TruncatedCell A)) a a
       ([ordPos (truncatedCell_le_retraction a)] ++
         ([ordNeg (truncatedCell_le_retraction a)] ++ p.1 ++
           [ordPos (truncatedCell_le_retraction a)]) ++
-        [ordNeg (truncatedCell_le_retraction a)]) [] := by
-    exact hstep.trans (by simpa using hc)
+        [ordNeg (truncatedCell_le_retraction a)]) [] := hstep.trans (by simpa using hc)
   exact Quotient.sound (hstrip.symm.trans hkill)
 
 theorem truncatedRetraction_pi1_surjective_at (a : TruncatedCell A) :

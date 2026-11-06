@@ -1,3 +1,2 @@
-module
-public import RequestProject.ChamberQuotientBaseComponents
-public import RequestProject.OrderUniversalDeck
+import RequestProject.ChamberQuotientBaseComponents
+import RequestProject.OrderUniversalDeck

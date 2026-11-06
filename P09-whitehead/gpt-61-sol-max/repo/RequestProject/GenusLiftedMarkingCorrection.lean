@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.LiftedHomotopyChains
-public import RequestProject.GenusEquivariantCapFillings
-
-@[expose] public section
+import RequestProject.LiftedHomotopyChains
+import RequestProject.GenusEquivariantCapFillings
 
 /-! Genuine old-block cover chains correcting the surviving-spine marking to its surface loop. -/
 set_option backward.defeqAttrib.useBackward true
@@ -17,8 +15,9 @@ variable (q : ℕ) [NeZero q]
 noncomputable abbrev markingOldCover :=
   uCover (orderCx (QOld (cmpRel (GenusVertex q)))) (posQCube (gBase q))
 
+variable (x : Fin q × Bool)
 /-- The marking correction is supported on actual old-block cover faces. -/
-theorem exists_lifted_marking_correction (x : Fin q × Bool) :
+theorem exists_lifted_marking_correction  :
     ∃ d : (markingOldCover q).F →₀ ℤ,
       Comb.bdry2 (fullCubeMarkCover q)
         (chain2 (univLift _ (oldToFullCube q) (posQCube (gBase q))) d) =
@@ -49,14 +48,13 @@ theorem exists_lifted_marking_correction (x : Fin q × Bool) :
         (surfaceFullCube_monotone _)) (gSig q (x.1.val, x.2)) := by
     simp only [mapPath, List.map_map]
     rfl
-  rw (config := { transparency := .default }) [he1, he2] at hd
+  rw  [he1, he2] at hd
   exact hd
 
-noncomputable def liftedMarkingCorrection (x : Fin q × Bool) :
-    (markingOldCover q).F →₀ ℤ :=
+noncomputable def liftedMarkingCorrection   :=
   Classical.choose (exists_lifted_marking_correction q x)
 
-theorem liftedMarkingCorrection_boundary (x : Fin q × Bool) :
+theorem liftedMarkingCorrection_boundary  :
     Comb.bdry2 (fullCubeMarkCover q)
       (chain2 (univLift _ (oldToFullCube q) (posQCube (gBase q)))
         (liftedMarkingCorrection q x)) =

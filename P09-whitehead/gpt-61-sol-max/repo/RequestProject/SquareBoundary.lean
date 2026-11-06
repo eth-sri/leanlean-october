@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib.Topology.Homotopy.HomotopyGroup
-public import Mathlib.Topology.Connected.Basic
-
-@[expose] public section
+import Mathlib.Topology.Homotopy.HomotopyGroup
+import Mathlib.Topology.Connected.Basic
 
 /-! Connectedness of the boundary used in Mathlib's two-dimensional based-loop model. -/
 
@@ -11,7 +9,7 @@ open scoped unitInterval Topology
 namespace Whitehead
 
 /-- A side of the unit square. -/
-def squareEdge (i : Fin 2) (v : I) (s : I) : Fin 2 → I :=
+def squareEdge (i : Fin 2) (v : I) (s : I)  :=
   fun j => if j = i then v else s
 
 theorem squareEdge_continuous (i : Fin 2) (v : I) : Continuous (squareEdge i v) := by
@@ -43,7 +41,7 @@ theorem square_boundary_eq : Cube.boundary (Fin 2) =
 /-- The boundary of the two-dimensional cube is preconnected. -/
 theorem square_boundary_isPreconnected : IsPreconnected (Cube.boundary (Fin 2)) := by
   rw [square_boundary_eq]
-  have he (i : Fin 2) (v : I) : IsPreconnected (Set.range (squareEdge i v)) :=
+  have he (i : Fin 2) (v : I)  :=
     isPreconnected_range (squareEdge_continuous i v)
   have h00 : squareEdge 0 0 0 = squareEdge 1 0 0 := by
     ext j; fin_cases j <;> simp [squareEdge]

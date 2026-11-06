@@ -1,30 +1,25 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MathlibOrderNerveNaturality
-public import Mathlib.AlgebraicTopology.SingularSet
-public import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
-public import Mathlib.Algebra.Category.ModuleCat.Abelian
+import RequestProject.MathlibOrderNerveNaturality
+import Mathlib.AlgebraicTopology.SingularSet
+import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
+import Mathlib.Algebra.Category.ModuleCat.Abelian
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
 variable (P : Type) [PartialOrder P]
 
 /-- The actual Mathlib geometric realization of the actual poset nerve. -/
-noncomputable def orderNerveRealization : TopCat := SSet.toTop.obj (nerve P)
+noncomputable def orderNerveRealization  := SSet.toTop.obj (nerve P)
 
 /-- The canonical actual map from the poset nerve to the singular set of its realization. -/
-noncomputable def orderNerveRealizationUnit :
-    nerve P ⟶ TopCat.toSSet.obj (orderNerveRealization P) :=
+noncomputable def orderNerveRealizationUnit  :=
   sSetTopAdj.unit.app (nerve P)
 
 /-- Free integral chains on the actual singular simplicial set of the realization. -/
-noncomputable def orderNerveRealizationSingularModule : SimplicialObject (ModuleCat ℤ) :=
+noncomputable def orderNerveRealizationSingularModule  :=
   TopCat.toSSet.obj (orderNerveRealization P) ⋙ ModuleCat.free ℤ
 
 /-- The actual realization-unit chain map into the free singular chains. -/
@@ -36,10 +31,7 @@ noncomputable def orderNerveRealizationChainComparison :
     (CategoryTheory.Functor.whiskerRight (orderNerveRealizationUnit P) (ModuleCat.free ℤ))
 
 /-- The canonical comparison on actual categorical second homology. -/
-noncomputable def orderNerveRealizationH2Comparison :
-    (AlgebraicTopology.AlternatingFaceMapComplex.obj (mathlibOrderNerveModule P)).homology 2 ⟶
-      (AlgebraicTopology.AlternatingFaceMapComplex.obj
-        (orderNerveRealizationSingularModule P)).homology 2 :=
+noncomputable def orderNerveRealizationH2Comparison  :=
   (HomologicalComplex.homologyFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) 2).map
     (orderNerveRealizationChainComparison P)
 
@@ -57,11 +49,7 @@ theorem orderNerveRealizationUnit_natural (f : P → Q) (hf : Monotone f) :
   sSetTopAdj.unit.naturality (nerveMap hf.functor)
 
 /-- The actual chain map on the free singular chains induced by the realized map. -/
-noncomputable def orderNerveRealizationSingularChainMap (f : P → Q) (hf : Monotone f) :
-    AlgebraicTopology.AlternatingFaceMapComplex.obj
-      (orderNerveRealizationSingularModule P) ⟶
-    AlgebraicTopology.AlternatingFaceMapComplex.obj
-      (orderNerveRealizationSingularModule Q) :=
+noncomputable def orderNerveRealizationSingularChainMap (f : P → Q) (hf : Monotone f)  :=
   AlgebraicTopology.AlternatingFaceMapComplex.map
     (CategoryTheory.Functor.whiskerRight
       (TopCat.toSSet.map (orderNerveRealizationMap f hf)) (ModuleCat.free ℤ))

@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CrowellFinsupp
-public import RequestProject.UniversalCoefficients
-
-@[expose] public section
+import RequestProject.CrowellFinsupp
+import RequestProject.UniversalCoefficients
 
 /-! Integral first homology and its torsion test for arbitrarily many cells. -/
 
@@ -12,10 +10,10 @@ namespace FiniteChains
 variable {α J : Type*} [DecidableEq α]
   (N : Subgroup (FreeGroup α)) [N.Normal] (ρ : J → FreeGroup α)
 
-noncomputable def fsCoverCycles : AddSubgroup (α →₀ CoverRing N) :=
+noncomputable def fsCoverCycles  :=
   (coverFirstBoundary N).toAddMonoidHom.ker
 
-noncomputable def fsCoverBoundaries : AddSubgroup (α →₀ CoverRing N) :=
+noncomputable def fsCoverBoundaries  :=
   (coverSecondBoundary N ρ).toAddMonoidHom.range
 
 def FSCoverH1 :=

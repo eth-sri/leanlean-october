@@ -1,17 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SimplexCoordinates
-public import RequestProject.Statement
-public import RequestProject.TopologicalSingular.SingularChainHomotopy
-public import RequestProject.TopologicalSingular.ContractibleSingularChains
-public import RequestProject.FreeSingularChainComparison
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SimplexCoordinates
+import RequestProject.Statement
+import RequestProject.TopologicalSingular.SingularChainHomotopy
+import RequestProject.TopologicalSingular.ContractibleSingularChains
+import RequestProject.FreeSingularChainComparison
 
 open scoped ContinuousMap
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxSynthPendingDepth 3
@@ -21,9 +17,10 @@ set_option maxHeartbeats 800000
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology
 
+variable (X : TopCat.{0})
 /-- Removing the universe lift from singular simplices is a simplicial
 isomorphism, not merely a degreewise bijection. -/
-noncomputable def simplicesMathlibIso (X : TopCat.{0}) :
+noncomputable def simplicesMathlibIso  :
     simplices X ≅ TopCat.toSSet.obj X :=
   NatIso.ofComponents (fun n => (((simplexCoordinates n.unop.len).symm.arrowCongr (Homeomorph.refl X)).toEquiv.trans
       (TopCat.toSSetObjEquiv X n).symm).toIso) (by
@@ -34,8 +31,7 @@ noncomputable def simplicesMathlibIso (X : TopCat.{0}) :
     apply (TopCat.toSSetObjEquiv X m).injective
     apply ContinuousMap.ext
     intro z
-    change σ (stdSimplex.map a.unop (simplexCoordinates m.unop.len z)) =
-      σ (simplexCoordinates n.unop.len (Convexity.StdSimplex.map a.unop z))
+    
     exact congrArg σ (simplexCoordinates_map a.unop z).symm)
 
 /-- The explicit integral chains agree with Mathlib's free singular chains. -/
@@ -60,9 +56,7 @@ theorem freeComplexMathlibIso_natural {X Y : TopCat.{0}} (f : X ⟶ Y) :
 
 /-- The actual explicit singular chain complex computes the coefficients and
 singular-homology functor occurring in `Whitehead.Acyclic`. -/
-noncomputable def complexMathlibIso (X : TopCat.{0}) :
-    complex X ≅ ((singularChainComplexFunctor (ModuleCat.{0} ℤ)).obj
-      (ModuleCat.of ℤ ℤ)).obj X :=
+noncomputable def complexMathlibIso   :=
   freeComplexMathlibIso X ≪≫ FiniteChains.freeSingularChainComplexIso X
 
 theorem complexMathlibIso_natural {X Y : TopCat.{0}} (f : X ⟶ Y) :
@@ -73,9 +67,7 @@ theorem complexMathlibIso_natural {X Y : TopCat.{0}} (f : X ⟶ Y) :
   rw [← Category.assoc, freeComplexMathlibIso_natural, Category.assoc,
     FiniteChains.freeSingularChainComplexIso_natural, Category.assoc]
 
-noncomputable def homologyMathlibIso (X : TopCat.{0}) (n : ℕ) :
-    (complex X).homology n ≅ ((singularHomologyFunctor (ModuleCat.{0} ℤ) n).obj
-      (ModuleCat.of ℤ ℤ)).obj X :=
+noncomputable def homologyMathlibIso  (n : ℕ)  :=
   (HomologicalComplex.homologyFunctor (ModuleCat.{0} ℤ) (ComplexShape.down ℕ) n).mapIso
     (complexMathlibIso X)
 
@@ -91,16 +83,14 @@ theorem homologyMathlibIso_natural {X Y : TopCat.{0}} (f : X ⟶ Y) (n : ℕ) :
 
 /-- Homotopy equivalent spaces have isomorphic actual integral singular homology. -/
 noncomputable def mathlibHomologyIsoOfHomotopyEquiv {X Y : Type}
-    [TopologicalSpace X] [TopologicalSpace Y] (e : X ≃ₕ Y) (n : ℕ) :
-    ((singularHomologyFunctor (ModuleCat.{0} ℤ) n).obj (ModuleCat.of ℤ ℤ)).obj (TopCat.of X) ≅
-      ((singularHomologyFunctor (ModuleCat.{0} ℤ) n).obj (ModuleCat.of ℤ ℤ)).obj (TopCat.of Y) :=
+    [TopologicalSpace X] [TopologicalSpace Y] (e : X ≃ₕ Y) (n : ℕ)  :=
   (homologyMathlibIso (TopCat.of X) n).symm ≪≫ homologyIsoOfHomotopyEquiv e n ≪≫
     homologyMathlibIso (TopCat.of Y) n
 
 end FiniteChains.TopologicalSingular
 
 namespace Whitehead
-open CategoryTheory
+
 
 /-- Acyclicity in the original statement is invariant under homotopy equivalence. -/
 theorem acyclic_iff_of_homotopyEquiv {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]

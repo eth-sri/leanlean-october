@@ -1,11 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeSquareFlagIndex
-
-@[expose] public section
+import RequestProject.QCubeSquareFlagIndex
 
 /-! Actual coefficients of the square fundamental subdivision in its faithful flag index. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -13,7 +10,7 @@ namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] {A : CommRel V}
 
-def squareFlagSign (i : Bool × ZMod 2 × Bool) : ℤ :=
+def squareFlagSign (i : Bool × ZMod 2 × Bool)  :=
   (if i.1 then -1 else 1) * (if i.2.1 = 0 then 1 else -1) *
     (if i.2.2 then -1 else 1)
 

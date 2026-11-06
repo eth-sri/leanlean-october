@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusReceivedPolygonCoefficient
-public import RequestProject.SurfaceDual
-
-@[expose] public section
+import RequestProject.GenusReceivedPolygonCoefficient
+import RequestProject.SurfaceDual
 
 /-! Relative coefficient propagation in actual covers of the polygon surface. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -15,7 +12,7 @@ open ASC
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q]
   {f : P → Q} (hf : IsPosetCover f)
 
-theorem cover_lt_of_image {a b : P} (hab : a ≤ b) (h : f a < f b) : a < b :=
+abbrev cover_lt_of_image {a b : P} (hab : a ≤ b) (h : f a < f b)  :=
   lt_of_le_of_ne hab (fun he => h.ne (congrArg f he))
 
 /-- All local surface incidences lift through a genuine poset cover. -/
@@ -27,11 +24,10 @@ noncomputable def coveredSurfaceRank (S : SurfaceRank Q) : SurfaceRank P where
     obtain ⟨a, b, hab, ha, hb, hall⟩ := S.two_vertices (f e) he
     obtain ⟨a', ⟨ha'e, hfa⟩, _⟩ := hf.down e a ha.le
     obtain ⟨b', ⟨hb'e, hfb⟩, _⟩ := hf.down e b hb.le
-    have ha' : a' < e := cover_lt_of_image ha'e (hfa.symm ▸ ha)
-    have hb' : b' < e := cover_lt_of_image hb'e (hfb.symm ▸ hb)
+    have ha'  := cover_lt_of_image ha'e (hfa.symm ▸ ha)
+    have hb'  := cover_lt_of_image hb'e (hfb.symm ▸ hb)
     refine ⟨a', b', ?_, ha', hb', ?_⟩
-    · intro heq
-      exact hab (hfa.symm.trans ((congrArg f heq).trans hfb))
+    · grind
     · intro z hz
       rcases hall (f z) (hf.strictMono hz) with hz' | hz'
       · exact Or.inl (hf.down_inj hz.le ha'e (hz'.trans hfa.symm))
@@ -40,11 +36,10 @@ noncomputable def coveredSurfaceRank (S : SurfaceRank Q) : SurfaceRank P where
     obtain ⟨a, b, hab, ha, hb, hall⟩ := S.two_faces (f e) he
     obtain ⟨a', ⟨hea', hfa⟩, _⟩ := hf.up e a ha.le
     obtain ⟨b', ⟨heb', hfb⟩, _⟩ := hf.up e b hb.le
-    have ha' : e < a' := cover_lt_of_image hea' (hfa.symm ▸ ha)
-    have hb' : e < b' := cover_lt_of_image heb' (hfb.symm ▸ hb)
+    have ha'  := cover_lt_of_image hea' (hfa.symm ▸ ha)
+    have hb'  := cover_lt_of_image heb' (hfb.symm ▸ hb)
     refine ⟨a', b', ?_, ha', hb', ?_⟩
-    · intro heq
-      exact hab (hfa.symm.trans ((congrArg f heq).trans hfb))
+    · grind
     · intro z hz
       rcases hall (f z) (hf.strictMono hz) with hz' | hz'
       · exact Or.inl (hf.up_inj hz.le hea' (hz'.trans hfa.symm))
@@ -60,8 +55,7 @@ noncomputable def coveredSurfaceRank (S : SurfaceRank Q) : SurfaceRank P where
       ⟨cover_lt_of_image hvb' (hfb.symm ▸ hb.1),
         cover_lt_of_image hb't (hfb.symm ▸ hb.2)⟩
     refine ⟨a', b', ?_, ha', hb', ?_⟩
-    · intro heq
-      exact hab (hfa.symm.trans ((congrArg f heq).trans hfb))
+    · aesop
     · intro z hz
       rcases hall (f z) ⟨hf.strictMono hz.1, hf.strictMono hz.2⟩ with hz' | hz'
       · exact Or.inl (hf.up_inj hz.1.le hva' (hz'.trans hfa.symm))
@@ -79,21 +73,20 @@ noncomputable def coveredSurfaceRank (S : SurfaceRank Q) : SurfaceRank P where
 theorem coveredSurfaceRank_faceEdges (S : SurfaceRank Q) (hfe : FaceEdges S) :
     FaceEdges (coveredSurfaceRank hf S) := by
   intro v w t hv hw ht hvt hwt hvw
-  have hne : f v ≠ f w := fun he => hvw (hf.down_inj hvt.le hwt.le he)
+  have hne  := fun he => hvw (hf.down_inj hvt.le hwt.le he)
   obtain ⟨e, hve, hwe, het⟩ := hfe (f v) (f w) (f t) hv hw ht
     (hf.strictMono hvt) (hf.strictMono hwt) hne
   obtain ⟨e', hve', he't, hfe'⟩ := hf.exists_interval_lift hvt.le e hve.le het.le
-  have hwe' : w ≤ e' := hf.le_of_le_below hwt.le he't (hfe'.symm ▸ hwe.le)
+  have hwe'  := hf.le_of_le_below hwt.le he't (hfe'.symm ▸ hwe.le)
   exact ⟨e', cover_lt_of_image hve' (hfe'.symm ▸ hve),
     cover_lt_of_image hwe' (hfe'.symm ▸ hwe),
     cover_lt_of_image he't (hfe'.symm ▸ het)⟩
 
-section Coefficients
+section
 variable (S : SurfaceRank P)
 include S
 
-theorem triangle_rank (r : StrictOrdTri P) :
-    S.rk r.1.1 = 0 ∧ S.rk r.1.2.1 = 1 ∧ S.rk r.1.2.2 = 2 :=
+abbrev triangle_rank (r : StrictOrdTri P)  :=
   S.rk_flag r.2.1 r.2.2
 
 /-- At a fixed edge/face incidence the only boundary contributions are the
@@ -128,22 +121,18 @@ theorem surfaceBoundary_vertex_pair {a b e t : P}
       have he : r.1.2.1 = e := congrArg (fun d : StrictOrdEdge P => d.1.1) h
       have ht : r.1.2.2 = t := congrArg (fun d : StrictOrdEdge P => d.1.2) h
       rcases hall r.1.1 (he ▸ r.2.1) with hv | hv
-      · exact Or.inl (Subtype.ext (Prod.ext hv (Prod.ext he ht)))
-      · exact Or.inr (Subtype.ext (Prod.ext hv (Prod.ext he ht)))
+      · aesop
+      · aesop
     · rintro (rfl | rfl) <;> rfl
   change Comb.bdry2 (strictOrderCx P) c E = c A + c B
   induction c using Finsupp.induction_linear with
   | zero => simp
   | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]; ring
   | single r n =>
-    rw (config := { transparency := .default }) [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
+    rw  [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
     by_cases hA : r = A
-    · subst r
-      simp [Finsupp.single_apply, h01, h02, h12, hAB]
-    · by_cases hB : r = B
-      · subst r
-        simp [Finsupp.single_apply, h01, h02, h12, hAB.symm]
-      · simp [h01, h02, h12, hA, hB]
+    · simp_all [Finsupp.single_apply]
+    simp_all [Finsupp.single_apply]
 
 /-- At a vertex/face diagonal the two incident flags both occur negatively. -/
 theorem surfaceBoundary_edge_pair {v a b t : P}
@@ -176,22 +165,18 @@ theorem surfaceBoundary_edge_pair {v a b t : P}
       have hv : r.1.1 = v := congrArg (fun d : StrictOrdEdge P => d.1.1) h
       have ht : r.1.2.2 = t := congrArg (fun d : StrictOrdEdge P => d.1.2) h
       rcases hall r.1.2.1 ⟨hv ▸ r.2.1, ht ▸ r.2.2⟩ with he | he
-      · exact Or.inl (Subtype.ext (Prod.ext hv (Prod.ext he ht)))
-      · exact Or.inr (Subtype.ext (Prod.ext hv (Prod.ext he ht)))
+      · aesop
+      · aesop
     · rintro (rfl | rfl) <;> rfl
   change Comb.bdry2 (strictOrderCx P) c E = -c A - c B
   induction c using Finsupp.induction_linear with
   | zero => simp
   | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]; ring
   | single r n =>
-    rw (config := { transparency := .default }) [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
+    rw  [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
     by_cases hA : r = A
-    · subst r
-      simp [Finsupp.single_apply, h01, h12, h02, hAB]
-    · by_cases hB : r = B
-      · subst r
-        simp [Finsupp.single_apply, h01, h12, h02, hAB.symm]
-      · simp [h01, h12, h02, hA, hB]
+    · simp_all [Finsupp.single_apply]
+    simp_all [Finsupp.single_apply]
 
 /-- At a vertex/edge incidence the two flags in the adjacent faces occur positively. -/
 theorem surfaceBoundary_face_pair {v e a b : P}
@@ -224,44 +209,28 @@ theorem surfaceBoundary_face_pair {v e a b : P}
       have hv : r.1.1 = v := congrArg (fun d : StrictOrdEdge P => d.1.1) h
       have he : r.1.2.1 = e := congrArg (fun d : StrictOrdEdge P => d.1.2) h
       rcases hall r.1.2.2 (he ▸ r.2.2) with ht | ht
-      · exact Or.inl (Subtype.ext (Prod.ext hv (Prod.ext he ht)))
-      · exact Or.inr (Subtype.ext (Prod.ext hv (Prod.ext he ht)))
+      · aesop
+      · aesop
     · rintro (rfl | rfl) <;> rfl
   change Comb.bdry2 (strictOrderCx P) c E = c A + c B
   induction c using Finsupp.induction_linear with
   | zero => simp
   | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd]; ring
   | single r n =>
-    rw (config := { transparency := .default }) [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
+    rw  [strictTriangle_bdry2_single, Finsupp.sub_apply, Finsupp.add_apply]
     by_cases hA : r = A
-    · subst r
-      simp [Finsupp.single_apply, h01, h12, h02, hAB]
-    · by_cases hB : r = B
-      · subst r
-        simp [Finsupp.single_apply, h01, h12, h02, hAB.symm]
-      · simp [h01, h12, h02, hA, hB]
+    · simp_all [Finsupp.single_apply]
+    simp_all [Finsupp.single_apply]
 
-end Coefficients
+end
 
 theorem exactlyTwo_exhaust {X : Type} {R : X → Prop} (h : ExactlyTwo R)
     {a b : X} (ha : R a) (hb : R b) (hab : a ≠ b) :
     ∀ x, R x → x = a ∨ x = b := by
   obtain ⟨x, y, _, _, _, hall⟩ := h
-  rcases hall a ha with hax | hay
-  · rcases hall b hb with hbx | hby
-    · exact False.elim (hab (hax.trans hbx.symm))
-    · intro z hz
-      rcases hall z hz with hzx | hzy
-      · exact Or.inl (hzx.trans hax.symm)
-      · exact Or.inr (hzy.trans hby.symm)
-  · rcases hall b hb with hbx | hby
-    · intro z hz
-      rcases hall z hz with hzx | hzy
-      · exact Or.inr (hzx.trans hbx.symm)
-      · exact Or.inl (hzy.trans hay.symm)
-    · exact False.elim (hab (hay.trans hby.symm))
+  grind
 
-section Propagation
+section
 variable (S : SurfaceRank P) (c : StrictOrdTri P →₀ ℤ)
 include S
 
@@ -274,10 +243,10 @@ theorem surface_zero_change_vertex {a b e t : P}
   by_cases hab : a = b
   · subst b
     exact hz
-  · have he : S.rk e = 1 := (S.rk_flag hae het).2.1
+  · have he  := (S.rk_flag hae het).2.1
     have hpair := surfaceBoundary_vertex_pair S hae hbe het hab
       (exactlyTwo_exhaust (S.two_vertices e he) hae hbe hab) c
-    rw (config := { transparency := .default }) [hd, hz] at hpair
+    rw  [hd, hz] at hpair
     omega
 
 /-- A zero flag coefficient propagates across an edge change inside a face. -/
@@ -293,7 +262,7 @@ theorem surface_zero_change_edge {v a b t : P}
     have hpair := surfaceBoundary_edge_pair S hva hat hvb hbt hab
       (exactlyTwo_exhaust (S.two_edges v t hrk.1 hrk.2.2 (hva.trans hat))
         ⟨hva, hat⟩ ⟨hvb, hbt⟩ hab) c
-    rw (config := { transparency := .default }) [hd, hz] at hpair
+    rw  [hd, hz] at hpair
     omega
 
 /-- A zero flag coefficient crosses an actual shared old edge as soon as the
@@ -306,10 +275,10 @@ theorem surface_zero_change_face {v e a b : P}
   by_cases hab : a = b
   · subst b
     exact hz
-  · have he : S.rk e = 1 := (S.rk_flag hve hea).2.1
+  · have he  := (S.rk_flag hve hea).2.1
     have hpair := surfaceBoundary_face_pair S hve hea heb hab
       (exactlyTwo_exhaust (S.two_faces e he) hea heb hab) c
-    rw (config := { transparency := .default }) [hd, hz] at hpair
+    rw  [hd, hz] at hpair
     omega
 
 /-- One zero flag coefficient determines all flags of its actual triangular
@@ -329,13 +298,13 @@ theorem surface_zero_in_face (hfe : FaceEdges S)
     exact surface_zero_change_edge S c hve het hwd hdt (hrel _ hrk.2.2) ha
   · obtain ⟨r, hvr, hwr, hrt⟩ := hfe v w t hrk.1 hrk'.1 hrk.2.2
       (hve.trans het) (hwd.trans hdt) hvw
-    have h₁ : c ⟨(v, r, t), hvr, hrt⟩ = 0 :=
+    have h₁  :=
       surface_zero_change_edge S c hve het hvr hrt (hrel _ hrk.2.2) ha
-    have h₂ : c ⟨(w, r, t), hwr, hrt⟩ = 0 :=
+    have h₂  :=
       surface_zero_change_vertex S c hvr hwr hrt (hrel _ hrk.2.2) h₁
     exact surface_zero_change_edge S c hwr hrt hwd hdt (hrel _ hrk.2.2) h₂
 
-end Propagation
+end
 end FiniteChains.Comb
 
 namespace FiniteChains.Davis
@@ -344,9 +313,10 @@ variable {κ ι P : Type} {M : ℕ} [NeZero M] [PartialOrder P]
   {vc : Fin M → κ} {ec : Fin M → ι} (hc : Compat vc ec)
   (hd : PolygonData vc ec) (f : P → SCell vc ec hc) (hf : IsPosetCover f)
 
+variable (c : StrictOrdTri P →₀ ℤ)
 /-- The boundary of a relative surface chain is supported on the actual
 identified polygon boundary, in both endpoints of each edge. -/
-def PolygonRelativeChain (c : StrictOrdTri P →₀ ℤ) : Prop :=
+def PolygonRelativeChain   :=
   ∀ e ∈ (Comb.bdry2 (strictOrderCx P) c).support,
     InPolygonBoundary hc (f e.1.1) ∧ InPolygonBoundary hc (f e.1.2)
 
@@ -354,143 +324,147 @@ theorem polygonBoundary_rank_le_one {a : SCell vc ec hc}
     (ha : InPolygonBoundary hc a) : Cell.rk a ≤ 1 := by
   cases a <;> simp_all [InPolygonBoundary, Cell.rk]
 
+variable (hrel : PolygonRelativeChain hc f c)
+include hrel in
 theorem polygonRelative_boundary_zero_of_target
-    (c : StrictOrdTri P →₀ ℤ) (hrel : PolygonRelativeChain hc f c)
+     
     (e : StrictOrdEdge P) (he : ¬ InPolygonBoundary hc (f e.1.2)) :
     Comb.bdry2 (strictOrderCx P) c e = 0 := by
   by_contra hn
   exact he ((hrel e (Finsupp.mem_support_iff.mpr hn)).2)
 
+include hrel in
 theorem polygonRelative_boundary_zero_at_face
-    (c : StrictOrdTri P →₀ ℤ) (hrel : PolygonRelativeChain hc f c)
+     
     (e : StrictOrdEdge P) (he : Cell.rk (f e.1.2) = 2) :
     Comb.bdry2 (strictOrderCx P) c e = 0 := by
-  apply polygonRelative_boundary_zero_of_target hc f c hrel e
-  intro hb
-  have hr := polygonBoundary_rank_le_one hc hb
-  omega
+  grind [polygonRelative_boundary_zero_of_target, polygonBoundary_rank_le_one]
 
+include hrel in
 include hd hf in
-theorem polygonRelative_zero_in_face
-    (c : StrictOrdTri P →₀ ℤ) (hrel : PolygonRelativeChain hc f c)
-    (a b : StrictOrdTri P) (ht : a.1.2.2 = b.1.2.2) (ha : c a = 0) : c b = 0 :=
-  surface_zero_in_face (coveredSurfaceRank hf (surfaceRank_SCell hc hd)) c
-    (coveredSurfaceRank_faceEdges hf (surfaceRank_SCell hc hd) (faceEdges_SCell hc hd))
-    (polygonRelative_boundary_zero_at_face hc f c hrel) a b ht ha
+abbrev polygonRelative_zero_in_face
+     
+    (a b : StrictOrdTri P) (ht : a.1.2.2 = b.1.2.2) (ha : c a = 0)  :=
+  FiniteChains.Comb.surface_zero_in_face
+    (FiniteChains.Comb.coveredSurfaceRank hf (FiniteChains.Davis.surfaceRank_SCell hc hd)) c
+    (FiniteChains.Comb.coveredSurfaceRank_faceEdges hf (FiniteChains.Davis.surfaceRank_SCell hc hd)
+      (FiniteChains.Davis.faceEdges_SCell hc hd))
+    (FiniteChains.Davis.polygonRelative_boundary_zero_at_face hc f c hrel) a b ht ha
 
+include hrel in
 include hd in
 /-- Every flag of every actual lifted inner triangle is forced by the pole
 coefficients.  This propagates across all six flags, not only the two centre flags. -/
 theorem polygonRelative_zero_inner
-    (c : StrictOrdTri P →₀ ℤ) (hrel : PolygonRelativeChain hc f c)
+     
     (hpoles : polygonCoverPoleCoefficients hc f hf c = 0)
     (p : Fin M) (t : StrictOrdTri P) (ht : f t.1.2.2 = cI hc p) : c t = 0 := by
   let S := coveredSurfaceRank hf (surfaceRank_SCell hc hd)
   have hM : 2 ≤ M := by have := hd.three_le; omega
-  have hsource : ∀ e : StrictOrdEdge P,
-      f e.1.1 = cC hc → Comb.bdry2 (strictOrderCx P) c e = 0 :=
+  have hsource  :=
     polygonCover_boundary_vanishes_at_poles hc f c (fun e he => (hrel e he).1)
   have hpole : ∀ a : StrictOrdTri P, f a.1.1 = cC hc → c a = 0 := by
     intro a ha
     have he : polygonCoverPoleCoefficients hc f hf c =
-        polygonCoverPoleCoefficients hc f hf 0 := by rw (config := { transparency := .default }) [map_zero]; exact hpoles
+        polygonCoverPoleCoefficients hc f hf 0 := by simp_all
     have hh := polygonCoverPole_relative_ext hc f hf hM c 0 hsource
       (by intro e _; simp) he a ha
     exact hh
   obtain ⟨v, ⟨hvt, hfv⟩, _⟩ := hf.down t.1.2.2 (cC hc)
-    (by rw (config := { transparency := .default }) [ht]; exact (ctr_lt_inn hc p).le)
-  have hvT : v < t.1.2.2 := lt_of_le_of_ne hvt (by
+    (by rw  [ht]; exact (ctr_lt_inn hc p).le)
+  have hvT  := lt_of_le_of_ne hvt (by
     intro he
     have hh := hfv.symm.trans ((congrArg f he).trans ht)
     exact (ctr_lt_inn hc p).ne hh)
-  have hvrk : S.rk v = 0 := by change Cell.rk (f v) = 0; rw (config := { transparency := .default }) [hfv]; rfl
-  have hTrk : S.rk t.1.2.2 = 2 := (S.rk_flag t.2.1 t.2.2).2.2
+  have hvrk : S.rk v = 0 := by change Cell.rk (f v) = 0; rw  [hfv]; rfl
+  have hTrk  := (S.rk_flag t.2.1 t.2.2).2.2
   obtain ⟨e, _, _, ⟨hve, heT⟩, _, _⟩ := S.two_edges v t.1.2.2 hvrk hTrk hvT
   let a : StrictOrdTri P := ⟨(v, e, t.1.2.2), hve, heT⟩
   exact polygonRelative_zero_in_face hc hd f hf c hrel a t rfl (hpole a hfv)
 
+include hrel in
 include hd hf in
 /-- Move a zero coefficient from all flags over one actual face across an
 internal edge to all flags over its adjacent actual face. -/
 theorem polygonRelative_zero_across
-    (c : StrictOrdTri P →₀ ℤ) (hrel : PolygonRelativeChain hc f c)
+     
     (t : StrictOrdTri P) (e a : SCell vc ec hc)
     (herk : Cell.rk e = 1) (het : e < f t.1.2.2) (hea : e < a)
     (heboundary : ¬ InPolygonBoundary hc e)
     (ha : ∀ z : StrictOrdTri P, f z.1.2.2 = a → c z = 0) : c t = 0 := by
   let S := coveredSurfaceRank hf (surfaceRank_SCell hc hd)
   obtain ⟨d, ⟨hdT, hfd⟩, _⟩ := hf.down t.1.2.2 e het.le
-  have hdT' : d < t.1.2.2 := lt_of_le_of_ne hdT (by
-    intro he
-    exact het.ne (hfd.symm.trans (congrArg f he)))
-  obtain ⟨a', ⟨hda, hfa⟩, _⟩ := hf.up d a (by rw (config := { transparency := .default }) [hfd]; exact hea.le)
-  have hda' : d < a' := lt_of_le_of_ne hda (by
-    intro he
-    exact hea.ne (hfd.symm.trans ((congrArg f he).trans hfa)))
-  have hdrk : S.rk d = 1 := by change Cell.rk (f d) = 1; rw (config := { transparency := .default }) [hfd]; exact herk
+  have hdT'  := lt_of_le_of_ne hdT (by
+    aesop)
+  obtain ⟨a', ⟨hda, hfa⟩, _⟩ := hf.up d a (by grind)
+  have hda'  := lt_of_le_of_ne hda (by
+    grind)
+  have hdrk : S.rk d = 1 := by change Cell.rk (f d) = 1; rw  [hfd]; exact herk
   obtain ⟨v, _, _, hvd, _, _⟩ := S.two_vertices d hdrk
   let z : StrictOrdTri P := ⟨(v, d, a'), hvd, hda'⟩
   let w : StrictOrdTri P := ⟨(v, d, t.1.2.2), hvd, hdT'⟩
   have hbd : Comb.bdry2 (strictOrderCx P) c ⟨(v, d), hvd⟩ = 0 :=
     polygonRelative_boundary_zero_of_target hc f c hrel _ (hfd.symm ▸ heboundary)
-  have hw : c w = 0 := surface_zero_change_face S c hvd hda' hdT' hbd (ha z hfa)
+  have hw  := surface_zero_change_face S c hvd hda' hdT' hbd (ha z hfa)
   exact polygonRelative_zero_in_face hc hd f hf c hrel w t rfl hw
 
+include hrel in
 include hd in
 /-- The genuine `ced` incidence carries rigidity from the fan into every
 lifted inner collar triangle. -/
 theorem polygonRelative_zero_inner_collar
-    (c : StrictOrdTri P →₀ ℤ) (hrel : PolygonRelativeChain hc f c)
+     
     (hpoles : polygonCoverPoleCoefficients hc f hf c = 0)
     (p : Fin M) (t : StrictOrdTri P) (ht : f t.1.2.2 = cT2 hc p) : c t = 0 := by
   apply polygonRelative_zero_across hc hd f hf c hrel t (cF hc p) (cI hc p) rfl
-  · rw (config := { transparency := .default }) [ht]
+  · rw  [ht]
     exact lt_of_le_of_ne (cF_le_cT2 hc p) (by intro h; cases h)
   · exact lt_of_le_of_ne (cF_le_cI hc p) (by intro h; cases h)
   · exact fun h => h
-  · exact polygonRelative_zero_inner hc hd f hf c hrel hpoles p
+  · grind [polygonRelative_zero_inner]
 
+include hrel in
 include hd in
 /-- The genuine `gdi` incidence carries rigidity to every lifted outer
 collar triangle.  The identified boundary is never crossed. -/
 theorem polygonRelative_zero_outer_collar
-    (c : StrictOrdTri P →₀ ℤ) (hrel : PolygonRelativeChain hc f c)
+     
     (hpoles : polygonCoverPoleCoefficients hc f hf c = 0)
     (p : Fin M) (t : StrictOrdTri P) (ht : f t.1.2.2 = cT1 hc p) : c t = 0 := by
   apply polygonRelative_zero_across hc hd f hf c hrel t (cG hc p) (cT2 hc p) rfl
-  · rw (config := { transparency := .default }) [ht]
+  · rw  [ht]
     exact lt_of_le_of_ne (cG_le_cT1 hc p) (by intro h; cases h)
   · exact lt_of_le_of_ne (cG_le_cT2 hc p) (by intro h; cases h)
   · exact fun h => h
-  · exact polygonRelative_zero_inner_collar hc hd f hf c hrel hpoles p
+  · grind [polygonRelative_zero_inner_collar]
 
+include hrel in
 include hd in
 /-- The complete relative two-chain in an actual surface cover is detected by
 its actual pole coefficients, after propagation through every fan and collar
 flag.  No global connectedness or group faithfulness premise is used. -/
 theorem polygonRelative_zero_of_pole_coefficients
-    (c : StrictOrdTri P →₀ ℤ) (hrel : PolygonRelativeChain hc f c)
+     
     (hpoles : polygonCoverPoleCoefficients hc f hf c = 0) : c = 0 := by
   ext t
   have hrk := (surfaceRank_SCell hc hd).rk_flag (hf.strictMono t.2.1) (hf.strictMono t.2.2)
   have ht : Cell.rk (f t.1.2.2) = 2 := hrk.2.2
   generalize he : f t.1.2.2 = a at ht
   cases a with
-  | inn p => exact polygonRelative_zero_inner hc hd f hf c hrel hpoles p t he
-  | tr2 p => exact polygonRelative_zero_inner_collar hc hd f hf c hrel hpoles p t he
-  | tr1 p => exact polygonRelative_zero_outer_collar hc hd f hf c hrel hpoles p t he
+  | inn p => classical solve_by_elim (transparency := .default) [FiniteChains.Davis.polygonRelative_zero_inner]
+  | tr2 p => classical solve_by_elim (transparency := .default) [FiniteChains.Davis.polygonRelative_zero_inner_collar]
+  | tr1 p => classical solve_by_elim (transparency := .default) [FiniteChains.Davis.polygonRelative_zero_outer_collar]
   | _ => simp [Cell.rk] at ht
 
-theorem PolygonRelativeChain.sub {c d : StrictOrdTri P →₀ ℤ}
+variable {c d : StrictOrdTri P →₀ ℤ}
+theorem PolygonRelativeChain.sub 
     (hc' : PolygonRelativeChain hc f c) (hd' : PolygonRelativeChain hc f d) :
     PolygonRelativeChain hc f (c - d) := by
   intro e he
-  have hn : Comb.bdry2 (strictOrderCx P) (c - d) e ≠ 0 := Finsupp.mem_support_iff.mp he
+  have hn  := Finsupp.mem_support_iff.mp he
   by_cases hce : Comb.bdry2 (strictOrderCx P) c e = 0
   · have hde : Comb.bdry2 (strictOrderCx P) d e ≠ 0 := by
-      intro hd0
-      apply hn
-      rw (config := { transparency := .default }) [map_sub, Finsupp.sub_apply, hce, hd0, sub_self]
+      simp_all
     exact hd' e (Finsupp.mem_support_iff.mpr hde)
   · exact hc' e (Finsupp.mem_support_iff.mpr hce)
 
@@ -498,28 +472,20 @@ theorem PolygonRelativeChain.zero : PolygonRelativeChain hc f (0 : StrictOrdTri 
   intro e he
   simp at he
 
-theorem PolygonRelativeChain.add {c d : StrictOrdTri P →₀ ℤ}
+theorem PolygonRelativeChain.add 
     (hc' : PolygonRelativeChain hc f c) (hd' : PolygonRelativeChain hc f d) :
     PolygonRelativeChain hc f (c + d) := by
   intro e he
-  have hn : Comb.bdry2 (strictOrderCx P) (c + d) e ≠ 0 := Finsupp.mem_support_iff.mp he
+  have hn  := Finsupp.mem_support_iff.mp he
   by_cases hce : Comb.bdry2 (strictOrderCx P) c e = 0
   · have hde : Comb.bdry2 (strictOrderCx P) d e ≠ 0 := by
-      intro hd0
-      apply hn
-      rw (config := { transparency := .default }) [map_add, Finsupp.add_apply, hce, hd0, add_zero]
+      simp_all
     exact hd' e (Finsupp.mem_support_iff.mpr hde)
   · exact hc' e (Finsupp.mem_support_iff.mpr hce)
 
 theorem PolygonRelativeChain.smul {c : StrictOrdTri P →₀ ℤ}
     (hc' : PolygonRelativeChain hc f c) (n : ℤ) : PolygonRelativeChain hc f (n • c) := by
-  intro e he
-  have hn : Comb.bdry2 (strictOrderCx P) (n • c) e ≠ 0 := Finsupp.mem_support_iff.mp he
-  have hce : Comb.bdry2 (strictOrderCx P) c e ≠ 0 := by
-    intro hzero
-    apply hn
-    rw (config := { transparency := .default }) [map_smul, Finsupp.smul_apply, hzero, smul_zero]
-  exact hc' e (Finsupp.mem_support_iff.mpr hce)
+  simp_all [FiniteChains.Davis.PolygonRelativeChain]
 
 include hd in
 /-- Full relative surface-chain reconstruction is unique for its finite family
@@ -532,6 +498,6 @@ theorem polygonRelative_ext
   apply sub_eq_zero.mp
   apply polygonRelative_zero_of_pole_coefficients hc hd f hf (c - d)
     (PolygonRelativeChain.sub hc f hc' hd')
-  rw (config := { transparency := .default }) [map_sub, hpoles, sub_self]
+  rw  [map_sub, hpoles, sub_self]
 
 end FiniteChains.Davis

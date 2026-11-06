@@ -1,5 +1,4 @@
-module
-public import RequestProject.TreeCoverAcyclic
-public import RequestProject.CoverComplexPres
-public import RequestProject.PresentationNecessity
-public import RequestProject.PresChainTopological
+import RequestProject.TreeCoverAcyclic
+import RequestProject.CoverComplexPres
+import RequestProject.PresentationNecessity
+import RequestProject.PresChainTopological

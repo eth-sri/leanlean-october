@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberDescent
-public import RequestProject.RACGCovering
-
-@[expose] public section
+import RequestProject.ChamberDescent
+import RequestProject.RACGCovering
 
 /-!
 # The parity map on a special subgroup of a simplex
@@ -24,23 +22,23 @@ Together these say that `phi` identifies `W_T` with `(ℤ/2)^T`, which is exactl
 faces of a cube of `C(L)` lift uniquely to faces of a chamber of the Davis complex.
 -/
 
-namespace FiniteChains
-namespace RACG
+namespace FiniteChains.RACG
 
-universe u
+
 
 variable {V : Type u} [DecidableEq V] (A : CommRel V)
 
+  {T : Set V}
 /-- An element of the special subgroup `W_T` has trivial parity outside `T`. -/
-theorem phi_eq_zero_of_mem_specialSub {T : Set V} {u : CayGroup A} (hu : u ∈ specialSub A T)
+theorem phi_eq_zero_of_mem_specialSub  {u : CayGroup A} (hu : u ∈ specialSub A T)
     {v : V} (hv : v ∉ T) : phi A u v = 0 := by
   obtain ⟨l, hl, rfl⟩ := exists_cword_of_mem_specialSub A hu
   rw [phi_cword]
-  have : l.count v = 0 := List.count_eq_zero_of_not_mem (fun hmem => hv (hl v hmem))
+  have  := List.count_eq_zero_of_not_mem (fun hmem => hv (hl v hmem))
   simp [parList, this]
 
 /-- An element of `W_T` with trivial parity is trivial. -/
-theorem eq_one_of_mem_specialSub_of_phi_eq_zero {T : Set V} (hT : Commuting A T)
+theorem eq_one_of_mem_specialSub_of_phi_eq_zero  (hT : Commuting A T)
     {u : CayGroup A} (hu : u ∈ specialSub A T) (hphi : phi A u = 0) : u = 1 := by
   obtain ⟨l, hl, hnd, rfl⟩ := exists_nodup_cword A hT hu
   have hnil : l = [] := by
@@ -51,14 +49,14 @@ theorem eq_one_of_mem_specialSub_of_phi_eq_zero {T : Set V} (hT : Commuting A T)
         have hcount : (a :: t).count a = 1 := List.count_eq_one_of_mem hnd (by simp)
         have h0 : phi A (cword A (a :: t)) a = 0 := congrFun hphi a
         rw [phi_cword] at h0
-        simp only [parList, hcount, Nat.cast_one] at h0
+        simp only [parList, hcount] at h0
         exact absurd h0 (by decide)
   rw [hnil, cword_nil]
 
 /-- **`phi` is injective on the special subgroup of a simplex.** -/
-theorem phi_injOn_specialSub {T : Set V} (hT : Commuting A T) {u u' : CayGroup A}
+theorem phi_injOn_specialSub  (hT : Commuting A T) {u u' : CayGroup A}
     (hu : u ∈ specialSub A T) (hu' : u' ∈ specialSub A T) (h : phi A u = phi A u') : u = u' := by
-  have hmem : u⁻¹ * u' ∈ specialSub A T := Subgroup.mul_mem _ (Subgroup.inv_mem _ hu) hu'
+  have hmem  := Subgroup.mul_mem _ (Subgroup.inv_mem _ hu) hu'
   have hzero : phi A (u⁻¹ * u') = 0 := by
     rw [phi_mul, phi_inv, h]
     funext v
@@ -74,22 +72,12 @@ theorem exists_mem_specialSub_phi_eq (T : Finset V) (t : V → ZMod 2)
   classical
   set l : List V := (T.filter (fun v : V => t v = 1)).toList with hldef
   have hlmem : ∀ a ∈ l, a ∈ (T : Set V) := by
-    intro a ha
-    rw [hldef, Finset.mem_toList, Finset.mem_filter] at ha
-    exact ha.1
+    simp_all
   refine ⟨cword A l, cword_mem_specialSub A hlmem, ?_⟩
   rw [phi_cword]
   funext v
   have hcount : l.count v = if v ∈ T ∧ t v = 1 then 1 else 0 := by
-    by_cases h : v ∈ T ∧ t v = 1
-    · rw [if_pos h]
-      refine List.count_eq_one_of_mem (Finset.nodup_toList _) ?_
-      rw [hldef, Finset.mem_toList, Finset.mem_filter]
-      exact h
-    · rw [if_neg h]
-      refine List.count_eq_zero_of_not_mem ?_
-      rw [hldef, Finset.mem_toList, Finset.mem_filter]
-      exact h
+    classical aesop (add simp [if_pos, List.count_eq_one_of_mem, Finset.nodup_toList, Finset.mem_toList, Finset.mem_filter, if_neg, List.count_eq_zero_of_not_mem])
   rw [parList, hcount]
   by_cases h : v ∈ T ∧ t v = 1
   · rw [if_pos h, h.2, Nat.cast_one]
@@ -104,5 +92,5 @@ theorem exists_mem_specialSub_phi_eq (T : Finset V) (t : V → ZMod 2)
       · exact ht v hv
     rw [if_neg h, h0, Nat.cast_zero]
 
-end RACG
-end FiniteChains
+end FiniteChains.RACG
+

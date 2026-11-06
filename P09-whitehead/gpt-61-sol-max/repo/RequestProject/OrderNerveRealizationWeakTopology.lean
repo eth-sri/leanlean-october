@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveRealizationHausdorff
-
-@[expose] public section
+import RequestProject.OrderNerveRealizationHausdorff
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -24,8 +22,7 @@ theorem orderNerveRealization_nonDegenerate_isClosed_iff (P : Type) [PartialOrde
       convert hc using 1
       ext z
       have ha := congrArg (fun k => k z) (orderNerveRealizationSimplex_operator P a t.val)
-      change orderNerveRealizationSimplex P t.val (SimplexCategory.toTop.map a z) =
-        orderNerveRealizationSimplex P ((nerve P).map a.op t.val) z at ha
+      
       rw [← ht] at ha
       exact iff_of_eq (congrArg (fun x => x ∈ A) ha.symm)
 
@@ -44,7 +41,7 @@ theorem orderNerveRealization_isClosed_iff_inter_simplex_range (P : Type) [Parti
     have hc := (h n s).preimage (orderNerveRealizationSimplex P s.val).hom.continuous
     convert hc using 1
     ext z
-    simp only [Set.mem_preimage, Set.mem_inter_iff]
+    simp only 
     exact ⟨fun hz => ⟨hz, ⟨z, rfl⟩⟩, fun hz => hz.1⟩
 
 end FiniteChains.Comb

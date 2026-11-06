@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeFacets
-public import RequestProject.CutSurfaceSpine
-
-@[expose] public section
+import RequestProject.QCubeFacets
+import RequestProject.CutSurfaceSpine
 
 /-! Fixed coordinate facets and the actual quotient-cube coefficient boundary. -/
 namespace FiniteChains.Davis
@@ -51,16 +49,16 @@ theorem coordinate_update_free_facet (g : Cube V) (c : QCube A) (v : V)
       funext x
       by_cases hx : x = v
       · subst x
-        simp [hgv]
-      · simp [Function.update_of_ne hx, hother x hx]
+        simp [*]
+      · simp [*]
   | neg =>
       refine ⟨1, ?_⟩
       rw [qCubeFacet_coordinate_one]
       funext x
       by_cases hx : x = v
       · subst x
-        simp [hgv]
-      · simp [Function.update_of_ne hx, hother x hx]
+        simp [*]
+      · simp [*]
 
 variable [LinearOrder V]
 
@@ -72,16 +70,12 @@ theorem cubeBdry_actual_facet (c : QCube A) (v : V) (hv : v ∈ c.spx) (s : ZMod
   classical
   let g := qCubeToCoordinate (qCubeFacet c v s)
   have hfixed : g v ≠ CubeCoord.free := by
-    by_cases hs : s = 0 <;> simp [g, qCubeToCoordinate, qCubeFacet, hs]
+    classical aesop (add simp [qCubeToCoordinate, qCubeFacet])
   have hmem : v ∈ Finset.univ.filter (fun x => g x ≠ CubeCoord.free) := by simp [hfixed]
   have he := qCubeFacet_coordinate_free c v hv s
   rw [cubeBdry_inl, Finset.sum_eq_single v]
   · rw [he, if_pos rfl, mul_one]
-  · intro k hk hkv
-    have hkfixed : g k ≠ CubeCoord.free := (Finset.mem_filter.mp hk).2
-    rw [if_neg, mul_zero]
-    intro hkfree
-    exact hkv (update_free_injective hkfixed (hkfree.trans he.symm))
+  · grind [update_free_injective]
   · intro hnot
     exact False.elim (hnot hmem)
 
@@ -89,7 +83,6 @@ theorem cubeBdry_actual_facet (c : QCube A) (v : V) (hv : v ∈ c.spx) (s : ZMod
 theorem cubeBdry_zero_off_actual_facets (c : QCube A) (g : Cube V)
     (hg : ∀ v ∈ c.spx, ∀ s : ZMod 2, g ≠ qCubeToCoordinate (qCubeFacet c v s)) :
     cubeBdry (qCubeToCoordinate c) (Sum.inl g) = 0 := by
-  classical
   rw [cubeBdry_inl]
   apply Finset.sum_eq_zero
   intro v hv

@@ -1,19 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ComponentComplex
-public import RequestProject.ZeroPi2Descent
-
-@[expose] public section
+import RequestProject.ComponentComplex
+import RequestProject.ZeroPi2Descent
 
 /-! Transfer vanishing through a commuting square whose target vertical
 map admits a cellular left inverse. Pending final Lean verification. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X Y Z X' Y' : Complex2.{u}}
 
 theorem zeroPi2_comp_left (g : Hom Y Z) (f : Hom X Y) (hz : ZeroPi2 f) :
@@ -24,11 +19,13 @@ theorem zeroPi2_comp_left (g : Hom Y Z) (f : Hom X Y) (hz : ZeroPi2 f) :
         (Finsupp.mapDomain (univLift X f x).onF c) := by
     rw [← Finsupp.mapDomain_comp]
     exact Finsupp.mapDomain_congr fun F _ => (univLiftF_comp g f x F).symm
-  change Finsupp.mapDomain (univLift X (g.comp f) x).onF c = 0
+  dsimp
   have hz' : Finsupp.mapDomain (univLift X f x).onF c = 0 := hz x c hc
   rw [he, hz', Finsupp.mapDomain_zero]
 
-theorem hom_retraction_square (f : Hom X Y) (g : Hom X' Y')
+variable (f : Hom X Y)
+  (g : Hom X' Y')
+theorem hom_retraction_square  
     (a : Hom X X') (b : Hom Y Y') (r : Hom Y' Y)
     (hV : ∀ y, r.onV (b.onV y) = y)
     (hE : ∀ y, r.onE (b.onE y) = y)
@@ -40,7 +37,7 @@ theorem hom_retraction_square (f : Hom X Y) (g : Hom X' Y')
   · exact funext fun x => hE (f.onE x)
   · exact funext fun x => hF (f.onF x)
 
-theorem zeroPi2_of_retraction_square (f : Hom X Y) (g : Hom X' Y')
+theorem zeroPi2_of_retraction_square  
     (a : Hom X X') (b : Hom Y Y') (r : Hom Y' Y)
     (hV : ∀ y, r.onV (b.onV y) = y)
     (hE : ∀ y, r.onE (b.onE y) = y)
@@ -52,9 +49,9 @@ theorem zeroPi2_of_retraction_square (f : Hom X Y) (g : Hom X' Y')
 theorem pi1Trivial_comp_right (g : Hom Y Z) (f : Hom X Y) (hz : Pi1Trivial g) :
     Pi1Trivial (g.comp f) := by
   intro x p hp
-  simpa only [mapPath_comp, Hom.comp, Function.comp_def] using hz (f.onV x) (mapPath f p) (isPath_mapPath f hp)
+  simpa [mapPath_comp, Hom.comp, Function.comp_def] using hz (f.onV x) (mapPath f p) (isPath_mapPath f hp)
 
-theorem pi1Trivial_of_retraction_square (f : Hom X Y) (g : Hom X' Y')
+theorem pi1Trivial_of_retraction_square  
     (a : Hom X X') (b : Hom Y Y') (r : Hom Y' Y)
     (hV : ∀ y, r.onV (b.onV y) = y)
     (hE : ∀ y, r.onE (b.onE y) = y)

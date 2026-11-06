@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.SquareSideQuotient
-public import RequestProject.ClassicalCWOneCellCellularization
-
-@[expose] public section
+import RequestProject.SquareSideQuotient
+import RequestProject.ClassicalCWOneCellCellularization
 
 /-! Affine coordinates identify the actual sup-norm disk boundary with
 the square boundary, and the one-dimensional disk with the unit interval. -/
@@ -12,19 +10,19 @@ noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped Topology unitInterval Classical
 
-theorem norm_coordinate_bounds {n : ℕ} (x : Fin n → ℝ)
-    (hx : ‖x‖ ≤ 1) (i : Fin n) : -1 ≤ x i ∧ x i ≤ 1 := by
-  have hi : |x i| ≤ 1 := (Real.norm_eq_abs (x i)) ▸ (norm_le_pi_norm x i).trans hx
-  exact abs_le.mp hi
+abbrev norm_coordinate_bounds {n : ℕ} (x : Fin n → ℝ)
+    (hx : ‖x‖ ≤ 1) (i : Fin n)  :=
+  have hi := Real.norm_eq_abs (x i) ▸ LE.le.trans (norm_le_pi_norm x i) hx;
+  abs_le.mp hi
 
 theorem norm_one_coordinate {n : ℕ} (x : Fin n → ℝ) (hx : ‖x‖ = 1) :
     ∃ i, x i = 1 ∨ x i = -1 := by
   by_contra! h
-  have hl : ‖x‖ < 1 := (pi_norm_lt_iff zero_lt_one).mpr (fun i => by
-    have hu : ‖x i‖ ≤ 1 := (norm_le_pi_norm x i).trans hx.le
+  have hl  := (pi_norm_lt_iff zero_lt_one).mpr (fun i => by
+    have hu  := (norm_le_pi_norm x i).trans hx.le
     apply lt_of_le_of_ne hu
     intro he
-    have hi : x i = 1 ∨ x i = -1 := (abs_eq zero_le_one).mp
+    have hi  := (abs_eq zero_le_one).mp
       (by simpa only [Real.norm_eq_abs] using he)
     exact hi.elim (h i).1 (h i).2)
   exact (not_lt_of_ge hx.ge) hl
@@ -38,12 +36,7 @@ def unitBoundarySquareHomeomorph : UnitBoundary (Fin 2 → ℝ) ≃ₜ SquareBou
     · exact ⟨i, Or.inl (Subtype.ext (by simp [hi]))⟩⟩
   invFun x := ⟨fun i => 2 * (x.val i : ℝ) - 1, by
     apply le_antisymm
-    · apply (pi_norm_le_iff_of_nonneg zero_le_one).mpr
-      intro i
-      rw [Real.norm_eq_abs]
-      apply abs_le.mpr
-      have hi := (x.val i).property
-      constructor <;> linarith [hi.1, hi.2]
+    · grind [pi_norm_le_iff_of_nonneg, Real.norm_eq_abs]
     · obtain ⟨i, hi | hi⟩ := x.property
       · have h := norm_le_pi_norm (fun j => 2 * (x.val j : ℝ) - 1) i
         simpa only [hi, Set.Icc.coe_zero, mul_zero, zero_sub, norm_neg, norm_one] using h
@@ -57,11 +50,7 @@ def unitBoundarySquareHomeomorph : UnitBoundary (Fin 2 → ℝ) ≃ₜ SquareBou
     dsimp
     ring
   right_inv x := by
-    apply Subtype.ext
-    funext i
-    apply Subtype.ext
-    dsimp
-    ring
+    simp_all
   continuous_toFun := by
     apply Continuous.subtype_mk
     apply continuous_pi
@@ -100,12 +89,10 @@ def oneBallIntervalHomeomorph : ClosedUnitBall (Fin 1 → ℝ) ≃ₜ I where
     apply Continuous.subtype_mk
     exact (((continuous_apply 0).comp continuous_subtype_val).add continuous_const).div_const 2
   continuous_invFun := by
-    apply Continuous.subtype_mk
-    exact continuous_pi fun _ =>
-      (continuous_const.mul continuous_subtype_val).sub continuous_const
+    fun_prop
 
 def oneBoundaryPoint (b : Bool) : UnitBoundary (Fin 1 → ℝ) :=
-  ⟨fun _ => if b then 1 else -1, by cases b <;> simp [pi_norm_const]⟩
+  ⟨fun _ => if b then 1 else -1, by cases b <;> simp ⟩
 
 theorem oneBoundary_eq (a : UnitBoundary (Fin 1 → ℝ)) :
     a = oneBoundaryPoint false ∨ a = oneBoundaryPoint true := by

@@ -1,15 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberQuotientCycleGeneration
-public import RequestProject.PosetCoverTargetIso
-public import RequestProject.UniversalCoverPi1Injection
-
-@[expose] public section
+import RequestProject.ChamberQuotientCycleGeneration
+import RequestProject.PosetCoverTargetIso
+import RequestProject.UniversalCoverPi1Injection
 
 /-! The actual lifted inserted base covers the original base poset. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 
@@ -19,7 +16,7 @@ noncomputable def qBaseOrderIso : {q : Qpos A X att // InQBase q} ≃o X where
   left_inv q := Subtype.ext (Classical.choose_spec q.2)
   right_inv x := Sum.inr.inj (Classical.choose_spec (show InQBase (qNew x) from ⟨x, rfl⟩))
   map_rel_iff' {q r} := by
-    change Classical.choose q.2 ≤ Classical.choose r.2 ↔ q.1 ≤ r.1
+    
     have h : qNew (A := A) (att := att) (Classical.choose q.2) ≤
         qNew (A := A) (att := att) (Classical.choose r.2) ↔ q.1 ≤ r.1 := by
       rw [Classical.choose_spec q.2, Classical.choose_spec r.2]
@@ -28,10 +25,11 @@ noncomputable def qBaseOrderIso : {q : Qpos A X att // InQBase q} ≃o X where
 abbrev QLiftedBase (a : Qpos A X att) :=
   {p : UOrder (Qpos A X att) a // InQBase (uOrderEnd p)}
 
-noncomputable def qBaseCoverEnd (a : Qpos A X att) (p : QLiftedBase a) : X :=
+noncomputable def qBaseCoverEnd (a : Qpos A X att) (p : QLiftedBase a)  :=
   qBaseOrderIso ⟨uOrderEnd p.1, p.2⟩
 
-omit [Fintype V] in
+section
+omit [Fintype V]
 theorem qBaseCoverEnd_isPosetCover (a : Qpos A X att)
     (hc : IsConnected (orderCx (Qpos A X att))) : IsPosetCover (qBaseCoverEnd a) := by
   let S : Set (Qpos A X att) := {q | InQBase q}
@@ -39,8 +37,8 @@ theorem qBaseCoverEnd_isPosetCover (a : Qpos A X att)
     (uOrderEnd_isPosetCover hc)
   exact h.postcompose_orderIso qBaseOrderIso
 
-omit [Fintype V] in
 theorem qBaseCoverEnd_spec (a : Qpos A X att) (p : QLiftedBase a) :
     qNew (qBaseCoverEnd a p) = uOrderEnd p.1 := Classical.choose_spec p.2
+end
 
 end FiniteChains.Davis

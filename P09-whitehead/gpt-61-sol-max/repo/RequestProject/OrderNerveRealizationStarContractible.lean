@@ -1,13 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveRealizationContraction
-public import RequestProject.OrderNerveRealizationStarSheets
-public import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
-
-@[expose] public section
+import RequestProject.OrderNerveRealizationContraction
+import RequestProject.OrderNerveRealizationStarSheets
+import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
 
 namespace FiniteChains.Comb
-open CategoryTheory
+
 
 /-- Closed vertex-star carriers are contractible in the actual CW topology. -/
 theorem orderNerveRealization_closedStar_contractible {P : Type} [PartialOrder P] (v : P) :

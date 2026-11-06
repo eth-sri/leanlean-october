@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.FoxCoordinateSubstitution
-
-@[expose] public section
+import RequestProject.FoxCoordinateSubstitution
 
 /-! Internal Fox coordinates of the actual simultaneous word substitution. -/
 namespace FiniteChains.BlockFamily
-universe u
 variable {A Jr S : Type u} {I Z M : S → Type u}
   (ρ : Jr ⊕ S → FreeGroup A) (u : ∀ s, I s → FreeGroup A)
   (β : ∀ s, M s → FreeGroup (I s ⊕ Z s))
@@ -23,9 +20,7 @@ def markedBlockHom (s : S) : PresGroup (β s) →*
     exact (QuotientGroup.eq_one_iff _).mpr
       (Subgroup.subset_normalClosure ⟨Sum.inr ⟨s, m⟩, rfl⟩))
 
-@[simp] theorem markedBlockHom_mk (s : S) (w : FreeGroup (I s ⊕ Z s)) :
-    markedBlockHom ρ u β s (QuotientGroup.mk w) =
-      QuotientGroup.mk (FreeGroup.map (genEmb s) (blockSubst u s w)) := rfl
+
 
 theorem markedBlockHom_coeff (s : S) (x : FreeGroupRing (I s ⊕ Z s)) :
     MonoidAlgebra.mapDomainRingHom ℤ (markedBlockHom ρ u β s)

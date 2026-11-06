@@ -1,3 +1,2 @@
-module
-public import RequestProject.SolutionLemmas
-public import RequestProject.OrderPi1TrivialLift
+import RequestProject.SolutionLemmas
+import RequestProject.OrderPi1TrivialLift

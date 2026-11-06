@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CmpNerve
-
-@[expose] public section
+import RequestProject.CmpNerve
 
 /-!
 # The face poset of a polygon with identified boundary
@@ -35,12 +33,11 @@ positions carrying the same edge label carry, in one of the two possible orders,
 of endpoint labels.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
-open RACG Mirror Comb
 
-universe u
+
+
 
 /-- The cells of the polygon with identified boundary. -/
 inductive Cell (κ ι : Type u) (M : ℕ) : Type u
@@ -99,7 +96,7 @@ instance [Fintype κ] [Fintype ι] [DecidableEq κ] [DecidableEq ι] :
 
 end Cell
 
-section Order
+section
 
 variable {κ ι : Type u} {M : ℕ} [NeZero M]
 
@@ -138,8 +135,7 @@ theorem rk_lt_of_plt {x y : Cell κ ι M} (h : plt vc ec x y) : x.rk < y.rk := b
 
 theorem plt_irrefl (x : Cell κ ι M) : ¬ plt vc ec x x := fun h => absurd (rk_lt_of_plt h) (by omega)
 
-theorem not_plt_of_rk_le {x y : Cell κ ι M} (h : y.rk ≤ x.rk) : ¬ plt vc ec x y :=
-  fun hh => absurd (rk_lt_of_plt hh) (by omega)
+
 
 omit [NeZero M] in
 theorem rk_le_two (x : Cell κ ι M) : x.rk ≤ 2 := by cases x <;> simp [rk]
@@ -153,136 +149,28 @@ theorem plt_asymm {x y : Cell κ ι M} (h : plt vc ec x y) : ¬ plt vc ec y x :=
 /-- **The compatibility of the identification of the boundary with the identification of its
 endpoints**: two positions of the polygon carrying the same edge of the surface carry, in one of
 the two orders, the same pair of endpoints. -/
-def Compat (vc : Fin M → κ) (ec : Fin M → ι) : Prop :=
+def Compat (vc : Fin M → κ) (ec : Fin M → ι)  :=
   ∀ i j : Fin M, ec i = ec j →
     (vc i = vc j ∧ vc (i + 1) = vc (j + 1)) ∨ (vc i = vc (j + 1) ∧ vc (i + 1) = vc j)
 
 theorem plt_trans (hc : Compat vc ec) {x y z : Cell κ ι M} (hxy : plt vc ec x y)
     (hyz : plt vc ec y z) : plt vc ec x z := by
-  cases y with
-  | vtx _ => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
-  | cvx _ => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
-  | ctr => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
-  | tr1 _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
-  | tr2 _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
-  | inn _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
-  | bed e =>
-      cases x with
-      | vtx v =>
-          cases z with
-          | tr1 p =>
-              obtain ⟨i, hi, hv⟩ := hxy
-              have hep : ec i = ec p := by rw [hi]; exact hyz
-              rcases hc i p hep with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rcases hv with rfl | rfl
-              · exact Or.inl h1.symm
-              · exact Or.inr h2.symm
-              · exact Or.inr h1.symm
-              · exact Or.inl h2.symm
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
-  | ced r =>
-      cases x with
-      | cvx q =>
-          cases z with
-          | tr2 p =>
-              have h : r = p := hyz
-              subst h
-              exact hxy
-          | inn p =>
-              have h : r = p := hyz
-              subst h
-              exact hxy
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
-  | dia r =>
-      cases x with
-      | vtx v =>
-          cases z with
-          | tr1 p =>
-              have hr : r = p + 1 := hyz
-              subst hr
-              exact Or.inr hxy
-          | tr2 p =>
-              have hr : r = p := hyz
-              subst hr
-              exact hxy
-          | _ => simp [plt] at hyz
-      | cvx q =>
-          cases z with
-          | tr1 p =>
-              have hr : r = p + 1 := hyz
-              have hq : q = r := hxy
-              show q = p + 1
-              rw [hq, hr]
-          | tr2 p =>
-              have hr : r = p := hyz
-              have hq : q = r := hxy
-              show q = p ∨ q = p + 1
-              exact Or.inl (by rw [hq, hr])
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
-  | gdi r =>
-      cases x with
-      | vtx v =>
-          cases z with
-          | tr1 p =>
-              have hr : r = p := hyz
-              subst hr
-              exact Or.inl hxy
-          | tr2 p =>
-              have hr : r = p := hyz
-              subst hr
-              exact hxy
-          | _ => simp [plt] at hyz
-      | cvx q =>
-          cases z with
-          | tr1 p =>
-              have hr : r = p := hyz
-              have hq : q = r + 1 := hxy
-              show q = p + 1
-              rw [hq, hr]
-          | tr2 p =>
-              have hr : r = p := hyz
-              have hq : q = r + 1 := hxy
-              show q = p ∨ q = p + 1
-              exact Or.inr (by rw [hq, hr])
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
-  | rad r =>
-      cases x with
-      | cvx q =>
-          cases z with
-          | inn p =>
-              have hq : q = r := hxy
-              show q = p ∨ q = p + 1
-              rcases hyz with hr | hr
-              · exact Or.inl (by rw [hq, hr])
-              · exact Or.inr (by rw [hq, hr])
-          | _ => simp [plt] at hyz
-      | ctr =>
-          cases z with
-          | inn p => trivial
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
+  cases x <;> cases y <;> cases z <;> simp_all [plt, Compat] <;> grind
 
 /-! ### The face poset -/
 
 /-- **The face poset of the polygon with identified boundary.** -/
-def SCell (_vc : Fin M → κ) (_ec : Fin M → ι) (_hc : Compat vc ec) : Type u := Cell κ ι M
+def SCell (_vc : Fin M → κ) (_ec : Fin M → ι) (_hc : Compat vc ec)  := Cell κ ι M
 
 variable (vc ec) in
 /-- The order of the face poset: equality or a strict face. -/
-def sle (_hc : Compat vc ec) (x y : Cell κ ι M) : Prop := x = y ∨ plt vc ec x y
+def sle (_hc : Compat vc ec) (x y : Cell κ ι M)  := x = y ∨ plt vc ec x y
 
 instance instPartialOrderSCell (hc : Compat vc ec) : PartialOrder (SCell vc ec hc) where
   le x y := sle vc ec hc x y
   le_refl _ := Or.inl rfl
   le_trans a b c hab hbc := by
-    rcases hab with rfl | h1
-    · exact hbc
-    rcases hbc with rfl | h2
-    · exact Or.inr h1
-    exact Or.inr (plt_trans hc h1 h2)
+    grind [FiniteChains.Davis.sle, plt_trans]
   le_antisymm a b hab hba := by
     rcases hab with rfl | h1
     · rfl
@@ -306,7 +194,7 @@ variable {vc ec}
 theorem le_of_plt (hc : Compat vc ec) {x y : Cell κ ι M} (h : plt vc ec x y) :
     toS vc ec hc x ≤ toS vc ec hc y := Or.inr h
 
-end Order
+end
 
-end Davis
-end FiniteChains
+end FiniteChains.Davis
+

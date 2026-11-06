@@ -1,3 +1,2 @@
-module
-public import RequestProject.PresUniversalFoxKernelEquiv
-public import RequestProject.PresUniversalCollapsedKernelEquiv
+import RequestProject.PresUniversalFoxKernelEquiv
+import RequestProject.PresUniversalCollapsedKernelEquiv

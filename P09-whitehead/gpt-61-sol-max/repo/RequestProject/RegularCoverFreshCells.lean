@@ -1,20 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RegularCoverAcyclicChains
-public import RequestProject.FreshLoopTreeStrictness
-
-@[expose] public section
+import RequestProject.RegularCoverAcyclicChains
+import RequestProject.FreshLoopTreeStrictness
 
 /-! The actual descended chains have stronger strictness than a generic
 cellular chain: a fresh loop or a fresh face at every step. Thus tree
 collapse cannot erase their strict inclusions. Pending final Lean check. -/
 
 noncomputable section
-open scoped Classical
-namespace FiniteChains.Comb
-universe u
 
-namespace RelativeCellChain
+namespace FiniteChains.Comb.RelativeCellChain
+
+
 variable {c : ℕ → Complex2.{u}} {n : ℕ} (R : RelativeCellChain c n)
   {K : Complex2.{u}} (p : Hom (c 0) K)
 
@@ -93,13 +90,13 @@ theorem inclusions_freshLoopOrFace (i : ℕ) (hi : i < n + 1) :
 
 end RelativeTreeAmbientChain
 
-theorem regularCoverChain_freshLoopOrFace {D K : Complex2}
+abbrev regularCoverChain_freshLoopOrFace {D K : Complex2}
     (T : SpanningTree D) (hD : IsAcyclic D) (p : Hom D K)
-    (n i : ℕ) (hi : i < n + 1) :
-    FreshLoopOrFace (regularCoverChainInclusion T hD p n i) :=
-  (acyclicRelativeCellChain T hD n).descInc_freshLoopOrFace p i
-    (RelativeTreeAmbientChain.inclusions_freshLoopOrFace T
-      (RelativeNormalForm.actualAmbientChain (SpanningTree.treeRel T)
-        (SpanningTree.expMatrix_bijective_of_acyclic T hD) n) i hi)
+    (n i : ℕ) (hi : i < n + 1)  :=
+  FiniteChains.Comb.RelativeCellChain.descInc_freshLoopOrFace (FiniteChains.Comb.acyclicRelativeCellChain T hD n) p i
+    (FiniteChains.Comb.RelativeTreeAmbientChain.inclusions_freshLoopOrFace T
+      (FiniteChains.RelativeNormalForm.actualAmbientChain T.treeRel
+        (FiniteChains.Comb.SpanningTree.expMatrix_bijective_of_acyclic T hD) n)
+      i hi)
 
 end FiniteChains.Comb

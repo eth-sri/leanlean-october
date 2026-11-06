@@ -1,14 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveHomologyDimension
-public import RequestProject.OrderNervePositiveFillings
-public import RequestProject.TopologicalSingular.MathlibH1Comparison
-
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+import RequestProject.OrderNerveHomologyDimension
+import RequestProject.OrderNervePositiveFillings
+import RequestProject.TopologicalSingular.MathlibH1Comparison
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular
@@ -23,8 +17,7 @@ theorem orderRealization_acyclic_iff_homology_one_two [(nerve P).HasDimensionLE 
       Limits.IsZero (((singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
         (ModuleCat.of ℤ ℤ)).obj (orderNerveRealization P)) := by
   constructor
-  · intro h
-    exact ⟨h 1 (by decide), h 2 (by decide)⟩
+  · aesop
   · rintro ⟨h1, h2⟩ n hn
     by_cases he1 : n = 1
     · subst n

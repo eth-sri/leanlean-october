@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ReducedSimplex
-public import Mathlib.Analysis.Normed.Operator.Banach
-
-@[expose] public section
+import RequestProject.ReducedSimplex
+import Mathlib.Analysis.Normed.Operator.Banach
 
 namespace FiniteChains
 
@@ -33,9 +31,9 @@ theorem reducedSimplex_interior_eq (n : ℕ) :
         have hi := interior_mono (show reducedSimplex (n + 1) ⊆
             L ⁻¹' Set.Iic 1 from fun _ h => h.2) hx
         have ht := (L.isOpenMap hs).interior_preimage_subset_preimage_interior hi
-        have ht' : L x < 1 := by simpa only [Set.mem_preimage, interior_Iic, Set.mem_Iio] using ht
+        have ht' : L x < 1 := by simp_all
         exact ht'
-  · exact interior_maximal (reducedSimplexPositive_subset n) (reducedSimplexPositive_isOpen n)
+  · simp_all [interior_maximal, FiniteChains.reducedSimplexPositive_subset, FiniteChains.reducedSimplexPositive_isOpen]
 
 /-- Reinserted barycentric coordinates are all positive exactly on the reduced simplex interior. -/
 theorem reducedSimplexToStandard_positive_iff (n : ℕ) (x : reducedSimplex n) :

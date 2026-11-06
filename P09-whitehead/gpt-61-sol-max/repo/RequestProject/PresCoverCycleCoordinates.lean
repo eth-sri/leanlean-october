@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresCoverConeCircleChains
-public import RequestProject.PresCoverCylinderElimination
-
-@[expose] public section
+import RequestProject.PresCoverConeCircleChains
+import RequestProject.PresCoverCylinderElimination
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → PresPos w) (hf : IsPosetCover f)
 

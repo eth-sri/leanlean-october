@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderComplexRetraction
-
-@[expose] public section
+import RequestProject.OrderComplexRetraction
 
 /-! The first half of an elementary face-poset collapse: delete the free face while
 retaining its unique coface. The resulting monotone retraction reflects homotopies. -/
@@ -20,17 +18,13 @@ theorem injIn_delete_free_face {C : P → Prop} {f t : P}
     by_cases hx : x.1 = f
     · by_cases hy : y.1 = f
       · simp [r, hx, hy]
-      · have hyt : y.1 = t := hunique y.1 y.2 (hx ▸ hxy) hy
-        simp [r, hx, hyt]
+      · aesop
     · by_cases hy : y.1 = f
       · have hxf : x.1 ≤ f := hy ▸ hxy
         simpa [r, hx, hy] using hxf.trans hft
       · simpa [r, hx, hy] using hxy
   apply injIn_of_monotone_retraction (fun _ h => h.1) r hr
-  · intro x
-    by_cases hx : x.1 = f
-    · simpa [r, hx] using And.intro ht hne
-    · simpa [r, hx] using And.intro x.2 hx
+  · grind
   · intro x hx
     simp [r, hx.2]
 
@@ -46,19 +40,7 @@ theorem injIn_delete_maximal {C : P → Prop} {t : P}
   apply injIn_union_of_unmixed
     (B := fun x => C x ∧ x ≤ t) (J := fun x => C x ∧ x < t)
     (j0 := j) (hJconn := hconn) (hJsc := hsc) (hj0 := hj)
-  · intro a b hab ha hb
-    by_cases hbt : b = t
-    · right
-      exact ⟨⟨ha, hbt ▸ hab⟩, ⟨hb, hbt.le⟩⟩
-    · left
-      refine ⟨⟨ha, ?_⟩, ⟨hb, hbt⟩⟩
-      intro hat
-      exact hbt (hmax b hb (hat ▸ hab))
-  · intro x
-    constructor
-    · rintro ⟨hx, hxt⟩
-      exact ⟨⟨hx, hxt.ne⟩, ⟨hx, hxt.le⟩⟩
-    · rintro ⟨⟨hx, hne⟩, ⟨_, hle⟩⟩
-      exact ⟨hx, lt_of_le_of_ne hle hne⟩
+  · grind
+  · grind [lt_of_le_of_ne]
 
 end FiniteChains.Comb

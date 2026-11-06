@@ -1,3 +1,2 @@
-module
-public import RequestProject.ChamberQuotientChosenInclusion
-public import RequestProject.UniversalCoverBaseTransport
+import RequestProject.ChamberQuotientChosenInclusion
+import RequestProject.UniversalCoverBaseTransport

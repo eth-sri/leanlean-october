@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderCxMonodromy
-
-@[expose] public section
+import RequestProject.OrderCxMonodromy
 
 /-!
 # Adjoining cone points over prescribed subsets of a poset
@@ -29,14 +27,13 @@ Also provided:
   of whose edges lie under a fixed element is null-homotopic.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-universe u v
+
 
 /-! ### Pullback of a cocycle -/
 
-section Comap
+section
 
 variable {P Q : Type u} [Preorder P] [Preorder Q] {G : Type v} [Group G]
 
@@ -45,17 +42,16 @@ def OrdCocycle.comap (f : P → Q) (hf : Monotone f) (c : OrdCocycle Q G) : OrdC
   val a b := c.val (f a) (f b)
   comp hab hbc := c.comp (hf hab) (hf hbc)
 
-@[simp] theorem OrdCocycle.comap_val (f : P → Q) (hf : Monotone f) (c : OrdCocycle Q G)
-    (a b : P) : (c.comap f hf).val a b = c.val (f a) (f b) := rfl
 
-end Comap
+
+end
 
 /-! ### The poset with adjoined cone points -/
 
 variable {P : Type u} [Preorder P] {T : Type u}
 
 /-- The preorder `P` with a new point above the down-closure of `S t` for every `t : T`. -/
-def ConeAdj (_S : T → P → Prop) : Type u := P ⊕ T
+def ConeAdj (_S : T → P → Prop)  := P ⊕ T
 
 namespace ConeAdj
 
@@ -78,39 +74,23 @@ protected def le (S : T → P → Prop) : ConeAdj S → ConeAdj S → Prop
 instance : Preorder (ConeAdj S) where
   le := ConeAdj.le S
   le_refl p := by
-    cases p with
-    | inl x => exact le_refl x
-    | inr t => rfl
+    aesop (add simp [FiniteChains.Comb.ConeAdj.le])
   le_trans p q r hpq hqr := by
     cases p with
     | inl x =>
         cases q with
         | inl y =>
-            cases r with
-            | inl z => exact le_trans hpq hqr
-            | inr t =>
-                obtain ⟨w, hw, hyw⟩ := hqr
-                exact ⟨w, hw, le_trans hpq hyw⟩
+            cases r <;> grind [FiniteChains.Comb.ConeAdj.le]
         | inr t =>
-            cases r with
-            | inl z => exact hqr.elim
-            | inr t' =>
-                cases hqr
-                exact hpq
+            aesop (add simp [FiniteChains.Comb.ConeAdj.le])
     | inr t =>
-        cases q with
-        | inl y => exact hpq.elim
-        | inr t' =>
-            cases r with
-            | inl z => exact hqr.elim
-            | inr t'' => exact hpq.trans hqr
+        aesop (add simp [FiniteChains.Comb.ConeAdj.le])
 
-@[simp] theorem inc_le_inc {p q : P} : (inc p : ConeAdj S) ≤ inc q ↔ p ≤ q := Iff.rfl
 
-@[simp] theorem inc_le_apex {p : P} {t : T} :
-    (inc p : ConeAdj S) ≤ apex t ↔ ∃ r, S t r ∧ p ≤ r := Iff.rfl
 
-@[simp] theorem not_apex_le_inc {p : P} {t : T} : ¬ (apex t : ConeAdj S) ≤ inc p := id
+
+
+
 
 theorem inc_monotone : Monotone (inc : P → ConeAdj S) := fun _ _ h => h
 
@@ -148,31 +128,25 @@ def OrdCocycle.coneAdj (c : OrdCocycle P G) (h : T → P → G)
     · exact c.comp hpq hqr
     · exact hh t'' hpq hqr
     · exact absurd hqr (fun x => x)
-    · cases (hqr : t' = t'')
-      show h t' p * 1 = h t' p
-      rw [mul_one]
+    · cases (hqr : t' = t'') <;> aesop (add simp [mul_one])
     · exact absurd hpq (fun x => x)
     · exact absurd hpq (fun x => x)
     · exact absurd hqr (fun x => x)
     · show (1 : G) * 1 = 1
       rw [mul_one]
 
-@[simp] theorem OrdCocycle.coneAdj_val_inc (c : OrdCocycle P G) (h : T → P → G) (hh) (p q : P) :
-    (c.coneAdj (S := S) h hh).val (ConeAdj.inc p) (ConeAdj.inc q) = c.val p q := rfl
 
-@[simp] theorem OrdCocycle.coneAdj_val_apex (c : OrdCocycle P G) (h : T → P → G) (hh)
-    (p : P) (t : T) :
-    (c.coneAdj (S := S) h hh).val (ConeAdj.inc p) (ConeAdj.apex t) = h t p := rfl
+
+
 
 /-! ### The cone lemma in the form used below -/
 
 /-- **A loop all of whose edges lie under a fixed element is null-homotopic.** -/
-theorem htpy_nil_of_pathIn_le {Pp : Type u} [Preorder Pp] (d : Pp) {v : Pp} (hv : v ≤ d)
-    {l : List ((orderCx Pp).E × Bool)}
-    (hp : IsPath (orderCx Pp).src (orderCx Pp).tgt l v v)
-    (hl : PathIn (fun x => x ≤ d) l) :
-    Htpy (orderCx Pp) v v l [] :=
-  htpy_nil_of_pathIn_le_top (A := fun x => x ≤ d) (le_refl d) (fun _ hx => hx) hv hp hl
+abbrev htpy_nil_of_pathIn_le.{eta_u0} :=
+  fun {Pp : Type eta_u0} [inst : Preorder.{eta_u0} Pp] (d : Pp) =>
+    @FiniteChains.Comb.htpy_nil_of_pathIn_le_top.{eta_u0} Pp inst
+      (fun (x : Pp) => @LE.le.{eta_u0} Pp (@Preorder.toLE.{eta_u0} Pp inst) x d) d (@le_refl.{eta_u0} Pp inst d)
+      fun (x : Pp) (hx : @LE.le.{eta_u0} Pp (@Preorder.toLE.{eta_u0} Pp inst) x d) => hx
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

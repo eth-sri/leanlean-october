@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MathlibOrderNerveCells
-public import Mathlib.Algebra.Category.ModuleCat.Adjunctions
-public import Mathlib.AlgebraicTopology.AlternatingFaceMapComplex
+import RequestProject.MathlibOrderNerveCells
+import Mathlib.Algebra.Category.ModuleCat.Adjunctions
+import Mathlib.AlgebraicTopology.AlternatingFaceMapComplex
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -15,7 +12,7 @@ open CategoryTheory
 variable (P : Type) [PartialOrder P]
 
 /-- Mathlib's free integral module simplicial object of the actual poset nerve. -/
-noncomputable def mathlibOrderNerveModule : SimplicialObject (ModuleCat ℤ) :=
+noncomputable def mathlibOrderNerveModule  :=
   nerve P ⋙ ModuleCat.free ℤ
 
 /-- The actual Mathlib alternating-face differential on a triangle agrees with

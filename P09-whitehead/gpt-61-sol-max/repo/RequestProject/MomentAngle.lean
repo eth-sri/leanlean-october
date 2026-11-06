@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.FlagComplex
-
-@[expose] public section
+import RequestProject.FlagComplex
 
 /-!
 # The cube complex `C(L)` and the fundamental cycle of Lemma 3.2 (i), (iii)
@@ -62,7 +60,7 @@ variable {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
 abbrev Cube (V : Type) := V → CubeCoord
 
 /-- The set of free coordinates of a cube; its cardinality is the dimension of the cube. -/
-def freeSet (f : Cube V) : Finset V := univ.filter fun v => f v = CubeCoord.free
+def freeSet (f : Cube V)  := univ.filter fun v => f v = CubeCoord.free
 
 omit [DecidableEq V] [LinearOrder V] in
 @[simp] theorem mem_freeSet {f : Cube V} {v : V} : v ∈ freeSet f ↔ f v = CubeCoord.free := by
@@ -74,31 +72,32 @@ omit [DecidableEq V] [LinearOrder V] in
 (which must be fixed in `g`) with its face `g`: the sign `(-1)^k·δ`, where `k` is the
 position of `j` among the free coordinates of the bigger cube and `δ` is the sign at which
 the coordinate `j` is fixed. -/
-def incid (g : Cube V) (j : V) : ℤ :=
+def incid (g : Cube V) (j : V)  :=
   (-1) ^ ((freeSet g).filter (fun i => i < j)).card * (g j).sgn
 
 /-- The cubical boundary operator, written on coefficient functions: the coefficient of the
 cube `g` in `∂c`. -/
-def bdry (c : Cube V → ℤ) : Cube V → ℤ := fun g =>
+def bdry (c : Cube V → ℤ)  := fun g =>
   ∑ j ∈ univ.filter (fun j => g j ≠ CubeCoord.free),
     incid g j * c (Function.update g j CubeCoord.free)
 
+variable (o : Finset V → ℤ)
 /-- The simplicial boundary of a chain of `n`-simplices, written on coefficient functions:
 the coefficient of the face `τ` in `∂o`. -/
-def simpBdry (o : Finset V → ℤ) : Finset V → ℤ := fun τ =>
+def simpBdry   := fun τ =>
   ∑ j ∈ univ.filter (fun j => j ∉ τ),
     (-1) ^ (τ.filter (fun i => i < j)).card * o (insert j τ)
 
 /-- The cubical chain attached to a simplicial chain `o`: the cube with free set `σ` and
 signs `ε` off `σ` gets the coefficient `o(σ)·∏_{h ∉ σ} ε_h`. -/
-def cubeChain (o : Finset V → ℤ) : Cube V → ℤ := fun f =>
+def cubeChain   := fun f =>
   o (freeSet f) * ∏ h ∈ univ \ freeSet f, (f h).sgn
 
 /-- **The signed cubical chains of the moment-angle complex form a chain map**:
 `∂(c_o) = c_{∂o}`.  This is the computation "every square meets exactly two three-cubes …
 the two incidences at each square cancel" of Lemma 3.2, in the form valid in every degree
 and for an arbitrary coefficient function. -/
-theorem bdry_cubeChain (o : Finset V → ℤ) :
+theorem bdry_cubeChain  :
     bdry (cubeChain o) = cubeChain (simpBdry o) := by
   funext g
   have hindex : (univ.filter fun j => g j ≠ CubeCoord.free)
@@ -116,12 +115,7 @@ theorem bdry_cubeChain (o : Finset V → ℤ) :
   have hprodeq : ∏ h ∈ univ \ insert j (freeSet g),
       (Function.update g j CubeCoord.free h).sgn
       = ∏ h ∈ univ \ insert j (freeSet g), (g h).sgn := by
-    refine Finset.prod_congr rfl ?_
-    intro h hh
-    have hhj : h ≠ j := by
-      intro hhj; subst hhj
-      simp at hh
-    simp [hhj]
+    aesop (add unsafe apply [Finset.prod_congr])
   -- split off the `j`-th factor
   have hsplit : ∏ h ∈ univ \ freeSet g, (g h).sgn
       = (g j).sgn * ∏ h ∈ univ \ insert j (freeSet g), (g h).sgn := by
@@ -135,29 +129,24 @@ theorem bdry_cubeChain (o : Finset V → ℤ) :
 
 /-! ### Incidences: every square lies in exactly two three-cubes -/
 
-section Incidence
+section
 
 open scoped Classical
 
 /-- The cubes of `C(L)` having `g` as a codimension one face: those obtained from `g` by
 making one further coordinate free. -/
-noncomputable def cofaces (L : ASC V) (g : Cube V) : Finset (Cube V) :=
+noncomputable def cofaces (L : ASC V) (g : Cube V)  :=
   ((univ.filter fun j => g j ≠ CubeCoord.free).filter
       fun j => insert j (freeSet g) ∈ L.faces).image
     fun j => Function.update g j CubeCoord.free
 
-omit [LinearOrder V] in
+section
+omit [LinearOrder V]
 theorem mem_cofaces {L : ASC V} {g f : Cube V} :
     f ∈ cofaces L g ↔ ∃ j, g j ≠ CubeCoord.free ∧ insert j (freeSet g) ∈ L.faces ∧
       f = Function.update g j CubeCoord.free := by
-  simp only [cofaces, Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and]
-  constructor
-  · rintro ⟨j, ⟨hj, hjL⟩, rfl⟩
-    exact ⟨j, hj, hjL, rfl⟩
-  · rintro ⟨j, hj, hjL, rfl⟩
-    exact ⟨j, ⟨hj, hjL⟩, rfl⟩
+  aesop (add simp [cofaces])
 
-omit [LinearOrder V] in
 /-- **Counting the cubes above a given face.**  The number of cubes of `C(L)` having `g` as
 a codimension one face is the number of ways of enlarging the free set of `g` by one vertex
 inside `L`. -/
@@ -172,12 +161,12 @@ theorem card_cofaces (L : ASC V) (g : Cube V) :
   · intro j hj k hk hjk
     simp only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and] at hj hk
     by_contra hne
-    have hval : Function.update g j CubeCoord.free j
-        = Function.update g k CubeCoord.free j := congrFun hjk j
+    have hval  := congrFun hjk j
     simp only [Function.update_apply, if_neg hne] at hval
     exact hj.1 hval.symm
+end
 
-end Incidence
+end
 
 /-! ### The cubical boundary is a differential -/
 
@@ -192,9 +181,6 @@ surface `L` with orientation coefficients `o` the hypothesis says that `Σ_σ o(
 cycle; the conclusion is that the corresponding signed sum of top-dimensional cubes of
 `C(L)` is a cycle, which is the chain used in the proof of Lemma 3.2. -/
 theorem cubeChain_cycle {o : Finset V → ℤ} (ho : simpBdry o = 0) :
-    bdry (cubeChain o) = 0 := by
-  rw [bdry_cubeChain, ho]
-  funext f
-  simp [cubeChain]
+    bdry (cubeChain o) = 0 := by aesop (add simp [bdry_cubeChain, cubeChain])
 
 end FiniteChains

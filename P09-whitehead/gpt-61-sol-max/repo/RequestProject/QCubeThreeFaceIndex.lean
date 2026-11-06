@@ -1,17 +1,15 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeDoubleFacetIndex
-public import RequestProject.QCubeCubicalTwoBoundary
-public import RequestProject.QCubeThreeFacetCoordinates
-
-@[expose] public section
+import RequestProject.QCubeDoubleFacetIndex
+import RequestProject.QCubeCubicalTwoBoundary
+import RequestProject.QCubeThreeFacetCoordinates
 
 /-! The six actual square faces in the ordered three-cube coefficient index. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] {A : CommRel V}
 
-def qThreeDirection (u v w : V) (e : Fin 3) : V :=
+def qThreeDirection (u v w : V) (e : Fin 3)  :=
   if e = 0 then u else if e = 1 then v else w
 
 omit [DecidableEq V] in
@@ -20,21 +18,22 @@ theorem qThreeDirection_injective (u v w : V) (huv : u ≠ v) (huw : u ≠ w) (h
   intro i j h
   fin_cases i <;> fin_cases j <;> simp_all [qThreeDirection, Fin.ext_iff]
 
-theorem qThreeDirection_mem (c : QCube A) (u v w : V) (hs : c.spx = {u, v, w})
+variable (c : QCube A)
+theorem qThreeDirection_mem  (u v w : V) (hs : c.spx = {u, v, w})
     (e : Fin 3) : qThreeDirection u v w e ∈ c.spx := by
-  fin_cases e <;> simp [qThreeDirection, hs, Fin.ext_iff]
+  fin_cases e <;> simp [qThreeDirection, hs]
 
-theorem qCube_three_card (c : QCube A) (u v w : V)
+theorem qCube_three_card  (u v w : V)
     (huv : u ≠ v) (huw : u ≠ w) (hvw : v ≠ w) (hs : c.spx = {u, v, w}) :
-    c.spx.card = 3 := by simp [hs, huv, huw, hvw]
+    c.spx.card = 3 := by simp [*]
 
-def qThreeFaceSquare (c : QCube A) (u v w : V)
+def qThreeFaceSquare  (u v w : V)
     (huv : u ≠ v) (huw : u ≠ w) (hvw : v ≠ w) (hs : c.spx = {u, v, w})
-    (i : Fin 3 × ZMod 2) : QSquare A :=
+    (i : Fin 3 × ZMod 2)  :=
   qThreeFacetSquare c (qCube_three_card c u v w huv huw hvw hs)
     (⟨qThreeDirection u v w i.1, qThreeDirection_mem c u v w hs i.1⟩, i.2)
 
-theorem qThreeFaceSquare_injective (c : QCube A) (u v w : V)
+theorem qThreeFaceSquare_injective  (u v w : V)
     (huv : u ≠ v) (huw : u ≠ w) (hvw : v ≠ w) (hs : c.spx = {u, v, w}) :
     Function.Injective (qThreeFaceSquare c u v w huv huw hvw hs) := by
   intro ⟨e, s⟩ ⟨f, t⟩ h
@@ -44,7 +43,7 @@ theorem qThreeFaceSquare_injective (c : QCube A) (u v w : V)
   exact Prod.ext (qThreeDirection_injective u v w huv huw hvw hd) hsign
 
 /-- Every actual square facet occurs in the six-entry coordinate index. -/
-theorem qThreeFaceSquare_exhaustive (c : QCube A) (u v w : V)
+theorem qThreeFaceSquare_exhaustive  (u v w : V)
     (huv : u ≠ v) (huw : u ≠ w) (hvw : v ≠ w) (hs : c.spx = {u, v, w})
     (s : QSquare A) (hslt : s.1 < c) :
     ∃ i : Fin 3 × ZMod 2, qThreeFaceSquare c u v w huv huw hvw hs i = s := by

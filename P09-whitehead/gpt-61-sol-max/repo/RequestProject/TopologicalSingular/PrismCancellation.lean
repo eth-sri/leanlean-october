@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.SingularChainMaps
-
-@[expose] public section
+import RequestProject.TopologicalSingular.SingularChainMaps
 
 /-! # The alternating-sum cancellation in a prism, in every dimension -/
 
@@ -12,17 +10,16 @@ namespace FiniteChains.SingularPrism
 
 variable {V : Type*} [AddCommGroup V]
 
-def altSum {n : ℕ} (f : Fin n → V) : V := ∑ i, (-1 : ℤ) ^ i.val • f i
+  {n : ℕ}
+def altSum  (f : Fin n → V)  := ∑ i, (-1 : ℤ) ^ i.val • f i
 
-theorem altSum_sub {n : ℕ} (f g : Fin n → V) :
+theorem altSum_sub  (f g : Fin n → V) :
     altSum (fun i => f i - g i) = altSum f - altSum g := by
   simp only [altSum, smul_sub, Finset.sum_sub_distrib]
 
-theorem altSum_succ {n : ℕ} (f : Fin (n + 1) → V) :
+theorem altSum_succ  (f : Fin (n + 1) → V) :
     altSum f = f 0 - altSum (fun i : Fin n => f i.succ) := by
-  rw [altSum, Fin.sum_univ_succ]
-  simp only [Fin.val_zero, pow_zero, one_smul, Fin.val_succ, pow_succ, mul_neg_one,
-    neg_smul, Finset.sum_neg_distrib, sub_eq_add_neg, altSum]
+  simp_all [altSum, Fin.sum_univ_succ, pow_succ, sub_eq_add_neg]
 
 theorem altSum_comm {m n : ℕ} (f : Fin m → Fin n → V) :
     altSum (fun i => altSum (f i)) = altSum (fun j => altSum (fun i => f i j)) := by
@@ -34,28 +31,27 @@ theorem altSum_comm {m n : ℕ} (f : Fin m → Fin n → V) :
   funext i
   rw [mul_comm]
 
-def side {n : ℕ} (A : Fin (n + 1) → Fin (n + 2) → V) (i : Fin n) (j : Fin (n + 1)) : V :=
+def side  (A : Fin (n + 1) → Fin (n + 2) → V) (i : Fin n) (j : Fin (n + 1))  :=
   if j ≤ i.castSucc then A i.succ j.castSucc else A i.castSucc j.succ
 
-omit [AddCommGroup V] in
-theorem side_zero_zero {n : ℕ} (A : Fin (n + 2) → Fin (n + 3) → V) :
+section
+omit [AddCommGroup V]
+variable {n : ℕ}
+  (A : Fin (n + 2) → Fin (n + 3) → V)
+theorem side_zero_zero   :
     side A 0 0 = A 1 0 := by simp [side]
 
-omit [AddCommGroup V] in
-theorem side_zero_succ {n : ℕ} (A : Fin (n + 2) → Fin (n + 3) → V) (j : Fin (n + 1)) :
+theorem side_zero_succ   (j : Fin (n + 1)) :
     side A 0 j.succ = A 0 j.succ.succ := by
-  simp [side, Fin.le_def]
+  simp [side]
 
-omit [AddCommGroup V] in
-theorem side_succ_zero {n : ℕ} (A : Fin (n + 2) → Fin (n + 3) → V) (i : Fin n) :
+theorem side_succ_zero   (i : Fin n) :
     side A i.succ 0 = A i.succ.succ 0 := by simp [side]
 
-omit [AddCommGroup V] in
-theorem side_succ_succ {n : ℕ} (A : Fin (n + 2) → Fin (n + 3) → V)
+theorem side_succ_succ  
     (i : Fin n) (j : Fin (n + 1)) :
-    side A i.succ j.succ = side (fun i j => A i.succ j.succ) i j := by
-  simp only [side, Fin.le_def, Fin.val_succ, Fin.val_castSucc, Nat.add_le_add_iff_right]
-  rfl
+    side A i.succ j.succ = side (fun i j => A i.succ j.succ) i j := by simp_all [side]
+end
 
 theorem prism_cancellation (n : ℕ) (A : Fin (n + 1) → Fin (n + 2) → V)
     (hd : ∀ i : Fin n, A i.castSucc i.succ.castSucc = A i.succ i.succ.castSucc) :
@@ -86,8 +82,7 @@ theorem prism_cancellation (n : ℕ) (A : Fin (n + 1) → Fin (n + 2) → V)
       abel
     have hbrow0 : altSum (side A 0) = A 1 0 -
         altSum (fun j : Fin (n + 1) => A 0 j.succ.succ) := by
-      rw [altSum_succ, side_zero_zero]
-      simp only [side_zero_succ]
+      simp_all [altSum_succ, side_zero_zero, side_zero_succ]
     have hbrow (i : Fin n) : altSum (side A i.succ) =
         A i.succ.succ 0 - altSum (side D i) := by
       rw [altSum_succ, side_succ_zero]

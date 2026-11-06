@@ -1,12 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveRealizationCover
-public import RequestProject.OrderNerveRealizationNestedSubcomplex
-public import RequestProject.ConeAdjBaseCover
-public import RequestProject.PosetCoverLowerInterval
-public import RequestProject.AttachmentQuotientHomeomorph
-
-@[expose] public section
+import RequestProject.OrderNerveRealizationCover
+import RequestProject.OrderNerveRealizationNestedSubcomplex
+import RequestProject.ConeAdjBaseCover
+import RequestProject.PosetCoverLowerInterval
+import RequestProject.AttachmentQuotientHomeomorph
 
 /-! The realization of a poset obtained by adjoining cone points is the
 actual attachment of the realized lower ideals to the realized old part.
@@ -14,23 +12,22 @@ The family can be infinite: the quotient argument uses the simplexwise
 weak topology, not a finite closed-cover assertion. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology
-open scoped Classical
+
 
 variable {P J : Type} [PartialOrder P] (S : J → P → Prop)
 
 abbrev ConeAdjBase := coneAdjBaseSet (S := S)
-abbrev ConeAdjDisk (j : J) := Set.Iic (ConeAdj.apex (S := S) j)
-abbrev ConeAdjBoundary (j : J) :=
+variable (j : J)
+abbrev ConeAdjDisk  := Set.Iic (ConeAdj.apex (S := S) j)
+abbrev ConeAdjBoundary  :=
   setOf (fun x : ConeAdjDisk S j => x.val ∈ ConeAdjBase S)
 
 /-- The old boundary of a cone is exactly its strict lower interval. -/
-def coneAdjBoundaryOrderIso (j : J) : ConeAdjBoundary S j ≃o StrictBelow (ConeAdj.apex (S := S) j) where
+def coneAdjBoundaryOrderIso  : ConeAdjBoundary S j ≃o StrictBelow (ConeAdj.apex (S := S) j) where
   toFun x := ⟨x.val.val, lt_of_le_of_ne x.val.property (by
     intro h
     obtain ⟨p, hp⟩ := x.property
@@ -40,7 +37,7 @@ def coneAdjBoundaryOrderIso (j : J) : ConeAdjBoundary S j ≃o StrictBelow (Cone
     cases q with
     | inl p => exact ⟨p, rfl⟩
     | inr k =>
-        have hk : k = j := hq.le
+        have hk  := hq.le
         subst k
         exact (lt_irrefl _ hq).elim⟩
   left_inv x := rfl
@@ -68,10 +65,10 @@ def coneAdjRealizationBoundary :
       (orderNerveRealizationMap (Subtype.val : ConeAdjBoundary S j → ConeAdjDisk S j)
         (fun _ _ h => h)).hom.continuous)⟩
 
-def coneAdjBoundaryToBase (j : J) : ConeAdjBoundary S j → ConeAdjBase S :=
+def coneAdjBoundaryToBase  : ConeAdjBoundary S j → ConeAdjBase S :=
   fun x => ⟨x.val.val, x.property⟩
 
-theorem coneAdjBoundaryToBase_monotone (j : J) : Monotone (coneAdjBoundaryToBase S j) :=
+theorem coneAdjBoundaryToBase_monotone  : Monotone (coneAdjBoundaryToBase S j) :=
   fun _ _ h => h
 
 def coneAdjRealizationAttaching :
@@ -100,7 +97,7 @@ theorem coneAdjRealizationOld_range :
       orderNerveRealizationSupported (ConeAdj S) (ConeAdjBase S) :=
   orderNerveRealizationSubtype_range (ConeAdjBase S)
 
-theorem coneAdjRealizationBoundary_range (j : J)
+theorem coneAdjRealizationBoundary_range 
     (x : orderNerveRealization (ConeAdjDisk S j)) :
     (⟨j, x⟩ : Σ k, orderNerveRealization (ConeAdjDisk S k)) ∈
         Set.range (coneAdjRealizationBoundary S) ↔
@@ -113,8 +110,7 @@ theorem coneAdjRealizationBoundary_range (j : J)
     have hk : k = j := congrArg Sigma.fst h
     subst k
     exact ⟨z, eq_of_heq (Sigma.mk.inj h).2⟩
-  · rintro ⟨z, rfl⟩
-    exact ⟨⟨j, z⟩, rfl⟩
+  · aesop
 
 theorem coneAdjRealizationCell_boundary_iff
     (z : Σ j, orderNerveRealization (ConeAdjDisk S j)) :
@@ -176,7 +172,7 @@ theorem coneAdj_simplex_in_piece (n : SimplexCategory)
     (s : (nerve (ConeAdj S)).obj (Opposite.op n)) :
     (∀ i, s.obj i ∈ ConeAdjBase S) ∨
       ∃ j, ∀ i, s.obj i ∈ ConeAdjDisk S j := by
-  have hlast (i : Fin (n.len + 1)) : s.obj i ≤ s.obj (Fin.last n.len) :=
+  have hlast (i : Fin (n.len + 1))  :=
     leOfHom (s.map (homOfLE (Fin.le_last i)))
   cases he : s.obj (Fin.last n.len) with
   | inl p =>
@@ -184,9 +180,7 @@ theorem coneAdj_simplex_in_piece (n : SimplexCategory)
         (show s.obj (Fin.last n.len) ∈ ConeAdjBase S by rw [he]; exact ⟨p, rfl⟩)
         (hlast i))
   | inr j =>
-      exact Or.inr ⟨j, fun i => by
-        change s.obj i ≤ ConeAdj.apex j
-        simpa only [he, ConeAdj.apex] using hlast i⟩
+      aesop
 
 theorem coneAdjRealization_piece_isQuotientMap :
     IsQuotientMap (Sum.elim (coneAdjRealizationOld S) (coneAdjRealizationCell S)) := by
@@ -236,9 +230,7 @@ theorem coneAdjRealization_piece_isQuotientMap :
 
 /-- The topological attachment is the actual nerve realization, with
 the actual old inclusion and the actual cone inclusions. -/
-def coneAdjRealizationAttachmentHomeomorph :
-    RelativeAttachment.Space (coneAdjRealizationAttaching S) (coneAdjRealizationBoundary S)
-      ≃ₜ orderNerveRealization (ConeAdj S) :=
+def coneAdjRealizationAttachmentHomeomorph  :=
   RelativeAttachment.attachmentQuotientHomeomorph
     (coneAdjRealizationAttaching S) (coneAdjRealizationBoundary S)
     (coneAdjRealizationOld S) (coneAdjRealizationCell S)
@@ -253,7 +245,7 @@ def coneAdjRealizationAttachmentHomeomorph :
     coneAdjRealizationAttachmentHomeomorph S
       (RelativeAttachment.old (coneAdjRealizationAttaching S)
         (coneAdjRealizationBoundary S) x) = coneAdjRealizationOld S x :=
-  RelativeAttachment.attachmentQuotientHomeomorph_old _ _ _ _ _ _ _ _ _ x
+  rfl
 
 @[simp] theorem coneAdjRealizationAttachmentHomeomorph_cell
     (x : Σ j, orderNerveRealization (ConeAdjDisk S j)) :

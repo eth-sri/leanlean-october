@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveRealizationComparison
-public import RequestProject.FreeSingularChainComparison
-public import RequestProject.MathlibOrderNerveComplexNaturality
-
-@[expose] public section
+import RequestProject.OrderNerveRealizationComparison
+import RequestProject.FreeSingularChainComparison
+import RequestProject.MathlibOrderNerveComplexNaturality
 
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
@@ -15,10 +13,7 @@ open CategoryTheory
 
 /-- The realization unit induces an actual map to Mathlib integral singular homology.
 This definition makes no claim that the map is an isomorphism. -/
-noncomputable def orderNerveSingularH2Comparison (P : Type) [PartialOrder P] :
-    (AlgebraicTopology.AlternatingFaceMapComplex.obj (mathlibOrderNerveModule P)).homology 2 ⟶
-      (((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
-        (ModuleCat.of ℤ ℤ)).obj (orderNerveRealization P)) :=
+noncomputable def orderNerveSingularH2Comparison (P : Type) [PartialOrder P]  :=
   orderNerveRealizationH2Comparison P ≫
     (FiniteChains.freeSingularHomologyIso (orderNerveRealization P) 2).hom
 
@@ -50,10 +45,7 @@ theorem orderNerveSingularH2Comparison_pushdown_zero {P Q : Type}
   exact CategoryTheory.Limits.zero_comp
 
 /-- The actual order-cell second-homology classes map to genuine singular classes. -/
-noncomputable def orderCellSingularH2Map (P : Type) [PartialOrder P] :
-    OrderNerveH2 P →ₗ[ℤ]
-      (((AlgebraicTopology.singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
-        (ModuleCat.of ℤ ℤ)).obj (orderNerveRealization P)) :=
+noncomputable def orderCellSingularH2Map (P : Type) [PartialOrder P]  :=
   (orderNerveSingularH2Comparison P).hom.comp
     (mathlibOrderNerveComplexH2Equiv P).toLinearMap
 

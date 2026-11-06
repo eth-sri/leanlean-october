@@ -1,14 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalPi1Lifting
-public import RequestProject.OrderRealizationHurewicz
-public import RequestProject.OrderUniversalRealizationCover
-
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+import RequestProject.TopologicalPi1Lifting
+import RequestProject.OrderRealizationHurewicz
+import RequestProject.OrderUniversalRealizationCover
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology

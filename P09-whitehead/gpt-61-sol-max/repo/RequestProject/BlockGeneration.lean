@@ -1,3 +1,2 @@
-module
-public import RequestProject.RelativeH2
-public import RequestProject.CellCancellation
+import RequestProject.RelativeH2
+import RequestProject.CellCancellation

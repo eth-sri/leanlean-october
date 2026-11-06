@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresConeExcursionReplacement
-
-@[expose] public section
+import RequestProject.PresConeExcursionReplacement
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 /-- Actual relator apices are maximal vertices in the actual presentation poset. -/
@@ -22,8 +19,9 @@ theorem presCone_strictEdge_source_ne_apex (e : StrictOrdEdge (PresPos w)) :
   have ht := presCone_apex_maximal w j e.val.2 (h ▸ e.property.le)
   exact e.property.ne (h.trans ht.symm)
 
+variable (e : (strictOrderCx (PresPos w)).E × Bool)
 /-- Every actual strict germ leaving an apex is a reversed incoming incidence. -/
-theorem presCone_strictGerm_from_apex (e : (strictOrderCx (PresPos w)).E × Bool)
+theorem presCone_strictGerm_from_apex 
     (h : germSrc (strictOrderCx (PresPos w)).src (strictOrderCx (PresPos w)).tgt e = apexOf w j) :
     e.2 = false ∧ e.1.val.2 = apexOf w j := by
   rcases e with ⟨e, b⟩
@@ -32,7 +30,7 @@ theorem presCone_strictGerm_from_apex (e : (strictOrderCx (PresPos w)).E × Bool
   | true => exact (presCone_strictEdge_source_ne_apex w j e h).elim
 
 /-- Every actual strict germ entering an apex is a positive incoming incidence. -/
-theorem presCone_strictGerm_to_apex (e : (strictOrderCx (PresPos w)).E × Bool)
+theorem presCone_strictGerm_to_apex 
     (h : germTgt (strictOrderCx (PresPos w)).src (strictOrderCx (PresPos w)).tgt e = apexOf w j) :
     e.2 = true ∧ e.1.val.2 = apexOf w j := by
   rcases e with ⟨e, b⟩

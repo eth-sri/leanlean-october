@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveSmallChainMapLow
-
-@[expose] public section
+import RequestProject.OrderNerveSmallChainMapLow
 
 namespace FiniteChains.Comb
 open TopologicalSingular SingularSubdivision
@@ -23,7 +21,7 @@ noncomputable def orderSmallNerveStageZero : OrderSmallNerveStage P 0 where
   homogeneous := orderSmallToNerve0_length
   closed_boundary c := by
     rw [orderSmallToNerve0_boundary]
-    change augmentation (boundary 0 c.val) • _ = 0
+    dsimp [FiniteChains.SingularSubdivision.smallBoundary]
     rw [augmentation_boundary, zero_smul]
 
 theorem orderSmallNerveBoundary_carrier {n : ℕ}
@@ -54,8 +52,7 @@ theorem orderSmallNerveStage_fill {n : ℕ} (s : OrderSmallNerveStage P n)
   rw [← Nerve.lengthProjection_bdry, he]
   exact s.homogeneous _
 
-noncomputable def orderSmallNerveStageNextMap {n : ℕ} (s : OrderSmallNerveStage P n) :
-    smallChains (orderNerveRealizationOpenStar P) (n + 1) →ₗ[ℤ] Nerve.Ch P :=
+noncomputable def orderSmallNerveStageNextMap {n : ℕ} (s : OrderSmallNerveStage P n)  :=
   (Finsupp.linearCombination ℤ (fun σ => (orderSmallNerveStage_fill s σ).choose)).comp
     (orderSmallChainEquiv P (n + 1)).toLinearMap
 
@@ -65,9 +62,7 @@ theorem orderSmallNerveStageNextMap_single {n : ℕ} (s : OrderSmallNerveStage P
       (orderSmallNerveStage_fill s σ).choose := by
   have he := (orderSmallChainEquiv P (n + 1)).apply_symm_apply (Finsupp.single σ 1)
   rw [orderSmallChainEquiv_symm_single] at he
-  change (Finsupp.linearCombination ℤ (fun τ : OrderSmallSimplex P (n + 1) =>
-    (orderSmallNerveStage_fill s τ).choose))
-      ((orderSmallChainEquiv P (n + 1)) (orderSmallSingle σ 1)) = _
+  dsimp [FiniteChains.Comb.orderSmallNerveStageNextMap]
   rw [he, Finsupp.linearCombination_single, one_smul]
 
 theorem orderSmallNerveStageNextMap_boundary {n : ℕ} (s : OrderSmallNerveStage P n)
@@ -78,7 +73,7 @@ theorem orderSmallNerveStageNextMap_boundary {n : ℕ} (s : OrderSmallNerveStage
       s.map.comp (smallBoundary (orderNerveRealizationOpenStar P) n) := by
     apply orderSmallSingle_spans
     intro σ
-    change Nerve.bdry (orderSmallNerveStageNextMap s (orderSmallSingle σ 1)) = _
+    dsimp
     rw [orderSmallNerveStageNextMap_single]
     exact (orderSmallNerveStage_fill s σ).choose_spec.2.2
   exact DFunLike.congr_fun he c
@@ -94,8 +89,7 @@ noncomputable def orderSmallNerveStageNext {n : ℕ} (s : OrderSmallNerveStage P
         (orderSmallNerveStageNextMap s) = orderSmallNerveStageNextMap s := by
       apply orderSmallSingle_spans
       intro σ
-      change Nerve.lengthProjection (n + 2)
-        (orderSmallNerveStageNextMap s (orderSmallSingle σ 1)) = _
+      dsimp
       rw [orderSmallNerveStageNextMap_single]
       exact (orderSmallNerveStage_fill s σ).choose_spec.2.1
     exact DFunLike.congr_fun he c
@@ -112,33 +106,32 @@ noncomputable def orderSmallNerveStage (P : Type) [PartialOrder P] :
   | 0 => orderSmallNerveStageZero
   | n + 1 => orderSmallNerveStageNext (orderSmallNerveStage P n)
 
-noncomputable def orderSmallToNerve (P : Type) [PartialOrder P] (n : ℕ) :
-    smallChains (orderNerveRealizationOpenStar P) n →ₗ[ℤ] Nerve.Ch P :=
+noncomputable def orderSmallToNerve (P : Type) [PartialOrder P] (n : ℕ)  :=
   (orderSmallNerveStage P n).map
 
-theorem orderSmallToNerve_carrier (n : ℕ) (σ : OrderSmallSimplex P n) :
-    orderSmallToNerve P n (orderSmallSingle σ 1) ∈
-      Nerve.IncOn (orderNerveSingularCarrier σ.val) :=
-  (orderSmallNerveStage P n).carrier σ
+variable (n : ℕ)
+abbrev orderSmallToNerve_carrier  (σ : OrderSmallSimplex P n)  :=
+  (FiniteChains.Comb.orderSmallNerveStage P n).carrier σ
 
-theorem orderSmallToNerve_length (n : ℕ)
-    (c : smallChains (orderNerveRealizationOpenStar P) n) :
+variable (c : smallChains (orderNerveRealizationOpenStar P) n)
+theorem orderSmallToNerve_length 
+     :
     Nerve.lengthProjection (n + 1) (orderSmallToNerve P n c) = orderSmallToNerve P n c :=
   (orderSmallNerveStage P n).homogeneous c
 
-theorem orderSmallToNerve_boundary (n : ℕ)
+theorem orderSmallToNerve_boundary 
     (c : smallChains (orderNerveRealizationOpenStar P) (n + 1)) :
     Nerve.bdry (orderSmallToNerve P (n + 1) c) =
       orderSmallToNerve P n (smallBoundary (orderNerveRealizationOpenStar P) n c) :=
   orderSmallNerveStageNextMap_boundary (orderSmallNerveStage P n) c
 
-theorem orderSmallToNerve_mem_inc (n : ℕ)
-    (c : smallChains (orderNerveRealizationOpenStar P) n) :
+theorem orderSmallToNerve_mem_inc 
+     :
     orderSmallToNerve P n c ∈ Nerve.Inc P := by
   obtain ⟨d, rfl⟩ := (orderSmallChainEquiv P n).symm.surjective c
   induction d using Finsupp.induction_linear with
   | zero => simp
-  | add d e hd he => simpa only [map_add] using (Nerve.Inc P).add_mem hd he
+  | add d e hd he => aesop
   | single σ r =>
     have hr : Finsupp.single σ r = r • Finsupp.single σ 1 := by simp
     rw [hr, map_smul, map_smul, orderSmallChainEquiv_symm_single]

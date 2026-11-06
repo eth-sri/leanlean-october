@@ -1,20 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresPosetPartialOrder
-public import RequestProject.StrictOrderChains
-
-@[expose] public section
+import RequestProject.PresPosetPartialOrder
+import RequestProject.StrictOrderChains
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool))
 
 /-- Valid attaching-circle positions are downward closed in the actual circle order. -/
 theorem tCirc_valid_down {x y : TCirc w} (hxy : x ≤ y)
     (hy : y.2.1 < (w y.1).length) :
     x.1 = y.1 ∧ x.2.1 < (w y.1).length := by
-  change x = y ∨ TCirc.lt w x y at hxy
+  
   rcases hxy with rfl | hxy
   · exact ⟨rfl, hy⟩
   obtain ⟨j, k, t⟩ := x
@@ -48,9 +45,7 @@ theorem presPos_le_apex_iff (j : J) (p : PresPos w) :
         change j' = j ∧ k' < (w j).length at hc
         obtain ⟨rfl, hc⟩ := hc
         exact Or.inr ⟨k', t', hc, rfl⟩
-  · rintro (rfl | ⟨k, t, hk, rfl⟩)
-    · exact le_refl _
-    · exact iCirc_le_apexOf w t hk
+  · grind [iCirc_le_apexOf]
 
 theorem presPos_lt_apex_iff (j : J) (p : PresPos w) :
     p < apexOf w j ↔ ∃ k t, k < (w j).length ∧ p = iCirc w (TCirc.pt w j k t) := by
@@ -64,10 +59,7 @@ theorem presPos_lt_apex_iff (j : J) (p : PresPos w) :
     exact Sum.inl_ne_inr
 
 theorem iCirc_strictMono : StrictMono (iCirc w) := by
-  intro x y h
-  apply lt_of_le_of_ne ((iCirc_monotone w) h.le)
-  intro he
-  exact (ne_of_lt h) (Sum.inr.inj (Sum.inl.inj he))
+  solve_by_elim []
 
 /-- The only strict circle edges are the four incidences for a valid letter position. -/
 theorem tCirc_strict_edge_cases (e : StrictOrdEdge (TCirc w)) :
@@ -88,11 +80,8 @@ theorem tCirc_strict_edge_cases (e : StrictOrdEdge (TCirc w)) :
   rcases htags with ⟨hs, hs', hk⟩ | ⟨hs, hs', hk⟩ | ⟨hs, hs', hk⟩ | ⟨hs, hs', hk⟩
   · subst s; subst s'; subst k
     exact Or.inl rfl
-  · subst s; subst s'; subst k
-    exact Or.inr (Or.inl rfl)
-  · subst s; subst s'; subst k
-    exact Or.inr (Or.inr (Or.inl rfl))
-  · subst s; subst s'; subst k
-    exact Or.inr (Or.inr (Or.inr rfl))
+  · simp_all
+  · simp_all
+  · simp_all
 
 end FiniteChains.PresModel

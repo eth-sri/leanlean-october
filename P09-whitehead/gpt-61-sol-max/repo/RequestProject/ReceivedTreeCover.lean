@@ -1,17 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ReceivedTreePaths
-
-@[expose] public section
+import RequestProject.ReceivedTreePaths
 
 /-! A genuine regular cover on all sheets of the receiving group. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
-universe u
 variable {K : Complex2.{u}} (T : SpanningTree K) {G : Type u} [Group G]
   (φ : PresGroup (treeRel T) →* G)
 

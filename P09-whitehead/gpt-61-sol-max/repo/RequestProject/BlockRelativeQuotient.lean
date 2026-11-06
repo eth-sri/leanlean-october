@@ -1,2 +1,1 @@
-module
-public import RequestProject.BlockQuotientModel
+import RequestProject.BlockQuotientModel

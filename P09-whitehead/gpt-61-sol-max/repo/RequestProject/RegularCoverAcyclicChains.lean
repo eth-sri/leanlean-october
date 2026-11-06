@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.AcyclicRelativeTreeChains
-public import RequestProject.TreeChainFinsupp
-
-@[expose] public section
+import RequestProject.AcyclicRelativeTreeChains
+import RequestProject.TreeChainFinsupp
 
 /-! The actual regular-cover sufficiency construction in the cellular
 category: build relative chains upstairs and descend their particular
@@ -12,37 +10,30 @@ topological realization of this result is a separate bridge. Pending
 final Lean verification. -/
 
 noncomputable section
-open scoped Classical
+
 namespace FiniteChains.Comb
-universe v
 variable {D K : Complex2} (T : SpanningTree D) (hD : IsAcyclic D)
   (p : Hom D K)
 
-def regularCoverChainStages (n : ℕ) : ℕ → Complex2 :=
+def regularCoverChainStages (n : ℕ)  :=
   (acyclicRelativeCellChain T hD n).desc p
 
-def regularCoverChainInclusion (n i : ℕ) :
-    Hom (regularCoverChainStages T hD p n i) (regularCoverChainStages T hD p n (i + 1)) :=
+def regularCoverChainInclusion (n i : ℕ)  :=
   (acyclicRelativeCellChain T hD n).descInc p i
 
-@[simp] theorem regularCoverChainStages_zero (n : ℕ) :
-    regularCoverChainStages T hD p n 0 = K := rfl
 
-theorem regularCoverChainInclusion_V (n i : ℕ) :
-    Function.Injective (regularCoverChainInclusion T hD p n i).onV :=
-  (acyclicRelativeCellChain T hD n).descInc_injective_V p i
 
-theorem regularCoverChainInclusion_E (n i : ℕ) :
-    Function.Injective (regularCoverChainInclusion T hD p n i).onE :=
-  (acyclicRelativeCellChain T hD n).descInc_injective_E p i
+abbrev regularCoverChainInclusion_V (n i : ℕ)  :=
+  FiniteChains.Comb.RelativeCellChain.descInc_injective_V (FiniteChains.Comb.acyclicRelativeCellChain T hD n) p i
 
-theorem regularCoverChainInclusion_F (n i : ℕ) :
-    Function.Injective (regularCoverChainInclusion T hD p n i).onF :=
-  (acyclicRelativeCellChain T hD n).descInc_injective_F p i
+abbrev regularCoverChainInclusion_E (n i : ℕ)  :=
+  FiniteChains.Comb.RelativeCellChain.descInc_injective_E (FiniteChains.Comb.acyclicRelativeCellChain T hD n) p i
 
-theorem regularCoverChain_connected (hp : IsCovering p) (n i : ℕ) :
-    IsConnected (regularCoverChainStages T hD p n i) :=
-  (acyclicRelativeCellChain T hD n).desc_connected p hp T.root i
+abbrev regularCoverChainInclusion_F (n i : ℕ)  :=
+  FiniteChains.Comb.RelativeCellChain.descInc_injective_F (FiniteChains.Comb.acyclicRelativeCellChain T hD n) p i
+
+abbrev regularCoverChain_connected (hp : IsCovering p) (n i : ℕ)  :=
+  FiniteChains.Comb.RelativeCellChain.desc_connected (FiniteChains.Comb.acyclicRelativeCellChain T hD n) p hp T.root i
 
 variable (hp : IsCovering p) {Q : Type v} [Group Q]
   (a : DeckAction D Q) (hr : IsRegular p a)
@@ -50,9 +41,9 @@ variable (hp : IsCovering p) {Q : Type v} [Group Q]
   (hf : ∀ q f, p.onF (a.smulF q f) = p.onF f)
 
 include hp hr he hf in
-theorem regularCoverChain_zeroPi2 (n i : ℕ) (hi : i < n + 1) :
-    ZeroPi2 (regularCoverChainInclusion T hD p n i) :=
-  (acyclicRelativeCellChain T hD n).descInc_zeroPi2 p hp a hr he hf hD T.root i hi
+abbrev regularCoverChain_zeroPi2 (n i : ℕ) (hi : i < n + 1)  :=
+  FiniteChains.Comb.RelativeCellChain.descInc_zeroPi2 (FiniteChains.Comb.acyclicRelativeCellChain T hD n) p hp a hr he hf
+    hD T.root i hi
 
 /-- The actual descended inclusions form an arbitrary-length cellular
 chain beginning literally at K. Strictness is regularCoverChain_proper. -/

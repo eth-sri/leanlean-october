@@ -1,16 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresCoverCycleCoordinates
+import RequestProject.PresCoverCycleCoordinates
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → PresPos w) (hf : IsPosetCover f) (hpos : ∀ j, 0 < (w j).length)
 
@@ -18,7 +13,7 @@ variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
 def PresCoverRelator := {p : P × J // f p.1 = apexOf w p.2}
 
 /-- The distinguished actual cone triangle over the first left attaching-circle incidence. -/
-noncomputable def presCoverRelatorTriangle (p : PresCoverRelator w f) : StrictOrdTri P :=
+noncomputable def presCoverRelatorTriangle (p : PresCoverRelator w f)  :=
   strictConeTriangle p.1.1
     ((strictOrderEdgeEquiv
       (presCoverConeCircleOrderIso w f hf p.1.1 p.1.2 p.2)).symm
@@ -27,7 +22,7 @@ noncomputable def presCoverRelatorTriangle (p : PresCoverRelator w f) : StrictOr
 theorem presCoverRelatorTriangle_injective :
     Function.Injective (presCoverRelatorTriangle w f hf hpos) := by
   intro p q he
-  have hv : p.1.1 = q.1.1 := congrArg (fun t : StrictOrdTri P => t.1.2.2) he
+  have hv  := congrArg (fun t : StrictOrdTri P => t.1.2.2) he
   have hj : p.1.2 = q.1.2 := by
     apply Sum.inr_injective
     exact p.2.symm.trans ((congrArg f hv).trans q.2)
@@ -40,11 +35,12 @@ noncomputable def presCoverRelatorChain :
   (Finsupp.comapDomain.addMonoidHom
     (presCoverRelatorTriangle_injective w f hf hpos)).toIntLinearMap
 
-theorem presCoverRelatorChain_apply (c : StrictOrdTri P →₀ ℤ)
+variable (c : StrictOrdTri P →₀ ℤ)
+theorem presCoverRelatorChain_apply 
     (p : PresCoverRelator w f) :
     presCoverRelatorChain w f hf hpos c p = c (presCoverRelatorTriangle w f hf hpos p) := rfl
 
-theorem presCoverRelatorChain_circle (c : StrictOrdTri P →₀ ℤ)
+theorem presCoverRelatorChain_circle 
     (p : PresCoverRelator w f) :
     presCoverRelatorChain w f hf hpos c p =
       presCoverConeCircleChain w f hf p.1.1 p.1.2 p.2 c
@@ -68,11 +64,10 @@ theorem presCoverRelatorChain_cycle_injective (c d : StrictOrdTri P →₀ ℤ)
   apply presCover_cycles_eq_of_first_coefficients w f hf hpos c d hc hd
   intro v j hv
   have h := congrArg (fun z => z (⟨(v, j), hv⟩ : PresCoverRelator w f)) he
-  simpa only [presCoverRelatorChain_circle] using h
+  simpa [presCoverRelatorChain_circle] using h
 
 /-- The genuine strict two-cycle module embeds linearly in actual lifted-relator chains. -/
-noncomputable def presCoverCycleRelatorLinear :
-    LinearMap.ker (Comb.bdry2 (strictOrderCx P)) →ₗ[ℤ] (PresCoverRelator w f →₀ ℤ) :=
+noncomputable def presCoverCycleRelatorLinear  :=
   (presCoverRelatorChain w f hf hpos).comp
     (LinearMap.ker (Comb.bdry2 (strictOrderCx P))).subtype
 

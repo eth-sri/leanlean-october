@@ -1,10 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusNamedSpine
-
-@[expose] public section
+import RequestProject.GenusNamedSpine
 
 /-! The genuine finite marked presentation compared with the previously verified block. -/
+set_option backward.isDefEq.respectTransparency false
 namespace FiniteChains.Comb
 variable {X : Complex2} {a b : X.V}
 
@@ -15,7 +14,7 @@ variable {X : Complex2} {a b : X.V}
  theorem pi1BaseEqEquiv_mk (h : a = b) (p : Loop X a) (q : Loop X b)
     (hpq : p.1 = q.1) : pi1BaseEqEquiv h (Pi1.mk p) = Pi1.mk q := by
   subst b
-  have he : p = q := Subtype.ext hpq
+  have he  := Subtype.ext hpq
   subst q
   rfl
 end FiniteChains.Comb
@@ -32,17 +31,17 @@ noncomputable def namedSpineToOldEquiv :
     ((pi1BaseEqEquiv (markedSpineTree_root q)).trans
       ((markedSpinePi1Equiv q).trans (genusSpineToOldPi1Equiv q)))
 
-noncomputable def treeMarkedSpineLoop (x : Fin q × Bool) :
+variable (x : Fin q × Bool)
+noncomputable def treeMarkedSpineLoop  :
     Loop (markedSpineCx q) (markedSpineTree q).root :=
-  ⟨(markedSpineLoop q x).1, by rw [markedSpineTree_root]; exact (markedSpineLoop q x).2⟩
+  ⟨(markedSpineLoop q x).1, by grind [FiniteChains.Davis.Genus.markedSpineTree_root]⟩
 
-theorem namedSpinePi1Equiv_marked (x : Fin q × Bool) :
+theorem namedSpinePi1Equiv_marked  :
     namedSpinePi1Equiv q (Pi1.mk (treeMarkedSpineLoop q x)) =
-      (QuotientGroup.mk (FreeGroup.of (Sum.inr x)) : PresGroup (namedSpinePresentation q)) := by
-  exact (namedSpine_generator q x).symm
+      (QuotientGroup.mk (FreeGroup.of (Sum.inr x)) : PresGroup (namedSpinePresentation q)) := (namedSpine_generator q x).symm
 
 /-- The distinguished names correspond exactly to the verified old block marking. -/
-theorem namedSpineToOld_marked (x : Fin q × Bool) :
+theorem namedSpineToOld_marked  :
     namedSpineToOldEquiv q (QuotientGroup.mk (FreeGroup.of (Sum.inr x))) =
       pi1Map (genusSpineToOld q) (spineBase q) (Pi1.mk (spineMarkedLoop q x)) := by
   rw [← namedSpinePi1Equiv_marked q x]

@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib
-
-@[expose] public section
+import Mathlib
 
 /-!
 # Group rings of torsion-free abelian groups are integral domains
@@ -33,13 +31,13 @@ theorem uniqueSums_of_isAddTorsionFree (A : Type*) [AddCommGroup A] [IsAddTorsio
   -- the finitely generated subgroup containing both finite sets
   set G : AddSubgroup A := AddSubgroup.closure ((S ∪ T : Finset A) : Set A) with hG
   haveI : AddGroup.FG G := by
-    rw [hG]; exact AddGroup.closure_finset_fg (S ∪ T)
+    solve_by_elim [AddGroup.closure_finset_fg]
   haveI : Module.Finite ℤ G := inferInstance
-  haveI : IsAddTorsionFree G := Function.Injective.isAddTorsionFree
+  haveI  := Function.Injective.isAddTorsionFree
     (f := (AddSubgroup.subtype G)) Subtype.val_injective
   haveI : Module.IsTorsionFree ℤ G := inferInstance
-  haveI : Module.Free ℤ G := Module.free_of_finite_type_torsion_free' (R := ℤ) (M := G)
-  haveI : TwoUniqueSums G :=
+  haveI  := Module.free_of_finite_type_torsion_free' (R := ℤ) (M := G)
+  haveI  :=
     TwoUniqueSums.of_injective_addHom
       ((Module.Free.chooseBasis ℤ G).repr.toLinearMap.toAddMonoidHom.toAddHom)
       (Module.Free.chooseBasis ℤ G).repr.injective inferInstance
@@ -71,11 +69,9 @@ theorem uniqueSums_of_isAddTorsionFree (A : Type*) [AddCommGroup A] [IsAddTorsio
 theorem uniqueProds_of_isMulTorsionFree (H : Type*) [CommGroup H] [IsMulTorsionFree H] :
     UniqueProds H := by
   haveI : IsAddTorsionFree (Additive H) := inferInstance
-  haveI : UniqueSums (Additive H) := uniqueSums_of_isAddTorsionFree (Additive H)
+  haveI  := uniqueSums_of_isAddTorsionFree (Additive H)
   haveI : UniqueProds (Multiplicative (Additive H)) := inferInstance
-  exact UniqueProds.of_injective_mulHom
-    (MulEquiv.multiplicativeAdditive H).symm.toMonoidHom.toMulHom
-    (MulEquiv.multiplicativeAdditive H).symm.injective inferInstance
+  assumption
 
 /-- **The group ring of a torsion-free abelian group over an integral domain is an integral
 domain.**  This is the hypothesis on the coefficient ring `k[H]` used in Lemma 2.1, for
@@ -83,7 +79,7 @@ domain.**  This is the hypothesis on the coefficient ring `k[H]` used in Lemma 2
 theorem monoidAlgebra_isDomain (k : Type*) [CommRing k] [IsDomain k]
     (H : Type*) [CommGroup H] [IsMulTorsionFree H] :
     IsDomain (MonoidAlgebra k H) := by
-  haveI : UniqueProds H := uniqueProds_of_isMulTorsionFree H
+  haveI  := uniqueProds_of_isMulTorsionFree H
   infer_instance
 
 end FiniteChains

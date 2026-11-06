@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Fox
-
-@[expose] public section
+import RequestProject.Fox
 
 /-!
 # The Fox derivative as a linear map on the group ring
@@ -27,15 +25,13 @@ open MonoidAlgebra
 variable {α : Type*} [DecidableEq α]
 
 /-- The linear extension `D_i : ℤ[F] → ℤ[F]` of the Fox derivative `∂/∂x_i`. -/
-noncomputable def foxLin (i : α) : FreeGroupRing α →ₗ[ℤ] FreeGroupRing α :=
+noncomputable def foxLin (i : α)  :=
   (Finsupp.linearCombination ℤ (fun g => fox i g)).comp
     (MonoidAlgebra.coeffLinearEquiv ℤ).toLinearMap
 
 @[simp] theorem foxLin_single (i : α) (g : FreeGroup α) (n : ℤ) :
     foxLin i (single g n) = n • fox i g :=
-  by
-    change Finsupp.linearCombination ℤ (fun g => fox i g) (Finsupp.single g n) = _
-    exact Finsupp.linearCombination_single ℤ n g
+  Finsupp.linearCombination_single ℤ n g
 
 omit [DecidableEq α] in
 theorem grp_eq_single (g : FreeGroup α) : (grp g : FreeGroupRing α) = single g 1 := rfl
@@ -43,15 +39,16 @@ theorem grp_eq_single (g : FreeGroup α) : (grp g : FreeGroupRing α) = single g
 @[simp] theorem foxLin_grp (i : α) (g : FreeGroup α) : foxLin i (grp g) = fox i g := by
   rw [grp_eq_single, foxLin_single, one_smul]
 
-omit [DecidableEq α] in
+section
+omit [DecidableEq α]
 theorem single_eq_smul_grp (g : FreeGroup α) (n : ℤ) :
     (single g n : FreeGroupRing α) = n • grp g := by
   rw [grp_eq_single, MonoidAlgebra.smul_single, smul_eq_mul, mul_one]
 
-omit [DecidableEq α] in
 @[simp] theorem aug_single (g : FreeGroup α) (n : ℤ) :
     aug (single g n : FreeGroupRing α) = n := by
   rw [single_eq_smul_grp, map_zsmul, aug_grp, smul_eq_mul, mul_one]
+end
 
 /-- The Leibniz rule for the linear extension of the Fox derivative. -/
 theorem foxLin_mul (i : α) (a b : FreeGroupRing α) :

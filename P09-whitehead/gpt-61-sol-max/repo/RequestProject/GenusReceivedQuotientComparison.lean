@@ -1,32 +1,32 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusFaithfulComparison
-public import RequestProject.ReceivedTreeMarkedComparison
-public import RequestProject.UniversalCoverPathTransport
-
-@[expose] public section
+import RequestProject.GenusFaithfulComparison
+import RequestProject.ReceivedTreeMarkedComparison
+import RequestProject.UniversalCoverPathTransport
 
 /-! The received spine cover mapped to the actual named quotient.
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 variable {K Y Z : Complex2}
 
-theorem pi1Map_comp_apply (f : Hom K Y) (g : Hom Y Z) (a : K.V)
+  (f : Hom K Y)
+  (g : Hom Y Z)
+theorem pi1Map_comp_apply   (a : K.V)
     (z : Pi1 K a) :
     pi1Map (g.comp f) a z = pi1Map g (f.onV a) (pi1Map f a z) := by
   refine Quotient.inductionOn z ?_
   intro p
   apply congrArg Pi1.mk
   apply Subtype.ext
-  simp only [mapPath, Hom.comp, List.map_map, Function.comp_def]
+  simp [mapPath, Hom.comp]
 
-theorem pi1Map_baseEq_apply (f : Hom K Y) {a b : K.V} (h : a = b)
+variable {a b : K.V}
+theorem pi1Map_baseEq_apply   (h : a = b)
     (z : Pi1 K a) :
     pi1Map f b (pi1BaseEqEquiv h z) =
       pi1BaseEqEquiv (congrArg f.onV h) (pi1Map f a z) := by
@@ -40,32 +40,30 @@ theorem pi1Conj_baseEq_end {a b c : K.V} {p : List (K.E × Bool)}
   subst c
   rfl
 
-theorem pi1Conj_reverse_cancel {a b : K.V} {p : List (K.E × Bool)}
+theorem pi1Conj_reverse_cancel  {p : List (K.E × Bool)}
     (hp : IsPath K.src K.tgt p a b) (z : Pi1 K b) :
     pi1Conj (isPath_revPath hp) (pi1Conj hp z) = z := by
-  rw (config := { transparency := .default }) [pi1Conj_pi1Conj]
+  rw  [pi1Conj_pi1Conj]
   exact (pi1Conj_congr _ (show IsPath K.src K.tgt [] b b from rfl)
     (htpy_revPath_append hp) z).trans
     (pi1Conj_empty_apply b z)
 
-theorem pi1Conj_cancel_reverse {a b : K.V} {p : List (K.E × Bool)}
+theorem pi1Conj_cancel_reverse  {p : List (K.E × Bool)}
     (hp : IsPath K.src K.tgt p a b) (z : Pi1 K a) :
     pi1Conj hp (pi1Conj (isPath_revPath hp) z) = z := by
-  rw (config := { transparency := .default }) [pi1Conj_pi1Conj]
+  rw  [pi1Conj_pi1Conj]
   exact (pi1Conj_congr _ (show IsPath K.src K.tgt [] a a from rfl)
     (htpy_append_revPath hp) z).trans
     (pi1Conj_empty_apply a z)
 
-theorem chain1_comp_apply (f : Hom K Y) (g : Hom Y Z) (c : K.E →₀ ℤ) :
+theorem chain1_comp_apply   (c : K.E →₀ ℤ) :
     chain1 (g.comp f) c = chain1 g (chain1 f c) := by
-  change Finsupp.mapDomain (g.onE ∘ f.onE) c =
-    Finsupp.mapDomain g.onE (Finsupp.mapDomain f.onE c)
+  dsimp [FiniteChains.Comb.chain1, FiniteChains.Comb.Hom.comp]
   rw (config := { transparency := .default }) [Finsupp.mapDomain_comp]
 
-theorem chain2_comp_apply (f : Hom K Y) (g : Hom Y Z) (c : K.F →₀ ℤ) :
+theorem chain2_comp_apply   (c : K.F →₀ ℤ) :
     chain2 (g.comp f) c = chain2 g (chain2 f c) := by
-  change Finsupp.mapDomain (g.onF ∘ f.onF) c =
-    Finsupp.mapDomain g.onF (Finsupp.mapDomain f.onF c)
+  dsimp [FiniteChains.Comb.Hom.comp]
   rw (config := { transparency := .default }) [Finsupp.mapDomain_comp]
 
 end FiniteChains.Comb
@@ -76,13 +74,12 @@ open scoped Classical
 
 variable (q : ℕ) [NeZero q]
 
-noncomputable def markedSpineToOld : Hom (markedSpineCx q)
-    (orderCx (QOld (cmpRel (GenusVertex q)))) :=
+noncomputable def markedSpineToOld  :=
   (genusSpineToOld q).comp (componentIncl (genusSpineCx q) (spineBase q))
 
 theorem markedSpineToOld_root :
     (markedSpineToOld q).onV (markedSpineTree q).root = posQCube (gBase q) := by
-  rw (config := { transparency := .default }) [markedSpineTree_root]
+  rw  [markedSpineTree_root]
   rfl
 
 /-- Naming the marked words does not change the geometric map from the
@@ -96,17 +93,14 @@ theorem namedSpineToOld_inclusion (z : PresGroup (spinePresentation q)) :
   have hnamed : (namedSpinePi1Equiv q).symm
       (NamedPresentation.inclusion (spinePresentation q) (spinePresentationMarkedWord q) z) =
       SpanningTree.presToPi1 (markedSpineTree q) z := by
-    change (spinePresentationPi1Equiv q).symm
-      ((namedSpineGroupEquiv q).symm ((namedSpineGroupEquiv q) z)) = _
-    rw (config := { transparency := .default }) [MulEquiv.symm_apply_apply]
-    rfl
+    classical solve_by_elim (transparency := .default) [symm, MulEquiv.symm_apply_apply]
   change pi1Map (genusSpineToOld q) (spineBase q)
     (pi1Map (componentIncl (genusSpineCx q) (spineBase q)) (markedSpineBase q)
       (pi1BaseEqEquiv (markedSpineTree_root q)
         ((namedSpinePi1Equiv q).symm
           (NamedPresentation.inclusion (spinePresentation q)
             (spinePresentationMarkedWord q) z)))) = _
-  rw (config := { transparency := .default }) [hnamed]
+  rw  [hnamed]
   erw [← pi1Map_comp_apply (componentIncl (genusSpineCx q) (spineBase q))
     (genusSpineToOld q) (markedSpineBase q)]
   exact pi1Map_baseEq_apply (markedSpineToOld q) (markedSpineTree_root q) _
@@ -115,8 +109,7 @@ variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (u : Fin q × Bool → FreeGroup α)
   (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
 
-noncomputable def markedSpineToNamedQuotient : Hom (markedSpineCx q)
-    (orderCx (namedQuotientPos ρ q u)) :=
+noncomputable def markedSpineToNamedQuotient  :=
   (orderCxMap (qOldIncl (att := namedAtt ρ q u)) qOldIncl_monotone).comp
     (markedSpineToOld q)
 
@@ -125,8 +118,7 @@ theorem markedSpineToNamedQuotient_root :
       qOldIncl (att := namedAtt ρ q u) (posQCube (gBase q)) :=
   congrArg (qOldIncl (att := namedAtt ρ q u)) (markedSpineToOld_root q)
 
-noncomputable def spineQuotientCylinderPath :
-    List ((orderCx (namedQuotientPos ρ q u)).E × Bool) :=
+noncomputable def spineQuotientCylinderPath  :=
   [ordPos (qNew_att_le_qOldIncl (att := namedAtt ρ q u) (gBase q))]
 
 theorem spineQuotientCylinderPath_isPath :
@@ -134,7 +126,7 @@ theorem spineQuotientCylinderPath_isPath :
       (orderCx (namedQuotientPos ρ q u)).tgt (spineQuotientCylinderPath q ρ u)
       (namedQuotientBase ρ q u)
       ((markedSpineToNamedQuotient q ρ u).onV (markedSpineTree q).root) := by
-  rw (config := { transparency := .default }) [markedSpineToNamedQuotient_root]
+  rw  [markedSpineToNamedQuotient_root]
   exact isPath_ordPos (qNew_att_le_qOldIncl (att := namedAtt ρ q u) (gBase q))
 
 /-- The geometric map on all spine words, with the actual cylinder path
@@ -152,22 +144,19 @@ theorem namedSpineIntoQuotient_inclusion (z : PresGroup (spinePresentation q)) :
       (namedSpineToOldEquiv q
         (NamedPresentation.inclusion (spinePresentation q)
           (spinePresentationMarkedWord q) z))) = _
-  rw (config := { transparency := .default }) [namedSpineToOld_inclusion, pi1Map_baseEq_apply]
+  rw  [namedSpineToOld_inclusion, pi1Map_baseEq_apply]
   erw [pi1Conj_baseEq_end
     (isPath_ordPos (qNew_att_le_qOldIncl (att := namedAtt ρ q u) (gBase q)))
     (markedSpineToNamedQuotient_root q ρ u)
     (spineQuotientCylinderPath_isPath q ρ u)]
-  rw (config := { transparency := .default }) [← pi1Map_comp_apply]
+  rw  [← pi1Map_comp_apply]
   rfl
 
-noncomputable abbrev singleReceivedSpineCover : Complex2 :=
+noncomputable abbrev singleReceivedSpineCover  :=
   receivedSpineCover ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit
 
 /-- The proved faithful comparison expressed at the old spine base vertex. -/
-noncomputable def finiteSpineOldRootReceiver :
-    PresGroup (substPresF ρ (finiteSpineWordBlock q u)) →*
-      Pi1 (orderCx (namedQuotientPos ρ q u))
-        ((markedSpineToNamedQuotient q ρ u).onV (markedSpineTree q).root) :=
+noncomputable def finiteSpineOldRootReceiver  :=
   (pi1Conj (isPath_revPath (spineQuotientCylinderPath_isPath q ρ u))).comp
     (finiteSpineToQuotient ρ q u hrho)
 
@@ -185,21 +174,18 @@ theorem finiteSpineOldRootReceiver_compatible :
           (spinePresentationMarkedWord q) z))) = _
   have h := DFunLike.congr_fun (finiteSpineToQuotient_spine ρ q u hrho)
     (NamedPresentation.inclusion (spinePresentation q) (spinePresentationMarkedWord q) z)
-  rw (config := { transparency := .default }) [show finiteSpineToQuotient ρ q u hrho
+  rw  [show finiteSpineToQuotient ρ q u hrho
       (singleSpineNamedReceiver ρ q u
         (NamedPresentation.inclusion (spinePresentation q) (spinePresentationMarkedWord q) z)) =
       namedSpineIntoQuotient ρ q u
         (NamedPresentation.inclusion (spinePresentation q) (spinePresentationMarkedWord q) z)
       from h]
-  rw (config := { transparency := .default }) [namedSpineIntoQuotient_inclusion, pi1Conj_reverse_cancel]
+  rw  [namedSpineIntoQuotient_inclusion, pi1Conj_reverse_cancel]
   rfl
 
 /-- A genuine cellular comparison, with compatibility now proved from the
 actual substituted presentation instead of required as an extra hypothesis. -/
-noncomputable def receivedSpineToQuotientOldRoot :
-    Hom (singleReceivedSpineCover q ρ u)
-      (uCover (orderCx (namedQuotientPos ρ q u))
-        ((markedSpineToNamedQuotient q ρ u).onV (markedSpineTree q).root)) :=
+noncomputable def receivedSpineToQuotientOldRoot  :=
   ReceivedTree.comparison (markedSpineTree q) (markedSpineToNamedQuotient q ρ u)
     (receivedSpineWordReceiver ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit)
     (finiteSpineOldRootReceiver q ρ u hrho)
@@ -207,9 +193,7 @@ noncomputable def receivedSpineToQuotientOldRoot :
 
 /-- The comparison now lands at the base vertex used by the old/star
 relative filling theorem. The change of base is the actual cylinder path. -/
-noncomputable def receivedSpineToQuotient :
-    Hom (singleReceivedSpineCover q ρ u)
-      (uCover (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)) :=
+noncomputable def receivedSpineToQuotient  :=
   (uCoverPathTransport (spineQuotientCylinderPath_isPath q ρ u)).comp
     (receivedSpineToQuotientOldRoot q ρ u hrho)
 
@@ -229,7 +213,7 @@ theorem receivedSpineToQuotient_relative_boundary
           (markedSpineToNamedQuotient q ρ u) (finiteSpineOldRootReceiver q ρ u hrho)
           (treeMarkedSpineLoop q)
           ((ReceivedTree.cellCoordinates (Fin q × Bool)).symm (fun i => β (Sum.inr i)))) := by
-  rw (config := { transparency := .default }) [receivedSpineToQuotient, chain2_comp_apply, bdry2_chain2]
+  rw  [receivedSpineToQuotient, chain2_comp_apply, bdry2_chain2]
   apply congrArg (chain1 (uCoverPathTransport (spineQuotientCylinderPath_isPath q ρ u)))
   apply ReceivedTree.comparison_relative_boundary
     (markedSpineTree q) (markedSpineToNamedQuotient q ρ u)
@@ -239,9 +223,7 @@ theorem receivedSpineToQuotient_relative_boundary
     (treeMarkedSpineLoop q) (fun i => β (Sum.inr i))
     (receivedSpineFaceChain ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit β)
   intro z
-  let βF : NamedSpineRel q → MonoidAlgebra ℤ
-      (PresGroup (substPresF ρ
-        (familyFiniteSpineWordBlock (fun _ : PUnit.{1} => q) (fun _ => u)))) := β
+  let βF  := β
   have hz0 := receivedSpineFaceChain_relative_boundary ρ (fun _ : PUnit.{1} => q)
     (fun _ => u) PUnit.unit βF
   have hz := hz0 (by

@@ -1,22 +1,17 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderUniversalPosetConnected
-public import RequestProject.OrderNerveOneDictionary
-public import RequestProject.ChamberQuotientAttachingRelativeChains
-
-@[expose] public section
+import RequestProject.OrderUniversalPosetConnected
+import RequestProject.OrderNerveOneDictionary
+import RequestProject.ChamberQuotientAttachingRelativeChains
 
 /-! Convert genuine universal-cover cellular chains into lifted-order nerve chains.
 The conversion preserves coefficients, boundaries, projection, and subposet support.
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P : Type u} [PartialOrder P] {a : P}
 
 /-- The actual cover edges, expressed in lifted-order nerve coordinates. -/
@@ -29,37 +24,33 @@ noncomputable def universalNerveChain2 :
     (UF (orderCx P) a →₀ ℤ) →ₗ[ℤ] Nerve.Ch (UOrder P a) :=
   ordNerveChain2.comp (chain2 uOrderHomInv)
 
-theorem uOrderHomInv_edge_projection (e : UE (orderCx P) a) :
-    (orderCxMap uOrderEnd uOrderEnd_monotone).onE (uOrderHomInv.onE e) = e.1.2 := by
-  exact congrArg (fun e : UE (orderCx P) a => e.1.2)
+abbrev uOrderHomInv_edge_projection (e : UE (orderCx P) a)  := congrArg (fun e : UE (orderCx P) a => e.1.2)
     (homInv_onE_apply uOrderHom Function.bijective_id
       ⟨uOrderEdge_injective, uOrderEdge_surjective⟩
       ⟨uOrderFace_injective, uOrderFace_surjective⟩ e)
 
-theorem uOrderHomInv_face_projection (t : UF (orderCx P) a) :
-    (orderCxMap uOrderEnd uOrderEnd_monotone).onF (uOrderHomInv.onF t) = t.1.2 := by
-  exact congrArg (fun t : UF (orderCx P) a => t.1.2)
+variable (t : UF (orderCx P) a)
+abbrev uOrderHomInv_face_projection   := congrArg (fun t : UF (orderCx P) a => t.1.2)
     (homInv_onF_apply uOrderHom Function.bijective_id
       ⟨uOrderEdge_injective, uOrderEdge_surjective⟩
       ⟨uOrderFace_injective, uOrderFace_surjective⟩ t)
 
+variable (c : UF (orderCx P) a →₀ ℤ)
 /-- This is an equality for arbitrary chains, including relative chains. -/
-theorem universalNerveChain2_bdry (c : UF (orderCx P) a →₀ ℤ) :
+theorem universalNerveChain2_bdry  :
     Nerve.bdry (universalNerveChain2 c) =
       universalNerveChain1 (Comb.bdry2 (uCover (orderCx P) a) c) := by
   change Nerve.bdry (ordNerveChain2 (chain2 uOrderHomInv c)) =
     ordNerveChain1 (chain1 uOrderHomInv (Comb.bdry2 (uCover (orderCx P) a) c))
   rw [← ordNerveChain1_bdry2, bdry2_chain2]
 
-theorem universalNerveChain2_lengthProjection (c : UF (orderCx P) a →₀ ℤ) :
-    Nerve.lengthProjection 3 (universalNerveChain2 c) = universalNerveChain2 c :=
-  ordNerveChain2_lengthProjection _
+abbrev universalNerveChain2_lengthProjection   :=
+  FiniteChains.Comb.ordNerveChain2_lengthProjection ((FiniteChains.Comb.chain2 FiniteChains.Comb.uOrderHomInv) c)
 
-theorem universalNerveChain2_mem_inc (c : UF (orderCx P) a →₀ ℤ) :
-    universalNerveChain2 c ∈ Nerve.Inc (UOrder P a) :=
-  ordNerveChain2_mem_inc _
+abbrev universalNerveChain2_mem_inc   :=
+  FiniteChains.Comb.ordNerveChain2_mem_inc ((FiniteChains.Comb.chain2 FiniteChains.Comb.uOrderHomInv) c)
 
-theorem universalNerveChain2_single (t : UF (orderCx P) a) (n : ℤ) :
+theorem universalNerveChain2_single  (n : ℤ) :
     universalNerveChain2 (Finsupp.single t n) =
       n • FreeAbelianGroup.of [(uOrderHomInv.onF t).1.1,
         (uOrderHomInv.onF t).1.2.1, (uOrderHomInv.onF t).1.2.2] := by
@@ -77,11 +68,9 @@ theorem universalNerveChain2_single_mem_incOn (S : P → Prop)
   apply Nerve.of_mem_incOn
   · simpa [List.isChain_cons] using (uOrderHomInv.onF t).2
   · rw [← uOrderHomInv_face_projection t] at ht
-    change S (uOrderEnd (uOrderHomInv.onF t).1.1) ∧
-      S (uOrderEnd (uOrderHomInv.onF t).1.2.1) ∧
-      S (uOrderEnd (uOrderHomInv.onF t).1.2.2) at ht
+    
     intro v hv
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at hv
+    simp  at hv
     rcases hv with rfl | rfl | rfl
     · exact ht.1
     · exact ht.2.1
@@ -93,7 +82,6 @@ theorem universalNerveChain2_mem_incOn (S : P → Prop)
     (c : UF (orderCx P) a →₀ ℤ)
     (hc : ∀ t ∈ c.support, t.1.2 ∈ ordTriOn S) :
     universalNerveChain2 c ∈ Nerve.IncOn (fun v => S (uOrderEnd v)) := by
-  classical
   have he : c = ∑ t ∈ c.support, Finsupp.single t (c t) :=
     (Finsupp.sum_single c).symm
   rw [he, map_sum]
@@ -105,7 +93,6 @@ end FiniteChains.Comb
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
-universe u
 variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

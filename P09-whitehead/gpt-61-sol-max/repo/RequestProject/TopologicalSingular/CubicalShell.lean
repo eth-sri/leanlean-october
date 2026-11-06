@@ -1,4 +1,4 @@
-module
+import Mathlib.Tactic
 
 /-
 Copyright (c) 2026 Vasily Ilin. All rights reserved.
@@ -8,11 +8,9 @@ c66523531ff172d7f41913d94e56921e790a1b47.
 The simplex-specific dependency has been removed; cube-face definitions
 are copied from the same revision of Hurewicz/StickSimplex.lean.
 -/
-public import Mathlib.Topology.Homotopy.HomotopyGroup
-public import Mathlib.Topology.UnitInterval
-public import Mathlib.Tactic
-
-@[expose] public section
+import Mathlib.Topology.Homotopy.HomotopyGroup
+import Mathlib.Topology.UnitInterval
+import Mathlib.Tactic
 
 /-!
 # Cubical shells in a pointed space
@@ -32,8 +30,6 @@ open scoped Topology Topology.Homotopy unitInterval
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
@@ -45,13 +41,7 @@ variable {d : ℕ} {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
 def cubeFace {d : ℕ} (i : Fin (d + 1)) (a : I) : C(I^Fin d, I^Fin (d + 1)) where
   toFun t := i.insertNth a t
   continuous_toFun := by
-    apply continuous_pi
-    intro j
-    refine Fin.succAboveCases i ?_ (fun k => ?_) j
-    · simp only [Fin.insertNth_apply_same]
-      exact continuous_const
-    · simp only [Fin.insertNth_apply_succAbove]
-      exact continuous_apply k
+    fun_prop
 
 @[simp]
 theorem cubeFace_apply {d : ℕ} (i : Fin (d + 1)) (a : I) (t : I^Fin d) :
@@ -61,13 +51,13 @@ theorem cubeFace_apply {d : ℕ} (i : Fin (d + 1)) (a : I) (t : I^Fin d) :
 @[simp]
 theorem cubeFace_apply_same {d : ℕ} (i : Fin (d + 1)) (a : I) (t : I^Fin d) :
     cubeFace i a t i = a := by
-  simp [cubeFace]
+  simp 
 
 @[simp]
 theorem cubeFace_apply_succAbove {d : ℕ} (i : Fin (d + 1)) (a : I)
     (t : I^Fin d) (j : Fin d) :
     cubeFace i a t (i.succAbove j) = t j := by
-  simp [cubeFace]
+  simp 
 
 /-- The codimension-two cubical skeleton: at least two distinct coordinates are endpoints. -/
 def cubeCodimTwo (d : ℕ) : Set (I^Fin d) :=
@@ -85,13 +75,7 @@ theorem cubeFace_mem_cubeCodimTwo {d : ℕ} (i : Fin (d + 1)) (a : I)
 def cubeFaceVary {d : ℕ} (i : Fin (d + 1)) : C(I × (I^Fin d), I^Fin (d + 1)) where
   toFun p := i.insertNth p.1 p.2
   continuous_toFun := by
-    apply continuous_pi
-    intro j
-    refine Fin.succAboveCases i ?_ (fun k ↦ ?_) j
-    · simpa only [Fin.insertNth_apply_same] using (continuous_fst :
-        Continuous fun p : I × (I^Fin d) ↦ p.1)
-    · simpa only [Fin.insertNth_apply_succAbove]
-        using (by fun_prop : Continuous fun p : I × (I^Fin d) ↦ p.2 k)
+    fun_prop
 
 @[simp]
 theorem cubeFaceVary_apply {d : ℕ} (i : Fin (d + 1)) (a : I) (t : I^Fin d) :
@@ -129,11 +113,11 @@ def squareTop : Path ((0, 1) : I × I) (1, 1) where
   target' := rfl
 
 /-- The bottom-then-right route around the unit square. -/
-def squareBottomRight : Path ((0, 0) : I × I) (1, 1) :=
+def squareBottomRight  :=
   squareBottom.trans squareRight
 
 /-- The left-then-top route around the unit square. -/
-def squareLeftTop : Path ((0, 0) : I × I) (1, 1) :=
+def squareLeftTop  :=
   squareLeft.trans squareTop
 
 /-- Convex interpolation across the square gives a path homotopy between its two monotone
@@ -144,28 +128,22 @@ noncomputable def squareBoundaryHomotopy :
     (Set.Icc.convexComb (squareBottomRight p.2).1 (squareLeftTop p.2).1 p.1,
       Set.Icc.convexComb (squareBottomRight p.2).2 (squareLeftTop p.2).2 p.1)
   continuous_toFun := by
-    apply Continuous.prodMk
-    all_goals
-      apply Continuous.subtype_mk
-      fun_prop
+    fun_prop
   map_zero_left t := by
-    ext <;> simp [squareBottomRight, squareLeftTop]
+    simp_all
   map_one_left t := by
-    ext <;> simp [squareBottomRight, squareLeftTop]
+    simp_all
   prop' s t ht := by
-    rcases ht with rfl | ht
-    · simp [squareBottomRight, squareLeftTop, Set.Icc.convexComb]
-    · rw [Set.mem_singleton_iff] at ht
-      subst t
-      simp [squareBottomRight, squareLeftTop, Set.Icc.convexComb]
+    aesop
 
+variable {m : ℕ}
 @[simp]
-theorem cubeFace_last_eq_snoc {m : ℕ} (a : I) (t : I^Fin m) :
+theorem cubeFace_last_eq_snoc  (a : I) (t : I^Fin m) :
     cubeFace (Fin.last m) a t = Fin.snoc t a := by
-  simp [cubeFace]
+  simp 
 
 @[simp]
-theorem cubeFace_penultimate_snoc {m : ℕ} (a b : I) (t : I^Fin m) :
+theorem cubeFace_penultimate_snoc  (a b : I) (t : I^Fin m) :
     cubeFace (Fin.last m).castSucc a (Fin.snoc t b) = Fin.snoc (Fin.snoc t a) b := by
   funext j
   induction j using Fin.lastCases with
@@ -176,15 +154,12 @@ theorem cubeFace_penultimate_snoc {m : ℕ} (a b : I) (t : I^Fin m) :
       rw [← hlast, cubeFace_apply_succAbove]
       simp
   | cast j =>
-      induction j using Fin.lastCases with
-      | last => simp [cubeFace]
-      | cast j => simp [cubeFace, Fin.insertNth_apply_below, Fin.snoc]
+      induction j using Fin.lastCases <;> simp_all [Fin.insertNth_apply_below]
 
 @[simp]
-theorem update_last_eq_snoc_init {m : ℕ} (t : I^Fin (m + 1)) (a : I) :
+theorem update_last_eq_snoc_init  (t : I^Fin (m + 1)) (a : I) :
     Function.update t (Fin.last m) a = Fin.snoc (Fin.init t) a := by
-  conv_lhs => rw [← Fin.snoc_init_self t]
-  exact Fin.update_snoc_last _ _ _
+  classical grind [Fin.snoc_init_self, Fin.update_snoc_last]
 
 /-- The convex sweep from the bottom-right route to the left-top route, with `m` passive
 coordinates prepended. -/
@@ -194,20 +169,7 @@ noncomputable def squareSweepCube (m : ℕ) :
     Fin.snoc (Fin.snoc (Fin.init st.2) (squareBoundaryHomotopy (st.1, st.2 (Fin.last m))).1)
       (squareBoundaryHomotopy (st.1, st.2 (Fin.last m))).2
   continuous_toFun := by
-    have hc : Continuous (fun st : I × (I^Fin (m + 1)) =>
-        squareBoundaryHomotopy (st.1, st.2 (Fin.last m))) :=
-      squareBoundaryHomotopy.continuous.comp (by fun_prop)
-    apply continuous_pi
-    intro j
-    refine Fin.lastCases ?_ (fun k => ?_) j
-    · simp only [Fin.snoc_last]
-      exact hc.snd
-    · simp only [Fin.snoc_castSucc]
-      refine Fin.lastCases ?_ (fun l => ?_) k
-      · simp only [Fin.snoc_last]
-        exact hc.fst
-      · simp only [Fin.snoc_castSucc, Fin.init_def]
-        fun_prop
+    fun_prop
 
 /-- Pointwise concatenation formula with the unclamped half-interval coordinates exposed. -/
 theorem genLoop_transAt_apply_path {N : Type*} [DecidableEq N] (i : N)
@@ -224,9 +186,8 @@ theorem genLoop_transAt_apply_path {N : Type*} [DecidableEq N] (i : N)
       f (Function.update t i (Set.projIcc 0 1 zero_le_one (2 * t i)))
     else g (Function.update t i (Set.projIcc 0 1 zero_le_one (2 * t i - 1)))) = _
   split_ifs with h
-  · rw [Set.projIcc_of_mem _ ((unitInterval.mul_pos_mem_iff zero_lt_two).2 ⟨(t i).2.1, h⟩)]
-  · rw [Set.projIcc_of_mem _ (unitInterval.two_mul_sub_one_mem_iff.2
-      ⟨(not_le.1 h).le, (t i).2.2⟩)]
+  · classical grind [Set.projIcc_of_mem, unitInterval.mul_pos_mem_iff, zero_lt_two]
+  · classical grind [Set.projIcc_of_mem, unitInterval.two_mul_sub_one_mem_iff, not_le]
 
 /-- A cubical shell is a map on a cube which collapses the codimension-two skeleton to the
 chosen basepoint. -/
@@ -238,44 +199,48 @@ structure CubicalShell (d : ℕ) (X : Type*) [TopologicalSpace X] (x : X) where
 
 namespace CubicalShell
 
+variable (S : CubicalShell d X x)
+  (i : Fin (d + 1))
+  (a : I)
+variable (ha : a = 0 ∨ a = 1)
 /-- The facet of a cubical shell at coordinate `i` and endpoint `a`, as a based generalized
 loop. -/
-noncomputable def faceLoop (S : CubicalShell d X x) (i : Fin (d + 1)) (a : I)
-    (ha : a = 0 ∨ a = 1) : Ω^ (Fin d) X x :=
+noncomputable def faceLoop   
+     : Ω^ (Fin d) X x :=
   ⟨S.map.comp (cubeFace i a), fun t ht ↦ S.codimTwo _
     (cubeFace_mem_cubeCodimTwo i a ha t ht)⟩
 
 @[simp]
-theorem faceLoop_apply (S : CubicalShell d X x) (i : Fin (d + 1)) (a : I)
-    (ha : a = 0 ∨ a = 1) (t : I^Fin d) :
+theorem faceLoop_apply   
+     (t : I^Fin d) :
     (S.faceLoop i a ha).val t = S.map (cubeFace i a t) :=
   rfl
 
 /-- The lower facet loop. -/
-noncomputable def lowerFaceLoop (S : CubicalShell d X x) (i : Fin (d + 1)) :
-    Ω^ (Fin d) X x :=
+noncomputable def lowerFaceLoop    :=
   S.faceLoop i 0 (Or.inl rfl)
 
 /-- The upper facet loop. -/
-noncomputable def upperFaceLoop (S : CubicalShell d X x) (i : Fin (d + 1)) :
-    Ω^ (Fin d) X x :=
+noncomputable def upperFaceLoop    :=
   S.faceLoop i 1 (Or.inr rfl)
 
+variable (t : I^Fin d)
 @[simp]
-theorem lowerFaceLoop_apply (S : CubicalShell d X x) (i : Fin (d + 1))
-    (t : I^Fin d) :
+theorem lowerFaceLoop_apply  
+     :
     (S.lowerFaceLoop i).val t = S.map (cubeFace i 0 t) :=
   rfl
 
 @[simp]
-theorem upperFaceLoop_apply (S : CubicalShell d X x) (i : Fin (d + 1))
-    (t : I^Fin d) :
+theorem upperFaceLoop_apply  
+     :
     (S.upperFaceLoop i).val t = S.map (cubeFace i 1 t) :=
   rfl
 
+variable {m : ℕ}
 /-- The sweep starts at the concatenation of the last lower face with the penultimate upper
 face. -/
-theorem squareSweepCube_zero {m : ℕ} (S : CubicalShell (m + 1) X x)
+theorem squareSweepCube_zero  (S : CubicalShell (m + 1) X x)
     (t : I^Fin (m + 1)) :
     S.map (squareSweepCube m (0, t)) =
       (GenLoop.transAt (Fin.last m) (S.lowerFaceLoop (Fin.last (m + 1)))
@@ -287,10 +252,7 @@ theorem squareSweepCube_zero {m : ℕ} (S : CubicalShell (m + 1) X x)
   simp only [Path.coe_toContinuousMap]
   rw [Path.trans_apply, genLoop_transAt_apply_path]
   split_ifs with h
-  · change S.map _ = S.map (cubeFace (Fin.last (m + 1)) 0 _)
-    apply congrArg S.map
-    rw [cubeFace_last_eq_snoc, update_last_eq_snoc_init]
-    rfl
+  · classical aesop (add unsafe apply [congrArg, FiniteChains.TopologicalSingular.cubeFace_last_eq_snoc, FiniteChains.TopologicalSingular.update_last_eq_snoc_init])
   · change S.map _ = S.map (cubeFace (Fin.last m).castSucc 1 _)
     apply congrArg S.map
     rw [update_last_eq_snoc_init, cubeFace_penultimate_snoc]
@@ -298,7 +260,7 @@ theorem squareSweepCube_zero {m : ℕ} (S : CubicalShell (m + 1) X x)
 
 /-- The sweep ends at the concatenation of the penultimate lower face with the last upper
 face. -/
-theorem squareSweepCube_one {m : ℕ} (S : CubicalShell (m + 1) X x)
+theorem squareSweepCube_one  (S : CubicalShell (m + 1) X x)
     (t : I^Fin (m + 1)) :
     S.map (squareSweepCube m (1, t)) =
       (GenLoop.transAt (Fin.last m) (S.lowerFaceLoop (Fin.last m).castSucc)
@@ -314,35 +276,32 @@ theorem squareSweepCube_one {m : ℕ} (S : CubicalShell (m + 1) X x)
     apply congrArg S.map
     rw [update_last_eq_snoc_init, cubeFace_penultimate_snoc]
     rfl
-  · change S.map _ = S.map (cubeFace (Fin.last (m + 1)) 1 _)
-    apply congrArg S.map
-    rw [cubeFace_last_eq_snoc, update_last_eq_snoc_init]
-    rfl
+  · classical aesop (add unsafe apply [congrArg, FiniteChains.TopologicalSingular.cubeFace_last_eq_snoc, FiniteChains.TopologicalSingular.update_last_eq_snoc_init])
 
 /-- A facet of the ambient cube is constant at the shell basepoint. -/
-def IsConstantFace (S : CubicalShell d X x) (i : Fin (d + 1)) (a : I) : Prop :=
+def IsConstantFace     :=
   ∀ t : I^Fin (d + 1), t i = a → S.map t = x
 
-theorem faceLoop_eq_const (S : CubicalShell d X x) (i : Fin (d + 1)) (a : I)
-    (ha : a = 0 ∨ a = 1) (h : S.IsConstantFace i a) :
+theorem faceLoop_eq_const   
+     (h : S.IsConstantFace i a) :
     S.faceLoop i a ha = GenLoop.const := by
   apply GenLoop.ext
   intro t
   exact h _ (by simp)
 
-theorem lowerFaceLoop_eq_const (S : CubicalShell d X x) (i : Fin (d + 1))
+theorem lowerFaceLoop_eq_const  
     (h : S.IsConstantFace i 0) :
     S.lowerFaceLoop i = GenLoop.const :=
   S.faceLoop_eq_const i 0 (Or.inl rfl) h
 
 /-- All facets in the first `m` directions are constant, leaving only the last two coordinate
 pairs potentially nonconstant. -/
-def LeadingFacesConstant {m : ℕ} (S : CubicalShell (m + 1) X x) : Prop :=
+def LeadingFacesConstant  (S : CubicalShell (m + 1) X x)  :=
   ∀ i : Fin m,
     S.IsConstantFace i.castSucc.castSucc 0 ∧ S.IsConstantFace i.castSucc.castSucc 1
 
 /-- The square filling relates the two concatenations formed by the last four facets. -/
-theorem lastTwoFaceLoops_homotopic {m : ℕ} (S : CubicalShell (m + 1) X x)
+theorem lastTwoFaceLoops_homotopic  (S : CubicalShell (m + 1) X x)
     (h : S.LeadingFacesConstant) :
     GenLoop.Homotopic
       (GenLoop.transAt (Fin.last m) (S.lowerFaceLoop (Fin.last (m + 1)))
@@ -362,8 +321,8 @@ theorem lastTwoFaceLoops_homotopic {m : ℕ} (S : CubicalShell (m + 1) X x)
   obtain ⟨i, rfl⟩ | rfl := j.eq_castSucc_or_eq_last
   · rcases h i with ⟨hi0, hi1⟩
     rcases hj with hj | hj
-    · exact hi0 _ (by simpa [squareSweepCube, Fin.init_def] using hj)
-    · exact hi1 _ (by simpa [squareSweepCube, Fin.init_def] using hj)
+    · aesop (add simp [squareSweepCube])
+    · aesop (add simp [squareSweepCube])
   · rcases hj with hj | hj
     · apply S.codimTwo
       refine ⟨(Fin.last m).castSucc, Fin.last (m + 1),
@@ -377,24 +336,23 @@ theorem lastTwoFaceLoops_homotopic {m : ℕ} (S : CubicalShell (m + 1) X x)
       · simp [squareSweepCube, hj]
 
 /-- The additive homotopy class of a lower facet. -/
-noncomputable def lowerFaceClass (S : CubicalShell d X x) (i : Fin (d + 1)) :
+noncomputable def lowerFaceClass   :
     Additive (HomotopyGroup (Fin d) X x) :=
   Additive.ofMul (⟦S.lowerFaceLoop i⟧ : HomotopyGroup (Fin d) X x)
 
 /-- The additive homotopy class of an upper facet. -/
-noncomputable def upperFaceClass (S : CubicalShell d X x) (i : Fin (d + 1)) :
+noncomputable def upperFaceClass   :
     Additive (HomotopyGroup (Fin d) X x) :=
   Additive.ofMul (⟦S.upperFaceLoop i⟧ : HomotopyGroup (Fin d) X x)
 
 theorem lowerFaceClass_eq_zero [Nonempty (Fin d)] (S : CubicalShell d X x)
     (i : Fin (d + 1)) (h : S.IsConstantFace i 0) :
     S.lowerFaceClass i = 0 := by
-  rw [lowerFaceClass, S.lowerFaceLoop_eq_const i h, ← HomotopyGroup.one_def]
-  rfl
+  aesop (add simp [FiniteChains.TopologicalSingular.CubicalShell.lowerFaceLoop_eq_const, lowerFaceClass])
 
 /-- The four face classes around the last-coordinate square satisfy the square boundary
 relation. -/
-theorem lastTwoFaceClass_relation {m : ℕ} [Nontrivial (Fin (m + 1))]
+theorem lastTwoFaceClass_relation  [Nontrivial (Fin (m + 1))]
     (S : CubicalShell (m + 1) X x) (h : S.LeadingFacesConstant) :
     S.upperFaceClass (Fin.last m).castSucc + S.lowerFaceClass (Fin.last (m + 1)) =
       S.upperFaceClass (Fin.last (m + 1)) + S.lowerFaceClass (Fin.last m).castSucc := by
@@ -410,6 +368,6 @@ theorem lastTwoFaceClass_relation {m : ℕ} [Nontrivial (Fin (m + 1))]
     exact Quotient.sound (S.lastTwoFaceLoops_homotopic h)
   exact congrArg Additive.ofMul hq
 
-end CubicalShell
+end FiniteChains.TopologicalSingular.CubicalShell
 
-end FiniteChains.TopologicalSingular
+

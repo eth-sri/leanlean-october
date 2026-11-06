@@ -1,12 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusSpinePresentation
-
-@[expose] public section
+import RequestProject.GenusSpinePresentation
 
 /-! The genuine finite complex obtained by capping the marked surviving spine. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
@@ -22,9 +18,7 @@ noncomputable def cappedSpineCx : Complex2 where
   base := Sum.elim (markedSpineCx q).base (fun _ => markedSpineBase q)
   att := Sum.elim (markedSpineCx q).att (fun x => (markedSpineLoop q x).1)
   att_isLoop := by
-    rintro (f | x)
-    · exact (markedSpineCx q).att_isLoop f
-    · exact (markedSpineLoop q x).2
+    classical grind [FiniteChains.Comb.Complex2.att_isLoop, FiniteChains.Comb.IsPath, markedSpineCx, markedSpineLoop]
 
 instance : Finite (cappedSpineCx q).V := inferInstanceAs (Finite (markedSpineCx q).V)
 instance : Finite (cappedSpineCx q).E := inferInstanceAs (Finite (markedSpineCx q).E)
@@ -56,8 +50,6 @@ noncomputable def cappedSpineIncl : Hom (markedSpineCx q) (cappedSpineCx q) wher
   tgt_onE _ := rfl
   base_onF _ := rfl
   att_onF f := by
-    change (markedSpineCx q).att f = List.map (fun eb : (markedSpineCx q).E × Bool => (eb.1, eb.2))
-      ((markedSpineCx q).att f)
-    simp
+    aesop
 
 end FiniteChains.Davis.Genus

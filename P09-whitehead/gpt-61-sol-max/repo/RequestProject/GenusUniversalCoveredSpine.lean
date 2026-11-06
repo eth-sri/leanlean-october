@@ -1,53 +1,40 @@
-module
+import Mathlib.Tactic
+import RequestProject.GenusReceivedQuotientComparison
 
-public import RequestProject.GenusSpineConnected
-public import RequestProject.GenusNamedSpineComparison
-public import RequestProject.ReceivedTreeFiberCoordinates
-public import RequestProject.StrictOrderPullbackHom
-public import RequestProject.UniversalOrderChainBridge
-public import RequestProject.GenusOldCoverSpineFaithfulness
-public import RequestProject.GenusOldCoverSpineGeneration
-
-@[expose] public section
+import RequestProject.GenusSpineConnected
+import RequestProject.GenusNamedSpineComparison
+import RequestProject.ReceivedTreeFiberCoordinates
+import RequestProject.StrictOrderPullbackHom
+import RequestProject.UniversalOrderChainBridge
+import RequestProject.GenusOldCoverSpineFaithfulness
+import RequestProject.GenusOldCoverSpineGeneration
 
 /-! The full pulled-back spine in the universal old cover has actual named
 tree-cover coordinates before substitution. Pending final Lean verification.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxHeartbeats 1600000
 
 namespace FiniteChains.Comb
-universe u
 variable {K Y Z : Complex2.{u}}
 
 theorem universal_pi1Map_comp (f : Hom K Y) (g : Hom Y Z) (a : K.V)
     (z : Pi1 K a) :
-    pi1Map (g.comp f) a z = pi1Map g (f.onV a) (pi1Map f a z) := by
-  refine Quotient.inductionOn z ?_
-  intro p
-  apply congrArg Pi1.mk
-  apply Subtype.ext
-  simp only [mapPath, Hom.comp, List.map_map, Function.comp_def]
+    pi1Map (g.comp f) a z = pi1Map g (f.onV a) (pi1Map f a z) := pi1Map_comp_apply f g a z
 
-theorem universal_chain2_comp (f : Hom K Y) (g : Hom Y Z) (c : K.F →₀ ℤ) :
-    chain2 (g.comp f) c = chain2 g (chain2 f c) := by
-  change Finsupp.mapDomain (g.onF ∘ f.onF) c =
-    Finsupp.mapDomain g.onF (Finsupp.mapDomain f.onF c)
-  rw (config := { transparency := .default }) [Finsupp.mapDomain_comp]
+
 
 end FiniteChains.Comb
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
-open scoped Classical
+
 variable (q : ℕ) [NeZero q]
 
-noncomputable def universalSpineToOld :
-    Hom (markedSpineCx q) (orderCx (QOld (cmpRel (GenusVertex q)))) :=
+noncomputable def universalSpineToOld  :=
   (genusSpineToOld q).comp (componentIncl (genusSpineCx q) (spineBase q))
 
 noncomputable abbrev universalSpineOldBase :=
@@ -55,50 +42,36 @@ noncomputable abbrev universalSpineOldBase :=
 
 theorem universalSpineToOld_pi1_bijective :
     Function.Bijective (pi1Map (universalSpineToOld q) (markedSpineTree q).root) := by
-  rw (config := { transparency := .default }) [markedSpineTree_root]
+  rw  [markedSpineTree_root]
   have he : pi1Map (universalSpineToOld q) (markedSpineBase q) =
       (genusSpineToOldPi1Equiv q).toMonoidHom.comp (markedSpinePi1Equiv q).toMonoidHom := by
-    apply MonoidHom.ext
-    intro z
-    exact universal_pi1Map_comp (componentIncl (genusSpineCx q) (spineBase q))
-      (genusSpineToOld q) (markedSpineBase q) z
-  rw (config := { transparency := .default }) [he]
+    solve_by_elim [MonoidHom.ext, FiniteChains.Comb.universal_pi1Map_comp, MonoidHom.ext]
+  rw  [he]
   exact (genusSpineToOldPi1Equiv q).bijective.comp (markedSpinePi1Equiv q).bijective
 
 /-- The receiver is the actual geometric fundamental-group equivalence,
 with named generators folded back to the tree presentation. -/
-noncomputable def universalSpineOldReceiver :
-    PresGroup (namedSpinePresentation q) →*
-      Pi1 (orderCx (QOld (cmpRel (GenusVertex q)))) (universalSpineOldBase q) :=
+noncomputable def universalSpineOldReceiver  :=
   (ReceivedTree.canonicalReceiver (markedSpineTree q) (universalSpineToOld q)).comp
     (namedSpineGroupEquiv q).symm.toMonoidHom
 
-theorem universalSpineOldReceiver_bijective :
-    Function.Bijective (universalSpineOldReceiver q) :=
+abbrev universalSpineOldReceiver_bijective  :=
   (universalSpineToOld_pi1_bijective q).comp
     ((spinePresentationPi1Equiv q).symm.bijective.comp (namedSpineGroupEquiv q).symm.bijective)
 
-noncomputable def universalSpineWordReceiver :
-    PresGroup (spinePresentation q) →* PresGroup (namedSpinePresentation q) :=
+noncomputable def universalSpineWordReceiver  :=
   (namedSpineGroupEquiv q).toMonoidHom
 
 theorem universalSpineOldReceiver_compatible :
     (universalSpineOldReceiver q).comp (universalSpineWordReceiver q) =
       (pi1Map (universalSpineToOld q) (markedSpineTree q).root).comp
         (SpanningTree.presToPi1 (markedSpineTree q)) := by
-  apply MonoidHom.ext
-  intro z
-  change (ReceivedTree.canonicalReceiver (markedSpineTree q) (universalSpineToOld q))
-    ((namedSpineGroupEquiv q).symm ((namedSpineGroupEquiv q) z)) = _
-  rw (config := { transparency := .default }) [MulEquiv.symm_apply_apply]
-  rfl
+  aesop
 
 noncomputable abbrev universalNamedSpineCover :=
   ReceivedTree.cover (markedSpineTree q) (universalSpineWordReceiver q)
 
-noncomputable def universalNamedSpineComparison :
-    Hom (universalNamedSpineCover q)
-      (uCover (orderCx (QOld (cmpRel (GenusVertex q)))) (universalSpineOldBase q)) :=
+noncomputable def universalNamedSpineComparison  :=
   ReceivedTree.comparison (markedSpineTree q) (universalSpineToOld q)
     (universalSpineWordReceiver q) (universalSpineOldReceiver q)
     (universalSpineOldReceiver_compatible q)
@@ -112,12 +85,10 @@ theorem universalOldEnd_isPosetCover :
   letI : Nonempty (GenusVertex q) := ⟨cV (gc q) (cyc (8 * q) 0)⟩
   exact uOrderEnd_isPosetCover isConnected_orderCx_qOld
 
-noncomputable def universalReceivedOrderMap :
-    Hom (universalNamedSpineCover q) (orderCx (universalOldOrder q)) :=
+noncomputable def universalReceivedOrderMap  :=
   uOrderHomInv.comp (universalNamedSpineComparison q)
 
-noncomputable def universalReceivedStrictSpine :
-    Hom (universalNamedSpineCover q) (strictOrderCx (GenusSpineCell q)) :=
+noncomputable def universalReceivedStrictSpine  :=
   (componentIncl (genusSpineCx q) (spineBase q)).comp
     (ReceivedTree.projection (markedSpineTree q) (universalSpineWordReceiver q))
 
@@ -131,7 +102,7 @@ theorem universalReceived_spine_square :
     change uOrderEnd (uOrderHomInv.onV
       (ReceivedTree.receiverVertex (markedSpineTree q) (universalSpineToOld q)
         (universalSpineOldReceiver q) a.1 a.2)) = _
-    rw (config := { transparency := .default }) [uOrderHomInv_vertex]
+    rw  [uOrderHomInv_vertex]
     exact ReceivedTree.receiverVertex_end _ _ _ _ _
   · funext e
     exact uOrderHomInv_edge_projection
@@ -146,8 +117,7 @@ noncomputable abbrev universalSpinePullback :=
   PosetCoverPullback (uOrderEnd (P := QOld (cmpRel (GenusVertex q)))
     (a := universalSpineOldBase q)) (genusSpineCellToOld q)
 
-noncomputable def universalReceivedToPullback :
-    Hom (universalNamedSpineCover q) (strictOrderCx (universalSpinePullback q)) :=
+noncomputable def universalReceivedToPullback  :=
   strictOrderPullbackHom uOrderEnd (universalOldEnd_isPosetCover q)
     (genusSpineCellToOld q) (genusSpineCellToOld_monotone q)
     (universalReceivedOrderMap q) (universalReceivedStrictSpine q)
@@ -214,10 +184,7 @@ def universalSpinePullbackOldOrderIso :
   right_inv _ := rfl
   map_rel_iff' := Iff.rfl
 
-noncomputable def universalReceivedToCoveredSpine :
-    Hom (universalNamedSpineCover q)
-      (strictOrderCx (OldCoveredSpine q
-        (uOrderEnd (P := QOld (cmpRel (GenusVertex q))) (a := universalSpineOldBase q)))) :=
+noncomputable def universalReceivedToCoveredSpine  :=
   (strictOrderCxMap (universalSpinePullbackOldOrderIso q)
     (universalSpinePullbackOldOrderIso q).strictMono).comp (universalReceivedToPullback q)
 
@@ -231,9 +198,7 @@ theorem universalReceivedToCoveredSpine_onF_surjective :
   change (strictOrderCxMap (universalSpinePullbackOldOrderIso q)
     (universalSpinePullbackOldOrderIso q).strictMono).onF
       ((universalReceivedToPullback q).onF c) = t
-  rw (config := { transparency := .default }) [hc]
-  apply Subtype.ext
-  simp only [strictOrderCxMap, OrderIso.apply_symm_apply]
+  aesop
 
 /-- This is the concrete pre-substitution chain lift needed for the normalized
 marked reference filling. It applies to every finite chain on the full geometric spine. -/
@@ -243,10 +208,7 @@ theorem universalReceivedToCoveredSpine_chain2_surjective :
 
 /-- Keeping the underlying spine edge and its actual initial lift retains
 both coordinates of a received edge. -/
-noncomputable def universalCoveredSpineToStrictSpine :
-    Hom (strictOrderCx (OldCoveredSpine q
-      (uOrderEnd (P := QOld (cmpRel (GenusVertex q)))
-        (a := universalSpineOldBase q)))) (strictOrderCx (GenusSpineCell q)) :=
+noncomputable def universalCoveredSpineToStrictSpine  :=
   (strictPullbackProjection uOrderEnd (universalOldEnd_isPosetCover q)
     (genusSpineCellToOld q) (genusSpineCellToOld_monotone q)).comp
       (strictOrderCxMap (universalSpinePullbackOldOrderIso q).symm
@@ -255,9 +217,7 @@ noncomputable def universalCoveredSpineToStrictSpine :
 theorem universalReceivedToCoveredSpine_vertex_old
     (a : (universalNamedSpineCover q).V) :
     oldCoveredSpineToOld q uOrderEnd ((universalReceivedToCoveredSpine q).onV a) =
-      (universalNamedSpineComparison q).onV a := by
-  change uOrderHomInv.onV ((universalNamedSpineComparison q).onV a) = _
-  exact uOrderHomInv_vertex _
+      (universalNamedSpineComparison q).onV a := uOrderHomInv_vertex _
 
 theorem universalReceivedToCoveredSpine_onE_injective :
     Function.Injective (universalReceivedToCoveredSpine q).onE := by
@@ -269,12 +229,12 @@ theorem universalReceivedToCoveredSpine_onE_injective :
       ((universalNamedSpineCover q).src (g, e)) =
       (universalReceivedToCoveredSpine q).onV
         ((universalNamedSpineCover q).src (h, e)) := by
-    rw (config := { transparency := .default }) [← (universalReceivedToCoveredSpine q).src_onE,
+    rw  [← (universalReceivedToCoveredSpine q).src_onE,
       ← (universalReceivedToCoveredSpine q).src_onE, he]
   have hv' := congrArg (oldCoveredSpineToOld q uOrderEnd) hv
-  rw (config := { transparency := .default }) [universalReceivedToCoveredSpine_vertex_old,
+  rw  [universalReceivedToCoveredSpine_vertex_old,
     universalReceivedToCoveredSpine_vertex_old] at hv'
-  have hg : g = h := ReceivedTree.receiverVertex_fiber_injective
+  have hg  := ReceivedTree.receiverVertex_fiber_injective
     (markedSpineTree q) (universalSpineToOld q) (universalSpineOldReceiver q)
     (universalSpineOldReceiver_bijective q).1 ((markedSpineCx q).src e) hv'
   exact Prod.ext hg rfl
@@ -283,8 +243,9 @@ theorem universalReceivedToCoveredSpine_chain1_injective :
     Function.Injective (chain1 (universalReceivedToCoveredSpine q)) :=
   Finsupp.mapDomain_injective (universalReceivedToCoveredSpine_onE_injective q)
 
+variable (d : (universalNamedSpineCover q).F →₀ ℤ)
 theorem universalReceivedCoveredChain_nerve_image
-    (d : (universalNamedSpineCover q).F →₀ ℤ) :
+     :
     Nerve.cmap (oldCoveredSpineToOld q uOrderEnd)
       (ordNerveChain2 (ordStrictInclusion2
         (chain2 (universalReceivedToCoveredSpine q) d))) =
@@ -298,16 +259,14 @@ theorem universalReceivedCoveredChain_nerve_image
   change Nerve.cmap _ (ordNerveChain2 (chain2 (strictOrderIncl _)
     (chain2 (universalReceivedToCoveredSpine q) d))) =
     ordNerveChain2 (chain2 uOrderHomInv (chain2 (universalNamedSpineComparison q) d))
-  rw (config := { transparency := .default }) [← ordNerveChain2_chain2 _ (oldCoveredSpineToOld_monotone q uOrderEnd)]
-  apply congrArg ordNerveChain2
-  have he := congrArg (fun k => chain2 k d) hfirst
-  simpa only [universal_chain2_comp, universalReceivedOrderMap] using he
+  rw  [← ordNerveChain2_chain2 _ (oldCoveredSpineToOld_monotone q uOrderEnd)]
+  aesop (add simp [ordNerveChain2])
 
 /-- The geometric adjustment lifts back to genuine pre-substitution tree
 coordinates with its exact boundary preserved. The prescribed geometric
 class is an explicit input here, rather than a claimed canonical choice. -/
 theorem universalSpine_adjust_filling
-    (d : (universalNamedSpineCover q).F →₀ ℤ)
+    
     (z : Nerve.Ch (universalOldOrder q))
     (hz : z ∈ Nerve.Inc (universalOldOrder q))
     (hd : Nerve.lengthProjection 3 z = z)
@@ -328,15 +287,14 @@ theorem universalSpine_adjust_filling
   obtain ⟨d', hd'⟩ := universalReceivedToCoveredSpine_chain2_surjective q c
   refine ⟨d', ?_, y, hy, ?_⟩
   · apply universalReceivedToCoveredSpine_chain1_injective q
-    rw (config := { transparency := .default }) [← bdry2_chain2, ← bdry2_chain2, hd']
+    rw  [← bdry2_chain2, ← bdry2_chain2, hd']
     exact hcb
-  · rw (config := { transparency := .default }) [hd']
-    exact hzy
+  · simp_all
 
 /-- Cellular form of the actual geometric adjustment: equality of the
 specified old-cover boundaries is sufficient, with no support premise added. -/
 theorem universalSpine_adjust_to_chain
-    (d : (universalNamedSpineCover q).F →₀ ℤ)
+    
     (z : (uCover (orderCx (QOld (cmpRel (GenusVertex q))))
       (universalSpineOldBase q)).F →₀ ℤ)
     (hz : Comb.bdry2 _ z = chain1 (universalNamedSpineComparison q)
@@ -349,7 +307,7 @@ theorem universalSpine_adjust_to_chain
   obtain ⟨d', hbd, y, hy, hzy⟩ := universalSpine_adjust_filling q d
     (universalNerveChain2 z) (universalNerveChain2_mem_inc z)
     (universalNerveChain2_lengthProjection z) (by
-      rw (config := { transparency := .default }) [universalReceivedCoveredChain_nerve_image, universalNerveChain2_bdry,
+      rw  [universalReceivedCoveredChain_nerve_image, universalNerveChain2_bdry,
         universalNerveChain2_bdry, bdry2_chain2, hz])
   refine ⟨d', hbd, y, hy, ?_⟩
   rwa [universalReceivedCoveredChain_nerve_image] at hzy

@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.Pi2HurewiczMap
-public import RequestProject.TopologicalSingular.SquareSubdivisionPrism
-public import RequestProject.TopologicalSingular.SquareConcatenationGeometry
-
-@[expose] public section
+import RequestProject.TopologicalSingular.Pi2HurewiczMap
+import RequestProject.TopologicalSingular.SquareSubdivisionPrism
+import RequestProject.TopologicalSingular.SquareConcatenationGeometry
 
 set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
@@ -12,16 +10,17 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology
-open scoped Topology
+
 variable {X : Type} [TopologicalSpace X] {x : X}
 
-theorem squareCycle_transAt_difference_bounds (p q : GenLoop (Fin 2) X x) :
+variable (p q : GenLoop (Fin 2) X x)
+theorem squareCycle_transAt_difference_bounds  :
     squareCycle p + squareCycle q - squareCycle (GenLoop.transAt 0 p q) ∈
       LinearMap.range (boundary 2) := by
   have he := squareCycle_rectangle_sum_difference_bounds (GenLoop.transAt 0 p q)
   rwa [transAt_leftRectangle, transAt_rightRectangle] at he
 
-theorem squareCycleClass_transAt (p q : GenLoop (Fin 2) X x) :
+theorem squareCycleClass_transAt  :
     singularCycleClass 1 (squareCycle (GenLoop.transAt 0 p q)) (squareCycle_boundary _) =
       singularCycleClass 1 (squareCycle p) (squareCycle_boundary p) +
         singularCycleClass 1 (squareCycle q) (squareCycle_boundary q) := by
@@ -39,22 +38,11 @@ theorem pi2CycleClass_mul (x : X) (a b : HomotopyGroup (Fin 2) X x) :
         _ = pi2CycleClass x (Quotient.mk _ (GenLoop.transAt 0 q p)) :=
           congrArg (pi2CycleClass x) (HomotopyGroup.mul_spec (i := (0 : Fin 2)) (p := p) (q := q))
         _ = _ := by
-          rw [pi2CycleClass_mk, pi2CycleClass_mk, pi2CycleClass_mk, squareCycleClass_transAt, add_comm]
+          simp_all [pi2CycleClass_mk, squareCycleClass_transAt, add_comm]
 
-theorem singularHurewicz2_mul (x : X) (a b : HomotopyGroup (Fin 2) X x) :
-    singularHurewicz2 x (a * b) = singularHurewicz2 x a + singularHurewicz2 x b := by
-  change (homologyMathlibIso (TopCat.of X) 2).hom (pi2CycleClass x (a * b)) = _
-  rw [pi2CycleClass_mul, map_add]
-  rfl
 
-/-- The genuine topological Hurewicz homomorphism in degree two. Its group
-law is proved using an explicit subdivision of the parameter square. -/
-noncomputable def singularHurewicz2Hom (x : X) : HomotopyGroup (Fin 2) X x →*
-    Multiplicative
-      (((singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj (ModuleCat.of ℤ ℤ)).obj (TopCat.of X)) where
-  toFun z := Multiplicative.ofAdd (singularHurewicz2 x z)
-  map_one' := singularHurewicz2_one x
-  map_mul' a b := singularHurewicz2_mul x a b
+
+
 
 /-- Vanishing of the genuine Hurewicz image is exactly the existence of an
 integral singular filling of the square's fundamental cycle. -/
@@ -82,7 +70,7 @@ theorem singularHurewicz2_mk_eq_zero_iff (p : GenLoop (Fin 2) X x) :
     simpa only [sub_zero, LinearMap.mem_range] using hc
   · intro h
     have hc := (singularCycleClass_eq_iff 1 (squareCycle p) 0 (squareCycle_boundary p) (map_zero _)).mpr
-      (by simpa only [sub_zero, LinearMap.mem_range] using h)
+      (by simp_all)
     exact hc.trans (singularCycleClass_zero 1)
 
 end FiniteChains.TopologicalSingular

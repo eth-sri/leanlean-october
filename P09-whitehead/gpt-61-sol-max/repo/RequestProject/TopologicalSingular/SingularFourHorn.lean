@@ -1,12 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SingularSimplicialHelpers
+import RequestProject.TopologicalSingular.SingularSimplicialHelpers
 
-@[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 variable {X : Type} [TopologicalSpace X]
@@ -23,7 +19,7 @@ theorem singular_four_horn_missing_one (T0 T2 T3 T4 : Simplex X 3)
     ∃ W : Simplex X 3,
       face 0 W = face 0 T0 ∧ face 1 W = face 1 T2 ∧
       face 2 W = face 1 T3 ∧ face 3 W = face 1 T4 := by
-  let g : Fin 5 → Simplex X 3 := ![T0, T0, T2, T3, T4]
+  let g  := ![T0, T0, T2, T3, T4]
   have hg : ∀ (j : Fin 5) (k : Fin 4) (hj : j ≠ 1) (hk : j.succAbove k ≠ 1),
       face k (g j) = face (k.predAbove j) (g (j.succAbove k)) := by
     intro j k hj hk
@@ -32,17 +28,9 @@ theorem singular_four_horn_missing_one (T0 T2 T3 T4 : Simplex X 3)
   obtain ⟨S, hS⟩ := singular_horn_filler_of_face_compatible 1
     (fun j _ => g j) hg
   refine ⟨face 1 S, ?_, ?_, ?_, ?_⟩
-  · have h := singular_double_face_swap S 1 0
-    simpa [g, show (1 : Fin 5).succAbove 0 = 0 from rfl,
-      show (0 : Fin 4).predAbove 1 = 0 from rfl, hS 0 (by decide)] using h
-  · have h := singular_double_face_swap S 1 1
-    simpa [g, show (1 : Fin 5).succAbove 1 = 2 from rfl,
-      show (1 : Fin 4).predAbove 1 = 1 from rfl, hS 2 (by decide)] using h
-  · have h := singular_double_face_swap S 1 2
-    simpa [g, show (1 : Fin 5).succAbove 2 = 3 from rfl,
-      show (2 : Fin 4).predAbove 1 = 1 from rfl, hS 3 (by decide)] using h
-  · have h := singular_double_face_swap S 1 3
-    simpa [g, show (1 : Fin 5).succAbove 3 = 4 from rfl,
-      show (3 : Fin 4).predAbove 1 = 1 from rfl, hS 4 (by decide)] using h
+  · aesop (add simp [singular_double_face_swap])
+  · aesop (add simp [singular_double_face_swap])
+  · aesop (add simp [singular_double_face_swap])
+  · aesop (add simp [singular_double_face_swap])
 
 end FiniteChains.TopologicalSingular

@@ -1,15 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderPosetCovering
-
-@[expose] public section
+import RequestProject.OrderPosetCovering
 
 /-! The actual fiber product of a poset covering along a monotone map. -/
 namespace FiniteChains.Comb
-universe u
 variable {P Q R : Type u} [Preorder P] [Preorder Q] [Preorder R]
 
-def PosetCoverPullback (f : P → Q) (g : R → Q) :=
+  (f : P → Q)
+  (g : R → Q)
+def PosetCoverPullback   :=
   {x : P × R // f x.1 = g x.2}
 
 instance (f : P → Q) (g : R → Q) : Preorder (PosetCoverPullback f g) :=
@@ -19,17 +18,18 @@ instance {P Q R : Type u} [PartialOrder P] [Preorder Q] [PartialOrder R]
     (f : P → Q) (g : R → Q) : PartialOrder (PosetCoverPullback f g) :=
   Subtype.partialOrder _
 
-def posetPullbackProjection (f : P → Q) (g : R → Q) (x : PosetCoverPullback f g) : R := x.1.2
+def posetPullbackProjection   (x : PosetCoverPullback f g)  := x.1.2
 
-def posetPullbackOriginal (f : P → Q) (g : R → Q) (x : PosetCoverPullback f g) : P := x.1.1
+def posetPullbackOriginal   (x : PosetCoverPullback f g)  := x.1.1
 
-omit [Preorder Q] in
+section
+omit [Preorder Q]
 theorem posetPullbackProjection_monotone (f : P → Q) (g : R → Q) :
     Monotone (posetPullbackProjection f g) := fun _ _ h => h.2
 
-omit [Preorder Q] in
 theorem posetPullbackOriginal_monotone (f : P → Q) (g : R → Q) :
     Monotone (posetPullbackOriginal f g) := fun _ _ h => h.1
+end
 
 /-- No injectivity assumption on the map used to pull back the covering is needed. -/
 theorem IsPosetCover.pullback {f : P → Q} (hf : IsPosetCover f)

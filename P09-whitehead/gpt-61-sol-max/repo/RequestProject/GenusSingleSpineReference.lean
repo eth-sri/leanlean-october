@@ -1,16 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusNormalizedSpineBaseChange
-
-@[expose] public section
+import RequestProject.GenusNormalizedSpineBaseChange
 
 /-! The fixed normalized reference in one actual substituted spine, and its
 compatibility with the arbitrary-family reference. Awaiting Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily
@@ -69,11 +65,8 @@ theorem singleFiniteSpineReference_markingChain :
       (universalReferenceMarkingCoefficients q) :=
   finiteSpineFamilyFilling_markingChain ρ (fun _ : PUnit.{1} => q) (fun _ => u) PUnit.unit
 
-variable {S : Type} (σ : Jr ⊕ S → FreeGroup α)
-  (qs : S → ℕ) [∀ s, NeZero (qs s)] (us : ∀ s, Fin (qs s) × Bool → FreeGroup α)
 
-theorem singleFiniteSpineReference_oneRel (s : S) :
-    singleFiniteSpineReference (oneRel σ s) (qs s) (us s) =
-      finiteSpineIndividualFilling σ qs us s := rfl
+
+
 
 end FiniteChains.Davis.Genus

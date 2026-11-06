@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ExplicitRelativeAttachment
-
-@[expose] public section
+import RequestProject.ExplicitRelativeAttachment
 
 /-! Identify the explicit attachment with an actual quotient covered by
 an old piece and disk pieces. Boundary identifications and separation of
@@ -13,7 +11,6 @@ noncomputable section
 namespace FiniteChains.RelativeAttachment
 open Topology
 
-universe u
 variable {A B D Y : Type u} [TopologicalSpace B] [TopologicalSpace D]
   [TopologicalSpace Y] (r : A → B) (i : A → D)
   (f : C(B, Y)) (g : C(D, Y))
@@ -43,14 +40,12 @@ def attachmentQuotientHomeomorph : Space r i ≃ₜ Y := by
   let E := Equiv.ofBijective F ⟨hFi, hFq.surjective⟩
   refine { E with continuous_toFun := F.continuous, continuous_invFun := ?_ }
   apply hFq.continuous_iff.mpr
-  change Continuous (E.symm ∘ F)
+  dsimp
   have he : E.symm ∘ F = id := funext E.symm_apply_apply
   rw [he]
   exact continuous_id
 
-@[simp] theorem attachmentQuotientHomeomorph_old (b : B) :
-    attachmentQuotientHomeomorph r i f g hbd hf hsep hnew hq (old r i b) = f b :=
-  desc_old r i f g hbd b
+
 
 @[simp] theorem attachmentQuotientHomeomorph_cell (d : D) :
     attachmentQuotientHomeomorph r i f g hbd hf hsep hnew hq (cell r i d) = g d :=

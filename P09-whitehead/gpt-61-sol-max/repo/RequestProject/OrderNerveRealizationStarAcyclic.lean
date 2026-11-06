@@ -1,3 +1,2 @@
-module
-public import RequestProject.OrderNerveRealizationStarContractible
-public import RequestProject.TopologicalSingular.MathlibComparison
+import RequestProject.OrderNerveRealizationStarContractible
+import RequestProject.TopologicalSingular.MathlibComparison

@@ -1,45 +1,39 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CoverComplex
-public import RequestProject.CombLoopWord
-public import RequestProject.UniversalPathGauge
-public import RequestProject.CellularHomotopyChain
-public import RequestProject.ZeroPi2Descent
-
-@[expose] public section
+import RequestProject.CoverComplex
+import RequestProject.CombLoopWord
+import RequestProject.UniversalPathGauge
+import RequestProject.CellularHomotopyChain
+import RequestProject.ZeroPi2Descent
 
 /-! Exact Fox expansion for a word of actual lifted loops. This is an
 identity of edge chains, not merely of homology classes. Unverified source. -/
 noncomputable section
-open scoped Classical
-set_option backward.defeqAttrib.useBackward true
+
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {X : Complex2.{u}} {a : X.V} {I : Type u}
   (N : Subgroup (FreeGroup I)) [N.Normal]
   (p : I → Loop X a) (ψ : (FreeGroup I ⧸ N) →* Pi1 X a)
   (hψ : ∀ i, ψ (qof N i) = Pi1.mk (p i))
 
-def loopCoefficientVertex (g : FreeGroup I ⧸ N) : UV X a :=
+def loopCoefficientVertex (g : FreeGroup I ⧸ N)  :=
   deckV (ψ g) (UV.base X a)
 
 theorem loopCoefficientVertex_end (g : FreeGroup I ⧸ N) :
     endV (loopCoefficientVertex N ψ g) = a := by
   rw [loopCoefficientVertex, endV_deckV, endV_base]
 
+variable (i : I)
 include hψ in
-theorem extendList_loopCoefficientVertex (i : I) (g : FreeGroup I ⧸ N) :
+theorem extendList_loopCoefficientVertex  (g : FreeGroup I ⧸ N) :
     extendList (p i).1 (loopCoefficientVertex N ψ g) =
-      loopCoefficientVertex N ψ (g * qof N i) := by
-  rw [loopCoefficientVertex, extendList_deckV, ← deckV_loop_base, ← hψ,
-    ← deckV_mul, ← map_mul]
-  rfl
+      loopCoefficientVertex N ψ (g * qof N i) := by simp_all [loopCoefficientVertex, extendList_deckV, deckV_loop_base, deckV_mul]
 
 include hψ in
-theorem extendList_rev_loopCoefficientVertex (i : I) (g : FreeGroup I ⧸ N) :
+theorem extendList_rev_loopCoefficientVertex  (g : FreeGroup I ⧸ N) :
     extendList (revPath (p i).1) (loopCoefficientVertex N ψ g) =
       loopCoefficientVertex N ψ (g * (qof N i)⁻¹) := by
   rw [loopCoefficientVertex, extendList_deckV]
@@ -49,13 +43,12 @@ theorem extendList_rev_loopCoefficientVertex (i : I) (g : FreeGroup I ⧸ N) :
   rfl
 
 include hψ in
-theorem lifted_loop_reverse_chain (i : I) (g : FreeGroup I ⧸ N) :
+theorem lifted_loop_reverse_chain  (g : FreeGroup I ⧸ N) :
     pathChain (uLiftPath (revPath (p i).1) (loopCoefficientVertex N ψ g)) =
       -pathChain (uLiftPath (p i).1 (loopCoefficientVertex N ψ (g * (qof N i)⁻¹))) := by
   have hp : IsPath X.src X.tgt (p i).1
       (endV (loopCoefficientVertex N ψ (g * (qof N i)⁻¹))) a := by
-    rw [loopCoefficientVertex_end]
-    exact (p i).2
+    grind [loopCoefficientVertex_end]
   have hl := isPath_uLiftPath (p i).1 (loopCoefficientVertex N ψ (g * (qof N i)⁻¹)) a hp
   have hcancel : (g * (qof N i)⁻¹) * qof N i = g := by group
   rw [extendList_loopCoefficientVertex N p ψ hψ, hcancel] at hl
@@ -84,8 +77,7 @@ theorem loopCoefficientChainMap_liftPath (l : List (I × Bool)) (g : FreeGroup I
       cases b with
       | true =>
           have hp : IsPath X.src X.tgt (p i).1 (endV (loopCoefficientVertex N ψ g)) a := by
-            rw [loopCoefficientVertex_end]
-            exact (p i).2
+            grind [loopCoefficientVertex_end]
           rw [liftPath_cons_true, pathChain_cons, wordPath_cons, germLoopPath_pos,
             uLiftPath_append _ _ _ a hp, pathChain_append,
             extendList_loopCoefficientVertex N p ψ hψ, map_add, ih]
@@ -94,8 +86,7 @@ theorem loopCoefficientChainMap_liftPath (l : List (I × Bool)) (g : FreeGroup I
       | false =>
           have hp : IsPath X.src X.tgt (revPath (p i).1)
               (endV (loopCoefficientVertex N ψ g)) a := by
-            rw [loopCoefficientVertex_end]
-            exact isPath_revPath (p i).2
+            grind [FiniteChains.Comb.loopCoefficientVertex_end, FiniteChains.Comb.isPath_revPath]
           rw [liftPath_cons_false, pathChain_cons, wordPath_cons, germLoopPath_neg,
             uLiftPath_append _ _ _ a hp, pathChain_append,
             extendList_rev_loopCoefficientVertex N p ψ hψ, map_add, ih,
@@ -114,8 +105,7 @@ theorem lifted_wordPath_fox (l : List (I × Bool)) :
         ((coords N I).symm (fun i => proj N (fox i (FreeGroup.mk l)))) := by
   have hcoords : coords N I (pathChain (liftPath (Nsub := N) l 1)) =
       fun i => proj N (fox i (FreeGroup.mk l)) := by
-    simpa only [show (MonoidAlgebra.single (1 : FreeGroup I ⧸ N) (1 : ℤ)) = 1 from rfl,
-      one_mul] using coords_pathChain_liftPath (Nsub := N) l (1 : FreeGroup I ⧸ N)
+    aesop (add simp [coords_pathChain_liftPath])
   have hc := congrArg (coords N I).symm hcoords
   rw [LinearEquiv.symm_apply_apply] at hc
   rw [← hc, loopCoefficientChainMap_liftPath N p ψ hψ]

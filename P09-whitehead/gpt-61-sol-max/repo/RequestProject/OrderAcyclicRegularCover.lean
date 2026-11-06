@@ -1,21 +1,20 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderUniversalRealizationAcyclicity
-
-@[expose] public section
+import RequestProject.OrderUniversalRealizationAcyclicity
 
 set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular Topology
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q]
 
+variable (hfill : ∀ c : StrictOrdEdge P →₀ ℤ, bdry1 (strictOrderCx P) c = 0 →
+      ∃ b : StrictOrdTri P →₀ ℤ, bdry2 (strictOrderCx P) b = c)
+include hfill in
 /-- Actual strict edge-cycle fillings give genuine singular one-cycle fillings. -/
 theorem orderRealization_oneCycle_bounds_of_strict_fillings
-    (hfill : ∀ c : StrictOrdEdge P →₀ ℤ, bdry1 (strictOrderCx P) c = 0 →
-      ∃ b : StrictOrdTri P →₀ ℤ, bdry2 (strictOrderCx P) b = c)
+    
     (c : Chain (orderNerveRealization P) 1) (hc : boundary 0 c = 0) :
     ∃ b : Chain (orderNerveRealization P) 2, boundary 1 b = c := by
   obtain ⟨z, hz, hd, hz0, b, hb⟩ := orderNerveRealization_cycle_nerveRepresentative 0 c hc
@@ -24,9 +23,9 @@ theorem orderRealization_oneCycle_bounds_of_strict_fillings
   rw [map_add, hb, orderNerveGradedRealize_boundary 1 ha, ha0]
   abel
 
+include hfill in
 theorem orderRealization_homology_one_isZero_of_strict_fillings
-    (hfill : ∀ c : StrictOrdEdge P →₀ ℤ, bdry1 (strictOrderCx P) c = 0 →
-      ∃ b : StrictOrdTri P →₀ ℤ, bdry2 (strictOrderCx P) b = c) :
+     :
     Limits.IsZero (((singularHomologyFunctor (ModuleCat.{0} ℤ) 1).obj
       (ModuleCat.of ℤ ℤ)).obj (orderNerveRealization P)) := by
   have he : (complex (orderNerveRealization P)).ExactAt 1 := by
@@ -34,10 +33,9 @@ theorem orderRealization_homology_one_isZero_of_strict_fillings
       (i := 2) (j := 1) (k := 0) (ChainComplex.prev ℕ 1) (ChainComplex.next_nat_succ 0)]
     apply (ShortComplex.moduleCat_exact_iff _).mpr
     intro c hc
-    change (complex (orderNerveRealization P)).d 1 0 c = 0 at hc
+    dsimp at hc
     rw [complex_d] at hc
-    change ∃ b : Chain (orderNerveRealization P) 2,
-      (complex (orderNerveRealization P)).d 2 1 b = c
+    dsimp
     rw [complex_d]
     exact orderRealization_oneCycle_bounds_of_strict_fillings hfill c hc
   exact he.isZero_homology.of_iso (homologyMathlibIso (orderNerveRealization P) 1).symm
@@ -63,7 +61,6 @@ theorem hasAcyclicRegularCover [Nonempty Q] [(nerve Q).HasDimensionLE 2]
       ∃ e : P ≃o P, (∀ p, f (e p) = f p) ∧ e v = w)
     (hacyc : IsAcyclic (strictOrderCx P)) :
     Whitehead.HasAcyclicRegularCover (orderNerveTwoComplex Q hQ) := by
-  classical
   obtain ⟨q⟩ := (inferInstance : Nonempty Q)
   obtain ⟨p, _⟩ := hf.surj q
   letI : Nonempty P := ⟨p⟩
@@ -75,5 +72,5 @@ theorem hasAcyclicRegularCover [Nonempty Q] [(nerve Q).HasDimensionLE 2]
     inferInstance, hf.realizationMap_regular hdeck,
     orderRealization_acyclic_of_strict_isAcyclic hacyc⟩
 
-end IsPosetCover
-end FiniteChains.Comb
+end FiniteChains.Comb.IsPosetCover
+

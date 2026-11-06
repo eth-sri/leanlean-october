@@ -1,13 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.MathlibOrderNerveCategoricalNaturality
-public import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
+import RequestProject.MathlibOrderNerveCategoricalNaturality
+import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -55,7 +51,7 @@ theorem mathlibOrderNerveComplex_homologyMap_zero (f : P → Q) (hf : Monotone f
     (mathlibOrderNerveShortComplexIso P)).hom)).mp
   rw [← mathlibOrderNerveComplex_homologyMap_natural,
     mathlibOrderNerve_homologyMap_zero f hf hzero]
-  rw (config := { transparency := .default }) [CategoryTheory.Limits.zero_comp, CategoryTheory.Limits.comp_zero]
+  rw  [CategoryTheory.Limits.zero_comp, CategoryTheory.Limits.comp_zero]
 
 /-- The actual order-cell homology equivalence is natural on full chain-complex homology. -/
 theorem mathlibOrderNerveComplexH2Equiv_natural (f : P → Q) (hf : Monotone f)
@@ -67,12 +63,7 @@ theorem mathlibOrderNerveComplexH2Equiv_natural (f : P → Q) (hf : Monotone f)
       (AlgebraicTopology.AlternatingFaceMapComplex.obj (mathlibOrderNerveModule Q)).homology 2 =>
         k (mathlibOrderNerveCategoricalH2Equiv P z))
     (mathlibOrderNerveComplex_homologyMap_natural f hf)
-  change (((ShortComplex.homologyFunctor (ModuleCat ℤ)).mapIso
-      (mathlibOrderNerveShortComplexIso Q)).hom)
-        ((ShortComplex.homologyMap (mathlibOrderNerveShortComplexMap f hf)).hom
-          (mathlibOrderNerveCategoricalH2Equiv P z)) =
-    ((HomologicalComplex.homologyFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) 2).map
-      (mathlibOrderNerveChainMap f hf)).hom (mathlibOrderNerveComplexH2Equiv P z) at h
+  dsimp at h
   rw [mathlibOrderNerveCategoricalH2Equiv_natural] at h
   exact h.symm
 

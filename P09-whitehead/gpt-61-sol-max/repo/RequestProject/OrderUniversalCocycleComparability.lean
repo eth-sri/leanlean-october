@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderUniversalCocycleReading
-public import RequestProject.OrderUniversalPoset
-
-@[expose] public section
+import RequestProject.OrderUniversalCocycleReading
+import RequestProject.OrderUniversalPoset
 
 namespace FiniteChains.Comb.OrdCocycle
-universe u v
 variable {P : Type u} [PartialOrder P] {G : Type v} [Group G]
   (c : OrdCocycle P G) (a : P)
 
@@ -20,7 +17,7 @@ theorem readVertex_of_le (p q : UOrder P a) (h : p ≤ q) :
     c.readVertex a q = c.readVertex a p * c.val (uOrderEnd p) (uOrderEnd q) := by
   obtain ⟨hle, he⟩ := h
   rw [← he]
-  simpa only [uOrderStep_end] using c.readVertex_uOrderStep a p (uOrderEnd q) hle
+  simpa [uOrderStep_end] using c.readVertex_uOrderStep a p (uOrderEnd q) hle
 
 /-- Reading down a genuine lifted comparability multiplies by the inverse cocycle value. -/
 theorem readVertex_lower_of_le (p q : UOrder P a) (h : p ≤ q) :

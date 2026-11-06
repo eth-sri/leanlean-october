@@ -1,25 +1,23 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderUniversalThree
-public import RequestProject.CombPi2
-
-@[expose] public section
+import RequestProject.OrderUniversalThree
+import RequestProject.CombPi2
 
 /-! Naturality of genuine lifted tetrahedra, including the transported first face. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
-def uOrdTetMap (f : P → Q) (hf : Monotone f) (a : P) (t : UOrdTet P a) : UOrdTet Q (f a) :=
+  (f : P → Q)
+  (hf : Monotone f)
+def uOrdTetMap   (a : P) (t : UOrdTet P a) : UOrdTet Q (f a) :=
   ⟨(@univLiftV (orderCx P) (orderCx Q) a (orderCxMap f hf) t.1.1, ordTetMap f hf t.1.2), by
     rw [endV_univLiftV, t.2]
     rfl⟩
 
-theorem uOrdTetMap_face0 (f : P → Q) (hf : Monotone f) (a : P) (t : UOrdTet P a) :
+theorem uOrdTetMap_face0   (a : P) (t : UOrdTet P a) :
     univLiftF a (orderCxMap f hf) (uOrdTetFace0 t) = uOrdTetFace0 (uOrdTetMap f hf a t) := by
   apply Subtype.ext
   apply Prod.ext
@@ -27,10 +25,10 @@ theorem uOrdTetMap_face0 (f : P → Q) (hf : Monotone f) (a : P) (t : UOrdTet P 
       (c := t.1.1) t.2
   · rfl
 
-theorem uOrdTetMap_boundary (f : P → Q) (hf : Monotone f) (a : P) (t : UOrdTet P a) :
+theorem uOrdTetMap_boundary   (a : P) (t : UOrdTet P a) :
     Finsupp.mapDomain (@univLiftF (orderCx P) (orderCx Q) a (orderCxMap f hf))
       (uOrdTetBoundary t) = uOrdTetBoundary (uOrdTetMap f hf a t) := by
-  let L : (UF (orderCx P) a →₀ ℤ) →ₗ[ℤ] (UF (orderCx Q) (f a) →₀ ℤ) :=
+  let L  :=
     Finsupp.lmapDomain ℤ ℤ (@univLiftF (orderCx P) (orderCx Q) a (orderCxMap f hf))
   change L (uOrdTetBoundary t) = _
   simp only [uOrdTetBoundary, map_sub, map_add]
@@ -38,13 +36,13 @@ theorem uOrdTetMap_boundary (f : P → Q) (hf : Monotone f) (a : P) (t : UOrdTet
   rw [uOrdTetMap_face0]
   rfl
 
-theorem univLift_uOrdBoundary3 (f : P → Q) (hf : Monotone f) (a : P)
+theorem univLift_uOrdBoundary3   (a : P)
     (y : UOrdTet P a →₀ ℤ) :
     chain2 (univLift (orderCx P) (orderCxMap f hf) a) (uOrdBoundary3 y) =
       uOrdBoundary3 (Finsupp.mapDomain (uOrdTetMap f hf a) y) := by
   induction y using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw [map_add, map_add, hc, hd, Finsupp.mapDomain_add, map_add]
+  | add c d hc hd => simp_all [Finsupp.mapDomain_add]
   | single t n =>
     rw [uOrdBoundary3, Finsupp.linearCombination_single, map_smul]
     change n • Finsupp.mapDomain (@univLiftF (orderCx P) (orderCx Q) a (orderCxMap f hf))

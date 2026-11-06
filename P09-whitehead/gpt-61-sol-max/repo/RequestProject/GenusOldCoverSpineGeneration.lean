@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusOldCoverSpineFaithfulness
-
-@[expose] public section
+import RequestProject.GenusOldCoverSpineFaithfulness
 
 /-!
 Actual chain generation and reference-filling adjustment in every old-cell
@@ -20,9 +18,11 @@ open RACG Mirror Comb Nerve
 variable (q : ℕ) [NeZero q]
   {P : Type} [PartialOrder P] (f : P → QOld (cmpRel (GenusVertex q)))
 
+variable (hf : IsPosetCover f)
+include hf in
 /-- Every homogeneous old-cover two-cycle is represented by an actual cycle on
 the actual covered spine, modulo an actual increasing three-boundary. -/
-theorem genus_old_cover_spine_nerve_generation (hf : IsPosetCover f)
+theorem genus_old_cover_spine_nerve_generation 
     (z : Ch P) (hz : z ∈ Inc P) (hd : lengthProjection 3 z = z)
     (hcyc : Nerve.bdry z = 0) :
     ∃ c ∈ Inc (OldCoveredSpine q f), lengthProjection 3 c = c ∧
@@ -37,9 +37,9 @@ theorem genus_old_cover_spine_nerve_generation (hf : IsPosetCover f)
   have hz' : z' ∈ IncOn (fun _ : TruncatedCover f => True) :=
     cmap_mem_incOn_of_maps hs (fun _ => True.intro) hz
   have hd' : lengthProjection 3 z' = z' := by
-    rw (config := { transparency := .default }) [lengthProjection_cmap, hd]
+    rw  [lengthProjection_cmap, hd]
   have hcyc' : Nerve.bdry z' = 0 := by
-    rw (config := { transparency := .default }) [← cmap_bdry, hcyc, map_zero]
+    rw  [← cmap_bdry, hcyc, map_zero]
   obtain ⟨c₀, hc₀, y₀, hy₀, hcc₀, he₀⟩ :=
     (genusSpine_cover_homology q (truncatedCoverProjection_isPosetCover f hf)).1
       z' hz' hd' hcyc'
@@ -50,34 +50,35 @@ theorem genus_old_cover_spine_nerve_generation (hf : IsPosetCover f)
     lengthProjection_mem_inc _ (incOn_le_inc _ hy₀)
   have hbd : lengthProjection 3 b = b := lengthProjection_idempotent _ _
   have hbc : Nerve.bdry b = 0 := by
-    rw (config := { transparency := .default }) [← lengthProjection_bdry, hcc₀, map_zero]
+    rw  [← lengthProjection_bdry, hcc₀, map_zero]
   have he : z' = b + Nerve.bdry y := by
-    rw (config := { transparency := .default }) [← hd', he₀, map_add, lengthProjection_bdry]
+    rw  [← hd', he₀, map_add, lengthProjection_bdry]
   have hne : ∃ p : TruncatedCover f, B p := by
     obtain ⟨p, hp⟩ := (truncatedCoverProjection_isPosetCover f hf).surj (spineBase q).1
     refine ⟨p, ?_⟩
     change truncatedCoverProjection f p ∈ genusSpineCellSet q
-    rw (config := { transparency := .default }) [hp]
+    rw  [hp]
     exact (spineBase q).2
   obtain ⟨c, hc, hcb⟩ := exists_preimage_of_mem_incOn B hb
   have hcd : lengthProjection 3 c = c := by
     apply cmap_val_injective B hne
-    rw (config := { transparency := .default }) [← lengthProjection_cmap, hcb, hbd]
+    rw  [← lengthProjection_cmap, hcb, hbd]
   have hcc : Nerve.bdry c = 0 := by
     apply cmap_val_injective B hne
-    rw (config := { transparency := .default }) [cmap_bdry, hcb, hbc, map_zero]
+    rw  [cmap_bdry, hcb, hbc, map_zero]
   refine ⟨c, hc, hcd, hcc, cmap r y, cmap_mem_inc_of_monotone hr hy, ?_⟩
   have hp := congrArg (cmap r) he
   have hreturn : cmap r z' = z := by
-    rw (config := { transparency := .default }) [cmap_comp]
+    rw  [cmap_comp]
     change cmap id z = z
     exact cmap_id z
-  rw (config := { transparency := .default }) [hreturn, map_add, cmap_bdry, ← hcb, cmap_comp] at hp
+  rw  [hreturn, map_add, cmap_bdry, ← hcb, cmap_comp] at hp
   exact hp
 
+include hf in
 /-- The preceding geometric representative can be made strictly cellular.
 Degenerate flags are removed with the explicit normalization three-chain. -/
-theorem genus_old_cover_spine_cycle_generation (hf : IsPosetCover f)
+theorem genus_old_cover_spine_cycle_generation 
     (z : Ch P) (hz : z ∈ Inc P) (hd : lengthProjection 3 z = z)
     (hcyc : Nerve.bdry z = 0) :
     ∃ c : StrictOrdTri (OldCoveredSpine q f) →₀ ℤ,
@@ -88,27 +89,28 @@ theorem genus_old_cover_spine_cycle_generation (hf : IsPosetCover f)
     genus_old_cover_spine_nerve_generation q f hf z hz hd hcyc
   let a := decodeOrdNerve2 b
   have ha : ordNerveChain2 a = b := by
-    rw (config := { transparency := .default }) [ordNerveChain2_decode hb, hbd]
-  have hac : Comb.bdry2 (orderCx (OldCoveredSpine q f)) a = 0 :=
-    (ordNerveChain2_cycle_iff a).mp (by rw (config := { transparency := .default }) [ha]; exact hbc)
+    rw  [ordNerveChain2_decode hb, hbd]
+  have hac  :=
+    (ordNerveChain2_cycle_iff a).mp (by simp_all)
   let w := ordNerveChain3 (ordNormalizationHomotopy2 a)
   have hw : w ∈ Inc (OldCoveredSpine q f) := ordNerveChain3_mem_inc _
   have hwb : b - ordNerveChain2 (ordStrictInclusion2 (normalizeOrdChain2 a)) =
       Nerve.bdry w := by
-    rw (config := { transparency := .default }) [← ha]
+    rw  [← ha]
     exact ordNerve_normalization_cycle a hac
   let g := oldCoveredSpineToOld q f
   have hg := oldCoveredSpineToOld_monotone q f
   refine ⟨normalizeOrdChain2 a, normalizeOrdChain2_cycle a hac,
     cmap g w + y, (Inc _).add_mem (cmap_mem_inc_of_monotone hg hw) hy, ?_⟩
-  rw (config := { transparency := .default }) [map_add, ← cmap_bdry, ← hwb, map_sub, he]
+  rw  [map_add, ← cmap_bdry, ← hwb, map_sub, he]
   abel
 
+include hf in
 /-- Any spine filling can be adjusted by an actual spine cycle so that its
 old-cover realization represents a prescribed geometric filling of the same
 boundary. This is the normalization needed when choosing the marked reference
 filling before arbitrary substitutions. -/
-theorem genus_old_cover_spine_adjust_filling (hf : IsPosetCover f)
+theorem genus_old_cover_spine_adjust_filling 
     (d : StrictOrdTri (OldCoveredSpine q f) →₀ ℤ)
     (z : Ch P) (hz : z ∈ Inc P) (hd : lengthProjection 3 z = z)
     (hb : Nerve.bdry z = Nerve.bdry (cmap (oldCoveredSpineToOld q f)
@@ -123,19 +125,19 @@ theorem genus_old_cover_spine_adjust_filling (hf : IsPosetCover f)
   have hbi : b ∈ Inc P := cmap_mem_inc_of_monotone
     (oldCoveredSpineToOld_monotone q f) (ordNerveChain2_mem_inc _)
   have hbd : lengthProjection 3 b = b := by
-    rw (config := { transparency := .default }) [lengthProjection_cmap, ordNerveChain2_lengthProjection]
+    rw  [lengthProjection_cmap, ordNerveChain2_lengthProjection]
   have hzd : lengthProjection 3 (z - b) = z - b := by
-    rw (config := { transparency := .default }) [map_sub, hd, hbd]
+    simp_all
   have hzc : Nerve.bdry (z - b) = 0 := by
-    rw (config := { transparency := .default }) [map_sub, hb, sub_self]
+    aesop
   obtain ⟨c, hc, y, hy, he⟩ := genus_old_cover_spine_cycle_generation q f hf
     (z - b) ((Inc _).sub_mem hz hbi) hzd hzc
   refine ⟨d + c, ?_, y, hy, ?_⟩
-  · rw (config := { transparency := .default }) [map_add, hc, add_zero]
+  · simp_all
   · simp only [map_add]
     have he' := congrArg (fun x : Ch P => x + b) he
     simp only [sub_add_cancel] at he'
-    rw (config := { transparency := .default }) [he']
+    rw  [he']
     dsimp only [b]
     abel
 

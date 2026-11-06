@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Fox
-
-@[expose] public section
+import RequestProject.Fox
 
 /-!
 # Words with vanishing exponent sums are products of commutators
@@ -14,7 +12,6 @@ actually uses is the existence of such a factorization, i.e. that the kernel of
 the exponent-sum homomorphism on a free group is its commutator subgroup.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -28,35 +25,20 @@ variable {α : Type*} [DecidableEq α]
 noncomputable def expSumTotal : FreeGroup α →* Multiplicative (α →₀ ℤ) :=
   FreeGroup.lift fun k => Multiplicative.ofAdd (Finsupp.single k (1 : ℤ))
 
-theorem expSumTotal_apply (w : FreeGroup α) (i : α) :
+variable (w : FreeGroup α)
+theorem expSumTotal_apply  (i : α) :
     Multiplicative.toAdd (expSumTotal w) i = Multiplicative.toAdd (expSum i w) := by
-  induction w using FreeGroup.induction_on with
-  | one => simp [expSumTotal]
-  | of k =>
-      simp [expSumTotal, expSum, FreeGroup.lift_apply_of, Finsupp.single_apply, eq_comm]
-  | inv_of k h =>
-      have h1 : expSumTotal (FreeGroup.of k)⁻¹ = (expSumTotal (FreeGroup.of k))⁻¹ :=
-        map_inv _ _
-      have h2 : expSum i (FreeGroup.of k)⁻¹ = (expSum i (FreeGroup.of k))⁻¹ := map_inv _ _
-      rw [h1, h2]
-      simpa [Finsupp.neg_apply] using congrArg Neg.neg h
-  | mul u v hu hv =>
-      have h1 : expSumTotal (u * v) = expSumTotal u * expSumTotal v := map_mul _ _ _
-      have h2 : expSum i (u * v) = expSum i u * expSum i v := map_mul _ _ _
-      rw [h1, h2]
-      simpa [Finsupp.add_apply] using congrArg₂ (· + ·) hu hv
+  induction w using FreeGroup.induction_on <;> aesop (add simp [expSumTotal])
 
+variable (h : ∀ i : α, Multiplicative.toAdd (expSum i w) = 0)
+include h in
 /-- A word with vanishing exponent sums lies in the commutator subgroup. -/
-theorem mem_commutator_of_expSum_eq_zero (w : FreeGroup α)
-    (h : ∀ i : α, Multiplicative.toAdd (expSum i w) = 0) :
+theorem mem_commutator_of_expSum_eq_zero 
+     :
     w ∈ commutator (FreeGroup α) := by
   classical
   have hw : expSumTotal w = 1 := by
-    have h0 : Multiplicative.toAdd (expSumTotal w) = 0 := by
-      ext i
-      rw [expSumTotal_apply]
-      simpa using h i
-    simpa using h0
+    aesop (add simp [expSumTotal_apply])
   -- the retraction of the abelianization onto the free abelian group on the generators
   set psi : Multiplicative (α →₀ ℤ) →* Abelianization (FreeGroup α) :=
     MonoidHom.mk' (fun x => Additive.toMul
@@ -68,8 +50,7 @@ theorem mem_commutator_of_expSum_eq_zero (w : FreeGroup α)
   set phi : Abelianization (FreeGroup α) →* Multiplicative (α →₀ ℤ) :=
     Abelianization.lift expSumTotal with hphi
   have hcomp : psi.comp phi = MonoidHom.id (Abelianization (FreeGroup α)) := by
-    refine Abelianization.hom_ext _ _ (FreeGroup.ext_hom _ _ fun k => ?_)
-    simp [hpsi, hphi, expSumTotal, FreeGroup.lift_apply_of]
+    ext <;> simp_all [expSumTotal]
   have hof : Abelianization.of w = 1 := by
     have h1 : phi (Abelianization.of w) = 1 := by simp [hphi, hw]
     calc Abelianization.of w
@@ -79,14 +60,15 @@ theorem mem_commutator_of_expSum_eq_zero (w : FreeGroup α)
   rwa [show Abelianization.of w = QuotientGroup.mk' (commutator (FreeGroup α)) w from rfl,
     QuotientGroup.mk'_apply, QuotientGroup.eq_one_iff] at hof
 
+include h in
 /-- **Rule 3 of Section 3.4.**  A word with vanishing exponent sums in every generator is a
 product of `q ≥ 2` commutators, as required before substituting a block `B_q`. -/
-theorem exists_commutator_factorization (w : FreeGroup α)
-    (h : ∀ i : α, Multiplicative.toAdd (expSum i w) = 0) :
+theorem exists_commutator_factorization 
+     :
     ∃ (q : ℕ) (u v : Fin q → FreeGroup α), 2 ≤ q ∧
       w = (List.ofFn fun j : Fin q => ⁅u j, v j⁆).prod := by
   classical
-  have hw : w ∈ commutator (FreeGroup α) := mem_commutator_of_expSum_eq_zero w h
+  have hw  := mem_commutator_of_expSum_eq_zero w h
   have hsub : w ∈ Submonoid.closure (commutatorSet (FreeGroup α)) := by
     have h1 : w ∈ Submonoid.closure
         (commutatorSet (FreeGroup α) ∪ (commutatorSet (FreeGroup α))⁻¹) := by
@@ -111,11 +93,7 @@ theorem exists_commutator_factorization (w : FreeGroup α)
     · obtain ⟨a, b, hab⟩ := hl x hx
       exact ⟨(a, b), hab.symm⟩
     · have : x = 1 := by
-        rcases List.mem_cons.mp hx with h1 | h1
-        · exact h1
-        · rcases List.mem_cons.mp h1 with h2 | h2
-          · exact h2
-          · exact absurd h2 (List.not_mem_nil)
+        simp_all
       exact ⟨(1, 1), by simp [this]⟩
   choose ab hab using hmem
   refine ⟨l'.length, fun j => (ab l'[(j : ℕ)] (List.getElem_mem j.2)).1,

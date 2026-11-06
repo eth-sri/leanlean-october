@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberQuotientCycleGeneration
-
-@[expose] public section
+import RequestProject.ChamberQuotientCycleGeneration
 
 /-! The quotient is an unmixed union of its actual old cells and the inserted-base star. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 

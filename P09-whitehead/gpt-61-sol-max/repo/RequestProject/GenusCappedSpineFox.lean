@@ -1,13 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusCappedSpineHurewicz
-public import RequestProject.PresCockcroftDictionary
-
-@[expose] public section
+import RequestProject.GenusCappedSpineHurewicz
+import RequestProject.PresCockcroftDictionary
 
 /-! The actual capped spine and the Fox complex of its genuine presentation agree. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
@@ -39,8 +35,8 @@ open scoped Classical
 end FiniteChains.Comb
 
 namespace FiniteChains.Davis.Genus
-open RACG Mirror Comb
-open scoped Classical
+
+
 variable (q : ℕ) [NeZero q]
 
 noncomputable instance : Fintype (SpinePresentationGen q) := Fintype.ofFinite _

@@ -1,21 +1,16 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.PresRoseAffineWordReading
-public import RequestProject.SquareBoundaryLoopQuotient
-public import Mathlib.GroupTheory.FreeGroup.Reduce
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.PresRoseAffineWordReading
+import RequestProject.SquareBoundaryLoopQuotient
+import Mathlib.GroupTheory.FreeGroup.Reduce
 
 /-! Free reduction and insertion of a cancelling pair give actual based
 path homotopies in the literal disk rose, and hence actual homotopies of
 disk attaching maps. Pending Lean verification. -/
 
 noncomputable section
-open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
 
 namespace FiniteChains.PresModel
 open ClassicalGraphModel RelativeAttachment
@@ -44,18 +39,17 @@ theorem classicalRoseRead_cancelHead (a : A) (b : Bool) (l : List (A × Bool)) :
       (((Path.Homotopic.trans_symm _).hcomp (Path.Homotopic.refl _)).trans
         (Path.Homotopic.refl_trans _))
 
-theorem classicalRoseRead_cancelPair (l r : List (A × Bool)) (a : A) (b : Bool) :
-    (classicalRoseRead (l ++ (a, b) :: (a, !b) :: r)).Homotopic (classicalRoseRead (l ++ r)) :=
+abbrev classicalRoseRead_cancelPair (l r : List (A × Bool)) (a : A) (b : Bool)  :=
   (classicalRoseRead_append l _).symm.trans
     (((Path.Homotopic.refl _).hcomp (classicalRoseRead_cancelHead a b r)).trans
       (classicalRoseRead_append l r))
 
-theorem classicalRoseRead_homotopic_of_step {l m : List (A × Bool)} (h : FreeGroup.Red.Step l m) :
+variable {l m : List (A × Bool)}
+theorem classicalRoseRead_homotopic_of_step  (h : FreeGroup.Red.Step l m) :
     (classicalRoseRead l).Homotopic (classicalRoseRead m) := by
-  cases h with
-  | not => exact classicalRoseRead_cancelPair _ _ _ _
+  cases h <;> simp_all [classicalRoseRead_cancelPair]
 
-theorem classicalRoseRead_homotopic_of_red {l m : List (A × Bool)} (h : FreeGroup.Red l m) :
+theorem classicalRoseRead_homotopic_of_red  (h : FreeGroup.Red l m) :
     (classicalRoseRead l).Homotopic (classicalRoseRead m) := by
   induction h with
   | refl => exact Path.Homotopic.refl _
@@ -63,25 +57,23 @@ theorem classicalRoseRead_homotopic_of_red {l m : List (A × Bool)} (h : FreeGro
 
 /-- Equality in the free group is realized by an actual fixed-endpoint
 homotopy of the continuous word paths. -/
-theorem classicalRoseRead_homotopic_of_mk_eq {l m : List (A × Bool)}
+theorem classicalRoseRead_homotopic_of_mk_eq 
     (h : FreeGroup.mk l = FreeGroup.mk m) :
     (classicalRoseRead l).Homotopic (classicalRoseRead m) := by
   obtain ⟨r, hl, hm⟩ := FreeGroup.Red.exact.mp h
   exact (classicalRoseRead_homotopic_of_red hl).trans (classicalRoseRead_homotopic_of_red hm).symm
 
-def classicalRoseWordBoundary (l : List (A × Bool)) :
-    C(UnitBoundary (Fin 2 → ℝ), ClassicalGraphModel.Rose A) :=
+def classicalRoseWordBoundary (l : List (A × Bool))  :=
   (squareLoopDesc (classicalRoseRead l)).comp unitBoundarySquareHomeomorph.toContinuousMap
 
-theorem classicalRoseWordBoundary_homotopic_of_read {l m : List (A × Bool)}
-    (h : (classicalRoseRead l).Homotopic (classicalRoseRead m)) :
-    (classicalRoseWordBoundary l).Homotopic (classicalRoseWordBoundary m) :=
-  (squareLoopDesc_homotopic h).comp
-    (ContinuousMap.Homotopic.refl unitBoundarySquareHomeomorph.toContinuousMap)
+abbrev classicalRoseWordBoundary_homotopic_of_read 
+    (h : (classicalRoseRead l).Homotopic (classicalRoseRead m))  :=
+  ContinuousMap.Homotopic.comp (FiniteChains.RelativeAttachment.squareLoopDesc_homotopic h)
+    (ContinuousMap.Homotopic.refl FiniteChains.RelativeAttachment.unitBoundarySquareHomeomorph.toContinuousMap)
 
-theorem classicalRoseWordBoundary_homotopic_of_mk_eq {l m : List (A × Bool)}
-    (h : FreeGroup.mk l = FreeGroup.mk m) :
-    (classicalRoseWordBoundary l).Homotopic (classicalRoseWordBoundary m) :=
-  classicalRoseWordBoundary_homotopic_of_read (classicalRoseRead_homotopic_of_mk_eq h)
+abbrev classicalRoseWordBoundary_homotopic_of_mk_eq 
+    (h : FreeGroup.mk l = FreeGroup.mk m)  :=
+  FiniteChains.PresModel.classicalRoseWordBoundary_homotopic_of_read
+    (FiniteChains.PresModel.classicalRoseRead_homotopic_of_mk_eq h)
 
 end FiniteChains.PresModel

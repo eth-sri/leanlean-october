@@ -1,28 +1,23 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusCappedRootedGauge
-public import RequestProject.GenusCappedSpine
-public import RequestProject.TreeCover
-
-@[expose] public section
+import RequestProject.GenusCappedRootedGauge
+import RequestProject.GenusCappedSpine
+import RequestProject.TreeCover
 
 /-! Exact lifted-path comparison between the capped tree cover and the full cube cover. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
 noncomputable def rootedCappedEdgeGerm
-    (z : (PresGroup (cappedSpinePresentation q) × (markedSpineCx q).E) × Bool) :
-    UE (orderCx (QCube (cmpRel (GenusVertex q))))
-      ((markedSpineToFullCube q).onV (markedSpineTree q).root) × Bool :=
+    (z : (PresGroup (cappedSpinePresentation q) × (markedSpineCx q).E) × Bool)  :=
   (rootedCappedFullEdge q z.1.1 z.1.2, z.2)
 
+variable (g : PresGroup (cappedSpinePresentation q))
 /-- Comparison of an oriented lifted edge, including reverse traversal. -/
-theorem rootedCapped_liftGerm (g : PresGroup (cappedSpinePresentation q))
+theorem rootedCapped_liftGerm 
     (eb : (markedSpineCx q).E × Bool) :
     rootedCappedEdgeGerm q
       (SpanningTree.liftGerm (cappedSpineTree q) (relSub (cappedSpinePresentation q)) g eb) =
@@ -41,17 +36,13 @@ theorem rootedCapped_liftGerm (g : PresGroup (cappedSpinePresentation q))
           rootedCappedFullVertex q
             (g * QuotientGroup.mk (SpanningTree.germWord (markedSpineTree q) (e, false)))
             ((markedSpineCx q).src e) := by
-        simpa only [mapPath, List.map_cons, List.map_nil, extendList_cons, extendList_nil,
-          SpanningTree.pathWord_cons, SpanningTree.pathWord_nil, mul_one, germSrc, germTgt, ite_false, Bool.false_eq_true] using h
+        aesop (add simp [FiniteChains.Comb.SpanningTree.pathWord_cons])
       apply Prod.ext
-      · apply Subtype.ext
-        apply Prod.ext
-        · exact he.symm
-        · rfl
+      · aesop
       · rfl
 
 /-- The comparison sends the entire genuine tree-cover lift to the actual path-class lift. -/
-theorem rootedCapped_liftPath (g : PresGroup (cappedSpinePresentation q))
+theorem rootedCapped_liftPath 
     {a b : (markedSpineCx q).V} {p : List ((markedSpineCx q).E × Bool)}
     (hp : IsPath (markedSpineCx q).src (markedSpineCx q).tgt p a b) :
     (SpanningTree.liftK (cappedSpineTree q) (relSub (cappedSpinePresentation q)) p g).map

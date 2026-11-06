@@ -1,11 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresentationWordTopologicalChains
-
-@[expose] public section
+import RequestProject.PresentationWordTopologicalChains
 
 namespace FiniteChains.PresModel
-open Comb
+
 variable {α J : ℕ → Type}
 
 /-- Carry the chosen padding generator along the given generator inclusions. -/
@@ -20,9 +18,7 @@ variable [∀ i, DecidableEq (α i)]
 
 /-- All nonempty word representatives and their literal compatibility are
 derived from the labelled group presentations, simultaneously at every stage. -/
-def canonicalPresentationStep (i : ℕ) :
-    PresWordEmbedding (presCanonicalWords (ρ i) (presentationMarkedGenerator f a i))
-      (presCanonicalWords (ρ (i + 1)) (presentationMarkedGenerator f a (i + 1))) :=
+def canonicalPresentationStep (i : ℕ)  :=
   canonicalPresWordEmbedding (ρ i) (ρ (i + 1)) (f i) (g i) (hr i)
     (presentationMarkedGenerator f a i)
 

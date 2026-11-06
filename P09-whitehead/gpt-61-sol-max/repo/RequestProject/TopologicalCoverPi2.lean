@@ -1,15 +1,11 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.Statement
-public import RequestProject.SquareBoundary
-public import Mathlib.Topology.Homotopy.Lifting
-
-@[expose] public section
+import RequestProject.Statement
+import RequestProject.SquareBoundary
+import Mathlib.Topology.Homotopy.Lifting
 
 /-! General topological covering/pi2 results moved unchanged from Solution. -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace Whitehead
@@ -19,24 +15,24 @@ open scoped unitInterval Topology
 theorem mapSquare_homotopic_iff_of_covering {E X : Type}
     [TopologicalSpace E] [TopologicalSpace X] (p : C(E, X))
     (hp : IsCoveringMap p) {e : E} (a b : GenLoop (Fin 2) E e) :
-    GenLoop.Homotopic (mapSquare p a) (mapSquare p b) ↔ GenLoop.Homotopic a b := by
-  exact (hp.homotopicRel_iff_comp (f₀ := a.1) (f₁ := b.1) (S := Cube.boundary (Fin 2))
+    GenLoop.Homotopic (mapSquare p a) (mapSquare p b) ↔ GenLoop.Homotopic a b := (hp.homotopicRel_iff_comp (f₀ := a.1) (f₁ := b.1) (S := Cube.boundary (Fin 2))
     ⟨fun _ => 0, ⟨0, Or.inl rfl⟩,
       (GenLoop.boundary a _ ⟨0, Or.inl rfl⟩).trans (GenLoop.boundary b _ ⟨0, Or.inl rfl⟩).symm⟩).symm
 
-theorem mapSquare_homotopic {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
+variable {X Y : Type}
+theorem mapSquare_homotopic  [TopologicalSpace X] [TopologicalSpace Y]
     (f : C(X, Y)) {x : X} {p q : GenLoop (Fin 2) X x}
     (h : GenLoop.Homotopic p q) : GenLoop.Homotopic (mapSquare f p) (mapSquare f q) :=
   h.comp_continuousMap f
 
-@[simp] theorem mapSquare_const {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
+@[simp] theorem mapSquare_const  [TopologicalSpace X] [TopologicalSpace Y]
     (f : C(X, Y)) (x : X) : mapSquare f (GenLoop.const (x := x)) = GenLoop.const := by
   apply GenLoop.ext
   intro t
   rfl
 
 /-- The continuous map induced on Mathlib's topological second homotopy quotient. -/
-def pi2Map {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
+def pi2Map  [TopologicalSpace X] [TopologicalSpace Y]
     (f : C(X, Y)) (x : X) : HomotopyGroup (Fin 2) X x → HomotopyGroup (Fin 2) Y (f x) :=
   Quotient.map (mapSquare f) (fun _ _ h => mapSquare_homotopic f h)
 
@@ -53,13 +49,13 @@ theorem exists_mapSquare_lift {E X : Type} [TopologicalSpace E] [TopologicalSpac
     ∃ a : GenLoop (Fin 2) E e, mapSquare p a = q := by
   let z : Fin 2 → I := fun _ => 0
   have hz : z ∈ Cube.boundary (Fin 2) := ⟨0, Or.inl rfl⟩
-  let H : C(I × (Fin 2 → I), X) := q.1.comp radialSquare
+  let H  := q.1.comp radialSquare
   have H0 : ∀ t, H (0, t) = p e := by
     intro t
     change q (fun i => 0 * t i) = p e
     simpa only [zero_mul] using GenLoop.boundary q z hz
   let F := hp.liftHomotopy H (ContinuousMap.const _ e) H0
-  let G : C((Fin 2 → I), E) := F.comp ⟨fun t => (1, t), continuous_const.prodMk continuous_id⟩
+  let G  := F.comp ⟨fun t => (1, t), continuous_const.prodMk continuous_id⟩
   have hG : ∀ t, p (G t) = q t := by
     intro t
     have he := congrFun (hp.liftHomotopy_lifts H (ContinuousMap.const _ e) H0) (1, t)
@@ -92,14 +88,11 @@ theorem exists_mapSquare_lift {E X : Type} [TopologicalSpace E] [TopologicalSpac
 theorem mapSquare_comp {X Y Z : Type} [TopologicalSpace X] [TopologicalSpace Y]
     [TopologicalSpace Z] (f : C(Y, Z)) (g : C(X, Y)) {x : X}
     (a : GenLoop (Fin 2) X x) :
-    mapSquare (f.comp g) a = mapSquare f (mapSquare g a) := by
-  apply GenLoop.ext
-  intro t
-  simp [mapSquare, ContinuousMap.comp_apply]
+    mapSquare (f.comp g) a = mapSquare f (mapSquare g a) := rfl
 
 /-- The square-map formulation in the challenge is exactly the zero-map condition on
 Mathlib's topological homotopy group, not an auxiliary algebraic substitute. -/
-theorem killsPi2_iff {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
+theorem killsPi2_iff  [TopologicalSpace X] [TopologicalSpace Y]
     (f : C(X, Y)) : KillsPi2 f ↔ ∀ x z, pi2Map f x z = 1 := by
   constructor
   · intro h x z
@@ -116,13 +109,10 @@ theorem killsPi2_covering_postcomp_iff {Y E X : Type}
   constructor
   · intro h y a
     apply (mapSquare_homotopic_iff_of_covering p hp (mapSquare f a) GenLoop.const).mp
-    have := h y a
-    simp only [ContinuousMap.comp_apply, mapSquare_comp] at this
-    simpa only [mapSquare_const] using this
+    aesop
   · intro h y a
     have he := mapSquare_homotopic p (h y a)
-    simp only [← mapSquare_comp, ← ContinuousMap.comp_apply] at he
-    simpa only [mapSquare_const] using he
+    assumption
 
 /-- Surjective coverings also reflect the zero-map condition when precomposed. -/
 theorem killsPi2_covering_precomp_iff {E X Y : Type}
@@ -133,9 +123,7 @@ theorem killsPi2_covering_precomp_iff {E X Y : Type}
   · intro h x q
     obtain ⟨e, rfl⟩ := hs x
     obtain ⟨a, ha⟩ := exists_mapSquare_lift p hp e q
-    have he := h e a
-    change GenLoop.Homotopic (mapSquare f (mapSquare p a)) GenLoop.const at he
-    rwa [ha] at he
+    aesop
   · intro h e a
     exact h (p e) (mapSquare p a)
 

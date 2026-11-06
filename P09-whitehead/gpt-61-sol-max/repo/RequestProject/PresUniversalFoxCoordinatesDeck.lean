@@ -1,3 +1,2 @@
-module
-public import RequestProject.PresUniversalFoxKernelEquiv
-public import RequestProject.PresUniversalGroupCoordinatesDeck
+import RequestProject.PresUniversalFoxKernelEquiv
+import RequestProject.PresUniversalGroupCoordinatesDeck

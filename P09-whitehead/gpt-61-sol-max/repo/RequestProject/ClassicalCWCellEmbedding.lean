@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalCellAttachmentTwoComplex
-public import RequestProject.TopologicalPi2HomotopyTransport
-
-@[expose] public section
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalCellAttachmentTwoComplex
+import RequestProject.TopologicalPi2HomotopyTransport
 
 /-! Closed embeddings retaining the actual open cells of classical CW
 complexes. Compatible embeddings into a final stage give the exact chain
@@ -42,9 +40,10 @@ def comp (g : CWCellEmbedding L M) (f : CWCellEmbedding K L) : CWCellEmbedding K
     rw [Set.image_comp, f.openCell_image, g.openCell_image]
     rfl
 
+variable (e : CWCellEmbedding K L)
 /-- The image has the CW subcomplex structure specified by the actual
 cell images, not by a separately chosen CW decomposition of the range. -/
-def imageSubcomplex (e : CWCellEmbedding K L) : CWComplex.Subcomplex (Set.univ : Set L) where
+def imageSubcomplex  : CWComplex.Subcomplex (Set.univ : Set L) where
   carrier := Set.range e.map
   I m := Set.range (e.cellIndex m)
   closed' := e.closedEmbedding.isClosed_range
@@ -68,24 +67,22 @@ def imageSubcomplex (e : CWCellEmbedding K L) : CWComplex.Subcomplex (Set.univ :
       rw [← e.openCell_image]
       exact ⟨x, hj, rfl⟩
 
-def imageHomeomorph (e : CWCellEmbedding K L) : K ≃ₜ (e.imageSubcomplex : Set L) :=
+def imageHomeomorph   :=
   e.closedEmbedding.isEmbedding.toHomeomorph
 
-@[simp] theorem imageHomeomorph_val (e : CWCellEmbedding K L) (x : K) :
-    (e.imageHomeomorph x).val = e.map x := rfl
 
-def imageCellEquiv (e : CWCellEmbedding K L) (m : ℕ) :
+
+def imageCellEquiv  (m : ℕ) :
     RelCWComplex.cell (Set.univ : Set K) m ≃
       {j : RelCWComplex.cell (Set.univ : Set L) m // j ∈ e.imageSubcomplex.I m} :=
   Equiv.ofInjective (e.cellIndex m) (e.cellIndex m).injective
 
-theorem initialIdentification (e : CWCellEmbedding K L) :
+theorem initialIdentification  :
     InitialIdentification e.imageSubcomplex e.imageHomeomorph := by
   intro m
   exact ⟨e.imageCellEquiv m, e.openCell_image m⟩
 
-theorem image_connectedSpace (e : CWCellEmbedding K L) :
-    ConnectedSpace (e.imageSubcomplex : Set L) :=
+abbrev image_connectedSpace   :=
   e.imageHomeomorph.surjective.connectedSpace e.imageHomeomorph.continuous
 
 end CWCellEmbedding

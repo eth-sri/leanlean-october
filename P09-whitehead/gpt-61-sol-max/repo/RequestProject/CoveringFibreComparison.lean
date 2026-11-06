@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib.Topology.Homotopy.Lifting
-
-@[expose] public section
+import Mathlib.Topology.Homotopy.Lifting
 
 /-! A continuous map over a covering projection is a homeomorphism if
 its fibre map is bijective at points meeting every path component.
@@ -10,8 +8,8 @@ All transport is actual covering monodromy. Unverified source. -/
 
 noncomputable section
 namespace FiniteChains.CoveringComparison
-open Topology
-open scoped unitInterval Classical
+
+
 variable {Y E X : Type} [TopologicalSpace Y] [TopologicalSpace E] [TopologicalSpace X]
   (r : C(Y, X)) (p : C(E, X)) (hr : IsCoveringMap r) (hp : IsCoveringMap p)
   (f : C(Y, E)) (hover : ∀ y, p (f y) = r y)
@@ -57,11 +55,13 @@ theorem fibreMap_bijective_of_joined {x x' : X} (hxx' : Joined x x')
     refine ⟨y, hb'.1 ?_⟩
     rw [← hs, hy']
 
+variable (hfib : ∀ x, Function.Bijective (fibreMap r p f hover x))
+include hfib in
 theorem bijective_of_fibrewise
-    (hfib : ∀ x, Function.Bijective (fibreMap r p f hover x)) : Function.Bijective f := by
+     : Function.Bijective f := by
   constructor
   · intro y z hyz
-    have hz : r z = r y := (hover z).symm.trans
+    have hz  := (hover z).symm.trans
       ((congrArg p hyz).symm.trans (hover y))
     exact congrArg Subtype.val ((hfib (r y)).1
       (show fibreMap r p f hover (r y) ⟨y, rfl⟩ =
@@ -71,13 +71,14 @@ theorem bijective_of_fibrewise
     exact ⟨y.val, congrArg Subtype.val hy⟩
 
 include hr hp hover in
-theorem isLocalHomeomorph : IsLocalHomeomorph f := by
-  have h : (p ∘ f : Y → X) = r := funext hover
-  have hc : IsLocalHomeomorph (p ∘ f) := by simpa only [h] using hr.isLocalHomeomorph
-  exact hc.of_comp hp.isLocalHomeomorph f.continuous
+abbrev isLocalHomeomorph  :=
+  have h := funext hover;
+  have hc := Eq.mpr (id (congrArg IsLocalHomeomorph h)) (IsCoveringMap.isLocalHomeomorph hr);
+  IsLocalHomeomorph.of_comp hc (IsCoveringMap.isLocalHomeomorph hp) (ContinuousMap.continuous f)
 
+include hfib in
 def homeomorphOfFibrewise
-    (hfib : ∀ x, Function.Bijective (fibreMap r p f hover x)) : Y ≃ₜ E :=
+      :=
   (isLocalHomeomorph r p hr hp f hover).toHomeomorphOfBijective
     (bijective_of_fibrewise r p f hover hfib)
 

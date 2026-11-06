@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib.Algebra.MonoidAlgebra.Basic
-
-@[expose] public section
+import Mathlib.Algebra.MonoidAlgebra.Basic
 
 namespace MonoidAlgebra
 
@@ -15,7 +13,6 @@ theorem mapDomain_comp (f : M → N) (g : N → P) (x : MonoidAlgebra R M) :
   exact Finsupp.mapDomain_comp
 
 @[simp] theorem mapDomain_id (x : MonoidAlgebra R M) : mapDomain id x = x := by
-  apply coeff_injective
-  exact Finsupp.mapDomain_id
+  aesop
 
 end MonoidAlgebra

@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CylinderCoverCollapsedCircle
-
-@[expose] public section
+import RequestProject.CylinderCoverCollapsedCircle
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool)) (j : J)
   (f : P → CylBase w) (hf : IsPosetCover f) (m : RelatorCircle w j → P)
   (hm : StrictMono m) (hp : ∀ x, f (m x) = cylOuter (aHom w) x.val)
@@ -27,7 +24,6 @@ theorem cylinderCoverCollapsedCircle_coordinates :
           Finsupp.single (roseCoverMidpointEdge (cylinderCoverRoseEnd w f)
             (cylinderCoverRoseEnd_isPosetCover w f hf)
             (cylinderCoverCollapsedLetterMidpoint w j f hf m hp k)) 1 := by
-  classical
   change roseCoverGeneratorCoordinates (cylinderCoverRoseEnd w f)
     (cylinderCoverRoseEnd_isPosetCover w f hf)
       (cylinderCoverCollapsedRoseChain w f hf

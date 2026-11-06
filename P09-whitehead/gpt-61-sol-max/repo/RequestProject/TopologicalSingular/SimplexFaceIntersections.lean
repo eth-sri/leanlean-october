@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.TriangleBasedNormalization
-
-@[expose] public section
+import RequestProject.TopologicalSingular.TriangleBasedNormalization
 
 namespace FiniteChains.TopologicalSingular
-open scoped unitInterval Topology
-universe u
+
 variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 
 /-- The two orders of inserting the missing coordinates give the same face. -/
@@ -28,7 +25,7 @@ theorem singular_double_face_swap (tau : Simplex X (n + 2))
     face k (face i tau) = face (k.predAbove i) (face (i.succAbove k) tau) := by
   apply ContinuousMap.ext
   intro q
-  simp only [face_apply, simplex_double_face_swap i k q]
+  simp [face_apply, simplex_double_face_swap i k q]
 
 /-- A point in two different faces comes from one common codimension-two face,
 with a single parameter in the lower-dimensional simplex. -/
@@ -43,8 +40,7 @@ theorem simplex_face_intersection_factor (i j : Fin (n + 3)) (hij : i ≠ j)
           stdSimplex.map (SimplexCategory.δ j) (stdSimplex.map (SimplexCategory.δ l) a) := by
   obtain ⟨k, hk⟩ := Fin.exists_succAbove_eq hij.symm
   have hz : z.val k = 0 := by
-    rw [← simplex_face_coordinate_succAbove i z k, hk, h]
-    exact simplex_face_coordinate_zero j w
+    grind [FiniteChains.TopologicalSingular.simplex_face_coordinate_succAbove, FiniteChains.TopologicalSingular.simplex_face_coordinate_zero]
   obtain ⟨q, hq⟩ := domain_zero_coordinate_face z k hz
   have he (a : Domain n) := simplex_double_face_swap i k a
   rw [hk] at he

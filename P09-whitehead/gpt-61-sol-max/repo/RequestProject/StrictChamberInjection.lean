@@ -1,9 +1,5 @@
-module
-
-public import RequestProject.StrictOrderComplex
-public import RequestProject.ChamberQuotientCover
-
-@[expose] public section
+import RequestProject.StrictOrderComplex
+import RequestProject.ChamberQuotientCover
 
 /-! The chamber group injection in the genuine, nondegenerate simplicial model. -/
 

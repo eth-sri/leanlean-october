@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.NerveRelativeGluing
-
-@[expose] public section
+import RequestProject.NerveRelativeGluing
 
 /-! A concrete upper order homotopy reflects fillings along its projection. -/
 namespace FiniteChains.Nerve
-universe u
 variable {P Q : Type u} [Preorder P] [Preorder Q]
 
 /-- A filling of the projected cycle pulls back along the section; the prism

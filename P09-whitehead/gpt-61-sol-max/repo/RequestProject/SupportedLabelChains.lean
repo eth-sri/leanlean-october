@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CellComplex
-
-@[expose] public section
+import RequestProject.CellComplex
 
 /-! A finitely supported chain can be split by incidence labels.  The
 boundary identity below requires homogeneity only at cells in its actual
@@ -12,9 +10,10 @@ Unverified source. -/
 noncomputable section
 open scoped Classical
 namespace FiniteChains.Comb
-universe u v w
 
-theorem finsupp_filter_of_constant_label {I : Type u} {J : Type v}
+variable {I : Type u}
+  {J : Type v}
+theorem finsupp_filter_of_constant_label  
     (label : I → J) (j : J) (c : I →₀ ℤ) (k : J)
     (hc : ∀ i, c i ≠ 0 → label i = j) :
     c.filter (fun i => label i = k) = if j = k then c else 0 := by
@@ -24,13 +23,13 @@ theorem finsupp_filter_of_constant_label {I : Type u} {J : Type v}
     rw [if_pos rfl]
     by_cases hi : c i = 0
     · simp [Finsupp.filter_apply, hi]
-    · simp [hc i hi]
+    · simp [*]
   · rw [if_neg hjk]
     by_cases hi : c i = 0
     · simp [Finsupp.filter_apply, hi]
-    · simp [hc i hi, hjk]
+    · simp [*]
 
-theorem supported_label_boundary {I : Type u} {J : Type v} {T : Type w}
+theorem supported_label_boundary   {T : Type w}
     (d : (I →₀ ℤ) →ₗ[ℤ] (J →₀ ℤ)) (labelI : I → T) (labelJ : J → T)
     (old : I → Prop)
     (hd : ∀ i, old i → ∀ j, d (Finsupp.single i 1) j ≠ 0 → labelJ j = labelI i)
@@ -49,8 +48,8 @@ theorem supported_label_boundary {I : Type u} {J : Type v} {T : Type w}
       simp [hz]
     rw [finsupp_filter_of_constant_label labelJ (labelI i) _ k hm]
     by_cases hik : labelI i = k
-    · rw [Finsupp.filter_single_of_pos (fun i => labelI i = k) hik, if_pos hik]
-    · rw [Finsupp.filter_single_of_neg (fun i => labelI i = k) hik, if_neg hik, map_zero]
+    · simp_all
+    · simp_all
   calc
     d (c.filter (fun i => labelI i = k)) =
         d ((∑ i ∈ c.support, Finsupp.single i (c i)).filter (fun i => labelI i = k)) := by
@@ -65,7 +64,7 @@ theorem supported_label_boundary {I : Type u} {J : Type v} {T : Type w}
           rw [← Finsupp.filter_sum, ← map_sum]
           rw [show (∑ i ∈ c.support, Finsupp.single i (c i)) = c from c.sum_single]
 
-theorem finsupp_sum_label_filters {I : Type u} {J : Type v}
+theorem finsupp_sum_label_filters  
     (label : I → J) (c : I →₀ ℤ) :
     ∑ j ∈ c.support.image label, c.filter (fun i => label i = j) = c := by
   ext i

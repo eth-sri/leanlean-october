@@ -1,18 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderPosetCoverThree
-public import RequestProject.SimplyConnectedCoverEquiv
-
-@[expose] public section
+import RequestProject.OrderPosetCoverThree
+import RequestProject.SimplyConnectedCoverEquiv
 
 /-! The actual lifted three-simplices of the path-class universal cover of an order nerve. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 /-- A lifted three-simplex is a simplex and a path class at its first vertex. -/
@@ -21,25 +17,26 @@ def UOrdTet (P : Type u) [PartialOrder P] (a : P) :=
 
 variable {a : P}
 
+  (t : UOrdTet P a)
 /-- The lifted first face starts at the next vertex of the simplex. -/
-noncomputable def uOrdTetFace0 (t : UOrdTet P a) : UF (orderCx P) a :=
+noncomputable def uOrdTetFace0  : UF (orderCx P) a :=
   ⟨(extend (ordPos t.1.2.2.1) t.1.1,
     ⟨(t.1.2.1.2.1, t.1.2.1.2.2.1, t.1.2.1.2.2.2), t.1.2.2.2⟩),
     endV_extend (eb := ordPos t.1.2.2.1) t.2⟩
 
-def uOrdTetFace1 (t : UOrdTet P a) : UF (orderCx P) a :=
+def uOrdTetFace1  : UF (orderCx P) a :=
   ⟨(t.1.1, ⟨(t.1.2.1.1, t.1.2.1.2.2.1, t.1.2.1.2.2.2),
     t.1.2.2.1.trans t.1.2.2.2.1, t.1.2.2.2.2⟩), t.2⟩
 
-def uOrdTetFace2 (t : UOrdTet P a) : UF (orderCx P) a :=
+def uOrdTetFace2  : UF (orderCx P) a :=
   ⟨(t.1.1, ⟨(t.1.2.1.1, t.1.2.1.2.1, t.1.2.1.2.2.2),
     t.1.2.2.1, t.1.2.2.2.1.trans t.1.2.2.2.2⟩), t.2⟩
 
-def uOrdTetFace3 (t : UOrdTet P a) : UF (orderCx P) a :=
+def uOrdTetFace3  : UF (orderCx P) a :=
   ⟨(t.1.1, ⟨(t.1.2.1.1, t.1.2.1.2.1, t.1.2.1.2.2.1),
     t.1.2.2.1, t.1.2.2.2.1⟩), t.2⟩
 
-noncomputable def uOrdTetBoundary (t : UOrdTet P a) : UF (orderCx P) a →₀ ℤ :=
+noncomputable def uOrdTetBoundary  : UF (orderCx P) a →₀ ℤ :=
   Finsupp.single (uOrdTetFace0 t) 1 - Finsupp.single (uOrdTetFace1 t) 1 +
     Finsupp.single (uOrdTetFace2 t) 1 - Finsupp.single (uOrdTetFace3 t) 1
 
@@ -48,30 +45,26 @@ noncomputable def uOrdBoundary3 : (UOrdTet P a →₀ ℤ) →ₗ[ℤ] (UF (orde
 
 variable {f : P → Q} (hf : IsPosetCover f) (d₀ : P)
 
+variable (t : UOrdTet Q (f d₀))
 /-- The three-cell lift into a simply connected poset covering, extending the canonical
  path-class covering map on vertices and faces. -/
-noncomputable def coveredOrdTet (t : UOrdTet Q (f d₀)) : OrdTet P :=
+noncomputable def coveredOrdTet   :=
   Classical.choose (hf.existsUnique_tetLift t.1.2
     (@coverV (orderCx P) (orderCx Q) (orderCxMap f hf.mono)
       (f d₀) d₀ (isCovering_orderCxMap hf) rfl t.1.1)
     (by
-      have h := @onV_coverV (orderCx P) (orderCx Q) (orderCxMap f hf.mono)
-        (f d₀) d₀ (isCovering_orderCxMap hf) rfl t.1.1
-      exact h.trans t.2))
+      grind [onV_coverV, orderCxMap]))
 
-theorem coveredOrdTet_spec (t : UOrdTet Q (f d₀)) :
+theorem coveredOrdTet_spec  :
     (coveredOrdTet hf d₀ t).1.1 =
       @coverV (orderCx P) (orderCx Q) (orderCxMap f hf.mono)
         (f d₀) d₀ (isCovering_orderCxMap hf) rfl t.1.1 ∧
     ordTetMap f hf.mono (coveredOrdTet hf d₀ t) = t.1.2 := by
-  unfold coveredOrdTet
-  exact (Classical.choose_spec (hf.existsUnique_tetLift t.1.2
-    (@coverV (orderCx P) (orderCx Q) (orderCxMap f hf.mono)
-      (f d₀) d₀ (isCovering_orderCxMap hf) rfl t.1.1)
-    (by exact (@onV_coverV (orderCx P) (orderCx Q) (orderCxMap f hf.mono)
-      (f d₀) d₀ (isCovering_orderCxMap hf) rfl t.1.1).trans t.2))).1
+  grind [coveredOrdTet]
 
-theorem coveredOrdTet_surjective (hconn : IsConnected (orderCx P)) :
+variable (hconn : IsConnected (orderCx P))
+include hconn in
+theorem coveredOrdTet_surjective  :
     Function.Surjective (coveredOrdTet hf d₀) := by
   intro t
   obtain ⟨v, hv⟩ := coverV_surjective (d₀ := d₀) (isCovering_orderCxMap hf) hconn t.1.1
@@ -94,7 +87,7 @@ def ordTetFace2 (t : OrdTet P) : OrdTri P :=
 def ordTetFace3 (t : OrdTet P) : OrdTri P :=
   ⟨(t.1.1, t.1.2.1, t.1.2.2.1), t.2.1, t.2.2.1⟩
 
-theorem coverF_uOrdTetFace1 (t : UOrdTet Q (f d₀)) :
+theorem coverF_uOrdTetFace1  :
     coverF (isCovering_orderCxMap hf) (d₀ := d₀) (x₀ := f d₀) rfl (uOrdTetFace1 t) =
       ordTetFace1 (coveredOrdTet hf d₀ t) := by
   apply coverF_eq_of_base_and_image (isCovering_orderCxMap hf)
@@ -104,7 +97,7 @@ theorem coverF_uOrdTetFace1 (t : UOrdTet Q (f d₀)) :
     rfl
   · exact (coveredOrdTet_spec hf d₀ t).1
 
-theorem coverF_uOrdTetFace2 (t : UOrdTet Q (f d₀)) :
+theorem coverF_uOrdTetFace2  :
     coverF (isCovering_orderCxMap hf) (d₀ := d₀) (x₀ := f d₀) rfl (uOrdTetFace2 t) =
       ordTetFace2 (coveredOrdTet hf d₀ t) := by
   apply coverF_eq_of_base_and_image (isCovering_orderCxMap hf)
@@ -114,7 +107,7 @@ theorem coverF_uOrdTetFace2 (t : UOrdTet Q (f d₀)) :
     rfl
   · exact (coveredOrdTet_spec hf d₀ t).1
 
-theorem coverF_uOrdTetFace3 (t : UOrdTet Q (f d₀)) :
+theorem coverF_uOrdTetFace3  :
     coverF (isCovering_orderCxMap hf) (d₀ := d₀) (x₀ := f d₀) rfl (uOrdTetFace3 t) =
       ordTetFace3 (coveredOrdTet hf d₀ t) := by
   apply coverF_eq_of_base_and_image (isCovering_orderCxMap hf)
@@ -124,7 +117,7 @@ theorem coverF_uOrdTetFace3 (t : UOrdTet Q (f d₀)) :
     rfl
   · exact (coveredOrdTet_spec hf d₀ t).1
 
-theorem coverF_uOrdTetFace0 (t : UOrdTet Q (f d₀)) :
+theorem coverF_uOrdTetFace0  :
     coverF (isCovering_orderCxMap hf) (d₀ := d₀) (x₀ := f d₀) rfl (uOrdTetFace0 t) =
       ordTetFace0 (coveredOrdTet hf d₀ t) := by
   apply coverF_eq_of_base_and_image (isCovering_orderCxMap hf)
@@ -142,7 +135,7 @@ theorem coverF_uOrdTetFace0 (t : UOrdTet Q (f d₀)) :
 
 /-- The canonical cover map carries the full lifted three-boundary to the actual
  three-boundary upstairs, face by face. -/
-theorem coverF_uOrdTetBoundary (t : UOrdTet Q (f d₀)) :
+theorem coverF_uOrdTetBoundary  :
     Finsupp.mapDomain (coverF (isCovering_orderCxMap hf) (d₀ := d₀) (x₀ := f d₀) rfl)
       (uOrdTetBoundary t) = ordTetBoundary (coveredOrdTet hf d₀ t) := by
   have hsub (x y : UF (orderCx Q) (f d₀) →₀ ℤ) :
@@ -162,7 +155,7 @@ theorem coverHom_uOrdBoundary3 (c : UOrdTet Q (f d₀) →₀ ℤ) :
     ordBoundary3 (Finsupp.mapDomain (coveredOrdTet hf d₀) c) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => simp only [map_add, Finsupp.mapDomain_add, hc, hd]
+  | add c d hc hd => simp_all [Finsupp.mapDomain_add]
   | single t n =>
     change Finsupp.mapDomain
       (coverF (isCovering_orderCxMap hf) (d₀ := d₀) (x₀ := f d₀) rfl)
@@ -170,10 +163,11 @@ theorem coverHom_uOrdBoundary3 (c : UOrdTet Q (f d₀) →₀ ℤ) :
     simp only [uOrdBoundary3, Finsupp.linearCombination_single, Finsupp.mapDomain_smul,
       coverF_uOrdTetBoundary hf d₀ t, Finsupp.mapDomain_single, ordBoundary3]
 
+include hconn in
 include hf in
 /-- Actual full-nerve degree-two exactness transports to the path-class universal cover
  through the constructed covering comparison. -/
-theorem exists_uOrdBoundary3_of_cover_exact (hconn : IsConnected (orderCx P))
+theorem exists_uOrdBoundary3_of_cover_exact 
     (hsc : SimplyConnected (orderCx P))
     (hfill : ∀ z : OrdTri P →₀ ℤ, bdry2 (orderCx P) z = 0 →
       ∃ y : OrdTet P →₀ ℤ, ordBoundary3 y = z)

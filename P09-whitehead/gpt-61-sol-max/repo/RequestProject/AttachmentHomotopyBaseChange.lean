@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.AttachingHomotopyEquiv
-public import RequestProject.HomotopyEquivCancellation
-
-@[expose] public section
+import RequestProject.AttachingHomotopyEquiv
+import RequestProject.HomotopyEquivCancellation
 
 /-! Homotopy invariance of actual cell attachments under change of their
 base. Both required homotopy extension properties are supplied for disks
@@ -14,7 +12,6 @@ noncomputable section
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
 
-universe u
 variable {D P K : Type u} [TopologicalSpace D] [TopologicalSpace P] [TopologicalSpace K]
 
 def attachmentBaseMapEquivOfHomotopicId (S : Set D) (hS : IsClosed S)
@@ -23,15 +20,14 @@ def attachmentBaseMapEquivOfHomotopicId (S : Set D) (hS : IsClosed S)
     (a : C(S, P)) (h : C(P, P))
     (H : ContinuousMap.Homotopy (ContinuousMap.id P) h) :
     ContinuousMap.HomotopyEquiv (Space a Subtype.val) (Space (h ∘ a) Subtype.val) := by
-  let Hatt : a.Homotopy (h.comp a) := H.compContinuousMap a
+  let Hatt  := H.compContinuousMap a
   let C := (attachingHomotopyEquiv S hS hext hfull a (h.comp a) Hatt).symm
   let F := attachmentBaseMap a Subtype.val Subtype.val_injective h
   let L := attachingDiskExtension S hext a (h.comp a) Hatt
   let HOld : C(I × P, Space a Subtype.val) :=
     ⟨fun tp => old a Subtype.val (H tp), (old_continuous _ _).comp H.continuous⟩
   have hcompat : ∀ t b, HOld (t, a b) = L (t, b.val) := by
-    intro t b
-    exact (attachingDiskExtension_side S hext a (h.comp a) Hatt t b).symm
+    solve_by_elim [FiniteChains.RelativeAttachment.attachingDiskExtension_side, symm]
   let T := attachmentHomotopyPasting a Subtype.val HOld L hcompat
   have HT : ContinuousMap.Homotopy (ContinuousMap.id (Space a Subtype.val))
       (C.toFun.comp F) := {
@@ -58,13 +54,7 @@ def attachmentBaseMapEquivOfHomotopicId (S : Set D) (hS : IsClosed S)
         exact (attachingBackwardMap_cell S hext a (h.comp a) Hatt d).symm }
   exact ContinuousMap.HomotopyEquiv.ofHomotopicSection C F ⟨HT.symm⟩
 
-@[simp] theorem attachmentBaseMapEquivOfHomotopicId_toFun (S : Set D) (hS : IsClosed S)
-    (hext : HasHomotopyExtension (Subtype.val : S → D))
-    (hfull : HasHomotopyExtension (Subtype.val : FullCylinderBoundary S → I × D))
-    (a : C(S, P)) (h : C(P, P))
-    (H : ContinuousMap.Homotopy (ContinuousMap.id P) h) :
-    (attachmentBaseMapEquivOfHomotopicId S hS hext hfull a h H).toFun =
-      attachmentBaseMap a Subtype.val Subtype.val_injective h := rfl
+
 
 /-- Change of the base by an actual homotopy equivalence induces an actual
 homotopy equivalence on the attached spaces. Its forward map is precisely
@@ -82,25 +72,15 @@ def attachmentBaseChangeHomotopyEquiv (S : Set D) (hS : IsClosed S)
     (e.invFun.comp e.toFun) (Classical.choice e.left_inv).symm
   let D := attachmentBaseMapEquivOfHomotopicId S hS hext hfull (e.toFun.comp a)
     (e.toFun.comp e.invFun) (Classical.choice e.right_inv).symm
-  have hE : E.toFun = g.comp f :=
+  have hE  :=
     (attachmentBaseMap_comp a Subtype.val Subtype.val_injective e.toFun e.invFun).symm
-  have hD : D.toFun = h.comp g :=
+  have hD  :=
     (attachmentBaseMap_comp (e.toFun ∘ a) Subtype.val
       Subtype.val_injective e.invFun e.toFun).symm
   exact ContinuousMap.HomotopyEquiv.twoOfSixLeft f g h E hE D hD
 
-@[simp] theorem attachmentBaseChangeHomotopyEquiv_toFun (S : Set D) (hS : IsClosed S)
-    (hext : HasHomotopyExtension (Subtype.val : S → D))
-    (hfull : HasHomotopyExtension (Subtype.val : FullCylinderBoundary S → I × D))
-    (a : C(S, P)) (e : ContinuousMap.HomotopyEquiv P K) :
-    (attachmentBaseChangeHomotopyEquiv S hS hext hfull a e).toFun =
-      attachmentBaseMap a Subtype.val Subtype.val_injective e.toFun := rfl
 
-@[simp] theorem attachmentBaseChangeHomotopyEquiv_old (S : Set D) (hS : IsClosed S)
-    (hext : HasHomotopyExtension (Subtype.val : S → D))
-    (hfull : HasHomotopyExtension (Subtype.val : FullCylinderBoundary S → I × D))
-    (a : C(S, P)) (e : ContinuousMap.HomotopyEquiv P K) (p : P) :
-    attachmentBaseChangeHomotopyEquiv S hS hext hfull a e (old a Subtype.val p) =
-      old (e.toFun ∘ a) Subtype.val (e p) := rfl
+
+
 
 end FiniteChains.RelativeAttachment

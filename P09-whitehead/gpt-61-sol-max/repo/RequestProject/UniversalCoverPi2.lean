@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CoverComplexPres
-
-@[expose] public section
+import RequestProject.CoverComplexPres
 
 /-!
 # The universal cover of a presentation complex and its two-cycles
@@ -20,15 +18,14 @@ condition assumed of a chain of presentation complexes (the inclusions are zero 
 is exactly the vanishing of the image of such a cycle.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
-open MonoidAlgebra
 
-universe u
+
+
 
 variable {α : Type u} [Fintype α] [DecidableEq α]
-variable {J : Type u} [Fintype J] [DecidableEq J] (ρ : J → FreeGroup α)
+  {J : Type u} [Fintype J] [DecidableEq J] (ρ : J → FreeGroup α)
 
 omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] in
 theorem rel_mem_relSub (j : J) : ρ j ∈ relSub ρ :=
@@ -36,7 +33,7 @@ theorem rel_mem_relSub (j : J) : ρ j ∈ relSub ρ :=
 
 /-- The universal cover of the presentation complex: the cover attached to the relator
 subgroup, with deck group `G = π₁(K)`. -/
-noncomputable abbrev univCover : Complex2.{u} :=
+noncomputable abbrev univCover  :=
   coverComplex (relSub ρ) ρ (rel_mem_relSub ρ)
 
 /-- **The two-cycles of the universal cover.**  A cellular two-chain of `K̃` is a cycle
@@ -48,7 +45,7 @@ theorem univCover_bdry2_eq_zero_iff (u : ((FreeGroup α ⧸ relSub ρ) × J) →
   constructor
   · intro h
     have h' : _root_.FiniteChains.bdry2 (relSub ρ) ρ (coords (relSub ρ) J u) = 0 := by
-      rw [coverComplex_bdry2 (rel_mem_relSub ρ), h, map_zero]
+      classical simp_all [FiniteChains.relSub_normal, FiniteChains.Comb.rel_mem_relSub, FiniteChains.Comb.coverComplex_bdry2]
     intro i
     have := congrFun h' i
     simpa [_root_.FiniteChains.bdry2, foxMatrixPres, proj_eq_quotRingHom] using this
@@ -61,5 +58,5 @@ theorem univCover_bdry2_eq_zero_iff (u : ((FreeGroup α ⧸ relSub ρ) × J) →
     rw [h']
     exact (map_zero _).symm
 
-end Comb
-end FiniteChains
+end FiniteChains.Comb
+

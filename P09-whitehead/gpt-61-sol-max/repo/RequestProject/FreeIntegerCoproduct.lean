@@ -1,14 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib.Algebra.Category.ModuleCat.Adjunctions
-public import Mathlib.Algebra.Category.ModuleCat.Products
-public import Mathlib.LinearAlgebra.DFinsupp
-public import Mathlib.Algebra.Category.ModuleCat.Colimits
+import Mathlib.Algebra.Category.ModuleCat.Adjunctions
+import Mathlib.Algebra.Category.ModuleCat.Products
+import Mathlib.LinearAlgebra.DFinsupp
+import Mathlib.Algebra.Category.ModuleCat.Colimits
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
@@ -57,8 +53,7 @@ theorem freeIntegerCoproductIso_inv_natural {ι κ : Type} (f : ι → κ) :
     Finsupp.mapDomain_single]
 
 /-- The coefficient comparison is a genuine natural isomorphism of functors. -/
-noncomputable def freeIntegerCoproductNatIso :
-    ModuleCat.free ℤ ≅ sigmaConst.obj (ModuleCat.of ℤ ℤ) :=
+noncomputable def freeIntegerCoproductNatIso  :=
   NatIso.ofComponents freeIntegerCoproductIso (by
     intro ι κ f
     apply (cancel_mono (freeIntegerCoproductIso κ).inv).mp

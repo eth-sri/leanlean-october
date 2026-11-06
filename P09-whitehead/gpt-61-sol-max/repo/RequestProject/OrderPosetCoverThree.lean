@@ -1,18 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderPosetCovering
-public import RequestProject.OrderNormalizationHomotopy
-
-@[expose] public section
+import RequestProject.OrderPosetCovering
+import RequestProject.OrderNormalizationHomotopy
 
 /-! Three-simplex maps and their unique lifts through actual poset coverings. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 
 /-- The three-cell map of the full nerve, without truncating at the two-skeleton. -/
@@ -30,15 +26,15 @@ theorem existsUnique_tetLift (s : OrdTet Q) (a : P) (ha : f a = s.1.1) :
   obtain ⟨c, ⟨hbc, hfc⟩, -⟩ := hf.up b s.1.2.2.1 (by rw [hfb]; exact s.2.2.1)
   obtain ⟨d, ⟨hcd, hfd⟩, -⟩ := hf.up c s.1.2.2.2 (by rw [hfc]; exact s.2.2.2)
   refine ⟨⟨(a, b, c, d), hab, hbc, hcd⟩, ⟨rfl, ?_⟩, ?_⟩
-  · exact Subtype.ext (Prod.ext ha (Prod.ext hfb (Prod.ext hfc hfd)))
+  · apply_rules [Subtype.ext, Prod.ext]
   · intro t ht
-    have hb : t.1.2.1 = b := hf.up_inj (by rw [← ht.1]; exact t.2.1) hab
+    have hb  := hf.up_inj (by rw [← ht.1]; exact t.2.1) hab
       ((congrArg (fun s : OrdTet Q => s.1.2.1) ht.2).trans hfb.symm)
-    have hc : t.1.2.2.1 = c := hf.up_inj
+    have hc  := hf.up_inj
       (by rw [← ht.1]; exact t.2.1.trans t.2.2.1) (hab.trans hbc)
       ((congrArg (fun s : OrdTet Q => s.1.2.2.1) ht.2).trans hfc.symm)
-    have hd : t.1.2.2.2 = d := hf.up_inj
-      (by rw [← ht.1]; exact (t.2.1.trans t.2.2.1).trans t.2.2.2)
+    have hd  := hf.up_inj
+      (by grind)
       ((hab.trans hbc).trans hcd)
       ((congrArg (fun s : OrdTet Q => s.1.2.2.2) ht.2).trans hfd.symm)
     exact Subtype.ext (Prod.ext ht.1 (Prod.ext hb (Prod.ext hc hd)))

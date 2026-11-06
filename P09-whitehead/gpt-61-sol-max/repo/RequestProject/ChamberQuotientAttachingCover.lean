@@ -1,16 +1,13 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.ChamberQuotientOldStar
-public import RequestProject.ChamberQuotientEquivariantGeneration
-public import RequestProject.ChamberZConnected
-public import RequestProject.BlockSpinePres
-
-@[expose] public section
+import RequestProject.ChamberQuotientOldStar
+import RequestProject.ChamberQuotientEquivariantGeneration
+import RequestProject.ChamberZConnected
+import RequestProject.BlockSpinePres
 
 /-! The actual intersection cover is a cover of the original attaching simplex poset. -/
 namespace FiniteChains.Davis
 open RACG Mirror Comb
-universe u
 variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 
@@ -60,7 +57,7 @@ def qPositiveOldOrderIso : QPositiveOld (att := att) ≃o NeSpx A where
 abbrev QLiftedAttaching (a : Qpos A X att) :=
   {p : UOrder (Qpos A X att) a // InQOld (uOrderEnd p) ∧ InQBaseStar (uOrderEnd p)}
 
-def qAttachingCoverEnd (a : Qpos A X att) (p : QLiftedAttaching a) : NeSpx A :=
+def qAttachingCoverEnd (a : Qpos A X att) (p : QLiftedAttaching a)  :=
   qPositiveOldSimplex ⟨uOrderEnd p.1, p.2⟩
 
 variable [Fintype V]

@@ -1,10 +1,8 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.SubstOneWayBlockLoops
-public import RequestProject.TreePresentation
-public import RequestProject.CombPi1Conj
-
-@[expose] public section
+import RequestProject.SubstOneWayBlockLoops
+import RequestProject.TreePresentation
+import RequestProject.CombPi1Conj
 
 /-!
 # The block of the article: its spine, its marked presentation, its loops and its fillings
@@ -46,12 +44,9 @@ two-dimensional order complex of that poset:
   prescribed old word `u_h` along the chosen loop of the cut surface.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
+
 
 open RACG Mirror Comb PresModel BlockFamily
 
@@ -76,7 +71,7 @@ theorem posQCube_monotone : Monotone (posQCube (A := A)) := fun _ _ h => ⟨h, f
 def surfCx (A : CommRel V) : Hom (orderCx (NeSpx A)) (orderCx (QOld A)) :=
   orderCxMap posQCube posQCube_monotone
 
-section Block
+section
 
 variable {X : Type u} [Preorder X] {att : NeSpx A →o X}
 
@@ -98,34 +93,27 @@ theorem qNew_att_le_qOldIncl (σ : NeSpx A) :
     (qNew (A := A) (att := att) (att σ)) ≤ qOldIncl (posQCube σ) :=
   ⟨rfl, σ.2.1, le_refl _⟩
 
-end Block
+end
 
 /-! ### The block inside the quotient, based at the base point of the copy of the base -/
 
-section Spine
 
-variable {α J : Type u} (ρ : J → FreeGroup α) (att : NeSpx A →o presModelPos ρ) (σ₀ : NeSpx A)
-  (cb : List ((orderCx (presModelPos ρ)).E × Bool)) (T : SpanningTree (orderCx (QOld A)))
 
-end Spine
+
+
+
 
 /-! ### The marked presentation of the block and the application -/
 
-/-- **The internal generators `Z` of the block**: the edges of the two-dimensional order complex
-of the block outside the chosen spanning tree of its one-skeleton. -/
-abbrev spineGens (T : SpanningTree (orderCx (QOld A))) : Type u := SpanningTree.NonTree T
 
-/-- **The relators of the marked block presentation** `B_q = ⟨s_h, t_h, Z ∣ β_m⟩`: the two-cells
-of the block, and one marking relator per distinguished generator. -/
-abbrev spineRels (Su : Type u) : Type u := (orderCx (QOld A)).F ⊕ Su
 
-section Application
 
-variable {α J : Type u} (ρ : J → FreeGroup α) (att : NeSpx A →o presModelPos ρ) (σ₀ : NeSpx A)
-  (cb : List ((orderCx (presModelPos ρ)).E × Bool)) (T : SpanningTree (orderCx (QOld A)))
-  {Su : Type u}
 
-end Application
 
-end Davis
-end FiniteChains
+
+
+
+
+
+end FiniteChains.Davis
+

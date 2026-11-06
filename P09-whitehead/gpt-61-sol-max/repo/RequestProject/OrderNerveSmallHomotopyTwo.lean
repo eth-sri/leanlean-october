@@ -1,24 +1,20 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.OrderNerveSmallHomotopyOne
-
-@[expose] public section
+import RequestProject.OrderNerveSmallHomotopyOne
 
 namespace FiniteChains.Comb
 open TopologicalSingular SingularSubdivision
 
+variable {P : Type}
 /-- Fill the comparison discrepancy on a two-simplex after correcting its edges. -/
-theorem orderSmallHomotopyTwoFill_exists {P : Type} [PartialOrder P]
+theorem orderSmallHomotopyTwoFill_exists  [PartialOrder P]
     (σ : OrderSmallSimplex P 2) :
     ∃ b : Chain (orderNerveRealization P) 3, b ∈ orderSingularCarrierChains σ.val 3 ∧
       boundary 2 b = Finsupp.single σ.val 1 -
         orderSmallSingularApproximation2 (orderSmallSingle σ 1) -
         orderSmallHomotopy1 (smallBoundary (orderNerveRealizationOpenStar P) 1 (orderSmallSingle σ 1)) := by
   apply orderSingularCarrierChains_cycle_bounds σ.val σ.property 1
-  · exact Submodule.sub_mem _
-      (Submodule.sub_mem _ (orderSingularCarrierChains_single σ.val 1)
-        (orderSmallSingularApproximation2_carrier σ))
-      (orderSmallBoundary_map_carrier orderSmallHomotopy1 orderSmallHomotopy1_carrier σ)
+  · simp_all [Submodule.sub_mem, FiniteChains.Comb.orderSingularCarrierChains_single, FiniteChains.Comb.orderSmallSingularApproximation2_carrier, FiniteChains.Comb.orderSmallBoundary_map_carrier, FiniteChains.Comb.orderSmallHomotopy1_carrier]
   · rw [map_sub, map_sub, orderSmallSingularApproximation2_boundary, orderSmallHomotopy1_boundary]
     have hd : smallBoundary (orderNerveRealizationOpenStar P) 0
         (smallBoundary (orderNerveRealizationOpenStar P) 1 (orderSmallSingle σ 1)) = 0 :=
@@ -27,12 +23,11 @@ theorem orderSmallHomotopyTwoFill_exists {P : Type} [PartialOrder P]
     rw [hd, map_zero, sub_zero]
     exact sub_self _
 
-noncomputable def orderSmallHomotopy2 {P : Type} [PartialOrder P] :
-    smallChains (orderNerveRealizationOpenStar P) 2 →ₗ[ℤ] Chain (orderNerveRealization P) 3 :=
+noncomputable def orderSmallHomotopy2  [PartialOrder P]  :=
   (Finsupp.linearCombination ℤ (fun σ => (orderSmallHomotopyTwoFill_exists σ).choose)).comp
     (orderSmallChainEquiv P 2).toLinearMap
 
-theorem orderSmallHomotopy2_single {P : Type} [PartialOrder P]
+theorem orderSmallHomotopy2_single  [PartialOrder P]
     (σ : OrderSmallSimplex P 2) :
     orderSmallHomotopy2 (orderSmallSingle σ 1) = (orderSmallHomotopyTwoFill_exists σ).choose := by
   have he := (orderSmallChainEquiv P 2).apply_symm_apply (Finsupp.single σ 1)
@@ -42,7 +37,7 @@ theorem orderSmallHomotopy2_single {P : Type} [PartialOrder P]
       ((orderSmallChainEquiv P 2) (orderSmallSingle σ 1)) = _
   rw [he, Finsupp.linearCombination_single, one_smul]
 
-theorem orderSmallHomotopy2_boundary {P : Type} [PartialOrder P]
+theorem orderSmallHomotopy2_boundary  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 2) :
     boundary 2 (orderSmallHomotopy2 c) = c.val - orderSmallSingularApproximation2 c -
       orderSmallHomotopy1 (smallBoundary (orderNerveRealizationOpenStar P) 1 c) := by
@@ -57,7 +52,7 @@ theorem orderSmallHomotopy2_boundary {P : Type} [PartialOrder P]
 
 /-- Realizing the cellular approximation preserves the actual singular class
 of every star-small two-cycle. -/
-theorem orderSmallCellularApproximation2_homologous {P : Type} [PartialOrder P]
+theorem orderSmallCellularApproximation2_homologous  [PartialOrder P]
     (c : smallChains (orderNerveRealizationOpenStar P) 2)
     (hc : smallBoundary (orderNerveRealizationOpenStar P) 1 c = 0) :
     ∃ b : Chain (orderNerveRealization P) 3,

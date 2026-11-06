@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeSquareBoundaryKernel
-
-@[expose] public section
+import RequestProject.QCubeSquareBoundaryKernel
 
 /-! Local recovery of cubical coefficients from actual two-dimensional strict cycles. -/
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -14,7 +11,9 @@ namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] {A : CommRel V}
 
-theorem squareRadialBoundary_off_square (c : QCube A) (a b : V) (hne : a ≠ b)
+  (c : QCube A)
+  (a b : V)
+theorem squareRadialBoundary_off_square   (hne : a ≠ b)
     (hs : c.spx = {a, b}) (t : (strictOrderCx (QCube A)).F)
     (hm : t.1.2.1 ≠ c) (ht : t.1.2.2 ≠ c) (n : ℤ) :
     squareRadialCoordinates c a b hne hs
@@ -33,7 +32,7 @@ theorem squareRadialBoundary_off_square (c : QCube A) (a b : V) (hne : a ≠ b)
     squareRadialCoordinates_off_top c a b hne hs e02 ht]
   simp
 
-theorem squareRadialBoundary_filter_top (c : QCube A) (a b : V) (hne : a ≠ b)
+theorem squareRadialBoundary_filter_top   (hne : a ≠ b)
     (hs : c.spx = {a, b}) (z : (strictOrderCx (QCube A)).F →₀ ℤ)
     (hz : ∀ t ∈ z.support, t.1.2.2.spx.card ≤ 2) :
     squareRadialCoordinates c a b hne hs (Comb.bdry2 (strictOrderCx (QCube A)) z) =
@@ -47,27 +46,19 @@ theorem squareRadialBoundary_filter_top (c : QCube A) (a b : V) (hne : a ≠ b)
   apply Finset.sum_congr rfl
   intro t ht
   by_cases he : t.1.2.2 = c
-  · rw [Finsupp.filter_single_of_pos (fun t : (strictOrderCx (QCube A)).F => t.1.2.2 = c) he]
-  · rw [Finsupp.filter_single_of_neg (fun t : (strictOrderCx (QCube A)).F => t.1.2.2 = c) he]
-    have hm : t.1.2.1 ≠ c := by
-      intro hm
-      have hdim := (qCube_triangle_dimensions t (hz t ht)).2.1
-      rw [hm, hc] at hdim
-      omega
-    rw [squareRadialBoundary_off_square c a b hne hs t hm he, map_zero, map_zero]
+  · simp_all
+  · grind [Finsupp.filter_single_of_neg, FiniteChains.Davis.qCube_triangle_dimensions, FiniteChains.Davis.squareRadialBoundary_off_square]
 
 /-- Every genuine two-dimensional cycle has on each square exactly its cubical coefficient
  times the actual strict square subdivision. -/
-theorem cubeTwoCycle_square_component (c : QCube A) (a b : V) (hne : a ≠ b)
+theorem cubeTwoCycle_square_component   (hne : a ≠ b)
     (hs : c.spx = {a, b}) (z : (strictOrderCx (QCube A)).F →₀ ℤ)
     (hz : ∀ t ∈ z.support, t.1.2.2.spx.card ≤ 2)
     (hcycle : Comb.bdry2 (strictOrderCx (QCube A)) z = 0) :
     z.filter (fun t => t.1.2.2 = c) =
       z (squareFlag c a b hne hs (false, 0, false)) • cubeSquareSubdivision c a b hne hs := by
   have hsupp : ∀ t ∈ (z.filter (fun t => t.1.2.2 = c)).support, t.1.2.2 = c := by
-    intro t ht
-    change t ∈ z.support.filter (fun t => t.1.2.2 = c) at ht
-    exact (Finset.mem_filter.mp ht).2
+    simp_all
   have hint : squareRadialCoordinates c a b hne hs
       (Comb.bdry2 (strictOrderCx (QCube A)) (z.filter (fun t => t.1.2.2 = c))) = 0 := by
     rw [← squareRadialBoundary_filter_top c a b hne hs z hz, hcycle, map_zero]

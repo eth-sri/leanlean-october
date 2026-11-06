@@ -1,8 +1,7 @@
-module
+import Mathlib.Tactic
+import RequestProject.OpenCoverCorePaths
 
-public import RequestProject.OrderNerveRealizationStarContractible
-
-@[expose] public section
+import RequestProject.OrderNerveRealizationStarContractible
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -11,25 +10,11 @@ open CategoryTheory Simplicial
 space, with their endpoints fixed. -/
 theorem paths_homotopic_of_range_subset {X : Type} [TopologicalSpace X]
     {A : Set X} (hA : IsSimplyConnected A) {a b : X} (p q : Path a b)
-    (hp : Set.range p ⊆ A) (hq : Set.range q ⊆ A) : p.Homotopic q := by
-  letI : SimplyConnectedSpace A := hA
-  have ha : a ∈ A := hp p.source_mem_range
-  have hb : b ∈ A := hp p.target_mem_range
-  let p' : Path (⟨a, ha⟩ : A) ⟨b, hb⟩ :=
-    { toFun := fun t => ⟨p t, hp ⟨t, rfl⟩⟩
-      continuous_toFun := p.continuous.subtype_mk _
-      source' := Subtype.ext p.source
-      target' := Subtype.ext p.target }
-  let q' : Path (⟨a, ha⟩ : A) ⟨b, hb⟩ :=
-    { toFun := fun t => ⟨q t, hq ⟨t, rfl⟩⟩
-      continuous_toFun := q.continuous.subtype_mk _
-      source' := Subtype.ext q.source
-      target' := Subtype.ext q.target }
-  exact (SimplyConnectedSpace.paths_homotopic p' q').map
-    ⟨Subtype.val, continuous_subtype_val⟩
+    (hp : Set.range p ⊆ A) (hq : Set.range q ⊆ A) : p.Homotopic q := FiniteChains.PathReplacement.homotopic_of_within_simplyConnected A hA p q hp hq
 
+variable {P : Type}
 /-- Two vertices of a canonical simplex can be joined inside that simplex. -/
-theorem orderNerveRealizationSimplex_exists_path {P : Type} [PartialOrder P]
+theorem orderNerveRealizationSimplex_exists_path  [PartialOrder P]
     {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n))
     (i j : Fin (n.len + 1)) :
     ∃ p : Path (orderNerveRealizationVertex (s.obj i))
@@ -44,13 +29,13 @@ theorem orderNerveRealizationSimplex_exists_path {P : Type} [PartialOrder P]
   exact ⟨(PathConnectedSpace.joined z w).somePath t, rfl⟩
 
 /-- A realized comparable edge, chosen inside its canonical one-simplex. -/
-noncomputable def orderNerveRealizationEdgePath {P : Type} [PartialOrder P]
+noncomputable def orderNerveRealizationEdgePath  [PartialOrder P]
     {a b : P} (h : a ≤ b) : Path (orderNerveRealizationVertex a)
       (orderNerveRealizationVertex b) :=
   (orderNerveRealizationSimplex_exists_path (n := ⦋1⦌) (ComposableArrows.mk₁ (homOfLE h))
     (0 : Fin 2) (1 : Fin 2)).choose
 
-theorem orderNerveRealizationEdgePath_range {P : Type} [PartialOrder P]
+theorem orderNerveRealizationEdgePath_range  [PartialOrder P]
     {a b : P} (h : a ≤ b) :
     Set.range (orderNerveRealizationEdgePath h) ⊆
       Set.range (orderNerveRealizationSimplex P (n := ⦋1⦌) (ComposableArrows.mk₁ (homOfLE h))) :=
@@ -58,7 +43,7 @@ theorem orderNerveRealizationEdgePath_range {P : Type} [PartialOrder P]
     (0 : Fin 2) (1 : Fin 2)).choose_spec
 
 /-- A comparable edge stays in any closed vertex star containing its endpoints. -/
-theorem orderNerveRealizationEdgePath_supported {P : Type} [PartialOrder P]
+theorem orderNerveRealizationEdgePath_supported  [PartialOrder P]
     {a b : P} (h : a ≤ b) (v : P) (ha : a ≤ v ∨ v ≤ a) (hb : b ≤ v ∨ v ≤ b) :
     Set.range (orderNerveRealizationEdgePath h) ⊆
       (orderNerveRealizationSubcomplex P (orderNerveVertexStar P v) :
@@ -70,7 +55,7 @@ theorem orderNerveRealizationEdgePath_supported {P : Type} [PartialOrder P]
   · exact ha
   · exact hb
 
-theorem orderNerveRealizationVertex_mem_closedStar {P : Type} [PartialOrder P]
+theorem orderNerveRealizationVertex_mem_closedStar  [PartialOrder P]
     {p v : P} (hp : p ≤ v ∨ v ≤ p) :
     orderNerveRealizationVertex p ∈
       (orderNerveRealizationSubcomplex P (orderNerveVertexStar P v) :
@@ -80,10 +65,10 @@ theorem orderNerveRealizationVertex_mem_closedStar {P : Type} [PartialOrder P]
   by_cases he : p = q
   · subst q
     exact (hq hp).elim
-  · simp only [orderNerveRealizationCoordinates_vertex, if_neg he]
+  · simp_all [orderNerveRealizationCoordinates_vertex]
 
 /-- The degenerate edge represents the identity path class. -/
-theorem orderNerveRealizationEdgePath_refl {P : Type} [PartialOrder P] (a : P) :
+theorem orderNerveRealizationEdgePath_refl  [PartialOrder P] (a : P) :
     (orderNerveRealizationEdgePath (le_refl a)).Homotopic
       (Path.refl (orderNerveRealizationVertex a)) := by
   letI := orderNerveRealization_closedStar_contractible a
@@ -97,7 +82,7 @@ theorem orderNerveRealizationEdgePath_refl {P : Type} [PartialOrder P] (a : P) :
     exact orderNerveRealizationVertex_mem_closedStar (Or.inl le_rfl)
 
 /-- A chain of three vertices gives the actual topological triangle relation. -/
-theorem orderNerveRealizationEdgePath_trans {P : Type} [PartialOrder P]
+theorem orderNerveRealizationEdgePath_trans  [PartialOrder P]
     {a b c : P} (hab : a ≤ b) (hbc : b ≤ c) :
     (orderNerveRealizationEdgePath (hab.trans hbc)).Homotopic
       ((orderNerveRealizationEdgePath hab).trans (orderNerveRealizationEdgePath hbc)) := by
@@ -108,10 +93,7 @@ theorem orderNerveRealizationEdgePath_trans {P : Type} [PartialOrder P]
         change SimplyConnectedSpace _
         infer_instance)
   · exact orderNerveRealizationEdgePath_supported _ b (Or.inl hab) (Or.inr hbc)
-  · rw [Path.trans_range]
-    exact Set.union_subset
-      (orderNerveRealizationEdgePath_supported hab b (Or.inl hab) (Or.inl le_rfl))
-      (orderNerveRealizationEdgePath_supported hbc b (Or.inl le_rfl) (Or.inr hbc))
+  · simp_all [Path.trans_range, FiniteChains.Comb.orderNerveRealizationEdgePath_supported]
 
 /-- Comparable vertices and their canonical edge paths form a functor to the
 actual topological fundamental groupoid of the realization. -/

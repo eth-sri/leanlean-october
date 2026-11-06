@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.InitialPairFinsupp
-public import RequestProject.RelativeAmbientPresChain
-
-@[expose] public section
+import RequestProject.InitialPairFinsupp
+import RequestProject.RelativeAmbientPresChain
 
 /-! The acyclic-core sufficiency construction with its explicit initial
 pair, actual genus replacement, actual terminal extension, and actual
@@ -14,12 +12,10 @@ open scoped Classical
 
 namespace FiniteChains
 
-theorem FSIsCockcroft.redecide {A J : Type} [dA : DecidableEq A]
-    {ρ : J → FreeGroup A} (h : FSIsCockcroft ρ) (dA' : DecidableEq A) :
-    @FSIsCockcroft A J dA' ρ := by
-  have hd : dA' = dA := Subsingleton.elim _ _
-  subst dA'
-  exact h
+abbrev FSIsCockcroft.redecide {A J : Type} [dA : DecidableEq A]
+    {ρ : J → FreeGroup A} (h : FSIsCockcroft ρ) (dA' : DecidableEq A)  :=
+  have hd := Subsingleton.elim dA' dA;
+  Eq.symm hd ▸ h
 
 end FiniteChains
 
@@ -32,7 +28,7 @@ def actualInitial : AmbientChain core 0 := by
     ?_ (InitialFS.core_trivial core hcore.2)
   exact @FSIsCockcroft.redecide _ _ _ _ (InitialFS.isCockcroft core hcore) _
 
-def actualAmbientChain (n : ℕ) : AmbientChain core n :=
+def actualAmbientChain (n : ℕ)  :=
   ambientChains core hcore (actualInitial core hcore) n
 
 theorem actualAmbientChain_finite [Finite A] (n : ℕ) :

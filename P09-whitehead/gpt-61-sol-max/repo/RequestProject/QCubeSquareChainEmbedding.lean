@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.QCubeSquareSupport
-
-@[expose] public section
+import RequestProject.QCubeSquareSupport
 
 /-! Faithful finite square-chain subdivision, separated by actual top cubes. -/
 open scoped Classical
@@ -26,7 +24,7 @@ theorem squareChainSubdivision_filter_top (hcell : Function.Injective cell)
   induction z using Finsupp.induction_linear with
   | zero => simp [Finsupp.filter_zero]
   | add z w hz hw =>
-      rw [map_add, Finsupp.filter_add, hz, hw, Finsupp.add_apply, add_smul]
+      simp_all [add_smul]
   | single j n =>
       rw [squareChainSubdivision, Finsupp.linearCombination_single,
         Finsupp.filter_smul, cubeSquareSubdivision_filter_top]

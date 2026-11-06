@@ -1,27 +1,23 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PushoutUniversalEmbedding
-public import RequestProject.ZeroPi2Descent
-public import RequestProject.CellularChainMapZero
-public import RequestProject.DeckChainTransport
-
-@[expose] public section
+import RequestProject.PushoutUniversalEmbedding
+import RequestProject.ZeroPi2Descent
+import RequestProject.CellularChainMapZero
+import RequestProject.DeckChainTransport
 
 /-! Genuine copies of the acyclic cover inside the universal cover of
 K∪D L, with explicit supported H1 fillings and H2 vanishing. The same
 statements hold after every actual deck translation. Unverified source. -/
 
 noncomputable section
-open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
+
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u v
 
-section EmbeddedHomology
+section
 variable {D X : Complex2.{u}} (f : Hom D X)
   (hV : Function.Injective f.onV) (hE : Function.Injective f.onE)
   (hF : Function.Injective f.onF) (hD : IsAcyclic D)
@@ -39,8 +35,7 @@ theorem embedded_one_cycle_filling (z : X.E →₀ ℤ)
     rfl
   obtain ⟨d, hd⟩ := hD.h1 c hc
   refine ⟨chain2 f d, ?_, ?_⟩
-  · intro g hg
-    exact Finsupp.mapDomain_notin_range d g hg
+  · simp_all [Finsupp.mapDomain_notin_range]
   · rw [bdry2_chain2, hd]
     rfl
 
@@ -54,9 +49,9 @@ theorem embedded_two_cycle_zero (z : X.F →₀ ℤ)
     change chain1 f (bdry2 D c) = Finsupp.mapDomain f.onE 0
     rw [← bdry2_chain2, hz]
     rfl
-  have hc0 : c = 0 := hD.h2 (hc.trans (map_zero _).symm)
+  have hc0  := hD.h2 (hc.trans (map_zero _).symm)
   rw [hc0, Finsupp.mapDomain_zero]
-end EmbeddedHomology
+end
 
 namespace PushoutOldCover
 variable {D K L : Complex2.{u}} {Q : Type v} [Group Q]
@@ -65,15 +60,15 @@ variable {D K L : Complex2.{u}} {Q : Type v} [Group Q]
   (i : Hom D L) (hiV : Function.Injective i.onV) (hiE : Function.Injective i.onE)
   (hiF : Function.Injective i.onF) (hconn : IsConnected D) (d₀ : D.V) (ht : Pi1Trivial i)
 
-def oldMap : Hom D (pushoutComplex p i hiV hiE) := (pushoutInl p i hiV hiE).comp p
+def oldMap  := (pushoutInl p i hiV hiE).comp p
 
 include hiF ht in
 theorem oldMap_pi1Trivial : Pi1Trivial (oldMap p i hiV hiE) := by
-  change Pi1Trivial ((pushoutInl p i hiV hiE).comp p)
+  unfold FiniteChains.Comb.PushoutOldCover.oldMap
   rw [← pushout_comm p i hiV hiE hiF]
   exact Pi1Trivial.comp_left _ ht
 
-def oldLift : Hom D (uCover (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) :=
+def oldLift  :=
   liftHom (f := oldMap p i hiV hiE) (d₀ := d₀) hconn
     (oldMap_pi1Trivial p i hiV hiE hiF ht)
 
@@ -105,9 +100,9 @@ theorem oldLift_injective_V : Function.Injective (oldLift p i hiV hiE hiF hconn 
 include hp hr he in
 theorem oldLift_injective_E : Function.Injective (oldLift p i hiV hiE hiF hconn d₀ ht).onE := by
   intro e f h
-  have hs : D.src e = D.src f := oldLift_injective_V p hp a hr he i hiV hiE hiF hconn d₀ ht
+  have hs  := oldLift_injective_V p hp a hr he i hiV hiE hiF hconn d₀ ht
     (congrArg (fun e : UE (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀)) => e.val.1) h)
-  have hp' : p.onE e = p.onE f := Sum.inl.inj
+  have hp'  := Sum.inl.inj
     (congrArg (fun e : UE (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀)) => e.val.2) h)
   have hg := liftGerm_unique hp (x := (e, true)) (y := (f, true)) rfl hs.symm
     (congrArg (fun e => (e, true)) hp')
@@ -116,19 +111,19 @@ theorem oldLift_injective_E : Function.Injective (oldLift p i hiV hiE hiF hconn 
 include hp hr he in
 theorem oldLift_injective_F : Function.Injective (oldLift p i hiV hiE hiF hconn d₀ ht).onF := by
   intro e f h
-  have hs : D.base e = D.base f := oldLift_injective_V p hp a hr he i hiV hiE hiF hconn d₀ ht
+  have hs  := oldLift_injective_V p hp a hr he i hiV hiE hiF hconn d₀ ht
     (congrArg (fun e : UF (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀)) => e.val.1) h)
-  have hp' : p.onF e = p.onF f := Sum.inl.inj
+  have hp'  := Sum.inl.inj
     (congrArg (fun e : UF (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀)) => e.val.2) h)
   apply hp.cell.1
   exact Subtype.ext (Prod.ext hp' hs)
 
-def translatedOldLift (g : Pi1 (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) :
-    Hom D (uCover (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) :=
+variable (g : Pi1 (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀)))
+def translatedOldLift   :=
   ((univDeck _ _).cellHom g).comp (oldLift p i hiV hiE hiF hconn d₀ ht)
 
 include hp hr he in
-theorem translatedOldLift_injective_E (g : Pi1 (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) :
+theorem translatedOldLift_injective_E  :
     Function.Injective (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onE := by
   intro x y h
   apply oldLift_injective_E p hp a hr he i hiV hiE hiF hconn d₀ ht
@@ -139,10 +134,10 @@ theorem translatedOldLift_injective_E (g : Pi1 (pushoutComplex p i hiV hiE) (Sum
     (univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulE g⁻¹
       ((univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulE g
         ((oldLift p i hiV hiE hiF hconn d₀ ht).onE y)) at h'
-  simpa only [← DeckAction.mul_smulE, inv_mul_cancel, DeckAction.one_smulE] using h'
+  simpa [← DeckAction.mul_smulE, inv_mul_cancel, DeckAction.one_smulE] using h'
 
 include hp hr he in
-theorem translatedOldLift_injective_F (g : Pi1 (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))) :
+theorem translatedOldLift_injective_F  :
     Function.Injective (translatedOldLift p i hiV hiE hiF hconn d₀ ht g).onF := by
   intro x y h
   apply oldLift_injective_F p hp a hr he i hiV hiE hiF hconn d₀ ht
@@ -153,7 +148,7 @@ theorem translatedOldLift_injective_F (g : Pi1 (pushoutComplex p i hiV hiE) (Sum
     (univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulF g⁻¹
       ((univDeck (pushoutComplex p i hiV hiE) (Sum.inl (p.onV d₀))).smulF g
         ((oldLift p i hiV hiE hiF hconn d₀ ht).onF y)) at h'
-  simpa only [← DeckAction.mul_smulF, inv_mul_cancel, DeckAction.one_smulF] using h'
+  simpa [← DeckAction.mul_smulF, inv_mul_cancel, DeckAction.one_smulF] using h'
 
-end PushoutOldCover
-end FiniteChains.Comb
+end FiniteChains.Comb.PushoutOldCover
+

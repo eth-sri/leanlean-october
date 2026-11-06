@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusPolygonCoefficientBoundaryBridge
-
-@[expose] public section
+import RequestProject.GenusPolygonCoefficientBoundaryBridge
 
 /-! The actual marking boundary supplies polygon relativity automatically.
 Consequently a fixed degree-one geometric reference generates every vector
@@ -10,12 +8,10 @@ satisfying the internal B2 equations. Written, unverified proof terms. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 variable {P Q I : Type u} [PartialOrder P] [PartialOrder Q]
 
 theorem normalizedWeakChain1To_paths_boundary_support
@@ -28,20 +24,15 @@ theorem normalizedWeakChain1To_paths_boundary_support
   intro e he
   by_contra hnot
   have hz (i : I) : normalizedWeakChain1To f hf (pathChain (p i)) e = 0 := by
-    apply normalizedWeakChain1To_path_apply_zero
-    intro a ha heq
-    apply hnot
-    rw [← heq]
-    exact hp i a ha
+    grind [FiniteChains.Comb.normalizedWeakChain1To_path_apply_zero]
   have hzero : normalizedWeakChain1To f hf
       (Finsupp.linearCombination ℤ (fun i => pathChain (p i)) c) e = 0 := by
     clear he
     induction c using Finsupp.induction_linear with
     | zero => simp
-    | add c d hc hd => simp only [map_add, Finsupp.add_apply, hc, hd, add_zero]
+    | add c d hc hd => simp_all
     | single i n =>
-        simp only [Finsupp.linearCombination_single, map_smul, Finsupp.smul_apply,
-          hz, smul_zero]
+        simp_all
   exact Finsupp.mem_support_iff.mp he hzero
 
 end FiniteChains.Comb
@@ -56,11 +47,7 @@ theorem gSig_lastEndpoints_boundary (i : Fin q × Bool)
     (a : MarkingSurfaceEdge q × Bool) (ha : a ∈ gSig q (i.1.val, i.2)) :
     InPolygonBoundary (gc q) (chainMax a.1.1.1) ∧
       InPolygonBoundary (gc q) (chainMax a.1.1.2) := by
-  rw [gSig_first_edge] at ha
-  simp only [markingTail, List.mem_cons, List.not_mem_nil, or_false] at ha
-  rcases ha with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-    simp [markingFirstEdge, markingBaseFlag, markingBedBaseFlag, markingBedMidFlag,
-      markingMidFlag, markingBaseCell, markingMidCell, markingBedCell, InPolygonBoundary]
+  classical aesop (add simp [FiniteChains.Davis.neZero_eight_mul, FiniteChains.Davis.Genus.gc, FiniteChains.Davis.Genus.gSig_first_edge, FiniteChains.Davis.chainMax_spx1, FiniteChains.Davis.Genus.markingBaseLe, FiniteChains.Davis.chainMax_spx2, FiniteChains.Davis.Genus.markingMidLe, markingTail, markingFirstEdge, markingBaseFlag, markingBedBaseFlag, markingBedMidFlag, markingMidFlag, markingBaseCell, markingMidCell, markingBedCell, InPolygonBoundary])
 
 variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
   (u : Fin q × Bool → FreeGroup α)
@@ -84,8 +71,7 @@ theorem namedSurfaceMarkingChains_boundary_support
     ∀ e ∈ (normalizedWeakChain1To (namedSurfaceForward q ρ u)
         (namedSurfaceForward_monotone q ρ u) (namedAttachingMarkingChains q ρ u hrho b)).support,
       InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.1) ∧
-        InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.2) := by
-  exact normalizedWeakChain1To_paths_boundary_support
+        InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u e.1.2) := normalizedWeakChain1To_paths_boundary_support
     (namedSurfaceForward q ρ u) (namedSurfaceForward_monotone q ρ u)
     (fun p : NamedSurfaceCover ρ q u =>
       InPolygonBoundary (gc q) (namedSurfaceProjection ρ q u p))

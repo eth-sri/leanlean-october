@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.GenusSpineMarking
-public import RequestProject.TruncatedCubePi1
-
-@[expose] public section
+import RequestProject.GenusSpineMarking
+import RequestProject.TruncatedCubePi1
 
 /-! Factor the marked spine comparison through the genuine truncated face poset. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
@@ -14,8 +11,7 @@ namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-noncomputable def genusSpineToTruncated :
-    Hom (genusSpineCx q) (orderCx (GenusTruncatedCell q)) :=
+noncomputable def genusSpineToTruncated  :=
   Hom.comp (orderCxMap (fun c : GenusSpineCell q => c.val) monotone_subtypeVal)
     (strictOrderIncl (GenusSpineCell q))
 
@@ -29,7 +25,7 @@ theorem genusSpine_pi1_factor (z : Pi1 (genusSpineCx q) (spineBase q)) :
   rcases z with ⟨p⟩
   apply congrArg Pi1.mk
   apply Subtype.ext
-  simp [genusSpineToOld_factor, mapPath, Hom.comp, List.map_map, Function.comp_def]
+  simp [genusSpineToOld_factor, mapPath, Hom.comp]
 
 /-- The remaining injectivity obligation is precisely the inclusion of the surviving spine
 into the truncated complex, since truncation itself has already been proved harmless. -/
@@ -44,6 +40,6 @@ theorem genusSpine_pi1_injective_iff :
     apply h
     apply truncatedRetraction_pi1_injective_at
       ((genusSpineToTruncated q).onV (spineBase q))
-    convert hxy using 1 <;> simp only [← genusSpine_pi1_factor]
+    convert hxy using 1 <;> simp [← genusSpine_pi1_factor]
 
 end FiniteChains.Davis.Genus

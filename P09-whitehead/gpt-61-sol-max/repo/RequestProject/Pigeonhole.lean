@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import Mathlib
-
-@[expose] public section
+import Mathlib
 
 /-!
 # The one-violation principle of Section 2
@@ -39,8 +37,7 @@ theorem exists_stage_satisfying_all {ι : Type*} [DecidableEq ι] {m : ℕ}
   -- Each requirement fails at most once, so `bad` injects into `S`.
   have hbadcard : bad.card ≤ S.card := by
     have hmem : ∀ r ∈ bad, ∃ v ∈ S, ¬ P r v := by
-      intro r hr
-      simpa [hbad] using (Finset.mem_filter.mp hr).2
+      simp_all
     choose w hwS hwP using hmem
     refine Finset.card_le_card_of_injOn (fun r => if h : r ∈ bad then w r h else v₀)
       ?_ ?_
@@ -53,26 +50,12 @@ theorem exists_stage_satisfying_all {ι : Type*} [DecidableEq ι] {m : ℕ}
       simp only [dif_pos hr, dif_pos hs] at hrs
       by_contra hne
       rcases lt_or_gt_of_ne hne with h | h
-      · have hsle : s ≤ m := by
-          have := (Finset.mem_filter.mp hs).1
-          simpa [Nat.lt_succ_iff] using Finset.mem_range.mp this
-        exact hwP s hs (hrs ▸ hlater r (w r hr) (hwP r hr) s h hsle)
-      · have hrle : r ≤ m := by
-          have := (Finset.mem_filter.mp hr).1
-          simpa [Nat.lt_succ_iff] using Finset.mem_range.mp this
-        exact hwP r hr (hrs ▸ hlater s (w s hs) (hwP s hs) r h hrle)
+      · grind
+      grind
   -- There are `m + 1` stages but at most `m` bad ones.
   have hsub : bad ⊆ Finset.range (m + 1) := Finset.filter_subset _ _
   have : bad ≠ Finset.range (m + 1) := by
-    intro h
-    have : m + 1 ≤ m := by
-      have := hbadcard.trans hcard
-      rwa [h, Finset.card_range] at this
-    omega
-  obtain ⟨r, hr, hrbad⟩ := Finset.exists_of_ssubset (hsub.ssubset_of_ne this)
-  refine ⟨r, by simpa [Nat.lt_succ_iff] using Finset.mem_range.mp hr, ?_⟩
-  intro v hv
-  by_contra hP
-  exact hrbad (Finset.mem_filter.mpr ⟨hr, ⟨v, hv, hP⟩⟩)
+    grind
+  aesop
 
 end FiniteChains

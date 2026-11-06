@@ -1,12 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.StrictTopConeThreeChains
-
-@[expose] public section
+import RequestProject.StrictTopConeThreeChains
 
 /-! The genuine strict cone maps preserve all finite-chain coefficients. -/
 namespace FiniteChains.Comb
-universe u
 variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
   (f : P → Q) (hf : StrictMono f) (c : Q) (hc : ∀ x, f x < c) (hfi : Function.Injective f)
 
@@ -22,10 +19,7 @@ theorem strictTopConeEdgeTriangle_injective :
 theorem strictTopConeEdgeChain_eq_mapDomain (z : (strictOrderCx P).E →₀ ℤ) :
     strictTopConeEdgeChain f hf c hc z =
       Finsupp.mapDomain (strictTopConeEdgeTriangle f hf c hc) z := by
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [map_add, Finsupp.mapDomain_add, hz, hw]
-  | single e n => simp [strictTopConeEdgeChain]
+  induction z using Finsupp.induction_linear <;> simp_all [Finsupp.mapDomain_add, strictTopConeEdgeChain]
 
 include hfi in
 theorem strictTopConeEdgeChain_injective :

@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CoreCollapse
-public import RequestProject.FoxCoordinateSubstitution
-
-@[expose] public section
+import RequestProject.CoreCollapse
+import RequestProject.FoxCoordinateSubstitution
 
 /-! The actual core-collapse map, including reversed orientations of surviving cells.
 The only input describing the quotient is an equality of free-group words.  The
@@ -11,11 +9,8 @@ group map, signed cellular map and Hurewicz reflection are constructed below.
 Written proof terms; not compiled in the current proof-first workflow. -/
 
 noncomputable section
-open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+
 
 namespace FiniteChains.CoreSignedCollapse
 
@@ -61,9 +56,7 @@ def groupMap : PresGroup (corePres core extra) →* PresGroup target :=
     ((QuotientGroup.mk' (relSub target)).comp dropCore) (by
       refine Subgroup.normalClosure_le_normal ?_
       rintro _ ⟨m | j, rfl⟩
-      · change (QuotientGroup.mk' (relSub target))
-          (dropCore (FreeGroup.map Sum.inl (core m))) = 1
-        rw [dropCore_map_inl, map_one]
+      · simp_all
       · change (QuotientGroup.mk' (relSub target)) (dropCore (extra j)) = 1
         have ht : (QuotientGroup.mk (target j) : PresGroup target) = 1 :=
           (QuotientGroup.eq_one_iff _).mpr
@@ -71,8 +64,7 @@ def groupMap : PresGroup (corePres core extra) →* PresGroup target :=
         rw [hword j]
         cases rev j <;> simp [ht])
 
-def coefficientMap : MonoidAlgebra ℤ (PresGroup (corePres core extra)) →+*
-    MonoidAlgebra ℤ (PresGroup target) :=
+def coefficientMap  :=
   MonoidAlgebra.mapDomainRingHom ℤ (groupMap core extra target rev hword)
 
 theorem coefficientMap_quot (x : FreeGroupRing (A ⊕ B)) :
@@ -99,7 +91,7 @@ theorem coefficientMap_fox (b : B) (w : FreeGroup (A ⊕ B)) :
   congr 1
   symm
   apply fox_subst_coordinate
-  rintro (a | b') <;> simp [fox_of]
+  rintro (a | b') <;> simp 
 
 theorem quotientFox_inv_relator (b : B) (j : J) :
     quotRingHom ℤ (relSub target) (fox b (target j)⁻¹) =
@@ -116,7 +108,7 @@ theorem quotientFox_inv_relator (b : B) (j : J) :
 
 theorem matrix_core (b : B) (m : M) :
     foxMatrixPres (corePres core extra) (Sum.inr b) (Sum.inl m) = 0 := by
-  change quotRingHom ℤ _ (fox (Sum.inr b) (FreeGroup.map Sum.inl (core m))) = 0
+  dsimp [FiniteChains.foxMatrixPres]
   rw [fox_map_of_not_mem_range Sum.inl (fun _ => Sum.inr_ne_inl), map_zero]
 
 theorem matrix_extra (b : B) (j : J) :
@@ -130,6 +122,6 @@ theorem matrix_extra (b : B) (j : J) :
   · rfl
   · exact quotientFox_inv_relator target b j
 
-variable [Fintype M] [Fintype J]
+
 
 end FiniteChains.CoreSignedCollapse

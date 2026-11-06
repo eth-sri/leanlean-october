@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RelativeStructuralOperation
-public import RequestProject.GenusTerminalSpineFinsupp
-
-@[expose] public section
+import RequestProject.RelativeStructuralOperation
+import RequestProject.GenusTerminalSpineFinsupp
 
 /-! The actual fixed-core T/Q terminal step. Original extra words need not
 already be products of commutators: normalization supplies them. No assumed
@@ -46,27 +44,23 @@ theorem normalized_core_trivial
   have h := congrArg (rawToNormalizedGroup core hcore extra) (htriv a)
   change QuotientGroup.mk (pairSubstitution (FreeGroup.of (Sum.inl a))) =
     rawToNormalizedGroup core hcore extra 1 at h
-  simpa only [pairSubstitution_core, map_one] using h
+  simpa [pairSubstitution_core, map_one] using h
 
 def terminalPresentation :=
   addRels (blockPresentation core hcore extra)
     (terminalSpineCaps (A := A) (K := Z × Bool) (normalizedGenus core hcore extra))
 
-def relativeTerminalMap : PresMorFS (blockPresentation core hcore extra)
-    (terminalPresentation core hcore extra) :=
+def relativeTerminalMap  :=
   actualTerminalSpineMorFS (normalizedGenus core hcore extra)
     (normalizedLoops core hcore extra) (normalizedPresentation core hcore extra)
 
 /-- A genuine fixed-core terminal step for an arbitrary relative source.
 The source need only be Cockcroft with trivial core image. -/
-theorem relativeTerminal_conclusions
+abbrev relativeTerminal_conclusions
     (hcoreInjective : Function.Injective (expMatrix core))
     (hP : FSIsCockcroft (rawPresentation core extra))
     (htriv : ∀ a : A,
-      (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (rawPresentation core extra)) = 1) :
-    FSIsCockcroft (terminalPresentation core hcore extra) ∧
-      (∀ v, FSIsFoxCycle (blockPresentation core hcore extra) v →
-        (relativeTerminalMap core hcore extra).cells v = 0) :=
+      (QuotientGroup.mk (FreeGroup.of (Sum.inl a)) : PresGroup (rawPresentation core extra)) = 1)  :=
   actualTerminalSpineFS_conclusions core (normalizedGenus core hcore extra)
     (normalizedLoops core hcore extra) (normalizedPresentation core hcore extra)
     (normalizedPresentation_surface core hcore extra) (fun _ => rfl)

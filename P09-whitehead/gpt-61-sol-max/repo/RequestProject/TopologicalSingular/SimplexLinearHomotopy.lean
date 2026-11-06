@@ -1,20 +1,16 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TopologicalSingular.SingularChains
+import RequestProject.TopologicalSingular.SingularChains
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
-universe u
 variable {Y : Type u} [TopologicalSpace Y] {n : ℕ}
 
+  (f g : C(Y, Domain n))
 /-- Coordinatewise straight-line interpolation stays in the standard simplex. -/
-noncomputable def simplexLinearHomotopy (f g : C(Y, Domain n)) : f.Homotopy g where
+noncomputable def simplexLinearHomotopy  : f.Homotopy g where
   toFun w := ⟨fun i => (1 - (w.1 : ℝ)) * (f w.2).val i + (w.1 : ℝ) * (g w.2).val i, by
     constructor
     · intro i
@@ -40,7 +36,7 @@ noncomputable def simplexLinearHomotopy (f g : C(Y, Domain n)) : f.Homotopy g wh
     funext i
     simp
 
-theorem simplexLinearHomotopy_fixed (f g : C(Y, Domain n)) (z : Y)
+theorem simplexLinearHomotopy_fixed  (z : Y)
     (h : f z = g z) (t : I) : simplexLinearHomotopy f g (t, z) = f z := by
   apply Subtype.ext
   funext i
@@ -48,7 +44,7 @@ theorem simplexLinearHomotopy_fixed (f g : C(Y, Domain n)) (z : Y)
   rw [h]
   ring
 
-noncomputable def simplexLinearHomotopyRel (f g : C(Y, Domain n)) (S : Set Y)
+noncomputable def simplexLinearHomotopyRel  (S : Set Y)
     (h : ∀ z ∈ S, f z = g z) : ContinuousMap.HomotopyRel f g S where
   toHomotopy := simplexLinearHomotopy f g
   prop' t z hz := simplexLinearHomotopy_fixed f g z (h z hz) t

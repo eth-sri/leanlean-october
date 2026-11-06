@@ -1,10 +1,6 @@
-module
-
-public import RequestProject.TreeChainTopological
-public import RequestProject.TreeCoverNecessityFinsupp
-public import RequestProject.PresChainTopologicalFinsupp
-
-@[expose] public section
+import RequestProject.TreeChainTopological
+import RequestProject.TreeCoverNecessityFinsupp
+import RequestProject.PresChainTopologicalFinsupp
 
 /-! Necessity for arbitrary connected cellular two-complexes and arbitrary cellular chains. -/
 
@@ -29,10 +25,10 @@ structure TopChainFS (K : Complex2.{u}) (n : ℕ) where
   /-- **The inclusion `X r ⊂ X (r + 1)` is zero on `π₂`.** -/
   zero_pi2 : ∀ r, r < n → ZeroPi2 (inc r)
 
-namespace TopChainFS
 
-variable {K : Complex2.{u}} {n : ℕ} (c : TopChainFS K n) (T₀ : SpanningTree K)
 
-end TopChainFS
+
+
+
 
 end FiniteChains.Comb

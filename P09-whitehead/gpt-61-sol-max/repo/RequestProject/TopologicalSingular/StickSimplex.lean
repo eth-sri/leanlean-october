@@ -1,4 +1,4 @@
-module
+import Mathlib.Tactic
 
 /-
 Copyright (c) 2026 Vasily Ilin. All rights reserved.
@@ -8,11 +8,9 @@ c66523531ff172d7f41913d94e56921e790a1b47, Hurewicz/StickSimplex.lean
 and elementary face definitions from Hurewicz/SimplexGlue.lean.
 The heavy singular-homology imports are replaced by local cubical geometry.
 -/
-public import RequestProject.TopologicalSingular.CubicalShell
-public import Mathlib.AlgebraicTopology.TopologicalSimplex
-public import Mathlib.Topology.Homotopy.HomotopyGroup
-
-@[expose] public section
+import RequestProject.TopologicalSingular.CubicalShell
+import Mathlib.AlgebraicTopology.TopologicalSimplex
+import Mathlib.Topology.Homotopy.HomotopyGroup
 
 /-!
 # The stick-breaking cube-to-simplex map
@@ -43,8 +41,10 @@ variable {j : ℕ}
 /-- The boundary of the standard `j`-simplex: the points with a vanishing coordinate. -/
 def bdry (j : ℕ) : Set (stdSimplex ℝ (Fin (j + 1))) := {x | ∃ i, x.1 i = 0}
 
+variable (i : Fin (j + 2))
+  (x : stdSimplex ℝ (Fin (j + 1)))
 /-- The `i`-th face inclusion `|Δ^j| → |Δ^{j+1}|`, inserting a zero in slot `i`. -/
-def faceMap (i : Fin (j + 2)) (x : stdSimplex ℝ (Fin (j + 1))) : stdSimplex ℝ (Fin (j + 2)) :=
+def faceMap   : stdSimplex ℝ (Fin (j + 2)) :=
   ⟨i.insertNth 0 x.1, by
     refine ⟨(Fin.forall_iff_succAbove i).2 ⟨?_, fun k => ?_⟩, ?_⟩
     · rw [Fin.insertNth_apply_same]
@@ -54,16 +54,16 @@ def faceMap (i : Fin (j + 2)) (x : stdSimplex ℝ (Fin (j + 1))) : stdSimplex �
       rw [zero_add, x.2.2]⟩
 
 @[simp]
-theorem faceMap_coe_same (i : Fin (j + 2)) (x : stdSimplex ℝ (Fin (j + 1))) :
+theorem faceMap_coe_same   :
     (faceMap i x).1 i = 0 := by
   simp [faceMap]
 
 @[simp]
-theorem faceMap_coe_succAbove (i : Fin (j + 2)) (x : stdSimplex ℝ (Fin (j + 1))) (k : Fin (j + 1)) :
+theorem faceMap_coe_succAbove   (k : Fin (j + 1)) :
     (faceMap i x).1 (i.succAbove k) = x.1 k := by
   simp [faceMap]
 
-theorem faceMap_mem_bdry (i : Fin (j + 2)) (x : stdSimplex ℝ (Fin (j + 1))) :
+theorem faceMap_mem_bdry   :
     faceMap i x ∈ bdry (j + 1) := ⟨i, faceMap_coe_same i x⟩
 
 /-- The stick-breaking map from the `d`-cube to the standard `d`-simplex. -/
@@ -80,7 +80,7 @@ def stickSimplex : (d : ℕ) → C(I^Fin d, stdSimplex ℝ (Fin (d + 1)))
               · exact mul_nonneg (t 0).2.1
                   ((stickSimplex d (fun j => t j.succ)).property.1 j)
             · rw [Fin.sum_univ_succ]
-              simp only [Fin.cons_zero, Fin.cons_succ]
+              simp 
               rw [← Finset.mul_sum, stdSimplex.sum_eq_one]
               ring⟩
         continuous_toFun := by
@@ -93,16 +93,12 @@ def stickSimplex : (d : ℕ) → C(I^Fin d, stdSimplex ℝ (Fin (d + 1)))
           · simp only [Fin.cons_succ]
             have htail : Continuous (fun t : I^Fin (d + 1) => fun k : Fin d => t k.succ) := by
               fun_prop
-            have hrec : Continuous
-                (fun t : I^Fin (d + 1) => stickSimplex d (fun k : Fin d => t k.succ)) :=
+            have hrec  :=
               (stickSimplex d).continuous.comp htail
             exact (by fun_prop : Continuous fun t : I^Fin (d + 1) => (t 0 : ℝ)).mul
               (((continuous_apply j).comp continuous_subtype_val).comp hrec) }
 
-@[simp]
-theorem stickSimplex_zero (t : I^Fin 0) :
-    stickSimplex 0 t = stdSimplex.vertex (0 : Fin 1) :=
-  rfl
+
 
 @[simp]
 theorem stickSimplex_succ_zero (d : ℕ) (t : I^Fin (d + 1)) :
@@ -115,49 +111,35 @@ theorem stickSimplex_succ_succ (d : ℕ) (t : I^Fin (d + 1)) (i : Fin (d + 1)) :
       (t 0 : ℝ) * stickSimplex d (fun j => t j.succ) i :=
   rfl
 
-theorem stickSimplex_succ_val (d : ℕ) (t : I^Fin (d + 1)) :
-    (⇑(stickSimplex (d + 1) t) : Fin (d + 2) → ℝ) =
-      (Fin.cons (1 - (t 0 : ℝ))
-        (fun i => (t 0 : ℝ) * stickSimplex d (fun j => t j.succ) i) :
-          Fin (d + 2) → ℝ) :=
-  rfl
+
 
 theorem stickSimplex_cons_val (d : ℕ) (a : I) (t : I^Fin d) :
     (⇑(stickSimplex (d + 1) (Fin.cons a t)) : Fin (d + 2) → ℝ) =
       (Fin.cons (1 - (a : ℝ))
-        (fun i => (a : ℝ) * stickSimplex d t i) : Fin (d + 2) → ℝ) := by
-  rw [stickSimplex_succ_val]
-  simp only [Fin.cons_zero, Fin.cons_succ]
+        (fun i => (a : ℝ) * stickSimplex d t i) : Fin (d + 2) → ℝ) := rfl
 
 /-! ### Cubical faces -/
 
-theorem cubeFace_zero_eq_cons {d : ℕ} (a : I) (t : I^Fin d) :
-    cubeFace (0 : Fin (d + 1)) a t = (Fin.cons a t : I^Fin (d + 1)) := by
-  change Fin.insertNth 0 a t = (Fin.cons a t : I^Fin (d + 1))
-  exact Fin.insertNth_zero' a t
 
-theorem cubeFace_succ_eq_cons {d : ℕ} (i : Fin (d + 1)) (a : I)
+
+variable {d : ℕ}
+  (i : Fin (d + 1))
+theorem cubeFace_succ_eq_cons   (a : I)
     (t : I^Fin (d + 1)) :
     cubeFace i.succ a t =
       (Fin.cons (t 0) (cubeFace i a (Fin.tail t)) : I^Fin (d + 2)) := by
-  change i.succ.insertNth a t =
-    (Fin.cons (t 0) (i.insertNth a (Fin.tail t)) : I^Fin (d + 2))
+  
   rw [← Fin.cons_self_tail t]
   exact Fin.insertNth_succ_cons i a (t 0) (Fin.tail t)
 
 /-! ### Compatibility with simplex faces -/
 
-theorem faceMap_zero_val {d : ℕ} (s : stdSimplex ℝ (Fin (d + 1))) :
+theorem faceMap_zero_val  (s : stdSimplex ℝ (Fin (d + 1))) :
     (⇑(faceMap (0 : Fin (d + 2)) s) : Fin (d + 2) → ℝ) =
       (Fin.cons (0 : ℝ) (⇑s : Fin (d + 1) → ℝ) : Fin (d + 2) → ℝ) := by
-  funext j
-  refine Fin.cases ?_ (fun k => ?_) j
-  · change (faceMap (0 : Fin (d + 2)) s).1 0 = 0
-    exact faceMap_coe_same 0 s
-  · change (faceMap (0 : Fin (d + 2)) s).1 k.succ = s.1 k
-    simpa using faceMap_coe_succAbove (0 : Fin (d + 2)) s k
+  aesop (add simp [faceMap])
 
-theorem faceMap_succ_val {d : ℕ} (i : Fin (d + 1))
+theorem faceMap_succ_val  
     (s : stdSimplex ℝ (Fin (d + 1))) :
     (⇑(faceMap i.succ s) : Fin (d + 2) → ℝ) =
       (Fin.cons (s 0)
@@ -168,7 +150,7 @@ theorem faceMap_succ_val {d : ℕ} (i : Fin (d + 1))
   rw [← Fin.cons_self_tail (⇑s : Fin (d + 1) → ℝ), Fin.insertNth_succ_cons]
   simp only [Fin.cons_zero, Fin.cons_succ]
 
-theorem mul_insertNth_zero {d : ℕ} (i : Fin (d + 1)) (a : ℝ) (f : Fin d → ℝ) :
+theorem mul_insertNth_zero   (a : ℝ) (f : Fin d → ℝ) :
     (fun j : Fin (d + 1) => a *
         (@Fin.insertNth d (fun _ : Fin (d + 1) => ℝ) i (0 : ℝ) f) j) =
       @Fin.insertNth d (fun _ : Fin (d + 1) => ℝ) i (0 : ℝ)
@@ -186,12 +168,11 @@ theorem stickSimplex_cubeFace_one : ∀ (d : ℕ) (i : Fin (d + 1)) (t : I^Fin d
   induction d with
   | zero =>
       intro i t
-      have hi : i = 0 := Fin.eq_zero i
+      have hi  := Fin.eq_zero i
       subst i
       have hinput : cubeFace (0 : Fin 1) 1 t =
           (Fin.cons 1 t : I^Fin 1) := by
-        change Fin.insertNth 0 1 t = (Fin.cons 1 t : I^Fin 1)
-        exact Fin.insertNth_zero' 1 t
+        simp_all
       rw [hinput]
       apply stdSimplex.ext
       rw [stickSimplex_cons_val,
@@ -200,20 +181,10 @@ theorem stickSimplex_cubeFace_one : ∀ (d : ℕ) (i : Fin (d + 1)) (t : I^Fin d
   | succ d ih =>
       intro i t
       refine Fin.cases ?_ (fun i => ?_) i
-      · have hinput : cubeFace (0 : Fin (d + 2)) 1 t =
-            (Fin.cons 1 t : I^Fin (d + 2)) := by
-          change Fin.insertNth 0 1 t = (Fin.cons 1 t : I^Fin (d + 2))
-          exact Fin.insertNth_zero' 1 t
-        rw [hinput]
-        apply stdSimplex.ext
-        rw [stickSimplex_cons_val,
-          show (0 : Fin (d + 2)).castSucc = (0 : Fin (d + 3)) by rfl,
-          faceMap_zero_val]
-        norm_num
+      · aesop (add simp [stickSimplex_cons_val, faceMap_zero_val])
       · have hinput : cubeFace i.succ 1 t =
             (Fin.cons (t 0) (cubeFace i 1 (Fin.tail t)) : I^Fin (d + 2)) := by
-          change i.succ.insertNth 1 t =
-            (Fin.cons (t 0) (i.insertNth 1 (Fin.tail t)) : I^Fin (d + 2))
+          
           rw [← Fin.cons_self_tail t]
           exact Fin.insertNth_succ_cons i 1 (t 0) (Fin.tail t)
         rw [hinput]
@@ -221,18 +192,7 @@ theorem stickSimplex_cubeFace_one : ∀ (d : ℕ) (i : Fin (d + 1)) (t : I^Fin d
         rw [stickSimplex_cons_val,
           show i.succ.castSucc = i.castSucc.succ by rfl,
           faceMap_succ_val i.castSucc]
-        simp only [stickSimplex_succ_zero, stickSimplex_succ_succ]
-        apply congrArg (fun f : Fin (d + 2) → ℝ =>
-          (Fin.cons (1 - (t 0 : ℝ)) f : Fin (d + 3) → ℝ))
-        rw [ih]
-        change (fun j : Fin (d + 2) => (t 0 : ℝ) *
-            (@Fin.insertNth (d + 1) (fun _ : Fin (d + 2) => ℝ) i.castSucc 0
-              (⇑(stickSimplex d (Fin.tail t)) : Fin (d + 1) → ℝ)) j) =
-          @Fin.insertNth (d + 1) (fun _ : Fin (d + 2) => ℝ) i.castSucc 0
-            (fun j : Fin (d + 1) => (t 0 : ℝ) *
-              stickSimplex d (Fin.tail t) j)
-        exact mul_insertNth_zero i.castSucc (t 0 : ℝ)
-          (⇑(stickSimplex d (Fin.tail t)) : Fin (d + 1) → ℝ)
+        aesop (add unsafe apply [mul_insertNth_zero])
 
 /-- The final lower cube face is the final simplex face. -/
 theorem stickSimplex_cubeFace_last_zero : ∀ (d : ℕ) (t : I^Fin d),
@@ -243,8 +203,7 @@ theorem stickSimplex_cubeFace_last_zero : ∀ (d : ℕ) (t : I^Fin d),
   | zero =>
       intro t
       have hinput : cubeFace (Fin.last 0) 0 t = (Fin.cons 0 t : I^Fin 1) := by
-        change Fin.insertNth 0 0 t = (Fin.cons 0 t : I^Fin 1)
-        exact Fin.insertNth_zero' 0 t
+        simp_all
       rw [hinput]
       apply stdSimplex.ext
       rw [stickSimplex_cons_val,
@@ -256,8 +215,7 @@ theorem stickSimplex_cubeFace_last_zero : ∀ (d : ℕ) (t : I^Fin d),
       intro t
       have hinput : cubeFace (Fin.last (d + 1)) 0 t =
           (Fin.cons (t 0) (cubeFace (Fin.last d) 0 (Fin.tail t)) : I^Fin (d + 2)) := by
-        change (Fin.last d).succ.insertNth 0 t =
-          (Fin.cons (t 0) ((Fin.last d).insertNth 0 (Fin.tail t)) : I^Fin (d + 2))
+        
         rw [← Fin.cons_self_tail t]
         exact Fin.insertNth_succ_cons (Fin.last d) 0 (t 0) (Fin.tail t)
       rw [hinput]
@@ -269,11 +227,7 @@ theorem stickSimplex_cubeFace_last_zero : ∀ (d : ℕ) (t : I^Fin d),
       apply congrArg (fun f : Fin (d + 2) → ℝ =>
         (Fin.cons (1 - (t 0 : ℝ)) f : Fin (d + 3) → ℝ))
       rw [ih]
-      change (fun j : Fin (d + 2) => (t 0 : ℝ) *
-          (@Fin.insertNth (d + 1) (fun _ : Fin (d + 2) => ℝ) (Fin.last (d + 1)) 0
-            (⇑(stickSimplex d (Fin.tail t)) : Fin (d + 1) → ℝ)) j) =
-        @Fin.insertNth (d + 1) (fun _ : Fin (d + 2) => ℝ) (Fin.last (d + 1)) 0
-          (fun j : Fin (d + 1) => (t 0 : ℝ) * stickSimplex d (Fin.tail t) j)
+      
       exact mul_insertNth_zero (Fin.last (d + 1)) (t 0 : ℝ)
         (⇑(stickSimplex d (Fin.tail t)) : Fin (d + 1) → ℝ)
 
@@ -284,18 +238,11 @@ theorem stickSimplex_cubeFace_zero_succ : ∀ (d : ℕ) (i : Fin (d + 1)) (t : I
   intro d
   induction d with
   | zero =>
-      intro i t
-      have hi : i = 0 := Fin.eq_zero i
-      subst i
-      rw [cubeFace_zero_eq_cons]
-      change (0 : ℝ) * stickSimplex 0 t 0 = 0
-      ring
+      simp_all
   | succ d ih =>
       intro i t
       refine Fin.cases ?_ (fun i => ?_) i
-      · rw [cubeFace_zero_eq_cons]
-        change (0 : ℝ) * stickSimplex (d + 1) t 0 = 0
-        ring
+      · aesop (add simp [stickSimplex])
       · rw [cubeFace_succ_eq_cons]
         change (t 0 : ℝ) *
             stickSimplex (d + 1) (cubeFace i 0 (Fin.tail t)) i.succ = 0
@@ -308,16 +255,11 @@ theorem stickSimplex_cubeFace_zero_last : ∀ (d : ℕ) (i : Fin (d + 1)) (t : I
   intro d
   induction d with
   | zero =>
-      intro i t
-      simpa only [show i = 0 by exact Fin.eq_zero i,
-        show Fin.last 1 = (0 : Fin 1).succ by rfl] using
-          stickSimplex_cubeFace_zero_succ 0 (0 : Fin 1) t
+      grind [stickSimplex_cubeFace_zero_succ]
   | succ d ih =>
       intro i t
       refine Fin.cases ?_ (fun i => ?_) i
-      · rw [cubeFace_zero_eq_cons]
-        change (0 : ℝ) * stickSimplex (d + 1) t (Fin.last (d + 1)) = 0
-        ring
+      · aesop (add simp [stickSimplex])
       · rw [cubeFace_succ_eq_cons]
         change (t 0 : ℝ) *
             stickSimplex (d + 1) (cubeFace i 0 (Fin.tail t)) (Fin.last (d + 1)) = 0
@@ -330,7 +272,7 @@ def simplexCodimTwo (d : ℕ) : Set (stdSimplex ℝ (Fin (d + 1))) :=
   {z | ∃ i j, i ≠ j ∧ z i = 0 ∧ z j = 0}
 
 /-- A simplex face applied to a boundary point lands in the codimension-two skeleton. -/
-theorem faceMap_mem_simplexCodimTwo {d : ℕ} (i : Fin (d + 2))
+theorem faceMap_mem_simplexCodimTwo  (i : Fin (d + 2))
     (z : stdSimplex ℝ (Fin (d + 1))) (hz : z ∈ bdry d) :
     faceMap i z ∈ simplexCodimTwo (d + 1) := by
   obtain ⟨j, hj⟩ := hz
@@ -340,14 +282,12 @@ theorem faceMap_mem_simplexCodimTwo {d : ℕ} (i : Fin (d + 2))
   rw [faceMap_coe_succAbove, hj]
 
 /-- Every nonfinal lower cube face lands in the codimension-two skeleton. -/
-theorem stickSimplex_cubeFace_zero_mem_codimTwo {d : ℕ} (i : Fin (d + 1))
+theorem stickSimplex_cubeFace_zero_mem_codimTwo  
     (hi : i ≠ Fin.last d) (t : I^Fin d) :
     stickSimplex (d + 1) (cubeFace i 0 t) ∈ simplexCodimTwo (d + 1) := by
-  have hlt : i < Fin.last d := Fin.lt_last_iff_ne_last.mpr hi
+  have hlt  := Fin.lt_last_iff_ne_last.mpr hi
   have hsucc : i.succ ≠ Fin.last (d + 1) := by
-    apply ne_of_lt
-    rw [show Fin.last (d + 1) = (Fin.last d).succ by rfl]
-    exact Fin.succ_lt_succ_iff.mpr hlt
+    simp_all
   exact ⟨i.succ, Fin.last (d + 1), hsucc,
     stickSimplex_cubeFace_zero_succ d i t,
     stickSimplex_cubeFace_zero_last d i t⟩
@@ -362,21 +302,12 @@ theorem stickSimplex_mem_bdry (d : ℕ) (t : I^Fin d)
   | succ d =>
       obtain ⟨i, hi | hi⟩ := ht
       · have hrep : t = cubeFace i 0 (Fin.removeNth i t) := by
-          calc
-            t = i.insertNth (t i) (Fin.removeNth i t) :=
-              (Fin.insertNth_self_removeNth i t).symm
-            _ = i.insertNth 0 (Fin.removeNth i t) := by rw [hi]
-            _ = cubeFace i 0 (Fin.removeNth i t) := rfl
+          simp_all
         rw [hrep]
         exact ⟨i.succ, stickSimplex_cubeFace_zero_succ d i (Fin.removeNth i t)⟩
       · have hrep : t = cubeFace i 1 (Fin.removeNth i t) := by
-          calc
-            t = i.insertNth (t i) (Fin.removeNth i t) :=
-              (Fin.insertNth_self_removeNth i t).symm
-            _ = i.insertNth 1 (Fin.removeNth i t) := by rw [hi]
-            _ = cubeFace i 1 (Fin.removeNth i t) := rfl
-        rw [hrep, stickSimplex_cubeFace_one]
-        exact faceMap_mem_bdry i.castSucc (stickSimplex d (Fin.removeNth i t))
+          simp_all
+        grind [stickSimplex_cubeFace_one, faceMap_mem_bdry]
 
 /-- Stick-breaking reflects the boundary: an interior cube point has no vanishing
 barycentric coordinate. -/
@@ -399,7 +330,7 @@ theorem mem_cube_boundary_of_stickSimplex_mem_bdry : ∀ (d : ℕ) (t : I^Fin d)
         have ht0 : (t 0 : ℝ) = 1 := by linarith
         exact ⟨0, Or.inr (Subtype.ext ht0)⟩
       | succ j =>
-        change (t 0 : ℝ) * stickSimplex d (fun k => t k.succ) j = 0 at hi
+        
         rcases mul_eq_zero.mp hi with ht0 | htail
         · exact ⟨0, Or.inl (Subtype.ext ht0)⟩
         · obtain ⟨k, hk⟩ := ih (fun j => t j.succ) ⟨j, htail⟩
@@ -423,10 +354,8 @@ theorem stickSimplex_injective_of_not_mem_boundary : ∀ (d : ℕ) (t u : I^Fin 
   | succ d ih =>
       intro t u ht hu hstick
       have hheadReal : (t 0 : ℝ) = (u 0 : ℝ) := by
-        have hzero := congrArg (fun z : stdSimplex ℝ (Fin (d + 2)) => z 0) hstick
-        simp only [stickSimplex_succ_zero] at hzero
-        linarith
-      have hhead : t 0 = u 0 := Subtype.ext hheadReal
+        grind [stickSimplex_succ_zero]
+      have hhead  := Subtype.ext hheadReal
       have ht0 : (t 0 : ℝ) ≠ 0 := by
         intro ht0
         exact ht ⟨0, Or.inl (Subtype.ext ht0)⟩
@@ -456,15 +385,11 @@ theorem stickSimplex_surjective : ∀ d : ℕ, Function.Surjective (stickSimplex
   | zero =>
       intro z
       refine ⟨default, ?_⟩
-      apply stdSimplex.ext
-      funext i
-      have hi : i = 0 := Fin.eq_zero i
-      subst i
-      simp [stickSimplex, stdSimplex.vertex]
+      ext <;> simp_all []
   | succ d ih =>
       intro z
-      let a : ℝ := 1 - z.1 0
-      have ha0 : 0 ≤ a := sub_nonneg.mpr (stdSimplex.le_one z 0)
+      let a  := 1 - z.1 0
+      have ha0  := sub_nonneg.mpr (stdSimplex.le_one z 0)
       have ha1 : a ≤ 1 := by
         dsimp [a]
         exact sub_le_self 1 (z.property.1 0)
@@ -485,15 +410,12 @@ theorem stickSimplex_surjective : ∀ d : ℕ, Function.Surjective (stickSimplex
             have hzsum := z.property.2
             rw [Fin.sum_univ_succ] at hzsum
             change z.1 0 + ∑ k : Fin (d + 1), z.1 k.succ = 1 at hzsum
-            have hzj_le : z.1 j.succ ≤ ∑ k : Fin (d + 1), z.1 k.succ :=
+            have hzj_le  :=
               Finset.single_le_sum (fun k _ => z.property.1 k.succ) (Finset.mem_univ j)
             have htailsum : ∑ k : Fin (d + 1), z.1 k.succ = 0 := by
-              have htailform : ∑ k : Fin (d + 1), z.1 k.succ = 1 - z.1 0 :=
-                (eq_sub_iff_add_eq).2 (by simpa [add_comm] using hzsum)
-              rw [hz0one] at htailform
-              simpa using htailform
+              simp_all
             rw [htailsum] at hzj_le
-            have hzjzero : z.1 j.succ = 0 :=
+            have hzjzero  :=
               le_antisymm hzj_le (z.property.1 j.succ)
             simp [t, hzjzero]
       · let ai : I := ⟨a, ha0, ha1⟩
@@ -505,11 +427,7 @@ theorem stickSimplex_surjective : ∀ d : ℕ, Function.Surjective (stickSimplex
               rw [Fin.sum_univ_succ] at hzsum
               change z.1 0 + ∑ i : Fin (d + 1), z.1 i.succ = 1 at hzsum
               rw [← Finset.sum_div]
-              have hsum : ∑ i : Fin (d + 1), z.1 i.succ = a := by
-                have htailform : ∑ i : Fin (d + 1), z.1 i.succ = 1 - z.1 0 :=
-                  (eq_sub_iff_add_eq).2 (by simpa [add_comm] using hzsum)
-                simpa [a] using htailform
-              rw [hsum, div_self ha]⟩
+              grind⟩
         obtain ⟨u, hu⟩ := ih y
         refine ⟨Fin.cons ai u, ?_⟩
         apply stdSimplex.ext
@@ -527,23 +445,16 @@ theorem stickSimplex_surjective : ∀ d : ℕ, Function.Surjective (stickSimplex
 
 /-- Every parameterized simplex face takes the cubical boundary into the codimension-two
 skeleton of the ambient simplex. -/
-theorem faceMap_stickSimplex_mem_codimTwo {d : ℕ} (i : Fin (d + 2))
+theorem faceMap_stickSimplex_mem_codimTwo  (i : Fin (d + 2))
     (t : I^Fin d) (ht : t ∈ Cube.boundary (Fin d)) :
     faceMap i (stickSimplex d t) ∈ simplexCodimTwo (d + 1) :=
   faceMap_mem_simplexCodimTwo i _ (stickSimplex_mem_bdry d t ht)
 
 /-- A parameterized cubical face, restricted to its own boundary, lands in the codimension-two
 skeleton of the simplex. -/
-theorem stickSimplex_cubeFace_mem_codimTwo {d : ℕ} (i : Fin (d + 1)) (a : I)
+theorem stickSimplex_cubeFace_mem_codimTwo   (a : I)
     (ha : a = 0 ∨ a = 1) (t : I^Fin d) (ht : t ∈ Cube.boundary (Fin d)) :
     stickSimplex (d + 1) (cubeFace i a t) ∈ simplexCodimTwo (d + 1) := by
-  rcases ha with rfl | rfl
-  · by_cases hi : i = Fin.last d
-    · subst i
-      rw [stickSimplex_cubeFace_last_zero]
-      exact faceMap_stickSimplex_mem_codimTwo _ t ht
-    · exact stickSimplex_cubeFace_zero_mem_codimTwo i hi t
-  · rw [stickSimplex_cubeFace_one]
-    exact faceMap_stickSimplex_mem_codimTwo _ t ht
+  grind [stickSimplex_cubeFace_last_zero, faceMap_stickSimplex_mem_codimTwo, stickSimplex_cubeFace_zero_mem_codimTwo, stickSimplex_cubeFace_one]
 
 end FiniteChains.TopologicalSingular

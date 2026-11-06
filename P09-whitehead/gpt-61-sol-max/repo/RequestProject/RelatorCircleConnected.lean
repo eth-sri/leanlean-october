@@ -1,13 +1,10 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RelatorCircleEdges
-public import RequestProject.OrderConstructionConnected
-
-@[expose] public section
+import RequestProject.RelatorCircleEdges
+import RequestProject.OrderConstructionConnected
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool)) (j : J)
 
 /-- Consecutive actual circle corners lie in the same actual edge-path component. -/
@@ -20,8 +17,10 @@ theorem relatorCircle_corner_component_next (k : Fin (w j).length) :
       ((orderComponentLabel_eq_of_le (relatorCircleEdge1 w j k).property.le).trans
         (orderComponentLabel_eq_of_le (relatorCircleEdge0 w j k).property.le).symm))
 
+variable (hpos : 0 < (w j).length)
+include hpos in
 /-- Every actual circle corner is connected to the actual initial corner. -/
-theorem relatorCircle_corner_component_zero (hpos : 0 < (w j).length)
+theorem relatorCircle_corner_component_zero 
     (k : Fin (w j).length) :
     orderComponentLabel (RelatorCircle w j) (relatorCirclePoint w j k CPos.cor) =
       orderComponentLabel (RelatorCircle w j) (relatorCirclePoint w j ⟨0, hpos⟩ CPos.cor) := by
@@ -40,14 +39,15 @@ theorem relatorCircle_corner_component_zero (hpos : 0 < (w j).length)
       exact (he ▸ relatorCircle_corner_component_next w j ⟨n, hn'⟩).trans (ih hn')
   exact h k.val k.isLt
 
+include hpos in
 /-- Each nonempty genuine relator circle is connected by actual order-complex edge paths. -/
-theorem relatorCircle_isConnected (hpos : 0 < (w j).length) :
+theorem relatorCircle_isConnected  :
     IsConnected (orderCx (RelatorCircle w j)) := by
   have h : ∀ x : RelatorCircle w j,
       orderComponentLabel (RelatorCircle w j) x =
         orderComponentLabel (RelatorCircle w j) (relatorCirclePoint w j ⟨0, hpos⟩ CPos.cor) := by
     rintro ⟨⟨j', k, t⟩, hj, hk⟩
-    change j' = j at hj
+    dsimp at hj
     subst j'
     let n : Fin (w j).length := ⟨k, hk⟩
     have hc := relatorCircle_corner_component_zero w j hpos n

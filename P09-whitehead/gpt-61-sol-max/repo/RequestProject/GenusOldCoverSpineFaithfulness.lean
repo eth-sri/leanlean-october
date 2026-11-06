@@ -1,13 +1,9 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.TruncatedCoverRetraction
-public import RequestProject.GenusCoveredSpineCycleFaithfulness
-
-@[expose] public section
+import RequestProject.TruncatedCoverRetraction
+import RequestProject.GenusCoveredSpineCycleFaithfulness
 
 /-! Actual covered-spine cycles are detected in the old cubical block. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
@@ -18,7 +14,7 @@ variable (q : ℕ) [NeZero q]
 abbrev OldCoveredSpine :=
   {p : TruncatedCover f // truncatedCoverProjection f p ∈ genusSpineCellSet q}
 
-def oldCoveredSpineToOld (p : OldCoveredSpine q f) : P := truncatedCoverRetraction f p.1
+def oldCoveredSpineToOld (p : OldCoveredSpine q f)  := truncatedCoverRetraction f p.1
 
 theorem oldCoveredSpineToOld_monotone : Monotone (oldCoveredSpineToOld q f) :=
   fun _ _ h => h.1

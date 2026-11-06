@@ -1,9 +1,7 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.StabilizedDiskPresentation
-public import RequestProject.DiskFamilyMap
-
-@[expose] public section
+import RequestProject.StabilizedDiskPresentation
+import RequestProject.DiskFamilyMap
 
 /-! The filled-circle stabilization is natural for literal disk
 inclusions. This includes its actual forward homotopy equivalence,
@@ -20,10 +18,7 @@ theorem diskRoseMap_comp (f : A → B) (g : B → D) :
   · intro u
     cases u
     rfl
-  · rintro ⟨a, x⟩
-    change diskRoseMap g (diskRoseMap f (cell _ _ ⟨a, x⟩)) = _
-    rw [diskRoseMap_cell, diskRoseMap_cell, diskRoseMap_cell]
-    rfl
+  · simp_all
 
 end FiniteChains.ClassicalGraphModel
 
@@ -58,7 +53,7 @@ theorem attaching_natural (z : BoundaryFamily (J ⊕ PUnit) (Fin 2 → ℝ)) :
     exact congrArg (fun m => m (dummyCircleBoundaryHomeomorph a))
       (diskRoseMap_comp Sum.inr (withDummy f))
 
-def map : C(Model r, Model s) :=
+def map  :=
   diskFamilyMap (attaching r) (attaching s) (diskRoseMap (withDummy f))
     (withDummy c) (fun j a => attaching_natural f c r s h ⟨j, a⟩)
 

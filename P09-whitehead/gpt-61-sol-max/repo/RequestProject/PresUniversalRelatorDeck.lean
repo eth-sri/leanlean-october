@@ -1,15 +1,12 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.PresCoverRelatorNaturality
-public import RequestProject.OrderUniversalDeck
-public import RequestProject.OrderUniversalPosetCover
-public import RequestProject.PresPosetConnected
-
-@[expose] public section
+import RequestProject.PresCoverRelatorNaturality
+import RequestProject.OrderUniversalDeck
+import RequestProject.OrderUniversalPosetCover
+import RequestProject.PresPosetConnected
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (w : J → List (α × Bool))
   (hpos : ∀ j, 0 < (w j).length)
 

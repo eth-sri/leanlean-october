@@ -1,8 +1,6 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.CoverChainComplex
-
-@[expose] public section
+import RequestProject.CoverChainComplex
 
 /-!
 # The boundaries of the cover are the Fox vectors of the relator subgroup
@@ -46,7 +44,7 @@ theorem exists_mem_smul_foxVec {P : Subgroup (FreeGroup α)} [P.Normal] (hP : P 
         rw [foxVec_mul (hP hw₁), ← e₁, ← e₂, add_smul]⟩
   | single q n =>
       obtain ⟨f, rfl⟩ := Quotient.exists_rep q
-      have hconj : f * r * f⁻¹ ∈ P := Subgroup.Normal.conj_mem ‹P.Normal› r hr f
+      have hconj  := Subgroup.Normal.conj_mem ‹P.Normal› r hr f
       refine ⟨(f * r * f⁻¹) ^ n, Subgroup.zpow_mem _ hconj n, ?_⟩
       have hsingle : (single (QuotientGroup.mk f : FreeGroup α ⧸ Nsub) n : CoverRing Nsub)
           = n • proj Nsub (grp f) := by
@@ -54,6 +52,6 @@ theorem exists_mem_smul_foxVec {P : Subgroup (FreeGroup α)} [P.Normal] (hP : P 
       rw [foxVec_zpow (Nsub := Nsub) (hP hconj) n, foxVec_conj (Nsub := Nsub) (hP hr),
         hsingle, smul_assoc]
 
-variable (Nsub ρ)
+
 
 end FiniteChains

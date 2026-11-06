@@ -1,16 +1,14 @@
-module
+import Mathlib.Tactic
 
-public import RequestProject.RelativeAmbientChain
-public import RequestProject.PresChainRealization
-
-@[expose] public section
+import RequestProject.RelativeAmbientChain
+import RequestProject.PresChainRealization
 
 /-! The concrete relative induction as `PresChainFS` and hence as actual
 topological presentation chains. The zeroth presentation is the original
 core itself, not a larger presentation merely containing it. Unverified. -/
 
 noncomputable section
-open scoped Classical
+
 
 namespace FiniteChains.PresInclusionFS
 variable {A B J K : Type} [DecidableEq A] [DecidableEq B]
@@ -25,9 +23,9 @@ theorem zero_universal_chains
   apply (Comb.fs_univCover_zero_pi2_iff ρ (groupHom ρ τ g f hrel) f hf).2 ?_ u hu
   intro v hv
   apply hz v
-  change coverSecondBoundary (relSub ρ) ρ v = 0
+  
   ext i : 1
-  simpa only [fs_coverSecondBoundary_apply, Finsupp.zero_apply] using hv i
+  simpa [fs_coverSecondBoundary_apply, Finsupp.zero_apply] using hv i
 end FiniteChains.PresInclusionFS
 
 namespace FiniteChains.RelativeNormalForm.AmbientChain
@@ -57,26 +55,32 @@ def chainCellIncl : ∀ i, c.chainCell i → c.chainCell (i + 1)
   | 0 => Sum.inl
   | i + 1 => oldCellIncl (c.mono i)
 
-theorem chainGenIncl_injective (i : ℕ) : Function.Injective (c.chainGenIncl i) := by
+variable (i : ℕ)
+include i in
+theorem chainGenIncl_injective  : Function.Injective (c.chainGenIncl i) := by
   cases i
   · exact Sum.inl_injective
   · exact Function.injective_id
 
-theorem chainCellIncl_injective (i : ℕ) : Function.Injective (c.chainCellIncl i) := by
+include i in
+theorem chainCellIncl_injective  : Function.Injective (c.chainCellIncl i) := by
   cases i with
   | zero => exact Sum.inl_injective
   | succ i => exact oldCellIncl_injective (c.mono i)
 
-theorem chainRel_incl (i : ℕ) (j : c.chainCell i) :
+include i in
+theorem chainRel_incl  (j : c.chainCell i) :
     c.chainRel (i + 1) (c.chainCellIncl i j) = FreeGroup.map (c.chainGenIncl i) (c.chainRel i j) := by
   cases i with
   | zero => rfl
   | succ i =>
       cases j with
-      | inl j => exact (FreeGroup.map.id (FreeGroup.map Sum.inl (core j))).symm
+      | inl j => solve_by_elim [FreeGroup.map.id, symm]
       | inr j => exact (FreeGroup.map.id (c.rel j.val)).symm
 
-theorem chainMor_zero (hinj : Function.Injective (expMatrix core)) (i : ℕ) (hi : i < n + 1)
+variable (hinj : Function.Injective (expMatrix core))
+include hinj in
+theorem chainMor_zero  (i : ℕ) (hi : i < n + 1)
     (x : c.chainCell i →₀ MonoidAlgebra ℤ (PresGroup (c.chainRel i)))
     (hx : FSIsFoxCycle (c.chainRel i) x) :
     (PresInclusionFS.mor (c.chainRel i) (c.chainRel (i + 1))
@@ -88,9 +92,10 @@ theorem chainMor_zero (hinj : Function.Injective (expMatrix core)) (i : ℕ) (hi
         (c.core_trivial 0) x hx
   | succ i => exact c.zero i (by omega) x hx
 
+include hinj in
 /-- Every hypothesis in the presentation-chain zero field is supplied by
 the actual finite-support construction. -/
-def toPresChainFS (hinj : Function.Injective (expMatrix core)) : PresChainFS core (n + 1) where
+def toPresChainFS  : PresChainFS core (n + 1) where
   gen := c.chainGen
   cell := c.chainCell
   decGen := c.chainGenDecidableEq
@@ -106,12 +111,10 @@ def toPresChainFS (hinj : Function.Injective (expMatrix core)) : PresChainFS cor
   baseCell_injective := Function.injective_id
   rel_base := by intro j; exact (FreeGroup.map.id (core j)).symm
   zero_pi2 := by
-    intro i hi u hu
-    exact PresInclusionFS.zero_universal_chains (c.chainRel i) (c.chainRel (i + 1))
-      (c.chainGenIncl i) (c.chainCellIncl i) (c.chainGenIncl_injective i)
-      (c.chainCellIncl_injective i) (c.chainRel_incl i) (c.chainMor_zero hinj i hi) u hu
+    classical solve_by_elim (transparency := .default) (maxDepth := 10) [FiniteChains.PresInclusionFS.zero_universal_chains, FiniteChains.RelativeNormalForm.AmbientChain.chainGenIncl_injective, FiniteChains.RelativeNormalForm.AmbientChain.chainCellIncl_injective, FiniteChains.RelativeNormalForm.AmbientChain.chainRel_incl, FiniteChains.RelativeNormalForm.AmbientChain.chainMor_zero]
 
-theorem chain_proper (i : ℕ) (hi : i < n + 1) :
+include i in
+theorem chain_proper  (hi : i < n + 1) :
     (∃ a : c.chainGen (i + 1), a ∉ Set.range (c.chainGenIncl i)) ∨
       ∃ j : c.chainCell (i + 1), j ∉ Set.range (c.chainCellIncl i) := by
   cases i with
