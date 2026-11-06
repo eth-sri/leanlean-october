@@ -1,0 +1,17 @@
+{
+  "problem_idx": 11,
+  "key": "PALOMAR-2026-10-10-000002-v1",
+  "model_name": "Claude-Opus-5.5 (high)",
+  "model_id": "opus-55-high",
+  "harness": "Claude Code 2.1.280",
+  "status": "verified",
+  "verified": true,
+  "failure_label": null,
+  "verification_note": "Fresh verification passed.",
+  "baseline_tokens": 854028,
+  "final_tokens": 520779,
+  "compression_percent": 39.02085177535163,
+  "credited_compression_percent": 39.02085177535163,
+  "cost": 29.750902800000002,
+  "elapsed_seconds": 39173.218268579
+}

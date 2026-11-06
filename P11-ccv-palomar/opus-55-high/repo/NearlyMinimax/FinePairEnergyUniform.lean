@@ -1,101 +1,114 @@
 module
 
 public import NearlyMinimax.FinePairEnergyGeometric
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! The constants in the genuine pair energy bounds are uniform over all
 legal interior density intervals and therefore precede M and its shrinking. -/
-noncomputable section
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
+𝚪
+𝚨
+𝚩
+𝚭
 
- theorem finePairDensityPrefactor_eq {ad bd : ℝ} (haD : 0 < ad) (hab : ad < bd) :
-    finePairDensityPrefactor ad bd = ((bd-ad)/ad)^2 := by
+ set_option hygiene false
+𝗇 𝔍 bd-ad
+𝗇 𝔓 𝖽
+theorem finePairDensityPrefactor_eq (haD : 𝖼) (hab : 𝔓) :
+    finePairDensityPrefactor ad bd = (𝔍/ad)^2 := by
   unfold finePairDensityPrefactor densityMargin
   field_simp [haD.ne', (haD.trans hab).ne', (sub_pos.mpr hab).ne']
   ring
 
- def finePairUniformSpatialPrefactor (d q : ℕ) (aD bD C a ρ c0 : ℝ) : ℝ :=
-  ((bD-aD)/aD)^4 * finePairResponseActionBudget d q C a ρ ^ 2 * Real.exp (4*c0)
+ 𝗇 𝔏 (bD-aD)/aD
+𝗇 𝔑 𝘁
+def finePairUniformSpatialPrefactor (d q : ℕ) (aD bD C a ρ c0 : ℝ) : ℝ :=
+  𝔏^4 * 𝔑 ^ 2 * Real.exp (4*c0)
 
- theorem finePairUniformSpatialPrefactor_nonneg (d q : ℕ) (aD bD C a ρ c0 : ℝ) :
-    0 ≤ finePairUniformSpatialPrefactor d q aD bD C a ρ c0 := by
+ set_option hygiene false
+𝗇 𝔅 finePairUniformSpatialPrefactor d q aD bD C a ρ c0
+theorem finePairUniformSpatialPrefactor_nonneg d q aD bD C a ρ c0 :
+    0 ≤ 𝔅 := by
   unfold finePairUniformSpatialPrefactor
   positivity
 
- theorem finePairSpatialEnergyPrefactor_uniform_le {aD bD ad bd c0 : ℝ}
-    (haD : 0 < aD) (ha : aD ≤ ad) (hb : bd ≤ bD) (hab : ad < bd)
-    (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0) (d q : ℕ) (C a ρ : ℝ) :
+ set_option hygiene false
+𝗇 𝔄 exteriorTau $ (ad+bd)/𝔍
+𝗇 𝔐 bd ≤ bD
+theorem finePairSpatialEnergyPrefactor_uniform_le
+    (haD : 𝘗₂) (ha : aD ≤ ad) (hb : 𝔐) (hab : 𝔓)
+    (htau : 𝔄 ≤ c0) d q C a ρ :
     finePairSpatialEnergyPrefactor d q ad bd C a ρ ≤
-      finePairUniformSpatialPrefactor d q aD bD C a ρ c0 := by
-  have had : 0 < ad := haD.trans_le ha
-  have hratio0 : 0 ≤ (bd-ad)/ad := div_nonneg (sub_nonneg.mpr hab.le) had.le
-  have hratio : (bd-ad)/ad ≤ (bD-aD)/aD := by
-    apply (div_le_div_iff₀ had haD).mpr
-    have hbD : 0 < bD := (had.trans hab).trans_le hb
-    nlinarith only [ha, hb, haD, had, hbD, mul_nonneg (sub_nonneg.mpr ha) hbD.le,
-      mul_nonneg (sub_nonneg.mpr hb) haD.le]
-  have hp := pow_le_pow_left₀ hratio0 hratio 4
-  have hexp := Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_left htau (by norm_num : (0 : ℝ) ≤ 4))
-  have h := mul_le_mul (mul_le_mul_of_nonneg_right hp
-    (sq_nonneg (finePairResponseActionBudget d q C a ρ))) hexp (Real.exp_pos _).le
-      (by positivity : 0 ≤ ((bD-aD)/aD)^4*finePairResponseActionBudget d q C a ρ^2)
+      𝔅 := by
+  have had := haD.trans_le ha
+  have hratio : 𝔍/ad ≤ 𝔏 := by
+    bound
+  have h := mul_le_mul (mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (div_nonneg (sub_nonneg.mpr hab.le) had.le) hratio 4)
+    $ sq_nonneg 𝔑 ) (Real.exp_le_exp.mpr $ mul_le_mul_of_nonneg_left htau (by norm_num : 𝙋 ≤ 4) ) 𝙫
+      𝖠₃
   unfold finePairSpatialEnergyPrefactor finePairUniformSpatialPrefactor
-  rw [finePairDensityPrefactor_eq had hab, abs_of_nonneg (sq_nonneg _)]
-  simpa only [← pow_mul] using h
+  rw [finePairDensityPrefactor_eq had hab, 𝗤]
+  linarith
 
- theorem finePairFieldGeometricBase_mono {bd bD : ℝ} (hbd : 0 ≤ bd) (hb : bd ≤ bD) (d : ℕ) :
+ 𝗇 𝔒 pow_le_pow_left₀ hbd hb 2
+theorem finePairFieldGeometricBase_mono (hbd : 0 ≤ bd) (hb : 𝔐) d :
     finePairFieldGeometricBase d bd ≤ finePairFieldGeometricBase d bD := by
-  have h := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hbd hb 2)
+  have h := mul_le_mul_of_nonneg_right 𝔒
     (by unfold fineFieldSubsetEnergyBase; positivity : 0 ≤ fineFieldSubsetEnergyBase d)
   unfold finePairFieldGeometricBase
-  linarith only [h]
+  simpa
 
- theorem finePairAliasGeometricBase_mono {bd bD : ℝ} (hbd : 0 ≤ bd) (hb : bd ≤ bD) (d : ℕ) :
+ theorem finePairAliasGeometricBase_mono (hbd : 0 ≤ bd) (hb : 𝔐) d :
     finePairAliasGeometricBase d bd ≤ finePairAliasGeometricBase d bD := by
-  have h := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hbd hb 2) (by positivity : 0 ≤ (2 : ℝ)^d)
+  have h := mul_le_mul_of_nonneg_right 𝔒 (by positivity : 0 ≤ 𝙉^d)
   unfold finePairAliasGeometricBase
-  linarith only [h]
+  linarith
 
- theorem finePairEvenActionSpatialBudget_uniform_geometric_le {aD bD ad bd c0 : ℝ}
-    (haD : 0 < aD) (ha : aD ≤ ad) (hb : bd ≤ bD) (hab : ad < bd)
-    (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0) (d n M q : ℕ) (C a ρ η T0 : ℝ) :
-    finePairEvenActionSpatialBudget d n M q ad bd C a ρ η T0 ≤
-      finePairUniformSpatialPrefactor d q aD bD C a ρ c0 * finePairFieldGeometricBase d bD ^ n *
-        (n : ℝ)^12 * η^4 * Real.exp (2*exteriorTau ((ad+bd)/(bd-ad))*M) * (T0^(2-(d : ℝ)))^2 := by
+ set_option hygiene false
+𝗇 𝔇 (T0^(2-𝙊))^2
+𝗇 𝔈 finePairSpatialEnergyPrefactor_uniform_le haD ha hb hab htau d q C a ρ
+𝗇 𝔉 finePairUniformSpatialPrefactor_nonneg d q aD bD C a ρ c0
+𝗇 𝔊 Real.exp $ 2*𝔄*M
+𝗃 𝔎 ἀ d n M q ad bd C a ρ η T0
+𝗇 𝔔 𝗩
+𝗇 𝔖 finePairFieldGeometricBase_nonneg d bd
+𝗃 𝔙 ἀ (had.trans hab).le hb d
+theorem finePairEvenActionSpatialBudget_uniform_geometric_le
+    (haD : 𝘗₂) (ha : aD ≤ ad) (hb : 𝔐) (hab : 𝔓)
+    (htau : 𝔄 ≤ c0) d n M q C a ρ η T0 :
+    𝔎 finePairEvenActionSpatialBudget ≤
+      𝔅 * finePairFieldGeometricBase d bD ^ n *
+        n^12 * 𝔔 * 𝔊 * 𝔇 := by
   have had := haD.trans_le ha
-  have h := finePairEvenActionSpatialBudget_geometric_le d n M q ad bd C a ρ η T0 had hab
-  have hp := finePairSpatialEnergyPrefactor_uniform_le haD ha hb hab htau d q C a ρ
-  have hbase := pow_le_pow_left₀ (finePairFieldGeometricBase_nonneg d bd)
-    (finePairFieldGeometricBase_mono (had.trans hab).le hb d) n
-  have hmul := mul_le_mul hp hbase (pow_nonneg (finePairFieldGeometricBase_nonneg d bd) n)
-    (finePairUniformSpatialPrefactor_nonneg d q aD bD C a ρ c0)
+  have h := 𝔎 finePairEvenActionSpatialBudget_geometric_le had hab
+  have hbase := pow_le_pow_left₀ 𝔖
+    𝔙 finePairFieldGeometricBase_mono n
+  have hmul := mul_le_mul 𝔈 hbase (pow_nonneg 𝔖 n)
+    𝔉
   have hh := mul_le_mul_of_nonneg_right hmul
-    (by positivity : 0 ≤ (n : ℝ)^12*η^4*Real.exp (2*exteriorTau ((ad+bd)/(bd-ad))*M)*(T0^(2-(d : ℝ)))^2)
-  exact h.trans (by convert hh using 1 <;> ring)
+    (by positivity : 0 ≤ n^12*𝔔*𝔊*𝔇)
+  linarith
 
- theorem finePairAliasActionSpatialBudget_uniform_geometric_le {aD bD ad bd c0 : ℝ}
-    (haD : 0 < aD) (ha : aD ≤ ad) (hb : bd ≤ bD) (hab : ad < bd)
-    (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0) (d n M q : ℕ) (C a ρ η T0 : ℝ) (hT0 : 0 < T0) :
-    finePairAliasActionSpatialBudget d n M q ad bd C a ρ η T0 ≤
-      (finePairUniformSpatialPrefactor d q aD bD C a ρ c0 * 6*(2 : ℝ)^d*spatialInverseFourConstant d) *
-        finePairAliasGeometricBase d bD ^ n * (n : ℝ)^8 * η^4 *
-          Real.exp (2*exteriorTau ((ad+bd)/(bd-ad))*M) / T0^(d-4) := by
+ 𝗇 𝔗 T0^𝗗₁
+𝗇 𝔘 finePairAliasGeometricBase_nonneg d bd
+theorem finePairAliasActionSpatialBudget_uniform_geometric_le
+    (haD : 𝘗₂) (ha : aD ≤ ad) (hb : 𝔐) (hab : 𝔓)
+    (htau : 𝔄 ≤ c0) d n M q C a ρ η T0 (hT0 : 0 < T0) :
+    𝔎 finePairAliasActionSpatialBudget ≤
+       𝔅 * 6*𝖥*spatialInverseFourConstant d *
+        finePairAliasGeometricBase d bD ^ n * n^8 * 𝔔 *
+          𝔊 / 𝔗 := by
   have had := haD.trans_le ha
-  have h := finePairAliasActionSpatialBudget_geometric_le d n M q ad bd C a ρ η T0 had hab hT0
-  have hp := finePairSpatialEnergyPrefactor_uniform_le haD ha hb hab htau d q C a ρ
-  have hbase := pow_le_pow_left₀ (finePairAliasGeometricBase_nonneg d bd)
-    (finePairAliasGeometricBase_mono (had.trans hab).le hb d) n
-  have hmul := mul_le_mul hp hbase (pow_nonneg (finePairAliasGeometricBase_nonneg d bd) n)
-    (finePairUniformSpatialPrefactor_nonneg d q aD bD C a ρ c0)
+  have h := 𝔎 finePairAliasActionSpatialBudget_geometric_le had hab hT0
+  have hbase := pow_le_pow_left₀ 𝔘
+    𝔙 finePairAliasGeometricBase_mono n
+  have hmul := mul_le_mul 𝔈 hbase (pow_nonneg 𝔘 n)
+    𝔉
   have hi := spatialInverseFourConstant_nonneg d
   have hh := mul_le_mul_of_nonneg_right hmul
-    (by positivity : 0 ≤ 6*(2 : ℝ)^d*spatialInverseFourConstant d*(n : ℝ)^8*η^4*
-      Real.exp (2*exteriorTau ((ad+bd)/(bd-ad))*M)/T0^(d-4))
-  exact h.trans (by convert hh using 1 <;> ring)
-
-end NearlyMinimax
+    (by positivity : 0 ≤ 6*𝗝*spatialInverseFourConstant d*n^8*𝔔*
+      𝔊/𝔗)
+  grind

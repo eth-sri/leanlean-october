@@ -2,153 +2,168 @@ module
 
 public import NearlyMinimax.CompleteSourceRows
 public import NearlyMinimax.HighUnionDensityCancellation
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Actual canonical mass cancellation for the entire source packet,
 including the singleton, all three pair rows, and every selected higher
 coarse/fine row. Primitive cancellation is proved from finite response
 atoms on the true carrier spaces. -/
-noncomputable section
-open Set MeasureTheory
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1200000
-attribute [local instance] Classical.propDecidable
+𝚸
+𝚪
+𝚨
+𝚩
+𝛆
+𝚬
 
+𝗃 𝔜 ἀ d D M q
+𝗃 𝔐 𝔜 ἀ a b
+𝗃 𝔙 𝔐 ἀ C lam ℓ N μ
+𝗇 𝔇 𝔙 SourceRowIndex
+𝗇 𝔒 .inr $ .inl _
+𝗇 𝔖 𝗱₁
+𝗇 𝔗 𝚁
 abbrev SourceRowDensityMark (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
-    SourceRowIndex d D M q a b C lam ℓ N μ → Type
+    𝔇 → Type
   | .inl p => FinePairRowDensityMark d D M p
-  | .inr (.inl _) => Unit × HighDensityMarkIndex D 1 D
-  | .inr (.inr i) => HigherBandCarrier d (higherBandFamilyTarget i.val) i.val.2 ×
-      HighDensityMarkIndex (higherBandFamilyGuardDegree M i.val) (higherBandFamilyTarget i.val) D
+  | 𝔒 => Unit × HighDensityMarkIndex D 1 D
+  | 𝔖 => HigherBandCarrier d (higherBandFamilyTarget i.val) i.val.2 ×
+      HighDensityMarkIndex 𝔗 (higherBandFamilyTarget i.val) D
 
+𝗇 𝔉 𝔙 SourceRowDensityMark i
 instance sourceRowDensityMark_measurable (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ) :
-    MeasurableSpace (SourceRowDensityMark d D M q a b C lam ℓ N μ i) := by
+    (i : 𝔇) :
+    MeasurableSpace 𝔉 := by
   cases i with
   | inl p => infer_instance
   | inr i => cases i <;> dsimp [SourceRowDensityMark] <;> infer_instance
 
+𝗇 𝔊 𝔙 SourceRowMark i
+𝗇 𝔔 fun e => 𝘆₂
 def sourceRowDensityProj (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ) →
-      SourceRowMark d D M q a b C lam ℓ N μ i → SourceRowDensityMark d D M q a b C lam ℓ N μ i
-  | .inl p => finePairRowDensityProj d D M q p
-  | .inr (.inl _) => fun e => (e.1,e.2.1)
-  | .inr (.inr _) => fun e => (e.1,e.2.1)
+    (i : 𝔇) →
+      𝔊 → 𝔉
+  | .inl p => 𝔜 finePairRowDensityProj p
+  | 𝔒 => 𝔔
+  | .inr $ .inr _ => 𝔔
 
+𝗇 𝔍 fun e => (e.1,(e.2,r))
+𝗇 𝔓 𝙮
 def sourceRowDensityLift (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (r : HighResponseMarkIndex (HighFrameIndex d D) q) :
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ) →
-      SourceRowDensityMark d D M q a b C lam ℓ N μ i → SourceRowMark d D M q a b C lam ℓ N μ i
-  | .inl p => finePairRowWithResponse d D M q p r
-  | .inr (.inl _) => fun e => (e.1,(e.2,r))
-  | .inr (.inr _) => fun e => (e.1,(e.2,r))
+    (r : HighResponseMarkIndex 𝔓 q) :
+    (i : 𝔇) →
+      𝔉 → 𝔊
+  | .inl p => 𝔜 finePairRowWithResponse p r
+  | 𝔒 => 𝔍
+  | .inr $ .inr _ => 𝔍
 
-theorem sourceRowDensityLift_measurable (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (r : HighResponseMarkIndex (HighFrameIndex d D) q)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ) :
-    Measurable (sourceRowDensityLift d D M q a b C lam ℓ N μ r i) := by
+𝗇 𝔏 𝔙 sourceRowDensityLift r i
+theorem sourceRowDensityLift_measurable d D M q a b C lam ℓ N μ
+    r
+    i :
+    Measurable 𝔏 := by
   cases i with
-  | inl p => exact finePairRowWithResponse_measurable d D M q p r
-  | inr i => cases i <;> exact measurable_fst.prodMk (measurable_snd.prodMk measurable_const)
+  | inl p => exact 𝔜 finePairRowWithResponse_measurable p r
+  | inr i => cases i <;> exact measurable_fst.prodMk $ measurable_snd.prodMk measurable_const
 
-theorem sourceRow_density_projection_slope (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (r : HighResponseMarkIndex (HighFrameIndex d D) q) (j : HighWindowLabels d k)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ)
-    (e : SourceRowMark d D M q a b C lam ℓ N μ i) (x : Covariate d) :
-    (sourceRowData d k D M q a b C lam ℓ N μ).rowSlope j i e x =
-    (sourceRowData d k D M q a b C lam ℓ N μ).rowSlope j i
-      (sourceRowDensityLift d D M q a b C lam ℓ N μ r i
-        (sourceRowDensityProj d D M q a b C lam ℓ N μ i e)) x := by
-  cases i with
-  | inl p => cases p <;> rfl
-  | inr i => cases i <;> rfl
-
-theorem sourceRow_density_projection_intercept (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (r : HighResponseMarkIndex (HighFrameIndex d D) q)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ)
-    (e : SourceRowMark d D M q a b C lam ℓ N μ i) :
-    (sourceRowData d k D M q a b C lam ℓ N μ).rowIntercept i e =
-    (sourceRowData d k D M q a b C lam ℓ N μ).rowIntercept i
-      (sourceRowDensityLift d D M q a b C lam ℓ N μ r i
-        (sourceRowDensityProj d D M q a b C lam ℓ N μ i e)) := by
+𝗃 𝔑 ἀ d k D M q a b
+𝗇 𝔄 𝔑 sourceRowData C lam ℓ N μ
+𝗇 𝔎 𝔙 sourceRowDensityProj i e
+𝗇 𝔈 𝔏 𝔎
+theorem sourceRow_density_projection_slope d k D M q a b C lam ℓ N μ
+    r j
+    i
+    e x :
+    (𝔄).rowSlope j i e x =
+    (𝔄).rowSlope j i
+      𝔈 x := by
   cases i with
   | inl p => cases p <;> rfl
   | inr i => cases i <;> rfl
 
-theorem sourceRow_density_observable_zero (d : ℕ) [NeZero d] (k D M q : ℕ)
-    (a b C lam ℓ N μ : ℝ)
-    (hpos : ∀ i, 0 < (sourceRowData d k D M q a b C lam ℓ N μ).rowMass i)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ)
-    (H : SourceRowDensityMark d D M q a b C lam ℓ N μ i → ℝ) (hH : Measurable H)
-    (B : ℝ) (hB : ∀ z, ‖H z‖ ≤ B) :
-    (∫ e, (sourceRowData d k D M q a b C lam ℓ N μ).rowActivation i e *
-      H (sourceRowDensityProj d D M q a b C lam ℓ N μ i e)
-      ∂(sourceRowData d k D M q a b C lam ℓ N μ).rowLaw i) = 0 := by
+theorem sourceRow_density_projection_intercept d k D M q a b C lam ℓ N μ
+    r
+    i
+    e :
+    (𝔄).rowIntercept i e =
+    (𝔄).rowIntercept i
+      𝔈 := by
+  cases i with
+  | inl p => cases p <;> rfl
+  | inr i => cases i <;> rfl
+
+𝗇 𝔘 0 < (𝔄).rowMass i
+theorem sourceRow_density_observable_zero (d : ℕ) [NeZero d] k D M q
+    a b C lam ℓ N μ
+    (hpos : ∀ i, 𝔘)
+    i
+    H (hH : Measurable H)
+    B (hB : ∀ z, ‖H z‖ ≤ B) :
+     ∫ e, (𝔄).rowActivation i e *
+      H 𝔎
+      ∂(𝔄).rowLaw i = 0 := by
   cases i with
   | inl p =>
-    exact finePairRow_density_observable_zero d D M q a b C ℓ N
-      (fun p => hpos (Sum.inl p)) p H hH B hB
+    exact 𝔐 finePairRow_density_observable_zero C ℓ N
+      (fun p => hpos $ Sum.inl p ) p H hH B hB
   | inr i =>
     cases i with
     | inl _ =>
-      exact highPacketAbsoluteLaw_density_observable_zero (Measure.dirac ()) a b D 1 D q C
-        (fun _ => finePairUnitMatrix d D) (fun _ _ => measurable_const) (integrable_const _)
-        (hpos (.inr (.inl ()))) H hH B hB
+      exact highPacketAbsoluteLaw_density_observable_zero 𝖶₁ a b D 1 D q C
+        𝗻 𝗱 (integrable_const _)
+        (hpos 𝘊₁) H hH B hB
     | inr i =>
       exact higherBandRow_density_observable_zero d (higherBandFamilyTarget i.val)
-        (higherBandFamilyGuardDegree M i.val) D q a b C lam ℓ
-        (higherBandFamilyUpper d ℓ N μ i.val) i.val.2 i.property.1
-        (hpos (.inr (.inr i))) H hH B hB
+        𝔗 D q a b C lam ℓ
+        𝙽 i.val.2 i.property.1
+        (hpos 𝔖) H hH B hB
 
-theorem sourceRowMass_positive_actual (d : ℕ) [NeZero d] (k D M q : ℕ)
-    (hD : 3 ≤ D) (hq : 1 ≤ q) (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (C : ℝ) (hC : 0 < C) (lam ℓ N μ : ℝ) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ) :
-    0 < (sourceRowData d k D M q a b C lam ℓ N μ).rowMass i := by
+theorem sourceRowMass_positive_actual (d : ℕ) [NeZero d] k D M q
+    (hD : 𝗕) (hq : 𝗘) a b (ha : 𝙆) (hab : 𝙭)
+    C (hC : 𝙴) lam ℓ N μ (hℓ : 𝙲₁) (hℓN : 𝖰₂)
+    i :
+    𝔘 := by
   cases i with
-  | inl p => exact finePairRowMass_positive d D hD M q hq a b ha hab C hC ℓ N hℓ hℓN p
+  | inl p => exact 𝙿₁ C hC ℓ N hℓ hℓN p
   | inr i =>
     cases i with
-    | inl _ => exact singletonRowMass_positive d D q hq a b ha hab C hC
-    | inr i => exact higherBandFamily_mass_positive d k D M q a b C lam ℓ N μ i
+    | inl _ => exact 𝘇₂ C hC
+    | inr i => exact 𝔑 higherBandFamily_mass_positive C lam ℓ N μ i
 
+𝗇 𝔅 𝖻 lam ℓ N μ
+𝗃 𝔚 𝔐 ἀ Cfr lam ℓ N μ
+𝗃 𝔛 𝔑 ἀ Cfr lam ℓ N μ r₀
 /-- Genuine canonical append annihilation for the complete actual source
 family, with only the original construction's numerical guards. -/
 theorem completeSourceMass_append_indicator_zero {d k D M q : ℕ}
-    [NeZero d] [NeZero k] [LinearOrder (HighWindowLabels d k)]
-    (C : ModelConstants d) (hD : 3 ≤ D) (hq : 1 ≤ q)
-    (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
-    (Cfr lam ℓ N μ : ℝ) (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
-    (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-      (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-        (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ))) (S : Set ℝ) (hS : MeasurableSet S) :
-    (∫ e, S.indicator (fun _ : ℝ => (1 : ℝ))
-      (highUnionSourceMass C (completeSourceRows C k D M q Cfr lam ℓ N μ)
-        (historyMarkedAppend (fun i j => j ∈ highNeighborLabels d k i)
-          (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e))) *
-      highUnionActivation (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C) e
-      ∂highUnionLaw (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C)) = 0 := by
-  let a := C.densityLower+1/(M : ℝ)
-  let b := C.densityUpper-1/(M : ℝ)
-  let R := completeSourceRows C k D M q Cfr lam ℓ N μ
-  obtain ⟨ha,hab⟩ := high_source_interval_numeric C (M : ℝ) hM
-  have hCf : 0 < Cfr := by linarith
-  have hpos := sourceRowMass_positive_actual d k D M q hD hq a b ha hab Cfr hCf lam ℓ N μ hℓ hℓN
-  let β₀ : HighFrameIndex d D := ⟨fun _ => 0,by simp⟩
-  let r₀ : HighResponseMarkIndex (HighFrameIndex d D) q := ((β₀,β₀),(false,false),0)
+    [NeZero d] [NeZero k] [LinearOrder 𝙯]
+    C (hD : 𝗕) (hq : 𝗘)
+    (hM : 𝘧)
+    Cfr lam ℓ N μ (hCfr : 𝗹) (hℓ : 𝙲₁) (hℓN : 𝖰₂)
+    j
+    h S (hS : MeasurableSet S) :
+     ∫ e, S.indicator 𝘋₁
+      (highUnionSourceMass C 𝔅
+        $ historyMarkedAppend 𝖫
+          𝗘₁ j 𝖷₁ ) *
+      highUnionActivation 𝔅 (highCenterMix C) e
+      ∂highUnionLaw 𝔅 (highCenterMix C) = 0 := by
+  let a := C.densityLower+𝗙
+  let b := C.densityUpper-𝗙
+  let R := 𝔅
+  obtain ⟨ha,hab⟩ := 𝗌₁
+  have hpos := sourceRowMass_positive_actual d k D M q hD hq a b ha hab Cfr  𝖡₄  lam ℓ N μ hℓ hℓN
+  let β₀ : 𝔓 := ⟨𝖾,𝖢₄⟩
+  let r₀ : HighResponseMarkIndex 𝔓 q := 𝖵₁
   exact highUnionSourceMass_append_indicator_zero_of_density_projection C R
-    (completeSourceRows_guards C k D M q hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN) hpos
-    (SourceRowDensityMark d D M q a b Cfr lam ℓ N μ)
-    (sourceRowDensityProj d D M q a b Cfr lam ℓ N μ)
-    (sourceRowDensityLift d D M q a b Cfr lam ℓ N μ r₀)
-    (sourceRowDensityLift_measurable d D M q a b Cfr lam ℓ N μ r₀)
-    (sourceRow_density_projection_slope d k D M q a b Cfr lam ℓ N μ r₀)
-    (sourceRow_density_projection_intercept d k D M q a b Cfr lam ℓ N μ r₀)
-    (sourceRow_density_observable_zero d k D M q a b Cfr lam ℓ N μ hpos) j h S hS
-
-end NearlyMinimax
+    (𝖠 ℓ N μ hCfr hℓ hℓN) hpos
+    𝔚 SourceRowDensityMark
+    𝔚 sourceRowDensityProj
+    (𝔚 sourceRowDensityLift r₀)
+    (𝔚 sourceRowDensityLift_measurable r₀)
+    𝔛 sourceRow_density_projection_slope
+    𝔛 sourceRow_density_projection_intercept
+    (𝔑 sourceRow_density_observable_zero Cfr lam ℓ N μ hpos) j h S hS

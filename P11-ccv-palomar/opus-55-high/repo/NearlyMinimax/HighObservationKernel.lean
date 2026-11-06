@@ -1,123 +1,125 @@
 module
 
 public import NearlyMinimax.HighObservationLaw
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Jointly measurable, normalized high-prior experiments over arbitrary raw states. -/
-noncomputable section
-open MeasureTheory ProbabilityTheory Set
-open scoped ENNReal BigOperators
-namespace NearlyMinimax
-set_option maxHeartbeats 800000
-set_option backward.isDefEq.respectTransparency false
+𝚴
+𝛉
+𝚨
+𝚱
+𝚩
 
-variable {Ω : Type*} [MeasurableSpace Ω]
+𝛂
 
-theorem highRawDensityMass_joint_measurable {d : ℕ} (p : Ω → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) :
-    Measurable (fun ω => highRawDensityMass (p ω)) := by
+𝗇 𝔊 Ω → 𝙀
+𝗃 𝔑 ἀ $ p ω
+𝗃 𝔖 Measurable $ Function.uncurry ἀ
+𝗇 𝔒 𝔖 p
+theorem highRawDensityMass_joint_measurable (p : 𝔊)
+    (hp : 𝔒) :
+    Measurable fun ω => 𝔑 highRawDensityMass := by
   let _ := cubeVolume_isProbability d
   exact hp.stronglyMeasurable.integral_prod_right.measurable
 
-theorem ternaryMass_joint_measurable {α : Type*} [MeasurableSpace α]
-    (a V : ℝ) (F : α → ℝ) (hF : Measurable F) :
-    Measurable (fun z : α × Fin 3 => ternaryMass a (F z.1) V z.2) := by
-  exact measurable_from_prod_countable_left fun y =>
-    ternaryMass_measurable_comp a V F hF y
+theorem ternaryMass_joint_measurable [MeasurableSpace α]
+    a V F (hF : Measurable F) :
+    Measurable fun z : α × Fin 3 => ternaryMass a (F z.1) V z.2 := measurable_from_prod_countable_left $ ternaryMass_measurable_comp a V F hF
 
-theorem highSampleLikelihood_joint_measurable {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
-    (hF : Measurable (Function.uncurry F)) :
-    Measurable (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-      highSampleLikelihood n a V (p z.1) (F z.1) z.2) := by
+𝗇 𝔄 𝙇 × 𝙈
+𝗃 𝔗 (measurable_pi_apply i).comp $ ἀ measurable_snd
+𝗃 𝔘 ἀ n a V
+theorem highSampleLikelihood_joint_measurable (n : ℕ) (a V : ℝ)
+    p F (hp : 𝔒)
+    (hF : 𝔖 F) :
+    Measurable fun z : Ω × 𝔄 =>
+      𝔘 highSampleLikelihood (p z.1) (F z.1) z.2 := by
   have hx (i : Fin n) : Measurable
-      (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) => (z.1, z.2.1 i)) :=
-    measurable_fst.prodMk ((measurable_pi_apply i).comp (measurable_fst.comp measurable_snd))
+       fun z : Ω × 𝔄 => (z.1, z.2.1 i) :=
+    measurable_fst.prodMk 𝔗 measurable_fst.comp
   have hy (i : Fin n) : Measurable
-      (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) => z.2.2 i) :=
-    (measurable_pi_apply i).comp (measurable_snd.comp measurable_snd)
-  exact ((Finset.measurable_prod _ (fun i _ => hp.comp (hx i))).div
-    (((highRawDensityMass_joint_measurable p hp).comp measurable_fst).pow_const n)).mul
-    (Finset.measurable_prod _ (fun i _ =>
-      (ternaryMass_joint_measurable a V (Function.uncurry F) hF).comp
-        ((hx i).prodMk (hy i))))
+       fun z : Ω × 𝔄 => z.2.2 i :=
+    𝔗 measurable_snd.comp
+  exact ((Finset.measurable_prod _ fun i _ => hp.comp $ hx i ).div
+    $ ((𝙨).comp measurable_fst).pow_const n ).mul
+    $ Finset.measurable_prod _ fun i _ =>
+      𝘍₁
 
 /-- Fixed reference measure for the full design/finite-response experiment. -/
-def highSampleReference (d n : ℕ) : Measure ((Fin n → Covariate d) × (Fin n → Fin 3)) :=
-  (Measure.pi (fun _ : Fin n => cubeVolume d)).prod Measure.count
+def highSampleReference (d n : ℕ) : Measure 𝔄 :=
+  (Measure.pi 𝘂).prod Measure.count
 
-instance highSampleReference_isFinite (d n : ℕ) : IsFiniteMeasure (highSampleReference d n) := by
+𝗇 𝔓 𝘱
+instance highSampleReference_isFinite (d n : ℕ) : IsFiniteMeasure 𝔓 := by
   let _ := cubeVolume_isProbability d
   unfold highSampleReference
   infer_instance
 
+𝗇 𝔇 ENNReal.ofReal $ 𝔘 highSampleLikelihood (p ω) (F ω) z
+𝗇 𝔔 fun ω z => 𝔇
 /-- The joint sample kernel carries exactly the normalized raw likelihood. -/
-def highSampleIndexKernel {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
-    (hF : Measurable (Function.uncurry F)) :
-    Kernel Ω ((Fin n → Covariate d) × (Fin n → Fin 3)) := by
+def highSampleIndexKernel (n : ℕ) (a V : ℝ)
+    (p F : 𝔊) (hp : 𝔒)
+    (hF : 𝔖 F) :
+    Kernel Ω 𝔄 := by
   let _ := cubeVolume_isProbability d
-  exact (Kernel.const Ω (highSampleReference d n)).withDensity
-    (fun ω z => ENNReal.ofReal (highSampleLikelihood n a V (p ω) (F ω) z))
+  exact (Kernel.const Ω 𝔓).withDensity
+    𝔔
 
-theorem highSampleIndexKernel_apply {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
-    (hF : Measurable (Function.uncurry F)) (ω : Ω) :
-    highSampleIndexKernel n a V p F hp hF ω =
-      (highSampleReference d n).withDensity
-        (fun z => ENNReal.ofReal (highSampleLikelihood n a V (p ω) (F ω) z)) := by
+𝗇 𝔉 𝔘 highSampleIndexKernel p F hp hF
+theorem highSampleIndexKernel_apply n a V
+    p F hp
+    hF (ω : Ω) :
+    𝔉 ω =
+      (𝔓).withDensity
+         fun z => 𝔇 := by
   let _ := cubeVolume_isProbability d
-  have hl : Measurable (Function.uncurry (fun ω z =>
-      ENNReal.ofReal (highSampleLikelihood n a V (p ω) (F ω) z))) :=
-    ENNReal.measurable_ofReal.comp (highSampleLikelihood_joint_measurable n a V p F hp hF)
-  change ((Kernel.const Ω (highSampleReference d n)).withDensity
-    (fun ω z => ENNReal.ofReal (highSampleLikelihood n a V (p ω) (F ω) z))) ω = _
+  have hl : 𝔖 𝔔 :=
+    ENNReal.measurable_ofReal.comp $ 𝔘 highSampleLikelihood_joint_measurable p F hp hF
   exact Kernel.withDensity_apply _ hl ω
 
+𝗇 𝔅 highSample_index_density n (p ω) (F ω) hpω hFω a V hd (fun x => haRaw.le.trans (hraw ω x).1) hm $ hq ω
+𝗇 𝔈 Filter.Eventually.of_forall $ hraw ω
+𝗇 𝔍 ∀ ω x y, 0 ≤ 𝙅 V y
+𝗇 𝔎 𝙄
+𝗇 𝔏 haRaw.trans_le (𝔑 highRawDensityMass_mem_Icc hpω aRaw bRaw haRaw 𝔈).1
+𝗇 𝔐 𝔑 normalizedDensityTernaryParameter_design_probability hpω aRaw bRaw haRaw 𝔈
 /-- This family is a probability kernel on every raw state, including states
 outside the original-model density interval after normalization. -/
-theorem highSampleIndexKernel_markov {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
-    (hF : Measurable (Function.uncurry F)) (aRaw bRaw : ℝ) (haRaw : 0 < aRaw)
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw) (ha : a ≠ 0)
-    (hq : ∀ ω x y, 0 ≤ ternaryMass a (F ω x) V y) :
-    IsMarkovKernel (highSampleIndexKernel n a V p F hp hF) := by
+theorem highSampleIndexKernel_markov n a V
+    (p F : 𝔊) hp
+    hF aRaw bRaw (haRaw : 𝙓)
+    (hraw : 𝔎) (ha : 𝙞)
+    (hq : 𝔍) :
+    IsMarkovKernel 𝔉 := by
   constructor
   intro ω
-  have hpω : Measurable (p ω) := hp.of_uncurry_left
-  have hFω : Measurable (F ω) := hF.of_uncurry_left
-  let hd := normalizedDensityTernaryParameter_design_probability (p ω) hpω aRaw bRaw haRaw
-    (Filter.Eventually.of_forall (hraw ω))
+  have hpω : 𝔑 Measurable := hp.of_uncurry_left
+  have hFω : Measurable $ F ω := hF.of_uncurry_left
+  let hd := 𝔐
   let _ := hd
-  let _ := responseSampleIndexKernel_markov n a V (F ω) hFω ha (hq ω)
-  have hm : 0 < highRawDensityMass (p ω) := haRaw.trans_le
-    (highRawDensityMass_mem_Icc (p ω) hpω aRaw bRaw haRaw
-      (Filter.Eventually.of_forall (hraw ω))).1
+  let _ := 𝔘 responseSampleIndexKernel_markov (F ω) hFω ha $ hq ω
+  have hm := 𝔏
   rw [highSampleIndexKernel_apply, highSampleReference]
-  rw [← highSample_index_density n (p ω) (F ω) hpω hFω a V hd
-    (fun x => haRaw.le.trans (hraw ω x).1) hm (hq ω)]
+  rw [← 𝔅]
   infer_instance
 
 /-- Exact transfer of the normalized experiment to the original real-valued sample law. -/
-theorem highSampleIndexKernel_encode {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
-    (hF : Measurable (Function.uncurry F)) (aRaw bRaw : ℝ) (haRaw : 0 < aRaw)
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw) (ha : a ≠ 0)
-    (hq : ∀ ω x y, 0 ≤ ternaryMass a (F ω x) V y) (ω : Ω) :
-    (highSampleIndexKernel n a V p F hp hF ω).map (encodeDesignResponse a) =
-      sampleLaw (normalizedDensityTernaryParameter (p ω) (F ω) a V
-        hF.of_uncurry_left ha (hq ω)) n := by
-  have hpω : Measurable (p ω) := hp.of_uncurry_left
-  have hFω : Measurable (F ω) := hF.of_uncurry_left
-  have hd := normalizedDensityTernaryParameter_design_probability (p ω) hpω aRaw bRaw haRaw
-    (Filter.Eventually.of_forall (hraw ω))
-  have hm : 0 < highRawDensityMass (p ω) := haRaw.trans_le
-    (highRawDensityMass_mem_Icc (p ω) hpω aRaw bRaw haRaw
-      (Filter.Eventually.of_forall (hraw ω))).1
+theorem highSampleIndexKernel_encode n a V
+    (p F : 𝔊) hp
+    hF aRaw bRaw (haRaw : 𝙓)
+    (hraw : 𝔎) ha
+    (hq : 𝔍) ω :
+    (𝔉 ω).map (encodeDesignResponse a) =
+      sampleLaw (𝔑 normalizedDensityTernaryParameter (F ω) a V
+        hF.of_uncurry_left ha $ hq ω ) n := by
+  have hpω : 𝔑 Measurable := hp.of_uncurry_left
+  have hFω : Measurable $ F ω := hF.of_uncurry_left
+  have hd := 𝔐
+  have hm := 𝔏
   rw [highSampleIndexKernel_apply, highSampleReference]
-  rw [← highSample_index_density n (p ω) (F ω) hpω hFω a V hd
-    (fun x => haRaw.le.trans (hraw ω x).1) hm (hq ω)]
-  exact normalizedDensityTernaryParameter_sample_index_map (p ω) hd n a V (F ω) hFω ha (hq ω)
-
-end NearlyMinimax
+  rw [← 𝔅]
+  exact 𝔑 normalizedDensityTernaryParameter_sample_index_map hd n a V (F ω) hFω ha $ hq ω

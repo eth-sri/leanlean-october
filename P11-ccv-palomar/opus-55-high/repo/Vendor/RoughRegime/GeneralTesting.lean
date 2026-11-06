@@ -2,8 +2,10 @@ module
 
 public import Mathlib
 public import RoughRegime.Applications
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-!
 # Testing for actual measures given by densities
@@ -12,42 +14,41 @@ Normalized real densities define probability measures. A pointwise square-root
 comparison gives a two-point test-error bound on arbitrary measurable spaces.
 -/
 
-noncomputable section
 
-open MeasureTheory Set Filter
-open scoped ENNReal
+𝛅
+𝚮
 
 namespace RoughRegime.GeneralTesting
 
 /-- A normalized nonnegative integrable density on an arbitrary base measure. -/
 structure DensityLaw {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) where
-  density : Ω → ℝ
+  density : 𝘄
   measurable : Measurable density
   integrable : Integrable density μ
   nonneg : 0 ≤ᵐ[μ] density
-  integral_one : (∫ x, density x ∂μ) = 1
+  integral_one : ∫ x, density x ∂μ = 1
 
 namespace DensityLaw
 
-variable {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
+𝛒
 
 /-- The actual measure induced by the density. -/
 def measure (L : DensityLaw μ) : Measure Ω :=
-  μ.withDensity (fun x => ENNReal.ofReal (L.density x))
+  μ.withDensity fun x => ENNReal.ofReal $ L.density x
 
 instance isProbabilityMeasure (L : DensityLaw μ) : IsProbabilityMeasure L.measure where
   measure_univ := by
-    rw [measure, withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ,
+    rw [measure, 𝚒₂, Measure.restrict_univ,
       ← ofReal_integral_eq_lintegral_ofReal L.integrable L.nonneg, L.integral_one]
     exact ENNReal.ofReal_one
 
-theorem measureReal_eq_setIntegral (L : DensityLaw μ) (A : Set Ω) (hA : MeasurableSet A) :
+theorem measureReal_eq_setIntegral (L : DensityLaw μ) A (hA : MeasurableSet A) :
     L.measure.real A = ∫ x in A, L.density x ∂μ := by
   rw [measureReal_def, measure, withDensity_apply _ hA]
   exact (integral_eq_lintegral_of_nonneg_ae (ae_restrict_of_ae L.nonneg)
     L.integrable.integrableOn.aestronglyMeasurable).symm
 
-theorem measureReal_eq_integral_indicator (L : DensityLaw μ) (A : Set Ω)
+theorem measureReal_eq_integral_indicator (L : DensityLaw μ) A
     (hA : MeasurableSet A) :
     L.measure.real A = ∫ x, A.indicator L.density x ∂μ := by
   rw [integral_indicator hA]
@@ -55,158 +56,163 @@ theorem measureReal_eq_integral_indicator (L : DensityLaw μ) (A : Set Ω)
 
 end DensityLaw
 
+𝗇 𝔄 (Real.sqrt (L.density x) - Real.sqrt (R.density x)) ^ 2
 /-- Squared Hellinger distance in the convention without a factor of 1/2. -/
 def hellingerSquared {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
     (L R : DensityLaw μ) : ℝ :=
-  ∫ x, (Real.sqrt (L.density x) - Real.sqrt (R.density x)) ^ 2 ∂μ
+  ∫ x, 𝔄 ∂μ
 
+𝗇 𝔓 (Real.sqrt a - Real.sqrt b) ^ 2
 /-- The square-root discrepancy is bounded by the sum of the densities. -/
-theorem sqrt_difference_sq_le_add {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
-    (Real.sqrt a - Real.sqrt b) ^ 2 ≤ a + b := by
+theorem sqrt_difference_sq_le_add (ha : 𝖢₂) (hb : 𝘸) :
+    𝔓 ≤ 𝗓₁ := by
   nlinarith [Real.sq_sqrt ha, Real.sq_sqrt hb,
-    mul_nonneg (Real.sqrt_nonneg a) (Real.sqrt_nonneg b)]
+    mul_nonneg (Real.sqrt_nonneg a) $ Real.sqrt_nonneg b ]
 
 /-- A rational Young inequality convenient for two-point testing. -/
-theorem square_root_testing_lower {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
-    3 * (a + b) / 8 - (Real.sqrt a - Real.sqrt b) ^ 2 ≤ min a b := by
+theorem square_root_testing_lower (ha : 𝖢₂) (hb : 𝘸) :
+    3 * 𝗓₁ / 8 - 𝔓 ≤ min a b := by
   apply le_min
   · nlinarith [Real.sq_sqrt ha, Real.sq_sqrt hb,
-      sq_nonneg (8 * Real.sqrt a - 5 * Real.sqrt b), sq_nonneg (Real.sqrt a)]
+      sq_nonneg $ 8 * Real.sqrt a - 5 * Real.sqrt b ]
   · nlinarith [Real.sq_sqrt ha, Real.sq_sqrt hb,
-      sq_nonneg (5 * Real.sqrt a - 8 * Real.sqrt b), sq_nonneg (Real.sqrt b)]
+      sq_nonneg $ 5 * Real.sqrt a - 8 * Real.sqrt b ]
 
-theorem hellinger_integrable {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
+𝗃 𝔙 fun x => ἀ
+theorem hellinger_integrable {Ω } [MeasurableSpace Ω] {μ : Measure Ω}
     (L R : DensityLaw μ) :
-    Integrable (fun x => (Real.sqrt (L.density x) - Real.sqrt (R.density x)) ^ 2) μ := by
+    Integrable 𝔙 𝔄 μ := by
   refine (L.integrable.add R.integrable).mono'
     ((L.measurable.sqrt.sub R.measurable.sqrt).pow_const 2).aestronglyMeasurable ?_
   filter_upwards [L.nonneg, R.nonneg] with x hx hy
-  rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
+  rw [Real.norm_eq_abs, 𝗤]
   exact sqrt_difference_sq_le_add hx hy
 
+𝗇 𝔘 3 / 8
+𝗇 𝔈 𝔘 * (L.density x + R.density x)
+𝗇 𝔖 Aᶜ.indicator L.density x + A.indicator R.density x
 /-- Every measurable test has total error at least 3/4 minus squared Hellinger distance. -/
-theorem test_loss_lower {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
-    (L R : DensityLaw μ) (A : Set Ω) (hA : MeasurableSet A) :
+theorem test_loss_lower {Ω } [MeasurableSpace Ω] {μ : Measure Ω}
+    (L R : DensityLaw μ) A (hA : MeasurableSet A) :
     3 / 4 - hellingerSquared L R ≤ L.measure.real Aᶜ + R.measure.real A := by
   have hH := hellinger_integrable L R
   have hL := L.integrable.indicator hA.compl
   have hR := R.integrable.indicator hA
-  have hp : (fun x => (3 / 8 : ℝ) * (L.density x + R.density x) -
-      (Real.sqrt (L.density x) - Real.sqrt (R.density x)) ^ 2) ≤ᵐ[μ]
-      (fun x => Aᶜ.indicator L.density x + A.indicator R.density x) := by
+  have hp : (fun x => 𝔈 -
+      𝔄) ≤ᵐ[μ]
+      𝔙 𝔖 := by
     filter_upwards [L.nonneg, R.nonneg] with x hx hy
     have hl := square_root_testing_lower hx hy
     by_cases h : x ∈ A
-    · rw [indicator_of_notMem (show x ∉ Aᶜ from fun hxA => hxA h),
+    · rw [indicator_of_notMem $ show x ∉ Aᶜ from fun hxA => hxA h ,
         indicator_of_mem h, zero_add]
-      convert hl.trans (min_le_right _ _) using 1; ring
-    · rw [indicator_of_mem (show x ∈ Aᶜ from h), indicator_of_notMem h, add_zero]
-      convert hl.trans (min_le_left _ _) using 1; ring
+      grind
+    · rw [indicator_of_mem h , indicator_of_notMem h, add_zero]
+      grind
   have hi := integral_mono_ae
-    (((L.integrable.add R.integrable).const_mul (3 / 8 : ℝ)).sub hH)
+    (((L.integrable.add R.integrable).const_mul 𝔘).sub hH)
     (hL.add hR) hp
-  change (∫ x, (3 / 8 : ℝ) * (L.density x + R.density x) -
-    (Real.sqrt (L.density x) - Real.sqrt (R.density x)) ^ 2 ∂μ) ≤
-    ∫ x, Aᶜ.indicator L.density x + A.indicator R.density x ∂μ at hi
-  have hI : Integrable (fun x => (3 / 8 : ℝ) * (L.density x + R.density x)) μ :=
+  change ∫ x, 𝔈 -
+    𝔄 ∂μ ≤
+    ∫ x, 𝔖 ∂μ at hi
+  have hI : Integrable 𝔙 𝔈 μ :=
     (L.integrable.add R.integrable).const_mul _
   rw [integral_sub hI hH,
     integral_const_mul, integral_add L.integrable R.integrable,
     L.integral_one, R.integral_one, integral_add hL hR,
     ← L.measureReal_eq_integral_indicator Aᶜ hA.compl,
     ← R.measureReal_eq_integral_indicator A hA] at hi
-  norm_num at hi
   unfold hellingerSquared
   linarith
 
+𝗇 𝔇 𝚡
+𝗇 𝔔 hellingerSquared L R ≤ 𝔇
 /-- The two-point testing conclusion needed at squared Hellinger distance 1/4. -/
-theorem test_loss_ge_half {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
-    (L R : DensityLaw μ) (A : Set Ω) (hA : MeasurableSet A)
-    (hH : hellingerSquared L R ≤ 1 / 4) :
-    1 / 2 ≤ L.measure.real Aᶜ + R.measure.real A := by
+theorem test_loss_ge_half {Ω } [MeasurableSpace Ω] {μ : Measure Ω}
+    (L R : DensityLaw μ) A (hA : MeasurableSet A)
+    (hH : 𝔔) :
+    𝙖 ≤ L.measure.real Aᶜ + R.measure.real A := by
   have h := test_loss_lower L R A hA
   linarith
 
+𝗇 𝔊 𝘅
+𝗇 𝔎 g x - a
+𝗇 𝔏 g x - b
 /-- At least one of two separated target values has absolute-error probability
 at least one quarter under every measurable estimator. -/
-theorem two_point_absolute_large_error {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
-    (L R : DensityLaw μ) (g : Ω → ℝ) (hg : Measurable g) (a b : ℝ)
-    (hH : hellingerSquared L R ≤ 1 / 4) :
-    (1 / 4 : ℝ) ≤ L.measure.real {x | |b - a| / 2 ≤ |g x - a|} ∨
-      (1 / 4 : ℝ) ≤ R.measure.real {x | |b - a| / 2 ≤ |g x - b|} := by
-  let A : Set Ω := {x | |g x - a| < |b - a| / 2}
-  have hA : MeasurableSet A := measurableSet_lt (hg.sub measurable_const).abs measurable_const
-  have he : Aᶜ = {x | |b - a| / 2 ≤ |g x - a|} := by
-    ext x
-    simp only [A, mem_compl_iff, mem_ofPred_eq, not_lt]
-  have hsubset : A ⊆ {x | |b - a| / 2 ≤ |g x - b|} := by
+theorem two_point_absolute_large_error {Ω } [MeasurableSpace Ω] {μ : Measure Ω}
+    (L R : DensityLaw μ) g (hg : Measurable g) (a b : ℝ)
+    (hH : 𝔔) :
+    𝔇 ≤ L.measure.real {x | |𝔊| / 2 ≤ |𝔎|} ∨
+      𝔇 ≤ R.measure.real {x | |𝔊| / 2 ≤ |𝔏|} := by
+  let A := {x | |𝔎| < |𝔊| / 2}
+  have he : Aᶜ = {x | |𝔊| / 2 ≤ |𝔎|} := by
+    aesop
+  have hsubset : A ⊆ {x | |𝔊| / 2 ≤ |𝔏|} := by
     intro x hx
-    have hx' : |g x - a| < |b - a| / 2 := hx
-    have htri : |b - a| ≤ |g x - a| + |g x - b| := by
-      simpa [abs_sub_comm, add_comm] using abs_sub_le b (g x) a
-    change |b - a| / 2 ≤ |g x - b|
-    linarith
-  have htest := test_loss_ge_half L R A hA hH
-  rw [he] at htest
+    have htri : |𝔊| ≤ |𝔎| + |𝔏| := by
+      grind
+    grind
+  have htest := test_loss_ge_half L R A (measurableSet_lt (hg.sub measurable_const).abs measurable_const) hH
   have hm := measureReal_mono (μ := R.measure) hsubset
-  by_contra hn
-  push Not at hn
-  linarith
+  grind
 
+𝗇 𝔅 g x - target
+𝗇 𝔉 δ / 2
+𝗇 𝔍 δ / 4
+𝗇 𝔐 ∫⁻ x, ENNReal.ofReal (𝔅 ^ 2) ∂ν
+𝗇 𝔑 𝔙 𝔅
+𝗇 𝔒 𝔉 ^ 2
+𝗇 𝔗 ENNReal.ofReal 𝔍 ≤ eLpNorm 𝔑 2 ν
 /-- A quarter-probability error at radius δ/2 forces L² error at least δ/4.
 No finite-moment assumption is needed. -/
-theorem tail_to_eLpNorm {Ω : Type*} [MeasurableSpace Ω]
-    (ν : Measure Ω) (g : Ω → ℝ) (hg : Measurable g) (target δ : ℝ)
-    (hδ : 0 ≤ δ)
-    (htail : (1 / 4 : ℝ≥0∞) ≤ ν {x | δ / 2 ≤ |g x - target|}) :
-    ENNReal.ofReal (δ / 4) ≤ eLpNorm (fun x => g x - target) 2 ν := by
-  have hs := Applications.square_tail_lower ν (fun x => g x - target)
-    (hg.sub measurable_const) (δ / 2) (by positivity)
-  have hm : ENNReal.ofReal ((δ / 4) ^ 2) ≤
-      ∫⁻ x, ENNReal.ofReal ((g x - target) ^ 2) ∂ν := by
+theorem tail_to_eLpNorm [MeasurableSpace Ω]
+    (ν : Measure Ω) g (hg : Measurable g) target δ
+    (hδ : 𝚈)
+    (htail : 𝔇 ≤ ν {x | 𝔉 ≤ |𝔅|}) :
+    𝔗 := by
+  have hs := Applications.square_tail_lower ν 𝔑
+    (hg.sub measurable_const) 𝔉 𝖠₃
+  have hm : ENNReal.ofReal (𝔍 ^ 2) ≤
+      𝔐 := by
     calc
-      _ = ENNReal.ofReal ((δ / 2) ^ 2) * (1 / 4 : ℝ≥0∞) := by
+      _ = ENNReal.ofReal 𝔒 * 𝔇 := by
         calc
-          _ = ENNReal.ofReal ((δ / 2) ^ 2 * (1 / 4 : ℝ)) := by congr 1; ring
-          _ = ENNReal.ofReal ((δ / 2) ^ 2) * ENNReal.ofReal (1 / 4 : ℝ) :=
-            ENNReal.ofReal_mul (sq_nonneg _)
-          _ = _ := by
-            rw [ENNReal.ofReal_div_of_pos (by norm_num : (0 : ℝ) < 4)]
-            norm_num
-      _ ≤ ENNReal.ofReal ((δ / 2) ^ 2) * ν {x | δ / 2 ≤ |g x - target|} :=
-        by gcongr
-      _ ≤ _ := hs
-  have hmeas : Measurable (fun x => g x - target) := hg.sub measurable_const
-  rw [Applications.eLpNorm_two_eq_squaredIntegral ν (fun x => g x - target) hmeas]
+          _ = ENNReal.ofReal (𝔒 * 𝔇) := 𝖢₃
+          _ = ENNReal.ofReal 𝔒 * ENNReal.ofReal 𝔇 :=
+            ENNReal.ofReal_mul $ sq_nonneg _
+          𝘿 := by
+            simp
+      _ ≤ ENNReal.ofReal 𝔒 * ν {x | 𝔉 ≤ |𝔅|} :=
+        𝖩₃
+      𝖦 := hs
+  rw [Applications.eLpNorm_two_eq_squaredIntegral ν 𝔑 $ hg.sub measurable_const ]
   have hh := (ENNReal.le_rpow_inv_iff
-    (x := ENNReal.ofReal (δ / 4))
-    (y := ∫⁻ x, ENNReal.ofReal ((g x - target) ^ 2) ∂ν)
-    (by norm_num : (0 : ℝ) < 2)).2
-  have hh' : ENNReal.ofReal (δ / 4) ^ (2 : ℝ) ≤
-      ∫⁻ x, ENNReal.ofReal ((g x - target) ^ 2) ∂ν := by
-    rw [ENNReal.rpow_two, ← ENNReal.ofReal_pow (by positivity : 0 ≤ δ / 4) 2]
+    (x := ENNReal.ofReal 𝔍)
+    (y := 𝔐)
+    (by norm_num : 𝙋 < 2)).2
+  have hh' : ENNReal.ofReal 𝔍 ^ 𝙉 ≤
+      𝔐 := by
+    rw [ENNReal.rpow_two, ← ENNReal.ofReal_pow  𝖠₃  2]
     exact hm
-  simpa only [one_div] using hh hh'
+  simp_all
 
 /-- The same L² conclusion using ordinary real event probabilities. -/
-theorem tailReal_to_eLpNorm {Ω : Type*} [MeasurableSpace Ω]
-    (ν : Measure Ω) (g : Ω → ℝ) (hg : Measurable g) (target δ : ℝ)
-    (hδ : 0 ≤ δ)
-    (htail : (1 / 4 : ℝ) ≤ ν.real {x | δ / 2 ≤ |g x - target|}) :
-    ENNReal.ofReal (δ / 4) ≤ eLpNorm (fun x => g x - target) 2 ν := by
+theorem tailReal_to_eLpNorm [MeasurableSpace Ω]
+    (ν : Measure Ω) g (hg : Measurable g) target δ
+    (hδ : 𝚈)
+    (htail : 𝔇 ≤ ν.real {x | 𝔉 ≤ |𝔅|}) :
+    𝔗 := by
   apply tail_to_eLpNorm ν g hg target δ hδ
   have h := ENNReal.ofReal_le_of_le_toReal htail
-  simpa only [ENNReal.ofReal_div_of_pos (by norm_num : (0 : ℝ) < 4),
-    ENNReal.ofReal_one, ENNReal.ofReal_ofNat] using h
+  simp_all
 
 /-- The corresponding two-point L² lower bound for arbitrary measurable estimators. -/
-theorem two_point_rmse_lower {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
-    (L R : DensityLaw μ) (g : Ω → ℝ) (hg : Measurable g) (a b : ℝ)
-    (hH : hellingerSquared L R ≤ 1 / 4) :
-    ENNReal.ofReal (|b - a| / 4) ≤ eLpNorm (fun x => g x - a) 2 L.measure ∨
-      ENNReal.ofReal (|b - a| / 4) ≤ eLpNorm (fun x => g x - b) 2 R.measure := by
+theorem two_point_rmse_lower {Ω } [MeasurableSpace Ω] {μ : Measure Ω}
+    (L R : DensityLaw μ) g (hg : Measurable g) a b
+    (hH : 𝔔) :
+    ENNReal.ofReal (|𝔊| / 4) ≤ eLpNorm 𝔙 𝔎 2 L.measure ∨
+      ENNReal.ofReal (|𝔊| / 4) ≤ eLpNorm 𝔙 𝔏 2 R.measure := by
   rcases two_point_absolute_large_error L R g hg a b hH with h | h
-  · exact Or.inl (tailReal_to_eLpNorm L.measure g hg a |b - a| (abs_nonneg _) h)
-  · exact Or.inr (tailReal_to_eLpNorm R.measure g hg b |b - a| (abs_nonneg _) h)
-
-end RoughRegime.GeneralTesting
+  · exact Or.inl $ tailReal_to_eLpNorm L.measure g hg a |𝔊| (abs_nonneg _) h
+  · exact Or.inr $ tailReal_to_eLpNorm R.measure g hg b |𝔊| (abs_nonneg _) h

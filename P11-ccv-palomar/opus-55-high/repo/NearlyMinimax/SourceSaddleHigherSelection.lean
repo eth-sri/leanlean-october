@@ -2,55 +2,50 @@ module
 
 public import NearlyMinimax.HigherBandFamily
 public import NearlyMinimax.LowerActivityHierarchy
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗍
 
 /-! The physical higher-family omission and fine-count guards follow
 from the actual rounded canonical saddle, before any signed action is tested. -/
-noncomputable section
-open Filter
-open scoped Topology
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
+𝚷
+𝚶
+𝚨
+𝚩
+𝚱
 
+𝗇 𝔅 𝙉₂
+𝗇 𝔄 lowerSaddleN s d m theta shift 𝔅 x
 theorem sourceSaddleHigherFamily_eventually_legal (d : ℕ)
-    (s a b shift : ℝ) (hs : 1 < s) (hd : 4*s < (d : ℝ)) (ha : 0 < a) (hab : a < b) :
-    let tau := densityIntervalExponent a b
-    let m := lowerSaddleCoefficient s (d : ℝ) tau
-    let theta := lowerSaddleTheta s (d : ℝ) tau
+    s a b shift (hs : 𝚊₁) (hd : 𝚄 < 𝙊) (ha : 𝙆) (hab : 𝙭) :
+    let tau := 𝘦₂
+    let m := lowerSaddleCoefficient s d tau
+    let theta := lowerSaddleTheta s d tau
     ∀ᶠ x in atTop,
-      let M := lowerSaddleM m x
-      let N := lowerSaddleN s (d : ℝ) m theta shift (shrunkDensityExponent a b) x
-      let mu := lowerSaddleMu (d : ℝ) m theta shift x
-      let ell := lowerAliasCutoff s (d : ℝ) m theta shift (tau+1) (shrunkDensityExponent a b) x
-      1 ≤ ell ∧ (∀ r : ℕ, 0 < higherBandTargetScale d r N mu) ∧
-        (∀ r : ℕ, ell < higherBandTargetScale d r N mu → r ≤ M) := by
-  dsimp only
-  let tau := densityIntervalExponent a b
-  let m := lowerSaddleCoefficient s (d : ℝ) tau
-  let theta := lowerSaddleTheta s (d : ℝ) tau
+      let M := 𝗫
+      let N := 𝔄
+      let mu := 𝙰₂ shift x
+      let ell := lowerAliasCutoff s d m theta shift (tau+1) 𝔅 x
+      𝚒 := by
+  let tau := 𝘦₂
+  let m := lowerSaddleCoefficient s d tau
+  let theta := lowerSaddleTheta s d tau
   have hτ := densityIntervalExponent_pos ha hab
-  have hm := lowerSaddleCoefficient_pos hs hd hτ
-  have htheta := lowerSaddleTheta_pos hs hd hτ
   obtain ⟨Cτ, _, hcontrol⟩ := exists_actual_lowerExponentControl ha hab
-  have hN := lowerSaddleN_tendsto_atTop hs hd hm htheta hcontrol shift
-  have hhier := actual_lowerAlias_hierarchy (Cact := 1) (Cs := 1) hs hd ha hab (by norm_num) (by norm_num) shift
-  filter_upwards [hhier, hN.eventually (eventually_ge_atTop (1 : ℝ)), eventually_gt_atTop (0 : ℝ)]
+  have hN := lowerSaddleN_tendsto_atTop hs hd (lowerSaddleCoefficient_pos hs hd hτ) (lowerSaddleTheta_pos hs hd hτ) hcontrol shift
+  filter_upwards [ actual_lowerAlias_hierarchy (Cact := 1) (Cs := 1) hs hd ha hab  𝖠₄   𝖠₄  shift , hN.eventually $ eventually_ge_atTop 1 , eventually_gt_atTop 0]
     with x hx hNx hxp
-  change LowerAliasHierarchy s (d : ℝ) m theta shift 1 1 (tau+1) (shrunkDensityExponent a b) x at hx
   rcases hx with ⟨hell, _, _, _, _, _, _, _, _, _, hRM, hFine⟩
-  have hmu : 0 < lowerSaddleMu (d : ℝ) m theta shift x := by
+  have hmu : 0 < 𝙰₂ shift x := by
     rw [lowerSaddleMu_eq_exp hxp]
     exact Real.exp_pos _
-  have hH : 0 < 1+Real.log (lowerSaddleN s (d : ℝ) m theta shift (shrunkDensityExponent a b) x) := by
+  have hH : 0 < 1+Real.log 𝔄 := by
     linarith [Real.log_nonneg hNx]
   refine ⟨hell.le, ?_, ?_⟩
   · intro r
     unfold higherBandTargetScale
-    exact mul_pos (by linarith) (Real.rpow_pos_of_pos (mul_pos hmu hH) _)
+    positivity
   · intro r hr
     exact (hFine r hr).trans hRM
-
-end NearlyMinimax

@@ -4,68 +4,71 @@ public import NearlyMinimax.FiniteAffineHistoryMean
 public import NearlyMinimax.HighPacketBalancing
 public import NearlyMinimax.HighRawUpdates
 public import NearlyMinimax.HighRawDensityLocality
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! The actual balanced packet retains the representation mark in its
 spatial density reset. Its finite canonical histories have pointwise mean
 one under their genuine independent reference mark laws. -/
-noncomputable section
-open Set MeasureTheory Function
-open scoped BigOperators ENNReal
-namespace NearlyMinimax
-set_option maxHeartbeats 600000
-set_option backward.isDefEq.respectTransparency false
-attribute [local instance] Classical.propDecidable
+𝛋
+𝚳
+𝚨
+𝚰
+𝚩
+𝚬
 
-theorem affinePatchFold_density_eq {J X E V I : Type*} [DecidableEq J]
-    (patch : J → Set X) (slope offset : J → E → X → ℝ)
-    (response : J → E → V → V) (labels : I → J) (marks : I → E)
-    (indices : List I) (initial : (X → ℝ) × (J → V)) (x : X) :
-    (indices.foldl (fun θ i => rawPatchUpdate (labels i) (patch (labels i))
-      (slope (labels i) (marks i)) (offset (labels i) (marks i))
-      (response (labels i) (marks i)) θ) initial).1 x =
+𝗃 𝔉 ἀ $ labels i
+𝗇 𝔇 𝔉 patch
+𝗇 𝔈 X → ℝ
+𝗃 𝔄 ἀ (labels i) $ marks i
+𝗇 𝔍 J → E → V → V
+𝗇 𝔎 𝔈 × (J → V)
+theorem affinePatchFold_density_eq [DecidableEq J]
+    (patch : J → Set X) (slope offset : J → E → 𝔈)
+    (response : 𝔍) (labels : I → J) (marks : I → E)
+    (indices : List I) (initial : 𝔎) x :
+    (indices.foldl (fun θ i => 𝔉 rawPatchUpdate 𝔉 patch
+      𝔄 slope 𝔄 offset
+      𝔄 response θ) initial).1 x =
       indices.foldl (fun v i =>
-        (if x ∈ patch (labels i) then slope (labels i) (marks i) x else 1) * v +
-        (if x ∈ patch (labels i) then offset (labels i) (marks i) x else 0)) (initial.1 x) := by
+        (if x ∈ 𝔇 then 𝔄 slope x else 1) * v +
+         if x ∈ 𝔇 then 𝔄 offset x else 0 ) (initial.1 x) := by
   induction indices generalizing initial with
   | nil => rfl
   | cons i indices ih =>
     simp only [List.foldl_cons]
     rw [ih]
-    by_cases hx : x ∈ patch (labels i) <;>
+    by_cases hx : x ∈ 𝔇 <;>
       simp only [rawPatchUpdate, affinePatchUpdate, hx, ite_true, ite_false, one_mul, add_zero]
 
-theorem affinePatchFold_density_joint_measurable {J X E V : Type*} [DecidableEq J]
+𝗇 𝔅 𝗚₁
+𝗃 𝔊 ∀ j, Measurable fun ex : E × X => ἀ j ex.1 ex.2
+𝗃 𝔏 𝔉 ἀ $ mx.1 i
+theorem affinePatchFold_density_joint_measurable [DecidableEq J]
     [MeasurableSpace X] [MeasurableSpace E]
-    (patch : J → Set X) (hpatch : ∀ j, MeasurableSet (patch j))
-    (slope offset : J → E → X → ℝ)
-    (hs : ∀ j, Measurable (fun ex : E × X => slope j ex.1 ex.2))
-    (ho : ∀ j, Measurable (fun ex : E × X => offset j ex.1 ex.2))
-    (response : J → E → V → V) (n : ℕ) (labels : Fin n → J) (indices : List (Fin n))
-    (initial : (Fin n → E) → (X → ℝ) × (J → V))
-    (hi : Measurable (fun mx : (Fin n → E) × X => (initial mx.1).1 mx.2)) :
-    Measurable (fun mx : (Fin n → E) × X =>
-      (indices.foldl (fun θ i => rawPatchUpdate (labels i) (patch (labels i))
-        (slope (labels i) (mx.1 i)) (offset (labels i) (mx.1 i))
-        (response (labels i) (mx.1 i)) θ) (initial mx.1)).1 mx.2) := by
+    (patch : J → Set X) (hpatch : ∀ j, MeasurableSet $ patch j )
+    (slope offset : J → E → 𝔈)
+    (hs : 𝔊 slope)
+    (ho : 𝔊 offset)
+    (response : 𝔍) n (labels : Fin n → J) (indices : List $ Fin n )
+    (initial : 𝔅 → 𝔎)
+    (hi : Measurable fun mx : 𝔅 × X => (initial mx.1).1 mx.2 ) :
+    Measurable fun mx : 𝔅 × X =>
+      (indices.foldl (fun θ i => 𝔉 rawPatchUpdate 𝔇
+        𝔏 slope 𝔏 offset
+        𝔏 response θ) $ initial mx.1 ).1 mx.2 := by
   induction indices generalizing initial with
   | nil => exact hi
   | cons i indices ih =>
-    simp only [List.foldl_cons]
-    apply ih (fun marks => rawPatchUpdate (labels i) (patch (labels i))
-      (slope (labels i) (marks i)) (offset (labels i) (marks i))
-      (response (labels i) (marks i)) (initial marks))
-    change Measurable (fun mx : (Fin n → E) × X =>
-      if mx.2 ∈ patch (labels i) then slope (labels i) (mx.1 i) mx.2 *
-        (initial mx.1).1 mx.2 + offset (labels i) (mx.1 i) mx.2 else (initial mx.1).1 mx.2)
-    have hcoord : Measurable (fun mx : (Fin n → E) × X => (mx.1 i, mx.2)) :=
-      ((measurable_pi_apply i).comp measurable_fst).prodMk measurable_snd
+    apply ih fun marks => 𝔉 rawPatchUpdate 𝔉 patch
+      𝔄 slope 𝔄 offset
+      𝔄 response $ initial marks
+    have hcoord : Measurable fun mx : 𝔅 × X => (mx.1 i, mx.2) :=
+      (𝘜 measurable_fst).prodMk measurable_snd
     exact Measurable.ite ((hpatch _).preimage measurable_snd)
-      (((hs (labels i)).comp hcoord).mul hi |>.add ((ho (labels i)).comp hcoord)) hi
+      (((𝔉 hs).comp hcoord).mul hi |>.add ((𝔉 ho).comp hcoord)) hi
 
 section Packet
 variable {Z : Type*} [MeasurableSpace Z] (d k F m r D q : ℕ)
-
-end Packet
-end NearlyMinimax

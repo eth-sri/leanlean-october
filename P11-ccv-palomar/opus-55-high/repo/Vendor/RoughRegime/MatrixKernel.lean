@@ -1,121 +1,136 @@
 module
 
 public import RoughRegime.MatrixDeterminant
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-!
 # Absolute convergence and exact matrix reciprocal kernel sum
 
 All matrices carry the genuine ℓ² operator norm.
 -/
-noncomputable section
-open scoped BigOperators Matrix.Norms.L2Operator
+𝚺
 open Polynomial
 namespace RoughRegime.MatrixKernel
 open RoughRegime.Upper RoughRegime.MatrixUpper RoughRegime.MatrixDeterminant
 
+𝗇 𝔄 𝘉₁ ℝ
+𝗃 𝔍 ἀ lo hi
 /-- Matrix coefficient of the normalized reciprocal kernel. -/
-def matrixKernelCoefficient {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (M : Matrix n n ℝ) (k : ℕ) : Matrix n n ℝ :=
-  Polynomial.aeval M (kernelCoefficientPolynomial lo hi k)
+def matrixKernelCoefficient [Fintype n] [DecidableEq n]
+    (lo hi : ℝ) (M : 𝔄) (k : ℕ) : 𝔄 :=
+  Polynomial.aeval M $ 𝔍 kernelCoefficientPolynomial k
 
+𝗇 𝔇 𝔍 matrixKernelCoefficient M k
+𝗇 𝔉 spectrum ℝ M ⊆ 𝔍 Set.Icc
+section
+
+variable [Fintype n]
+    [DecidableEq n]
+    (lo)
+    (hi)
+    (hlo : 𝙫₁)
+    (hlt : 𝘰₂)
+    (M : 𝔄)
+    (hM : M.IsHermitian)
+    (hSpec : 𝔉)
+
+include hlo hlt hM hSpec
+
+𝗃 𝔐 𝔍 ἀ hlo hlt
+𝗇 𝔏 𝔐 matrix_chebyshev_norm_le_one M hM hSpec
 /-- The matrix coefficients have the paper's geometric operator norm bound. -/
-theorem matrixKernelCoefficient_norm_le {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi) (M : Matrix n n ℝ) (hM : M.IsHermitian)
-    (hSpec : spectrum ℝ M ⊆ Set.Icc lo hi) (k : ℕ) :
-    ‖matrixKernelCoefficient lo hi M k‖ ≤ 2 * intervalRho lo hi ^ k := by
-  have hr := intervalRho_pos lo hi hlo hlt
-  have he : matrixKernelCoefficient lo hi M k =
-      (if k = 0 then 1 else 2 * (-intervalRho lo hi) ^ k) •
-        Polynomial.aeval M (normalizedChebyshev lo hi k) := by
+theorem matrixKernelCoefficient_norm_le k :
+    ‖𝔇‖ ≤ 2 * 𝔍 intervalRho ^ k := by
+  have hr := 𝔐 intervalRho_pos
+  have he : 𝔇 =
+      (if k = 0 then 1 else 2 * (-𝔍 intervalRho) ^ k) •
+        Polynomial.aeval M (𝔍 normalizedChebyshev k) := by
     simp [matrixKernelCoefficient, kernelCoefficientPolynomial, Algebra.smul_def]
   rw [he, norm_smul]
   by_cases hk : k = 0
   · subst k
-    simp only [ite_true, norm_one, one_mul, pow_zero]
-    exact (matrix_chebyshev_norm_le_one lo hi hlo hlt M hM hSpec 0).trans (by norm_num)
+    simp
+    exact (𝔏 0).trans 𝖠₄
   · simp only [hk, ite_false, Real.norm_eq_abs, abs_mul,
-      abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2), abs_pow, abs_neg, abs_of_pos hr]
+      abs_pow, abs_neg, abs_of_pos hr]
     simpa using mul_le_mul_of_nonneg_left
-      (matrix_chebyshev_norm_le_one lo hi hlo hlt M hM hSpec k)
-      (by positivity : 0 ≤ 2 * intervalRho lo hi ^ k)
+      (𝔏 k)
+      𝖠₃
 
 /-- Absolute convergence of the genuine matrix coefficient series. -/
-theorem matrixKernelCoefficient_summable_norm {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi) (M : Matrix n n ℝ) (hM : M.IsHermitian)
-    (hSpec : spectrum ℝ M ⊆ Set.Icc lo hi) :
-    Summable (fun k => ‖matrixKernelCoefficient lo hi M k‖) := by
+theorem matrixKernelCoefficient_summable_norm :
+    Summable fun k => ‖𝔇‖ := by
   apply Summable.of_nonneg_of_le (fun k => norm_nonneg _)
-    (matrixKernelCoefficient_norm_le lo hi hlo hlt M hM hSpec)
-  exact (summable_geometric_of_lt_one (intervalRho_pos lo hi hlo hlt).le
-    (intervalRho_lt_one lo hi hlo hlt)).mul_left (2 : ℝ)
+    $ 𝔐 matrixKernelCoefficient_norm_le M hM hSpec
+  exact (summable_geometric_of_lt_one (𝔐 intervalRho_pos).le
+    𝔐 intervalRho_lt_one).mul_left 2
 
+end
+
+𝗇 𝔈 PowerSeries.coeff k $ 𝔍 scalarKernelSeries $ hM.eigenvalues i
+𝗇 𝔎 (hM.eigenvectorUnitary : 𝔄)
 /-- Each matrix coefficient is diagonal in the fixed spectral eigenbasis. -/
-theorem matrixKernelCoefficient_spectral {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (M : Matrix n n ℝ) (hM : M.IsHermitian) (k : ℕ) :
-    matrixKernelCoefficient lo hi M k =
-      (hM.eigenvectorUnitary : Matrix n n ℝ) *
-      Matrix.diagonal (fun i => PowerSeries.coeff k (scalarKernelSeries lo hi (hM.eigenvalues i))) *
-      star (hM.eigenvectorUnitary : Matrix n n ℝ) := by
-  have he : matrixKernelCoefficient lo hi M k = coefficientMatrix k (kernelSeries lo hi M) := by
+theorem matrixKernelCoefficient_spectral [Fintype n] [DecidableEq n]
+    lo hi (M : 𝔄) (hM : M.IsHermitian) k :
+    𝔇 =
+      hM.eigenvectorUnitary *
+      Matrix.diagonal (fun i => 𝔈) *
+      star 𝔎 := by
+  have he : 𝔇 = coefficientMatrix k (𝔍 kernelSeries M) := by
     ext i j
     simp only [matrixKernelCoefficient, coefficientMatrix, kernelSeries, PowerSeries.coeff_mk]
-  rw [he, kernelSeries_spectral lo hi M hM, coefficientMatrix_mul_constant,
+  rw [he, 𝔍 kernelSeries_spectral M hM, coefficientMatrix_mul_constant,
     coefficientMatrix_constant_mul, coefficientMatrix_diagonal]
 
+𝗇 𝔅 Matrix.diagonal fun i => (hM.eigenvalues i)⁻¹
 /-- The inverse itself has the same spectral representation, with reciprocal eigenvalues. -/
-theorem matrix_inverse_spectral {n : Type*} [Fintype n] [DecidableEq n]
-    (M : Matrix n n ℝ) (hM : M.IsHermitian) (hn : ∀ i, hM.eigenvalues i ≠ 0) :
-    M⁻¹ = (hM.eigenvectorUnitary : Matrix n n ℝ) *
-      Matrix.diagonal (fun i => (hM.eigenvalues i)⁻¹) *
-      star (hM.eigenvectorUnitary : Matrix n n ℝ) := by
-  let U : Matrix n n ℝ := hM.eigenvectorUnitary
-  have hU : star U * U = 1 := Unitary.star_mul_self_of_mem hM.eigenvectorUnitary.property
+theorem matrix_inverse_spectral [Fintype n] [DecidableEq n]
+    (M : 𝔄) (hM : M.IsHermitian) (hn : ∀ i, hM.eigenvalues i ≠ 0) :
+    M⁻¹ = hM.eigenvectorUnitary *
+      𝔅 *
+      star 𝔎 := by
+  let U : 𝔄 := hM.eigenvectorUnitary
+  have hU := Unitary.star_mul_self_of_mem hM.eigenvectorUnitary.property
   have hU' : U * star U = 1 := Unitary.mul_star_self_of_mem hM.eigenvectorUnitary.property
   have hM' : M = U * Matrix.diagonal hM.eigenvalues * star U := by
     simpa only [U, Unitary.conjStarAlgAut_apply, Function.comp_apply,
       RCLike.ofReal_real_eq_id, Function.id_comp] using hM.spectral_theorem
   apply Matrix.inv_eq_left_inv
-  change (U * _ * star U) * M = 1
   conv_lhs => arg 2; rw [hM']
   calc
-    _ = U * Matrix.diagonal (fun i => (hM.eigenvalues i)⁻¹) *
+    _ = U * 𝔅 *
         (star U * U) * Matrix.diagonal hM.eigenvalues * star U := by noncomm_ring
-    _ = U * (Matrix.diagonal (fun i => (hM.eigenvalues i)⁻¹) *
-        Matrix.diagonal hM.eigenvalues) * star U := by rw [hU, mul_one]; noncomm_ring
-    _ = 1 := by
-      rw [Matrix.diagonal_mul_diagonal]
-      have hd : Matrix.diagonal (fun i => (hM.eigenvalues i)⁻¹ * hM.eigenvalues i) =
-          (1 : Matrix n n ℝ) := by
-        simp only [inv_mul_cancel₀ (hn _), Matrix.diagonal_one]
-      rw [hd, mul_one, hU']
+    _ = U * (𝔅 *
+        Matrix.diagonal hM.eigenvalues) * star U := 𝖤₃
+    𝚘₂ := by
+      simp_all
 
+𝗇 𝔊 hSpec $ hM.eigenvalues_mem_spectrum_real i
 /-- The actual matrix series sums to ḡ M⁻¹. -/
-theorem matrixKernelCoefficient_tsum {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi) (M : Matrix n n ℝ) (hM : M.IsHermitian)
-    (hSpec : spectrum ℝ M ⊆ Set.Icc lo hi) :
-    (∑' k, matrixKernelCoefficient lo hi M k) = intervalGeometricMean lo hi • M⁻¹ := by
-  let U : Matrix n n ℝ := hM.eigenvectorUnitary
-  have hd : Summable (fun k i => PowerSeries.coeff k (scalarKernelSeries lo hi (hM.eigenvalues i))) := by
+theorem matrixKernelCoefficient_tsum [Fintype n] [DecidableEq n]
+    lo hi (hlo : 𝙫₁) (hlt : 𝘰₂) (M : 𝔄) (hM : M.IsHermitian)
+    (hSpec : 𝔉) :
+     ∑' k, 𝔇 = 𝔍 intervalGeometricMean • M⁻¹ := by
+  let U := hM.eigenvectorUnitary
+  have hd : Summable fun k i => 𝔈 := by
     rw [Pi.summable]
     intro i
-    exact (scalarKernelSeries_summable_norm lo hi _ hlo hlt
-      (hSpec (hM.eigenvalues_mem_spectrum_real i))).of_norm
-  have hds : (∑' k, fun i => PowerSeries.coeff k (scalarKernelSeries lo hi (hM.eigenvalues i))) =
-      fun i => intervalGeometricMean lo hi / hM.eigenvalues i := by
+    exact (𝔍 scalarKernelSeries_summable_norm _ hlo hlt
+      𝔊).of_norm
+  have hds : (∑' k, fun i => 𝔈) =
+      fun i => 𝔍 intervalGeometricMean / hM.eigenvalues i := by
     funext i
     rw [Pi.tsum_apply hd]
-    exact scalarKernelSeries_tsum lo hi _ hlo hlt (hSpec (hM.eigenvalues_mem_spectrum_real i))
-  have hdmat : Summable (fun k => Matrix.diagonal
-      (fun i => PowerSeries.coeff k (scalarKernelSeries lo hi (hM.eigenvalues i)))) := hd.matrix_diagonal
-  simp_rw [matrixKernelCoefficient_spectral lo hi M hM]
-  rw [(hdmat.mul_left (hM.eigenvectorUnitary : Matrix n n ℝ)).tsum_mul_right,
+    exact 𝔍 scalarKernelSeries_tsum _ hlo hlt 𝔊
+  have hdmat := hd.matrix_diagonal
+  simp_rw [𝔍 matrixKernelCoefficient_spectral M hM]
+  rw [(hdmat.mul_left 𝔎).tsum_mul_right,
     hdmat.tsum_mul_left, ← Matrix.diagonal_tsum, hds]
-  rw [matrix_inverse_spectral M hM (fun i =>
-    ne_of_gt (hlo.trans_le (hSpec (hM.eigenvalues_mem_spectrum_real i)).1))]
+  rw [matrix_inverse_spectral M hM fun i =>
+    ne_of_gt $ hlo.trans_le (𝔊).1 ]
   rw [← Matrix.smul_mul, ← Matrix.mul_smul, ← Matrix.diagonal_smul]
   congr 2
-
-end RoughRegime.MatrixKernel

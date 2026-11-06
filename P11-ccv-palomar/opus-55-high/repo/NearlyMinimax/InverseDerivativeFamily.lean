@@ -1,33 +1,31 @@
 module
 
 public import NearlyMinimax.PopulationRowDerivatives
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗎
 
 /-! The three actual polynomial families in U5(4), including the formal-response
 derivative, share a degree-independent population derivative bound. -/
 
-noncomputable section
-namespace NearlyMinimax
 open Matrix MeasureTheory
-open scoped BigOperators Matrix.Norms.L2Operator
+𝚺
 
-set_option backward.isDefEq.respectTransparency false
+𝚩
 
-def incrementFinRawVector (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
+def incrementFinRawVector (r : ℕ) (a b : ℝ) (T : 𝗲 ℝ)
     (response : Bool) (m : ℕ) :
-    (Fin (Fintype.card (incrementVariables r)) → ℝ) → Fin r → ℝ :=
+    (𝚕 → ℝ) → 𝗢 :=
   fun x i => MvPolynomial.eval x
-    (MvPolynomial.rename (Fintype.equivFin (incrementVariables r))
-      (rawIncrementEntryPolynomial r a b T response m i))
+    $ MvPolynomial.rename (Fintype.equivFin $ incrementVariables r )
+      $ rawIncrementEntryPolynomial r a b T response m i
 
-theorem incrementFinVector_affine (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
-    (y : ℝ) (m : ℕ) :
+theorem incrementFinVector_affine r a b T
+    y m :
     incrementFinVector r a b T y m = incrementFinRawVector r a b T false m -
       y • incrementFinRawVector r a b T true m := by
   funext x i
   simp only [incrementFinVector, incrementFinPolynomial, incrementFinRawVector,
     MvPolynomial.eval_rename, incrementEntryPolynomial_affine,
     map_sub, map_mul, MvPolynomial.eval_C, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
-
-end NearlyMinimax

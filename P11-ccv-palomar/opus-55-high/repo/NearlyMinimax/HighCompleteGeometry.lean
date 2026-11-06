@@ -2,87 +2,87 @@ module
 
 public import NearlyMinimax.HighSourceHigherGeometry
 public import NearlyMinimax.HighCompleteSourceMarkedTail
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! A deterministic measurable integrable full-count spatial envelope for
 complete source scores, including empty/singleton cancellation, the genuine
 pair defect, matched higher counts, and the exterior-degree crude bound. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
-attribute [local instance] Classical.propDecidable
+𝚫
+𝚪
+𝚨
+𝚩
+𝚭
+𝚬
 
- def completeSourceGeometryEnvelope {d : ℕ} (D M R q : ℕ)
-    (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) : (n : ℕ) → (Fin n → Covariate d) → ℝ
+ set_option hygiene false
+𝗇 𝔅 n+3
+𝗇 𝔇 bD-𝖧⁻¹
+𝗇 𝔈 (Bl+1)^2
+𝗇 𝔉 𝚎₁^𝔅*𝗸*𝔈
+𝗇 𝔊 𝙇
+def completeSourceGeometryEnvelope (D M R q : ℕ)
+    (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) : (n : ℕ) → 𝔊 → ℝ
   | 0, _ => 0
   | 1, _ => 0
-  | 2, U => finePairCountTwoGeometryEnvelope (bD-(M : ℝ)⁻¹) a rho eta N U
-  | n+3, U => if n+3 ≤ D then
-      completeSourceHigherGeometryEnvelope (D := D) aD bD c0 ell N mu M R q C a rho eta U
-    else (3*Chi^2)^(n+3)*eta^4*(Bl+1)^2
+  | 2, U => finePairCountTwoGeometryEnvelope 𝔇 a rho eta N U
+  | 𝔅, U => if 𝔅 ≤ D then
+      𝘭
+    else 𝔉
 
- theorem completeSourceGeometryEnvelope_nonneg {d : ℕ} (D M R q : ℕ)
-    (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) (n : ℕ) (U : Fin n → Covariate d) :
-    0 ≤ completeSourceGeometryEnvelope D M R q aD bD c0 ell N mu C a rho eta Chi Bl n U := by
+ set_option hygiene false
+𝗇 𝔄 𝚀₂ Bl
+theorem completeSourceGeometryEnvelope_nonneg D M R q
+    aD bD c0 ell N mu C a rho eta Chi Bl n (U : 𝔊) :
+    0 ≤ 𝔄 n U := by
   rcases n with _|_|_|n
-  · norm_num [completeSourceGeometryEnvelope]
-  · norm_num [completeSourceGeometryEnvelope]
+  · rfl
+  · rfl
   · exact finePairCountTwoGeometryEnvelope_nonneg _ _ _ _ _ U
   · try simp only [completeSourceGeometryEnvelope]
     split_ifs
-    · exact completeSourceHigherGeometryEnvelope_nonneg _ _ _ _ _ _ _ _ _ _ _ _ _ _
+    · exact completeSourceHigherGeometryEnvelope_nonneg ..
     · positivity
 
- theorem completeSourceGeometryEnvelope_integrable {d : ℕ} [NeZero d] (hd : 5 ≤ d)
-    (D M R q : ℕ) (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ)
-    (hell : 1 ≤ ell) (hN : ell ≤ N) (n : ℕ) :
-    Integrable (completeSourceGeometryEnvelope (d := d) D M R q aD bD c0 ell N mu C a rho eta Chi Bl n)
-      (fullSpatialPatchDesign d n) := by
+ theorem completeSourceGeometryEnvelope_integrable [NeZero d] (hd : 𝘚)
+    D M R q aD bD c0 ell N mu C a rho eta Chi Bl
+    (hell : 𝗲₁) (hN : ell ≤ N) n :
+    Integrable (𝔄 n)
+      𝖮₁ := by
   rcases n with _|_|_|n
-  · exact integrable_zero _ _ _
-  · exact integrable_zero _ _ _
-  · exact (finePairCountTwoGeometryEnvelope_integrable_and_le (by omega) _ _ _ _
-      (lt_of_lt_of_le zero_lt_one (hell.trans hN))).1
-  · change Integrable (fun U : Fin (n+3) → Covariate d => if n+3 ≤ D then
-      completeSourceHigherGeometryEnvelope (D := D) aD bD c0 ell N mu M R q C a rho eta U
-      else (3*Chi^2)^(n+3)*eta^4*(Bl+1)^2) (fullSpatialPatchDesign d (n+3))
+  · simp
+  · exact integrable_zero ..
+  · exact (finePairCountTwoGeometryEnvelope_integrable_and_le  𝖡₃  _ _ _ _
+      $ lt_of_lt_of_le zero_lt_one $ hell.trans hN ).1
+  · change Integrable (fun U => if 𝔅 ≤ D then
+      completeSourceHigherGeometryEnvelope aD bD c0 ell N mu M R q C a rho eta U
+      else 𝔉) $ fullSpatialPatchDesign d 𝔅
     split_ifs
-    · exact completeSourceHigherGeometryEnvelope_integrable hd (by omega) _ _ _ _ _ _ _ _ _ _ _ _ _ hell hN
-    · exact integrable_const _
+    · exact completeSourceHigherGeometryEnvelope_integrable hd  𝖡₃  _ _ _ _ _ _ _ _ _ _ _ _ _ hell hN
+    fun_prop
 
- theorem completeSourceGeometryEnvelope_pair_integral_le {d : ℕ} (D M R q : ℕ)
-    (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) (hd : 0 < d) (hN : 0 < N) :
-    (∫ U, completeSourceGeometryEnvelope (d := d) D M R q aD bD c0 ell N mu C a rho eta Chi Bl 2 U
-      ∂fullSpatialPatchDesign d 2) ≤ 9*finePairCountTwoSpatialBudget d (bD-(M : ℝ)⁻¹) a rho eta N :=
+ theorem completeSourceGeometryEnvelope_pair_integral_le D M R q
+    aD bD c0 ell N mu C a rho eta Chi Bl (hd : 𝗆) (hN : 𝘹) :
+     ∫ U, 𝔄 2 U
+      ∂𝗿₂ ≤ 9*finePairCountTwoSpatialBudget d 𝔇 a rho eta N :=
     (finePairCountTwoGeometryEnvelope_integrable_and_le hd _ _ _ _ hN).2
 
- theorem completeSourceGeometryEnvelope_exterior_integral {d : ℕ} (D M R q n : ℕ)
-    (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) (hn : D < n+3) :
-    (∫ U, completeSourceGeometryEnvelope (d := d) D M R q aD bD c0 ell N mu C a rho eta Chi Bl (n+3) U
-      ∂fullSpatialPatchDesign d (n+3)) =
-      (3*(2 : ℝ)^d*Chi^2)^(n+3)*eta^4*(Bl+1)^2 := by
-  simp only [completeSourceGeometryEnvelope, if_neg (not_le.mpr hn), integral_const,
-    fullSpatialPatchDesign_real_univ, smul_eq_mul]
-  rw [pow_mul, mul_pow]
+ theorem completeSourceGeometryEnvelope_exterior_integral D M R q n
+    aD bD c0 ell N mu C a rho eta Chi Bl (hn : D < 𝔅) :
+     ∫ U, 𝔄 𝔅 U
+      ∂fullSpatialPatchDesign d 𝔅 =
+      (3*𝖥*Chi^2)^𝔅*𝗸*𝔈 := by
+  simp only [completeSourceGeometryEnvelope, if_neg $ not_le.mpr hn , integral_const,
+    fullSpatialPatchDesign_real_univ]
   ring
 
- theorem fineFieldGeometryEnvelope_count_three {d : ℕ} (ad bd T0 N : ℝ)
-    (M q : ℕ) (C a rho eta : ℝ) (U : Fin 3 → Covariate d) :
+ theorem fineFieldGeometryEnvelope_count_three ad bd T0 N
+    M q C a rho eta (U : Fin 3 → Covariate d) :
     fineFieldGeometryEnvelope ad bd T0 N M q C a rho eta U = 0 := by
-  have hs : ((Finset.univ : Finset (Fin 3)).powerset).filter
+  have hs : ((Finset.univ : Finset $ Fin 3 ).powerset).filter
       (fun S => 4 ≤ S.card ∧ Even S.card) = ∅ := by
-    apply Finset.eq_empty_iff_forall_notMem.mpr
-    intro S hS
-    have hcard := Finset.card_le_card ((Finset.mem_powerset.mp (Finset.mem_filter.mp hS).1))
-    simp only [Finset.card_univ, Fintype.card_fin] at hcard
-    have h4 := (Finset.mem_filter.mp hS).2.1
-    omega
+    rfl
   unfold fineFieldGeometryEnvelope
-  rw [hs]
-  simp
-
-end NearlyMinimax
+  grind

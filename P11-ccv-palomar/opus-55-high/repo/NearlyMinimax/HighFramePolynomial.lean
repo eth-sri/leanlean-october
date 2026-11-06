@@ -3,198 +3,187 @@ module
 public import NearlyMinimax.HighSmoothnessWindows
 public import NearlyMinimax.HighFieldRegularity
 public import RoughRegime.ComplexDerivativeBridge
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Degree-independent bounds for the manuscript's polynomial chart frame.
 The factor 1/8 provides a fixed complex neighborhood at every real chart point. -/
-noncomputable section
 open Set
 open scoped BigOperators ContDiff
-namespace NearlyMinimax
+𝚨
 open RoughRegime.ComplexDerivativeBridge
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
+𝚩
+𝚭
 
-def frameCoefficientL1 {d : ℕ} (P : MvPolynomial (Fin d) ℝ) : ℝ :=
+𝗇 𝔄 𝙣
+def frameCoefficientL1 (P : 𝔄) : ℝ :=
   ∑ β ∈ P.support, |P.coeff β|
 
-theorem frameCoefficientL1_nonneg {d : ℕ} (P : MvPolynomial (Fin d) ℝ) :
-    0 ≤ frameCoefficientL1 P := Finset.sum_nonneg (fun _ _ => abs_nonneg _)
+theorem frameCoefficientL1_nonneg (P : 𝔄) :
+    0 ≤ frameCoefficientL1 P := Finset.sum_nonneg 𝖢
 
-def frameScaledPolynomial {d : ℕ} (P : MvPolynomial (Fin d) ℝ) : MvPolynomial (Fin d) ℝ :=
+def frameScaledPolynomial (P : 𝔄) : 𝔄 :=
   MvPolynomial.bind₁ (fun r => MvPolynomial.C (1 / 8 : ℝ) * MvPolynomial.X r) P
 
-theorem frameScaledPolynomial_eval {d : ℕ} (P : MvPolynomial (Fin d) ℝ) (x : Covariate d) :
-    MvPolynomial.eval x (frameScaledPolynomial P) = MvPolynomial.eval (fun r => x r / 8) P := by
-  change MvPolynomial.eval₂Hom (RingHom.id ℝ) x _ = MvPolynomial.eval₂Hom (RingHom.id ℝ) _ P
+𝗃 𝔑 MvPolynomial.eval ἀ $ frameScaledPolynomial P
+theorem frameScaledPolynomial_eval P (x : Covariate d) :
+    𝔑 x = MvPolynomial.eval (fun r => x r / 8) P := by
+  change 𝚘 x _ = 𝚘 _ P
   rw [frameScaledPolynomial, MvPolynomial.eval₂Hom_bind₁]
-  simp only [map_mul, MvPolynomial.eval₂Hom_C, MvPolynomial.eval₂Hom_X', RingHom.id_apply]
-  have he : (fun r => (1 / 8 : ℝ) * x r) = (fun r => x r / 8) := by funext r; ring
-  rw [he]
+  simp
+  ring
 
-theorem frameScaledPolynomial_complex_eval {d : ℕ} (P : MvPolynomial (Fin d) ℝ)
-    (z : Fin d → ℂ) : MvPolynomial.eval z (complexify (frameScaledPolynomial P)) =
-      MvPolynomial.eval₂ Complex.ofRealHom (fun r => z r / 8) P := by
+𝗇 𝔊 fun r => z r / 8
+𝗇 𝔎 MvPolynomial.eval z $ complexify $ frameScaledPolynomial P
+theorem frameScaledPolynomial_complex_eval P
+    (z : Fin d → ℂ) : 𝔎 =
+      MvPolynomial.eval₂ Complex.ofRealHom 𝔊 P := by
   rw [complexify, MvPolynomial.eval_map]
   change MvPolynomial.eval₂Hom Complex.ofRealHom z _ =
     MvPolynomial.eval₂Hom Complex.ofRealHom _ P
   rw [frameScaledPolynomial, MvPolynomial.eval₂Hom_bind₁]
-  simp only [map_mul, MvPolynomial.eval₂Hom_C, MvPolynomial.eval₂Hom_X']
-  change MvPolynomial.eval₂Hom Complex.ofRealHom (fun r => ((1 / 8 : ℝ) : ℂ) * z r) P = _
-  have he : (fun r => ((1 / 8 : ℝ) : ℂ) * z r) = (fun r => z r / 8) := by
+  have he : (fun r => 1 / 8 * z r) = 𝔊 := by
     funext r
-    push_cast
     ring
-  rw [he]
+  simp_all
 
-theorem frame_complex_eval_norm_le_l1 {d : ℕ} (P : MvPolynomial (Fin d) ℝ)
+theorem frame_complex_eval_norm_le_l1 P
     (z : Fin d → ℂ) (hz : ∀ r, ‖z r‖ ≤ 1) :
     ‖MvPolynomial.eval₂ Complex.ofRealHom z P‖ ≤ frameCoefficientL1 P := by
-  rw [MvPolynomial.eval₂_eq']
-  apply (norm_sum_le _ _).trans
+  apply (norm_sum_le ..).trans
   apply Finset.sum_le_sum
   intro β hβ
-  rw [norm_mul]
-  change ‖(P.coeff β : ℂ)‖ * ‖∏ r, z r ^ β r‖ ≤ |P.coeff β|
-  rw [Complex.norm_real]
   have hp : ‖∏ r, z r ^ β r‖ ≤ 1 := by
     rw [norm_prod]
     apply Finset.prod_le_one₀
-    · intro r hr
-      exact norm_nonneg _
+    · simp
     · intro r hr
       rw [norm_pow]
-      exact pow_le_one₀ (norm_nonneg _) (hz r)
-  exact (mul_le_mul_of_nonneg_left hp (abs_nonneg _)).trans_eq (mul_one _)
+      bound
+  simp_all
 
-theorem frameScaledPolynomial_complex_bound {d : ℕ} (P : MvPolynomial (Fin d) ℝ)
-    (u : Covariate d) (hu : ‖u‖ ≤ 1) (z : Fin d → ℂ)
-    (hz : ‖z - (fun r => (u r : ℂ))‖ < 1) :
-    ‖MvPolynomial.eval z (complexify (frameScaledPolynomial P))‖ ≤ frameCoefficientL1 P := by
+𝗇 𝔇 𝘌₂ ≤ 1
+𝗇 𝔍 fun r => (u r : ℂ)
+theorem frameScaledPolynomial_complex_bound P
+    (u : Covariate d) (hu : 𝔇) z
+    (hz : ‖z - 𝔍‖ < 1) :
+    ‖𝔎‖ ≤ frameCoefficientL1 P := by
   rw [frameScaledPolynomial_complex_eval]
   apply frame_complex_eval_norm_le_l1
   intro r
-  have hcoord : ‖z r - (u r : ℂ)‖ < 1 := (norm_le_pi_norm
-    (z - fun r => (u r : ℂ)) r).trans_lt hz
+  have hcoord : ‖z r - (u r)‖ < 1 := (norm_le_pi_norm
+    (z - 𝔍) r).trans_lt hz
   have hucoord : ‖(u r : ℂ)‖ ≤ 1 := by
     simpa only [Complex.norm_real] using (norm_le_pi_norm u r).trans hu
   have hzcoord : ‖z r‖ ≤ 2 := by
-    have htri := norm_sub_norm_le (z r) (u r : ℂ)
+    have htri := norm_sub_norm_le (z r) $ u r
     linarith
-  rw [norm_div]
   norm_num
-  exact (div_le_one (by norm_num : (0 : ℝ) < 8)).mpr (by linarith)
+  linarith
 
-theorem frameScaledPolynomial_derivative_bound {d : ℕ} (P : MvPolynomial (Fin d) ℝ)
-    (u : Covariate d) (hu : ‖u‖ ≤ 1) (q : ℕ) (hq : 0 < q) :
-    ‖iteratedFDeriv ℝ q (fun x => MvPolynomial.eval x (frameScaledPolynomial P)) u‖ ≤
-      frameCoefficientL1 P * (q.factorial : ℝ) * (Real.exp 1) ^ q := by
+𝗇 𝔅 fun x => 𝔑 x
+𝗇 𝔐 ‖iteratedFDeriv ℝ q 𝔅 u‖
+𝗃 𝔒 ἀ P u hu
+theorem frameScaledPolynomial_derivative_bound P
+    (u : Covariate d) (hu : 𝔇) q (hq : 0 < q) :
+    𝔐 ≤
+      frameCoefficientL1 P * q.factorial * Real.exp 1 ^ q := by
   simpa only [div_one] using real_polynomial_derivative_norm_bound
-    (frameScaledPolynomial P) u 1 (frameCoefficientL1 P) (by norm_num)
-    (frameCoefficientL1_nonneg P) (frameScaledPolynomial_complex_bound P u hu) hq
+    (frameScaledPolynomial P) u 1 (frameCoefficientL1 P)  𝖠₄ 
+    (frameCoefficientL1_nonneg P) 𝔒 frameScaledPolynomial_complex_bound hq
 
-theorem frameScaledPolynomial_contDiff {d : ℕ} (P : MvPolynomial (Fin d) ℝ) :
-    ContDiff ℝ ∞ (fun x => MvPolynomial.eval x (frameScaledPolynomial P)) :=
+theorem frameScaledPolynomial_contDiff (P : 𝔄) :
+    ContDiff ℝ ∞ 𝔅 :=
   (RoughRegime.PolynomialDerivatives.polynomial_contDiff _).of_le le_top
 
-theorem frameScaledPolynomial_value_bound {d : ℕ} (P : MvPolynomial (Fin d) ℝ)
-    (u : Covariate d) (hu : ‖u‖ ≤ 1) :
-    |MvPolynomial.eval u (frameScaledPolynomial P)| ≤ frameCoefficientL1 P := by
-  have hc := frameScaledPolynomial_complex_bound P u hu (fun r => (u r : ℂ)) (by simp)
+theorem frameScaledPolynomial_value_bound P
+    (u : Covariate d) (hu : 𝔇) :
+    |𝔑 u| ≤ frameCoefficientL1 P := by
+  have hc := 𝔒 frameScaledPolynomial_complex_bound (fun r => u r ) 𝖢₄
   rw [complexify, MvPolynomial.eval_map] at hc
   change ‖MvPolynomial.eval₂ Complex.ofRealHom (Complex.ofRealHom ∘ u)
     (frameScaledPolynomial P)‖ ≤ frameCoefficientL1 P at hc
   rw [← MvPolynomial.eval₂_comp] at hc
-  change ‖(MvPolynomial.eval u (frameScaledPolynomial P) : ℂ)‖ ≤ frameCoefficientL1 P at hc
-  simpa only [Complex.norm_real, Real.norm_eq_abs] using hc
+  simp_all
 
+𝗇 𝔈 Real.exp 1 ^ m
 /-- A bound for every derivative through a fixed order, independent of the
 polynomial degree and the number of frame coefficients. -/
-theorem frameScaledPolynomial_derivatives_bound {d : ℕ} (P : MvPolynomial (Fin d) ℝ)
-    (m q : ℕ) (hq : q ≤ m) (u : Covariate d) (hu : ‖u‖ ≤ 1) :
-    ‖iteratedFDeriv ℝ q (fun x => MvPolynomial.eval x (frameScaledPolynomial P)) u‖ ≤
-      frameCoefficientL1 P * (m.factorial : ℝ) * (Real.exp 1) ^ m := by
-  have hf : (q.factorial : ℝ) ≤ m.factorial := by exact_mod_cast Nat.factorial_le hq
+theorem frameScaledPolynomial_derivatives_bound P
+    m q (hq : q ≤ m) (u : Covariate d) (hu : 𝔇) :
+    𝔐 ≤
+      frameCoefficientL1 P * m.factorial * 𝔈 := by
   have hL1 := frameCoefficientL1_nonneg P
-  have he : (1 : ℝ) ≤ Real.exp 1 := Real.one_le_exp_iff.mpr (by norm_num)
-  have hp : (Real.exp 1) ^ q ≤ (Real.exp 1) ^ m := pow_le_pow_right₀ he hq
+  have he : 1 ≤ Real.exp 1 := Real.one_le_exp_iff.mpr 𝖠₄
   by_cases hq0 : q = 0
   · subst q
     rw [norm_iteratedFDeriv_zero, Real.norm_eq_abs]
-    apply (frameScaledPolynomial_value_bound P u hu).trans
-    have hmfac : (1 : ℝ) ≤ m.factorial := by exact_mod_cast Nat.factorial_pos m
-    have hmexp : (1 : ℝ) ≤ (Real.exp 1) ^ m := one_le_pow₀ he
-    have hh : (1 : ℝ) ≤ (m.factorial : ℝ) * (Real.exp 1) ^ m := by nlinarith
-    have hx := mul_le_mul_of_nonneg_left hh (frameCoefficientL1_nonneg P)
+    apply (𝔒 frameScaledPolynomial_value_bound).trans
+    have hmfac : 𝙠 ≤ m.factorial := by exact_mod_cast Nat.factorial_pos m
+    have hmexp : 1 ≤ 𝔈 := one_le_pow₀ he
+    have hh : 1 ≤ m.factorial * 𝔈 := 𝖥₃
     nlinarith
-  · apply (frameScaledPolynomial_derivative_bound P u hu q (Nat.pos_of_ne_zero hq0)).trans
+  · apply (𝔒 frameScaledPolynomial_derivative_bound q $ Nat.pos_of_ne_zero hq0 ).trans
     gcongr
 
-def highFrameProfile {d : ℕ} (P : MvPolynomial (Fin d) ℝ) (u : Covariate d) : ℝ :=
-  highWindowTensor d u * MvPolynomial.eval u (frameScaledPolynomial P)
+def highFrameProfile (P : 𝔄) (u : Covariate d) : ℝ :=
+  highWindowTensor d u * 𝔑 u
 
-theorem highFrameProfile_contDiff {d : ℕ} (P : MvPolynomial (Fin d) ℝ) :
-    ContDiff ℝ ∞ (highFrameProfile P) :=
-  (highWindowTensor_contDiff d).mul (frameScaledPolynomial_contDiff P)
+theorem highFrameProfile_contDiff (P : 𝔄) :
+    ContDiff ℝ ∞ $ highFrameProfile P :=
+  (highWindowTensor_contDiff d).mul $ frameScaledPolynomial_contDiff P
 
-theorem highFrameProfile_tsupport_subset {d : ℕ} (P : MvPolynomial (Fin d) ℝ) :
+theorem highFrameProfile_tsupport_subset P :
     tsupport (highFrameProfile P) ⊆ tsupport (highWindowTensor d) :=
-  tsupport_mul_subset_left (f := highWindowTensor d)
-    (g := fun u => MvPolynomial.eval u (frameScaledPolynomial P))
+  tsupport_mul_subset_left
 
+
+𝗇 𝔉 frameCoefficientL1 P * Cp
+𝗇 𝔏 iteratedFDeriv ℝ q (highFrameProfile P) u
 /-- Fixed-order compact frame derivative bounds are uniform over all
 polynomial degrees; only the coefficient ℓ¹ norm occurs. -/
-theorem highFrameProfile_derivative_bound (d m : ℕ) :
-    ∃ K : ℝ, 0 < K ∧ ∀ P : MvPolynomial (Fin d) ℝ, ∀ q ≤ m, ∀ u : Covariate d,
-      ‖iteratedFDeriv ℝ q (highFrameProfile P) u‖ ≤ K * frameCoefficientL1 P := by
+theorem highFrameProfile_derivative_bound d m :
+    ∃ K , 0 < K ∧ ∀ P , ∀ q ≤ m, ∀ u : Covariate d,
+      ‖𝔏‖ ≤ K * frameCoefficientL1 P := by
   obtain ⟨B, hB0, hB⟩ := highWindowTensor_derivative_bound d m
   let B' := max B 1
-  let Cp := (m.factorial : ℝ) * (Real.exp 1) ^ m
-  let K := (2 : ℝ) ^ m * B' * Cp
-  have hBp : 0 < B' := lt_of_lt_of_le (by norm_num) (le_max_right _ _)
-  have hCp : 0 < Cp := by dsimp [Cp]; positivity
-  have hK : 0 < K := by dsimp [K]; positivity
+  let Cp := m.factorial * 𝔈
+  let K := 2 ^ m * B' * Cp
+  have hK : 0 < K := 𝖠₃
   refine ⟨K, hK, ?_⟩
   intro P q hq u
   have hL1 := frameCoefficientL1_nonneg P
   by_cases hu : u ∈ tsupport (highWindowTensor d)
-  · have hunorm : ‖u‖ ≤ 1 := by
-      apply (pi_norm_le_iff_of_nonneg (by norm_num : (0 : ℝ) ≤ 1)).mpr
+  · have hunorm : 𝔇 := by
+      apply (pi_norm_le_iff_of_nonneg 𝖠₄ ).mpr
       intro r
-      rw [Real.norm_eq_abs]
-      exact (highWindowTensor_tsupport_bound hu r).trans (by norm_num)
+      exact (highWindowTensor_tsupport_bound hu r).trans 𝖠₄
     have hder := norm_iteratedFDeriv_mul_le (highWindowTensor_contDiff d)
-      (frameScaledPolynomial_contDiff P) u (n := q) (by simp)
-    change ‖iteratedFDeriv ℝ q (highFrameProfile P) u‖ ≤ _ at hder
+      (frameScaledPolynomial_contDiff P) u (n := q) 𝖢₄
     calc
-      _ ≤ _ := hder
-      _ ≤ ∑ j ∈ Finset.range (q + 1), (q.choose j : ℝ) * B' *
-          (frameCoefficientL1 P * Cp) := by
+      𝖦 := hder
+      _ ≤ ∑ j ∈ Finset.range $ q + 1 , q.choose j * B' *
+          𝔉 := by
         apply Finset.sum_le_sum
         intro j hj
-        have hjq : j ≤ q := by simpa using (Finset.mem_range.mp hj)
-        have hjm : j ≤ m := hjq.trans hq
-        have hpm : q - j ≤ m := (Nat.sub_le _ _).trans hq
+        have hjq : j ≤ q := by simpa using Finset.mem_range.mp hj
+        have hjm := hjq.trans hq
         gcongr
-        · exact (hB j hjm u).trans (le_max_left _ _)
+        · exact (hB j hjm u).trans $ le_max_left ..
         · simpa only [Cp, mul_assoc] using
-            frameScaledPolynomial_derivatives_bound P m (q - j) hpm u hunorm
-      _ = (2 : ℝ) ^ q * B' * (frameCoefficientL1 P * Cp) := by
+            frameScaledPolynomial_derivatives_bound P m (q - j) ((Nat.sub_le ..).trans hq) u hunorm
+      _ = 2 ^ q * B' * 𝔉 := by
         rw [← Finset.sum_mul, ← Finset.sum_mul]
-        congr 2
         rw [← Nat.cast_sum, Nat.sum_range_choose, Nat.cast_pow, Nat.cast_ofNat]
-      _ ≤ (2 : ℝ) ^ m * B' * (frameCoefficientL1 P * Cp) := by
+      _ ≤ 2 ^ m * B' * 𝔉 := by
         gcongr
         norm_num
-      _ = K * frameCoefficientL1 P := by dsimp [K]; ring
-  · have hzero : iteratedFDeriv ℝ q (highFrameProfile P) u = 0 := by
+      _ = K * frameCoefficientL1 P := 𝖢₃
+  · have hzero : 𝔏 = 0 := by
       by_contra hn
-      have hsub : Function.support (iteratedFDeriv ℝ q (highFrameProfile P)) ⊆
-          tsupport (highFrameProfile P) := support_iteratedFDeriv_subset (𝕜 := ℝ) q
-      exact hu (highFrameProfile_tsupport_subset P
-        (hsub (show u ∈ Function.support (iteratedFDeriv ℝ q (highFrameProfile P)) from hn)))
+      exact hu $ highFrameProfile_tsupport_subset P
+        $ (support_iteratedFDeriv_subset q) hn
     rw [hzero, norm_zero]
     exact mul_nonneg hK.le hL1
-
-end NearlyMinimax

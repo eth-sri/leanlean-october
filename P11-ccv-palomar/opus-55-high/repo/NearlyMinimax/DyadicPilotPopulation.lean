@@ -3,141 +3,152 @@ module
 public import NearlyMinimax.DyadicGram
 public import NearlyMinimax.AnchoredMoments
 public import NearlyMinimax.PilotCoordinateExpansion
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Exact original-observation population means of the concrete raw pilot.
 The conditional error centering and affine cell map are proved explicitly. -/
-noncomputable section
 open MeasureTheory ProbabilityTheory Set Matrix
-open scoped BigOperators Matrix.Norms.L2Operator
-namespace NearlyMinimax
+𝚺
+𝚨
 
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
+𝚭
+𝚩
 
-def dyadicResponseMoment {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ)
-    (x : Covariate d) : AnchoredIndex d ℓ → ℝ :=
-  fun γ => dyadicPilotScale d j * ∫ z in dyadicPilotCell j x,
-    dyadicAnchoredFeature j x z γ * θ.regression z ∂designLaw θ
+𝗃 𝔛 ἀ j x
+𝗇 𝔗 𝔛 dyadicAnchoredFeature z
+𝗇 𝔄 𝔗 γ
+𝗇 𝔉 𝘟
+𝗇 𝔊 𝔛 dyadicPilotCell
+𝗇 𝔎 𝔄 * θ.regression z
+𝗇 𝔒 𝗎
+𝗃 𝔚 fun γ => 𝔉 * ∫ z in 𝔊, ἀ ∂designLaw θ
+def dyadicResponseMoment (θ : RegressionParameter d) (j : ℕ)
+    (x : Covariate d) : 𝔒 → ℝ :=
+  𝔚 𝔎
 
-def dyadicConstantMoment {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ)
-    (x : Covariate d) : AnchoredIndex d ℓ → ℝ :=
-  fun γ => dyadicPilotScale d j * ∫ z in dyadicPilotCell j x,
-    dyadicAnchoredFeature j x z γ ∂designLaw θ
+def dyadicConstantMoment (θ : RegressionParameter d) (j : ℕ)
+    (x : Covariate d) : 𝔒 → ℝ :=
+  𝔚 𝔄
 
+𝗇 𝔍 𝙟
+𝗃 𝔙 ἀ C θ hθ
 /-- A measurable function of the observed design integrates under the exact
 design marginal. This follows from the actual observation measure's map. -/
-theorem observationLaw_integral_design {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (g : Covariate d → ℝ)
-    (hg : Measurable g) : (∫ z, g z.1 ∂observationLaw θ) = ∫ x, g x ∂designLaw θ := by
-  have hp := observationLaw_fst_measurePreserving C θ hθ
+theorem observationLaw_integral_design C
+    θ (hθ : 𝔍) (g : 𝙀)
+    (hg : Measurable g) : 𝖴₂ := by
+  have hp := 𝔙 observationLaw_fst_measurePreserving
   rw [← hp.map_eq]
   exact (integral_map hp.aemeasurable hg.aestronglyMeasurable).symm
 
-theorem dyadicPilotPopulation_gram {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (γ δ : AnchoredIndex d ℓ) :
-    dyadicPilotPopulation θ j x (Sum.inl (γ, δ)) = dyadicPopulationGram θ j x γ δ := by
+𝗇 𝔇 𝔛 dyadicPilotCell_measurable
+𝗇 𝔏 fun z => 𝔄 * 𝔗 δ
+𝗇 𝔓 (𝔊).indicator
+𝗃 𝔜 ἀ θ j x
+𝗇 𝔔 𝔜 dyadicPilotPopulation
+theorem dyadicPilotPopulation_gram C
+    θ (hθ : 𝔍) j x
+    (γ δ : 𝔒) :
+    𝔔 𝙫₂ = 𝔜 dyadicPopulationGram γ δ := by
   unfold dyadicPilotPopulation dyadicPilotFeature
   rw [integral_const_mul]
-  change dyadicPilotScale d j * (∫ z, (dyadicPilotCell j x).indicator
-      (fun z => dyadicAnchoredFeature j x z γ * dyadicAnchoredFeature j x z δ) z.1
-        ∂observationLaw θ) = dyadicPilotScale d j * ∫ z in dyadicPilotCell j x,
-          dyadicAnchoredFeature j x z γ * dyadicAnchoredFeature j x z δ ∂designLaw θ
-  have hg : Measurable (fun z => dyadicAnchoredFeature j x z γ * dyadicAnchoredFeature j x z δ) :=
-    (dyadicAnchoredFeature_measurable j x γ).mul (dyadicAnchoredFeature_measurable j x δ)
-  rw [observationLaw_integral_design C θ hθ _
-    (hg.indicator (dyadicPilotCell_measurable j x)), integral_indicator (dyadicPilotCell_measurable j x)]
+  change 𝔉 * ∫ z, 𝔓
+      𝔏 z.1
+        ∂observationLaw θ = 𝔉 * ∫ z in 𝔊,
+          𝔄 * 𝔗 δ ∂designLaw θ
+  have hg : Measurable 𝔏 :=
+    (𝔛 dyadicAnchoredFeature_measurable γ).mul $ 𝔛 dyadicAnchoredFeature_measurable δ
+  rw [𝔙 observationLaw_integral_design _
+    $ hg.indicator 𝔇 , integral_indicator 𝔇]
 
-theorem dyadicPilotPopulation_constant {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (γ : AnchoredIndex d ℓ) :
-    dyadicPilotPopulation θ j x (Sum.inr (Sum.inr γ)) = dyadicConstantMoment θ j x γ := by
+theorem dyadicPilotPopulation_constant C
+    θ (hθ : 𝔍) j x
+    (γ : 𝔒) :
+    𝔔 (Sum.inr $ Sum.inr γ ) = 𝔜 dyadicConstantMoment γ := by
   unfold dyadicPilotPopulation dyadicPilotFeature
   rw [integral_const_mul]
-  change dyadicPilotScale d j * (∫ z, (dyadicPilotCell j x).indicator
-      (fun z => dyadicAnchoredFeature j x z γ) z.1 ∂observationLaw θ) = _
-  rw [observationLaw_integral_design C θ hθ _
-    ((dyadicAnchoredFeature_measurable j x γ).indicator (dyadicPilotCell_measurable j x)),
-    integral_indicator (dyadicPilotCell_measurable j x)]
+  change 𝔉 * ∫ z, 𝔓
+      (fun z => 𝔄) z.1 ∂observationLaw θ = _
+  rw [𝔙 observationLaw_integral_design _
+    $ (𝔛 dyadicAnchoredFeature_measurable γ).indicator 𝔇 ,
+    integral_indicator 𝔇]
   rfl
 
+𝗇 𝔈 Sum.inr $ Sum.inl γ
+𝗇 𝔐 𝔛 dyadicPilotFeature 𝔈 (z, θ.regression z + u)
 /-- The response vector's genuine mean uses the conditional zero mean of the
 original errors, even when their conditional laws depend on the design. -/
-theorem dyadicPilotPopulation_response {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (hx : x ∈ unitCube d) (γ : AnchoredIndex d ℓ) :
-    dyadicPilotPopulation θ j x (Sum.inr (Sum.inl γ)) = dyadicResponseMoment θ j x γ := by
-  let := observationLaw_isProbability C θ hθ
+theorem dyadicPilotPopulation_response C
+    θ (hθ : 𝔍) j x
+    (hx : 𝗌) (γ : 𝔒) :
+    𝔔 𝔈 = 𝔜 dyadicResponseMoment γ := by
+  let := 𝔙 observationLaw_isProbability
   unfold dyadicPilotPopulation
-  rw [observationLaw_integral_conditioning C θ hθ _
-    ((dyadicPilotFeature_memLp_two C θ hθ j x hx (Sum.inr (Sum.inl γ))).integrable (by norm_num))]
-  have heq : (fun z => ∫ u, dyadicPilotFeature j x (Sum.inr (Sum.inl γ))
-      (z, θ.regression z + u) ∂θ.errors z) =ᵐ[designLaw θ]
-      (fun z => dyadicPilotScale d j * (dyadicPilotCell j x).indicator
-        (fun z => dyadicAnchoredFeature j x z γ * θ.regression z) z) := by
+  rw [𝔙 observationLaw_integral_conditioning _
+    $ (𝔙 dyadicPilotFeature_memLp_two j x hx 𝔈).integrable 𝖠₄ ]
+  have heq : (fun z => ∫ u, 𝔐 ∂θ.errors z) =ᵐ[designLaw θ]
+       fun z => 𝔉 * 𝔓
+        (fun z => 𝔎) z := by
     filter_upwards [hθ.2.2.2.2.2.2.2] with z hz
-    by_cases hcell : z ∈ dyadicPilotCell j x
-    · have hm : Integrable (fun u : ℝ => u) (θ.errors z) := hz.1
-      have hi : (fun u => dyadicPilotFeature j x (Sum.inr (Sum.inl γ)) (z, θ.regression z + u)) =
-          (fun u => dyadicPilotScale d j * ((θ.regression z + u) * dyadicAnchoredFeature j x z γ)) := by
+    by_cases hcell : z ∈ 𝔊
+    · have hi : (fun u => 𝔐) =
+           fun u => 𝔉 * ((θ.regression z + u) * 𝔄) := by
         funext u
         simp [dyadicPilotFeature, dyadicPilotScalar, hcell]
       rw [hi, integral_const_mul, integral_mul_const]
       simp only [indicator_of_mem hcell]
-      rw [integral_add (integrable_const _) hm, integral_const, hz.2.2.2.1]
-      simp only [measureReal_def, measure_univ, ENNReal.toReal_one, smul_eq_mul, one_mul, add_zero]
+      rw [𝖻₁ hz.1 , integral_const, hz.2.2.2.1]
+      simp only [measureReal_def, measure_univ, ENNReal.toReal_one]
       ring
     · simp [dyadicPilotFeature, hcell]
-  rw [integral_congr_ae heq, integral_const_mul, integral_indicator (dyadicPilotCell_measurable j x)]
+  rw [integral_congr_ae heq, integral_const_mul, integral_indicator 𝔇]
   rfl
 
-theorem dyadicResponseMoment_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
+𝗇 𝔅 (𝗜 : ℕ) ^ d
+𝗇 𝔑 anchoredVectorMoment 𝔛 dyadicNormalizedAnchor 𝔜 dyadicNormalizedDensity
+𝗇 𝔖 𝘷
+𝗃 𝔘 𝔅 * ∫ z in 𝔊, θ.density z * ἀ ∂cubeVolume d = _
+𝗃 𝔞 fun z => θ.density z * ἀ
+theorem dyadicResponseMoment_eq_normalized C
+    θ (hθ : 𝔍) j (x : Covariate d) :
     dyadicResponseMoment (ℓ := ℓ) θ j x =
-      anchoredVectorMoment (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x)
-        (θ.regression ∘ dyadicCellAffine j x) := by
+      𝔑
+        (θ.regression ∘ 𝔛 dyadicCellAffine) := by
   funext γ
   unfold dyadicResponseMoment
-  rw [admissible_designLaw_setIntegral C θ hθ _ (dyadicPilotCell_measurable j x)]
-  have h := regular_grid_cell_integral ((2 : ℕ) ^ j) (by positivity)
-    (regularGridCell _ (by positivity) x)
-    (fun z => θ.density z * (dyadicAnchoredFeature j x z γ * θ.regression z))
-  change ((((2 : ℕ) ^ j : ℕ) : ℝ)) ^ d * (∫ z in dyadicPilotCell j x,
-    θ.density z * (dyadicAnchoredFeature j x z γ * θ.regression z) ∂cubeVolume d) = _ at h
-  change dyadicPilotScale d j * (∫ z in dyadicPilotCell j x,
-    θ.density z * (dyadicAnchoredFeature j x z γ * θ.regression z) ∂cubeVolume d) = _
-  rw [show dyadicPilotScale d j = ((((2 : ℕ) ^ j : ℕ) : ℝ)) ^ d by simp [dyadicPilotScale]]
+  rw [𝔙 admissible_designLaw_setIntegral _ 𝔇]
+  have h := regular_grid_cell_integral 𝔖  𝖠₃ 
+    (regularGridCell _  𝖠₃  x)
+    𝔞 𝔎
+  change 𝔘 𝔎 at h
+  rw [show 𝔉 = 𝔅 by aesop]
   rw [h]
   unfold anchoredVectorMoment dyadicNormalizedDensity dyadicCellAffine dyadicNormalizedAnchor
   apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun w => by
-    dsimp only [Function.comp_apply]
+  exact Filter.Eventually.of_forall fun w => by
+    dsimp
     rw [dyadicAnchoredFeature_affine]
-    ring)
+    ring
 
-theorem dyadicConstantMoment_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
+theorem dyadicConstantMoment_eq_normalized C
+    θ (hθ : 𝔍) j (x : Covariate d) :
     dyadicConstantMoment (ℓ := ℓ) θ j x =
-      anchoredVectorMoment (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x) (fun _ => 1) := by
+      𝔑 𝙃 := by
   funext γ
   unfold dyadicConstantMoment
-  rw [admissible_designLaw_setIntegral C θ hθ _ (dyadicPilotCell_measurable j x)]
-  have h := regular_grid_cell_integral ((2 : ℕ) ^ j) (by positivity)
-    (regularGridCell _ (by positivity) x) (fun z => θ.density z * dyadicAnchoredFeature j x z γ)
-  change ((((2 : ℕ) ^ j : ℕ) : ℝ)) ^ d * (∫ z in dyadicPilotCell j x,
-    θ.density z * dyadicAnchoredFeature j x z γ ∂cubeVolume d) = _ at h
-  change dyadicPilotScale d j * (∫ z in dyadicPilotCell j x,
-    θ.density z * dyadicAnchoredFeature j x z γ ∂cubeVolume d) = _
-  rw [show dyadicPilotScale d j = ((((2 : ℕ) ^ j : ℕ) : ℝ)) ^ d by simp [dyadicPilotScale]]
+  rw [𝔙 admissible_designLaw_setIntegral _ 𝔇]
+  have h := regular_grid_cell_integral 𝔖  𝖠₃ 
+    (regularGridCell _ (by positivity) x) 𝔞 𝔄
+  change 𝔘 𝔄 at h
+  rw [show 𝔉 = 𝔅 by aesop]
   rw [h]
   unfold anchoredVectorMoment dyadicNormalizedDensity dyadicCellAffine dyadicNormalizedAnchor
   apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun w => by
-    dsimp only [Function.comp_apply]
+  exact Filter.Eventually.of_forall fun w => by
+    dsimp
     rw [dyadicAnchoredFeature_affine]
-    simp)
-
-end NearlyMinimax
+    simp

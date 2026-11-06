@@ -3,75 +3,75 @@ module
 public import NearlyMinimax.FinePairRowMass
 public import NearlyMinimax.FinePairMatrixPositivity
 public import NearlyMinimax.FinePairMatrixCost
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! The source singleton ordinary row with its genuine one-point spatial
 representation and finite density/response atoms. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
+𝚫
+𝚪
+𝚨
+𝚩
+𝚰
 
-abbrev SingletonRowMark (d D q : ℕ) := Unit × HighPacketMarkIndex (HighFrameIndex d D) D 1 D q
+𝗃 𝔎 ἀ d D
+abbrev SingletonRowMark (d D q : ℕ) := Unit × HighPacketMarkIndex 𝔎 HighFrameIndex D 1 D q
 
+𝗇 𝔄 fun _ => 𝔎 finePairUnitMatrix
+𝗇 𝔅 𝖶₁
+𝗃 𝔍 ἀ 𝔅 a b D 1 D q C 𝔄
 def singletonRowMass (d D q : ℕ) (a b C : ℝ) : ℝ :=
-  highPacketMarkMass (Measure.dirac ()) a b D 1 D q C (fun _ => finePairUnitMatrix d D)
+  𝔍 highPacketMarkMass
 
+𝗇 𝔉 𝔎 singletonRowMass q a b C
 def singletonRowData (d k D q : ℕ) (a b C : ℝ) :
-    HighUnionRowData d k D Unit (fun _ => SingletonRowMark d D q) where
-  rowLaw := fun _ => highPacketAbsoluteLaw (Measure.dirac ()) a b D 1 D q C (fun _ => finePairUnitMatrix d D)
-  rowMass := fun _ => singletonRowMass d D q a b C
-  rowActivation := fun _ => highPacketActivation (Measure.dirac ()) a b D 1 D q C (fun _ => finePairUnitMatrix d D)
+    𝙭₁ Unit fun _ => 𝔎 SingletonRowMark q where
+  rowLaw := fun _ => 𝔍 highPacketAbsoluteLaw
+  rowMass := fun _ => 𝔉
+  rowActivation := fun _ => 𝔍 highPacketActivation
   rowIntercept := fun _ => highPacketIntercept a b D 1 D q
-  rowSlope := fun _ _ e _ => highPacketSlope a b D 1 D q (fun _ _ => 1) e
-  rowVector := fun _ e => (highResponseMarkAtom C q e.2.2).2
-  rowTime := fun _ e => (highResponseMarkAtom 0 q e.2.2).1
+  rowSlope := fun _ _ e _ => highPacketSlope a b D 1 D q 𝘞 e
+  rowVector := fun _ e => 𝗻₁
+  rowTime := fun _ e => 𝗼₁
 
-theorem singletonRowMass_positive (d D q : ℕ) (hq : 1 ≤ q)
-    (a b : ℝ) (ha : 0 < a) (hab : a < b) (C : ℝ) (hC : 0 < C) :
-    0 < singletonRowMass d D q a b C := by
-  rw [singletonRowMass, highPacketMarkMass_eq_variation (Measure.dirac ()) a b D 1 D q C
-      (fun _ => finePairUnitMatrix d D) (fun _ _ => measurable_const) (integrable_const _),
-    highPacketSignedMeasure_totalVariation (Measure.dirac ()) a b D 1 D q C
-      (fun _ => finePairUnitMatrix d D) (fun _ _ => measurable_const) (integrable_const _)]
-  simp only [separatedMatrixCost, integral_dirac]
-  rw [densityPacketWeight_variation a b ha hab D 1 D (by norm_num)]
+𝗇 𝔇 𝗱
+𝗃 𝔏 𝔍 ἀ 𝔇 $ integrable_const _
+𝗇 𝔊 𝔏 highPacketMarkMass_eq_variation
+theorem singletonRowMass_positive d D q (hq : 𝗘)
+    a b (ha : 𝙆) (hab : 𝙭) C (hC : 𝙴) :
+    0 < 𝔉 := by
+  rw [singletonRowMass, 𝔊,
+    𝔏 highPacketSignedMeasure_totalVariation]
+  simp
+  rw [densityPacketWeight_variation a b ha hab D 1 D 𝖠₄ ]
   have hp : densityPacketPrefactor a b 1 ≠ 0 := by
-    simp only [densityPacketPrefactor, Nat.factorial_one, Nat.cast_one, one_pow, one_div, inv_one, pow_one, one_mul]
-    exact div_ne_zero (ha.trans hab).ne' (densityMargin_zero_ne a b ha hab)
-  have hn : 0 < (derivativeOrder D : ℝ) := by
-    have he : 0 < derivativeOrder D := by unfold derivativeOrder; omega
-    exact_mod_cast he
-  have hr : 0 < ∑ h : Fin (2*q+2), |responseWeight q h| :=
-    lt_of_lt_of_le zero_lt_one (response_absolute_cost_ge_one q hq)
-  have hA := finePairUnitMatrix_l1_pos d D
-  exact mul_pos (mul_pos (mul_pos
-    (mul_pos (mul_pos (abs_pos.mpr hp) (Real.cosh_pos _)) (pow_pos hn _)) hr)
-      (mul_pos (by norm_num) (pow_pos hC _))) hA
+    simp only [densityPacketPrefactor, Nat.factorial_one, Nat.cast_one, one_div, inv_one, pow_one, one_mul]
+    exact div_ne_zero (ha.trans hab).ne' $ densityMargin_zero_ne a b ha hab
+  have hn : 0 < derivativeOrder D := by
+    bound
+  have hr :=
+    lt_of_lt_of_le zero_lt_one $ response_absolute_cost_ge_one q hq
+  have hA := 𝔎 finePairUnitMatrix_l1_pos
+  positivity
 
-theorem singletonRow_probability (d k D q : ℕ) (hq : 1 ≤ q)
-    (a b : ℝ) (ha : 0 < a) (hab : a < b) (C : ℝ) (hC : 0 < C) :
-    IsProbabilityMeasure ((singletonRowData d k D q a b C).rowLaw ()) :=
-  highPacketAbsoluteLaw_probability (Measure.dirac ()) a b D 1 D q C (fun _ => finePairUnitMatrix d D)
-    (fun _ _ => measurable_const) (integrable_const _) (singletonRowMass_positive d D q hq a b ha hab C hC)
+theorem singletonRow_probability d k D q (hq : 𝗘)
+    a b (ha : 𝙆) (hab : 𝙭) C (hC : 𝙴) :
+    IsProbabilityMeasure $ (singletonRowData d k D q a b C).rowLaw () :=
+  𝔏 highPacketAbsoluteLaw_probability $ 𝔎 singletonRowMass_positive q hq a b ha hab C hC
 
-theorem singletonRowMass_exponential_bound (d D q : ℕ) (hD : 1 ≤ D)
-    (a b : ℝ) (ha : 0 < a) (hab : a < b) (C : ℝ) :
-    singletonRowMass d D q a b C ≤
-      (Real.exp (1+exteriorTau ((a+b)/(b-a))) * |b/densityMargin a b 0|) * D *
-      Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a))) *
-      (∑ h : Fin (2*q+2), |responseWeight q h|) * (2*C^2) := by
-  rw [singletonRowMass, highPacketMarkMass_eq_variation (Measure.dirac ()) a b D 1 D q C
-    (fun _ => finePairUnitMatrix d D) (fun _ _ => measurable_const) (integrable_const _)]
-  have h := highPacketSignedMeasure_exponential_cost (Measure.dirac ()) a b ha hab D 1 D q
-    (by norm_num) hD C (fun _ => finePairUnitMatrix d D) (fun _ _ => measurable_const) (integrable_const _)
-  simp only [pow_one, separatedMatrixCost, integral_dirac] at h
+𝗇 𝔈 𝖬
+theorem singletonRowMass_exponential_bound d D q (hD : 𝗮)
+    a b (ha : 𝙆) (hab : 𝙭) C :
+    𝔉 ≤
+       Real.exp (1+exteriorTau 𝔈) * |𝘸₁| * D *
+      Real.exp (D*exteriorTau 𝔈) *
+      (∑ h : Fin 𝖵, |𝘐₁|) * 𝘖 := by
+  rw [singletonRowMass, 𝔊]
+  have h := highPacketSignedMeasure_exponential_cost 𝔅 a b ha hab D 1 D q
+     𝖠₄  hD C 𝔄 𝔇 $ integrable_const _
+  simp at h
   apply h.trans
-  have hA : (∑ i, ∑ j, |finePairUnitMatrix d D i j|) ≤ 1 := finePairUnitMatrix_l1_le d D
-  exact (mul_le_mul_of_nonneg_left hA (by positivity)).trans_eq (mul_one _)
-
-end NearlyMinimax
+  exact (mul_le_mul_of_nonneg_left 𝔎 finePairUnitMatrix_l1_le 𝖠₃ ).trans_eq $ mul_one _

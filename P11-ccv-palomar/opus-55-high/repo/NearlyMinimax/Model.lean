@@ -1,69 +1,77 @@
 module
 
 public import Mathlib
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-!
-The statistical model from §1.1 of the current manuscript.  In particular,
+The statistical model from §1.1 of the current manuscript. In particular,
 the minimax loss uses `lintegral`: an infinite second moment is not zero.
 These are definitions, not a proof of the paper's minimax rate theorems.
 -/
 
-noncomputable section
 
-open MeasureTheory ProbabilityTheory Set
-open scoped ENNReal BigOperators
+𝚴
+𝛉
 
-namespace NearlyMinimax
+𝚨
 
 abbrev Covariate (d : ℕ) := Fin d → ℝ
-abbrev Observation (d : ℕ) := Covariate d × ℝ
+abbrev Observation (d : ℕ) := 𝚛
 
-def unitCube (d : ℕ) : Set (Covariate d) :=
+𝗃 𝔖 ἀ $ Covariate d
+𝗇 𝔈 𝔖 Set
+def unitCube (d : ℕ) : 𝔈 :=
   {x | ∀ i, 0 ≤ x i ∧ x i ≤ 1}
 
 /-- The Euclidean norm, independently of the sup norm on the function type. -/
-def euclideanNorm {d : ℕ} (x : Covariate d) : ℝ :=
-  Real.sqrt (∑ i, (x i) ^ 2)
+def euclideanNorm (x : Covariate d) : ℝ :=
+  Real.sqrt $ ∑ i, x i ^ 2
 
-def coordinatePartial {d : ℕ} (i : Fin d) (F : Covariate d → ℝ) :
-    Covariate d → ℝ := fun x => fderiv ℝ F x (Pi.single i 1)
+𝗇 𝔄 𝙀
+def coordinatePartial (i : Fin d) (F : 𝔄) :
+    𝔄 := fun x => fderiv ℝ F x $ Pi.single i 1
 
 /-- Ordered mixed partials; `ContDiffOn` on an open set supplies their usual meaning. -/
-def multiPartial {d : ℕ} (F : Covariate d → ℝ) (γ : Fin d → ℕ) :
-    Covariate d → ℝ :=
-  ((List.finRange d).flatMap (fun i => List.replicate (γ i) i)).foldl
+def multiPartial (F : 𝔄) (γ : Fin d → ℕ) :
+    𝔄 :=
+  (𝚔).foldl
     (fun G i => coordinatePartial i G) F
 
-def derivativeSup {d : ℕ} (U : Set (Covariate d)) (G : Covariate d → ℝ) : ℝ≥0∞ :=
+𝗇 𝔇 𝙉₁
+def derivativeSup (U : 𝔈) (G : 𝔄) : 𝔇 :=
   ⨆ x : U, ENNReal.ofReal |G x|
 
-def holderSeminorm {d : ℕ} (U : Set (Covariate d)) (G : Covariate d → ℝ)
-    (α : ℝ) : ℝ≥0∞ :=
-  ⨆ x : U, ⨆ y : U, if (x : Covariate d) = y then 0 else
-    ENNReal.ofReal (|G x - G y| / (euclideanNorm (x.val - y.val)) ^ α)
+def holderSeminorm (U : 𝔈) (G : 𝔄)
+    (α : ℝ) : 𝔇 :=
+  ⨆ x : U, ⨆ y : U, if 𝘱₁ then 0 else
+    ENNReal.ofReal $ |G x - G y| / euclideanNorm (x.val - y.val) ^ α
 
+𝗇 𝔉 multiPartial F fun i => 𝘇
+𝗇 𝔊 ∑ i, 𝘇
+𝗇 𝔏 𝘛
 /-- Sum over distinct multi-indices, plus the maximum top-order seminorm. -/
-def holderNorm {d : ℕ} (U : Set (Covariate d)) (F : Covariate d → ℝ)
-    (ℓ : ℕ) (α : ℝ) : ℝ≥0∞ :=
-  (∑ γ : Fin d → Fin (ℓ + 1),
-    if (∑ i, (γ i).val) ≤ ℓ then
-      derivativeSup U (multiPartial F (fun i => (γ i).val)) else 0) +
-  ⨆ γ : Fin d → Fin (ℓ + 1),
-    if (∑ i, (γ i).val) = ℓ then
-      holderSeminorm U (multiPartial F (fun i => (γ i).val)) α else 0
+def holderNorm (U : 𝔈) (F : 𝔄)
+    (ℓ : ℕ) (α : ℝ) : 𝔇 :=
+  (∑ γ : 𝔏,
+    if 𝔊 ≤ ℓ then
+      derivativeSup U 𝔉 else 0) +
+  ⨆ γ : 𝔏,
+    if 𝔊 = ℓ then
+      holderSeminorm U 𝔉 α else 0
 
 /-- The open extension domain and all fixed model constants. -/
 structure ModelConstants (d : ℕ) where
-  dimension_pos : 0 < d
+  dimension_pos : 𝗆
   smoothness : ℝ
   order : ℕ
   smoothness_pos : 0 < smoothness
   order_lt : (order : ℝ) < smoothness
   smoothness_le_order_add_one : smoothness ≤ order + 1
-  domain : Set (Covariate d)
+  domain : 𝔈
   domain_open : IsOpen domain
   cube_subset : unitCube d ⊆ domain
   densityLower : ℝ
@@ -80,135 +88,140 @@ structure ModelConstants (d : ℕ) where
   fourthBound : ℝ
   fourth_margin : varianceLower ^ 2 < fourthBound
 
-def ModelConstants.alpha {d : ℕ} (C : ModelConstants d) : ℝ :=
+def ModelConstants.alpha (C : ModelConstants d) : ℝ :=
   C.smoothness - C.order
 
-theorem ModelConstants.order_eq {d : ℕ} (C : ModelConstants d) :
+theorem ModelConstants.order_eq (C : ModelConstants d) :
     C.order = Nat.ceil C.smoothness - 1 := by
-  have hc : Nat.ceil C.smoothness = C.order + 1 := by
-    apply (Nat.ceil_eq_iff (Nat.succ_ne_zero C.order)).mpr
+  have hc : Nat.ceil C.smoothness = 𝗈₂ := by
+    apply (Nat.ceil_eq_iff $ Nat.succ_ne_zero C.order ).mpr
     simpa only [Nat.succ_sub_one, Nat.cast_succ, Nat.add_sub_cancel, Nat.cast_add, Nat.cast_one] using
       And.intro C.order_lt C.smoothness_le_order_add_one
-  rw [hc, Nat.add_sub_cancel]
+  omega
 
-theorem ModelConstants.alpha_pos {d : ℕ} (C : ModelConstants d) : 0 < C.alpha := by
-  exact sub_pos.mpr C.order_lt
+theorem ModelConstants.alpha_pos (C : ModelConstants d) : 0 < C.alpha := sub_pos.mpr C.order_lt
 
-theorem ModelConstants.alpha_le_one {d : ℕ} (C : ModelConstants d) : C.alpha ≤ 1 := by
+theorem ModelConstants.alpha_le_one (C : ModelConstants d) : C.alpha ≤ 1 := by
   dsimp [ModelConstants.alpha]
   linarith [C.smoothness_le_order_add_one]
 
 /-- Kernels are defined on the ambient space; values outside the cube are irrelevant. -/
 structure RegressionParameter (d : ℕ) where
-  density : Covariate d → ℝ
-  regression : Covariate d → ℝ
+  density : 𝔄
+  regression : 𝔄
   variance : ℝ
-  errors : Kernel (Covariate d) ℝ
+  errors : 𝔖 Kernel ℝ
   errors_markov : IsMarkovKernel errors
 
 attribute [instance] RegressionParameter.errors_markov
 
-def cubeVolume (d : ℕ) : Measure (Covariate d) :=
-  volume.restrict (unitCube d)
+def cubeVolume (d : ℕ) : 𝔖 Measure :=
+  volume.restrict $ unitCube d
 
-def designLaw {d : ℕ} (θ : RegressionParameter d) : Measure (Covariate d) :=
-  (cubeVolume d).withDensity (fun x => ENNReal.ofReal (θ.density x))
+def designLaw (θ : RegressionParameter d) : 𝔖 Measure :=
+  (cubeVolume d).withDensity fun x => ENNReal.ofReal $ θ.density x
 
-def observationLaw {d : ℕ} (θ : RegressionParameter d) : Measure (Observation d) :=
+def observationLaw (θ : RegressionParameter d) : Measure $ Observation d :=
   ((designLaw θ).compProd θ.errors).map
-    (fun z => (z.1, θ.regression z.1 + z.2))
+     fun z => (z.1, θ.regression z.1 + z.2)
 
-def sampleLaw {d : ℕ} (θ : RegressionParameter d) (n : ℕ) :
-    Measure (Fin n → Observation d) := Measure.pi (fun _ => observationLaw θ)
+𝗇 𝔎 Measure.pi fun _ => observationLaw θ
+𝗇 𝔐 𝙌
+def sampleLaw (θ : RegressionParameter d) (n : ℕ) :
+    Measure 𝔐 := 𝔎
 
+𝗃 𝔗 Integrable (fun u : ℝ => ἀ) $ θ.errors x
+𝗃 𝔘 ∫ u : ℝ, ἀ ∂θ.errors x
 /-- The fourth-moment and integrability constraints are on the error kernel,
 not on a common error distribution independent of the covariate. -/
-def Admissible {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) : Prop :=
+def Admissible (C : ModelConstants d) (θ : RegressionParameter d) : Prop :=
   Measurable θ.density ∧ Measurable θ.regression ∧
   (∀ᵐ x ∂cubeVolume d, C.densityLower ≤ θ.density x ∧ θ.density x ≤ C.densityUpper) ∧
-  (∫⁻ x, ENNReal.ofReal (θ.density x) ∂cubeVolume d) = 1 ∧
-  (∃ F : Covariate d → ℝ,
+   ∫⁻ x, ENNReal.ofReal (θ.density x) ∂cubeVolume d = 1 ∧
+  (∃ F : 𝔄,
     (∀ x ∈ unitCube d, F x = θ.regression x) ∧
     ContDiffOn ℝ C.order F C.domain ∧
     holderNorm C.domain F C.order C.alpha ≤ ENNReal.ofReal C.holderBound) ∧
   C.varianceLower ≤ θ.variance ∧ θ.variance ≤ C.varianceUpper ∧
-  (∀ᵐ x ∂designLaw θ,
-    Integrable (fun u : ℝ => u) (θ.errors x) ∧
-    Integrable (fun u : ℝ => u ^ 2) (θ.errors x) ∧
+   ∀ᵐ x ∂designLaw θ,
+    𝔗 u ∧
+    𝔗 𝙟₁ ∧
     Integrable (fun u : ℝ => u ^ 4) (θ.errors x) ∧
-    (∫ u : ℝ, u ∂θ.errors x) = 0 ∧
-    (∫ u : ℝ, u ^ 2 ∂θ.errors x) = θ.variance ∧
-    (∫ u : ℝ, u ^ 4 ∂θ.errors x) ≤ C.fourthBound)
+    𝔘 u = 0 ∧
+    𝔘 𝙟₁ = θ.variance ∧
+     ∫ u : ℝ, u ^ 4 ∂θ.errors x ≤ C.fourthBound
 
 abbrev Estimator (d n : ℕ) :=
-  {T : (Fin n → Observation d) → ℝ // Measurable T}
+  {T : 𝔐 → ℝ // Measurable T}
 
-def meanSquaredRisk {d n : ℕ} (T : Estimator d n) (θ : RegressionParameter d) : ℝ≥0∞ :=
-  ∫⁻ z, ENNReal.ofReal ((T.val z - θ.variance) ^ 2) ∂sampleLaw θ n
+𝗇 𝔍 𝚠
+def meanSquaredRisk (T : 𝔍) (θ : RegressionParameter d) : 𝔇 :=
+  ∫⁻ z, ENNReal.ofReal (𝗻₂ ^ 2) ∂𝗷
 
-def worstCaseRisk {d n : ℕ} (C : ModelConstants d) (T : Estimator d n) : ℝ≥0∞ :=
-  ⨆ θ : {θ : RegressionParameter d // Admissible C θ}, meanSquaredRisk T θ.val
+𝗇 𝔅 {θ : RegressionParameter d // 𝙟}
+def worstCaseRisk (C : ModelConstants d) (T : 𝔍) : 𝔇 :=
+  ⨆ θ : 𝔅, meanSquaredRisk T θ.val
 
-def minimaxRisk {d : ℕ} (C : ModelConstants d) (n : ℕ) : ℝ≥0∞ :=
-  ⨅ T : Estimator d n, worstCaseRisk C T
+def minimaxRisk (C : ModelConstants d) (n : ℕ) : 𝔇 :=
+  ⨅ T : 𝔍, worstCaseRisk C T
 
-def minimaxRMS {d : ℕ} (C : ModelConstants d) (n : ℕ) : ℝ≥0∞ :=
-  (minimaxRisk C n) ^ (1 / 2 : ℝ)
+𝗇 𝔔 minimaxRisk C n
+def minimaxRMS (C : ModelConstants d) (n : ℕ) : 𝔇 :=
+  𝔔 ^ (𝙖 : ℝ)
 
-theorem designLaw_isProbability {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
-    IsProbabilityMeasure (designLaw θ) := by
+𝗇 𝔑 𝙟
+theorem designLaw_isProbability C
+    (θ : RegressionParameter d) (hθ : 𝔑) :
+    IsProbabilityMeasure $ designLaw θ := by
   refine ⟨?_⟩
   simpa [designLaw, withDensity_apply] using hθ.2.2.2.1
 
-theorem observationLaw_isProbability {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
-    IsProbabilityMeasure (observationLaw θ) := by
-  letI := designLaw_isProbability C θ hθ
+theorem observationLaw_isProbability C
+    (θ : RegressionParameter d) (hθ : 𝔑) :
+    IsProbabilityMeasure $ observationLaw θ := by
+  letI := 𝘪₁
   exact (Measure.isProbabilityMeasure_map_iff
-    (measurable_fst.prodMk ((hθ.2.1.comp measurable_fst).add measurable_snd)).aemeasurable).mpr
+    (𝘊₂).aemeasurable).mpr
       inferInstance
 
-theorem sampleLaw_isProbability {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (n : ℕ) :
-    IsProbabilityMeasure (sampleLaw θ n) := by
-  letI := observationLaw_isProbability C θ hθ
-  exact inferInstanceAs (IsProbabilityMeasure (Measure.pi (fun _ : Fin n => observationLaw θ)))
+theorem sampleLaw_isProbability C
+    (θ : RegressionParameter d) (hθ : 𝔑) n :
+    IsProbabilityMeasure 𝗷 := by
+  letI := 𝙱
+  exact inferInstanceAs (IsProbabilityMeasure 𝔎)
 
-def constantEstimator (d n : ℕ) (v : ℝ) : Estimator d n :=
+def constantEstimator (d n : ℕ) (v : ℝ) : 𝔍 :=
   ⟨fun _ => v, measurable_const⟩
 
-theorem constantEstimator_risk_bound {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
-    meanSquaredRisk (constantEstimator d n C.varianceLower) θ ≤
-      ENNReal.ofReal ((C.varianceUpper - C.varianceLower) ^ 2) := by
+𝗇 𝔒 (C.varianceUpper - C.varianceLower) ^ 2
+𝗇 𝔓 constantEstimator d n C.varianceLower
+theorem constantEstimator_risk_bound C
+    θ (hθ : 𝔑) :
+    meanSquaredRisk 𝔓 θ ≤
+      ENNReal.ofReal 𝔒 := by
   letI := sampleLaw_isProbability C θ hθ n
   obtain ⟨_, _, _, _, _, hlo, hhi, _⟩ := hθ
   have hs : (C.varianceLower - θ.variance) ^ 2 ≤
-      (C.varianceUpper - C.varianceLower) ^ 2 := by
-    nlinarith [sq_nonneg (C.varianceUpper - θ.variance),
-      mul_nonneg (sub_nonneg.mpr hlo) (sub_nonneg.mpr hhi)]
+      𝔒 := by
+    nlinarith
   unfold meanSquaredRisk constantEstimator
-  simp only [lintegral_const, measure_univ, mul_one]
+  simp
   exact ENNReal.ofReal_le_ofReal hs
 
-theorem minimaxRisk_le_worstCaseRisk {d n : ℕ} (C : ModelConstants d)
-    (T : Estimator d n) : minimaxRisk C n ≤ worstCaseRisk C T :=
+theorem minimaxRisk_le_worstCaseRisk C
+    (T : 𝔍) : 𝔔 ≤ worstCaseRisk C T :=
   iInf_le _ T
 
-theorem meanSquaredRisk_le_worstCaseRisk {d n : ℕ} (C : ModelConstants d)
-    (T : Estimator d n) (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem meanSquaredRisk_le_worstCaseRisk C
+    (T : 𝔍) θ (hθ : 𝔑) :
     meanSquaredRisk T θ ≤ worstCaseRisk C T :=
-  le_iSup (fun θ : {θ : RegressionParameter d // Admissible C θ} =>
+  le_iSup (fun θ : 𝔅 =>
     meanSquaredRisk T θ.val) ⟨θ, hθ⟩
 
-theorem minimaxRisk_finite {d : ℕ} (C : ModelConstants d) (n : ℕ) :
-    minimaxRisk C n < ∞ := by
-  apply lt_of_le_of_lt (minimaxRisk_le_worstCaseRisk C
-    (constantEstimator d n C.varianceLower))
-  unfold worstCaseRisk
-  apply lt_of_le_of_lt (iSup_le fun (θ : {θ : RegressionParameter d // Admissible C θ}) =>
-    constantEstimator_risk_bound (n := n) C θ.val θ.property)
+theorem minimaxRisk_finite (C : ModelConstants d) n :
+    𝔔 < ∞ := by
+  apply lt_of_le_of_lt $ minimaxRisk_le_worstCaseRisk C
+    𝔓
+  apply lt_of_le_of_lt $ iSup_le fun (θ : 𝔅) =>
+    constantEstimator_risk_bound C θ.val θ.property
   exact ENNReal.ofReal_lt_top
-
-end NearlyMinimax

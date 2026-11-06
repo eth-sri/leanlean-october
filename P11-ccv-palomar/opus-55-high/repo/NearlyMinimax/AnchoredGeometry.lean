@@ -2,58 +2,58 @@ module
 
 public import NearlyMinimax.AnchoredFeatures
 public import NearlyMinimax.ModelRegularity
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗍
 
 /-! Quantitative geometry of the exact nonconstant monomial feature vector. -/
 
-noncomputable section
 open Matrix Set
-open scoped BigOperators Matrix.Norms.L2Operator
-namespace NearlyMinimax
+𝚺
+𝚨
 
 /-- Each coordinate is bounded by the manuscript's Euclidean norm. -/
-theorem abs_coordinate_le_euclideanNorm {d : ℕ} (v : Covariate d) (i : Fin d) :
+theorem abs_coordinate_le_euclideanNorm v (i : Fin d) :
     |v i| ≤ euclideanNorm v := by
-  have hs : (v i) ^ 2 ≤ ∑ j, (v j) ^ 2 :=
-    Finset.single_le_sum (fun j _ => sq_nonneg (v j)) (Finset.mem_univ i)
-  simpa only [Real.sqrt_sq_eq_abs, euclideanNorm] using Real.sqrt_le_sqrt hs
+  simpa only [Real.sqrt_sq_eq_abs, euclideanNorm] using Real.sqrt_le_sqrt $ Finset.single_le_sum (fun j _ => sq_nonneg $ v j ) $ Finset.mem_univ i
 
+𝗇 𝔄 abs_nonneg $ v i
+𝗇 𝔅 𝗎
 /-- Every nonconstant bounded monomial vanishes at least linearly at the origin. -/
-theorem anchoredMonomial_abs_le_coordinate {d ℓ : ℕ} (γ : AnchoredIndex d ℓ)
-    (v : Covariate d) (hv : ∀ i, |v i| ≤ 1) :
-    ∃ i : Fin d, |anchoredMonomial γ v| ≤ |v i| := by
+theorem anchoredMonomial_abs_le_coordinate (γ : 𝔅)
+    v (hv : ∀ i, |v i| ≤ 1) :
+    ∃ i , |anchoredMonomial γ v| ≤ |v i| := by
   classical
   obtain ⟨i, hi, hip⟩ := Finset.exists_ne_zero_of_sum_ne_zero
-    (ne_of_gt γ.property.1 : (∑ i, (γ.val i).val) ≠ 0)
-  have hpow : |v i| ^ (γ.val i).val ≤ |v i| := by
+    $ ne_of_gt γ.property.1
+  have hpow : |v i| ^ 𝗮₂ ≤ |v i| := by
     obtain ⟨k, hk⟩ := Nat.exists_eq_succ_of_ne_zero hip
     rw [hk, pow_succ]
     have hle : |v i| ^ k ≤ 1 := by
-      exact (pow_le_pow_left₀ (abs_nonneg _) (hv i) k).trans_eq (one_pow k)
-    simpa only [one_mul] using mul_le_mul_of_nonneg_right hle (abs_nonneg (v i))
-  have hrest : (∏ j ∈ (Finset.univ : Finset (Fin d)).erase i,
-      |v j| ^ (γ.val j).val) ≤ 1 := by
-    exact (Finset.prod_le_prod₀ (fun j _ => pow_nonneg (abs_nonneg _) _)
-      (fun j _ => (pow_le_pow_left₀ (abs_nonneg _) (hv j) _))).trans_eq (by simp)
+      bound
+    simpa only [one_mul] using mul_le_mul_of_nonneg_right hle 𝔄
+  have hrest : ∏ j ∈ Finset.univ.erase i,
+      |v j| ^ (γ.val j).val ≤ 1 := (Finset.prod_le_prod₀ (fun j _ => pow_nonneg (abs_nonneg _) _)
+       fun j _ => 𝗂 (hv j) _ ).trans_eq 𝖢₄
   refine ⟨i, ?_⟩
   unfold anchoredMonomial
   rw [Finset.abs_prod]
-  simp only [abs_pow]
+  simp
   rw [← Finset.prod_erase_mul _ _ hi]
-  exact (mul_le_mul_of_nonneg_right hrest (pow_nonneg (abs_nonneg (v i)) _)).trans
-    (by simpa only [one_mul] using hpow)
+  exact (mul_le_mul_of_nonneg_right hrest $ pow_nonneg 𝔄 _ ).trans
+    𝖧₄
 
-theorem anchoredMonomial_abs_le_euclideanNorm {d ℓ : ℕ} (γ : AnchoredIndex d ℓ)
-    (v : Covariate d) (hv : ∀ i, |v i| ≤ 1) :
+theorem anchoredMonomial_abs_le_euclideanNorm (γ : 𝔅)
+    v (hv : ∀ i, |v i| ≤ 1) :
     |anchoredMonomial γ v| ≤ euclideanNorm v := by
   obtain ⟨i, hi⟩ := anchoredMonomial_abs_le_coordinate γ v hv
-  exact hi.trans (abs_coordinate_le_euclideanNorm v i)
+  exact hi.trans $ abs_coordinate_le_euclideanNorm v i
 
 /-- The actual normalized features satisfy the Lipschitz-at-anchor bound. -/
-theorem anchoredFeature_abs_le_euclideanNorm {d ℓ : ℕ} (u w : Covariate d)
-    (hu : u ∈ unitCube d) (hw : w ∈ unitCube d) (γ : AnchoredIndex d ℓ) :
-    |anchoredFeature u w γ| ≤ euclideanNorm (w - u) := by
+theorem anchoredFeature_abs_le_euclideanNorm u w
+    (hu : 𝘨₁) (hw : w ∈ unitCube d) (γ : 𝔅) :
+    |𝗱₂ γ| ≤ euclideanNorm (w - u) := by
   apply anchoredMonomial_abs_le_euclideanNorm
   intro i
   change |w i - u i| ≤ 1
@@ -61,23 +61,20 @@ theorem anchoredFeature_abs_le_euclideanNorm {d ℓ : ℕ} (u w : Covariate d)
   constructor <;> linarith [(hu i).1, (hu i).2, (hw i).1, (hw i).2]
 
 /-- Every monomial transport factor is at most one half. -/
-theorem anchoredTransport_entry_bound {d ℓ : ℕ} (γ : AnchoredIndex d ℓ) :
-    |(2 : ℝ) ^ (-(anchoredDegree γ : ℤ))| ≤ 1 / 2 := by
+theorem anchoredTransport_entry_bound (γ : 𝔅) :
+    |𝙉 ^ (-(anchoredDegree γ : ℤ))| ≤ 𝙖 := by
   rw [_root_.zpow_neg, zpow_natCast, abs_inv, abs_pow,
-    abs_of_pos (by norm_num : (0 : ℝ) < 2)]
-  have hpow : (2 : ℝ) ≤ 2 ^ anchoredDegree γ := by
-    simpa only [pow_one] using pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2)
-      (show 1 ≤ anchoredDegree γ from γ.property.1)
+    abs_of_pos 𝖠₄ ]
+  have hpow : 𝙉 ≤ 2 ^ anchoredDegree γ := by
+    bound
   simpa only [one_div] using
-    (inv_le_inv₀ (by norm_num : (0 : ℝ) < 2 ^ anchoredDegree γ) (by norm_num)).mpr hpow
+    (inv_le_inv₀  𝖠₄  𝖠₄ ).mpr hpow
 
 /-- The exact diagonal transport obeys the manuscript's genuine operator-norm bound. -/
-theorem anchoredTransport_norm_le_half (d ℓ : ℕ) :
-    ‖anchoredTransport d ℓ‖ ≤ 1 / 2 := by
+theorem anchoredTransport_norm_le_half d ℓ :
+    ‖𝗰₂‖ ≤ 𝙖 := by
   classical
   rw [anchoredTransport, Matrix.l2_opNorm_diagonal]
-  apply (pi_norm_le_iff_of_nonneg (by norm_num : (0 : ℝ) ≤ 1 / 2)).mpr
+  apply (pi_norm_le_iff_of_nonneg 𝖠₄ ).mpr
   intro γ
   exact anchoredTransport_entry_bound γ
-
-end NearlyMinimax

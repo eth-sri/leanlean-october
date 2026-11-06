@@ -1,20 +1,19 @@
 module
 
 public import NearlyMinimax.FinePairCountTwoEnergy
+public import RoughRegime.Macro
 public import NearlyMinimax.FinePairAliasSpatialEnergy
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Actual spatial energy of the complete three-row count-two numerator,
 including the single heat correction and the true radial defect. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
+𝚫
+𝚪
+𝚨
+𝚩
 set_option maxHeartbeats 100000
 
  def finePairCountTwoSpatialBudget (d : ℕ) (bd a ρ η N : ℝ) : ℝ :=
-  (η^2*bd^2*((2*ρ+a)/a^2)^2)^2 * (6*(2 : ℝ)^d*spatialExponentialConstant d/N^d)
-
-end NearlyMinimax
+  (𝙎*bd^2*(𝗠/𝗅)^2)^2 * (6*𝙉^d*spatialExponentialConstant d/𝚝₂)

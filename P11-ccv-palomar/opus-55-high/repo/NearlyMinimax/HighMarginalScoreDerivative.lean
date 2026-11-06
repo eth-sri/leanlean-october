@@ -1,128 +1,132 @@
 module
 
 public import NearlyMinimax.HighTiltedDataMean
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+public section
 
 /-! Genuine observed-data score derivative for the actual high experiment. -/
-noncomputable section
-open MeasureTheory ProbabilityTheory Filter Set
-namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
-variable {J : Type*} [Fintype J] [LinearOrder J]
+𝚹
+𝚨
+𝚲
 
-theorem historyMarkedPrior_dataMean_score_hasDerivAt (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (T Ba : ℝ) (hBa : 0 ≤ Ba)
-    {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (hactivation : Measurable activation)
-    (hcenter : ∫ e, activation e ∂π = 0) (habound : ∀ e, |activation e| ≤ Ba)
-    (hsmall : T * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    {d : ℕ} (n : ℕ) (a v η aRaw bRaw : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ u ∈ Icc 0 T, ∀ ω x y, 0 < ternaryMass a (F ω x) (v - η ^ 2 * u) y)
-    (hmass : ∀ u ∈ Icc 0 T,
-      (historyMarkedPrior dependent Δ u π activation).map (fun ω => highRawDensityMass (p ω)) =
-      (historyMarkedPrior dependent Δ 0 π activation).map (fun ω => highRawDensityMass (p ω)))
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H)
-    (B : ℝ) (hB : 0 ≤ B) (hHb : ∀ z, |H z| ≤ B)
-    (t : ℝ) (ht : 0 < t) (htT : t < T) :
-    HasDerivAt (fun u => ∫ z, H z ∂(highRealSampleKernel n a (v - η^2*u) p F hp hF) ∘ₘ
-      (massPowerTilt (historyMarkedPrior dependent Δ u π activation)
-        (fun ω => highRawDensityMass (p ω)) n))
-      (∫ z, H z * highMarginalRealScore dependent hsymm
-        (historyMarkedPrior dependent Δ t π activation) π activation n a (v - η^2*t) η p F z
-        ∂(highRealSampleKernel n a (v - η^2*t) p F hp hF) ∘ₘ
-          (massPowerTilt (historyMarkedPrior dependent Δ t π activation)
-            (fun ω => highRawDensityMass (p ω)) n)) t := by
-  have hq0 (u : ℝ) (hu : u ∈ Icc 0 T) (ω : HistoryMarked dependent E) (x : Covariate d) (y : Fin 3) :=
+𝗇 𝔛 𝙙
+𝗇 𝔡 𝘳 u π activation
+𝗇 𝔥 v - 𝙎*u
+𝗃 𝔦 highRealSampleKernel n a ἀ p F hp hF
+𝗇 𝔄 ∫ z, H z ∂𝔦 𝔥 ∘ₘ massPowerTilt 𝔡 𝔛 n
+𝗇 𝔅 ∀ u ∈ 𝗺, (𝔡).map 𝔛 = (𝘳 0 π activation).map 𝔛
+𝗇 𝔞 v - 𝙎*t
+𝗇 𝔠 𝘳 t π activation
+𝗇 𝔇 ∫ z, H z * highMarginalRealScore dependent hsymm 𝔠 π activation n a 𝔞 η p F z ∂𝔦 𝔞 ∘ₘ massPowerTilt 𝔠 𝔛 n
+𝗇 𝔈 𝖤
+𝗇 𝔉 𝔥
+𝗇 𝔊 𝙄
+𝗇 𝔍 𝘼
+𝗇 𝔎 𝔡
+𝗇 𝔏 𝘽
+𝗇 𝔐 𝘀₁
+𝗇 𝔑 historyMarkedPrior_probability dependent hrefl hsymm Δ hΔ hlabels u Ba hu.1 hBa π activation hint hcenter habound hs
+𝗇 𝔒 𝙗 → 𝙀
+𝗇 𝔓 𝗺
+𝗇 𝔔 (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2 hBa) 𝘤).trans hsmall
+𝗇 𝔖 ⟨ht.le, htT.le⟩
+𝗇 𝔗 𝙂
+𝗇 𝔘 F ω x
+𝗇 𝔙 𝔞
+𝗇 𝔚 𝔠
+𝗇 𝔜 fun u => 𝔄
+𝗇 𝔟 ∀ u ∈ 𝔓, ∀ ω x y, 0 < ternaryMass a 𝔘 𝔉 y
+𝗇 𝔢 highTiltedObservableMean_eq_dataMean 𝔎 n a 𝔉 aRaw bRaw B ha.ne' haRaw hB p F hp hF hraw
+𝗃 𝔣 ἀ dependent hrefl hsymm Δ hΔ hlabels T Ba hBa π activation hactivation hcenter habound hsmall n a v η aRaw bRaw ha haRaw p F hp hF hraw
+𝗇 𝔤 𝙁
+𝗃 𝔧 ἀ t 𝔖
+theorem historyMarkedPrior_dataMean_score_hasDerivAt (dependent : 𝔤)
+    (hrefl : 𝔗) (hsymm : 𝔍)
+    (Δ : ℕ) (hΔ : 𝙘) (hlabels : 𝔏)
+    (T Ba : ℝ) (hBa : 𝙑)
+    [MeasurableSpace E] [StandardBorelSpace E]
+    (π : Measure E) [IsProbabilityMeasure π] (activation : 𝙏) (hactivation : Measurable activation)
+    (hcenter : 𝔐) (habound : ∀ e, |activation e| ≤ Ba)
+    (hsmall : 𝔈)
+    (n : ℕ) (a v η aRaw bRaw : ℝ) (ha : 𝙆) (haRaw : 𝙓)
+    (p F : 𝔒)
+    hp hF
+    (hraw : 𝔊)
+    (hq : 𝔟)
+    (hmass : 𝔅)
+    H (hH : Measurable H)
+    B (hB : 𝙐) (hHb : ∀ z, |H z| ≤ B)
+    t (ht : 𝘁₁) (htT : t < T) :
+    HasDerivAt 𝔜
+      𝔇 t := by
+  have hq0 u hu ω x y :=
     (hq u hu ω x y).le
   have hint : Integrable activation π := by
     apply Integrable.of_bound hactivation.aestronglyMeasurable Ba
     exact Eventually.of_forall fun e => by simpa only [Real.norm_eq_abs] using habound e
-  have hprob (u : ℝ) (hu : u ∈ Icc 0 T) :
-      IsProbabilityMeasure (historyMarkedPrior dependent Δ u π activation) := by
-    have hs : u * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ)^2) :=
-      (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2 hBa)
-        (historyReferenceRho_pos Δ).le).trans hsmall
-    exact historyMarkedPrior_probability dependent hrefl hsymm Δ hΔ hlabels u Ba hu.1 hBa π
-      activation hint hcenter habound hs
-  let _ := hprob t ⟨ht.le, htT.le⟩
-  have hd := historyMarkedPrior_tiltedObservable_hasDerivAt dependent hrefl hsymm Δ hΔ hlabels
-    T Ba hBa π activation hactivation hcenter habound hsmall n a v η aRaw bRaw ha haRaw p F hp hF
-    hraw hq0 hmass H hH B hB hHb t ht htT
-  have hpb (ω : HistoryMarked dependent E) (x : Covariate d) : |p ω x| ≤ |bRaw| := by
-    rw [abs_of_nonneg (haRaw.le.trans (hraw ω x).1)]
-    exact (hraw ω x).2.trans (le_abs_self _)
+  have hprob u (hu : u ∈ 𝔓) :
+      IsProbabilityMeasure 𝔎 := by
+    have hs :=
+      𝔔
+    exact 𝔑
+  let _ := 𝔧 hprob
+  have hd := 𝔣 historyMarkedPrior_tiltedObservable_hasDerivAt hq0 hmass H hH B hB hHb t ht htT
+  have hpb ω x : |𝗃₁| ≤ |bRaw| := by
+    grind
   have he := highMarginalRealScore_integral dependent hsymm
-    (historyMarkedPrior dependent Δ t π activation) π activation hactivation Ba hBa habound
-    n a (v - η^2*t) η aRaw bRaw B ha haRaw hB p F hp hF hraw
-    (hq t ⟨ht.le,htT.le⟩) H hH hHb
+    𝔚 π activation hactivation Ba hBa habound
+    n a 𝔙 η aRaw bRaw B ha haRaw hB p F hp hF hraw
+    𝔧 hq H hH hHb
   have hi := highHistoryLikelihoodDerivative_observable π dependent hsymm
-    (historyMarkedPrior dependent Δ t π activation) activation hactivation Ba hBa habound
-    n a (v - η^2*t) η |bRaw| B (abs_nonneg _) hB ha p F hp hF hpb
-    (hq0 t ⟨ht.le,htT.le⟩) H hH hHb
-  rw [hi, massPowerNormalizer_eq_of_massLaw _ _ _ (highRawDensityMass_joint_measurable p hp)
-    n (hmass t ⟨ht.le,htT.le⟩)] at he
+    𝔚 activation hactivation Ba hBa habound
+    n a 𝔙 η |bRaw| B (abs_nonneg _) hB ha p F hp hF hpb
+    𝔧 hq0 H hH hHb
+  rw [hi, massPowerNormalizer_eq_of_massLaw _ _ _ 𝙨
+    n 𝔧 hmass] at he
   rw [he]
   apply hd.congr_of_eventuallyEq
-  filter_upwards [Ioo_mem_nhds ht htT] with u hu
-  let _ := hprob u ⟨hu.1.le,hu.2.le⟩
-  exact (highTiltedObservableMean_eq_dataMean (historyMarkedPrior dependent Δ u π activation)
-    n a (v - η^2*u) aRaw bRaw B ha.ne' haRaw hB p F hp hF hraw
-    (hq0 u ⟨hu.1.le,hu.2.le⟩) H hH hHb).symm
+  filter_upwards [𝗍₂] with u hu
+  let _ := hprob u 𝘠₂
+  exact (𝔢
+    (hq0 u 𝘠₂) H hH hHb).symm
 
-theorem historyMarkedPrior_dataMean_absolutelyContinuous (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (T Ba : ℝ) (hBa : 0 ≤ Ba)
-    {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (hactivation : Measurable activation)
-    (hcenter : ∫ e, activation e ∂π = 0) (habound : ∀ e, |activation e| ≤ Ba)
-    (hsmall : T * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    {d : ℕ} (n : ℕ) (a v η aRaw bRaw : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ u ∈ Icc 0 T, ∀ ω x y, 0 ≤ ternaryMass a (F ω x) (v - η ^ 2 * u) y)
-    (hmass : ∀ u ∈ Icc 0 T,
-      (historyMarkedPrior dependent Δ u π activation).map (fun ω => highRawDensityMass (p ω)) =
-      (historyMarkedPrior dependent Δ 0 π activation).map (fun ω => highRawDensityMass (p ω)))
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H)
-    (B : ℝ) (hB : 0 ≤ B) (hHb : ∀ z, |H z| ≤ B)
-    (hT : 0 ≤ T) :
+𝗃 𝔨 𝔣 ἀ hq hmass H hH B hB hHb
+theorem historyMarkedPrior_dataMean_absolutelyContinuous (dependent : 𝔤)
+    (hrefl : 𝔗) (hsymm : 𝔍)
+    (Δ : ℕ) (hΔ : 𝙘) (hlabels : 𝔏)
+    (T Ba : ℝ) (hBa : 𝙑)
+    [MeasurableSpace E] [StandardBorelSpace E]
+    (π : Measure E) [IsProbabilityMeasure π] (activation : 𝙏) (hactivation : Measurable activation)
+    (hcenter : 𝔐) (habound : ∀ e, |activation e| ≤ Ba)
+    (hsmall : 𝔈)
+    (n : ℕ) (a v η aRaw bRaw : ℝ) (ha : 𝙆) (haRaw : 𝙓)
+    (p F : 𝔒)
+    hp hF
+    (hraw : 𝔊)
+    (hq : ∀ u ∈ 𝔓, ∀ ω x y, 0 ≤ ternaryMass a 𝔘 𝔉 y)
+    (hmass : 𝔅)
+    H (hH : Measurable H)
+    (B : ℝ) (hB : 𝙐) (hHb : ∀ z, |H z| ≤ B)
+    (hT : 𝚞) :
     AbsolutelyContinuousOnInterval
-      (fun u => ∫ z, H z ∂(highRealSampleKernel n a (v - η^2*u) p F hp hF) ∘ₘ
-        (massPowerTilt (historyMarkedPrior dependent Δ u π activation)
-          (fun ω => highRawDensityMass (p ω)) n)) 0 T := by
-  obtain ⟨K, hK⟩ := historyMarkedPrior_tiltedObservable_exists_lipschitz dependent hrefl hsymm
-    Δ hΔ hlabels T Ba hBa π activation hactivation hcenter habound hsmall
-    n a v η aRaw bRaw ha haRaw p F hp hF hraw hq hmass H hH B hB hHb
+      𝔜 0 T := by
+  obtain ⟨K, hK⟩ := 𝔨 historyMarkedPrior_tiltedObservable_exists_lipschitz
   have hint : Integrable activation π := by
     apply Integrable.of_bound hactivation.aestronglyMeasurable Ba
     exact Eventually.of_forall fun e => by simpa only [Real.norm_eq_abs] using habound e
-  have he (u : ℝ) (hu : u ∈ Icc 0 T) :
-      highTiltedObservableMean (historyMarkedPrior dependent Δ u π activation)
-        n a (v - η^2*u) p F hp hF H =
-      ∫ z, H z ∂(highRealSampleKernel n a (v - η^2*u) p F hp hF) ∘ₘ
-        (massPowerTilt (historyMarkedPrior dependent Δ u π activation)
-          (fun ω => highRawDensityMass (p ω)) n) := by
-    have hs : u * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ)^2) :=
-      (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2 hBa)
-        (historyReferenceRho_pos Δ).le).trans hsmall
-    let _ := historyMarkedPrior_probability dependent hrefl hsymm Δ hΔ hlabels u Ba hu.1 hBa π
-      activation hint hcenter habound hs
-    exact highTiltedObservableMean_eq_dataMean (historyMarkedPrior dependent Δ u π activation)
-      n a (v - η^2*u) aRaw bRaw B ha.ne' haRaw hB p F hp hF hraw (hq u hu) H hH hHb
+  have he (u : ℝ) (hu : u ∈ 𝔓) :
+      highTiltedObservableMean 𝔎
+        n a 𝔉 p F hp hF H =
+      𝔄 := by
+    have hs :=
+      𝔔
+    let _ := 𝔑
+    exact 𝔢 (hq u hu) H hH hHb
   have hKd : LipschitzOnWith K
-      (fun u => ∫ z, H z ∂(highRealSampleKernel n a (v - η^2*u) p F hp hF) ∘ₘ
-        (massPowerTilt (historyMarkedPrior dependent Δ u π activation)
-          (fun ω => highRawDensityMass (p ω)) n)) (Icc 0 T) := by
+      𝔜 𝔓 := by
     apply LipschitzOnWith.of_dist_le_mul
     intro u hu w hw
     rw [← he u hu, ← he w hw]
@@ -130,39 +134,28 @@ theorem historyMarkedPrior_dataMean_absolutelyContinuous (dependent : J → J �
   rw [← uIcc_of_le hT] at hKd
   exact hKd.absolutelyContinuousOnInterval
 
-theorem historyMarkedPrior_dataMean_score_hasDerivAt_ae (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (T Ba : ℝ) (hBa : 0 ≤ Ba)
-    {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (activation : E → ℝ) (hactivation : Measurable activation)
-    (hcenter : ∫ e, activation e ∂π = 0) (habound : ∀ e, |activation e| ≤ Ba)
-    (hsmall : T * Ba / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    {d : ℕ} (n : ℕ) (a v η aRaw bRaw : ℝ) (ha : 0 < a) (haRaw : 0 < aRaw)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ u ∈ Icc 0 T, ∀ ω x y, 0 < ternaryMass a (F ω x) (v - η ^ 2 * u) y)
-    (hmass : ∀ u ∈ Icc 0 T,
-      (historyMarkedPrior dependent Δ u π activation).map (fun ω => highRawDensityMass (p ω)) =
-      (historyMarkedPrior dependent Δ 0 π activation).map (fun ω => highRawDensityMass (p ω)))
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H)
-    (B : ℝ) (hB : 0 ≤ B) (hHb : ∀ z, |H z| ≤ B)
-    : ∀ᵐ t ∂(volume : Measure ℝ), t ∈ Icc 0 T →
-      HasDerivAt (fun u => ∫ z, H z ∂(highRealSampleKernel n a (v - η^2*u) p F hp hF) ∘ₘ
-        (massPowerTilt (historyMarkedPrior dependent Δ u π activation)
-          (fun ω => highRawDensityMass (p ω)) n))
-        (∫ z, H z * highMarginalRealScore dependent hsymm
-          (historyMarkedPrior dependent Δ t π activation) π activation n a (v - η^2*t) η p F z
-          ∂(highRealSampleKernel n a (v - η^2*t) p F hp hF) ∘ₘ
-            (massPowerTilt (historyMarkedPrior dependent Δ t π activation)
-              (fun ω => highRawDensityMass (p ω)) n)) t := by
-  have h0 : ∀ᵐ t ∂(volume : Measure ℝ), t ≠ (0 : ℝ) := by simp [ae_iff]
-  have hT : ∀ᵐ t ∂(volume : Measure ℝ), t ≠ T := by simp [ae_iff]
+𝗃 𝔩 ∀ᵐ t ∂volume, t ≠ ἀ
+theorem historyMarkedPrior_dataMean_score_hasDerivAt_ae (dependent : 𝔤)
+    (hrefl : 𝔗) (hsymm : 𝔍)
+    (Δ : ℕ) (hΔ : 𝙘) (hlabels : 𝔏)
+    (T Ba : ℝ) (hBa : 𝙑)
+    [MeasurableSpace E] [StandardBorelSpace E]
+    (π : Measure E) [IsProbabilityMeasure π] (activation : 𝙏) (hactivation : Measurable activation)
+    (hcenter : 𝔐) (habound : ∀ e, |activation e| ≤ Ba)
+    (hsmall : 𝔈)
+    (n : ℕ) (a v η aRaw bRaw : ℝ) (ha : 𝙆) (haRaw : 𝙓)
+    (p F : 𝔒)
+    hp hF
+    (hraw : 𝔊)
+    (hq : 𝔟)
+    (hmass : 𝔅)
+    H (hH : Measurable H)
+    B (hB : 𝙐) (hHb : ∀ z, |H z| ≤ B)
+    : ∀ᵐ t ∂volume, t ∈ 𝔓 →
+      HasDerivAt 𝔜
+        𝔇 t := by
+  have h0 : 𝔩 𝙋 := by simp [ae_iff]
+  have hT : 𝔩 T := by simp [ae_iff]
   filter_upwards [h0, hT] with t ht0 htT
   intro ht
-  exact historyMarkedPrior_dataMean_score_hasDerivAt dependent hrefl hsymm Δ hΔ hlabels
-    T Ba hBa π activation hactivation hcenter habound hsmall n a v η aRaw bRaw ha haRaw p F hp hF
-    hraw hq hmass H hH B hB hHb t (lt_of_le_of_ne ht.1 (Ne.symm ht0)) (lt_of_le_of_ne ht.2 htT)
-
-end NearlyMinimax
+  exact 𝔨 historyMarkedPrior_dataMean_score_hasDerivAt t (lt_of_le_of_ne ht.1 $ Ne.symm ht0 ) $ lt_of_le_of_ne ht.2 htT

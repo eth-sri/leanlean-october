@@ -1,23 +1,30 @@
 module
 
 public import NearlyMinimax.Model
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Actual finite-product conditional sampling laws for the original model. -/
 
-noncomputable section
-open MeasureTheory ProbabilityTheory Set Filter
-open scoped ENNReal BigOperators
+𝛏
+𝚮
 
-namespace NearlyMinimax
+𝚨
 
+𝗃 𝔪 ἀ i $ x i
+𝗇 𝔇 Measure.pi fun i => 𝔪 κ
+𝗇 𝔎 ∀ i, IsMarkovKernel $ κ i
+𝗇 𝔔 ι → Kernel α β
+𝗇 𝔛 ι → α
+𝗇 𝔢 ι → β
 /-- The indexed product of Markov kernels, evaluated coordinate by coordinate. -/
-def finiteProductKernel {ι α β : Type*} [Fintype ι]
+def finiteProductKernel [Fintype ι]
     [MeasurableSpace α] [MeasurableSpace β]
-    (κ : ι → Kernel α β) [∀ i, IsMarkovKernel (κ i)] :
-    Kernel (ι → α) (ι → β) where
-  toFun x := Measure.pi (fun i => κ i (x i))
+    (κ : 𝔔) [𝔎] :
+    Kernel 𝔛 𝔢 where
+  toFun x := 𝔇
   measurable' := by
     apply Measure.measurable_of_measurable_coe
     intro s hs
@@ -28,266 +35,284 @@ def finiteProductKernel {ι α β : Type*} [Fintype ι]
         obtain ⟨t, ht, rfl⟩ := hs
         simp_rw [Measure.pi_pi]
         exact Finset.measurable_prod Finset.univ
-          (fun i _ => (Kernel.measurable_coe (κ i) (ht i (mem_univ i))).comp
-            (measurable_pi_apply i))
+           fun i _ => (Kernel.measurable_coe (κ i) $ ht i $ mem_univ i ).comp
+            $ measurable_pi_apply i
     | compl s hs ih =>
-        simp_rw [measure_compl hs (measure_ne_top _ _), measure_univ]
+        simp_rw [measure_compl hs 𝚃₁, measure_univ]
         exact measurable_const.sub ih
     | iUnion f hd hf ih =>
         simp_rw [measure_iUnion hd hf]
         exact Measurable.tsum ih
     | x_4 => infer_instance
 
-instance finiteProductKernel_markov {ι α β : Type*} [Fintype ι]
+instance finiteProductKernel_markov [Fintype ι]
     [MeasurableSpace α] [MeasurableSpace β]
-    (κ : ι → Kernel α β) [∀ i, IsMarkovKernel (κ i)] :
-    IsMarkovKernel (finiteProductKernel κ) :=
-  ⟨fun x => inferInstanceAs (IsProbabilityMeasure (Measure.pi (fun i => κ i (x i))))⟩
+    (κ : 𝔔) [𝔎] :
+    IsMarkovKernel $ finiteProductKernel κ :=
+  ⟨fun x => inferInstanceAs (IsProbabilityMeasure 𝔇)⟩
 
-theorem finiteProductKernel_apply {ι α β : Type*} [Fintype ι]
+theorem finiteProductKernel_apply [Fintype ι]
     [MeasurableSpace α] [MeasurableSpace β]
-    (κ : ι → Kernel α β) [∀ i, IsMarkovKernel (κ i)] (x : ι → α) :
-    finiteProductKernel κ x = Measure.pi (fun i => κ i (x i)) := rfl
+    (κ : 𝔔) [𝔎] x :
+    finiteProductKernel κ x = 𝔇 := rfl
 
 /-- Reassemble separate design and error vectors into coordinate pairs. -/
-def pairVectors {ι α β : Type*} (z : (ι → α) × (ι → β)) : ι → α × β :=
+def pairVectors {ι α β : Type*} (z : 𝔛 × 𝔢) : ι → α × β :=
   fun i => (z.1 i, z.2 i)
 
+𝗇 𝔑 𝘜
 theorem pairVectors_measurable {ι α β : Type*}
     [MeasurableSpace α] [MeasurableSpace β] :
-    Measurable (pairVectors (ι := ι) (α := α) (β := β)) :=
-  Measurable.of_eval (fun i =>
-    ((measurable_pi_apply i).comp measurable_fst).prodMk
-      ((measurable_pi_apply i).comp measurable_snd))
+    Measurable $ pairVectors (ι := ι) (α := α) (β := β) :=
+  Measurable.of_eval fun i =>
+    (𝔑 measurable_fst).prodMk
+      $ 𝔑 measurable_snd
 
+𝗇 𝔠 ∀ i, IsProbabilityMeasure $ μ i
+𝗃 𝔩 (ἀ i).aemeasurable
 /-- Tonelli factorization for coordinate functions under a product probability law. -/
-theorem lintegral_coordinate_product {ι α : Type*} [Fintype ι] [MeasurableSpace α]
-    (μ : ι → Measure α) [∀ i, IsProbabilityMeasure (μ i)]
-    (f : ι → α → ℝ≥0∞) (hf : ∀ i, Measurable (f i)) :
-    (∫⁻ x, ∏ i, f i (x i) ∂Measure.pi μ) = ∏ i, ∫⁻ a, f i a ∂μ i := by
+theorem lintegral_coordinate_product [Fintype ι] [MeasurableSpace α]
+    (μ : ι → Measure α) [𝔠]
+    (f : ι → α → 𝙉₁) (hf : ∀ i, Measurable $ f i ) :
+     ∫⁻ x, ∏ i, 𝔪 f ∂Measure.pi μ = ∏ i, ∫⁻ a, f i a ∂μ i := by
   have h := lintegral_prod_eq_prod_lintegral_of_indepFun Finset.univ
-    (fun (i : ι) (x : ι → α) => f i (x i))
-    (iIndepFun_pi (μ := μ) (X := f) (fun i => (hf i).aemeasurable))
-    (fun i => (hf i).comp (measurable_pi_apply i))
+    (fun i (x : 𝔛) => 𝔪 f)
+    (iIndepFun_pi (μ := μ) fun i => 𝔩 hf )
+     fun i => (hf i).comp $ measurable_pi_apply i
   rw [h]
   apply Finset.prod_congr rfl
   intro i _
-  exact lintegral_map' (hf i).aemeasurable (measurable_pi_apply i).aemeasurable |>.symm.trans
+  exact lintegral_map' 𝔩 hf 𝔩 measurable_pi_apply |>.symm.trans
     (by rw [(measurePreserving_eval μ i).map_eq])
 
 /-- The product of one-coordinate joint laws is the design-vector law followed
 by the independent coordinate conditional laws. No conditional independence is assumed. -/
-theorem pi_compProd_eq_map_pairVectors {ι α β : Type*} [Fintype ι]
+theorem pi_compProd_eq_map_pairVectors {ι α β } [Fintype ι]
     [MeasurableSpace α] [MeasurableSpace β]
-    (μ : ι → Measure α) [∀ i, IsProbabilityMeasure (μ i)]
-    (κ : ι → Kernel α β) [∀ i, IsMarkovKernel (κ i)] :
-    Measure.pi (fun i => (μ i).compProd (κ i)) =
-      ((Measure.pi μ).compProd (finiteProductKernel κ)).map pairVectors := by
+    (μ : ι → Measure α) [𝔠]
+    (κ : 𝔔) [𝔎] :
+    Measure.pi (fun i => (μ i).compProd $ κ i ) =
+      ((Measure.pi μ).compProd $ finiteProductKernel κ ).map pairVectors := by
   apply Measure.pi_eq
   intro s hs
-  rw [Measure.map_apply pairVectors_measurable (MeasurableSet.univ_pi hs),
-    Measure.compProd_apply (pairVectors_measurable (MeasurableSet.univ_pi hs))]
-  have hsection (x : ι → α) :
-      Prod.mk x ⁻¹' (pairVectors ⁻¹' Set.univ.pi s) =
-        Set.univ.pi (fun i => Prod.mk (x i) ⁻¹' s i) := by
-    ext u
-    simp [pairVectors, Set.mem_pi]
+  rw [Measure.map_apply pairVectors_measurable $ MeasurableSet.univ_pi hs ,
+    Measure.compProd_apply $ pairVectors_measurable $ MeasurableSet.univ_pi hs ]
+  have hsection x :
+      Prod.mk x ⁻¹' pairVectors ⁻¹' Set.univ.pi s =
+        Set.univ.pi fun i => Prod.mk (x i) ⁻¹' s i := by
+    rfl
   simp_rw [hsection, finiteProductKernel_apply, Measure.pi_pi]
   rw [lintegral_coordinate_product μ
-    (fun i a => κ i a (Prod.mk a ⁻¹' s i))
-    (fun i => Kernel.measurable_kernel_prodMk_left (hs i))]
-  simp_rw [Measure.compProd_apply (hs _)]
+    (fun i a => κ i a $ Prod.mk a ⁻¹' s i )
+     fun i => Kernel.measurable_kernel_prodMk_left $ hs i ]
+  simp_rw [Measure.compProd_apply $ hs _ ]
 
-def designVectorLaw {d : ℕ} (θ : RegressionParameter d) (n : ℕ) :
-    Measure (Fin n → Covariate d) := Measure.pi (fun _ => designLaw θ)
+𝗇 𝔈 fun _ => designLaw θ
+𝗇 𝔊 𝙇
+def designVectorLaw (θ : RegressionParameter d) (n : ℕ) :
+    Measure 𝔊 := Measure.pi 𝔈
 
-def conditionalErrorLaw {d n : ℕ} (θ : RegressionParameter d)
-    (x : Fin n → Covariate d) : Measure (Fin n → ℝ) :=
-  Measure.pi (fun i => θ.errors (x i))
+𝗇 𝔄 θ.errors $ x i
+𝗇 𝔓 𝙔
+def conditionalErrorLaw (θ : RegressionParameter d)
+    (x : 𝔊) : Measure 𝔓 :=
+  Measure.pi fun i => 𝔄
 
-def conditionalErrorKernel {d : ℕ} (θ : RegressionParameter d) (n : ℕ) :
-    Kernel (Fin n → Covariate d) (Fin n → ℝ) :=
-  finiteProductKernel (fun _ => θ.errors)
+𝗃 𝔫 fun _ => ἀ
+𝗇 𝔡 𝔫 θ.errors
+def conditionalErrorKernel (θ : RegressionParameter d) (n : ℕ) :
+    Kernel 𝔊 𝔓 :=
+  finiteProductKernel 𝔡
 
-instance conditionalErrorKernel_markov {d : ℕ} (θ : RegressionParameter d) (n : ℕ) :
-    IsMarkovKernel (conditionalErrorKernel θ n) := by
+𝗇 𝔦 conditionalErrorKernel θ n
+instance conditionalErrorKernel_markov (θ : RegressionParameter d) (n : ℕ) :
+    IsMarkovKernel 𝔦 := by
   unfold conditionalErrorKernel
   infer_instance
 
-instance conditionalErrorLaw_probability {d n : ℕ} (θ : RegressionParameter d)
-    (x : Fin n → Covariate d) : IsProbabilityMeasure (conditionalErrorLaw θ x) := by
+𝗇 𝔅 conditionalErrorLaw θ x
+instance conditionalErrorLaw_probability (θ : RegressionParameter d)
+    (x : 𝔊) : IsProbabilityMeasure 𝔅 := by
   unfold conditionalErrorLaw
   infer_instance
 
+𝗇 𝔣 𝙌
 /-- Reconstruct observations from the design and error vectors. -/
-def samplesFromDesignErrors {d n : ℕ} (θ : RegressionParameter d)
-    (z : (Fin n → Covariate d) × (Fin n → ℝ)) : Fin n → Observation d :=
+def samplesFromDesignErrors (θ : RegressionParameter d)
+    (z : 𝔊 × 𝔓) : 𝔣 :=
   fun i => (z.1 i, θ.regression (z.1 i) + z.2 i)
 
-theorem samplesFromDesignErrors_measurable {d n : ℕ} (θ : RegressionParameter d)
-    (hf : Measurable θ.regression) : Measurable (samplesFromDesignErrors (n := n) θ) :=
-  Measurable.of_eval (fun i =>
-    ((measurable_pi_apply i).comp measurable_fst).prodMk
-      ((hf.comp ((measurable_pi_apply i).comp measurable_fst)).add
-        ((measurable_pi_apply i).comp measurable_snd)))
+𝗃 𝔬 ἀ (n := n) θ
+theorem samplesFromDesignErrors_measurable (θ : RegressionParameter d)
+    (hf : Measurable θ.regression) : Measurable 𝔬 samplesFromDesignErrors :=
+  Measurable.of_eval fun i =>
+    (𝔑 measurable_fst).prodMk
+      $ (hf.comp $ 𝔑 measurable_fst ).add
+        $ 𝔑 measurable_snd
 
+𝗇 𝔍 (designVectorLaw θ n).compProd 𝔦
+𝗇 𝔘 𝘪₁
+𝗇 𝔚 (𝔍).map $ samplesFromDesignErrors θ
+𝗇 𝔜 𝙟
+𝗇 𝔞 𝗷
 /-- An equality of the actual original sample measure, not an assumed conditional law. -/
-theorem sampleLaw_eq_conditional_map {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (n : ℕ) :
-    sampleLaw θ n =
-      ((designVectorLaw θ n).compProd (conditionalErrorKernel θ n)).map
-        (samplesFromDesignErrors θ) := by
-  let := designLaw_isProbability C θ hθ
-  have hm : Measurable (fun z : Covariate d × ℝ =>
-      (z.1, θ.regression z.1 + z.2)) :=
-    measurable_fst.prodMk ((hθ.2.1.comp measurable_fst).add measurable_snd)
+theorem sampleLaw_eq_conditional_map {d } C
+    (θ : RegressionParameter d) (hθ : 𝔜) n :
+    𝔞 =
+      𝔚 := by
+  let := 𝔘
+  have hm : Measurable fun z : 𝚛 =>
+      (z.1, θ.regression z.1 + z.2) :=
+    𝘊₂
   have hp := pi_compProd_eq_map_pairVectors (ι := Fin n)
-    (fun _ => designLaw θ) (fun _ => θ.errors)
-  have hv : Measurable (fun z : Fin n → Covariate d × ℝ =>
-      fun i => ((z i).1, θ.regression (z i).1 + (z i).2)) :=
-    Measurable.of_eval (fun i => hm.comp (measurable_pi_apply i))
+    𝔈 𝔡
+  have hv : Measurable fun z : Fin n → 𝚛 =>
+      fun i => (𝚄₁, θ.regression 𝚄₁ + (z i).2) :=
+    Measurable.of_eval 𝘋₂
   unfold sampleLaw observationLaw
-  rw [← Measure.pi_map_pi (fun _ => hm.aemeasurable), hp]
+  rw [← Measure.pi_map_pi 𝔫 hm.aemeasurable, hp]
   rw [Measure.map_map hv pairVectors_measurable]
   rfl
 
+𝗇 𝔐 samplesFromDesignErrors θ (x, u)
+𝗇 𝔒 designVectorLaw θ n
+𝗇 𝔖 fun z => g $ samplesFromDesignErrors θ z
+𝗇 𝔟 IsProbabilityMeasure $ Measure.pi 𝔈
+𝗇 𝔤 sampleLaw_eq_conditional_map C θ hθ
 /-- Tonelli's identity for any nonnegative measurable loss under the original law. -/
-theorem sampleLaw_lintegral_conditioning {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (g : (Fin n → Observation d) → ℝ≥0∞) (hg : Measurable g) :
-    (∫⁻ z, g z ∂sampleLaw θ n) =
-      ∫⁻ x, ∫⁻ u, g (samplesFromDesignErrors θ (x, u))
-        ∂conditionalErrorLaw θ x ∂designVectorLaw θ n := by
-  let := designLaw_isProbability C θ hθ
-  let : IsProbabilityMeasure (designVectorLaw θ n) :=
-    inferInstanceAs (IsProbabilityMeasure (Measure.pi (fun _ : Fin n => designLaw θ)))
-  have hgm : Measurable (fun z : (Fin n → Covariate d) × (Fin n → ℝ) =>
-      g (samplesFromDesignErrors θ z)) :=
-    hg.comp (samplesFromDesignErrors_measurable θ hθ.2.1)
-  rw [sampleLaw_eq_conditional_map C θ hθ,
+theorem sampleLaw_lintegral_conditioning C
+    (θ : RegressionParameter d) (hθ : 𝔜)
+    g (hg : Measurable g) :
+     ∫⁻ z, g z ∂𝔞 =
+      ∫⁻ x, ∫⁻ u, g 𝔐
+        ∂ 𝔅 ∂ 𝔒 := by
+  let := 𝔘
+  let : IsProbabilityMeasure 𝔒 :=
+    inferInstanceAs 𝔟
+  have hgm : Measurable 𝔖 :=
+    hg.comp $ samplesFromDesignErrors_measurable θ hθ.2.1
+  rw [𝔤,
     lintegral_map' hg.aemeasurable (samplesFromDesignErrors_measurable θ hθ.2.1).aemeasurable,
     Measure.lintegral_compProd hgm]
   rfl
 
 /-- The paper's extended-valued mean square risk is exactly the conditional loss average. -/
-theorem meanSquaredRisk_conditioning {d n : ℕ} (C : ModelConstants d)
-    (T : Estimator d n) (θ : RegressionParameter d) (hθ : Admissible C θ) :
+theorem meanSquaredRisk_conditioning C
+    T (θ : RegressionParameter d) (hθ : 𝔜) :
     meanSquaredRisk T θ =
       ∫⁻ x, ∫⁻ u, ENNReal.ofReal
-        ((T.val (samplesFromDesignErrors θ (x, u)) - θ.variance) ^ 2)
-        ∂conditionalErrorLaw θ x ∂designVectorLaw θ n := by
+        ((T.val 𝔐 - θ.variance) ^ 2)
+        ∂ 𝔅 ∂ 𝔒 := by
   apply sampleLaw_lintegral_conditioning C θ hθ
-  exact ENNReal.measurable_ofReal.comp ((T.property.sub measurable_const).pow_const 2)
+  exact ENNReal.measurable_ofReal.comp $ (T.property.sub measurable_const).pow_const 2
 
 /-- Bochner Fubini for every integrable vector-valued observation function. -/
-theorem sampleLaw_integral_conditioning {d n : ℕ} {E : Type*}
-    [NormedAddCommGroup E] [NormedSpace ℝ E] (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (g : (Fin n → Observation d) → E) (hg : Integrable g (sampleLaw θ n)) :
-    (∫ z, g z ∂sampleLaw θ n) =
-      ∫ x, ∫ u, g (samplesFromDesignErrors θ (x, u))
-        ∂conditionalErrorLaw θ x ∂designVectorLaw θ n := by
-  let := designLaw_isProbability C θ hθ
-  let : IsProbabilityMeasure (designVectorLaw θ n) :=
-    inferInstanceAs (IsProbabilityMeasure (Measure.pi (fun _ : Fin n => designLaw θ)))
-  have hm := samplesFromDesignErrors_measurable (n := n) θ hθ.2.1
+theorem sampleLaw_integral_conditioning
+    [NormedAddCommGroup E] [NormedSpace ℝ E] C
+    (θ : RegressionParameter d) (hθ : 𝔜)
+    (g : 𝔣 → E) (hg : Integrable g 𝔞) :
+     ∫ z, g z ∂𝔞 =
+      ∫ x, ∫ u, g 𝔐
+        ∂ 𝔅 ∂ 𝔒 := by
+  let := 𝔘
+  let : IsProbabilityMeasure 𝔒 :=
+    inferInstanceAs 𝔟
+  have hm := 𝔬 samplesFromDesignErrors_measurable hθ.2.1
   have hmap : Integrable g
-      (((designVectorLaw θ n).compProd (conditionalErrorKernel θ n)).map
-        (samplesFromDesignErrors θ)) := by
-    rwa [← sampleLaw_eq_conditional_map C θ hθ]
-  have hcomp : Integrable (fun z => g (samplesFromDesignErrors θ z))
-      ((designVectorLaw θ n).compProd (conditionalErrorKernel θ n)) := by
+      𝔚 := by
+    rwa [← 𝔤]
+  have hcomp : Integrable 𝔖
+      𝔍 := by
     simpa only [Function.comp_def] using hmap.comp_measurable hm
-  rw [sampleLaw_eq_conditional_map C θ hθ,
+  rw [𝔤,
     integral_map hm.aemeasurable hmap.aestronglyMeasurable,
     Measure.integral_compProd hcomp]
   rfl
 
+𝗇 𝔧 u ^ 4
+𝗇 𝔉 fun u => 𝔧
+𝗇 𝔗 fun u => u
 /-- Finite fourth moment gives actual fourth-power integrability of the coordinate. -/
 theorem memLp_id_four_of_integrable_fourth (μ : Measure ℝ)
-    (h4 : Integrable (fun u : ℝ => u ^ 4) μ) : MemLp (fun u : ℝ => u) 4 μ := by
-  apply (integrable_norm_rpow_iff (f := fun u : ℝ => u) (p := 4)
-    aestronglyMeasurable_id (by norm_num) (by simp)).mp
-  have heq : (fun u : ℝ => ‖u‖ ^ ((4 : ℝ≥0∞).toReal)) = (fun u => u ^ 4) := by
+    (h4 : Integrable 𝔉 μ) : MemLp 𝔗 4 μ := by
+  apply (integrable_norm_rpow_iff
+    aestronglyMeasurable_id  𝖠₄  𝖢₄ ).mp
+  have heq : (fun u => 𝘌₂ ^ (4 : 𝙉₁).toReal ) = 𝔉 := by
     funext u
-    norm_num only [ENNReal.toReal_ofNat, Real.norm_eq_abs]
     calc
-      |u| ^ (4 : ℝ) = |u| ^ (4 : ℕ) := Real.rpow_natCast _ _
-      _ = |u ^ 4| := (abs_pow u 4).symm
-      _ = u ^ 4 := abs_of_nonneg (by positivity)
-  rw [heq]
-  exact h4
+      |u| ^ 4 = |u| ^ 4 := Real.rpow_natCast ..
+      _ = |𝔧| := (abs_pow u 4).symm
+      _ = 𝔧 := abs_of_nonneg 𝖠₃
+  simp_all
 
-theorem conditionalErrorLaw_iIndepFun {d n : ℕ} (θ : RegressionParameter d)
-    (x : Fin n → Covariate d) :
-    iIndepFun (fun i (u : Fin n → ℝ) => u i) (conditionalErrorLaw θ x) :=
-  iIndepFun_pi (μ := fun i => θ.errors (x i)) (X := fun _ => id)
-    (fun _ => aemeasurable_id)
+theorem conditionalErrorLaw_iIndepFun (θ : RegressionParameter d)
+    x :
+    iIndepFun (fun i (u : 𝔓) => u i) 𝔅 :=
+  iIndepFun_pi
+    𝔫 aemeasurable_id
 
-theorem conditionalErrorLaw_integral_coordinate {d n : ℕ} (θ : RegressionParameter d)
-    (x : Fin n → Covariate d) (i : Fin n) (g : ℝ → ℝ) (hg : Measurable g) :
-    (∫ u, g (u i) ∂conditionalErrorLaw θ x) = ∫ a, g a ∂θ.errors (x i) := by
-  have hm := (measurePreserving_eval (fun j => θ.errors (x j)) i).map_eq
-  have h := integral_map (μ := Measure.pi (fun j => θ.errors (x j)))
-    (measurable_pi_apply i).aemeasurable hg.aestronglyMeasurable
-  rw [hm] at h
-  exact h.symm
+𝗇 𝔏 fun j => θ.errors $ x j
+theorem conditionalErrorLaw_integral_coordinate (θ : RegressionParameter d)
+    x (i : Fin n) (g : 𝘓) (hg : Measurable g) :
+     ∫ u, g (u i) ∂ 𝔅 = ∫ a, g a ∂ 𝔄 := by
+  have hm := (measurePreserving_eval 𝔏 i).map_eq
+  have h := integral_map (μ := Measure.pi 𝔏)
+    𝔩 measurable_pi_apply hg.aestronglyMeasurable
+  aesop
 
-theorem unitCube_measurable (d : ℕ) : MeasurableSet (unitCube d) := by
-  have heq : unitCube d = Set.univ.pi (fun _ : Fin d => Set.Icc (0 : ℝ) 1) := by
+theorem unitCube_measurable d : MeasurableSet $ unitCube d := by
+  have heq : unitCube d = Set.univ.pi fun _ => Set.Icc 0 1 := by
     ext x
     simp only [unitCube, Set.mem_ofPred_eq, Set.mem_pi, Set.mem_univ,
       true_imp_iff, Set.mem_Icc]
-  rw [heq]
-  exact MeasurableSet.univ_pi (fun _ => measurableSet_Icc)
+  simp_all
 
 /-- The design law is supported on the actual cube, even before admissibility. -/
-theorem designLaw_cube_ae {d : ℕ} (θ : RegressionParameter d) :
-    ∀ᵐ x ∂designLaw θ, x ∈ unitCube d := by
-  have hx : ∀ᵐ x ∂cubeVolume d, x ∈ unitCube d :=
-    ae_restrict_mem (unitCube_measurable d)
+theorem designLaw_cube_ae θ :
+    ∀ᵐ x ∂designLaw θ, 𝗌 := by
+  have hx : ∀ᵐ x ∂cubeVolume d, 𝗌 :=
+    ae_restrict_mem $ unitCube_measurable d
   exact hx.filter_mono (withDensity_absolutelyContinuous (cubeVolume d)
-    (fun x => ENNReal.ofReal (θ.density x))).ae_le
+     fun x => ENNReal.ofReal $ θ.density x ).ae_le
 
+𝗇 𝔙 fun u => 𝙟₁
+𝗇 𝔥 conditionalErrorLaw_integral_coordinate θ x i
+𝗃 𝔨 ∫ u : ℝ, ἀ ∂ 𝔄
 /-- All fixed-design hypotheses used by projection risk bounds follow from
 admissibility for almost every vector of iid design points. -/
-theorem admissible_conditional_error_facts {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (n : ℕ) :
-    ∀ᵐ x ∂designVectorLaw θ n,
+theorem admissible_conditional_error_facts C
+    θ (hθ : 𝔜) n :
+    ∀ᵐ x ∂ 𝔒,
       (∀ i, x i ∈ unitCube d) ∧
-      (∀ i, MemLp (fun u : Fin n → ℝ => u i) 4 (conditionalErrorLaw θ x)) ∧
-      iIndepFun (fun i (u : Fin n → ℝ) => u i) (conditionalErrorLaw θ x) ∧
-      (∀ i, (∫ u, u i ∂conditionalErrorLaw θ x) = 0) ∧
-      (∀ i, (∫ u, (u i) ^ 2 ∂conditionalErrorLaw θ x) = θ.variance) ∧
-      (∀ i, (∫ u, (u i) ^ 4 ∂conditionalErrorLaw θ x) ≤ C.fourthBound) := by
-  let := designLaw_isProbability C θ hθ
-  have hbase := (designLaw_cube_ae θ).and hθ.2.2.2.2.2.2.2
-  have hgood : ∀ᵐ x ∂designVectorLaw θ n, ∀ i,
+      (∀ i, MemLp (fun u => u i) 4 𝔅) ∧
+      iIndepFun (fun i u => u i) 𝔅 ∧
+      (∀ i, ∫ u, u i ∂ 𝔅 = 0) ∧
+      (∀ i, ∫ u, u i ^ 2 ∂ 𝔅 = θ.variance) ∧
+       ∀ i, ∫ u, u i ^ 4 ∂ 𝔅 ≤ C.fourthBound := by
+  let := 𝔘
+  have hgood : ∀ᵐ x ∂ 𝔒, ∀ i,
       x i ∈ unitCube d ∧
-      Integrable (fun u : ℝ => u) (θ.errors (x i)) ∧
-      Integrable (fun u : ℝ => u ^ 2) (θ.errors (x i)) ∧
-      Integrable (fun u : ℝ => u ^ 4) (θ.errors (x i)) ∧
-      (∫ u : ℝ, u ∂θ.errors (x i)) = 0 ∧
-      (∫ u : ℝ, u ^ 2 ∂θ.errors (x i)) = θ.variance ∧
-      (∫ u : ℝ, u ^ 4 ∂θ.errors (x i)) ≤ C.fourthBound := by
+      Integrable 𝔗 𝔄 ∧
+      Integrable 𝔙 𝔄 ∧
+      Integrable 𝔉 𝔄 ∧
+      𝔨 u = 0 ∧
+       ∫ u : ℝ, 𝙟₁ ∂ 𝔄 = θ.variance ∧
+      𝔨 𝔧 ≤ C.fourthBound := by
     apply eventually_all.mpr
     intro i
-    exact (Measure.tendsto_eval_ae_ae (μ := fun _ : Fin n => designLaw θ) (i := i)).eventually hbase
+    exact (Measure.tendsto_eval_ae_ae (μ := 𝔈) ).eventually $ (designLaw_cube_ae θ).and hθ.2.2.2.2.2.2.2
   filter_upwards [hgood] with x hx
   refine ⟨fun i => (hx i).1, ?_, conditionalErrorLaw_iIndepFun θ x, ?_, ?_, ?_⟩
   · intro i
-    have h4 := (hx i).2.2.2.1
     simpa only [Function.comp_def, Function.eval, conditionalErrorLaw] using
-      (memLp_id_four_of_integrable_fourth (θ.errors (x i)) h4).comp_measurePreserving
-        (measurePreserving_eval (fun j => θ.errors (x j)) i)
+      (memLp_id_four_of_integrable_fourth 𝔄 (hx i).2.2.2.1 ).comp_measurePreserving
+        $ measurePreserving_eval 𝔏 i
   · intro i
-    rw [conditionalErrorLaw_integral_coordinate θ x i (fun u => u) measurable_id]
-    exact (hx i).2.2.2.2.1
+    rw [𝔥 𝔗 measurable_id]
+    simp_all
   · intro i
-    rw [conditionalErrorLaw_integral_coordinate θ x i (fun u => u ^ 2) (by fun_prop)]
-    exact (hx i).2.2.2.2.2.1
+    rw [𝔥 𝔙 𝖦₃ ]
+    simp_all
   · intro i
-    rw [conditionalErrorLaw_integral_coordinate θ x i (fun u => u ^ 4) (by fun_prop)]
-    exact (hx i).2.2.2.2.2.2
-
-end NearlyMinimax
+    rw [𝔥 𝔉 𝖦₃ ]
+    simp_all

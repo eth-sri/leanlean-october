@@ -2,149 +2,158 @@ module
 
 public import NearlyMinimax.PaperPopulationFit
 public import NearlyMinimax.DyadicPilotPointwise
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! The true population increment in finite coordinates and its actual
 inverse-polynomial approximation error. -/
 
-noncomputable section
 open Matrix MeasureTheory Set MvPolynomial
-open scoped BigOperators Matrix.Norms.L2Operator
-namespace NearlyMinimax
+𝚺
+𝚨
 
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
+𝚭
+𝚩
 
-def anchoredFinVector {d ℓ : ℕ} (v : AnchoredIndex d ℓ → ℝ) :
-    Fin (anchoredDimension d ℓ) → ℝ := fun i => v (anchoredFinIndex i)
+𝗃 𝔛 ἀ d ℓ
+𝗇 𝔅 Fin 𝔛 anchoredDimension
+𝗇 𝔇 𝔛 AnchoredIndex
+def anchoredFinVector (v : 𝔇 → ℝ) :
+    𝔅 → ℝ := fun i => v $ anchoredFinIndex i
 
-theorem anchoredFinVector_norm {d ℓ : ℕ} (v : AnchoredIndex d ℓ → ℝ) :
-    ‖(EuclideanSpace.equiv (Fin (anchoredDimension d ℓ)) ℝ).symm (anchoredFinVector v)‖ =
-      ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm v‖ := by
-  let e := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (Fintype.equivFin (AnchoredIndex d ℓ))
-  have he : e ((EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm v) =
-      (EuclideanSpace.equiv (Fin (anchoredDimension d ℓ)) ℝ).symm (anchoredFinVector v) := by
-    ext i
-    rfl
-  rw [← he]
+𝗇 𝔐 (EuclideanSpace.equiv 𝔅 ℝ).symm
+theorem anchoredFinVector_norm v :
+    ‖𝔐 (anchoredFinVector v)‖ =
+      ‖(EuclideanSpace.equiv 𝔇 ℝ).symm v‖ := by
+  let e := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ $ Fintype.equivFin 𝔇
   exact e.norm_map _
 
-theorem anchoredFinReindex_mulVec {d ℓ : ℕ}
-    (A : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ)
-    (v : AnchoredIndex d ℓ → ℝ) :
-    anchoredFinReindex d ℓ A *ᵥ anchoredFinVector v = anchoredFinVector (A *ᵥ v) := by
+theorem anchoredFinReindex_mulVec
+    A
+    v :
+    𝔛 anchoredFinReindex A *ᵥ anchoredFinVector v = anchoredFinVector (A *ᵥ v) := by
   ext i
-  simp only [anchoredFinReindex, Matrix.reindexAlgEquiv_apply, Matrix.reindex_apply,
-    anchoredFinVector, anchoredFinIndex, Matrix.mulVec, dotProduct]
-  exact (Fintype.equivFin (AnchoredIndex d ℓ)).symm.sum_comp
-    (fun γ : AnchoredIndex d ℓ => A (anchoredFinIndex i) γ * v γ)
+  exact (Fintype.equivFin 𝔇).symm.sum_comp
+     fun γ => A (anchoredFinIndex i) γ * v γ
 
-theorem anchoredFinReindex_inv {d ℓ : ℕ}
-    (A : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ) :
-    (anchoredFinReindex d ℓ A)⁻¹ = anchoredFinReindex d ℓ A⁻¹ :=
+theorem anchoredFinReindex_inv
+    A :
+    (𝔛 anchoredFinReindex A)⁻¹ = 𝔛 anchoredFinReindex A⁻¹ :=
   Matrix.inv_reindex _ _ A
 
-theorem anchoredFinVector_sub {d ℓ : ℕ} (v w : AnchoredIndex d ℓ → ℝ) :
+theorem anchoredFinVector_sub (v w : 𝔇 → ℝ) :
     anchoredFinVector (v - w) = anchoredFinVector v - anchoredFinVector w := rfl
 
-theorem anchoredFinVector_smul {d ℓ : ℕ} (a : ℝ) (v : AnchoredIndex d ℓ → ℝ) :
+theorem anchoredFinVector_smul (a : ℝ) (v : 𝔇 → ℝ) :
     anchoredFinVector (a • v) = a • anchoredFinVector v := rfl
 
-theorem dyadicFinPilotMoments_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
-    (x : Covariate d) (hx : x ∈ unitCube d) (t : Bool) :
-    dyadicFinPilotMoments (ℓ := ℓ) θ j x t = anchoredFinVector
-      ((dyadicKnownGram j x)⁻¹ *ᵥ (if t then dyadicConstantMoment θ j x else dyadicResponseMoment θ j x)) := by
+𝗃 𝔎 ἀ C θ hθ j x hx
+𝗃 𝔏 ἀ (ℓ := ℓ)
+𝗇 𝔓 𝗌
+theorem dyadicFinPilotMoments_eq_actual C
+    θ (hθ : 𝙟) j
+    x (hx : 𝔓) t :
+    𝔏 dyadicFinPilotMoments θ j x t = anchoredFinVector
+      (𝗵₁ *ᵥ if t then dyadicConstantMoment θ j x else dyadicResponseMoment θ j x ) := by
   ext i
   cases t
   all_goals simp only [dyadicFinPilotMoments, Bool.false_eq_true, ↓reduceIte,
     anchoredFinVector]
-  all_goals rw [preconditionedPilotPopulation_eq_sum C θ hθ j x hx]
+  all_goals rw [𝔎 preconditionedPilotPopulation_eq_sum]
   all_goals simp only [localPilotRow, localPilotReplaceRow, Matrix.mulVec, dotProduct,
-    dyadicPilotPopulation_response C θ hθ j x hx, dyadicPilotPopulation_constant C θ hθ]
+    𝔎 dyadicPilotPopulation_response, dyadicPilotPopulation_constant C θ hθ]
 
-theorem dyadicFinPilot_fit {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
-    (x : Covariate d) (hx : x ∈ unitCube d) :
-    (dyadicFinPilotGram (ℓ := ℓ) θ j x)⁻¹ *ᵥ
-      (dyadicFinPilotMoments θ j x false - θ.regression x • dyadicFinPilotMoments θ j x true) =
+𝗇 𝔉 dyadicFinPilotMoments θ j x false - θ.regression x • dyadicFinPilotMoments θ j x true
+theorem dyadicFinPilot_fit C
+    θ (hθ : 𝙟) j
+    x (hx : 𝔓) :
+    (𝔏 dyadicFinPilotGram θ j x)⁻¹ *ᵥ
+      𝔉 =
         anchoredFinVector (dyadicPopulationFit θ j x) := by
-  rw [dyadicFinPilotMoments_eq_actual C θ hθ j x hx false,
-    dyadicFinPilotMoments_eq_actual C θ hθ j x hx true]
-  simp only [Bool.false_eq_true, ↓reduceIte]
+  rw [𝔎 dyadicFinPilotMoments_eq_actual false,
+    𝔎 dyadicFinPilotMoments_eq_actual true]
+  simp
   rw [← anchoredFinVector_smul, ← anchoredFinVector_sub,
     ← Matrix.mulVec_smul, ← Matrix.mulVec_sub]
   rw [dyadicFinPilotGram, anchoredFinReindex_inv, anchoredFinReindex_mulVec,
     dyadicPopulationFit_preconditioner_cancels C θ hθ]
 
-theorem dyadicFinite_increment_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
-    (x : Covariate d) (hx : x ∈ unitCube d) :
-    (dyadicFinPilotGram (ℓ := ℓ) θ j x)⁻¹ *ᵥ
-      (dyadicFinPilotMoments θ j x false - θ.regression x • dyadicFinPilotMoments θ j x true) -
-      anchoredFinTransport d ℓ *ᵥ
-        ((if j = 0 then 1 else dyadicFinPilotGram θ (j - 1) x)⁻¹ *ᵥ
-          ((if j = 0 then 0 else dyadicFinPilotMoments θ (j - 1) x) false -
-            θ.regression x • (if j = 0 then 0 else dyadicFinPilotMoments θ (j - 1) x) true)) =
+𝗇 𝔖 𝘮
+𝗇 𝔈 if 𝘠 then 0 else dyadicFinPilotMoments θ 𝔖 x
+theorem dyadicFinite_increment_eq_actual C
+    θ (hθ : 𝙟) j
+    x (hx : 𝔓) :
+    (dyadicFinPilotGram θ j x)⁻¹ *ᵥ
+      𝔉 -
+      𝔛 anchoredFinTransport *ᵥ
+         (if 𝘠 then 1 else dyadicFinPilotGram θ 𝔖 x)⁻¹ *ᵥ
+          (𝔈 false -
+            θ.regression x • 𝔈 true) =
         anchoredFinVector (dyadicPopulationIncrement θ x j) := by
-  rw [dyadicFinPilot_fit C θ hθ j x hx]
+  rw [𝔎 dyadicFinPilot_fit]
   cases j with
   | zero => simp [dyadicPopulationIncrement, anchoredIncrement]
   | succ j =>
     simp only [Nat.add_one_ne_zero, ↓reduceIte, Nat.add_sub_cancel_right]
-    rw [dyadicFinPilot_fit C θ hθ j x hx]
+    rw [𝔎 dyadicFinPilot_fit]
     rw [anchoredFinTransport, anchoredFinReindex_mulVec, ← anchoredFinVector_sub]
     rfl
 
-theorem incrementFinVector_eval_population {r : ℕ} [NeZero r] (a b : ℝ)
-    (A B T : Matrix (Fin r) (Fin r) ℝ) (U V : Bool → Fin r → ℝ)
-    (y : ℝ) (m : ℕ) :
+𝗇 𝔔 incrementValuation A B U V
+𝗃 𝔚 incrementEntryPolynomial ἀ a b T y m i
+theorem incrementFinVector_eval_population [NeZero r] a b
+    A B T U V
+    y m :
     incrementFinVector r a b T y m
-      (fun i => incrementValuation A B U V ((Fintype.equivFin (incrementVariables r)).symm i)) =
-        fun i => eval (incrementValuation A B U V) (incrementEntryPolynomial r a b T y m i) := by
+      (fun i => 𝔔 $ (Fintype.equivFin $ incrementVariables r ).symm i ) =
+        fun i => eval 𝔔 𝔚 r := by
   ext i
   simp only [incrementFinVector, incrementFinPolynomial, eval_rename, Function.comp_def,
     Equiv.symm_apply_apply]
 
+𝗇 𝔗 anchoredFinNormalizedGram u p
+𝗇 𝔘 anchoredFinNormalizedGram v q
+𝗇 𝔄 𝔗⁻¹ *ᵥ (U false - y • U true) - T *ᵥ 𝔘⁻¹ *ᵥ (V false - y • V true)
+𝗇 𝔊 𝔏 anchoredFinSimilarityUnit u
+𝗇 𝔍 𝔛 anchoredDimension
+𝗇 𝔑 matrixSimilarity Q⁻¹ G
+𝗇 𝔒 matrixSimilarity R⁻¹ H
 /-- Density bounds yield the actual Hermitian charts used in the inverse
 approximation. Only the explicitly displayed small increment enters this
 generic deterministic helper. -/
-theorem anchoredNormalized_increment_error {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)]
-    (u v : Covariate d) (p q : Covariate d → ℝ) (hpmeas : Measurable p) (hqmeas : Measurable q)
-    (a b χ ε : ℝ) (ha : 0 < a) (hab : a < b)
-    (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b)
-    (hq : ∀ᵐ w ∂cubeVolume d, a ≤ q w ∧ q w ≤ b)
-    (hχ : ‖(anchoredFinSimilarityUnit (ℓ := ℓ) u).val‖ *
-      ‖((anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹).val‖ ≤ χ)
-    (U V : Bool → Fin (anchoredDimension d ℓ) → ℝ)
-    (y : ℝ) (T : Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ)
-    (hδ : ‖(EuclideanSpace.equiv (Fin (anchoredDimension d ℓ)) ℝ).symm
-      ((anchoredFinNormalizedGram u p)⁻¹ *ᵥ (U false - y • U true) -
-        T *ᵥ ((anchoredFinNormalizedGram v q)⁻¹ *ᵥ (V false - y • V true)))‖ ≤ ε)
+theorem anchoredNormalized_increment_error [Nonempty 𝔇]
+    (u v : Covariate d) (p q : 𝙀) (hpmeas : Measurable p) (hqmeas : Measurable q)
+    (a b χ ε : ℝ) (ha : 𝙆) (hab : 𝙭)
+    (hp : 𝖡)
+    (hq : 𝗭)
+    (hχ : ‖(𝔊).val‖ *
+      ‖(𝔊⁻¹).val‖ ≤ χ)
+    (U V : Bool → 𝔅 → ℝ)
+    (y : ℝ) (T : Matrix 𝔅 𝔅 ℝ)
+    (hδ : ‖𝔐
+      𝔄‖ ≤ ε)
     (m : ℕ) :
-    ‖(EuclideanSpace.equiv (Fin (anchoredDimension d ℓ)) ℝ).symm
-      ((fun i => eval (incrementValuation (anchoredFinNormalizedGram u p)
-        (anchoredFinNormalizedGram v q) U V)
-          (incrementEntryPolynomial (anchoredDimension d ℓ) a b T y m i)) -
-        ((anchoredFinNormalizedGram u p)⁻¹ *ᵥ (U false - y • U true) -
-          T *ᵥ ((anchoredFinNormalizedGram v q)⁻¹ *ᵥ (V false - y • V true))))‖ ≤
-      (χ ^ 2 * b ^ (anchoredDimension d ℓ + 1) * parentInverseErrorConstant a b (anchoredDimension d ℓ)) * ε *
-        ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d ℓ * Real.exp (-(m : ℝ) * exteriorTau ((a + b) / (b - a))) := by
-  let Q := anchoredFinSimilarityUnit (ℓ := ℓ) u
-  let R := anchoredFinSimilarityUnit (ℓ := ℓ) v
-  let G := anchoredFinNormalizedGram (ℓ := ℓ) u p
-  let H := anchoredFinNormalizedGram (ℓ := ℓ) v q
-  have hG : matrixSimilarity Q (matrixSimilarity Q⁻¹ G) = G := by
+    ‖𝔐
+      ((fun i => eval (incrementValuation 𝔗
+        𝔘 U V)
+          𝔚 𝔍) -
+        𝔄)‖ ≤
+       χ ^ 2 * b ^ (𝔍 + 1) * parentInverseErrorConstant a b 𝔍 * ε *
+        ((𝘻 : ℕ) : ℝ) ^ 𝔍 * Real.exp (-𝘏₂ * exteriorTau 𝖬) := by
+  let Q := 𝔊
+  let R := 𝔏 anchoredFinSimilarityUnit v
+  let G := 𝔏 anchoredFinNormalizedGram u p
+  let H := 𝔏 anchoredFinNormalizedGram v q
+  have hG : matrixSimilarity Q 𝔑 = G := by
     simp [matrixSimilarity, Matrix.mul_assoc]
-  have hH : matrixSimilarity R (matrixSimilarity R⁻¹ H) = H := by
+  have hH : matrixSimilarity R 𝔒 = H := by
     simp [matrixSimilarity, Matrix.mul_assoc]
   have he := incrementEntryPolynomial_error a b ha hab
-    (matrixSimilarity Q⁻¹ G) (matrixSimilarity R⁻¹ H) T
+    𝔑 𝔒 T
     (anchoredFin_similarity_isHermitian u p) (anchoredFin_similarity_isHermitian v q)
     (anchoredFin_similarity_spectrum u p hpmeas a b ha.le hp)
     (anchoredFin_similarity_spectrum v q hqmeas a b ha.le hq)
     Q R χ hχ U V y ε (by simpa only [hG, hH] using hδ) m
   simpa only [hG, hH] using he
-
-end NearlyMinimax

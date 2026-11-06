@@ -4,137 +4,155 @@ public import NearlyMinimax.FinePairHyperplanePacket
 public import NearlyMinimax.FinePairResponseGeometry
 public import NearlyMinimax.HighUnionReset
 public import NearlyMinimax.HighLocalFrame
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! The three genuine source fine-pair rows, on their actual finite-atom
 and time/hyperplane mark spaces. The single global balancing law is applied
 later by `HighUnionRowData`; these are its uncentered absolute row laws. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators ENNReal
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
+𝚫
+𝚳
+𝚨
+𝚩
+𝚱
 
 inductive FinePairRowTag where
   | unit | coarse | fine
   deriving DecidableEq, Fintype
 
+𝗇 𝔡 𝙮
+𝗇 𝔇 HighPacketMarkIndex 𝔡 D 2 D q
+𝗇 𝔉 𝙺₂
+𝗇 𝔑 FinePairPacketIndex 𝔡 M q
 def FinePairRowMark (d D M q : ℕ) : FinePairRowTag → Type
-  | .unit => Unit × HighPacketMarkIndex (HighFrameIndex d D) D 2 D q
-  | .coarse => (ℝ × FinePairFieldMark d) × HighPacketMarkIndex (HighFrameIndex d D) D 2 D q
-  | .fine => (ℝ × FinePairFieldMark d) × FinePairPacketIndex (HighFrameIndex d D) M q
+  | .unit => Unit × 𝔇
+  | .coarse => 𝔉 × 𝔇
+  | .fine => 𝔉 × 𝔑
 
+𝗃 𝔘 ἀ d D M q
+𝗇 𝔅 𝔘 FinePairRowMark i
 instance finePairRowMark_measurable (d D M q : ℕ) (i : FinePairRowTag) :
-    MeasurableSpace (FinePairRowMark d D M q i) := by
+    MeasurableSpace 𝔅 := by
   cases i <;> dsimp [FinePairRowMark] <;> infer_instance
 
 instance finePairRowMark_standardBorel (d D M q : ℕ) (i : FinePairRowTag) :
-    StandardBorelSpace (FinePairRowMark d D M q i) := by
-  letI : StandardBorelSpace (ℝ × FinePairFieldMark d) := by infer_instance
-  letI : StandardBorelSpace (HighPacketMarkIndex (HighFrameIndex d D) D 2 D q) := by infer_instance
-  letI : StandardBorelSpace (FinePairPacketIndex (HighFrameIndex d D) M q) := by infer_instance
-  cases i <;> dsimp [FinePairRowMark, finePairRowMark_measurable] <;> infer_instance
+    StandardBorelSpace 𝔅 := by
+  letI : StandardBorelSpace 𝔉 := by infer_instance
+  letI : StandardBorelSpace 𝔇 := by infer_instance
+  letI : StandardBorelSpace 𝔑 := by infer_instance
+  cases i <;> dsimp [FinePairRowMark] <;> infer_instance
 
+𝗇 𝔄 finePairTimeMatrix d 𝗀₂
+𝗇 𝔈 𝗻
+𝗇 𝔊 finePairTimeFieldMeasure d 0 T₀
+𝗇 𝔍 finePairTimeFieldMeasure d T₀ N
+𝗇 𝔎 𝖶₁
+𝗃 𝔙 ἀ 𝔎 a b D 2 D q C 𝔈
+𝗃 𝔚 ἀ 𝔊 a b D 2 D q C 𝔄
+𝗃 𝔢 ἀ 𝔍 a b M q C 𝔄
 def finePairRowLaw (d D M q : ℕ) (a b C T₀ N : ℝ) :
-    (i : FinePairRowTag) → Measure (FinePairRowMark d D M q i)
-  | .unit => highPacketAbsoluteLaw (Measure.dirac ()) a b D 2 D q C
-      (fun _ => finePairUnitMatrix d D)
-  | .coarse => highPacketAbsoluteLaw (finePairTimeFieldMeasure d 0 T₀) a b D 2 D q C
-      (finePairTimeMatrix d (finePairDistanceMatrix d D))
-  | .fine => finePairPacketAbsoluteLaw (finePairTimeFieldMeasure d T₀ N) a b M q C
-      (finePairTimeMatrix d (finePairDistanceMatrix d D))
+    (i : FinePairRowTag) → Measure 𝔅
+  | .unit => 𝔙 highPacketAbsoluteLaw
+  | .coarse => 𝔚 highPacketAbsoluteLaw
+  | .fine => 𝔢 finePairPacketAbsoluteLaw
 
 def finePairRowMass (d D M q : ℕ) (a b C T₀ N : ℝ) : FinePairRowTag → ℝ
-  | .unit => highPacketMarkMass (Measure.dirac ()) a b D 2 D q C
-      (fun _ => finePairUnitMatrix d D)
-  | .coarse => highPacketMarkMass (finePairTimeFieldMeasure d 0 T₀) a b D 2 D q C
-      (finePairTimeMatrix d (finePairDistanceMatrix d D))
-  | .fine => finePairPacketMarkMass (finePairTimeFieldMeasure d T₀ N) a b M q C
-      (finePairTimeMatrix d (finePairDistanceMatrix d D))
+  | .unit => 𝔙 highPacketMarkMass
+  | .coarse => 𝔚 highPacketMarkMass
+  | .fine => 𝔢 finePairPacketMarkMass
 
+𝗇 𝔔 (i : FinePairRowTag) → 𝔅 → ℝ
 def finePairRowActivation (d D M q : ℕ) (a b C T₀ N : ℝ) :
-    (i : FinePairRowTag) → FinePairRowMark d D M q i → ℝ
-  | .unit => highPacketActivation (Measure.dirac ()) a b D 2 D q C
-      (fun _ => finePairUnitMatrix d D)
-  | .coarse => highPacketActivation (finePairTimeFieldMeasure d 0 T₀) a b D 2 D q C
-      (finePairTimeMatrix d (finePairDistanceMatrix d D))
-  | .fine => finePairPacketActivation (finePairTimeFieldMeasure d T₀ N) a b M q C
-      (finePairTimeMatrix d (finePairDistanceMatrix d D))
+    𝔔
+  | .unit => 𝔙 highPacketActivation
+  | .coarse => 𝔚 highPacketActivation
+  | .fine => 𝔢 finePairPacketActivation
 
+𝗃 𝔤 ἀ a b
+𝗇 𝔟 𝔤 highPacketIntercept D 2 D q
 def finePairRowIntercept (d D M q : ℕ) (a b : ℝ) :
-    (i : FinePairRowTag) → FinePairRowMark d D M q i → ℝ
-  | .unit => highPacketIntercept a b D 2 D q
-  | .coarse => highPacketIntercept a b D 2 D q
-  | .fine => finePairPacketIntercept a b M q
+    𝔔
+  | .unit => 𝔟
+  | .coarse => 𝔟
+  | .fine => 𝔤 finePairPacketIntercept M q
 
-def finePairRowSlope (d k D M q : ℕ) (a b : ℝ) (j : HighWindowLabels d k) :
-    (i : FinePairRowTag) → FinePairRowMark d D M q i → Covariate d → ℝ
-  | .unit => fun e _ => highPacketSlope a b D 2 D q (fun _ _ => 1) e
-  | .coarse => fun e x => highPacketSlope a b D 2 D q
-      (fun ζ _ => finePairTimeFieldValue ζ (highLocalCoordinates d k j x)) e
-  | .fine => fun e x => finePairPacketSlope a b M q
-      (fun ζ => finePairTimeFieldValue ζ (highLocalCoordinates d k j x)) e
+𝗇 𝔛 finePairTimeFieldValue ζ 𝗂₂
+𝗇 𝔠 𝔤 highPacketSlope D 2 D q
+def finePairRowSlope (d k D M q : ℕ) (a b : ℝ) (j : 𝙯) :
+    (i : FinePairRowTag) → 𝔅 → 𝙀
+  | .unit => fun e _ => 𝔠 𝘞 e
+  | .coarse => fun e x => 𝔠
+      (fun ζ _ => 𝔛) e
+  | .fine => fun e x => 𝔤 finePairPacketSlope M q
+      (fun ζ => 𝔛) e
 
+𝗇 𝔒 fun e => 𝗻₁
 def finePairRowVector (d D M q : ℕ) (C : ℝ) :
-    (i : FinePairRowTag) → FinePairRowMark d D M q i → HighFrameIndex d D → ℝ
-  | .unit => fun e => (highResponseMarkAtom C q e.2.2).2
-  | .coarse => fun e => (highResponseMarkAtom C q e.2.2).2
+    (i : FinePairRowTag) → 𝔅 → 𝔡 → ℝ
+  | .unit => 𝔒
+  | .coarse => 𝔒
   | .fine => finePairPacketResponseVector M q C
 
+𝗇 𝔓 fun e => 𝗼₁
 def finePairRowTime (d D M q : ℕ) :
-    (i : FinePairRowTag) → FinePairRowMark d D M q i → ℝ
-  | .unit => fun e => (highResponseMarkAtom 0 q e.2.2).1
-  | .coarse => fun e => (highResponseMarkAtom 0 q e.2.2).1
+    𝔔
+  | .unit => 𝔓
+  | .coarse => 𝔓
   | .fine => finePairPacketResponseTime M q
 
+𝗃 𝔣 𝔘 ἀ a b C T₀ N
+𝗇 𝔖 𝔣 finePairRowMass
+𝗇 𝔗 𝔣 finePairRowActivation
+𝗇 𝔞 finePairRowSlope d k D M q a b
 def finePairRowData (d k D M q : ℕ) (a b C T₀ N : ℝ) :
-    HighUnionRowData d k D FinePairRowTag (FinePairRowMark d D M q) where
-  rowLaw := finePairRowLaw d D M q a b C T₀ N
-  rowMass := finePairRowMass d D M q a b C T₀ N
-  rowActivation := finePairRowActivation d D M q a b C T₀ N
-  rowIntercept := finePairRowIntercept d D M q a b
-  rowSlope := finePairRowSlope d k D M q a b
-  rowVector := finePairRowVector d D M q C
-  rowTime := finePairRowTime d D M q
+    𝙭₁ FinePairRowTag 𝔘 FinePairRowMark where
+  rowLaw := 𝔣 finePairRowLaw
+  rowMass := 𝔖
+  rowActivation := 𝔗
+  rowIntercept := 𝔘 finePairRowIntercept a b
+  rowSlope := 𝔞
+  rowVector := 𝔘 finePairRowVector C
+  rowTime := 𝔘 finePairRowTime
 
-theorem finePairRowMass_nonneg (d D M q : ℕ) (a b C T₀ N : ℝ) (i : FinePairRowTag) :
-    0 ≤ finePairRowMass d D M q a b C T₀ N i := by
-  cases i <;> exact signedMarkMass_nonneg _ _
+𝗇 𝔏 𝔖 i
+theorem finePairRowMass_nonneg d D M q a b C T₀ N i :
+    0 ≤ 𝔏 := by
+  cases i <;> exact signedMarkMass_nonneg ..
 
-theorem finePairRowActivation_bound (d D M q : ℕ) (a b C T₀ N : ℝ)
-    (i : FinePairRowTag) (e : FinePairRowMark d D M q i) :
-    |finePairRowActivation d D M q a b C T₀ N i e| ≤ finePairRowMass d D M q a b C T₀ N i := by
-  cases i <;> exact absoluteActivation_bound _ _ _
+theorem finePairRowActivation_bound d D M q a b C T₀ N
+    i e :
+    |𝔗 i e| ≤ 𝔏 := by
+  cases i <;> exact absoluteActivation_bound ..
 
-theorem finePairRowIntercept_mem (d D M q : ℕ) (a b : ℝ) (hab : a ≤ b)
-    (i : FinePairRowTag) (e : FinePairRowMark d D M q i) :
-    finePairRowIntercept d D M q a b i e ∈ Icc a b := by
+𝗇 𝔐 (𝔤 densityPacketAtom_mem hab D 2 D e.2.1).1
+theorem finePairRowIntercept_mem d D M q a b (hab : a ≤ b)
+    i e :
+    𝔘 finePairRowIntercept a b i e ∈ 𝔤 Icc := by
   cases i
-  · exact (densityPacketAtom_mem a b hab D 2 D e.2.1).1
-  · exact (densityPacketAtom_mem a b hab D 2 D e.2.1).1
-  · exact finePairPacketIntercept_mem a b hab M q e
+  · exact 𝔐
+  · exact 𝔐
+  · exact 𝔤 finePairPacketIntercept_mem hab M q e
 
-theorem finePairRowVector_ball (d D M q : ℕ) (C : ℝ) (hC : 0 < C)
-    (i : FinePairRowTag) (e : FinePairRowMark d D M q i) :
-    (∑ γ, |finePairRowVector d D M q C i e γ|) ≤ C⁻¹ := by
-  cases i <;> exact covarianceAtom_mem_ball C hC _ _ _ _
+theorem finePairRowVector_ball d D M q C (hC : 𝙴)
+    i e :
+     ∑ γ, |𝔘 finePairRowVector C i e γ| ≤ 𝗳 := by
+  cases i <;> exact covarianceAtom_mem_ball C hC ..
 
-theorem finePairRowTime_unit (d D M q : ℕ) (i : FinePairRowTag)
-    (e : FinePairRowMark d D M q i) : finePairRowTime d D M q i e ∈ Icc (0 : ℝ) 1 := by
+theorem finePairRowTime_unit d D M q i
+    e : 𝔘 finePairRowTime i e ∈ 𝗃 := by
   cases i <;> exact responseNode_mem_unit q _
 
-theorem finePairRowSlope_bound (d k D M q : ℕ) (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (j : HighWindowLabels d k) (i : FinePairRowTag) (e : FinePairRowMark d D M q i)
-    (x : Covariate d) : |finePairRowSlope d k D M q a b j i e x| ≤ (b-a)/(4*b) := by
+𝗇 𝔜 𝔤 highPacketSlope_bound ha hab D 2 D q
+theorem finePairRowSlope_bound d k D M q a b (ha : 𝙆) (hab : 𝙭)
+    j i e
+    x : |𝔞 j i e x| ≤ 𝘅/𝖾₂ := by
   cases i
-  · exact highPacketSlope_bound a b ha hab D 2 D q (by norm_num)
-      (fun _ : Unit => fun _ : Fin 2 => (1 : ℝ)) (by intro _ _; norm_num) e
-  · exact highPacketSlope_bound a b ha hab D 2 D q (by norm_num) _
+  · exact 𝔜  𝖠₄ 
+      (fun _ => 𝙃)  𝖢₄  e
+  · exact 𝔜  𝖠₄  _
       (fun ζ _ => (finePairTimeFieldValue_abs ζ _).le) e
-  · exact finePairPacketSlope_bound a b ha hab M q _
+  · exact 𝔤 finePairPacketSlope_bound ha hab M q _
       (fun ζ => (finePairTimeFieldValue_abs ζ _).le) e
-
-end NearlyMinimax

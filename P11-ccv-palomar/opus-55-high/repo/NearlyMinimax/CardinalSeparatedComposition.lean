@@ -3,302 +3,334 @@ module
 public import NearlyMinimax.CardinalScaleVolume
 public import NearlyMinimax.GaussianTensorCost
 public import NearlyMinimax.FiniteTensorPolynomialMoments
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Actual tensor Gaussian and compact-scale separated representation of the
 integrated spatial cardinal covariance. -/
-noncomputable section
-open MeasureTheory Set MvPolynomial
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
+𝛄
+𝚨
+𝚩
+𝚱
 
-theorem spatial_cardinal_polynomial_scale_product {d n : ℕ} (i : Fin n) (U : Fin n → Covariate d) :
-    spatialCardinalPolynomial U i = ∏ j : SpatialScaleIndex i, spatialCardinalAffine (U i) (U j.val) := by
+𝗇 𝔑 𝙇
+𝗇 𝔢 Finset.prod_subtype (p := fun j => 𝖰₁) $ Finset.univ.erase i
+𝗃 𝔵 ἀ $ U i
+theorem spatial_cardinal_polynomial_scale_product i (U : 𝔑) :
+    spatialCardinalPolynomial U i = ∏ j : SpatialScaleIndex i, 𝔵 spatialCardinalAffine (U j.val) := by
   unfold spatialCardinalPolynomial
-  rw [Finset.prod_subtype (p := fun j : Fin n => j ≠ i) ((Finset.univ : Finset (Fin n)).erase i)
-    (fun j => by simp) (fun j : Fin n => spatialCardinalAffine (U i) (U j))]
+  rw [𝔢
+     fun j => by simp fun j => 𝔵 spatialCardinalAffine $ U j ]
 
-theorem spatial_cardinal_scale_product {d n : ℕ} (i : Fin n) (lam : ℝ)
-    (U : Fin n → Covariate d) (t : SpatialScaleVector i) :
-    spatialCardinalScale lam (spatialScaleExtend i t) U i =
-      ∏ j : SpatialScaleIndex i, t j * lam ^ 2 *
-        Real.exp (-(t j * lam * spatialSquaredDistance (U i) (U j.val))) := by
+𝗇 𝔭 𝘒₁
+𝗃 𝕮 ἀ j * lam ^ 2
+theorem spatial_cardinal_scale_product i lam
+    (U : 𝔑) t :
+    spatialCardinalScale lam 𝔭 U i =
+      ∏ j : SpatialScaleIndex i, 𝕮 t *
+        Real.exp (-(𝘺₂ * 𝔵 spatialSquaredDistance (U j.val))) := by
   unfold spatialCardinalScale
-  rw [Finset.prod_subtype (p := fun j : Fin n => j ≠ i) ((Finset.univ : Finset (Fin n)).erase i)
-    (fun j => by simp) (fun j : Fin n => spatialScaleExtend i t j * lam ^ 2 *
-      Real.exp (-(spatialScaleExtend i t j * lam * spatialSquaredDistance (U i) (U j))))]
+  rw [𝔢
+     fun j => by simp fun j => 𝕮 𝔭 *
+      Real.exp (-(𝔭 j * lam * 𝔵 spatialSquaredDistance (U j))) ]
   apply Finset.prod_congr rfl
   intro j _
   simp only [spatialScaleExtend, dite_eq_left j.property]
 
+𝗃 𝕱 ἀ (x j) $ y j
+𝗇 𝔈 𝕮 t * Real.exp (-(𝘺₂ * 𝕱 spatialSquaredDistance))
+𝗇 𝔊 gaussianTensorObservable lam t x y e * gaussianTensorAmplitude lam e β β'
+𝗃 𝔶 ἀ lam $ t j
+𝗇 𝔍 𝔶 gaussianPrimitiveLeft e (x j) * 𝔶 gaussianPrimitiveRight e (y j)
+𝗇 𝔒 𝕱 spatialCardinalAffine
+𝗇 𝔨 polynomialPairMoment (w j) (P j) (P' j) b b'
+𝗇 𝔓 𝔨
+𝗇 𝔫 𝖺
+𝗇 𝔮 (∏ j, 𝔒).coeff
+𝗃 𝔷 fun e => ἀ
 /-- Tensorization of the actual primitive Gaussian coefficient moments. -/
-theorem gaussian_tensor_cardinal_moments {κ : Type*} [Fintype κ] {d : ℕ}
-    (lam : ℝ) (hlam : 0 ≤ lam) (t : κ → ℝ) (ht : ∀ j, 0 ≤ t j)
-    (x y : κ → Covariate d) (β β' : Fin d →₀ ℕ) :
-    Integrable (fun e : GaussianTensorMark κ d => gaussianTensorObservable lam t x y e *
-      gaussianTensorAmplitude lam e β β') (gaussianTensorMeasure κ d) ∧
-      (∫ e, gaussianTensorObservable lam t x y e * gaussianTensorAmplitude lam e β β'
-        ∂gaussianTensorMeasure κ d) =
-        (∏ j, t j * lam ^ 2 * Real.exp (-(t j * lam * spatialSquaredDistance (x j) (y j)))) *
-          (∏ j, spatialCardinalAffine (x j) (y j)).coeff β *
-          (∏ j, spatialCardinalAffine (x j) (y j)).coeff β' := by
-  let w := fun (j : κ) (e : GaussianPrimitiveMark d) =>
-    gaussianPrimitiveLeft lam (t j) e (x j) * gaussianPrimitiveRight lam (t j) e (y j) *
+theorem gaussian_tensor_cardinal_moments [Fintype κ]
+    (lam : ℝ) (hlam : 𝔫) (t : 𝖱₁) (ht : ∀ j, 𝖥₂)
+    (x y : κ → Covariate d) β β' :
+    Integrable 𝔷 𝔊 (gaussianTensorMeasure κ d) ∧
+       ∫ e, 𝔊
+        ∂gaussianTensorMeasure κ d =
+        (∏ j, 𝔈) *
+          𝔮 β *
+          𝔮 β' := by
+  let w := fun j e =>
+    𝔍 *
       gaussianPrimitiveScalar d lam e
   let P := fun (_j : κ) (e : GaussianPrimitiveMark d) => gaussianAffinePolynomial e.2.1.1 e.2.2.1.1
   let P' := fun (_j : κ) (e : GaussianPrimitiveMark d) => gaussianAffinePolynomial e.2.1.2 e.2.2.1.2
-  let p := fun j : κ => spatialCardinalAffine (x j) (y j)
-  let a := fun j : κ => t j * lam ^ 2 * Real.exp (-(t j * lam * spatialSquaredDistance (x j) (y j)))
-  have hpair (j : κ) (b b' : Fin d →₀ ℕ) :
-      polynomialPairMoment (w j) (P j) (P' j) b b' =
-        fun e => gaussianPrimitiveLeft lam (t j) e (x j) * gaussianPrimitiveRight lam (t j) e (y j) *
+  let p := fun j => 𝔒
+  let a := fun j => 𝔈
+  have hpair j b b' :
+      𝔓 =
+        fun e => 𝔍 *
           gaussianPrimitiveAmplitude lam e b b' := by
     funext e
-    dsimp [w, P, P', polynomialPairMoment, gaussianPrimitiveAmplitude, gaussianPrimitiveScalar]
+    dsimp [w, polynomialPairMoment, gaussianPrimitiveAmplitude, gaussianPrimitiveScalar]
     ring
-  have hi (j : κ) (b b' : Fin d →₀ ℕ) :
-      Integrable (polynomialPairMoment (w j) (P j) (P' j) b b') (gaussianPrimitiveMeasure d) := by
+  have hi j b b' :
+      Integrable 𝔓 $ gaussianPrimitiveMeasure d := by
     rw [hpair]
-    exact gaussianPrimitive_observable_integrable lam (t j) (x j) (y j) b b'
-  have he (j : κ) (b b' : Fin d →₀ ℕ) :
-      (∫ e, polynomialPairMoment (w j) (P j) (P' j) b b' e ∂gaussianPrimitiveMeasure d) =
+    exact 𝔶 gaussianPrimitive_observable_integrable (x j) (y j) b b'
+  have he j b b' :
+       ∫ e, 𝔨 e ∂gaussianPrimitiveMeasure d =
         a j * (p j).coeff b * (p j).coeff b' := by
     rw [hpair]
-    exact (gaussianPrimitive_separated_exact lam (t j) hlam (ht j) (x j) (y j) b b').symm
+    exact (𝔶 gaussianPrimitive_separated_exact hlam (ht j) (x j) (y j) b b').symm
   have h := tensorPolynomialPairMoment_fintype_integral (gaussianPrimitiveMeasure d)
     w P P' p p a hi he β β'
   have hfun : tensorPolynomialPairMoment_fintype w P P' β β' =
-      fun e : GaussianTensorMark κ d => gaussianTensorObservable lam t x y e *
-        gaussianTensorAmplitude lam e β β' := by
+      𝔷 𝔊 := by
     funext e
     unfold tensorPolynomialPairMoment_fintype gaussianTensorObservable gaussianTensorAmplitude
       gaussianTensorScalar gaussianTensorLeftPolynomial gaussianTensorRightPolynomial gaussianPolynomialProduct
-    dsimp [w, P, P']
     rw [Finset.prod_mul_distrib]
     ring
-  rw [hfun] at h
-  exact h
+  aesop
 
+𝗃 𝕯 ἀ (SpatialScaleIndex i) d
+𝗇 𝔜 𝕯 GaussianTensorMark
 /-- Genuine scale-and-Gaussian mark space for a fixed cardinal center. -/
 abbrev CenteredCardinalMark (d n : ℕ) (i : Fin n) :=
-  SpatialScaleVector i × GaussianTensorMark (SpatialScaleIndex i) d
+  SpatialScaleVector i × 𝔜
 
-def centeredCardinalMeasure {n : ℕ} (i : Fin n) (d : ℕ) (T : ℝ) :
-    Measure (CenteredCardinalMark d n i) :=
-  (spatialScaleMeasure i T).prod (gaussianTensorMeasure (SpatialScaleIndex i) d)
+𝗇 𝔇 𝕯 gaussianTensorMeasure
+𝗇 𝔎 CenteredCardinalMark d n i
+𝗇 𝔞 spatialScaleMeasure i T
+def centeredCardinalMeasure (i : Fin n) (d : ℕ) (T : ℝ) :
+    Measure 𝔎 :=
+  (𝔞).prod 𝔇
 
-def centeredCardinalAmplitude {d n D : ℕ} (i : Fin n) (lam : ℝ)
-    (z : CenteredCardinalMark d n i) : HighFrameIndex d D → HighFrameIndex d D → ℝ :=
+𝗇 𝔔 𝙮
+def centeredCardinalAmplitude (i : Fin n) (lam : ℝ)
+    (z : 𝔎) : 𝔔 → 𝔔 → ℝ :=
   gaussianTensorSymmetricAmplitude lam z.2
 
+𝗇 𝔏 ⟨l, h⟩
+𝗃 𝕰 ἀ lam (z.1 j) $ z.2 j
+𝗇 𝔥 𝕰 gaussianPrimitiveLeft
 /-- Each observation receives one bounded spatial factor. The distinguished
 observation receives the product of the left factors. -/
-def centeredCardinalFactor {d n : ℕ} (i : Fin n) (lam : ℝ)
-    (z : CenteredCardinalMark d n i) (l : Fin n) (x : Covariate d) : ℝ :=
-  if h : l ≠ i then gaussianPrimitiveRight lam (z.1 ⟨l, h⟩) (z.2 ⟨l, h⟩) x
-    else ∏ j : SpatialScaleIndex i, gaussianPrimitiveLeft lam (z.1 j) (z.2 j) x
+def centeredCardinalFactor (i : Fin n) (lam : ℝ)
+    (z : 𝔎) (l : Fin n) (x : Covariate d) : ℝ :=
+  if h : l ≠ i then gaussianPrimitiveRight lam (z.1 𝔏) (z.2 𝔏) x
+    else ∏ j : SpatialScaleIndex i, 𝔥 x
 
-theorem centered_cardinal_factor_abs_le_one {d n : ℕ} (i : Fin n) (lam : ℝ)
-    (z : CenteredCardinalMark d n i) (l : Fin n) (x : Covariate d) (hx : ∀ r, |x r| ≤ 2) :
-    |centeredCardinalFactor i lam z l x| ≤ 1 := by
+𝗇 𝔡 𝖢
+𝗃 𝔪 ἀ i lam
+𝗇 𝔦 𝔪 centeredCardinalFactor z
+theorem centered_cardinal_factor_abs_le_one i lam
+    z (l : Fin n) (x : Covariate d) (hx : ∀ r, |x r| ≤ 2) :
+    |𝔦 l x| ≤ 1 := by
   unfold centeredCardinalFactor
   split_ifs
   · exact gaussianPrimitiveRight_bound lam _ _ x hx
   · rw [Finset.abs_prod]
     calc
-      _ ≤ ∏ _j : SpatialScaleIndex i, (1 : ℝ) :=
-        Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _) (fun j _ => gaussianPrimitiveLeft_bound lam _ _ x)
-      _ = _ := by simp
+      _ ≤ ∏ _j : SpatialScaleIndex i, 1 :=
+        Finset.prod_le_prod₀ 𝔡 fun j _ => gaussianPrimitiveLeft_bound lam _ _ x
+      𝘿 := 𝖢₄
 
-theorem centered_cardinal_factor_measurable {d n : ℕ} (i : Fin n) (lam : ℝ)
-    (l : Fin n) (x : Covariate d) :
-    Measurable (fun z : CenteredCardinalMark d n i => centeredCardinalFactor i lam z l x) := by
+𝗇 𝔧 (measurable_pi_apply (𝔏 : SpatialScaleIndex i)).comp
+theorem centered_cardinal_factor_measurable i lam
+    (l : Fin n) x :
+    Measurable fun z : 𝔎 => 𝔦 l x := by
   unfold centeredCardinalFactor
   split_ifs with h
-  · have hm : Measurable (fun z : CenteredCardinalMark d n i => (z.1 ⟨l, h⟩, z.2 ⟨l, h⟩)) :=
-      (((measurable_pi_apply (⟨l, h⟩ : SpatialScaleIndex i)).comp measurable_fst).prodMk
-        ((measurable_pi_apply (⟨l, h⟩ : SpatialScaleIndex i)).comp measurable_snd))
+  · have hm : Measurable fun z : 𝔎 => (z.1 𝔏, z.2 𝔏) :=
+       (𝔧 measurable_fst).prodMk
+        $ 𝔧 measurable_snd
     have hh := (gaussianPrimitiveRight_scale_measurable lam x).comp hm
-    change Measurable (fun z : CenteredCardinalMark d n i =>
-      gaussianPrimitiveRight lam (z.1 ⟨l, h⟩) (z.2 ⟨l, h⟩) x) at hh
-    exact hh
+    assumption
   · apply Finset.measurable_fun_prod
     intro j _
-    have hm : Measurable (fun z : CenteredCardinalMark d n i => (z.1 j, z.2 j)) :=
-      (((measurable_pi_apply j).comp measurable_fst).prodMk
-        ((measurable_pi_apply j).comp measurable_snd))
+    have hm : Measurable fun z : 𝔎 => (z.1 j, z.2 j) :=
+       (𝗹₂ measurable_fst).prodMk
+        $ 𝗹₂ measurable_snd
     have hh := (gaussianPrimitiveLeft_scale_measurable lam x).comp hm
-    change Measurable (fun z : CenteredCardinalMark d n i =>
-      gaussianPrimitiveLeft lam (z.1 j) (z.2 j) x) at hh
-    exact hh
+    assumption
 
-theorem centered_cardinal_amplitude_measurable {d n D : ℕ} (i : Fin n) (lam : ℝ)
-    (β β' : HighFrameIndex d D) :
-    Measurable (fun z : CenteredCardinalMark d n i => centeredCardinalAmplitude i lam z β β') :=
+𝗇 𝔉 centeredCardinalMeasure i d T
+𝗇 𝔐 centeredCardinalAmplitude (D := D) i lam
+𝗇 𝔖 𝔪 centeredCardinalAmplitude z β β'
+𝗇 𝔗 𝕯 gaussianTensorMeasure_finite
+𝗇 𝔟 𝖹
+𝗇 𝔤 ∫ z, separatedMatrixCost 𝔐 z ∂ 𝔉
+𝗃 𝔩 ἀ (κ := SpatialScaleIndex i) (d := d) (D := D) lam
+𝗇 𝔯 spatial_scale_measure_finite i T hT
+section
+
+𝛔
+
+include i
+
+𝗇 𝔬 fun z => 𝔖
+theorem centered_cardinal_amplitude_measurable lam
+    (β β' : 𝔔) :
+    Measurable 𝔬 :=
   (gaussianTensorSymmetricAmplitude_measurable lam β β').comp measurable_snd
 
-theorem centered_cardinal_measure_finite {n : ℕ} (i : Fin n) (d : ℕ) {T : ℝ} (hT : 1 ≤ T) :
-    IsFiniteMeasure (centeredCardinalMeasure i d T) := by
-  letI := spatial_scale_measure_finite i T hT
-  letI := gaussianTensorMeasure_finite (SpatialScaleIndex i) d
+theorem centered_cardinal_measure_finite d (hT : 𝔟) :
+    IsFiniteMeasure 𝔉 := by
+  letI := 𝔯
+  letI := 𝔗
   unfold centeredCardinalMeasure
   infer_instance
 
-theorem centered_cardinal_cost_integrable {d n D : ℕ} (i : Fin n) (lam : ℝ)
-    {T : ℝ} (hT : 1 ≤ T) :
-    Integrable (separatedMatrixCost (centeredCardinalAmplitude (D := D) i lam))
-      (centeredCardinalMeasure i d T) := by
-  letI := spatial_scale_measure_finite i T hT
-  letI := gaussianTensorMeasure_finite (SpatialScaleIndex i) d
-  have h := (integrable_const (1 : ℝ) (μ := spatialScaleMeasure i T)).mul_prod
-    (gaussianTensorSymmetricAmplitude_cost_integrable (κ := SpatialScaleIndex i) (d := d) (D := D) lam)
-  change Integrable (fun z : CenteredCardinalMark d n i =>
-    separatedMatrixCost (gaussianTensorSymmetricAmplitude lam) z.2)
-      ((spatialScaleMeasure i T).prod (gaussianTensorMeasure (SpatialScaleIndex i) d))
-  simpa only [one_mul] using h
+theorem centered_cardinal_cost_integrable lam
+    (hT : 𝔟) :
+    Integrable (separatedMatrixCost 𝔐)
+      𝔉 := by
+  letI := 𝔯
+  letI := 𝔗
+  have h := (integrable_const 1 (μ := 𝔞)).mul_prod
+    𝔩 gaussianTensorSymmetricAmplitude_cost_integrable
+  aesop
 
-theorem centered_cardinal_entry_integrable {d n D : ℕ} (i : Fin n) (lam : ℝ)
-    {T : ℝ} (hT : 1 ≤ T) (β β' : HighFrameIndex d D) :
-    Integrable (fun z => centeredCardinalAmplitude i lam z β β') (centeredCardinalMeasure i d T) :=
-  separatedMatrix_entry_integrable _ _ (centered_cardinal_amplitude_measurable i lam)
-    (centered_cardinal_cost_integrable i lam hT) β β'
+theorem centered_cardinal_entry_integrable lam
+    (hT : 𝔟) (β β' : 𝔔) :
+    Integrable 𝔬 𝔉 :=
+  separatedMatrix_entry_integrable _ _ 𝔪 centered_cardinal_amplitude_measurable
+    (𝔪 centered_cardinal_cost_integrable hT) β β'
 
-theorem centered_cardinal_cost_integral_eq {d n D : ℕ} (i : Fin n) (lam T : ℝ) :
-    (∫ z, separatedMatrixCost (centeredCardinalAmplitude (D := D) i lam) z ∂centeredCardinalMeasure i d T) =
-      (volume : Measure (SpatialScaleVector i)).real (spatialScaleDomain i T) *
-        (∫ e, separatedMatrixCost (gaussianTensorSymmetricAmplitude (κ := SpatialScaleIndex i)
-          (d := d) (D := D) lam) e ∂gaussianTensorMeasure (SpatialScaleIndex i) d) := by
-  letI := gaussianTensorMeasure_finite (SpatialScaleIndex i) d
-  letI : SFinite (spatialScaleMeasure i T) := by unfold spatialScaleMeasure; infer_instance
-  have h := integral_prod_mul (μ := spatialScaleMeasure i T)
-    (ν := gaussianTensorMeasure (SpatialScaleIndex i) d) (fun _ => (1 : ℝ))
-    (separatedMatrixCost (gaussianTensorSymmetricAmplitude (κ := SpatialScaleIndex i) (d := d) (D := D) lam))
-  simp only [one_mul, integral_const, smul_eq_mul, mul_one] at h
+𝗇 𝔠 gaussianTensorSymmetricAmplitude (D := D) lam
+theorem centered_cardinal_cost_integral_eq lam T :
+    𝔤 =
+      volume.real 𝗕₁ *
+         ∫ e, separatedMatrixCost 𝔠 e ∂ 𝔇 := by
+  letI := 𝔗
+  letI : SFinite 𝔞 := by unfold spatialScaleMeasure; infer_instance
+  have h := integral_prod_mul (μ := 𝔞)
+    (ν := 𝔇) 𝙃
+    $ separatedMatrixCost 𝔠
+  simp at h
   simpa only [centeredCardinalMeasure, centeredCardinalAmplitude, separatedMatrixCost,
     spatialScaleMeasure, Measure.real, Measure.restrict_apply_univ] using h
 
+end
+
 /-- Actual representation cost, obtained from the actual Gaussian tensor
 moment cost and actual logarithmic scale-domain volume. -/
-theorem centered_cardinal_cost_integral_le {d n D : ℕ} (hn : 2 ≤ n) (i : Fin n) (lam : ℝ)
-    {T : ℝ} (hT : 1 ≤ T) :
-    (∫ z, separatedMatrixCost (centeredCardinalAmplitude (D := D) i lam) z ∂centeredCardinalMeasure i d T) ≤
-      (1024 * |lam| * (d : ℝ) ^ 2) ^ (n - 1) * T ^ 2 * (1 + Real.log T) ^ (n - 2) := by
+theorem centered_cardinal_cost_integral_le (hn : 𝗏) (i : Fin n) lam
+    (hT : 𝔟) :
+    𝔤 ≤
+      (1024 * |lam| * 𝙷₁) ^ 𝗈 * 𝖫₁ * 𝗶 ^ 𝗥 := by
   rw [centered_cardinal_cost_integral_eq]
-  have hcost := gaussianTensorSymmetricAmplitude_integrated_cost
-    (κ := SpatialScaleIndex i) (d := d) (D := D) lam
+  have hcost := 𝔩 gaussianTensorSymmetricAmplitude_integrated_cost
   rw [spatial_scale_index_card] at hcost
   have hvol := spatial_scale_domain_volume_le_uniform hn i hT
   have hlog := Real.log_nonneg hT
-  have hnn : 0 ≤ ∫ e, separatedMatrixCost (gaussianTensorSymmetricAmplitude
-      (κ := SpatialScaleIndex i) (d := d) (D := D) lam) e ∂gaussianTensorMeasure (SpatialScaleIndex i) d :=
-    integral_nonneg (fun e => Finset.sum_nonneg (fun β _ => Finset.sum_nonneg (fun β' _ => abs_nonneg _)))
-  have h := mul_le_mul hvol hcost hnn (by positivity :
-    0 ≤ (2 : ℝ) ^ (n - 1) * T ^ 2 * (1 + Real.log T) ^ (n - 2))
+  have h := mul_le_mul hvol hcost (integral_nonneg fun e => Finset.sum_nonneg 𝗺₂ ) $ by positivity
   convert h using 1
-  rw [show (1024 * |lam| * (d : ℝ) ^ 2) = 2 * (512 * |lam| * (d : ℝ) ^ 2) by ring, mul_pow]
+  rw [show 1024 * |lam| * 𝙷₁ = 2 * (512 * |lam| * 𝙷₁) by ring, mul_pow]
   ring
 
-theorem centered_cardinal_factor_product {d n : ℕ} (i : Fin n) (lam : ℝ)
-    (z : CenteredCardinalMark d n i) (U : Fin n → Covariate d) :
-    (∏ l, centeredCardinalFactor i lam z l (U l)) =
-      gaussianTensorObservable lam z.1 (fun _ : SpatialScaleIndex i => U i) (fun j => U j.val) z.2 := by
-  rw [← Finset.mul_prod_erase (Finset.univ : Finset (Fin n))
-    (fun l => centeredCardinalFactor i lam z l (U l)) (Finset.mem_univ i)]
-  have he : centeredCardinalFactor i lam z i (U i) =
-      ∏ j : SpatialScaleIndex i, gaussianPrimitiveLeft lam (z.1 j) (z.2 j) (U i) := by
+𝗇 𝔱 𝔪 centeredCardinalFactor z l $ U l
+𝗇 𝔅 ∏ l, 𝔱
+𝗇 𝔘 fun l => 𝔱
+𝗇 𝔳 fun _ => U i
+𝗇 𝔙 𝔳
+𝗇 𝔴 fun j => U j.val
+𝗇 𝔚 𝔴
+theorem centered_cardinal_factor_product i lam
+    z (U : 𝔑) :
+    𝔅 =
+      gaussianTensorObservable lam z.1 𝔙 𝔚 z.2 := by
+  rw [← Finset.mul_prod_erase Finset.univ
+    𝔘 $ Finset.mem_univ i ]
+  have he : 𝔦 i (U i) =
+      ∏ j : SpatialScaleIndex i, 𝔵 𝔥 := by
     simp [centeredCardinalFactor]
   rw [he]
-  rw [Finset.prod_subtype (p := fun l : Fin n => l ≠ i) ((Finset.univ : Finset (Fin n)).erase i)
-    (fun l => by simp) (fun l : Fin n => centeredCardinalFactor i lam z l (U l))]
-  have hr : (∏ j : SpatialScaleIndex i, centeredCardinalFactor i lam z j.val (U j.val)) =
-      ∏ j : SpatialScaleIndex i, gaussianPrimitiveRight lam (z.1 j) (z.2 j) (U j.val) := by
+  rw [Finset.prod_subtype (p := fun l => l ≠ i) (Finset.univ.erase i)
+     fun l => by simp 𝔘]
+  have hr : ∏ j : SpatialScaleIndex i, 𝔦 j.val (U j.val) =
+      ∏ j : SpatialScaleIndex i, 𝕰 gaussianPrimitiveRight (U j.val) := by
     apply Finset.prod_congr rfl
     intro j _
     simp only [centeredCardinalFactor, dite_eq_left j.property]
   rw [hr, ← Finset.prod_mul_distrib]
   rfl
 
-theorem centered_cardinal_raw_tensor_integrable {d n D : ℕ} (i : Fin n) (lam : ℝ) (hlam : 0 ≤ lam)
-    (t : SpatialScaleVector i) (ht : t ∈ Ici 0) (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
-    Integrable (fun e : GaussianTensorMark (SpatialScaleIndex i) d =>
-      gaussianTensorObservable lam t (fun _ => U i) (fun j => U j.val) e *
-        gaussianTensorFrameAmplitude lam e β β') (gaussianTensorMeasure (SpatialScaleIndex i) d) :=
-  (gaussian_tensor_cardinal_moments lam hlam t (fun j => ht j)
-    (fun _ => U i) (fun j => U j.val) _ _).1
+𝗇 𝔄 gaussianTensorObservable lam t 𝔳 𝔴 e
+𝗇 𝔣 𝔄 * gaussianTensorFrameAmplitude lam e β β'
+𝗇 𝔰 𝘩₁
+theorem centered_cardinal_raw_tensor_integrable i lam (hlam : 𝔫)
+    (t : SpatialScaleVector i) (ht : 𝔰) (U : 𝔑) (β β' : 𝔔) :
+    Integrable 𝔷 𝔣 𝔇 :=
+  (gaussian_tensor_cardinal_moments lam hlam t ht
+    𝔙 𝔚 ..).1
 
-theorem centered_cardinal_raw_tensor_exact {d n D : ℕ} (i : Fin n) (lam : ℝ) (hlam : 0 ≤ lam)
-    (t : SpatialScaleVector i) (ht : t ∈ Ici 0) (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
-    (∫ e : GaussianTensorMark (SpatialScaleIndex i) d,
-      gaussianTensorObservable lam t (fun _ => U i) (fun j => U j.val) e *
-        gaussianTensorFrameAmplitude lam e β β' ∂gaussianTensorMeasure (SpatialScaleIndex i) d) =
-      spatialCenteredCardinalMatrix i lam U t β β' := by
-  have h := (gaussian_tensor_cardinal_moments lam hlam t (fun j => ht j)
-    (fun _ => U i) (fun j => U j.val) (polynomialBoxExponent β.val) (polynomialBoxExponent β'.val)).2
+section
+
+𝛔
+
+𝗇 𝔛 𝔪 spatialCenteredCardinalMatrix U t β β'
+𝗃 𝕭 ∫ e : 𝔜, ἀ ∂ 𝔇 = 𝔛
+theorem centered_cardinal_raw_tensor_exact (lam : ℝ) (hlam : 𝔫)
+    (t : SpatialScaleVector i) (ht : 𝔰) U (β β' : 𝔔) :
+    𝕭 𝔣 := by
+  have h := (gaussian_tensor_cardinal_moments lam hlam t ht
+    𝔙 𝔚 (polynomialBoxExponent β.val) $ polynomialBoxExponent β'.val ).2
   simpa only [gaussianTensorFrameAmplitude, gaussianTensorAmplitude, spatialCenteredCardinalMatrix, highFrameCoefficients,
     spatial_cardinal_scale_product, spatial_cardinal_polynomial_scale_product] using h
 
-theorem centered_cardinal_symmetric_tensor_exact {d n D : ℕ} (i : Fin n) (lam : ℝ) (hlam : 0 ≤ lam)
-    (t : SpatialScaleVector i) (ht : t ∈ Ici 0) (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
-    (∫ e : GaussianTensorMark (SpatialScaleIndex i) d,
-      gaussianTensorObservable lam t (fun _ => U i) (fun j => U j.val) e *
-        gaussianTensorSymmetricAmplitude lam e β β' ∂gaussianTensorMeasure (SpatialScaleIndex i) d) =
-      spatialCenteredCardinalMatrix i lam U t β β' := by
-  have he : (fun e : GaussianTensorMark (SpatialScaleIndex i) d =>
-      gaussianTensorObservable lam t (fun _ => U i) (fun j => U j.val) e *
-        gaussianTensorSymmetricAmplitude lam e β β') =
-      fun e => (gaussianTensorObservable lam t (fun _ => U i) (fun j => U j.val) e *
-        gaussianTensorFrameAmplitude lam e β β' +
-        gaussianTensorObservable lam t (fun _ => U i) (fun j => U j.val) e *
+𝗇 𝔲 𝔄 * gaussianTensorSymmetricAmplitude lam e β β'
+𝗃 𝕬 𝔪 ἀ hlam t ht U
+theorem centered_cardinal_symmetric_tensor_exact lam (hlam : 𝔫)
+    (t : SpatialScaleVector i) (ht : 𝔰) U (β β' : 𝔔) :
+    𝕭 𝔲 := by
+  have he : 𝔷 𝔲 =
+      fun e => (𝔣 +
+        𝔄 *
         gaussianTensorFrameAmplitude lam e β' β) / 2 := by
     funext e
     unfold gaussianTensorSymmetricAmplitude realMatrixSymmetrize
     ring
   rw [he, integral_div, integral_add
-    (centered_cardinal_raw_tensor_integrable i lam hlam t ht U β β')
-    (centered_cardinal_raw_tensor_integrable i lam hlam t ht U β' β),
-    centered_cardinal_raw_tensor_exact i lam hlam t ht U β β',
-    centered_cardinal_raw_tensor_exact i lam hlam t ht U β' β]
+    (𝕬 centered_cardinal_raw_tensor_integrable β β')
+    $ 𝕬 centered_cardinal_raw_tensor_integrable β' β ,
+    𝕬 centered_cardinal_raw_tensor_exact β β',
+    𝕬 centered_cardinal_raw_tensor_exact β' β]
   unfold spatialCenteredCardinalMatrix
   ring
 
-theorem centered_cardinal_product_entry_integrable {d n D : ℕ} (i : Fin n) (lam : ℝ)
-    {T : ℝ} (hT : 1 ≤ T) (U : Fin n → Covariate d) (hU : ∀ l r, |U l r| ≤ 2)
-    (β β' : HighFrameIndex d D) :
-    Integrable (fun z => (∏ l, centeredCardinalFactor i lam z l (U l)) *
-      centeredCardinalAmplitude i lam z β β') (centeredCardinalMeasure i d T) := by
-  have hm : Measurable (fun z : CenteredCardinalMark d n i => ∏ l, centeredCardinalFactor i lam z l (U l)) :=
-    Finset.measurable_fun_prod _ (fun l _ => centered_cardinal_factor_measurable i lam l (U l))
-  have hb : ∀ z : CenteredCardinalMark d n i, |∏ l, centeredCardinalFactor i lam z l (U l)| ≤ 1 := by
+theorem centered_cardinal_product_entry_integrable (lam : ℝ)
+    (hT : 𝔟) (U : 𝔑) (hU : ∀ l r, |𝚚₂| ≤ 2)
+    (β β' : 𝔔) :
+    Integrable (fun z => 𝔅 *
+      𝔖) 𝔉 := by
+  have hm : Measurable fun z => 𝔅 :=
+    Finset.measurable_fun_prod _ fun l _ => 𝔪 centered_cardinal_factor_measurable l $ U l
+  have hb : ∀ z : 𝔎, |𝔅| ≤ 1 := by
     intro z
     rw [Finset.abs_prod]
     calc
-      _ ≤ ∏ _l : Fin n, (1 : ℝ) := Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _)
-        (fun l _ => centered_cardinal_factor_abs_le_one i lam z l (U l) (hU l))
-      _ = _ := by simp
-  have h := (centered_cardinal_entry_integrable i lam hT β β').mul_bdd hm.aestronglyMeasurable
-    (Filter.Eventually.of_forall (fun z => by rw [Real.norm_eq_abs]; exact hb z))
-  exact h.congr (Filter.Eventually.of_forall (fun z => mul_comm _ _))
+      _ ≤ ∏ _l : Fin n, 1 := Finset.prod_le_prod₀ 𝔡
+         fun l _ => 𝔪 centered_cardinal_factor_abs_le_one z l (U l) $ hU l
+      𝘿 := 𝖢₄
+  have h := (𝔪 centered_cardinal_entry_integrable hT β β').mul_bdd hm.aestronglyMeasurable
+    $ Filter.Eventually.of_forall fun z => 𝖥₄
+  grind
 
 /-- Exact positive separated representation of each centered, scale-integrated
 term of the genuine cardinal covariance. -/
-theorem centered_cardinal_integrated_separated_exact {d n D : ℕ} (i : Fin n)
-    (lam : ℝ) (hlam : 0 ≤ lam) {T : ℝ} (hT : 1 ≤ T) (U : Fin n → Covariate d)
-    (hU : ∀ l r, |U l r| ≤ 2) (β β' : HighFrameIndex d D) :
-    (∫ t, spatialCenteredCardinalMatrix i lam U t β β' ∂spatialScaleMeasure i T) =
-      ∫ z, (∏ l, centeredCardinalFactor i lam z l (U l)) * centeredCardinalAmplitude i lam z β β'
-        ∂centeredCardinalMeasure i d T := by
-  letI := spatial_scale_measure_finite i T hT
-  letI := gaussianTensorMeasure_finite (SpatialScaleIndex i) d
+theorem centered_cardinal_integrated_separated_exact lam (hlam : 𝔫) (hT : 𝔟) U
+    (hU : ∀ l r, |𝚚₂| ≤ 2) (β β' : 𝔔) :
+     ∫ t, 𝔛 ∂ 𝔞 =
+      ∫ z, 𝔅 * 𝔖
+        ∂ 𝔉 := by
+  letI := 𝔯
+  letI := 𝔗
   symm
-  rw [centeredCardinalMeasure, integral_prod _ (centered_cardinal_product_entry_integrable i lam hT U hU β β')]
+  rw [centeredCardinalMeasure, integral_prod _ $ 𝔪 centered_cardinal_product_entry_integrable hT U hU β β' ]
   apply integral_congr_ae
-  have hae : ∀ᵐ t ∂spatialScaleMeasure i T, t ∈ spatialScaleDomain i T :=
-    ae_restrict_mem (spatial_scale_domain_isClosed i T).measurableSet
-  filter_upwards [hae] with t ht
+  filter_upwards [ ae_restrict_mem 𝘻₂ ] with t ht
   simp_rw [centered_cardinal_factor_product]
-  exact centered_cardinal_symmetric_tensor_exact i lam hlam t ht.1 U β β'
-
-end NearlyMinimax
+  exact 𝔪 centered_cardinal_symmetric_tensor_exact hlam t ht.1 U β β'

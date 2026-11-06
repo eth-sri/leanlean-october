@@ -1,111 +1,120 @@
 module
 
 public import NearlyMinimax.PairLocalization
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Symmetrized, weighted, order-two pair statistics. -/
-noncomputable section
-open MeasureTheory
-open scoped BigOperators ENNReal
+𝚯
+𝚳
 namespace NearlyMinimax.PairUStatistic
-set_option backward.isDefEq.respectTransparency false
+𝚩
 
 variable {E I : Type*} [MeasurableSpace E] [MeasurableSpace I]
 variable [MeasurableSingletonClass I]
 variable {μ : Measure E} [IsProbabilityMeasure μ]
 
-def weightedSymmetrization (weight : ℝ) (G : E × E → ℝ) (z : E × E) : ℝ :=
-  weight / 4 * (G z + G z.swap)
+𝗇 𝔎 G z + G z.swap
+𝗇 𝔏 𝖸₂
+def weightedSymmetrization (weight : ℝ) (G : 𝔏 → ℝ) (z : 𝔏) : ℝ :=
+  weight / 4 * 𝔎
 
-theorem weightedSymmetrization_measurable (weight : ℝ) {G : E × E → ℝ}
-    (hmG : Measurable G) : Measurable (weightedSymmetrization weight G) :=
-  (hmG.add (hmG.comp measurable_swap)).const_mul _
+𝗇 𝔄 weightedSymmetrization weight G
+theorem weightedSymmetrization_measurable weight {G : 𝔏 → ℝ}
+    (hmG : Measurable G) : Measurable 𝔄 :=
+  (hmG.add $ hmG.comp measurable_swap ).const_mul _
 
-theorem weightedSymmetrization_symmetric (weight : ℝ) (G : E × E → ℝ) (x y : E) :
-    weightedSymmetrization weight G (x, y) = weightedSymmetrization weight G (y, x) := by
+𝗇 𝔑 𝖮
+theorem weightedSymmetrization_symmetric weight G (x y : E) :
+    𝔄 𝔑 = 𝔄 𝘮₂ := by
   simp only [weightedSymmetrization, Prod.swap_prod_mk, add_comm]
 
-theorem weightedSymmetrization_memLp (weight : ℝ) {G : E × E → ℝ}
-    (hG : MemLp G 2 (μ.prod μ)) : MemLp (weightedSymmetrization weight G) 2 (μ.prod μ) :=
-  (hG.add (hG.comp_measurePreserving Measure.measurePreserving_swap)).const_mul _
+𝗇 𝔅 MemLp G 2 $ μ.prod μ
+theorem weightedSymmetrization_memLp weight
+    (hG : 𝔅) : MemLp 𝔄 2 $ μ.prod μ :=
+  (hG.add $ hG.comp_measurePreserving Measure.measurePreserving_swap ).const_mul _
 
-theorem weightedSymmetrization_mean (weight : ℝ) {G : E × E → ℝ}
-    (hG : MemLp G 2 (μ.prod μ)) :
-    (∫ z, weightedSymmetrization weight G z ∂μ.prod μ) =
-      weight / 2 * ∫ z, G z ∂μ.prod μ := by
-  have h₁ := hG.integrable (by norm_num : (1 : ℝ≥0∞) ≤ 2)
+𝗃 𝔖 ∫ z, ἀ z ∂μ.prod μ
+𝗇 𝔍 weight / 2 * 𝔖 G
+theorem weightedSymmetrization_mean weight
+    (hG : 𝔅) :
+    𝔖 𝔄 =
+      𝔍 := by
   have h₂ := (hG.comp_measurePreserving Measure.measurePreserving_swap).integrable
-    (by norm_num : (1 : ℝ≥0∞) ≤ 2)
-  have ha := integral_add h₁ h₂
-  simp only [Function.comp_def] at ha
+    𝖠₄
+  have ha := integral_add (hG.integrable 𝖠₄ ) h₂
+  simp at ha
   simp only [weightedSymmetrization]
   rw [integral_const_mul, ha, integral_prod_swap G]
   ring
 
-theorem weightedSymmetrization_energy_le (weight : ℝ) {G : E × E → ℝ}
-    (hG : MemLp G 2 (μ.prod μ)) :
-    (∫ z, weightedSymmetrization weight G z ^ 2 ∂μ.prod μ) ≤
-      weight ^ 2 / 4 * ∫ z, G z ^ 2 ∂μ.prod μ := by
+𝗇 𝔒 G z ^ 2
+𝗇 𝔇 ∫ z, 𝔒 ∂μ.prod μ
+𝗇 𝔊 𝔒 + G z.swap ^ 2
+𝗇 𝔐 weight ^ 2 / 4
+theorem weightedSymmetrization_energy_le weight
+    (hG : 𝔅) :
+     ∫ z, 𝔄 z ^ 2 ∂μ.prod μ ≤
+      𝔐 * 𝔇 := by
   have h₁ := hG.integrable_sq
   have h₂ := (hG.comp_measurePreserving Measure.measurePreserving_swap).integrable_sq
   calc
-    _ ≤ ∫ z : E × E, weight ^ 2 / 8 * (G z ^ 2 + G z.swap ^ 2) ∂μ.prod μ := by
+    _ ≤ ∫ z : 𝔏, weight ^ 2 / 8 * 𝔊 ∂μ.prod μ := by
       apply integral_mono (weightedSymmetrization_memLp weight hG).integrable_sq
-        ((h₁.add h₂).const_mul _)
+        $ (h₁.add h₂).const_mul _
       intro z
-      have hs : (G z + G z.swap) ^ 2 ≤ 2 * (G z ^ 2 + G z.swap ^ 2) := by
-        nlinarith [sq_nonneg (G z - G z.swap)]
-      have hh := mul_le_mul_of_nonneg_left hs (by positivity : 0 ≤ weight ^ 2 / 16)
+      have hs : 𝔎 ^ 2 ≤ 2 * 𝔊 := by
+        nlinarith [sq_nonneg $ G z - G z.swap ]
       dsimp [weightedSymmetrization]
       nlinarith
-    _ = _ := by
+    𝘿 := by
       have ha := integral_add h₁ h₂
-      simp only [Pi.add_apply, Function.comp_def] at ha
-      rw [integral_const_mul, ha, integral_prod_swap (fun z => G z ^ 2)]
+      simp at ha
+      rw [integral_const_mul, ha, integral_prod_swap fun z => 𝔒 ]
       ring
 
-theorem weightedSymmetrization_supported (weight : ℝ) (label : E → I)
-    {G : E × E → ℝ} (hsupport : ∀ x y, label x ≠ label y → G (x, y) = 0) :
-    ∀ x y, label x ≠ label y → weightedSymmetrization weight G (x, y) = 0 := by
+𝗃 𝔔 ∀ x y, label x ≠ label y → ἀ 𝔑 = 0
+𝗇 𝔈 𝔔 G
+theorem weightedSymmetrization_supported weight (label : E → I)
+    (hsupport : 𝔈) :
+    𝔔 𝔄 := by
   intro x y hxy
   simp only [weightedSymmetrization, Prod.swap_prod_mk, hsupport x y hxy,
-    hsupport y x (Ne.symm hxy), add_zero, mul_zero]
+    hsupport y x $ Ne.symm hxy , add_zero, mul_zero]
 
-theorem weighted_pair_centered_sq_le {Ω : Type*} [MeasurableSpace Ω]
-    {ν : Measure Ω} [IsProbabilityMeasure ν] {n : ℕ} (hn : 2 ≤ n)
-    (X : Fin n → Ω → E) (hind : ProbabilityTheory.iIndepFun X ν)
-    (hX : ∀ i, MeasurePreserving (X i) ν μ)
+𝗇 𝔓 (𝗈 : ℕ)
+𝗇 𝔉 weight / (𝘕₁ * 𝔓)
+theorem weighted_pair_centered_sq_le {Ω } [MeasurableSpace Ω]
+    {ν : Measure Ω} [IsProbabilityMeasure ν] {n } (hn : 𝗏)
+    X (hind : ProbabilityTheory.iIndepFun X ν)
+    (hX : 𝗿)
     (label : E → I) (hlabel : Measurable label)
-    {G : E × E → ℝ} (hmG : Measurable G) (hG : MemLp G 2 (μ.prod μ))
-    (hsupport : ∀ x y, label x ≠ label y → G (x, y) = 0)
-    {weight cap P : ℝ} (hweight : 0 < weight) (hcap : 0 ≤ cap)
-    (hmass : ∀ i, μ.real (label ⁻¹' {i}) ≤ cap) (hP : weight * cap ≤ P) :
-    (∫ x, (pairAverage n (weightedSymmetrization weight G) (fun i => X i x) -
-      weight / 2 * ∫ z, G z ∂μ.prod μ) ^ 2 ∂ν) ≤
-      (P / (n : ℝ) + weight / (2 * (n : ℝ) * (n - 1 : ℕ))) *
-        (weight * ∫ z, G z ^ 2 ∂μ.prod μ) := by
+    {G } (hmG : Measurable G) (hG : 𝔅)
+    (hsupport : 𝔈)
+    {weight cap P } (hweight : 0 < weight) (hcap : 0 ≤ cap)
+    (hmass : 𝗧) (hP : weight * cap ≤ P) :
+     ∫ x, (pairAverage n 𝔄 (fun i => X i x) -
+      𝔍) ^ 2 ∂ν ≤
+      (P / n + 𝔉) *
+        (weight * 𝔇) := by
   have hv := partition_pairAverage_centered_sq_le hn X hind hX label hlabel
     (weightedSymmetrization_measurable weight hmG) (weightedSymmetrization_memLp weight hG)
     (weightedSymmetrization_symmetric weight G) (weightedSymmetrization_supported weight label hsupport)
     hmass
   rw [weightedSymmetrization_mean weight hG] at hv
   apply hv.trans
-  have hcoef : 0 ≤ 4 / (n : ℝ) * cap + 2 / ((n : ℝ) * (n - 1 : ℕ)) := by positivity
-  apply (mul_le_mul_of_nonneg_left (weightedSymmetrization_energy_le weight hG) hcoef).trans
-  have hn0 : 0 < (n : ℝ) := by exact_mod_cast (by omega : 0 < n)
-  have hm0 : 0 < ((n - 1 : ℕ) : ℝ) := by exact_mod_cast (by omega : 0 < n - 1)
-  have henergy : 0 ≤ ∫ z, G z ^ 2 ∂μ.prod μ := integral_nonneg (fun _ => sq_nonneg _)
-  have hscale : (4 / (n : ℝ) * cap + 2 / ((n : ℝ) * (n - 1 : ℕ))) * (weight ^ 2 / 4) =
-      (weight * cap / (n : ℝ) + weight / (2 * (n : ℝ) * (n - 1 : ℕ))) * weight := by
+  apply (mul_le_mul_of_nonneg_left (weightedSymmetrization_energy_le weight hG) 𝖠₃ ).trans
+  have hn0 : 0 < 𝙒 := by exact_mod_cast 𝖡₃
+  have henergy : 0 ≤ 𝔇 := integral_nonneg 𝖸
+  have hscale : (4 / n * cap + 2 / (n * 𝔓)) * 𝔐 =
+      (weight * cap / n + 𝔉) * weight := by
     field_simp
     <;> ring
-  rw [← mul_assoc, hscale]
   have hb := mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right
       (add_le_add_right (div_le_div_of_nonneg_right hP hn0.le)
-        (weight / (2 * (n : ℝ) * (n - 1 : ℕ)))) hweight.le) henergy
+        $ weight / (𝘕₁ * 𝗈) ) hweight.le) henergy
   nlinarith
-
-end NearlyMinimax.PairUStatistic

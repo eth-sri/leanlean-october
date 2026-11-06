@@ -1,63 +1,59 @@
 module
 
 public import NearlyMinimax.PaperScorePath
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! The scalar passage from the full score energy and update cost to the
 manuscript's quantitative lower bound. -/
-noncomputable section
-open MeasureTheory Set
-namespace NearlyMinimax
+𝚫
+𝚨
 
-def localScorePathLength (c B I : ℝ) : ℝ := c / (1 + B + I)
+𝗇 𝔇 1 + B + I
+def localScorePathLength (c B I : ℝ) : ℝ := c / 𝔇
 
-theorem localScorePathLength_pos {c B I : ℝ} (hc : 0 < c)
-    (hB : 0 ≤ B) (hI : 0 ≤ I) : 0 < localScorePathLength c B I := by
-  exact div_pos hc (by linarith only [hB, hI])
+𝗇 𝔉 localScorePathLength c B I
+theorem localScorePathLength_pos (hc : 𝘝)
+    (hB : 𝙐) (hI : 0 ≤ I) : 0 < 𝔉 := div_pos hc 𝖡₄
 
-theorem localScorePathLength_energy_le {c B I : ℝ} (hc : 0 ≤ c)
-    (hB : 0 ≤ B) (hI : 0 ≤ I) : localScorePathLength c B I * I ≤ c := by
-  have hden : 0 < 1 + B + I := by linarith only [hB, hI]
+theorem localScorePathLength_energy_le (hc : 𝗂₁)
+    (hB : 𝙐) (hI : 0 ≤ I) : 𝔉 * I ≤ c := by
   rw [localScorePathLength, div_mul_eq_mul_div]
-  apply (div_le_iff₀ hden).mpr
-  exact mul_le_mul_of_nonneg_left (by linarith only [hB]) hc
+  apply (div_le_iff₀ 𝖡₄ ).mpr
+  bound
 
+𝗇 𝔄 1 + B ^ 2 + I ^ 2
+𝗇 𝔍 𝔇 ^ 2
 theorem three_term_square_le (B I : ℝ) :
-    (1 + B + I) ^ 2 ≤ 3 * (1 + B ^ 2 + I ^ 2) := by
-  nlinarith only [sq_nonneg (1 - B), sq_nonneg (1 - I), sq_nonneg (B - I)]
+    𝔍 ≤ 3 * 𝔄 := by
+  nlinarith only [sq_nonneg $ 1 - I , sq_nonneg $ B - I ]
 
-theorem score_cost_numeric {c B I η score : ℝ} (hc : 0 < c)
-    (hB : 0 ≤ B) (hI : 0 ≤ I) (hscore0 : 0 ≤ score)
-    (hscore : score ≤ localScorePathLength c B I * I) :
-    c ^ 2 / (3 * (2 + c) ^ 2) * η ^ 4 / (1 + B ^ 2 + I ^ 2) ≤
-      η ^ 4 * (localScorePathLength c B I) ^ 2 / (2 + score) ^ 2 := by
-  have hden : 0 < 1 + B + I := by linarith only [hB, hI]
-  have hsc : score ≤ c := hscore.trans (localScorePathLength_energy_le hc.le hB hI)
-  have hscpos : 0 < 2 + score := by linarith only [hscore0]
-  have hcpos : 0 < 2 + c := by linarith only [hc]
-  have hsumpos : 0 < 1 + B ^ 2 + I ^ 2 := by
-    positivity
-  have hsq : (2 + score) ^ 2 ≤ (2 + c) ^ 2 := by
-    nlinarith only [hsc, hscpos, hcpos]
-  have hprod : (2 + score) ^ 2 * (1 + B + I) ^ 2 ≤
-      3 * (2 + c) ^ 2 * (1 + B ^ 2 + I ^ 2) := by
+𝗇 𝔅 (2 + c) ^ 2
+𝗇 𝔈 (2 + score) ^ 2
+𝗇 𝔊 𝗆₂ * 𝗩
+𝗇 𝔎 3 * 𝔅
+theorem score_cost_numeric (hc : 𝘝)
+    (hB : 𝙐) (hI : 0 ≤ I) (hscore0 : 0 ≤ score)
+    (hscore : score ≤ 𝔉 * I) :
+    𝗆₂ / 𝔎 * 𝗩 / 𝔄 ≤
+      𝗩 * 𝔉 ^ 2 / 𝔈 := by
+  have hsc := hscore.trans $ localScorePathLength_energy_le hc.le hB hI
+  have hsq : 𝔈 ≤ 𝔅 := by
+    bound
+  have hprod : 𝔈 * 𝔍 ≤
+      𝔎 * 𝔄 := by
     calc
-      _ ≤ (2 + c) ^ 2 * (1 + B + I) ^ 2 :=
-        mul_le_mul_of_nonneg_right hsq (sq_nonneg _)
-      _ ≤ (2 + c) ^ 2 * (3 * (1 + B ^ 2 + I ^ 2)) :=
-        mul_le_mul_of_nonneg_left (three_term_square_le B I) (sq_nonneg _)
-      _ = _ := by ring
-  have hfrac : (c ^ 2 * η ^ 4) /
-      (3 * (2 + c) ^ 2 * (1 + B ^ 2 + I ^ 2)) ≤
-      (c ^ 2 * η ^ 4) / ((2 + score) ^ 2 * (1 + B + I) ^ 2) := by
-    exact div_le_div_of_nonneg_left (by positivity) (by positivity) hprod
+      _ ≤ 𝔅 * 𝔍 :=
+        mul_le_mul_of_nonneg_right hsq $ sq_nonneg _
+      _ ≤ 𝔅 * (3 * 𝔄) :=
+        mul_le_mul_of_nonneg_left (three_term_square_le B I) $ sq_nonneg _
+      𝘿 := 𝖢₃
   calc
-    _ = (c ^ 2 * η ^ 4) / (3 * (2 + c) ^ 2 * (1 + B ^ 2 + I ^ 2)) := by
-      field_simp <;> ring
-    _ ≤ (c ^ 2 * η ^ 4) / ((2 + score) ^ 2 * (1 + B + I) ^ 2) := hfrac
-    _ = _ := by
+    _ = 𝔊 / (𝔎 * 𝔄) := by
+      field_simp
+    _ ≤ 𝔊 / (𝔈 * 𝔍) := div_le_div_of_nonneg_left  𝖠₃   𝖠₃  hprod
+    𝘿 := by
       rw [localScorePathLength]
-      field_simp <;> ring
-
-end NearlyMinimax
+      field_simp

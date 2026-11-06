@@ -1,111 +1,118 @@
 module
 
 public import NearlyMinimax.PoissonCellField
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Joint same-cell probabilities under the constructed field law. -/
-noncomputable section
-open MeasureTheory ProbabilityTheory
+𝚵
 open scoped ENNReal NNReal BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
+𝚨
+𝚩
 set_option maxHeartbeats 400000
-variable {H X : Type*} [MeasurableSpace H] [MeasurableSpace X]
+𝛝
 
-def pairSameIndicator (ρ : H → X → Fin 2) (x y : X) (h : H) : ℝ :=
+𝗇 𝔅 H → X → Fin 2
+def pairSameIndicator (ρ : 𝔅) (x y : X) (h : H) : ℝ :=
   if ρ h x = ρ h y then 1 else 0
 
-theorem pairSameIndicator_measurable (ρ : H → X → Fin 2)
-    (hρ : Measurable (Function.uncurry ρ)) (x y : X) :
-    Measurable (pairSameIndicator ρ x y) := by
+𝗇 𝔈 Measurable $ Function.uncurry ρ
+𝗇 𝔎 hρ.comp $ measurable_id.prodMk measurable_const
+𝗇 𝔐 pairSameIndicator ρ x y
+theorem pairSameIndicator_measurable (ρ : 𝔅)
+    (hρ : 𝔈) x y :
+    Measurable 𝔐 := by
   apply Measurable.ite
   · exact measurableSet_eq_fun
-      (hρ.comp (measurable_id.prodMk measurable_const))
-      (hρ.comp (measurable_id.prodMk measurable_const))
-  · exact measurable_const
-  · exact measurable_const
+      𝔎
+      𝔎
+  all_goals simp
 
 theorem pairSameIndicator_integrable (μ : Measure H) [IsFiniteMeasure μ]
-    (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ)) (x y : X) :
-    Integrable (pairSameIndicator ρ x y) μ :=
+    ρ (hρ : 𝔈) (x y : X) :
+    Integrable 𝔐 μ :=
   Integrable.of_bound (pairSameIndicator_measurable ρ hρ x y).aestronglyMeasurable 1
-    (Filter.Eventually.of_forall (fun h => by
+    $ Filter.Eventually.of_forall fun h => by
       unfold pairSameIndicator
-      split_ifs <;> norm_num))
+      bound
 
-def partitionBothProbability (μ : Measure H) (ρ : H → X → Fin 2) (a b c e : X) : ℝ :=
-  ∫ h, pairSameIndicator ρ a b h * pairSameIndicator ρ c e h ∂μ
+𝗇 𝔓 pairSameIndicator ρ a b
+𝗇 𝔔 pairSameIndicator ρ c e
+𝗇 𝔍 𝔓 h * 𝔔 h
+def partitionBothProbability (μ : Measure H) (ρ : 𝔅) (a b c e : X) : ℝ :=
+  ∫ h, 𝔍 ∂μ
 
-def partitionFiberBothIndicator (ρ : H → X → Fin 2) (n : ℕ)
+𝗇 𝔒 partitionFieldPattern ρ h
+def partitionFiberBothIndicator (ρ : 𝔅) (n : ℕ)
     (a b c e : X) (h : Fin n → H) : ℝ :=
-  if partitionFieldPattern ρ h a = partitionFieldPattern ρ h b ∧
-    partitionFieldPattern ρ h c = partitionFieldPattern ρ h e then 1 else 0
+  if 𝔒 a = 𝔒 b ∧
+    𝔒 c = 𝔒 e then 1 else 0
 
-theorem partitionFiberBothIndicator_measurable (ρ : H → X → Fin 2)
-    (hρ : Measurable (Function.uncurry ρ)) (n : ℕ) (a b c e : X) :
-    Measurable (partitionFiberBothIndicator ρ n a b c e) := by
+𝗇 𝔄 (partitionFieldPattern_measurable ρ hρ n).comp $ measurable_id.prodMk measurable_const
+𝗇 𝔇 partitionFiberBothIndicator ρ n a b c e
+theorem partitionFiberBothIndicator_measurable (ρ : 𝔅)
+    (hρ : 𝔈) n a b c e :
+    Measurable 𝔇 := by
   apply Measurable.ite
   · apply MeasurableSet.inter
     · exact measurableSet_eq_fun
-        ((partitionFieldPattern_measurable ρ hρ n).comp
-          (measurable_id.prodMk measurable_const))
-        ((partitionFieldPattern_measurable ρ hρ n).comp
-          (measurable_id.prodMk measurable_const))
+        𝔄
+        𝔄
     · exact measurableSet_eq_fun
-        ((partitionFieldPattern_measurable ρ hρ n).comp
-          (measurable_id.prodMk measurable_const))
-        ((partitionFieldPattern_measurable ρ hρ n).comp
-          (measurable_id.prodMk measurable_const))
-  · exact measurable_const
-  · exact measurable_const
+        𝔄
+        𝔄
+  all_goals simp
 
+𝗇 𝔉 partitionBothProbability μ ρ a b c e
+𝗇 𝔑 𝘫
 theorem partitionFiberBothIndicator_integral (μ : Measure H) [IsProbabilityMeasure μ]
-    (ρ : H → X → Fin 2) (n : ℕ) (a b c e : X) :
-    (∫ h, partitionFiberBothIndicator ρ n a b c e h
-      ∂Measure.pi (fun _ : Fin n => μ)) = partitionBothProbability μ ρ a b c e ^ n := by
-  have he (h : Fin n → H) : partitionFiberBothIndicator ρ n a b c e h =
-      ∏ i : Fin n, pairSameIndicator ρ a b (h i) * pairSameIndicator ρ c e (h i) := by
-    have hh (z : H) : pairSameIndicator ρ a b z * pairSameIndicator ρ c e z =
-        if ρ z a = ρ z b ∧ ρ z c = ρ z e then (1 : ℝ) else 0 := by
+    ρ n (a b c e : X) :
+     ∫ h, 𝔇 h
+      ∂Measure.pi 𝔑 = 𝔉 ^ n := by
+  have he h : 𝔇 h =
+      ∏ i : Fin n, 𝔓 (h i) * 𝔔 (h i) := by
+    have hh z : 𝔓 z * 𝔔 z =
+        if ρ z a = ρ z b ∧ ρ z c = ρ z e then 1 else 0 := by
       unfold pairSameIndicator
-      split_ifs <;> norm_num <;> aesop
+      grind
     simp_rw [hh]
     unfold partitionFiberBothIndicator
     rw [Fintype.prod_boole]
     simp only [partitionFieldPattern, funext_iff, forall_and]
   simp_rw [he]
   rw [integral_fintype_prod_eq_pow
-    (fun h => pairSameIndicator ρ a b h * pairSameIndicator ρ c e h)]
-  simp only [partitionBothProbability, Fintype.card_fin]
+     fun h => 𝔍 ]
+  aesop
 
-def poissonCellBothIndicator (ρ : H → X → Fin 2) (a b c e : X)
+def poissonCellBothIndicator (ρ : 𝔅) (a b c e : X)
     (z : partitionFieldMark H) : ℝ := partitionFiberBothIndicator ρ z.1 a b c e z.2.1
 
-theorem poissonCellBothIndicator_measurable (ρ : H → X → Fin 2)
-    (hρ : Measurable (Function.uncurry ρ)) (a b c e : X) :
-    Measurable (poissonCellBothIndicator ρ a b c e) :=
-  measurable_sigma_of_fibers _ (fun n =>
-    (partitionFiberBothIndicator_measurable ρ hρ n a b c e).comp measurable_fst)
+𝗇 𝔊 poissonCellBothIndicator ρ a b c e
+theorem poissonCellBothIndicator_measurable (ρ : 𝔅)
+    (hρ : 𝔈) a b c e :
+    Measurable 𝔊 :=
+  measurable_sigma_of_fibers _ fun n =>
+    (partitionFiberBothIndicator_measurable ρ hρ n a b c e).comp measurable_fst
 
+𝗇 𝔏 Fin n → Fin 2
 theorem poissonCellBothIndicator_integral (μ : Measure H) [IsProbabilityMeasure μ]
-    (r : ℝ≥0) (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ)) (a b c e : X) :
-    (∫ z, poissonCellBothIndicator ρ a b c e z ∂poissonCellFieldLaw μ r) =
-      Real.exp (-(r : ℝ) * (1 - partitionBothProbability μ ρ a b c e)) := by
+    r ρ (hρ : 𝔈) (a b c e : X) :
+     ∫ z, 𝔊 z ∂poissonCellFieldLaw μ r =
+      Real.exp (-r * (1 - 𝔉)) := by
   rw [poissonCellField_integral_series μ r _
     (poissonCellBothIndicator_measurable ρ hρ a b c e)
-    (fun z => by unfold poissonCellBothIndicator partitionFiberBothIndicator
-                 split_ifs <;> norm_num)]
-  have hf (n : ℕ) : (∫ z : partitionFieldFiber H n,
-      poissonCellBothIndicator ρ a b c e ⟨n, z⟩ ∂partitionFieldFiberLaw μ n) =
-      partitionBothProbability μ ρ a b c e ^ n := by
-    change (∫ z : (Fin n → H) × ((Fin n → Fin 2) → Fin 2),
-      partitionFiberBothIndicator ρ n a b c e z.1
-      ∂(Measure.pi (fun _ : Fin n => μ)).prod (cellSignLaw (Fin n → Fin 2))) = _
+     fun z => by unfold poissonCellBothIndicator partitionFiberBothIndicator
+                 bound ]
+  have hf n : ∫ z : partitionFieldFiber H n,
+      𝔊 ⟨n, z⟩ ∂partitionFieldFiberLaw μ n =
+      𝔉 ^ n := by
+    change ∫ z : (Fin n → H) × (𝔏 → Fin 2),
+      𝔇 z.1
+      ∂(Measure.pi 𝔑).prod (cellSignLaw 𝔏) = _
     rw [integral_fun_fst]
     simpa using partitionFiberBothIndicator_integral μ ρ n a b c e
   simp_rw [hf]
   exact (poisson_weighted_power_hasSum r _).tsum_eq
-
-end NearlyMinimax

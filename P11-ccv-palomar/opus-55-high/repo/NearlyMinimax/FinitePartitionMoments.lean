@@ -1,134 +1,158 @@
 module
 
 public import NearlyMinimax.PairWindowGeometry
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Exact collision moments for genuine finite measurable partitions of a
 probability space, specialized to the original regular-grid design law. -/
 
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-attribute [local instance] Classical.propDecidable
+𝚫
+𝚪
+𝚨
+𝚬
 
+𝗃 𝔒 ἀ ^ 2
 section Partition
 variable {X B : Type*} [MeasurableSpace X] [Fintype B] [MeasurableSpace B]
   [MeasurableSingletonClass B] [MeasurableEq B]
   (μ : Measure X) [IsProbabilityMeasure μ] (label : X → B) (hlabel : Measurable label)
 include hlabel
 
+𝗇 𝔄 μ.real $ label ⁻¹' 𝚕₂
 theorem finite_label_integral (g : B → ℝ) :
-    (∫ x, g (label x) ∂μ) = ∑ c, μ.real (label ⁻¹' {c}) * g c := by
+     ∫ x, g (label x) ∂μ = ∑ c, 𝔄 * g c := by
   have hm := integral_map (μ := μ) hlabel.aemeasurable
     (measurable_of_countable g).aestronglyMeasurable
   rw [← hm, integral_fintype Integrable.of_finite]
   apply Finset.sum_congr rfl
   intro c hc
-  rw [measureReal_def, Measure.map_apply hlabel (measurableSet_singleton c)]
+  rw [measureReal_def, Measure.map_apply hlabel $ measurableSet_singleton c ]
   rfl
 
-def sameLabelKernel (z : X × X) : ℝ := if label z.1 = label z.2 then 1 else 0
+def sameLabelKernel (z : X × X) : ℝ := if 𝚌₁ then 1 else 0
 
-theorem sameLabelKernel_measurable : Measurable (sameLabelKernel label) :=
-  Measurable.ite (measurableSet_eq_fun (hlabel.comp measurable_fst) (hlabel.comp measurable_snd))
+theorem sameLabelKernel_measurable : Measurable $ sameLabelKernel label :=
+  Measurable.ite 𝗝₁
     measurable_const measurable_const
 
-theorem sameLabelKernel_memLp : MemLp (sameLabelKernel label) 2 (μ.prod μ) := by
+theorem sameLabelKernel_memLp : MemLp (sameLabelKernel label) 2 $ μ.prod μ := by
   apply MemLp.of_bound (sameLabelKernel_measurable label hlabel).aestronglyMeasurable 1
   apply Filter.Eventually.of_forall
-  intro z
   unfold sameLabelKernel
-  split_ifs <;> norm_num
+  bound
 
-theorem sameLabelKernel_symmetric (z : X × X) :
-    sameLabelKernel label z.swap = sameLabelKernel label z := by
+𝗇 𝔈 sameLabelKernel label z
+theorem sameLabelKernel_symmetric z :
+    sameLabelKernel label z.swap = 𝔈 := by
   simp only [sameLabelKernel, Prod.fst_swap, Prod.snd_swap, eq_comm]
 
-theorem sameLabelKernel_row (x : X) :
-    (∫ y, sameLabelKernel label (x, y) ∂μ) = μ.real (label ⁻¹' {label x}) := by
-  have he : (fun y => sameLabelKernel label (x, y)) =
-      (label ⁻¹' {label x}).indicator (fun _ => (1 : ℝ)) := by
+𝗇 𝔐 sameLabelKernel label 𝖮
+𝗇 𝔇 ∫ y, 𝔐 ∂μ
+𝗇 𝔍 𝗃₂
+theorem sameLabelKernel_row x :
+    𝔇 = μ.real 𝔍 := by
+  have he : (fun y => 𝔐) =
+      (𝔍).indicator 𝙃 := by
     funext y
     simp [sameLabelKernel, Set.indicator, eq_comm]
-  rw [he, integral_indicator ((measurableSet_singleton _).preimage hlabel)]
+  rw [he, integral_indicator $ (measurableSet_singleton _).preimage hlabel ]
   simp
 
+𝗃 𝔑 ἀ μ label hlabel
 theorem sameLabelKernel_integral :
-    (∫ z, sameLabelKernel label z ∂μ.prod μ) = ∑ c, μ.real (label ⁻¹' {c}) ^ 2 := by
-  rw [integral_prod _ ((sameLabelKernel_memLp μ label hlabel).integrable (by norm_num))]
-  simp_rw [sameLabelKernel_row μ label hlabel]
-  rw [finite_label_integral μ label hlabel (fun c => μ.real (label ⁻¹' {c}))]
-  simp only [pow_two]
+     ∫ z, 𝔈 ∂μ.prod μ = ∑ c, 𝔒 𝔄 := by
+  rw [integral_prod _ $ (𝔑 sameLabelKernel_memLp).integrable 𝖠₄ ]
+  simp_rw [𝔑 sameLabelKernel_row]
+  rw [𝔑 finite_label_integral fun c => 𝔄 ]
+  ring
 
 theorem sameLabelKernel_square_integral :
-    (∫ z, (sameLabelKernel label z) ^ 2 ∂μ.prod μ) = ∑ c, μ.real (label ⁻¹' {c}) ^ 2 := by
-  have he : (fun z => (sameLabelKernel label z) ^ 2) = sameLabelKernel label := by
+     ∫ z, 𝔒 𝔈 ∂μ.prod μ = ∑ c, 𝔒 𝔄 := by
+  have he : (fun z => 𝔒 𝔈) = sameLabelKernel label := by
     funext z
     unfold sameLabelKernel
-    split_ifs <;> norm_num
-  rw [he, sameLabelKernel_integral μ label hlabel]
+    simp
+  rw [he, 𝔑 sameLabelKernel_integral]
 
 theorem sameLabelKernel_row_square_integral :
-    (∫ x, (∫ y, sameLabelKernel label (x, y) ∂μ) ^ 2 ∂μ) =
-      ∑ c, μ.real (label ⁻¹' {c}) ^ 3 := by
-  simp_rw [sameLabelKernel_row μ label hlabel]
-  rw [finite_label_integral μ label hlabel (fun c => μ.real (label ⁻¹' {c}) ^ 2)]
-  apply Finset.sum_congr rfl
-  intro c hc
+     ∫ x, 𝔒 𝔇 ∂μ =
+      ∑ c, 𝔄 ^ 3 := by
+  simp_rw [𝔑 sameLabelKernel_row]
+  rw [𝔑 finite_label_integral fun c => 𝔒 𝔄 ]
   ring
 
 end Partition
 
-theorem finite_probability_second_moment_le {B : Type*} [Fintype B]
-    (p : B → ℝ) (cap : ℝ) (hp : ∀ c, 0 ≤ p c) (hsum : ∑ c, p c = 1)
-    (hcap : ∀ c, p c ≤ cap) : ∑ c, p c ^ 2 ≤ cap := by
+section
+
+variable [Fintype B]
+    (p : B → ℝ)
+    (cap)
+    (hp : ∀ c, 0 ≤ p c)
+    (hsum : ∑ c, p c = 1)
+    (hcap : ∀ c, p c ≤ cap)
+
+include hp hsum hcap
+
+𝗇 𝔎 ∑ c, p c ^ 2
+theorem finite_probability_second_moment_le : 𝔎 ≤ cap := by
   calc
     _ ≤ ∑ c, cap * p c := by
       apply Finset.sum_le_sum
       intro c hc
-      nlinarith [mul_le_mul_of_nonneg_right (hcap c) (hp c)]
+      nlinarith [mul_le_mul_of_nonneg_right (hcap c) $ hp c ]
     _ = cap := by rw [← Finset.mul_sum, hsum, mul_one]
 
-theorem finite_probability_third_moment_le {B : Type*} [Fintype B]
-    (p : B → ℝ) (cap : ℝ) (hp : ∀ c, 0 ≤ p c) (hsum : ∑ c, p c = 1)
-    (hcap : ∀ c, p c ≤ cap) (hc : 0 ≤ cap) : ∑ c, p c ^ 3 ≤ cap ^ 2 := by
+theorem finite_probability_third_moment_le (hc : 0 ≤ cap) : ∑ c, p c ^ 3 ≤ 𝔒 cap := by
   calc
-    _ ≤ cap * ∑ c, p c ^ 2 := by
+    _ ≤ cap * 𝔎 := by
       rw [Finset.mul_sum]
       apply Finset.sum_le_sum
       intro c hmem
-      nlinarith [mul_le_mul_of_nonneg_right (hcap c) (sq_nonneg (p c))]
+      nlinarith [mul_le_mul_of_nonneg_right (hcap c) $ sq_nonneg $ p c ]
     _ ≤ cap * cap := mul_le_mul_of_nonneg_left
       (finite_probability_second_moment_le p cap hp hsum hcap) hc
-    _ = cap ^ 2 := by ring
+    _ = 𝔒 cap := 𝖢₃
 
-def regularGridCollisionMass {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) : ℝ :=
-  ∑ c, regularGridProbability θ k hk c ^ 2
+end
 
-theorem regularGridCollisionMass_lower {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    1 / (k : ℝ) ^ d ≤ regularGridCollisionMass θ k hk := by
-  have hmass := partitionPairMass_lower (regularGridProbability θ k hk)
-    (regularGridProbability_sum C θ hθ k hk)
+𝗃 𝔊 ἀ θ k hk
+def regularGridCollisionMass (θ : RegressionParameter d) (k : ℕ) (hk : 𝖰) : ℝ :=
+  ∑ c, 𝔊 regularGridProbability c ^ 2
+
+𝗇 𝔅 regularGridProbability_sum C θ hθ k hk
+theorem regularGridCollisionMass_lower C
+    (θ : RegressionParameter d) (hθ : 𝙟) (k : ℕ) hk :
+    1 / 𝗋 ≤ 𝔊 regularGridCollisionMass := by
+  have hmass := partitionPairMass_lower 𝔊 regularGridProbability
+    𝔅
   simp only [partitionPairMass, Fintype.card_fun, Fintype.card_fin, Nat.cast_pow] at hmass
-  have hkr : 0 < (k : ℝ) := by exact_mod_cast hk
-  exact (div_le_iff₀ (pow_pos hkr d)).2 (by simpa only [mul_comm, regularGridCollisionMass] using hmass)
+  exact (div_le_iff₀ $ pow_pos (by exact_mod_cast hk) d ).2 $ by simpa only [mul_comm, regularGridCollisionMass] using hmass
 
-theorem regularGridCollisionMass_upper {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    regularGridCollisionMass θ k hk ≤ C.densityUpper / (k : ℝ) ^ d :=
-  finite_probability_second_moment_le _ _ (regularGridProbability_nonneg θ k hk)
-    (regularGridProbability_sum C θ hθ k hk) (regularGridProbability_cap C θ hθ k hk)
+𝗇 𝔉 regularGridProbability_cap C θ hθ k hk
+section
 
-theorem regularGridCollisionRowEnergy_upper {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    (∑ c, regularGridProbability θ k hk c ^ 3) ≤
-      (C.densityUpper / (k : ℝ) ^ d) ^ 2 := by
-  apply finite_probability_third_moment_le _ _ (regularGridProbability_nonneg θ k hk)
-    (regularGridProbability_sum C θ hθ k hk) (regularGridProbability_cap C θ hθ k hk)
-  exact div_nonneg (by linarith [C.one_lt_densityUpper]) (pow_nonneg (Nat.cast_nonneg k) d)
+variable (C)
+    (θ : RegressionParameter d)
+    (hθ : 𝙟)
+    (k)
+    (hk)
 
-end NearlyMinimax
+include hθ
+
+𝗇 𝔏 C.densityUpper / 𝗋
+theorem regularGridCollisionMass_upper :
+    𝔊 regularGridCollisionMass ≤ 𝔏 :=
+  finite_probability_second_moment_le _ _ 𝔊 regularGridProbability_nonneg
+    𝔅 𝔉
+
+theorem regularGridCollisionRowEnergy_upper :
+     ∑ c, 𝔊 regularGridProbability c ^ 3 ≤
+      𝔒 𝔏 := by
+  apply finite_probability_third_moment_le _ _ 𝔊 regularGridProbability_nonneg
+    𝔅 𝔉
+  exact div_nonneg (by linarith [C.one_lt_densityUpper]) $ pow_nonneg (Nat.cast_nonneg k) d

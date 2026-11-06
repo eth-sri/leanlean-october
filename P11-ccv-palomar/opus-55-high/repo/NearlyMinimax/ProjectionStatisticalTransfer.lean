@@ -3,43 +3,48 @@ module
 public import NearlyMinimax.ConditionalLaw
 public import NearlyMinimax.ProjectionStatistical
 public import NearlyMinimax.PolynomialGridProjection
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter
-open scoped ENNReal
+𝚮
 noncomputable section
-namespace NearlyMinimax
+𝚨
+
+𝗇 𝔄 𝗋 * (𝗈₂ : ℕ) ^ d ≤ 𝙒 / 2
+𝗇 𝔅 ENNReal.ofReal $ gridProjectionConstant C / n + polynomialGridBias C k
+𝗇 𝔇 polynomialGridEstimator C n k hk
+section
+
+variable {d n : ℕ}
 
 /-- The actual iid-sample polynomial-projection risk upper bound in
 all smoothness orders. No conditional independence or risk identity is assumed. -/
-theorem polynomial_grid_sample_risk_bound {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (k : ℕ) (hk : 0 < k) (hn : 0 < n)
-    (hcolumns : (k : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ (n : ℝ) / 2) :
-    meanSquaredRisk (polynomialGridEstimator C n k hk) θ ≤
-      ENNReal.ofReal (gridProjectionConstant C / n + polynomialGridBias C k) := by
-  letI := designLaw_isProbability C θ hθ
-  letI : IsProbabilityMeasure (designVectorLaw θ n) :=
-    inferInstanceAs (IsProbabilityMeasure (Measure.pi (fun _ : Fin n => designLaw θ)))
+theorem polynomial_grid_sample_risk_bound C
+    (θ : RegressionParameter d) (hθ : 𝙟)
+    (k : ℕ) hk (hn : 𝗧₁)
+    (hcolumns : 𝔄) :
+    meanSquaredRisk 𝔇 θ ≤
+      𝔅 := by
+  letI := 𝘪₁
+  letI : IsProbabilityMeasure $ designVectorLaw θ n :=
+    inferInstanceAs (IsProbabilityMeasure $ Measure.pi fun _ => designLaw θ )
   rw [meanSquaredRisk_conditioning C _ θ hθ]
   have hconditional : ∀ᵐ x ∂designVectorLaw θ n,
-      (∫⁻ u, ENNReal.ofReal
-        (((polynomialGridEstimator C n k hk).val (samplesFromDesignErrors θ (x, u)) - θ.variance) ^ 2)
-        ∂conditionalErrorLaw θ x) ≤
-      ENNReal.ofReal (gridProjectionConstant C / n + polynomialGridBias C k) := by
+       ∫⁻ u, ENNReal.ofReal
+        (((𝔇).val (samplesFromDesignErrors θ (x, u)) - θ.variance) ^ 2)
+        ∂conditionalErrorLaw θ x ≤
+      𝔅 := by
     filter_upwards [admissible_conditional_error_facts C θ hθ n] with x hx
     obtain ⟨hcube, hε, hind, hmean, hsecond, hfourth⟩ := hx
     exact polynomial_grid_conditional_lintegral_bound C θ hθ k hk hn hcolumns
       x hcube (conditionalErrorLaw θ x) (fun i u => u i) hε hind hmean hsecond hfourth
-  exact (lintegral_mono_ae hconditional).trans_eq (by simp)
+  exact (lintegral_mono_ae hconditional).trans_eq 𝖢₄
 
-theorem polynomial_grid_worst_case_risk_bound {d n : ℕ} (C : ModelConstants d)
-    (k : ℕ) (hk : 0 < k) (hn : 0 < n)
-    (hcolumns : (k : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ (n : ℝ) / 2) :
-    worstCaseRisk C (polynomialGridEstimator C n k hk) ≤
-      ENNReal.ofReal (gridProjectionConstant C / n + polynomialGridBias C k) := by
-  unfold worstCaseRisk
-  exact iSup_le fun θ => polynomial_grid_sample_risk_bound C θ.val θ.property k hk hn hcolumns
-
-end NearlyMinimax
+theorem polynomial_grid_worst_case_risk_bound (C : ModelConstants d)
+    (k : ℕ) hk (hn : 𝗧₁)
+    (hcolumns : 𝔄) :
+    worstCaseRisk C 𝔇 ≤
+      𝔅 := iSup_le fun θ => polynomial_grid_sample_risk_bound C θ.val θ.property k hk hn hcolumns

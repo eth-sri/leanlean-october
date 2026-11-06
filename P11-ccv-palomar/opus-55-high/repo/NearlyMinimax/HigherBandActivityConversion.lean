@@ -2,195 +2,217 @@ module
 
 public import NearlyMinimax.HigherBandFamily
 public import NearlyMinimax.LowerActivityHierarchy
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Fixed geometric-ratio conversion of the genuine higher-band activation
 caps. Density and interpolation constants are chosen before the degree and
 sample size; no final activity estimate is assumed. -/
-noncomputable section
 open MeasureTheory Filter
-open scoped Topology BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
+𝚶
+𝚨
+𝚩
+𝚱
 
-def higherBandInterpolationBase (d : ℕ) (lam : ℝ) : ℝ := 1024 * |lam| *(d : ℝ)^2
+𝗇 𝔊 𝙊
+𝗃 𝔪 ἀ^2
+def higherBandInterpolationBase (d : ℕ) (lam : ℝ) : ℝ := 1024 * |lam| *𝔪 𝔊
 
-def higherBandGeometricConstant (B Ci : ℝ) : ℝ := 2*(1+B)*(1+Ci)
-def higherBandGeometricPrefactor (B Ci Rsp : ℝ) : ℝ := 8*Rsp*(1+B)^2*(1+Ci)
+𝗃 𝔭 1+ἀ
+𝗇 𝔎 𝔭 B
+𝗇 𝔏 𝔭 Ci
+def higherBandGeometricConstant (B Ci : ℝ) : ℝ := 2*𝔎*𝔏
+def higherBandGeometricPrefactor (B Ci Rsp : ℝ) : ℝ := 8*Rsp*𝔪 𝔎*𝔏
+𝗃 𝔮 base^(ἀ/𝔊)
 def higherBandGeometricRatio (d D : ℕ) (Cact H base a : ℝ) : ℝ :=
-  Cact*(D : ℝ)*H*base^(a/(d : ℝ))
+  Cact*𝚝₁*H*𝔮 a
 
-theorem higher_band_coefficient_absorption {r : ℕ} (hr : 2 ≤ r) {b B Ci : ℝ}
-    (hb : 0 ≤ b) (hB : 0 ≤ B) (hCi : 0 ≤ Ci) (hbB : b ≤ B) :
-    b^r * Ci^(r-1) * (2*(r : ℝ)) ≤
-      (8*(1+B)^2*(1+Ci)) * (higherBandGeometricConstant B Ci)^(r-2) := by
-  have hrEq : r = (r-2)+2 := by omega
-  have hrEq1 : r-1 = (r-2)+1 := by omega
-  have hbpow : b^r ≤ (1+B)^2*(1+B)^(r-2) := by
-    calc b^r ≤ (1+B)^r := pow_le_pow_left₀ hb (by linarith) r
-         _ = _ := by nth_rw 1 [hrEq]; rw [pow_add]; ring
-  have hcipow : Ci^(r-1) ≤ (1+Ci)*(1+Ci)^(r-2) := by
-    calc Ci^(r-1) ≤ (1+Ci)^(r-1) := pow_le_pow_left₀ hCi (by linarith) _
-         _ = _ := by rw [hrEq1, pow_succ]; ring
-  have hrpow : (r : ℝ) ≤ (2 : ℝ)^r := by exact_mod_cast (show r < 2^r from Nat.lt_two_pow_self).le
-  have hrcoef : 2*(r : ℝ) ≤ 8*(2 : ℝ)^(r-2) := by
-    have he : (2 : ℝ)^r = 4*(2 : ℝ)^(r-2) := by rw [hrEq, pow_add]; norm_num; ring
-    rw [he] at hrpow
-    nlinarith
-  have h := mul_le_mul (mul_le_mul hbpow hcipow (by positivity) (by positivity)) hrcoef
-    (by positivity) (by positivity)
+𝗇 𝔄 r-2
+𝗇 𝔓 r-1
+𝗇 𝔖 𝙉
+𝗇 𝔘 𝘠₁
+𝗃 𝔜 0 ≤ ἀ
+theorem higher_band_coefficient_absorption {r : ℕ} (hr : 𝔘) {b B Ci }
+    (hb : 𝔜 b) (hB : 𝔜 B) (hCi : 𝔜 Ci) (hbB : b ≤ B) :
+    b^r * Ci^𝔓 * (2*r) ≤
+       8*𝔪 𝔎*𝔏 * higherBandGeometricConstant B Ci ^𝔄 := by
+  have hrEq : r = 𝔄+2 := 𝖡₃
+  have hrEq1 : 𝔓 = 𝔄+1 := 𝖡₃
+  have hbpow : b^r ≤ 𝔪 𝔎*𝔎^𝔄 := by
+    calc b^r ≤ 𝔎^r := pow_le_pow_left₀ hb  𝖡₄  r
+         𝘿 := 𝖤₃
+  have hcipow : Ci^𝔓 ≤ 𝔏*𝔏^𝔄 := by
+    calc Ci^𝔓 ≤ 𝔏^𝔓 := pow_le_pow_left₀ hCi  𝖡₄  _
+         𝘿 := 𝖤₃
+  have hrpow : r ≤ 𝔖^r := by exact_mod_cast (Nat.lt_two_pow_self).le
+  have hrcoef : 2*r ≤ 8*𝔖^𝔄 := by
+    have he : 2^r = 4*𝔖^𝔄 := 𝖤₃
+    linarith
+  have h := mul_le_mul (mul_le_mul hbpow hcipow  𝖠₃  𝖠₃ ) hrcoef
+     𝖠₃  𝖠₃
   apply h.trans_eq
   unfold higherBandGeometricConstant
   rw [mul_pow, mul_pow]
   ring
 
-theorem higherBandTargetScale_eq {d r : ℕ} (hr : 2 ≤ r) (N mu : ℝ)
-    (hbase : 0 ≤ mu*(1+Real.log N)) :
-    higherBandTargetScale d r N mu =
-      N*((mu*(1+Real.log N))^(1/(d : ℝ)))^(r-2) := by
+𝗃 𝔬 1+Real.log ἀ
+𝗇 𝔅 mu*𝔬 N
+𝗇 𝔇 higherBandTargetScale d r N mu
+𝗇 𝔨 1/𝔊
+𝗇 𝔛 𝔅^𝔨
+theorem higherBandTargetScale_eq (hr : 𝔘) N mu
+    (hbase : 𝔜 𝔅) :
+    𝔇 =
+      N*𝔛^𝔄 := by
   unfold higherBandTargetScale
-  congr 1
-  have he : ((r : ℝ)-2)/(d : ℝ) = (1/(d : ℝ))*(r-2 : ℕ) := by
+  have he : 𝔄/d = 𝔨*(𝔄 : ℕ) := by
     rw [Nat.cast_sub hr]
-    push_cast
     ring
   rw [he, Real.rpow_mul_natCast hbase]
 
+𝗇 𝔩 𝘅
+𝗇 𝔈 exteriorTau $ 𝗓₁/𝔩
+𝗇 𝔉 higherBandInterpolationBase d lam
+𝗇 𝔐 Fin 𝖵
+𝗇 𝔑 2*𝔪 C
+𝗇 𝔚 higherBandGeometricConstant B 𝔉
+𝗃 𝔞 higherBandRowActivityCap d r ἀ D q a b C lam
+𝗇 𝔠 ordinaryDensityActivityBase a b ≤ B
+𝗇 𝔢 𝘐₁
+𝗇 𝔣 𝔪 D
+𝗇 𝔤 m*𝔈
+𝗇 𝔥 higherBandGeometricRatio d D 𝔚
 /-- A generic true cap is a geometric-ratio row bound once its T² and
 logarithmic scale are bounded by the actual target powers. -/
-theorem higherBandRowActivityCap_geometric_le {d r m D q : ℕ} (hr : 2 ≤ r)
-    (a b C lam T B H base P alpha : ℝ) (hT : 1 ≤ T) (hB : 0 ≤ B)
-    (hbase : 0 ≤ base) (hP : 0 ≤ P) (_hH : 0 ≤ H)
-    (hbB : ordinaryDensityActivityBase a b ≤ B)
-    (hlog : 1+Real.log T ≤ H)
-    (hT2 : T^2 ≤ P*(base^(alpha/(d : ℝ)))^(r-2)) :
-    higherBandRowActivityCap d r m D q a b C lam T ≤
-      higherBandGeometricPrefactor B (higherBandInterpolationBase d lam)
-        ((∑ h : Fin (2*q+2), |responseWeight q h|)*(2*C^2)) *
-      (D : ℝ)^2 * Real.exp ((m : ℝ)*exteriorTau ((a+b)/(b-a))) * P *
-      (higherBandGeometricRatio d D (higherBandGeometricConstant B (higherBandInterpolationBase d lam)) H base alpha)^(r-2) := by
-  have hb0 : 0 ≤ ordinaryDensityActivityBase a b := by unfold ordinaryDensityActivityBase; positivity
-  have hCi : 0 ≤ higherBandInterpolationBase d lam := by unfold higherBandInterpolationBase; positivity
-  have hcoef := higher_band_coefficient_absorption hr hb0 hB hCi hbB
-  have hlog0 : 0 ≤ 1+Real.log T := by linarith [Real.log_nonneg hT]
-  have hlogpow := pow_le_pow_left₀ hlog0 hlog (r-2)
-  have hCact : 0 ≤ higherBandGeometricConstant B (higherBandInterpolationBase d lam) := by
+theorem higherBandRowActivityCap_geometric_le {d r m D q : ℕ} (hr : 𝔘)
+    a b C lam T B H base P alpha (hT : 𝖹) (hB : 𝔜 B)
+    (hbase : 𝔜 base) (hP : 𝔜 P) (_hH : 𝔜 H)
+    (hbB : 𝔠)
+    (hlog : 𝔬 T ≤ H)
+    (hT2 : 𝔪 T ≤ P*𝔮 alpha^𝔄) :
+    𝔞 m T ≤
+      higherBandGeometricPrefactor B 𝔉
+        ((∑ h : 𝔐, |𝔢|)*𝔑) *
+      𝔣 * Real.exp 𝔤 * P *
+       𝔥 H base alpha ^𝔄 := by
+  have hCi : 𝔜 𝔉 := by unfold higherBandInterpolationBase; positivity
+  have hcoef := higher_band_coefficient_absorption hr (by unfold ordinaryDensityActivityBase; positivity) hB hCi hbB
+  have hlog0 : 0 ≤ 𝔬 T := 𝖥₄
+  have hCact : 𝔜 𝔚 := by
     unfold higherBandGeometricConstant
     positivity
-  have hDpower : (D : ℝ)^r = (D : ℝ)^2*(D : ℝ)^(r-2) := by
-    nth_rw 1 [show r=(r-2)+2 by omega]
-    rw [pow_add]
+  have hDpower : D^r = 𝔣*𝚝₁^𝔄 := by
+    nth_rw 1 [show r=𝔄+2 by omega]
     ring
-  have hscale := mul_le_mul hT2 hlogpow (by positivity) (by positivity)
-  have h := mul_le_mul hcoef hscale (by positivity) (by positivity)
+  have hscale := mul_le_mul hT2 (pow_le_pow_left₀ hlog0 hlog 𝔄)  𝖠₃  𝖠₃
+  have h := mul_le_mul hcoef hscale (by positivity) $ by positivity
   have hh := mul_le_mul_of_nonneg_left h
-    (show 0 ≤ (D : ℝ)^r * Real.exp ((m : ℝ)*exteriorTau ((a+b)/(b-a))) *
-      ((∑ h : Fin (2*q+2), |responseWeight q h|)*(2*C^2)) by positivity)
+    $ show 0 ≤ D^r * Real.exp 𝔤 *
+      ((∑ h : 𝔐, |𝔢|)*𝔑) by positivity
   convert hh using 1 <;>
     simp only [higherBandRowActivityCap, higherBandInterpolationCap, higherBandGeometricPrefactor,
-      higherBandGeometricRatio, higherBandInterpolationBase, hDpower, mul_pow] <;> ring
+      higherBandGeometricRatio, higherBandInterpolationBase, hDpower] <;> ring
 
-theorem higherBandTargetScale_le_N {d r : ℕ} (_hd : 0 < d) (hr : 2 ≤ r)
-    {N mu : ℝ} (hN : 1 ≤ N) (hmu : 0 ≤ mu) (hbase1 : mu*(1+Real.log N) ≤ 1) :
-    higherBandTargetScale d r N mu ≤ N := by
-  have hH : 0 ≤ 1+Real.log N := by linarith [Real.log_nonneg hN]
-  have hbase := mul_nonneg hmu hH
-  have hpower := Real.rpow_le_one hbase hbase1
-    (show 0 ≤ ((r : ℝ)-2)/(d : ℝ) by
-      have hrR : (2 : ℝ) ≤ r := by exact_mod_cast hr
-      exact div_nonneg (sub_nonneg.mpr hrR) (Nat.cast_nonneg _))
+𝗇 𝔔 𝔬 N
+𝗇 𝔦 mul_nonneg hmu hH
+theorem higherBandTargetScale_le_N (_hd : 𝗆) (hr : 𝔘)
+    (hN : 𝗭₁) (hmu : 𝔜 mu) (hbase1 : 𝔅 ≤ 1) :
+    𝔇 ≤ N := by
+  have hH : 𝔜 𝔔 := 𝖥₄
+  have hpower := Real.rpow_le_one 𝔦 hbase1
+    $ show 0 ≤ 𝔄/𝔊 by
+      have hrR : 𝔖 ≤ r := by exact_mod_cast hr
+      positivity
   unfold higherBandTargetScale
-  simpa only [mul_one] using mul_le_mul_of_nonneg_left hpower (by linarith : 0 ≤ N)
+  bound
 
+𝗇 𝔟 higherBandRowActivityCap_geometric_le hr a b C lam _ B _ _
+𝗇 𝔧 N*ell
+𝗃 𝔫 ἀ ell 𝔇
 /-- Actual coarse target cap, uniformly for every legal selected target. -/
-theorem higherBandRowActivityCap_coarse_geometric_le {d r D q : ℕ} (hd : 0 < d) (hr : 2 ≤ r)
-    (a b C lam N mu ell B : ℝ) (hN : 1 ≤ N) (hmu : 0 ≤ mu)
-    (hbase1 : mu*(1+Real.log N) ≤ 1)
-    (hT : 1 ≤ min ell (higherBandTargetScale d r N mu)) (hB : 0 ≤ B)
-    (hbB : ordinaryDensityActivityBase a b ≤ B) :
-    higherBandRowActivityCap d r D D q a b C lam (min ell (higherBandTargetScale d r N mu)) ≤
-      higherBandGeometricPrefactor B (higherBandInterpolationBase d lam)
-        ((∑ h : Fin (2*q+2), |responseWeight q h|)*(2*C^2)) *
-      (D : ℝ)^2 * Real.exp ((D : ℝ)*exteriorTau ((a+b)/(b-a))) * (N*ell) *
-      (higherBandGeometricRatio d D (higherBandGeometricConstant B (higherBandInterpolationBase d lam))
-        (1+Real.log N) (mu*(1+Real.log N)) 1)^(r-2) := by
-  have hH : 0 ≤ 1+Real.log N := by linarith [Real.log_nonneg hN]
-  have hbase := mul_nonneg hmu hH
-  have hell : 0 ≤ ell := by linarith [min_le_left ell (higherBandTargetScale d r N mu)]
+theorem higherBandRowActivityCap_coarse_geometric_le (hd : 𝗆) (hr : 𝔘)
+    a b C lam N mu ell B (hN : 𝗭₁) (hmu : 𝔜 mu)
+    (hbase1 : 𝔅 ≤ 1)
+    (hT : 1 ≤ 𝔫 min) (hB : 𝔜 B)
+    (hbB : 𝔠) :
+    𝔞 D 𝔫 min ≤
+      higherBandGeometricPrefactor B 𝔉
+        ((∑ h : 𝔐, |𝔢|)*𝔑) *
+      𝔣 * Real.exp (D*𝔈) * 𝔧 *
+       𝔥
+        𝔔 𝔅 1 ^𝔄 := by
+  have hH : 𝔜 𝔔 := 𝖥₄
+  have hbase := 𝔦
+  have hell : 𝔜 ell := 𝖤₃
   have hnu := higherBandTargetScale_le_N hd hr hN hmu hbase1
-  have hTN : min ell (higherBandTargetScale d r N mu) ≤ N := (min_le_right _ _).trans hnu
-  apply higherBandRowActivityCap_geometric_le hr a b C lam _ B _ _ (N*ell) 1 hT hB hbase (by positivity) hH hbB
-  · exact add_le_add_right (Real.log_le_log (by linarith : 0 < min ell (higherBandTargetScale d r N mu)) hTN) 1
-  · have ht0 : 0 ≤ min ell (higherBandTargetScale d r N mu) := by linarith
-    have h := mul_le_mul (min_le_left ell (higherBandTargetScale d r N mu))
-      (min_le_right ell (higherBandTargetScale d r N mu)) ht0 hell
+  apply 𝔟 𝔧 1 hT hB hbase  𝖠₃  hH hbB
+  · exact add_le_add_right (Real.log_le_log  𝖡₄  $ (min_le_right ..).trans hnu ) 1
+  · have h := mul_le_mul 𝔫 min_le_left
+      𝔫 min_le_right  𝖡₄  hell
     calc
-      _ ≤ ell * higherBandTargetScale d r N mu := by simpa only [pow_two] using h
-      _ = _ := by rw [higherBandTargetScale_eq hr N mu hbase]; ring
+      _ ≤ ell * 𝔇 := 𝖡₄
+      𝘿 := by rw [higherBandTargetScale_eq hr N mu hbase]; ring
 
 /-- Actual fine target cap with the exact q2 power, uniformly over all legal selected targets. -/
-theorem higherBandRowActivityCap_fine_geometric_le {d r M D q : ℕ} (hd : 0 < d) (hr : 2 ≤ r)
-    (a b C lam N mu B : ℝ) (hN : 1 ≤ N) (hmu : 0 ≤ mu)
-    (hbase1 : mu*(1+Real.log N) ≤ 1) (hT : 1 ≤ higherBandTargetScale d r N mu)
-    (hB : 0 ≤ B) (hbB : ordinaryDensityActivityBase a b ≤ B) :
-    higherBandRowActivityCap d r M D q a b C lam (higherBandTargetScale d r N mu) ≤
-      higherBandGeometricPrefactor B (higherBandInterpolationBase d lam)
-        ((∑ h : Fin (2*q+2), |responseWeight q h|)*(2*C^2)) *
-      (D : ℝ)^2 * Real.exp ((M : ℝ)*exteriorTau ((a+b)/(b-a))) * N^2 *
-      (higherBandGeometricRatio d D (higherBandGeometricConstant B (higherBandInterpolationBase d lam))
-        (1+Real.log N) (mu*(1+Real.log N)) 2)^(r-2) := by
-  have hH : 0 ≤ 1+Real.log N := by linarith [Real.log_nonneg hN]
-  have hbase := mul_nonneg hmu hH
+theorem higherBandRowActivityCap_fine_geometric_le (hd : 𝗆) (hr : 𝔘)
+    a b C lam N mu B (hN : 𝗭₁) (hmu : 𝔜 mu)
+    (hbase1 : 𝔅 ≤ 1) (hT : 1 ≤ 𝔇)
+    (hB : 𝔜 B) (hbB : 𝔠) :
+    𝔞 M 𝔇 ≤
+      higherBandGeometricPrefactor B 𝔉
+        ((∑ h : 𝔐, |𝔢|)*𝔑) *
+      𝔣 * Real.exp (M*𝔈) * 𝔪 N *
+       𝔥
+        𝔔 𝔅 2 ^𝔄 := by
+  have hH : 𝔜 𝔔 := 𝖥₄
+  have hbase := 𝔦
   have hnu := higherBandTargetScale_le_N hd hr hN hmu hbase1
-  apply higherBandRowActivityCap_geometric_le hr a b C lam _ B _ _ (N^2) 2 hT hB hbase (by positivity) hH hbB
-  · exact add_le_add_right (Real.log_le_log (by linarith : 0 < higherBandTargetScale d r N mu) hnu) 1
-  · apply le_of_eq
-    rw [higherBandTargetScale_eq hr N mu hbase, mul_pow]
-    have he : ((mu*(1+Real.log N))^(1/(d : ℝ)))^2 = (mu*(1+Real.log N))^(2/(d : ℝ)) := by
+  apply 𝔟 𝔪 N 2 hT hB hbase  𝖠₃  hH hbB
+  · bound
+  · rw [higherBandTargetScale_eq hr N mu hbase, mul_pow]
+    have he : 𝔪 𝔛 = 𝔅^(2/𝔊) := by
       rw [← Real.rpow_mul_natCast hbase]
-      congr 1
-      push_cast
       ring
-    rw [← pow_mul, Nat.mul_comm (r-2) 2, pow_mul, he]
+    rw [← pow_mul, Nat.mul_comm 𝔄 2, pow_mul, he]
 
+𝗇 𝔍 𝔩/a
+𝗇 𝔙 div_pos (sub_pos.mpr hab) ha
 /-- Exact elementary density-base simplification, including the true exterior interval exponent. -/
-theorem ordinaryDensityActivityBase_eq {a b : ℝ} (ha : 0 < a) (hab : a < b) :
-    ordinaryDensityActivityBase a b = Real.exp (1+densityIntervalExponent a b)*((b-a)/a) := by
-  have he : b/densityMargin a b 0 = -((b-a)/a) := by
+theorem ordinaryDensityActivityBase_eq (ha : 𝙆) (hab : 𝙭) :
+    ordinaryDensityActivityBase a b = Real.exp 𝔭 𝘦₂*𝔍 := by
+  have he : 𝘸₁ = -𝔍 := by
     unfold densityMargin
-    field_simp [ha.ne', (ha.trans hab).ne', (sub_pos.mpr hab).ne']
-    ring
+    grind
   unfold ordinaryDensityActivityBase
-  rw [he, abs_neg, abs_of_pos (div_pos (sub_pos.mpr hab) ha), exteriorTau_sqrt_ratio a b ha hab]
+  rw [he, abs_neg, abs_of_pos 𝔙, exteriorTau_sqrt_ratio a b ha hab]
   rfl
 
 def uniformOrdinaryDensityActivityBase (a b c0 : ℝ) : ℝ :=
-  Real.exp (1+c0)*((b-a)/a)
+  Real.exp 𝔭 c0*𝔍
 
+𝗇 𝔒 a+t
+𝗇 𝔗 b-t
+𝗇 𝔡 uniformOrdinaryDensityActivityBase a b c0
 /-- One fixed density base bounds every legal shrunk interval with tauM<=c0. -/
-theorem ordinaryDensityActivityBase_shrunk_le {a b t c0 : ℝ}
-    (ha : 0 < a) (ht : 0 ≤ t) (hshrink : a+t < b-t)
-    (htau : densityIntervalExponent (a+t) (b-t) ≤ c0) :
-    ordinaryDensityActivityBase (a+t) (b-t) ≤ uniformOrdinaryDensityActivityBase a b c0 := by
-  have hab : a < b := by linarith
-  have hap : 0 < a+t := by linarith
+theorem ordinaryDensityActivityBase_shrunk_le
+    (ha : 𝙆) (ht : 𝔜 t) (hshrink : 𝔒 < 𝔗)
+    (htau : densityIntervalExponent 𝔒 𝔗 ≤ c0) :
+    ordinaryDensityActivityBase 𝔒 𝔗 ≤ 𝔡 := by
+  have hap : 0 < 𝔒 := 𝖡₄
   rw [ordinaryDensityActivityBase_eq hap hshrink]
-  have hratio : ((b-t)-(a+t))/(a+t) ≤ (b-a)/a := by
-    apply (div_le_div_iff₀ hap ha).mpr
-    nlinarith
-  exact mul_le_mul (Real.exp_le_exp.mpr (by linarith)) hratio
-    (div_pos (sub_pos.mpr hshrink) hap).le (Real.exp_pos _).le
+  have hratio : (𝔗-𝔒)/𝔒 ≤ 𝔍 := by
+    bound
+  exact mul_le_mul (Real.exp_le_exp.mpr 𝖡₄ ) hratio
+    (div_pos (sub_pos.mpr hshrink) hap).le 𝙫
 
 def higherBandSourceCact (d : ℕ) (a b c0 lam : ℝ) : ℝ :=
-  higherBandGeometricConstant (uniformOrdinaryDensityActivityBase a b c0) (higherBandInterpolationBase d lam)
+  higherBandGeometricConstant 𝔡 𝔉
 
-theorem higherBandSourceCact_positive (d : ℕ) {a b c0 lam : ℝ} (ha : 0 < a) (hab : a < b) :
+theorem higherBandSourceCact_positive d (ha : 𝙆) (hab : 𝙭) :
     0 < higherBandSourceCact d a b c0 lam := by
-  have hB : 0 < uniformOrdinaryDensityActivityBase a b c0 :=
-    mul_pos (Real.exp_pos _) (div_pos (sub_pos.mpr hab) ha)
+  have hB : 0 < 𝔡 :=
+    mul_pos (Real.exp_pos _) 𝔙
   unfold higherBandSourceCact higherBandGeometricConstant higherBandInterpolationBase
   positivity
-
-end NearlyMinimax

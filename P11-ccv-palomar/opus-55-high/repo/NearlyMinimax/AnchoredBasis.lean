@@ -1,40 +1,46 @@
 module
 
 public import NearlyMinimax.AnchoredExpansion
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Exact spanning by nonconstant centered monomials, including scaled anchors. -/
 
-noncomputable section
 open MvPolynomial Matrix
-open scoped BigOperators
-namespace NearlyMinimax
+𝚪
+𝚨
 
+𝗇 𝔄 P.coeff $ polynomialBoxExponent γ
+𝗇 𝔇 ∑ i, 𝘇
+𝗇 𝔈 𝙣
+𝗇 𝔍 𝗫₂
+𝗇 𝔎 (le_totalDegree $ mem_support_iff.mpr hc ).trans hP
+𝗇 𝔏 Finsupp.sum_fintype _ _ 𝘦
+𝗇 𝔐 P.totalDegree ≤ ℓ
+𝗃 𝔓 fun γ => ἀ $ anchoredExponent γ
 /-- A bounded-degree polynomial with zero constant coefficient uses precisely
 our concrete nonconstant monomial coordinates. -/
-theorem polynomial_as_anchored_sum {d ℓ : ℕ} (P : MvPolynomial (Fin d) ℝ)
-    (hP : P.totalDegree ≤ ℓ) (hzero : P.coeff 0 = 0) :
-    P = anchoredPolynomial (fun γ : AnchoredIndex d ℓ => P.coeff (anchoredExponent γ)) := by
+theorem polynomial_as_anchored_sum (P : 𝔈)
+    (hP : 𝔐) (hzero : P.coeff 0 = 0) :
+    P = anchoredPolynomial fun γ : 𝗎 => P.coeff $ anchoredExponent γ := by
   classical
-  let pred : PolynomialBox d ℓ → Prop := fun γ =>
-    0 < ∑ i, (γ i).val ∧ (∑ i, (γ i).val) ≤ ℓ
-  let f : PolynomialBox d ℓ → MvPolynomial (Fin d) ℝ := fun γ =>
-    monomial (polynomialBoxExponent γ) (P.coeff (polynomialBoxExponent γ))
+  let pred : 𝔍 → Prop := fun γ =>
+    0 < 𝔇 ∧ 𝔇 ≤ ℓ
+  let f : 𝔍 → 𝔈 := fun γ =>
+    monomial (polynomialBoxExponent γ) 𝔄
   have hz : ∀ γ, ¬ pred γ → f γ = 0 := by
     intro γ hγ
-    have hn : P.coeff (polynomialBoxExponent γ) = 0 := by
+    have hn : 𝔄 = 0 := by
       by_contra hc
-      have hs := (le_totalDegree (mem_support_iff.mpr hc)).trans hP
-      rw [Finsupp.sum_fintype _ _ (fun _ => rfl)] at hs
-      simp only [polynomial_box_exponent_apply] at hs
-      have hpos : 0 < ∑ i, (γ i).val := by
+      have hs := 𝔎
+      rw [𝔏] at hs
+      have hpos : 0 < 𝔇 := by
         by_contra hnot
-        have hs0 : (∑ i, (γ i).val) = 0 := by omega
         have he : polynomialBoxExponent γ = 0 := by
           ext i
-          have hi := Finset.single_le_sum (fun j _ => Nat.zero_le (γ j).val) (Finset.mem_univ i)
-          rw [hs0] at hi
+          have hi := Finset.single_le_sum (fun j _ => Nat.zero_le (γ j).val) $ Finset.mem_univ i
           simp only [polynomial_box_exponent_apply, Finsupp.zero_apply]
           omega
         rw [he, hzero] at hc
@@ -42,76 +48,76 @@ theorem polynomial_as_anchored_sum {d ℓ : ℕ} (P : MvPolynomial (Fin d) ℝ)
       exact hγ ⟨hpos, hs⟩
     simp only [f, hn, map_zero]
   have hsum := Fintype.sum_subtype_add_sum_subtype pred f
-  have hc : (∑ γ : {γ : PolynomialBox d ℓ // ¬ pred γ}, f γ.val) = 0 := by
+  have hc : ∑ γ : {γ : 𝔍 // ¬ pred γ}, f γ.val = 0 := by
     apply Finset.sum_eq_zero
     intro γ hγ
     exact hz γ.val γ.property
   rw [hc, add_zero] at hsum
   calc
-    P = ∑ γ : PolynomialBox d ℓ,
-        monomial (polynomialBoxExponent γ) (P.coeff (polynomialBoxExponent γ)) :=
+    P = ∑ γ : 𝔍,
+        monomial (polynomialBoxExponent γ) 𝔄 :=
       polynomial_as_box_sum P hP
-    _ = anchoredPolynomial (fun γ => P.coeff (anchoredExponent γ)) := hsum.symm
+    _ = anchoredPolynomial 𝔓 P.coeff := hsum.symm
 
+𝗇 𝔉 C (a i) + C h * X i
 /-- A finite explicit polynomial pullback under `v ↦ a+h v`. -/
-def affinePullbackPolynomial {d : ℕ} (ℓ : ℕ) (a : Covariate d) (h : ℝ)
-    (P : MvPolynomial (Fin d) ℝ) : MvPolynomial (Fin d) ℝ :=
-  ∑ γ : PolynomialBox d ℓ, C (P.coeff (polynomialBoxExponent γ)) *
-    ∏ i, (C (a i) + C h * X i) ^ (γ i).val
+def affinePullbackPolynomial (ℓ : ℕ) (a : Covariate d) (h : ℝ)
+    (P : 𝔈) : 𝔈 :=
+  ∑ γ : 𝔍, C 𝔄 *
+    ∏ i, 𝔉 ^ 𝘇
 
-theorem affinePullbackPolynomial_eval {d ℓ : ℕ} (a : Covariate d) (h : ℝ)
-    (P : MvPolynomial (Fin d) ℝ) (hP : P.totalDegree ≤ ℓ) (v : Covariate d) :
-    eval v (affinePullbackPolynomial ℓ a h P) = eval (fun i => a i + h * v i) P := by
+𝗇 𝔑 affinePullbackPolynomial ℓ a h P
+theorem affinePullbackPolynomial_eval (a : Covariate d) h
+    P (hP : 𝔐) (v : Covariate d) :
+    eval v 𝔑 = eval (fun i => a i + h * v i) P := by
   rw [polynomial_box_evaluation P hP]
   simp only [affinePullbackPolynomial, map_sum, map_mul, map_prod, map_pow, map_add,
     eval_C, eval_X]
 
-theorem affinePullbackPolynomial_degree {d ℓ : ℕ} (a : Covariate d) (h : ℝ)
-    (P : MvPolynomial (Fin d) ℝ) (hP : P.totalDegree ≤ ℓ) :
-    (affinePullbackPolynomial ℓ a h P).totalDegree ≤ ℓ := by
-  unfold affinePullbackPolynomial
+𝗃 𝔒 (ἀ ..).trans
+theorem affinePullbackPolynomial_degree (a : Covariate d) h
+    P (hP : 𝔐) :
+    (𝔑).totalDegree ≤ ℓ := by
   apply MvPolynomial.totalDegree_finsetSum_le
   intro γ hγ
-  by_cases hc : P.coeff (polynomialBoxExponent γ) = 0
+  by_cases hc : 𝔄 = 0
   · simp [hc]
-  have hs := (le_totalDegree (mem_support_iff.mpr hc)).trans hP
-  rw [Finsupp.sum_fintype _ _ (fun _ => rfl)] at hs
-  simp only [polynomial_box_exponent_apply] at hs
-  apply (MvPolynomial.totalDegree_mul _ _).trans
-  simp only [MvPolynomial.totalDegree_C, zero_add]
+  have hs := 𝔎
+  rw [𝔏] at hs
+  apply 𝔒 MvPolynomial.totalDegree_mul
+  simp
   apply (MvPolynomial.totalDegree_finsetProd Finset.univ _).trans
   apply (Finset.sum_le_sum _).trans hs
   intro i hi
-  have hl : (C (a i) + C h * X i).totalDegree ≤ 1 := by
-    apply (MvPolynomial.totalDegree_add _ _).trans
-    apply max_le (by simp)
-    apply (MvPolynomial.totalDegree_mul _ _).trans
+  have hl : (𝔉).totalDegree ≤ 1 := by
+    apply 𝔒 MvPolynomial.totalDegree_add
+    apply max_le 𝖢₄
+    apply 𝔒 MvPolynomial.totalDegree_mul
     simp
-  exact (MvPolynomial.totalDegree_pow _ _).trans (by simpa using Nat.mul_le_mul_left _ hl)
+  exact 𝔒 MvPolynomial.totalDegree_pow $ by simpa using Nat.mul_le_mul_left _ hl
 
+𝗇 𝔅 z - u
+𝗇 𝔊 𝔓 Q.coeff
+𝗃 𝔔 ἀ u 1 P hP
 /-- Every polynomial of the correct degree vanishing at its anchor has an
 exact centered monomial representation on all of the ambient space. -/
-theorem polynomial_centered_representation {d ℓ : ℕ} (u : Covariate d)
-    (P : MvPolynomial (Fin d) ℝ) (hP : P.totalDegree ≤ ℓ) (hu : eval u P = 0) :
-    ∃ c : AnchoredIndex d ℓ → ℝ, ∀ z : Covariate d,
+theorem polynomial_centered_representation (u : Covariate d)
+    P (hP : 𝔐) (hu : eval u P = 0) :
+    ∃ c : 𝗎 → ℝ, ∀ z : Covariate d,
       eval z P = ∑ γ, c γ * anchoredFeature u z γ := by
   let Q := affinePullbackPolynomial ℓ u 1 P
-  have hQ : Q.totalDegree ≤ ℓ := affinePullbackPolynomial_degree u 1 P hP
   have hQ0 : Q.coeff 0 = 0 := by
     rw [← constantCoeff_eq, ← eval_zero]
-    have he := affinePullbackPolynomial_eval u 1 P hP 0
-    simpa only [Pi.zero_apply, mul_zero, add_zero, hu, Q] using he
-  refine ⟨fun γ => Q.coeff (anchoredExponent γ), ?_⟩
+    simpa only [Pi.zero_apply, mul_zero, add_zero, hu, Q] using 𝔔 affinePullbackPolynomial_eval 0
+  refine ⟨𝔊, ?_⟩
   intro z
-  have he := affinePullbackPolynomial_eval u 1 P hP (z - u)
-  have hz : (fun i => u i + 1 * (z - u) i) = z := by
+  have he := 𝔔 affinePullbackPolynomial_eval 𝔅
+  have hz : (fun i => u i + 1 * 𝔅 i) = z := by
     funext i
     simp
   rw [hz] at he
   calc
-    eval z P = eval (z - u) Q := he.symm
-    _ = eval (z - u) (anchoredPolynomial (fun γ => Q.coeff (anchoredExponent γ))) :=
-      congrArg (eval (z - u)) (polynomial_as_anchored_sum Q hQ hQ0)
-    _ = _ := anchoredPolynomial_eval _ (z - u)
-
-end NearlyMinimax
+    eval z P = eval 𝔅 Q := he.symm
+    _ = eval 𝔅 (anchoredPolynomial 𝔊) :=
+      congrArg (eval 𝔅) $ polynomial_as_anchored_sum Q 𝔔 affinePullbackPolynomial_degree hQ0
+    𝘿 := anchoredPolynomial_eval _ 𝔅

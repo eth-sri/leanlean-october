@@ -1,28 +1,27 @@
 module
 
 public import NearlyMinimax.HighFrameDesignEnergy
-public import NearlyMinimax.LocalEnergySeries
+public import RoughRegime.Macro
+public import NearlyMinimax.PoissonEnergyBounds
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Exact passage from the actual finite window/design count sum to the
 local factorial series, retaining the geometric overlap and window factors. -/
-noncomputable section
-open MeasureTheory
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-attribute [local instance] Classical.propDecidable
+𝚯
+𝚪
+𝚨
+𝚩
+𝚬
 
-theorem highWindowLabels_card {d k : ℕ} [NeZero k] :
-    Fintype.card (HighWindowLabels d k) = k ^ d := by
-  simp only [HighWindowLabels, Fintype.card_fun, Fintype.card_fin, ZMod.card]
+theorem highWindowLabels_card [NeZero k] :
+    Fintype.card 𝙯 = 𝗋 := by
+  simp
 
-theorem high_design_factorial_parameter {d k n : ℕ} [NeZero k]
-    (Csharp mu : ℝ) (hmu : mu = (n : ℝ) / (k : ℝ) ^ d) :
-    (n : ℝ) * Csharp * (2 / (k : ℝ)) ^ d =
-      (Csharp * (2 : ℝ) ^ d) * mu := by
+theorem high_design_factorial_parameter [NeZero k]
+    (Csharp mu : ℝ) (hmu : mu = 𝙒 / 𝙦 ^ d) :
+    n * Csharp * 𝗄 =
+       Csharp * 𝖥 * mu := by
   rw [hmu, div_pow]
   ring
-
-end NearlyMinimax

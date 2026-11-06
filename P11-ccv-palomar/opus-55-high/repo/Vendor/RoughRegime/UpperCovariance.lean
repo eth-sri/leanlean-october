@@ -1,42 +1,41 @@
 module
 
 public import Mathlib
+public import RoughRegime.Macro
 public import RoughRegime.Upper
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-!
 Centered-kernel orthogonality and covariance ingredients for Lemma 7.
 No covariance identity or centering contraction is assumed.
 -/
 
-noncomputable section
-open MeasureTheory ProbabilityTheory
+𝚵
 
 namespace RoughRegime.UpperCovariance
 
-def kernelSum {Ω : Type*} {n p r : ℕ}
-    (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (ω : Ω) : ℝ :=
-  ∑ e : Fin r ↪ Fin n, H (fun i => X (e i) ω)
+def kernelSum
+    (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => 𝗓) ℝ)
+    (X : Fin n → Ω → 𝗓) (ω : Ω) : ℝ :=
+  ∑ e : 𝚖₁, H fun i => X (e i) ω
 
 /-- The normalization in the centered expansion of the manuscript's lift. -/
-def kernelStatistic {Ω : Type*} {n p r : ℕ}
-    (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => Fin p → ℝ) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (ω : Ω) : ℝ :=
-  ((r.factorial : ℝ) * (n.descFactorial r : ℝ))⁻¹ * kernelSum H X ω
+def kernelStatistic
+    (H : ContinuousMultilinearMap ℝ (fun _ : Fin r => 𝗓) ℝ)
+    (X : Fin n → Ω → 𝗓) (ω : Ω) : ℝ :=
+  𝚐₂ * kernelSum H X ω
 
 /-- Finite centered expansion, with the exact coefficients from the paper's Taylor lift. -/
-def centeredKernelExpansion {Ω : Type*} {n p R : ℕ} (c : ℝ)
-    (H : (r : Fin R) → ContinuousMultilinearMap ℝ (fun _ : Fin (r.val + 1) => Fin p → ℝ) ℝ)
-    (X : Fin n → Ω → Fin p → ℝ) (ω : Ω) : ℝ :=
+def centeredKernelExpansion (c : ℝ)
+    (H : (r : Fin R) → ContinuousMultilinearMap ℝ (fun _ : Fin 𝗙₁ => 𝗓) ℝ)
+    (X : Fin n → Ω → 𝗓) (ω : Ω) : ℝ :=
   c + ∑ r : Fin R, kernelStatistic (H r) X ω
 
 /-- The centered derivative expression appearing in the proof of Lemma 7. -/
-def centeredDerivativeLift {Ω : Type*} {n p : ℕ} (R : ℕ)
-    (F : MvPolynomial (Fin p) ℝ) (m : Fin p → ℝ)
-    (Y : Fin n → Ω → Fin p → ℝ) : Ω → ℝ :=
+def centeredDerivativeLift (R : ℕ)
+    (F : 𝙩₁) (m : 𝗓)
+    (Y : Fin n → Ω → 𝗓) : 𝘄 :=
   centeredKernelExpansion (MvPolynomial.eval m F)
-    (fun r : Fin R => iteratedFDeriv ℝ (r.val + 1) (fun x => MvPolynomial.eval x F) m) Y
-
-end RoughRegime.UpperCovariance
+    (fun r : Fin R => iteratedFDeriv ℝ 𝗙₁ 𝘣₁ m) Y

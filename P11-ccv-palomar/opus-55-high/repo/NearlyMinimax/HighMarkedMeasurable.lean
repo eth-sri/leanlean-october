@@ -1,71 +1,67 @@
 module
 
 public import NearlyMinimax.HighMarkedDesignFactorial
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗍
 
 /-! Borel complete-generator numerator arrays from the primitive genuine
 mark law and legal Borel density/coefficient resets. This applies to the
 entire source row union, with its one common heat correction. -/
-noncomputable section
-open MeasureTheory
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
+𝚯
+𝚪
+𝚨
+𝚩
 set_option maxHeartbeats 900000
 
 section
-variable {α ι E : Type*} [MeasurableSpace α] [Fintype ι] [DecidableEq ι] [MeasurableSpace E]
+𝛣
 
-theorem highMarkedResponseMass_measurable (a V η : ℝ) (g w : α → ℝ)
-    (hg : Measurable g) (hw : Measurable w) (φ : α → ι → ℝ)
-    (hφ : ∀ γ, Measurable (fun x => φ x γ)) (c : ι → ℝ) (y : Fin 3) :
-    Measurable (fun x => highMarkedResponseMass a V η g w φ c x y) := by
+𝗇 𝔅 𝘜₁
+theorem highMarkedResponseMass_measurable a V η (g w : 𝘬)
+    (hg : Measurable g) (hw : Measurable w) φ
+    (hφ : 𝔅) (c : 𝙛) y :
+    Measurable fun x => highMarkedResponseMass a V η g w φ c x y := by
   apply ternaryMass_measurable_comp
-  exact hg.add ((measurable_const.mul hw).mul
-    (Finset.measurable_sum _ (fun γ _ => (hφ γ).mul_const (c γ))))
+  fun_prop
 
+𝗇 𝔄 E × (Fin r → α)
+𝗇 𝔇 g ∘ x
+𝗇 𝔈 w ∘ x
+𝗇 𝔉 φ ∘ x
+𝗃 𝔊 ἀ ∘ z.2
 theorem highMarkedSampleNumerator_measurable (r : ℕ) (π : Measure E) [SFinite π]
-    (activation : E → ℝ) (hAct : Measurable activation) (a V η : ℝ)
-    (p : α → ℝ) (hp : Measurable p) (pReset : E → α → ℝ)
-    (hpReset : Measurable (Function.uncurry pReset)) (cReset : E → ι → ℝ)
-    (hcReset : ∀ γ, Measurable (fun e => cReset e γ))
-    (g w : α → ℝ) (hg : Measurable g) (hw : Measurable w)
-    (φ : α → ι → ℝ) (hφ : ∀ γ, Measurable (fun x => φ x γ))
-    (c : ι → ℝ) (y : Fin r → Fin 3) :
-    Measurable (fun x => highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c x y) := by
-  have hReset (i : Fin r) : Measurable (fun z : E × (Fin r → α) => pReset z.1 (z.2 i)) :=
-    hpReset.comp (measurable_fst.prodMk ((measurable_pi_apply i).comp measurable_snd))
-  have hreg (i : Fin r) : Measurable (fun z : E × (Fin r → α) =>
-      coefficientRegression η (g ∘ z.2) (w ∘ z.2) (φ ∘ z.2) (cReset z.1) i) := by
+    activation (hAct : Measurable activation) a V η
+    p (hp : Measurable p) pReset
+    (hpReset : Measurable $ Function.uncurry pReset ) cReset
+    (hcReset : 𝘝₁)
+    (g w : 𝘬) (hg : Measurable g) (hw : Measurable w)
+    φ (hφ : 𝔅)
+    (c : 𝙛) y :
+    Measurable fun x => highMarkedSampleNumerator r π activation a V η p pReset cReset g w φ c x y := by
+  have hReset i : Measurable fun z : 𝔄 => pReset z.1 $ z.2 i :=
+    hpReset.comp $ measurable_fst.prodMk $ 𝘜 measurable_snd
+  have hreg i : Measurable fun z : 𝔄 =>
+      coefficientRegression η 𝔊 g 𝔊 w 𝔊 φ (cReset z.1) i := by
     unfold coefficientRegression
-    exact (hg.comp ((measurable_pi_apply i).comp measurable_snd)).add
-      ((measurable_const.mul (hw.comp ((measurable_pi_apply i).comp measurable_snd))).mul
-        (Finset.measurable_sum _ (fun γ _ =>
-          ((hφ γ).comp ((measurable_pi_apply i).comp measurable_snd)).mul
-            ((hcReset γ).comp measurable_fst))))
-  have hproduct : Measurable (fun z : E × (Fin r → α) =>
-      highResponseProduct a V η (g ∘ z.2) (w ∘ z.2) (φ ∘ z.2) (cReset z.1) y) :=
-    Finset.measurable_prod _ (fun i _ => ternaryMass_measurable_comp a V _ (hreg i) (y i))
-  have hMarked : Measurable (fun z : E × (Fin r → α) =>
+    fun_prop
+  have hMarked : Measurable fun z : 𝔄 =>
       activation z.1 * (∏ i, pReset z.1 (z.2 i)) *
-        highResponseProduct a V η (g ∘ z.2) (w ∘ z.2) (φ ∘ z.2) (cReset z.1) y) :=
-    ((hAct.comp measurable_fst).mul (Finset.measurable_prod _ (fun i _ => hReset i))).mul hproduct
-  have hAction : Measurable (fun x : Fin r → α =>
+        highResponseProduct a V η 𝔊 g 𝔊 w 𝔊 φ (cReset z.1) y :=
+    ((hAct.comp measurable_fst).mul $ Finset.measurable_prod _ fun i _ => hReset i ).mul $ Finset.measurable_prod _ fun i _ => ternaryMass_measurable_comp a V _ (hreg i) $ y i
+  have hAction : Measurable fun x =>
       highMarkedResponseAction π activation a V η (fun z => pReset z ∘ x) cReset
-        (g ∘ x) (w ∘ x) (φ ∘ x) y) :=
+        𝔇 𝔈 𝔉 y :=
     hMarked.stronglyMeasurable.integral_prod_left'.measurable
-  have hq (i : Fin r) : Measurable (fun x : Fin r → α =>
-      ternaryMass a (coefficientRegression η (g ∘ x) (w ∘ x) (φ ∘ x) c i) V (y i)) :=
-    (highMarkedResponseMass_measurable a V η g w hg hw φ hφ c (y i)).comp (measurable_pi_apply i)
-  have hvar (i : Fin r) : Measurable (fun x : Fin r → α =>
-      highResponseVarianceTerm a V η (g ∘ x) (w ∘ x) (φ ∘ x) c y i) := by
+  have hq i : Measurable fun x =>
+      ternaryMass a (coefficientRegression η 𝔇 𝔈 𝔉 c i) V $ y i :=
+    (𝗉₂ c $ y i ).comp $ measurable_pi_apply i
+  have hvar i : Measurable fun x =>
+      highResponseVarianceTerm a V η 𝔇 𝔈 𝔉 c y i := by
     unfold highResponseVarianceTerm
-    exact measurable_const.mul (Finset.measurable_prod _ (fun l _ => hq l))
-  exact hAction.sub ((measurable_const.mul
-    (Finset.measurable_prod _ (fun i _ => hp.comp (measurable_pi_apply i)))).mul
-      (Finset.measurable_sum _ (fun i _ =>
-        ((hw.comp (measurable_pi_apply i)).pow_const 2).mul (hvar i))))
-
-end
-end NearlyMinimax
+    fun_prop
+  exact hAction.sub $ (measurable_const.mul
+    $ Finset.measurable_prod _ fun i _ => hp.comp $ measurable_pi_apply i ).mul
+      $ Finset.measurable_sum _ fun i _ =>
+        ((hw.comp $ measurable_pi_apply i ).pow_const 2).mul $ hvar i

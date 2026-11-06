@@ -1,170 +1,182 @@
 module
 
 public import NearlyMinimax.HistoryHeapFold
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Exact raw-state compatibility of actual independent marked canonical
 append, derived from the genuine heap-coordinate transport. -/
-noncomputable section
-open MeasureTheory
-namespace NearlyMinimax
-set_option maxHeartbeats 600000
-set_option backward.isDefEq.respectTransparency false
-variable {J : Type*} [Fintype J] [LinearOrder J]
+𝚯
+𝚨
+𝚰
+𝚩
+𝚲
 
-def historyCanonicalWordMarks (dependent : J → J → Prop)
-    (g : HistoryShape (fun a b => ¬ dependent a b)) {E : Type*}
-    (marks : Fin (historyShapeLength dependent g) → E) : Fin g.out.length → E :=
-  fun i => marks (Fin.cast (historyShapeLength_out dependent g).symm i)
+𝗇 𝔄 HistoryShape 𝖴
+𝗇 𝔈 𝙁
+𝗇 𝔉 𝗠₁
+𝗇 𝔓 𝚈₂
+𝗇 𝔛 Fin 𝔉 → E
+def historyCanonicalWordMarks (dependent : 𝔈)
+    (g : 𝔄)
+    (marks : 𝔛) : Fin g.out.length → E :=
+  fun i => marks $ Fin.cast 𝔓 i
 
-theorem historyMarkedRawState_eq_wordMarkedState (dependent : J → J → Prop)
-    {E X : Type*} (update : J → E → X → X) (initial : X)
-    (g : HistoryShape (fun a b => ¬ dependent a b))
-    (marks : Fin (historyShapeLength dependent g) → E) :
-    historyMarkedRawState dependent update initial ⟨g, marks⟩ =
-      historyWordMarkedState update initial g.out (historyCanonicalWordMarks dependent g marks) := by
-  have hm : (List.ofFn (fun i : Fin (historyShapeLength dependent g) =>
-      (historyShapeCanonicalLabels dependent g i, marks i))) =
-      (List.ofFn (fun i : Fin (historyShapeLength dependent g) => i)).map
-        (fun i => (historyShapeCanonicalLabels dependent g i, marks i)) := by
-    rw [List.map_ofFn]
-    rfl
-  have ht : (List.ofFn (fun i : Fin (historyShapeLength dependent g) =>
-      (historyShapeCanonicalLabels dependent g i, marks i))) =
-      List.ofFn (fun i : Fin g.out.length => (g.out.get i, historyCanonicalWordMarks dependent g marks i)) := by
-    apply List.ext_getElem (by simp only [List.length_ofFn]; exact historyShapeLength_out dependent g)
+𝗇 𝔇 fun i => (𝘤₂ i, marks i)
+𝗇 𝔠 historyCanonicalWordMarks dependent g marks
+𝗇 𝔊 List.ofFn fun i => (g.out.get i, 𝔠 i)
+𝗇 𝔎 J → E → X → X
+𝗇 𝔒 historyWordMarkedState update initial g.out 𝔠
+𝗇 𝔗 historyMarkedRawState dependent update initial
+theorem historyMarkedRawState_eq_wordMarkedState dependent
+    (update : 𝔎) initial
+    g
+    marks :
+    𝔗 𝗬 =
+      𝔒 := by
+  have hm : List.ofFn 𝔇 =
+      (𝘞₁).map
+        𝔇 := by
+    aesop
+  have ht : List.ofFn 𝔇 =
+      𝔊 := by
+    apply List.ext_getElem $ by simp ; exact historyShapeLength_out dependent g
     intro i hi hi'
-    simp only [List.getElem_ofFn, historyShapeCanonicalLabels, historyCanonicalWordMarks]
+    simp only [List.getElem_ofFn]
     congr 1
-  have hh := congrArg (fun l : List (J × E) =>
-    l.foldl (fun state p => update p.1 p.2 state) initial) (hm.symm.trans ht)
+  have hh := congrArg (fun l =>
+    l.foldl (fun state p => update p.1 p.2 state) initial) $ hm.symm.trans ht
   rw [List.foldl_map] at hh
   exact hh
 
-def historyAppendWordMarks (dependent : J → J → Prop)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
-    {E : Type*} [MeasurableSpace E] (fresh : E)
-    (marks : Fin (historyShapeLength dependent g) → E) : Fin (g.out ++ [j]).length → E :=
-  fun i => historyFiniteMarkAppendEquiv (historyShapeLength dependent g) (fresh, marks)
-    (Fin.cast (by rw [historyShapeLength_out]; simp) i)
+𝗇 𝔅 g.out ++ [j]
+𝗇 𝔏 𝘨₂
+def historyAppendWordMarks (dependent : 𝔈)
+    (j : J) (g : 𝔄)
+    [MeasurableSpace E] (fresh : E)
+    (marks : 𝔛) : Fin (𝔅).length → E :=
+  fun i => historyFiniteMarkAppendEquiv 𝔉 𝔏
+    $ Fin.cast (by rw [historyShapeLength_out]; simp) i
 
-theorem historyCanonicalAppend_word_marks (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
-    {E : Type*} [MeasurableSpace E] (fresh : E)
-    (marks : Fin (historyShapeLength dependent g) → E) :
-    historyCanonicalWordMarks dependent (historyShapeAppend dependent j g)
-      (historyCanonicalMarkAppendEquiv dependent hsymm j g (fresh, marks)) =
-      historyHeapMarkEquiv (historyCanonicalAppendHeapIso dependent hsymm j g)
-        (historyAppendWordMarks dependent j g fresh marks) := by
-  let e := historyCanonicalAppendHeapIso dependent hsymm j g
-  let hlen : historyShapeLength dependent g + 1 = (g.out ++ [j]).length := by
+𝗃 𝔡 ἀ dependent j g fresh marks
+𝗇 𝔖 𝔡 historyAppendWordMarks
+𝗇 𝔍 𝔖
+𝗇 𝔐 𝘼
+𝗃 𝔘 ἀ dependent hsymm j g
+𝗇 𝔑 𝔘 historyCanonicalAppendHeapIso
+𝗇 𝔔 𝗡₁ g
+𝗇 𝔜 Fin.cast hlen.symm x.position
+theorem historyCanonicalAppend_word_marks (dependent : 𝔈)
+    (hsymm : 𝔐)
+    j (g : 𝔄)
+    [MeasurableSpace E] (fresh : E)
+    marks :
+    historyCanonicalWordMarks dependent 𝔔
+      (𝔘 historyCanonicalMarkAppendEquiv 𝔏) =
+      historyHeapMarkEquiv 𝔑
+        𝔍 := by
+  let e := 𝔑
+  let hlen : 𝔉 + 1 = (𝔅).length := by
     rw [historyShapeLength_out]; simp
-  have hc (x : WordHeapPiece (g.out ++ [j]) dependent) :
-      historyCanonicalAppendCoordinates dependent hsymm j g (Fin.cast hlen.symm x.position) =
-      Fin.cast (historyShapeLength_out dependent (historyShapeAppend dependent j g)).symm (e x).position := by
-    unfold historyCanonicalAppendCoordinates
-    change Fin.cast (historyShapeLength_out dependent (historyShapeAppend dependent j g)).symm
-      (historyHeapCoordinateEquiv e (Fin.cast hlen (Fin.cast hlen.symm x.position))) = _
-    rw [Fin.cast_cast, Fin.cast_refl, historyHeapCoordinateEquiv_position]
+  have hc x :
+      𝔘 historyCanonicalAppendCoordinates 𝔜 =
+      Fin.cast (historyShapeLength_out dependent 𝔔).symm 𝚟₁ := by
     rfl
-  have hm (x : WordHeapPiece (g.out ++ [j]) dependent) :=
+  have hm (x : WordHeapPiece 𝔅 dependent) :=
     MeasurableEquiv.piCongrLeft_apply_apply
-      (historyCanonicalAppendCoordinates dependent hsymm j g)
-      (β := fun _ => E) (historyFiniteMarkAppendEquiv _ (fresh, marks)) (Fin.cast hlen.symm x.position)
+      𝔘 historyCanonicalAppendCoordinates
+      (β := 𝚓) (historyFiniteMarkAppendEquiv _ 𝔏) 𝔜
   ext i
-  let x : WordHeapPiece (g.out ++ [j]) dependent := e.symm ⟨i⟩
-  have hx : (e x).position = i := by simp only [x, e.apply_symm_apply]
+  let x := e.symm ⟨i⟩
+  have hx : 𝚟₁ = i := by simp only [x, e.apply_symm_apply]
   have hh := hm x
   rw [hc x, hx] at hh
-  have ht := historyHeapMarkEquiv_position e (historyAppendWordMarks dependent j g fresh marks) x
+  have ht := historyHeapMarkEquiv_position e 𝔍 x
   rw [hx] at ht
   exact hh.trans ht.symm
 
-@[simp] theorem historyAppendWordMarks_old (dependent : J → J → Prop)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
-    {E : Type*} [MeasurableSpace E] (fresh : E)
-    (marks : Fin (historyShapeLength dependent g) → E) (x : WordHeapPiece g.out dependent) :
-    historyAppendWordMarks dependent j g fresh marks
-      (historyPrefixHeapEmbedding g.out dependent j x).position =
-      historyCanonicalWordMarks dependent g marks x.position := by
+𝗇 𝔚 (historyPrefixHeapEmbedding g.out dependent j x).position
+@[simp] theorem historyAppendWordMarks_old (dependent : 𝔈)
+    j (g : 𝔄)
+    [MeasurableSpace E] (fresh : E)
+    marks x :
+    𝔖
+      𝔚 =
+      𝔠 x.position := by
   unfold historyAppendWordMarks historyCanonicalWordMarks
   have he : Fin.cast (by rw [historyShapeLength_out]; simp)
-      (historyPrefixHeapEmbedding g.out dependent j x).position =
-      (Fin.cast (historyShapeLength_out dependent g).symm x.position).castSucc := by
-    apply Fin.ext
+      𝔚 =
+      (Fin.cast 𝔓 x.position).castSucc := by
     rfl
-  rw [he, historyFiniteMarkAppendEquiv_old]
+  simp_all
 
-@[simp] theorem historyAppendWordMarks_fresh (dependent : J → J → Prop)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
-    {E : Type*} [MeasurableSpace E] (fresh : E)
-    (marks : Fin (historyShapeLength dependent g) → E) :
-    historyAppendWordMarks dependent j g fresh marks (wordHeapAppendedPiece g.out dependent j).position = fresh := by
+𝗇 𝔞 (wordHeapAppendedPiece g.out dependent j).position
+@[simp] theorem historyAppendWordMarks_fresh (dependent : 𝔈)
+    j (g : 𝔄)
+    [MeasurableSpace E] (fresh : E)
+    marks :
+    𝔖 𝔞 = fresh := by
   unfold historyAppendWordMarks
   have he : Fin.cast (by rw [historyShapeLength_out]; simp)
-      (wordHeapAppendedPiece g.out dependent j).position = Fin.last (historyShapeLength dependent g) := by
+      𝔞 = Fin.last 𝔉 := by
     apply Fin.ext
-    exact (historyShapeLength_out dependent g).symm
-  rw [he, historyFiniteMarkAppendEquiv_last]
+    exact 𝔓
+  simp_all
 
-theorem historyAppendWordMarkedState (dependent : J → J → Prop)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
-    {E X : Type*} [MeasurableSpace E] (fresh : E)
-    (marks : Fin (historyShapeLength dependent g) → E)
-    (update : J → E → X → X) (initial : X) :
-    historyWordMarkedState update initial (g.out ++ [j])
-      (historyAppendWordMarks dependent j g fresh marks) =
-      update j fresh (historyWordMarkedState update initial g.out
-        (historyCanonicalWordMarks dependent g marks)) := by
-  have ht : (List.ofFn (fun i : Fin (g.out ++ [j]).length =>
-      ((g.out ++ [j]).get i, historyAppendWordMarks dependent j g fresh marks i))) =
-      (List.ofFn (fun i : Fin g.out.length =>
-        (g.out.get i, historyCanonicalWordMarks dependent g marks i))) ++ [(j, fresh)] := by
-    apply List.ext_getElem (by simp only [List.length_ofFn, List.length_append, List.length_singleton])
+𝗇 𝔙 ⟨i, hiold⟩
+𝗇 𝔟 (𝔅).get
+theorem historyAppendWordMarkedState (dependent : 𝔈)
+    j (g : 𝔄)
+    [MeasurableSpace E] fresh
+    (marks : 𝔛)
+    (update : 𝔎) initial :
+    historyWordMarkedState update initial 𝔅
+      𝔍 =
+      update j fresh 𝔒 := by
+  have ht : (List.ofFn fun i =>
+      (𝔟 i, 𝔖 i) ) =
+      𝔊 ++ [(j, fresh)] := by
+    apply List.ext_getElem 𝖢₄
     intro i hi hi'
     by_cases hiold : i < g.out.length
-    · rw [List.getElem_append_left (by simpa only [List.length_ofFn] using hiold)]
+    · rw [List.getElem_append_left 𝖧₄ ]
       simp only [List.getElem_ofFn]
-      have hg : (g.out ++ [j]).get ⟨i, by simpa only [List.length_ofFn] using hi⟩ = g.out.get ⟨i, hiold⟩ := by
-        simp only [List.get_eq_getElem, List.getElem_append_left hiold]
+      have hg : 𝔟 ⟨i, 𝖤₄⟩ = g.out.get 𝔙 := by
+        simp_all
       rw [hg]
-      exact congrArg (fun a => (g.out.get ⟨i, hiold⟩, a))
-        (historyAppendWordMarks_old dependent j g fresh marks (⟨⟨i, hiold⟩⟩ : WordHeapPiece g.out dependent))
+      exact congrArg (fun a => (g.out.get 𝔙, a))
+        $ 𝔡 historyAppendWordMarks_old ⟨𝔙⟩
     · have hieq : i = g.out.length := by
-        simp only [List.length_ofFn, List.length_append, List.length_singleton] at hi
-        omega
+        grind
       subst i
-      rw [List.getElem_append_right (by simp only [List.length_ofFn]; exact le_rfl)]
-      simp only [List.length_ofFn, Nat.sub_self, List.getElem_cons_zero, List.getElem_ofFn]
-      have hg : (g.out ++ [j]).get ⟨g.out.length, by simpa only [List.length_ofFn] using hi⟩ = j := by
-        simp only [List.get_eq_getElem, List.getElem_append_right le_rfl, Nat.sub_self, List.getElem_cons_zero]
+      rw [List.getElem_append_right 𝖢₄ ]
+      simp only [List.length_ofFn, Nat.sub_self, List.getElem_ofFn]
+      have hg : 𝔟 ⟨g.out.length, 𝖢₄⟩ = j := by
+        simp
       rw [hg]
-      exact congrArg (fun a => (j, a)) (historyAppendWordMarks_fresh dependent j g fresh marks)
+      exact congrArg (fun a => (j, a)) 𝔡 historyAppendWordMarks_fresh
   unfold historyWordMarkedState historyWordState
-  rw [ht, List.foldl_append, List.foldl_cons, List.foldl_nil]
+  simp_all
 
 /-- Actual canonical marked append applies exactly the fresh local update
 once, even when the canonical representative reorders old occurrences. -/
-theorem historyMarkedRawState_append (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    {E X : Type*} [MeasurableSpace E] (update : J → E → X → X)
-    (hcomm : ∀ j k, ¬ dependent j k → ∀ e f state,
-      update k f (update j e state) = update j e (update k f state))
-    (initial : X) (j : J) (h : HistoryMarked dependent E) (fresh : E) :
-    historyMarkedRawState dependent update initial
-      (historyMarkedAppend dependent hsymm j (h, fresh)) =
-      update j fresh (historyMarkedRawState dependent update initial h) := by
+theorem historyMarkedRawState_append (dependent : 𝔈)
+    (hsymm : 𝔐)
+    [MeasurableSpace E] (update : 𝔎)
+    (hcomm : 𝚙)
+    initial j h fresh :
+    𝔗
+      (𝙯₁ 𝘥₂) =
+      update j fresh (𝔗 h) := by
   obtain ⟨g, marks⟩ := h
-  change historyMarkedRawState dependent update initial
-      ⟨historyShapeAppend dependent j g, historyCanonicalMarkAppendEquiv dependent hsymm j g (fresh, marks)⟩ = _
+  change 𝔗
+      ⟨𝔔, 𝔘 historyCanonicalMarkAppendEquiv 𝔏⟩ = _
   rw [historyMarkedRawState_eq_wordMarkedState,
     historyCanonicalAppend_word_marks,
     historyHeapMarkEquiv_state dependent hsymm update hcomm
-      (historyCanonicalAppendHeapIso dependent hsymm j g)
-      (historyCanonicalAppendHeapIso_label dependent hsymm j g),
+      𝔑
+      𝔘 historyCanonicalAppendHeapIso_label,
     historyAppendWordMarkedState, historyMarkedRawState_eq_wordMarkedState]
-
-end NearlyMinimax

@@ -2,50 +2,46 @@ module
 
 public import NearlyMinimax.HighUnionSource
 public import NearlyMinimax.HighFrameEvaluation
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Actual original-model legality of complete-row canonical raw histories.
 The density is normalized by its true integrated mass, and the regression
 uses the actual periodic polynomial field of the history's reset coefficients. -/
-noncomputable section
-open Set MeasureTheory
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 700000
-attribute [local instance] Classical.propDecidable
+𝚸
+𝚪
+𝚨
+𝚩
+𝚾
+𝚬
 
 section
-variable {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
-  [∀ i, MeasurableSpace (E i)] [NeZero k] [LinearOrder (HighWindowLabels d k)]
-  (C : ModelConstants d) (R : HighUnionRowData d k F I E)
+variable {d k F : ℕ} {I : Type*} [Fintype I] {E : 𝗀}
+  [𝙪] [NeZero k] [LinearOrder 𝙯]
+  (C : ModelConstants d) (R : 𝗽)
 
+𝗇 𝔄 𝖫
 def highUnionSourceRegression (η : ℝ)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
+    (h : HistoryMarked 𝔄 $ HighUnionMark E )
     (x : Covariate d) : ℝ :=
-  highFrameField d k η (fun j => highFramePolynomial ((highUnionSourceState C R h).2 j)) x
+  highFrameField d k η (fun j => highFramePolynomial $ 𝖯 j ) x
 
-theorem highUnionSourceState_measurable [∀ i, StandardBorelSpace (E i)]
-    {M Cfr : ℝ} (G : HighUnionSourceGuards C M Cfr R) :
-    Measurable (highUnionSourceState C R) :=
-  historyMarkedRawState_measurable (fun i j => j ∈ highNeighborLabels d k i)
-    (highUnionRawUpdate R (highCenterMix C))
-    (fun j => highUnionRawUpdate_measurable R G.slope_measurable G.intercept_measurable
-      G.vector_measurable G.time_measurable (highCenterMix C) j) highUnionVacuum
+theorem highUnionSourceState_measurable [𝖭]
+    (G : 𝗗) :
+    Measurable $ highUnionSourceState C R :=
+  historyMarkedRawState_measurable 𝔄
+    (highUnionRawUpdate R $ highCenterMix C )
+    ( highUnionRawUpdate_measurable R G.slope_measurable G.intercept_measurable
+      G.vector_measurable G.time_measurable $ highCenterMix C ) highUnionVacuum
 
-theorem highUnionSourceRegression_joint_measurable [∀ i, StandardBorelSpace (E i)]
-    {M Cfr : ℝ} (G : HighUnionSourceGuards C M Cfr R) (η : ℝ) :
-    Measurable (fun hx : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-      (HighUnionMark E) × Covariate d => highUnionSourceRegression C R η hx.1 hx.2) :=
+theorem highUnionSourceRegression_joint_measurable [𝖭]
+    (G : 𝗗) η :
+    Measurable fun hx : HistoryMarked 𝔄
+      (HighUnionMark E) × Covariate d => highUnionSourceRegression C R η hx.1 hx.2 :=
 by
-  let Ω := HistoryMarked (fun i j : HighWindowLabels d k => j ∈ highNeighborLabels d k i)
-    (HighUnionMark E)
-  have hcoef : Measurable (fun h : Ω => (highUnionSourceState C R h).2) :=
-    measurable_snd.comp (highUnionSourceState_measurable C R G)
-  exact highFrameField_joint_measurable (Ω := Ω) d k F η
-    (fun h : Ω => (highUnionSourceState C R h).2) hcoef
-
-end
-
-end NearlyMinimax
+  let Ω := HistoryMarked 𝔄
+    $ HighUnionMark E
+  exact highFrameField_joint_measurable d k F η
+    (fun h => 𝖯) $ measurable_snd.comp $ highUnionSourceState_measurable C R G

@@ -2,105 +2,106 @@ module
 
 public import NearlyMinimax.LowerActivityHierarchy
 public import NearlyMinimax.FieldTailSummation
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! The actual rounded saddle absorbs the higher-field scale energy into
 mu² N^-d. The negative quadratic logarithmic scale is proved explicitly. -/
-noncomputable section
-open Filter
-open scoped Topology
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
+𝚷
+𝚶
+𝚨
+𝚩
 
-def lowerSaddleFineFieldScale (s d m theta C c0 : ℝ) (tauM : ℕ → ℝ) (x : ℝ) : ℝ :=
-  Real.exp (2 * tauM (lowerSaddleM m x) * lowerSaddleM m x) *
-    lowerSaddleN s d m theta C tauM x ^ (4 - d) *
-    Real.exp (c0 * (2 * d - 4) * lowerSaddleD d m x)
+𝗇 𝔔 c0 * (𝖩₁ - 4)
+𝗇 𝔉 𝔔
+𝗇 𝔗 𝗫
+𝗇 𝔍 2 * tauM 𝔗 * 𝔗
+𝗇 𝔎 𝚜₂
+𝗃 𝔐 ἀ s d m theta C
+def lowerSaddleFineFieldScale (s d m theta C c0 : ℝ) (tauM : 𝙜) (x : ℝ) : ℝ :=
+  Real.exp 𝔍 *
+    𝔐 lowerSaddleN tauM x ^ 𝔎 *
+    Real.exp (𝔉 * 𝙵)
 
-theorem lowerSaddleFineFieldScale_positive (s d m theta C c0 : ℝ) (tauM : ℕ → ℝ) (x : ℝ) :
-    0 < lowerSaddleFineFieldScale s d m theta C c0 tauM x := by
+𝗇 𝔊 𝔐 lowerSaddleN_positive tauM x
+𝗇 𝔏 𝔐 lowerSaddleFineFieldScale c0 tauM
+theorem lowerSaddleFineFieldScale_positive s d m theta C c0 tauM x :
+    0 < 𝔏 x := by
   unfold lowerSaddleFineFieldScale
-  positivity [lowerSaddleN_positive s d m theta C tauM x]
+  positivity [𝔊]
 
-theorem lowerSaddleFineFieldScale_tends_zero {s d m theta tau Ctau : ℝ}
-    {tauM : ℕ → ℝ} (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (htheta : 0 < theta)
-    (hcontrol : LowerExponentControl tauM tau Ctau) (C c0 : ℝ) :
-    Tendsto (lowerSaddleFineFieldScale s d m theta C c0 tauM) atTop (𝓝 0) := by
-  have hd0 : 0 < d := by linarith only [hs, hd]
-  have hd4 : 4 < d := by linarith only [hs, hd]
+𝗇 𝔅 (d - 𝚄) / (d * 𝙾₁) / m ^ 2
+theorem lowerSaddleFineFieldScale_tends_zero
+    (hs : 𝚊₁) (hd : 𝚄 < d) (hm : 0 < m) (htheta : 0 < theta)
+    (hcontrol : LowerExponentControl tauM tau Ctau) C c0 :
+    Tendsto 𝔏 atTop $ 𝓝 0 := by
+  have hd0 : 𝗆 := 𝖡₄
   have hM := lowerSaddleM_tendsto_atTop hm
-  have hM2 : Tendsto (fun x : ℝ => (lowerSaddleM m x : ℝ) ^ 2) atTop atTop :=
-    (tendsto_pow_atTop (by decide : (2 : ℕ) ≠ 0)).comp hM
+  have hM2 : Tendsto (fun x => (𝔗 : ℝ) ^ 2) atTop atTop :=
+    (tendsto_pow_atTop 𝖨₃ ).comp hM
   have htau := ((lowerSaddleTau_limit hm hcontrol).mul hM.inv_tendsto_atTop).const_mul 2
-  have hN := (lowerSaddleLogN_div_M_sq_limit hd0 hm htheta hcontrol s C).const_mul (4 - d)
-  have hD := (lowerSaddleD_div_M_sq_tends_zero hd0 hm).const_mul (c0 * (2 * d - 4))
-  have hh := (htau.add hN).add hD
+  have hh := (htau.add $ (lowerSaddleLogN_div_M_sq_limit hd0 hm htheta hcontrol s C).const_mul 𝔎 ).add $ (lowerSaddleD_div_M_sq_tends_zero hd0 hm).const_mul 𝔉
   simp only [mul_zero, zero_add, add_zero] at hh
   apply positive_profile_tends_zero_of_log_div_negative
-    (c := (4 - d) * (((d - 4 * s) / (d * (d + 4))) / m ^ 2)) hM2
-    (by have hp : 0 < ((d - 4 * s) / (d * (d + 4))) / m ^ 2 := by positivity
-        exact mul_neg_of_neg_of_pos (by linarith only [hd4]) hp)
-    (Filter.Eventually.of_forall (lowerSaddleFineFieldScale_positive s d m theta C c0 tauM))
+    (c := 𝔎 * 𝔅) hM2
+    (by have hp : 0 < 𝔅 := by positivity
+        nlinarith)
+    $ Filter.Eventually.of_forall $ 𝔐 lowerSaddleFineFieldScale_positive c0 tauM
   refine hh.congr' ?_
-  filter_upwards [hM.eventually (eventually_gt_atTop (0 : ℝ))] with x hMx
+  filter_upwards [hM.eventually $ eventually_gt_atTop 0 ] with x hMx
   unfold lowerSaddleFineFieldScale
-  have hNp := lowerSaddleN_positive s d m theta C tauM x
-  rw [Real.log_mul (by positivity) (Real.exp_pos _).ne',
+  have hNp := 𝔊
+  rw [Real.log_mul  𝖠₃  (Real.exp_pos _).ne',
     Real.log_mul (Real.exp_pos _).ne' (Real.rpow_pos_of_pos hNp _).ne',
     Real.log_exp, Real.log_exp, Real.log_rpow hNp]
-  simp only [Pi.inv_apply]
-  field_simp [hMx.ne']
+  simp
+  field_simp
 
-theorem fine_field_scale_absorption {d N mu ell tau M D c0 : ℝ}
-    (hN : 0 < N) (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1)
-    (hell : ell = N * Real.exp (-c0 * D))
-    (hscale : Real.exp (2 * tau * M) * N ^ (4 - d) *
-      Real.exp (c0 * (2 * d - 4) * D) ≤ 1) :
-    Real.exp (2 * tau * M) * mu ^ 4 * ell ^ (4 - 2 * d) ≤
-      mu ^ 2 * N ^ (-d) := by
-  have hNpow : N ^ (-d) * N ^ (4 - d) = N ^ (4 - 2 * d) := by
+𝗇 𝔖 𝙹₁
+𝗇 𝔄 Real.exp 𝔖 * N ^ 𝚜₂ * Real.exp (𝔔 * D)
+𝗇 𝔇 𝙺₁ * N ^ (-d)
+𝗇 𝔈 4 - 𝖩₁
+𝗇 𝔑 -c0 * D
+𝗇 𝔒 𝙺₁ * 𝔄
+theorem fine_field_scale_absorption
+    (hN : 𝘹) (hmu : 0 ≤ mu) (hmu1 : 𝗦₁)
+    (hell : ell = N * Real.exp 𝔑)
+    (hscale : 𝔄 ≤ 1) :
+    Real.exp 𝔖 * mu ^ 4 * ell ^ 𝔈 ≤
+      𝔇 := by
+  have hNpow : N ^ (-d) * N ^ 𝔎 = N ^ 𝔈 := by
     rw [← Real.rpow_add hN]
-    congr 1
     ring
-  have he : Real.exp (-c0 * D) ^ (4 - 2 * d) = Real.exp (c0 * (2 * d - 4) * D) := by
+  have he : Real.exp 𝔑 ^ 𝔈 = Real.exp (𝔉 * D) := by
     rw [← Real.exp_mul]
-    congr 1
     ring
-  rw [hell, Real.mul_rpow hN.le (Real.exp_pos _).le, he]
-  have hmu2 : mu ^ 2 ≤ 1 := pow_le_one₀ hmu hmu1
-  have hprod : mu ^ 2 * (Real.exp (2 * tau * M) * N ^ (4 - d) *
-      Real.exp (c0 * (2 * d - 4) * D)) ≤ 1 := by
-    have h := mul_le_mul hmu2 hscale (by positivity) (by norm_num : (0 : ℝ) ≤ 1)
-    simpa only [one_mul] using h
+  rw [hell, Real.mul_rpow hN.le 𝙫, he]
+  have hprod : 𝔒 ≤ 1 := by
+    bound
   calc
-    _ = (mu ^ 2 * N ^ (-d)) * (mu ^ 2 *
-        (Real.exp (2 * tau * M) * N ^ (4 - d) * Real.exp (c0 * (2 * d - 4) * D))) := by
-      rw [show (mu ^ 2 * N ^ (-d)) * (mu ^ 2 *
-          (Real.exp (2 * tau * M) * N ^ (4 - d) * Real.exp (c0 * (2 * d - 4) * D))) =
-        mu ^ 4 * Real.exp (2 * tau * M) * (N ^ (-d) * N ^ (4 - d)) *
-          Real.exp (c0 * (2 * d - 4) * D) by ring]
-      rw [hNpow]
-      ring
-    _ ≤ (mu ^ 2 * N ^ (-d)) * 1 := mul_le_mul_of_nonneg_left hprod (by positivity)
-    _ = _ := mul_one _
+    _ = 𝔇 * 𝔒 := by
+      grind
+    _ ≤ 𝔇 * 1 := mul_le_mul_of_nonneg_left hprod 𝖠₃
+    𝘿 := mul_one _
 
-theorem eventually_lowerSaddle_fine_field_energy_scale {s d m theta tau Ctau : ℝ}
-    {tauM : ℕ → ℝ} (hs : 1 < s) (hd : 4 * s < d) (hm : 0 < m) (htheta : 0 < theta)
-    (hcontrol : LowerExponentControl tauM tau Ctau) (C c0 : ℝ) :
+𝗇 𝔓 𝙋 < 1
+𝗃 𝔘 ἀ d m theta C x
+theorem eventually_lowerSaddle_fine_field_energy_scale
+    (hs : 𝚊₁) (hd : 𝚄 < d) (hm : 0 < m) (htheta : 0 < theta)
+    (hcontrol : LowerExponentControl tauM tau Ctau) C c0 :
     ∀ᶠ x : ℝ in atTop,
-      Real.exp (2 * tauM (lowerSaddleM m x) * lowerSaddleM m x) *
-        lowerSaddleMu d m theta C x ^ 4 *
-        lowerAliasCutoff s d m theta C c0 tauM x ^ (4 - 2 * d) ≤
-          lowerSaddleMu d m theta C x ^ 2 * lowerSaddleN s d m theta C tauM x ^ (-d) := by
-  have hd0 : 0 < d := by linarith only [hs, hd]
+      Real.exp 𝔍 *
+        𝔘 lowerSaddleMu ^ 4 *
+        𝔐 lowerAliasCutoff c0 tauM x ^ 𝔈 ≤
+          𝔘 lowerSaddleMu ^ 2 * 𝔐 lowerSaddleN tauM x ^ (-d) := by
+  have hd0 : 𝗆 := 𝖡₄
   filter_upwards [(lowerSaddleFineFieldScale_tends_zero hs hd hm htheta hcontrol C c0).eventually
-      (gt_mem_nhds (by norm_num : (0 : ℝ) < 1)),
-    (lowerSaddleMu_tends_zero hd0 hm htheta C).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1)),
-    eventually_gt_atTop (0 : ℝ)] with x hscale hmu hx
-  apply fine_field_scale_absorption (lowerSaddleN_positive s d m theta C tauM x)
-    (mul_nonneg hx.le (Real.rpow_pos_of_pos (lowerSaddleH_positive d m theta C x) _).le) hmu.le rfl
+      $ gt_mem_nhds (by norm_num : 𝔓) ,
+    (lowerSaddleMu_tends_zero hd0 hm htheta C).eventually $ gt_mem_nhds (by norm_num : 𝔓) ,
+    eventually_gt_atTop 0] with x hscale hmu hx
+  apply fine_field_scale_absorption 𝔊
+    (mul_nonneg hx.le (Real.rpow_pos_of_pos 𝔘 lowerSaddleH_positive _).le) hmu.le rfl
   exact hscale.le
-
-end NearlyMinimax

@@ -1,157 +1,180 @@
 module
 
 public import NearlyMinimax.HighAppendLikelihood
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! The genuine likelihood score of the constructed marked-history experiment.
 The derivative numerator uses actual append likelihood actions and one variance
 heat correction. This module does not assume a score derivative identity. -/
-noncomputable section
-open MeasureTheory ProbabilityTheory Filter Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
-variable {J : Type*} [Fintype J] [LinearOrder J]
+𝚹
+𝚨
+𝚭
+𝚩
+𝚲
 
-def highHistoryLikelihoodDerivative {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (π : Measure E) (activation : E → ℝ) (n : ℕ) (a V η : ℝ)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (ω : HistoryMarked dependent E) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
-  (∑ j, highAppendLikelihoodAction dependent hsymm π activation n a V p F j ω z) -
-    η^2 * highRawSampleVarianceDerivative n a V (p ω) (F ω) z
+𝗇 𝔄 𝙇 × 𝙈
+𝗇 𝔅 𝘼
+𝗇 𝔉 𝙗 → 𝙀
+𝗃 𝔥 ἀ dependent hsymm π activation n a V
+𝗇 𝔊 ∑ j, 𝔥 highAppendLikelihoodAction p F j ω z
+𝗇 𝔏 𝙁
+𝗇 𝔠 𝙎
+𝗃 𝔮 ἀ n a V
+𝗃 𝔤 𝔮 ἀ (p ω) $ F ω
+𝗇 𝔐 𝔠 * 𝔤 highRawSampleVarianceDerivative z
+𝗇 𝔖 𝙗
+𝗇 𝔦 𝙏
+def highHistoryLikelihoodDerivative [MeasurableSpace E]
+    (dependent : 𝔏) (hsymm : 𝔅)
+    (π : Measure E) (activation : 𝔦) (n : ℕ) (a V η : ℝ)
+    (p F : 𝔉)
+    (ω : 𝔖) (z : 𝔄) : ℝ :=
+  𝔊 -
+    𝔐
 
+𝗇 𝔗 𝔥 highHistoryLikelihoodDerivative η p F ω z
+𝗇 𝔘 𝔤 highRawSampleLikelihood z
 /-- A true score: the actual derivative numerator divided by the raw likelihood. -/
-def highHistoryLikelihoodScore {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (π : Measure E) (activation : E → ℝ) (n : ℕ) (a V η : ℝ)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (ω : HistoryMarked dependent E) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
-  highHistoryLikelihoodDerivative dependent hsymm π activation n a V η p F ω z /
-    highRawSampleLikelihood n a V (p ω) (F ω) z
+def highHistoryLikelihoodScore [MeasurableSpace E]
+    (dependent : 𝔏) (hsymm : 𝔅)
+    (π : Measure E) (activation : 𝔦) (n : ℕ) (a V η : ℝ)
+    (p F : 𝔉)
+    (ω : 𝔖) (z : 𝔄) : ℝ :=
+  𝔗 /
+    𝔘
 
-theorem highHistoryLikelihoodDerivative_measurable {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (π : Measure E) [SFinite π] (activation : E → ℝ) (ham : Measurable activation)
-    (n : ℕ) (a V η : ℝ) (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) :
-    Measurable (fun z : HistoryMarked dependent E × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-      highHistoryLikelihoodDerivative dependent hsymm π activation n a V η p F z.1 z.2) := by
-  exact (Finset.measurable_sum _ (fun j _ =>
-    highAppendLikelihoodAction_measurable dependent hsymm π activation ham n a V p F hp hF j)).sub
-      ((highRawSampleVarianceDerivative_joint_measurable n a V p F hp hF).const_mul (η^2))
+𝗇 𝔒 𝙾₂
+𝗇 𝔙 𝔥 highHistoryLikelihoodDerivative η p F z.1 z.2
+𝗇 𝔜 𝔮 highRawSampleVarianceDerivative_joint_measurable p F hp hF
+𝗃 𝔭 Measurable $ Function.uncurry ἀ
+theorem highHistoryLikelihoodDerivative_measurable [MeasurableSpace E]
+    [StandardBorelSpace E]
+    (dependent : 𝔏) (hsymm : 𝔅)
+    (π : Measure E) [SFinite π] (activation : 𝔦) (ham : Measurable activation)
+    (n : ℕ) (a V η : ℝ) (p F : 𝔉)
+    (hp : 𝔭 p) (hF : 𝔭 F) :
+    Measurable fun z : 𝔖 × 𝔄 =>
+      𝔙 := (Finset.measurable_sum _ fun j _ =>
+    𝔒 ).sub
+      $ (𝔜).const_mul 𝔠
 
-theorem highRawSampleLikelihood_pos {Ω : Type*} {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ) (hp : ∀ ω x, 0 < p ω x)
-    (hq : ∀ ω x y, 0 < ternaryMass a (F ω x) V y)
-    (ω : Ω) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
-    0 < highRawSampleLikelihood n a V (p ω) (F ω) z :=
-  Finset.prod_pos (fun i _ => mul_pos (hp ω _) (hq ω _ _))
+𝗇 𝔑 𝙅 V y
+theorem highRawSampleLikelihood_pos n a V
+    (p F : Ω → 𝙀) (hp : ∀ ω x, 0 < 𝗃₁)
+    (hq : ∀ ω x y, 0 < 𝔑)
+    ω z :
+    0 < 𝔘 :=
+  Finset.prod_pos fun i _ => mul_pos (hp ω _) $ hq ω ..
 
+𝗇 𝔫 𝙯₁ z
+𝗇 𝔇 ∑ j, ∫ z : 𝙗 × E, 𝔮 highRawObservable (p 𝔫) (F 𝔫) H * activation z.2 ∂ν.prod π
+𝗇 𝔍 ∫ ω, 𝔤 highRawObservableVarianceDerivative H ∂ν
+𝗇 𝔢 test z * A j z
+𝗇 𝔎 ∑ j, ∫ z, 𝔢 ∂μ
+𝗇 𝔓 𝙽₂
+𝗇 𝔔 test z * D z
+𝗇 𝔚 𝔥 highAppendLikelihoodAction p F j z.1 z.2
+𝗇 𝔛 𝔮 highRawSampleVarianceDerivative (p z.1) (F z.1) z.2
+𝗇 𝔞 fun j _ => hiA j
+𝗇 𝔟 𝚗 * (n/𝗅)
+𝗇 𝔡 Ba * 𝚗
+𝗇 𝔣 highAppendLikelihoodAction_abs_le π dependent hsymm activation Ba hBa habound n a V P hP ha.ne' p F hpb hq j
+𝗇 𝔧 ∀ ω x y, 0 ≤ 𝔑
+𝗇 𝔨 ∫ z, 𝔔 ∂μ
+𝗇 𝔩 𝘱
+𝗇 𝔪 𝔮 highRawSampleVarianceDerivative_abs_le P ha hP
+𝗃 𝔬 fun z => ἀ
 /-- Integrability and Fubini for the actual score numerator derive from
 bounded primitive likelihoods, including all reset states. -/
-theorem highHistoryLikelihoodDerivative_observable {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] (π : Measure E) [IsProbabilityMeasure π] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (ν : Measure (HistoryMarked dependent E)) [IsProbabilityMeasure ν]
-    (activation : E → ℝ) (ham : Measurable activation)
-    (Ba : ℝ) (hBa : 0 ≤ Ba) (habound : ∀ e, |activation e| ≤ Ba)
-    (n : ℕ) (a V η P B : ℝ) (hP : 0 ≤ P) (hB : 0 ≤ B) (ha : 0 < a)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hpb : ∀ ω x, |p ω x| ≤ P) (hq : ∀ ω x y, 0 ≤ ternaryMass a (F ω x) V y)
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H) (hHb : ∀ z, |H z| ≤ B) :
-    (∫ z : HistoryMarked dependent E × ((Fin n → Covariate d) × (Fin n → Fin 3)),
-      H (encodeDesignResponse a z.2) *
-        highHistoryLikelihoodDerivative dependent hsymm π activation n a V η p F z.1 z.2
-      ∂ν.prod (highSampleReference d n)) =
-      (-η^2 * ∫ ω, highRawObservableVarianceDerivative n a V (p ω) (F ω) H ∂ν) +
-        ∑ j, ∫ z : HistoryMarked dependent E × E,
-          highRawObservable n a V (p (historyMarkedAppend dependent hsymm j z))
-            (F (historyMarkedAppend dependent hsymm j z)) H * activation z.2 ∂ν.prod π := by
-  let Q := HistoryMarked dependent E × ((Fin n → Covariate d) × (Fin n → Fin 3))
-  let μ : Measure Q := ν.prod (highSampleReference d n)
-  let test : Q → ℝ := fun z => H (encodeDesignResponse a z.2)
+theorem highHistoryLikelihoodDerivative_observable [MeasurableSpace E]
+    [StandardBorelSpace E] (π : Measure E) [IsProbabilityMeasure π]
+    (dependent : 𝔏) (hsymm : 𝔅)
+    (ν : Measure 𝔖) [IsProbabilityMeasure ν]
+    (activation : 𝔦) (ham : Measurable activation)
+    (Ba : ℝ) (hBa : 𝙑) (habound : ∀ e, |activation e| ≤ Ba)
+    (n : ℕ) (a V η P B : ℝ) (hP : 𝚏) (hB : 𝙐) (ha : 𝙆)
+    (p F : 𝔉)
+    (hp : 𝔭 p) (hF : 𝔭 F)
+    (hpb : ∀ ω x, |𝗃₁| ≤ P) (hq : 𝔧)
+    H (hH : Measurable H) (hHb : ∀ z, |H z| ≤ B) :
+     ∫ z : 𝔖 × 𝔄,
+      𝔓 *
+        𝔙
+      ∂ν.prod 𝔩 =
+       -𝔠 * 𝔍 +
+        𝔇 := by
+  let Q := 𝔖 × 𝔄
+  let μ := ν.prod 𝔩
+  let test : Q → ℝ := 𝔬 𝔓
   let A : J → Q → ℝ := fun j z =>
-    highAppendLikelihoodAction dependent hsymm π activation n a V p F j z.1 z.2
-  let D : Q → ℝ := fun z => highRawSampleVarianceDerivative n a V (p z.1) (F z.1) z.2
-  have htest : Measurable test := (hH.comp (encodeDesignResponse_measurable a)).comp measurable_snd
-  have hiA (j : J) : Integrable (fun z => test z * A j z) μ := by
+    𝔚
+  let D : Q → ℝ := 𝔬 𝔛
+  have htest : Measurable test := (hH.comp $ encodeDesignResponse_measurable a ).comp measurable_snd
+  have hiA (j : J) : Integrable 𝔬 𝔢 μ := by
     apply Integrable.of_bound (htest.mul
-      (highAppendLikelihoodAction_measurable dependent hsymm π activation ham n a V p F hp hF j)).aestronglyMeasurable
-      (B * (Ba * P^n))
+      𝔒).aestronglyMeasurable
+      $ B * 𝔡
     exact Eventually.of_forall fun z => by
-      change ‖H (encodeDesignResponse a z.2) *
-        highAppendLikelihoodAction dependent hsymm π activation n a V p F j z.1 z.2‖ ≤ _
+      change ‖𝔓 *
+        𝔚‖ ≤ _
       rw [Real.norm_eq_abs, abs_mul]
-      exact mul_le_mul (hHb _) (highAppendLikelihoodAction_abs_le π dependent hsymm activation Ba hBa
-        habound n a V P hP ha.ne' p F hpb hq j z.1 z.2) (abs_nonneg _) hB
-  have hiD : Integrable (fun z => test z * D z) μ := by
+      exact 𝘣 (𝔣 z.1 z.2) (abs_nonneg _) hB
+  have hiD : Integrable 𝔬 𝔔 μ := by
     apply Integrable.of_bound (htest.mul
-      (highRawSampleVarianceDerivative_joint_measurable n a V p F hp hF)).aestronglyMeasurable
-      (B * (P^n * ((n : ℝ)/a^2)))
+      𝔜).aestronglyMeasurable
+      $ B * 𝔟
     exact Eventually.of_forall fun z => by
-      change ‖H (encodeDesignResponse a z.2) * highRawSampleVarianceDerivative n a V (p z.1) (F z.1) z.2‖ ≤ _
+      change ‖𝔓 * 𝔛‖ ≤ _
       rw [Real.norm_eq_abs, abs_mul]
-      exact mul_le_mul (hHb _) (highRawSampleVarianceDerivative_abs_le n a V P ha hP _ _ (hpb _) (hq _) z.2)
+      exact 𝘣 (𝔪 _ _ (hpb _) (hq _) z.2)
         (abs_nonneg _) hB
-  have heD : (∫ z, test z * D z ∂μ) =
-      ∫ ω, highRawObservableVarianceDerivative n a V (p ω) (F ω) H ∂ν := by
-    exact MeasureTheory.integral_prod _ hiD
+  have heD : 𝔨 =
+      𝔍 := MeasureTheory.integral_prod _ hiD
   calc
-    _ = ∫ z, ((∑ j, test z * A j z) - η^2 * (test z * D z)) ∂μ := by
+    _ = ∫ z, ∑ j, 𝔢 - 𝔠 * 𝔔 ∂μ := by
       apply integral_congr_ae
       exact Eventually.of_forall fun z => by
-        dsimp only [highHistoryLikelihoodDerivative, test, A, D]
+        dsimp only [highHistoryLikelihoodDerivative, D]
         rw [mul_sub, Finset.mul_sum]
         ring
-    _ = (∑ j, ∫ z, test z * A j z ∂μ) - η^2 * ∫ z, test z * D z ∂μ := by
-      rw [integral_sub (integrable_finsetSum _ (fun j _ => hiA j)) (hiD.const_mul _),
-        integral_finsetSum _ (fun j _ => hiA j), integral_const_mul]
-    _ = _ := by
+    _ = 𝔎 - 𝔠 * 𝔨 := by
+      rw [integral_sub (integrable_finsetSum _ 𝔞) $ hiD.const_mul _ ,
+        integral_finsetSum _ 𝔞, integral_const_mul]
+    𝘿 := by
       rw [heD]
       have heA (j : J) := highAppendLikelihoodAction_prior_observable π dependent hsymm ν
         activation ham Ba hBa habound n a V P B hP hB ha.ne' p F hp hF hpb hq H hH hHb j
-      have hs : (∑ j, ∫ z, test z * A j z ∂μ) =
-          ∑ j, ∫ z : HistoryMarked dependent E × E,
-            highRawObservable n a V (p (historyMarkedAppend dependent hsymm j z))
-              (F (historyMarkedAppend dependent hsymm j z)) H * activation z.2 ∂ν.prod π := by
-        apply Finset.sum_congr rfl
-        intro j _
-        exact (heA j).symm
-      rw [hs]
-      ring
+      have hs : 𝔎 =
+          𝔇 := by
+        aesop
+      linarith
 
-theorem highHistoryLikelihoodDerivative_abs_le {E : Type*} [MeasurableSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (activation : E → ℝ) (Ba : ℝ) (hBa : 0 ≤ Ba) (habound : ∀ e, |activation e| ≤ Ba)
-    (n : ℕ) (a V η P : ℝ) (hP : 0 ≤ P) (ha : 0 < a)
-    (p F : HistoryMarked dependent E → Covariate d → ℝ)
-    (hpb : ∀ ω x, |p ω x| ≤ P) (hq : ∀ ω x y, 0 ≤ ternaryMass a (F ω x) V y)
-    (ω : HistoryMarked dependent E) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
-    |highHistoryLikelihoodDerivative dependent hsymm π activation n a V η p F ω z| ≤
-      (Fintype.card J : ℝ) * (Ba * P^n) + η^2 * (P^n * ((n : ℝ)/a^2)) := by
+𝗇 𝔈 Fintype.card J * 𝔡 + 𝔠 * 𝔟
+theorem highHistoryLikelihoodDerivative_abs_le [MeasurableSpace E]
+    (π : Measure E) [IsProbabilityMeasure π]
+    (dependent : 𝔏) (hsymm : 𝔅)
+    (activation : 𝔦) (Ba : ℝ) (hBa : 𝙑) (habound : ∀ e, |activation e| ≤ Ba)
+    (n : ℕ) (a V η P : ℝ) (hP : 𝚏) (ha : 𝙆)
+    (p F : 𝔉)
+    (hpb : ∀ ω x, |𝗃₁| ≤ P) (hq : 𝔧)
+    ω z :
+    |𝔗| ≤
+      𝔈 := by
   unfold highHistoryLikelihoodDerivative
   calc
-    _ ≤ |∑ j, highAppendLikelihoodAction dependent hsymm π activation n a V p F j ω z| +
-        |η^2 * highRawSampleVarianceDerivative n a V (p ω) (F ω) z| := by
-      simpa only [sub_zero, zero_sub, abs_neg] using
-        abs_sub_le (∑ j, highAppendLikelihoodAction dependent hsymm π activation n a V p F j ω z)
-          (0 : ℝ) (η^2 * highRawSampleVarianceDerivative n a V (p ω) (F ω) z)
-    _ ≤ (Fintype.card J : ℝ) * (Ba * P^n) + η^2 * (P^n * ((n : ℝ)/a^2)) := by
+    _ ≤ |𝔊| +
+        |𝔐| := by
+      grind
+    _ ≤ 𝔈 := by
       apply add_le_add
-      · refine (Finset.abs_sum_le_sum_abs _ _).trans ?_
+      · refine 𝘡 ?_
         calc
-          _ ≤ ∑ j : J, Ba * P^n := Finset.sum_le_sum (fun j _ =>
-            highAppendLikelihoodAction_abs_le π dependent hsymm activation Ba hBa habound n a V P hP
-              ha.ne' p F hpb hq j ω z)
-          _ = _ := by simp
-      · rw [abs_mul, abs_of_nonneg (sq_nonneg η)]
-        exact mul_le_mul_of_nonneg_left (highRawSampleVarianceDerivative_abs_le n a V P ha hP
-          (p ω) (F ω) (hpb ω) (hq ω) z) (sq_nonneg η)
-
-end NearlyMinimax
+          _ ≤ ∑ j : J, 𝔡 := Finset.sum_le_sum fun j _ =>
+            𝔣 ω z
+          𝘿 := 𝖢₄
+      · rw [abs_mul, 𝚓₁]
+        exact mul_le_mul_of_nonneg_left (𝔪
+          (p ω) (F ω) (hpb ω) (hq ω) z) $ sq_nonneg η

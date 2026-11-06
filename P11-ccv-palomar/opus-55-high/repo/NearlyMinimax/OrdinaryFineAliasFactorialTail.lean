@@ -2,47 +2,45 @@ module
 
 public import NearlyMinimax.OrdinaryFineAliasAggregation
 public import NearlyMinimax.AliasTailSummation
+public import RoughRegime.Macro
 
-@[expose] public section
+𝗌
 
 /-! The actual response-summed ordinary fine-alias factorial tail at the
 paper's canonical rounded saddle. The fixed exp(L M) changes only the
 factorial-tail constant and never the source activity exponent. -/
-noncomputable section
-open MeasureTheory Set Filter
+𝛅
 open scoped BigOperators Topology
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1200000
-attribute [local instance] Classical.propDecidable
+𝚨
+𝚩
+𝛆
+𝚬
 
 def ordinaryFineAliasSaddleCoefficient (s : ℝ) (d : ℕ) (ad bd : ℝ) : ℝ :=
-  lowerSaddleCoefficient s d (densityIntervalExponent ad bd)
+  lowerSaddleCoefficient s d $ densityIntervalExponent ad bd
 
 def ordinaryFineAliasSaddleTheta (s : ℝ) (d : ℕ) (ad bd : ℝ) : ℝ :=
-  lowerSaddleTheta s d (densityIntervalExponent ad bd)
+  lowerSaddleTheta s d $ densityIntervalExponent ad bd
 
+𝗇 𝔄 densityIntervalExponent ad bd+1
+𝗃 𝔅 ἀ s d ad bd
 def ordinaryFineAliasSaddleTargetBound (s : ℝ) (d : ℕ) (ad bd : ℝ) : ℕ :=
-  lowerAliasFineTargetBound d (ordinaryFineAliasSaddleTheta s d ad bd) (densityIntervalExponent ad bd+1)
+  lowerAliasFineTargetBound d 𝔅 ordinaryFineAliasSaddleTheta 𝔄
 
 def ordinaryFineAliasSaddleTailPrefactor (s : ℝ) (d q : ℕ) (ad bd C a rho : ℝ) : ℝ :=
-  ordinaryAliasFamilySpatialPrefactor d q (ordinaryFineAliasSaddleTargetBound s d ad bd)
-    ad bd (densityIntervalExponent ad bd+1) C a rho
+  ordinaryAliasFamilySpatialPrefactor d q 𝔅 ordinaryFineAliasSaddleTargetBound
+    ad bd 𝔄 C a rho
 
 def ordinaryFineAliasSaddleTailExponent (s : ℝ) (d : ℕ) (ad bd : ℝ) : ℝ :=
-  lowerAliasSpatialFixedL d (ordinaryFineAliasSaddleTheta s d ad bd) (densityIntervalExponent ad bd+1)
+  lowerAliasSpatialFixedL d 𝔅 ordinaryFineAliasSaddleTheta 𝔄
 
 /-- Chosen once before the sample size, observation count, frame degree or
 any nuisance tuple. -/
 def ordinaryFineAliasFactorialConstant (s : ℝ) (d q : ℕ) (ad bd C a rho Csharp : ℝ) : ℝ :=
   aliasTailConstant (ordinaryFineAliasSaddleTailPrefactor s d q ad bd C a rho)
-    Csharp (ordinaryAliasSpatialResponseBase d bd) (ordinaryFineAliasSaddleTailExponent s d ad bd)
+    Csharp (ordinaryAliasSpatialResponseBase d bd) 𝔅 ordinaryFineAliasSaddleTailExponent
 
-theorem ordinaryFineAliasFactorialConstant_ge_one {s ad bd C a rho Csharp : ℝ} {d q : ℕ}
+theorem ordinaryFineAliasFactorialConstant_ge_one
     (hbd : 0 ≤ bd) (hCs : 0 ≤ Csharp) :
-    1 ≤ ordinaryFineAliasFactorialConstant s d q ad bd C a rho Csharp := by
-  unfold ordinaryFineAliasFactorialConstant
-  exact aliasTailConstant_ge_one (ordinaryAliasFamilySpatialPrefactor_nonneg _ _ _ _ _ _ _ _ _)
-    hCs (by unfold ordinaryAliasSpatialResponseBase ordinaryAliasSpatialCountBase; positivity)
-
-end NearlyMinimax
+    1 ≤ ordinaryFineAliasFactorialConstant s d q ad bd C a rho Csharp := aliasTailConstant_ge_one (ordinaryAliasFamilySpatialPrefactor_nonneg ..)
+    hCs $ by unfold ordinaryAliasSpatialResponseBase ordinaryAliasSpatialCountBase; positivity

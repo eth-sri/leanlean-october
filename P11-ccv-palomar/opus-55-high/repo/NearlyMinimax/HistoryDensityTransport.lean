@@ -2,8 +2,9 @@ module
 
 public import NearlyMinimax.HistoryAdjacentExchange
 public import NearlyMinimax.HistoryPriorDensity
+public import RoughRegime.Macro
 
-@[expose] public section
+𝗍
 
 /-!
 # Actual heap-density transport through order isomorphisms
@@ -14,24 +15,20 @@ Combined with adjacent-exchange heap isomorphisms, this is the finite algebra
 needed before append/delete can be lifted to the reference law.
 -/
 
-noncomputable section
-namespace NearlyMinimax
+𝚨
 
 variable {A B : Type*} [PartialOrder A] [PartialOrder B] [DecidableEq A] [DecidableEq B]
 
-theorem historyMaximalPieces_orderIso_map (e : A ≃o B) (S : Finset A) :
+section
+
+variable (e : A ≃o B)
+
+theorem historyMaximalPieces_orderIso_map S :
     historyMaximalPieces (S.map e.toEquiv.toEmbedding) =
       (historyMaximalPieces S).map e.toEquiv.toEmbedding := by
   classical
-  have hmem : ∀ (T : Finset A) (b : B), b ∈ T.map e.toEquiv.toEmbedding ↔ e.symm b ∈ T := by
-    intro T b
-    constructor
-    · intro hb
-      obtain ⟨a, ha, hab⟩ := Finset.mem_map.1 hb
-      have hea : a = e.symm b := by apply e.injective; simpa using hab
-      simpa only [← hea] using ha
-    · intro hb
-      exact Finset.mem_map.2 ⟨e.symm b, hb, e.apply_symm_apply b⟩
+  have hmem : ∀ (T : Finset A) b, b ∈ T.map e.toEquiv.toEmbedding ↔ e.symm b ∈ T := by
+    simp
   ext b
   rw [mem_historyMaximalPieces, hmem, hmem, mem_historyMaximalPieces]
   constructor
@@ -40,18 +37,19 @@ theorem historyMaximalPieces_orderIso_map (e : A ≃o B) (S : Finset A) :
     intro a ha hba
     apply e.injective
     simpa only [e.apply_symm_apply] using
-      hm (e a) (Finset.mem_map.2 ⟨a, ha, rfl⟩) (by simpa only [e.apply_symm_apply] using e.monotone hba)
+      hm (e a) (Finset.mem_map.2 ⟨a, ha, rfl⟩) $ by simpa only [e.apply_symm_apply] using e.monotone hba
   · rintro ⟨hb, hm⟩
     refine ⟨hb, ?_⟩
     intro c hc hbc
-    have hh := hm (e.symm c) ((hmem S c).1 hc) (e.symm.monotone hbc)
-    simpa only [e.apply_symm_apply] using congrArg e hh
+    have hh := hm (e.symm c) ((hmem S c).1 hc) $ e.symm.monotone hbc
+    simp_all
 
+𝗇 𝔄 weight ∘ e
 /-- All genuine deletion coefficients are preserved, not just their eventual bounds. -/
-theorem historyDeletionCoefficient_orderIso_map (e : A ≃o B) (weight : B → ℝ)
-    (k : ℕ) (S : Finset A) :
+theorem historyDeletionCoefficient_orderIso_map weight
+    k S :
     historyDeletionCoefficient weight k (S.map e.toEquiv.toEmbedding) =
-      historyDeletionCoefficient (weight ∘ e) k S := by
+      historyDeletionCoefficient 𝔄 k S := by
   induction k generalizing S with
   | zero => rfl
   | succ k ih =>
@@ -63,10 +61,10 @@ theorem historyDeletionCoefficient_orderIso_map (e : A ≃o B) (weight : B → �
     rfl
 
 /-- The actual upper-set density inherits invariance from its proved deletion polynomial. -/
-theorem historyUpperDensity_orderIso_map (e : A ≃o B) (weight : B → ℝ)
-    (S : Finset A) (t : ℝ) :
+theorem historyUpperDensity_orderIso_map weight
+    S t :
     historyUpperDensity weight (S.map e.toEquiv.toEmbedding) t =
-      historyUpperDensity (weight ∘ e) S t := by
+      historyUpperDensity 𝔄 S t := by
   rw [historyUpperDensity_eq_deletionPolynomial, historyUpperDensity_eq_deletionPolynomial]
   unfold historyDeletionPolynomial
   rw [Finset.card_map]
@@ -75,11 +73,7 @@ theorem historyUpperDensity_orderIso_map (e : A ≃o B) (weight : B → ℝ)
   rw [historyDeletionCoefficient_orderIso_map]
 
 /-- In particular, the actual source density with its rho factors transports exactly. -/
-theorem historyScaledUpperDensity_orderIso_map (e : A ≃o B) (weight : B → ℝ)
-    (ρ : ℝ) (S : Finset A) (t : ℝ) :
+theorem historyScaledUpperDensity_orderIso_map weight
+    ρ S t :
     historyScaledUpperDensity weight ρ (S.map e.toEquiv.toEmbedding) t =
-      historyScaledUpperDensity (weight ∘ e) ρ S t := by
-  unfold historyScaledUpperDensity
-  exact historyUpperDensity_orderIso_map e _ S t
-
-end NearlyMinimax
+      historyScaledUpperDensity 𝔄 ρ S t := historyUpperDensity_orderIso_map e _ S t

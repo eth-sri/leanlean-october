@@ -1,22 +1,21 @@
 module
 
 public import NearlyMinimax.HighWindowGeometry
+public import RoughRegime.Macro
 public import NearlyMinimax.HighFrameCoefficientBridge
 public import NearlyMinimax.HighDensityUpdates
 public import NearlyMinimax.HistoryReferenceMeasure
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Actual density/coefficient state maps for the high-regime marked prior. -/
-noncomputable section
-open Set MeasureTheory Function
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
-attribute [local instance] Classical.propDecidable
+𝛋
+𝚪
+𝚨
+𝚩
+𝚭
+𝚬
 
 abbrev HighRawState (d k D : ℕ) :=
-  (Covariate d → ℝ) × (HighWindowLabels d k → (HighFrameIndex d D → ℝ))
-
-end NearlyMinimax
+  𝙀 × (𝙯 → 𝙮 → ℝ )

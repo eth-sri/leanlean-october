@@ -1,168 +1,179 @@
 module
 
 public import NearlyMinimax.HistoryCoordinateTransport
-public import NearlyMinimax.HistoryShapeChangeVariables
+public import NearlyMinimax.HistoryMaximalDelete
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-!
 # Actual independent mark insertion and canonical append coordinates
 -/
 
-noncomputable section
-open MeasureTheory
-namespace NearlyMinimax
+𝚯
+𝚨
 
-variable {J : Type*} [Fintype J] [LinearOrder J]
+𝚲
 
+𝗇 𝔄 𝘼
+𝗇 𝔓 𝖴
+𝗇 𝔅 HistoryShape 𝔓
+𝗇 𝔇 g.out ++ [j]
+𝗇 𝔈 𝙁
+𝗇 𝔉 𝗡₁ g
+𝗇 𝔛 WordHeapPiece 𝔇 dependent
+𝗇 𝔜 (𝔉).out
+𝗇 𝔔 𝔛 ≃o WordHeapPiece 𝔜 dependent
 omit [Fintype J] [LinearOrder J] in
 /-- The canonical appended word carries the same actual labelled dependency heap. -/
-theorem historyCanonicalAppendHeapIso_exists (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    ∃ e : WordHeapPiece (g.out ++ [j]) dependent ≃o
-        WordHeapPiece (historyShapeAppend dependent j g).out dependent,
-      ∀ x, wordHeapLabel (e x) = wordHeapLabel x := by
-  have hmk : (Quotient.mk _ (g.out ++ [j]) : HistoryShape (fun a b => ¬ dependent a b)) =
-      historyShapeAppend dependent j g := by
-    exact congrArg (historyShapeAppend dependent j) (Quotient.out_eq g)
-  have hr : Relation.EqvGen (IndependentHistoryExchange (fun a b => ¬ dependent a b))
-      (g.out ++ [j]) (historyShapeAppend dependent j g).out :=
-    Quotient.exact (hmk.trans (Quotient.out_eq _).symm)
+theorem historyCanonicalAppendHeapIso_exists (dependent : 𝔈)
+    (hsymm : 𝔄)
+    (j : J) (g : 𝔅) :
+    ∃ e : 𝔔,
+      𝚠₁ := by
+  have hmk : (Quotient.mk _ 𝔇 : 𝔅) =
+      𝔉 := by
+    exact congrArg 𝗡₁ $ Quotient.out_eq g
+  have hr : Relation.EqvGen (IndependentHistoryExchange 𝔓)
+      𝔇 𝔜 :=
+    Quotient.exact $ hmk.trans (Quotient.out_eq _).symm
   exact historyShapeRelation_heapIso dependent hsymm hr
 
+𝗃 𝔘 ἀ dependent hsymm j g
 /-- Choose once an actual representative coordinate transport, not a law or score bound. -/
-def historyCanonicalAppendHeapIso (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    WordHeapPiece (g.out ++ [j]) dependent ≃o
-      WordHeapPiece (historyShapeAppend dependent j g).out dependent :=
-  (historyCanonicalAppendHeapIso_exists dependent hsymm j g).choose
+def historyCanonicalAppendHeapIso (dependent : 𝔈)
+    (hsymm : 𝔄)
+    (j : J) (g : 𝔅) :
+    𝔔 :=
+  (𝔘 historyCanonicalAppendHeapIso_exists).choose
 
+𝗇 𝔗 𝔘 historyCanonicalAppendHeapIso
 omit [Fintype J] [LinearOrder J] in
-theorem historyCanonicalAppendHeapIso_label (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) (x : WordHeapPiece (g.out ++ [j]) dependent) :
-    wordHeapLabel (historyCanonicalAppendHeapIso dependent hsymm j g x) = wordHeapLabel x :=
-  (historyCanonicalAppendHeapIso_exists dependent hsymm j g).choose_spec x
+theorem historyCanonicalAppendHeapIso_label (dependent : 𝔈)
+    (hsymm : 𝔄)
+    (j : J) (g : 𝔅) (x : 𝔛) :
+    wordHeapLabel (𝔗 x) = wordHeapLabel x :=
+  (𝔘 historyCanonicalAppendHeapIso_exists).choose_spec x
 
+𝗇 𝔚 𝗉
+𝗃 𝔞 Fin ἀ → E
 /-- Insert one genuinely independent mark at the last finite coordinate. -/
-def historyFiniteMarkAppendEquiv (n : ℕ) {E : Type*} [MeasurableSpace E] :
-    E × (Fin n → E) ≃ᵐ (Fin (n + 1) → E) :=
-  (MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => E) (Fin.last n)).symm
+def historyFiniteMarkAppendEquiv (n : ℕ) [MeasurableSpace E] :
+    E × 𝔞 n ≃ᵐ 𝔞 𝔚 :=
+  (MeasurableEquiv.piFinSuccAbove (fun _ : Fin 𝔚 => E) $ Fin.last n ).symm
 
-theorem historyFiniteMarkAppendEquiv_preserving (n : ℕ) {E : Type*} [MeasurableSpace E]
+𝗇 𝔊 fun _ => π
+𝗇 𝔙 π.prod $ Measure.pi 𝔊
+theorem historyFiniteMarkAppendEquiv_preserving (n : ℕ) [MeasurableSpace E]
     (π : Measure E) [IsProbabilityMeasure π] :
-    MeasurePreserving (historyFiniteMarkAppendEquiv n (E := E))
-      (π.prod (Measure.pi (fun _ : Fin n => π))) (Measure.pi (fun _ : Fin (n + 1) => π)) :=
-  (measurePreserving_piFinSuccAbove (fun _ : Fin (n + 1) => π) (Fin.last n)).symm _
+    MeasurePreserving (historyFiniteMarkAppendEquiv n )
+      𝔙 $ Measure.pi 𝔊 :=
+  (measurePreserving_piFinSuccAbove 𝔊 $ Fin.last n ).symm _
 
+𝗇 𝔍 𝗠₁
+𝗇 𝔖 Fin $ historyShapeLength dependent 𝔉
 /-- The real position bijection from old coordinates plus a fresh last coordinate to the canonical append. -/
-def historyCanonicalAppendCoordinates (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    Fin (historyShapeLength dependent g + 1) ≃ Fin (historyShapeLength dependent (historyShapeAppend dependent j g)) :=
-  (finCongr (by rw [historyShapeLength_out]; simp)).trans
-    ((historyHeapCoordinateEquiv (historyCanonicalAppendHeapIso dependent hsymm j g)).trans
-      (finCongr (historyShapeLength_out dependent (historyShapeAppend dependent j g)).symm))
+def historyCanonicalAppendCoordinates (dependent : 𝔈)
+    (hsymm : 𝔄)
+    (j : J) (g : 𝔅) :
+    Fin (𝔍 + 1) ≃ 𝔖 :=
+  (finCongr $ by rw [historyShapeLength_out]; simp ).trans
+    $ (historyHeapCoordinateEquiv 𝔗).trans
+      $ finCongr (historyShapeLength_out dependent 𝔉).symm
 
+𝗇 𝔎 𝔘 historyCanonicalAppendCoordinates
+𝗇 𝔐 𝚓
 /-- Actual independent insertion followed by the actual canonical heap-coordinate permutation. -/
-def historyCanonicalMarkAppendEquiv (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) {E : Type*} [MeasurableSpace E] :
-    E × (Fin (historyShapeLength dependent g) → E) ≃ᵐ
-      (Fin (historyShapeLength dependent (historyShapeAppend dependent j g)) → E) :=
-  (historyFiniteMarkAppendEquiv (historyShapeLength dependent g)).trans
-    (MeasurableEquiv.piCongrLeft (fun _ => E) (historyCanonicalAppendCoordinates dependent hsymm j g))
+def historyCanonicalMarkAppendEquiv (dependent : 𝔈)
+    (hsymm : 𝔄)
+    (j : J) (g : 𝔅) [MeasurableSpace E] :
+    E × 𝔞 𝔍 ≃ᵐ
+      (𝔖 → E) :=
+  (historyFiniteMarkAppendEquiv 𝔍).trans
+    $ MeasurableEquiv.piCongrLeft 𝔐 𝔎
 
 /-- The actual canonical append adds precisely one independent pi mark. -/
-theorem historyCanonicalMarkAppendEquiv_preserving (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) {E : Type*} [MeasurableSpace E]
+theorem historyCanonicalMarkAppendEquiv_preserving (dependent : 𝔈)
+    (hsymm : 𝔄)
+    j (g : 𝔅) [MeasurableSpace E]
     (π : Measure E) [IsProbabilityMeasure π] :
-    MeasurePreserving (historyCanonicalMarkAppendEquiv dependent hsymm j g (E := E))
-      (π.prod (Measure.pi (fun _ : Fin (historyShapeLength dependent g) => π)))
-      (Measure.pi (fun _ : Fin (historyShapeLength dependent (historyShapeAppend dependent j g)) => π)) :=
-  (measurePreserving_piCongrLeft (fun _ => π) (historyCanonicalAppendCoordinates dependent hsymm j g)).comp
-    (historyFiniteMarkAppendEquiv_preserving _ π)
+    MeasurePreserving 𝔘 historyCanonicalMarkAppendEquiv
+      𝔙
+      $ Measure.pi 𝔊 :=
+  (measurePreserving_piCongrLeft 𝔊 𝔎).comp
+    $ historyFiniteMarkAppendEquiv_preserving _ π
 
+𝗇 𝔑 wordHeapAppendedPiece g.out dependent j
 /-- The actual maximal piece corresponding to the freshly appended update. -/
-def historyCanonicalAppendedPiece (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    WordHeapPiece (historyShapeAppend dependent j g).out dependent :=
-  historyCanonicalAppendHeapIso dependent hsymm j g (wordHeapAppendedPiece g.out dependent j)
+def historyCanonicalAppendedPiece (dependent : 𝔈)
+    (hsymm : 𝔄)
+    (j : J) (g : 𝔅) :
+    WordHeapPiece 𝔜 dependent :=
+  𝔗 𝔑
 
+𝗇 𝔒 𝔘 historyCanonicalAppendedPiece
 omit [Fintype J] [LinearOrder J] in
-theorem historyCanonicalAppendedPiece_maximal (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    historyCanonicalAppendedPiece dependent hsymm j g ∈ historyMaximalPieces Finset.univ := by
-  let e := historyCanonicalAppendHeapIso dependent hsymm j g
-  have hx : e (wordHeapAppendedPiece g.out dependent j) ∈ historyMaximalPieces
-      ((Finset.univ : Finset (WordHeapPiece (g.out ++ [j]) dependent)).map e.toEquiv.toEmbedding) := by
+theorem historyCanonicalAppendedPiece_maximal (dependent : 𝔈)
+    (hsymm : 𝔄)
+    (j : J) (g : 𝔅) :
+    𝔒 ∈ historyMaximalPieces Finset.univ := by
+  let e := 𝔗
+  have hx : e 𝔑 ∈ historyMaximalPieces
+      ((Finset.univ : Finset 𝔛).map e.toEquiv.toEmbedding) := by
     rw [historyMaximalPieces_orderIso_map]
     exact Finset.mem_map.2 ⟨_, wordHeapAppendedPiece_maximal g.out dependent j, rfl⟩
   rw [Finset.map_univ_equiv e.toEquiv] at hx
   exact hx
 
 omit [Fintype J] [LinearOrder J] in
-@[simp] theorem historyCanonicalAppendedPiece_label (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    wordHeapLabel (historyCanonicalAppendedPiece dependent hsymm j g) = j :=
-  (historyCanonicalAppendHeapIso_label dependent hsymm j g _).trans
-    (wordHeapAppendedPiece_label g.out dependent j)
+@[simp] theorem historyCanonicalAppendedPiece_label (dependent : 𝔈)
+    (hsymm : 𝔄)
+    (j : J) (g : 𝔅) :
+    wordHeapLabel 𝔒 = j :=
+  (𝔘 historyCanonicalAppendHeapIso_label _).trans
+    $ wordHeapAppendedPiece_label g.out dependent j
 
 /-- The freshly added coordinate in the canonical marked-history fiber. -/
-def historyCanonicalFreshCoordinate (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    Fin (historyShapeLength dependent (historyShapeAppend dependent j g)) :=
-  Fin.cast (historyShapeLength_out dependent (historyShapeAppend dependent j g)).symm
-    (historyCanonicalAppendedPiece dependent hsymm j g).position
+def historyCanonicalFreshCoordinate (dependent : 𝔈)
+    (hsymm : 𝔄)
+    (j : J) (g : 𝔅) :
+    𝔖 :=
+  Fin.cast (historyShapeLength_out dependent 𝔉).symm
+    (𝔒).position
 
-theorem historyCanonicalAppendCoordinates_last (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) :
-    historyCanonicalAppendCoordinates dependent hsymm j g (Fin.last (historyShapeLength dependent g)) =
-      historyCanonicalFreshCoordinate dependent hsymm j g := by
-  let hlen : historyShapeLength dependent g + 1 = (g.out ++ [j]).length := by
+theorem historyCanonicalAppendCoordinates_last dependent
+    hsymm
+    (j : J) g :
+    𝔘 historyCanonicalAppendCoordinates (Fin.last 𝔍) =
+      𝔘 historyCanonicalFreshCoordinate := by
+  let hlen : 𝔍 + 1 = (𝔇).length := by
     rw [historyShapeLength_out]; simp
-  have hl : (finCongr hlen) (Fin.last (historyShapeLength dependent g)) =
-      (wordHeapAppendedPiece g.out dependent j).position := by
+  have hl : (finCongr hlen) (Fin.last 𝔍) =
+      (𝔑).position := by
     apply Fin.ext
     exact historyShapeLength_out dependent g
   unfold historyCanonicalAppendCoordinates historyCanonicalFreshCoordinate historyCanonicalAppendedPiece
-  change Fin.cast (historyShapeLength_out dependent (historyShapeAppend dependent j g)).symm
-    (historyHeapCoordinateEquiv (historyCanonicalAppendHeapIso dependent hsymm j g)
-      ((finCongr hlen) (Fin.last (historyShapeLength dependent g)))) = _
-  rw [hl, historyHeapCoordinateEquiv_position]
+  simp_all
 
-@[simp] theorem historyFiniteMarkAppendEquiv_last (n : ℕ) {E : Type*} [MeasurableSpace E]
-    (fresh : E) (marks : Fin n → E) :
-    historyFiniteMarkAppendEquiv n (fresh, marks) (Fin.last n) = fresh := by
+𝗇 𝔏 𝘨₂
+@[simp] theorem historyFiniteMarkAppendEquiv_last (n : ℕ) [MeasurableSpace E]
+    (fresh : E) marks :
+    historyFiniteMarkAppendEquiv n 𝔏 (Fin.last n) = fresh := by
   have hh := congrArg Prod.fst
-    ((MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => E) (Fin.last n)).apply_symm_apply (fresh, marks))
+    $ (MeasurableEquiv.piFinSuccAbove 𝔐 $ Fin.last n ).apply_symm_apply 𝔏
   exact hh
 
 /-- The canonical maximal-piece mark is exactly the independent fresh mark, including after reordering. -/
-@[simp] theorem historyCanonicalMarkAppendEquiv_fresh (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) {E : Type*} [MeasurableSpace E]
-    (fresh : E) (marks : Fin (historyShapeLength dependent g) → E) :
-    historyCanonicalMarkAppendEquiv dependent hsymm j g (fresh, marks)
-      (historyCanonicalFreshCoordinate dependent hsymm j g) = fresh := by
+@[simp] theorem historyCanonicalMarkAppendEquiv_fresh (dependent : 𝔈)
+    (hsymm : 𝔄)
+    j (g : 𝔅) [MeasurableSpace E]
+    (fresh : E) marks :
+    𝔘 historyCanonicalMarkAppendEquiv 𝔏
+      𝔘 historyCanonicalFreshCoordinate = fresh := by
   rw [← historyCanonicalAppendCoordinates_last]
   have hh := MeasurableEquiv.piCongrLeft_apply_apply
-    (historyCanonicalAppendCoordinates dependent hsymm j g)
-    (β := fun _ => E) (historyFiniteMarkAppendEquiv _ (fresh, marks)) (Fin.last _)
-  change MeasurableEquiv.piCongrLeft
-    (fun _ : Fin (historyShapeLength dependent (historyShapeAppend dependent j g)) => E)
-    (historyCanonicalAppendCoordinates dependent hsymm j g)
-    (historyFiniteMarkAppendEquiv _ (fresh, marks))
-    (historyCanonicalAppendCoordinates dependent hsymm j g (Fin.last (historyShapeLength dependent g))) = fresh
-  rw [hh, historyFiniteMarkAppendEquiv_last]
-
-end NearlyMinimax
+    𝔎
+    (β := 𝔐) (historyFiniteMarkAppendEquiv _ 𝔏) $ Fin.last _
+  aesop

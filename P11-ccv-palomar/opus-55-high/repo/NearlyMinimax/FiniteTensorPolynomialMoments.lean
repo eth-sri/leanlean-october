@@ -2,29 +2,36 @@ module
 
 public import NearlyMinimax.GaussianPrimitiveSeparated
 public import Mathlib.MeasureTheory.Integral.Pi
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Coefficient moment tensorization under actual finite product measures.
 Only the primitive weighted coefficient pairs need to be integrable. -/
-noncomputable section
 open MeasureTheory MvPolynomial
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
+𝚪
+𝚨
+𝚩
+𝚰
 
 variable {σ E F : Type*} [DecidableEq σ] [MeasurableSpace E] [MeasurableSpace F]
 
-def polynomialPairMoment (w : E → ℝ) (P P' : E → MvPolynomial σ ℝ)
-    (β β' : σ →₀ ℕ) (e : E) : ℝ := w e * (P e).coeff β * (P' e).coeff β'
+𝗇 𝔍 σ →₀ ℕ
+𝗇 𝔙 MvPolynomial σ ℝ
+def polynomialPairMoment (w : 𝙏) (P P' : E → 𝔙)
+    (β β' : 𝔍) (e : E) : ℝ := w e * (P e).coeff β * (P' e).coeff β'
 
+𝗇 𝔟 fun z => P z.1 * Q z.2
+𝗇 𝔓 𝔟
+𝗇 𝔠 fun z => P' z.1 * Q' z.2
+𝗇 𝔔 𝔠
 theorem polynomialPairMoment_mul_expansion
-    (w : E → ℝ) (v : F → ℝ) (P P' : E → MvPolynomial σ ℝ)
-    (Q Q' : F → MvPolynomial σ ℝ) (β β' : σ →₀ ℕ) (z : E × F) :
+    w v P P'
+    Q Q' (β β' : 𝔍) z :
     polynomialPairMoment (fun z : E × F => w z.1 * v z.2)
-      (fun z => P z.1 * Q z.2) (fun z => P' z.1 * Q' z.2) β β' z =
+      𝔓 𝔔 β β' z =
       ∑ b ∈ _root_.Finset.HasAntidiagonal.antidiagonal β,
         ∑ b' ∈ _root_.Finset.HasAntidiagonal.antidiagonal β',
         polynomialPairMoment w P P' b.1 b'.1 z.1 *
@@ -33,167 +40,164 @@ theorem polynomialPairMoment_mul_expansion
   rw [coeff_mul, coeff_mul]
   simp only [Finset.sum_mul, Finset.mul_sum]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro b hb
-  apply Finset.sum_congr rfl
-  intro b' hb'
-  ring
+  grind
 
+𝗇 𝔞 fun z => w z.1 * v z.2
+𝗇 𝔈 polynomialPairMoment 𝔞 𝔟 𝔠 β β' z
+𝗃 𝔭 ἀ w P P' β β'
+𝗇 𝔦 𝔭 polynomialPairMoment
+𝗇 𝔑 ∀ β β', Integrable 𝔦 μ
+𝗇 𝔧 polynomialPairMoment v Q Q' β β'
+𝗇 𝔒 ∀ β β', Integrable 𝔧 ν
 theorem polynomialPairMoment_product_integrable
     (μ : Measure E) (ν : Measure F) [SigmaFinite μ] [SigmaFinite ν]
-    (w : E → ℝ) (v : F → ℝ) (P P' : E → MvPolynomial σ ℝ)
-    (Q Q' : F → MvPolynomial σ ℝ)
-    (hP : ∀ β β', Integrable (polynomialPairMoment w P P' β β') μ)
-    (hQ : ∀ β β', Integrable (polynomialPairMoment v Q Q' β β') ν)
-    (β β' : σ →₀ ℕ) :
-    Integrable (polynomialPairMoment (fun z : E × F => w z.1 * v z.2)
-      (fun z => P z.1 * Q z.2) (fun z => P' z.1 * Q' z.2) β β') (μ.prod ν) := by
-  change Integrable (fun z : E × F => polynomialPairMoment
-    (fun z : E × F => w z.1 * v z.2) (fun z => P z.1 * Q z.2)
-    (fun z => P' z.1 * Q' z.2) β β' z) (μ.prod ν)
+    w v P P'
+    Q Q'
+    (hP : 𝔑)
+    (hQ : 𝔒)
+    (β β' : 𝔍) :
+    Integrable (polynomialPairMoment 𝔞
+      𝔓 𝔔 β β') $ μ.prod ν := by
+  change Integrable (fun z => 𝔈) $ μ.prod ν
   simp_rw [polynomialPairMoment_mul_expansion]
-  exact integrable_finsetSum _ fun b _ => integrable_finsetSum _ fun b' _ =>
-    (hP b.1 b'.1).mul_prod (hQ b.2 b'.2)
+  fun_prop
 
+𝗃 𝔫 ∫ e, ἀ e ∂μ
 theorem polynomialPairMoment_product_integral
     (μ : Measure E) (ν : Measure F) [SigmaFinite μ] [SigmaFinite ν]
-    (w : E → ℝ) (v : F → ℝ) (P P' : E → MvPolynomial σ ℝ)
-    (Q Q' : F → MvPolynomial σ ℝ)
-    (hP : ∀ β β', Integrable (polynomialPairMoment w P P' β β') μ)
-    (hQ : ∀ β β', Integrable (polynomialPairMoment v Q Q' β β') ν)
-    (p p' q q' : MvPolynomial σ ℝ) (a b : ℝ)
-    (hEP : ∀ β β', (∫ e, polynomialPairMoment w P P' β β' e ∂μ) =
+    w v P P'
+    Q Q'
+    (hP : 𝔑)
+    (hQ : 𝔒)
+    (p p' q q' : 𝔙) a b
+    (hEP : ∀ β β', 𝔫 𝔦 =
       a * p.coeff β * p'.coeff β')
-    (hEQ : ∀ β β', (∫ e, polynomialPairMoment v Q Q' β β' e ∂ν) =
-      b * q.coeff β * q'.coeff β') (β β' : σ →₀ ℕ) :
-    (∫ z, polynomialPairMoment (fun z : E × F => w z.1 * v z.2)
-      (fun z => P z.1 * Q z.2) (fun z => P' z.1 * Q' z.2) β β' z ∂μ.prod ν) =
-      (a * b) * (p * q).coeff β * (p' * q').coeff β' := by
+    (hEQ : ∀ β β', ∫ e, 𝔧 e ∂ν =
+      b * q.coeff β * q'.coeff β') β β' :
+     ∫ z, 𝔈 ∂μ.prod ν =
+       a * b * (p * q).coeff β * (p' * q').coeff β' := by
   simp_rw [polynomialPairMoment_mul_expansion]
-  rw [integral_finsetSum _ (fun c _ => integrable_finsetSum _ fun c' _ =>
-    (hP c.1 c'.1).mul_prod (hQ c.2 c'.2))]
-  simp_rw [integral_finsetSum _ (fun (c' : (σ →₀ ℕ) × (σ →₀ ℕ)) _ =>
-    (hP _ c'.1).mul_prod (hQ _ c'.2)), integral_prod_mul, hEP, hEQ]
+  rw [integral_finsetSum _ fun c _ => integrable_finsetSum _ fun c' _ =>
+    (hP c.1 c'.1).mul_prod $ hQ c.2 c'.2 ]
+  simp_rw [integral_finsetSum _ fun (c' : 𝔍 × 𝔍) _ =>
+    (hP _ c'.1).mul_prod $ hQ _ c'.2 , integral_prod_mul, hEP, hEQ]
   rw [coeff_mul, coeff_mul]
   simp only [Finset.sum_mul, Finset.mul_sum]
   conv_rhs => rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro c hc
-  apply Finset.sum_congr rfl
-  intro c' hc'
-  ring
+  grind
 
-def tensorPolynomialPairMoment {n : ℕ} (w : Fin n → E → ℝ)
-    (P P' : Fin n → E → MvPolynomial σ ℝ) (β β' : σ →₀ ℕ)
-    (e : Fin n → E) : ℝ :=
-  (∏ j, w j (e j)) * (∏ j, P j (e j)).coeff β * (∏ j, P' j (e j)).coeff β'
+𝗃 𝔥 ∏ j, ἀ j (e j)
+𝗇 𝔇 𝔥 w * (𝔥 P).coeff β * (𝔥 P').coeff β'
+𝗇 𝔐 𝗚₁
+def tensorPolynomialPairMoment (w : Fin n → 𝙏)
+    (P P' : Fin n → E → 𝔙) (β β' : 𝔍)
+    (e : 𝔐) : ℝ :=
+  𝔇
 
+𝗇 𝔚 polynomialPairMoment (w j) (P j) (P' j) β β'
+𝗇 𝔄 ∀ j β β', 𝔫 𝔚 = a j * (p j).coeff β * (p' j).coeff β'
+𝗇 𝔨 𝘫
+𝗇 𝔅 Measure.pi 𝔨
+𝗃 𝔮 ∏ j, ἀ j
+𝗇 𝔉 𝔮 a * (𝔮 p).coeff β * (𝔮 p').coeff β'
+𝗇 𝔊 ∀ j β β', Integrable 𝔚 μ
+𝗇 𝔛 𝔭 tensorPolynomialPairMoment
+𝗇 𝔩 𝚓
+𝗇 𝔎 𝔛 ∘ (MeasurableEquiv.piFinSuccAbove 𝔩 0).symm
+𝗃 𝔢 fun j => ἀ j.succ
+𝗃 𝔣 ἀ μ _ (w 0) W (P 0) (P' 0) Q Q' (hi 0) hiTail
+𝗃 𝔤 ∏ j : Fin n, ἀ j.succ
+𝗃 𝔪 ∏ j, ἀ j.succ (x j)
+𝗃 𝔬 ∫ e, ἀ e ∂𝔅 = 𝔉
 theorem tensorPolynomialPairMoment_fin
-    (μ : Measure E) [SigmaFinite μ] (n : ℕ)
-    (w : Fin n → E → ℝ) (P P' : Fin n → E → MvPolynomial σ ℝ)
-    (p p' : Fin n → MvPolynomial σ ℝ) (a : Fin n → ℝ)
-    (hi : ∀ j β β', Integrable (polynomialPairMoment (w j) (P j) (P' j) β β') μ)
-    (he : ∀ j β β', (∫ e, polynomialPairMoment (w j) (P j) (P' j) β β' e ∂μ) =
-      a j * (p j).coeff β * (p' j).coeff β') :
-    ∀ β β', Integrable (tensorPolynomialPairMoment w P P' β β') (Measure.pi (fun _ => μ)) ∧
-      (∫ e, tensorPolynomialPairMoment w P P' β β' e ∂Measure.pi (fun _ => μ)) =
-        (∏ j, a j) * (∏ j, p j).coeff β * (∏ j, p' j).coeff β' := by
+    (μ : Measure E) [SigmaFinite μ] n
+    w P P'
+    (p p' : Fin n → 𝔙) (a : 𝙔)
+    (hi : 𝔊)
+    (he : 𝔄) :
+    ∀ β β', Integrable 𝔛 𝔅 ∧
+      𝔬 𝔛 := by
   induction n with
   | zero =>
     intro β β'
-    have hprob : IsProbabilityMeasure (Measure.pi (fun _ : Fin 0 => μ)) := by
+    have hprob : IsProbabilityMeasure $ Measure.pi fun _ : Fin 0 => μ := by
       constructor
-      rw [Measure.pi_empty_univ]
+      simp
     let _ := hprob
     constructor
-    · change Integrable (fun e : Fin 0 → E => tensorPolynomialPairMoment w P P' β β' e) _
-      simp only [tensorPolynomialPairMoment, Finset.univ_eq_empty, Finset.prod_empty]
-      exact integrable_const _
+    · simp
     · simp only [tensorPolynomialPairMoment, Finset.univ_eq_empty, Finset.prod_empty,
         integral_const, probReal_univ, one_smul]
   | succ n ih =>
     intro β β'
-    let W (x : Fin n → E) := ∏ j, w j.succ (x j)
-    let Q (x : Fin n → E) := ∏ j, P j.succ (x j)
-    let Q' (x : Fin n → E) := ∏ j, P' j.succ (x j)
-    have htail := ih (fun j => w j.succ) (fun j => P j.succ) (fun j => P' j.succ)
-      (fun j => p j.succ) (fun j => p' j.succ) (fun j => a j.succ)
-      (fun j => hi j.succ) (fun j => he j.succ)
-    have hiTail : ∀ b b', Integrable (polynomialPairMoment W Q Q' b b')
-        (Measure.pi (fun _ : Fin n => μ)) := fun b b' => (htail b b').1
-    have heTail : ∀ b b', (∫ e, polynomialPairMoment W Q Q' b b' e
-        ∂Measure.pi (fun _ : Fin n => μ)) =
-        (∏ j : Fin n, a j.succ) * (∏ j : Fin n, p j.succ).coeff b *
-          (∏ j : Fin n, p' j.succ).coeff b' := fun b b' => (htail b b').2
-    let G := polynomialPairMoment (fun z : E × (Fin n → E) => w 0 z.1 * W z.2)
+    let W (x : 𝔐) := 𝔪 w
+    let Q (x : 𝔐) := 𝔪 P
+    let Q' (x : 𝔐) := 𝔪 P'
+    have htail := ih 𝔢 w 𝔢 P 𝔢 P'
+      𝔢 p 𝔢 p' 𝔢 a
+      𝔢 hi 𝔢 he
+    have hiTail := fun b b' => (htail b b').1
+    let G := polynomialPairMoment (fun z : E × 𝔐 => w 0 z.1 * W z.2)
       (fun z => P 0 z.1 * Q z.2) (fun z => P' 0 z.1 * Q' z.2) β β'
-    have hGi : Integrable G (μ.prod (Measure.pi (fun _ : Fin n => μ))) :=
-      polynomialPairMoment_product_integrable μ _ (w 0) W (P 0) (P' 0) Q Q'
-        (hi 0) hiTail β β'
-    have hGe : (∫ z, G z ∂μ.prod (Measure.pi (fun _ : Fin n => μ))) =
-        (a 0 * ∏ j : Fin n, a j.succ) *
-          (p 0 * ∏ j : Fin n, p j.succ).coeff β *
-          (p' 0 * ∏ j : Fin n, p' j.succ).coeff β' :=
-      polynomialPairMoment_product_integral μ _ (w 0) W (P 0) (P' 0) Q Q'
-        (hi 0) hiTail (p 0) (p' 0) (∏ j : Fin n, p j.succ) (∏ j : Fin n, p' j.succ)
-        (a 0) (∏ j : Fin n, a j.succ) (he 0) heTail β β'
-    have hmp := (measurePreserving_piFinSuccAbove (fun _ : Fin (n + 1) => μ) 0).symm
-    have hcomp : (tensorPolynomialPairMoment w P P' β β') ∘
-        (MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => E) 0).symm = G := by
+    have hGi : Integrable G $ μ.prod 𝔅 :=
+      𝔣 polynomialPairMoment_product_integrable β β'
+    have hGe :=
+      𝔣 polynomialPairMoment_product_integral (p 0) (p' 0) 𝔤 p 𝔤 p'
+        (a 0) 𝔤 a (he 0) (fun b b' => (htail b b').2) β β'
+    have hmp := (measurePreserving_piFinSuccAbove (fun _ : Fin 𝗉 => μ) 0).symm
+    have hcomp : 𝔎 = G := by
       funext z
       simp only [Function.comp_def, tensorPolynomialPairMoment,
         MeasurableEquiv.piFinSuccAbove_symm_apply, Fin.insertNthEquiv,
-        Fin.prod_univ_succ, Fin.insertNth_zero, Fin.zero_succAbove, G, W, Q, Q',
+        Fin.prod_univ_succ, Fin.insertNth_zero, G, W, Q, Q',
         polynomialPairMoment, Equiv.coe_fn_mk, Fin.cons_zero, Fin.cons_succ, cast_eq]
     constructor
-    · rw [← hmp.integrable_comp_emb (MeasurableEquiv.measurableEmbedding _)]
-      rw [hcomp]
-      exact hGi
+    · rw [← hmp.integrable_comp_emb $ MeasurableEquiv.measurableEmbedding _ ]
+      simp_all
     · rw [← hmp.integral_comp']
-      change (∫ x, ((tensorPolynomialPairMoment w P P' β β') ∘
-        (MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => E) 0).symm) x
-        ∂μ.prod (Measure.pi (fun _ : Fin n => μ))) = _
+      change ∫ x, 𝔎 x
+        ∂μ.prod 𝔅 = _
       rw [hcomp, hGe]
       simp only [Fin.prod_univ_succ]
 
-def tensorPolynomialPairMoment_fintype {κ : Type*} [Fintype κ]
-    (w : κ → E → ℝ) (P P' : κ → E → MvPolynomial σ ℝ)
-    (β β' : σ →₀ ℕ) (e : κ → E) : ℝ :=
-  (∏ j, w j (e j)) * (∏ j, P j (e j)).coeff β * (∏ j, P' j (e j)).coeff β'
+def tensorPolynomialPairMoment_fintype [Fintype κ]
+    (w : κ → 𝙏) (P P' : κ → E → 𝔙)
+    (β β' : 𝔍) (e : κ → E) : ℝ :=
+  𝔇
 
-theorem tensorPolynomialPairMoment_fintype_integral {κ : Type*} [Fintype κ]
+𝗇 𝔜 𝔭 tensorPolynomialPairMoment_fintype
+𝗇 𝔏 𝔜 ∘ MeasurableEquiv.piCongrLeft 𝔩 e
+𝗃 𝔡 fun j => ἀ $ e j
+𝗇 𝔖 𝔡 w
+𝗇 𝔗 𝔡 P
+𝗇 𝔘 𝔡 P'
+theorem tensorPolynomialPairMoment_fintype_integral [Fintype κ]
     (μ : Measure E) [SigmaFinite μ]
-    (w : κ → E → ℝ) (P P' : κ → E → MvPolynomial σ ℝ)
-    (p p' : κ → MvPolynomial σ ℝ) (a : κ → ℝ)
-    (hi : ∀ j β β', Integrable (polynomialPairMoment (w j) (P j) (P' j) β β') μ)
-    (he : ∀ j β β', (∫ e, polynomialPairMoment (w j) (P j) (P' j) β β' e ∂μ) =
-      a j * (p j).coeff β * (p' j).coeff β') (β β' : σ →₀ ℕ) :
-    Integrable (tensorPolynomialPairMoment_fintype w P P' β β') (Measure.pi (fun _ => μ)) ∧
-      (∫ e, tensorPolynomialPairMoment_fintype w P P' β β' e ∂Measure.pi (fun _ => μ)) =
-        (∏ j, a j) * (∏ j, p j).coeff β * (∏ j, p' j).coeff β' := by
+    w P P'
+    (p p' : κ → 𝔙) (a : 𝖱₁)
+    (hi : 𝔊)
+    (he : 𝔄) β β' :
+    Integrable 𝔜 𝔅 ∧
+      𝔬 𝔜 := by
   classical
-  let e : Fin (Fintype.card κ) ≃ κ := (Fintype.equivFin κ).symm
+  let e := (Fintype.equivFin κ).symm
   have h := tensorPolynomialPairMoment_fin μ (Fintype.card κ)
-    (fun j => w (e j)) (fun j => P (e j)) (fun j => P' (e j))
-    (fun j => p (e j)) (fun j => p' (e j)) (fun j => a (e j))
-    (fun j => hi (e j)) (fun j => he (e j)) β β'
-  have hmp := measurePreserving_piCongrLeft (fun _ : κ => μ) e
-  have hcomp : (tensorPolynomialPairMoment_fintype w P P' β β') ∘
-      MeasurableEquiv.piCongrLeft (fun _ : κ => E) e =
-      tensorPolynomialPairMoment (fun j => w (e j)) (fun j => P (e j))
-        (fun j => P' (e j)) β β' := by
+    𝔖 𝔗 𝔘
+    𝔡 p 𝔡 p' 𝔡 a
+    𝔡 hi 𝔡 he β β'
+  have hmp := measurePreserving_piCongrLeft 𝔨 e
+  have hcomp : 𝔏 =
+      tensorPolynomialPairMoment 𝔖 𝔗
+        𝔘 β β' := by
     funext x
     simp only [Function.comp_def, tensorPolynomialPairMoment_fintype,
       tensorPolynomialPairMoment, ← e.prod_comp, MeasurableEquiv.coe_piCongrLeft,
       Equiv.piCongrLeft_apply_apply]
   constructor
-  · rw [← hmp.integrable_comp_emb (MeasurableEquiv.measurableEmbedding _), hcomp]
+  · rw [← hmp.integrable_comp_emb $ MeasurableEquiv.measurableEmbedding _ , hcomp]
     exact h.1
   · rw [← hmp.integral_comp']
-    change (∫ x, ((tensorPolynomialPairMoment_fintype w P P' β β') ∘
-      MeasurableEquiv.piCongrLeft (fun _ : κ => E) e) x
-      ∂Measure.pi (fun _ : Fin (Fintype.card κ) => μ)) = _
+    change ∫ x, 𝔏 x
+      ∂𝔅 = _
     rw [hcomp, h.2]
     simp only [e.prod_comp]
-
-end NearlyMinimax

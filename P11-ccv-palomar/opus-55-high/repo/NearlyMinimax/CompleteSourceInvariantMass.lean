@@ -2,62 +2,70 @@ module
 
 public import NearlyMinimax.CompleteSourceMassAnnihilation
 public import NearlyMinimax.HighUnionInvariantMass
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! The complete singleton, pair, and higher coarse/fine packet source
 has a genuine time-independent raw mass law. -/
-noncomputable section
-open MeasureTheory Set
-namespace NearlyMinimax
-set_option maxHeartbeats 1200000
-set_option backward.isDefEq.respectTransparency false
-attribute [local instance] Classical.propDecidable
+𝚫
+𝚨
+𝛆
+𝚩
+𝚬
 
-variable {d k D M q : ℕ} [NeZero d] [NeZero k] [LinearOrder (HighWindowLabels d k)]
-    (C : ModelConstants d) (hD : 3 ≤ D) (hq : 1 ≤ q)
-    (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
-    (Cfr lam ℓ N μ : ℝ) (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
+variable {d k D M q : ℕ} [NeZero d] [NeZero k] [LinearOrder 𝙯]
+    (C : ModelConstants d) (hD : 𝗕) (hq : 𝗘)
+    (hM : highCenterResolutionThreshold C ≤ 𝖧)
+    (Cfr lam ℓ N μ : ℝ) (hCfr : 𝗹) (hℓ : 𝙲₁) (hℓN : 𝖰₂)
 include hD hq hM hCfr hℓ hℓN
 
-theorem completeSourceRows_mass_positive (i : SourceRowIndex d D M q
-    (C.densityLower+1/(M : ℝ)) (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ) :
-    0 < (completeSourceRows C k D M q Cfr lam ℓ N μ).rowMass i := by
-  obtain ⟨ha,hab⟩ := high_source_interval_numeric C (M : ℝ) hM
+𝗇 𝔄 𝖻 lam ℓ N μ
+theorem completeSourceRows_mass_positive i :
+    0 < (𝔄).rowMass i := by
+  obtain ⟨ha,hab⟩ := 𝗌₁
   exact sourceRowMass_positive_actual d k D M q hD hq _ _ ha hab Cfr
-    (by linarith) lam ℓ N μ hℓ hℓN i
+     𝖡₄  lam ℓ N μ hℓ hℓN i
+
+𝗇 𝔅 𝖫
+𝗇 𝔇 𝚐
+𝗇 𝔈 𝖠 ℓ N μ hCfr hℓ hℓN
+𝗃 𝔐 ἀ C hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN
+𝗇 𝔉 𝔐 completeSourceRows_mass_positive
+𝗇 𝔊 T * (highRowTotalMass (𝔄).rowMass / highCenterMix C) / historyReferenceRho 𝔇 ≤ 1 / (2+8* (𝔇 : ℕ) ^2)
+𝗇 𝔏 highUnionLaw 𝔄 $ highCenterMix C
+𝗇 𝔍 historyMarkedPrior 𝔅 𝔇 t 𝔏 $ highUnionActivation 𝔄 $ highCenterMix C
+section
+
+variable (T)
+    (hT : 𝚞)
+    (hsmall : 𝔊)
+    (t)
+    (ht : t ∈ 𝗺)
+
+include hT hsmall ht
 
 /-- Probability of the actual full source path follows from its primitive
 finite packet guards and the explicit history positivity budget. -/
-theorem completeSourcePrior_probability (T : ℝ) (hT : 0 ≤ T)
-    (hsmall : T * (highRowTotalMass (completeSourceRows C k D M q Cfr lam ℓ N μ).rowMass /
-      highCenterMix C) / historyReferenceRho (3^d) ≤ 1 / (2+8*((3^d : ℕ):ℝ)^2))
-    (t : ℝ) (ht : t ∈ Icc 0 T) :
-    IsProbabilityMeasure (historyMarkedPrior (fun i j => j ∈ highNeighborLabels d k i) (3^d) t
-      (highUnionLaw (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C))
-      (highUnionActivation (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C))) :=
+theorem completeSourcePrior_probability :
+    IsProbabilityMeasure 𝔍 :=
   highUnionSourcePrior_probability C _
-    (completeSourceRows_guards C k D M q hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN)
-    (completeSourceRows_mass_positive C hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN) T hT hsmall t ht
+    𝔈
+    𝔉 T hT hsmall t ht
 
+𝗇 𝔎 highUnionSourceMass C 𝔄
 /-- Actual canonical append cancellation closes mass-law invariance for
 all retained rows, including every higher coarse/fine target. -/
-theorem completeSourceMass_prior_law (T : ℝ) (hT : 0 ≤ T)
-    (hsmall : T * (highRowTotalMass (completeSourceRows C k D M q Cfr lam ℓ N μ).rowMass /
-      highCenterMix C) / historyReferenceRho (3^d) ≤ 1 / (2+8*((3^d : ℕ):ℝ)^2))
-    (t : ℝ) (ht : t ∈ Icc 0 T) :
-    Measure.map (highUnionSourceMass C (completeSourceRows C k D M q Cfr lam ℓ N μ))
-      (historyMarkedPrior (fun i j => j ∈ highNeighborLabels d k i) (3^d) t
-        (highUnionLaw (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C))
-        (highUnionActivation (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C))) =
-    Measure.map (highUnionSourceMass C (completeSourceRows C k D M q Cfr lam ℓ N μ))
-      (historyMarkedReference (fun i j => j ∈ highNeighborLabels d k i) (3^d)
-        (highUnionLaw (completeSourceRows C k D M q Cfr lam ℓ N μ) (highCenterMix C))) :=
+theorem completeSourceMass_prior_law :
+    Measure.map 𝔎
+      𝔍 =
+    Measure.map 𝔎
+      (historyMarkedReference 𝔅 𝔇
+        𝔏) :=
   highUnionSourceMass_prior_law_of_append_annihilation C _
-    (completeSourceRows_guards C k D M q hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN)
-    (completeSourceRows_mass_positive C hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN)
+    𝔈
+    𝔉
     T hT hsmall
-    (completeSourceMass_append_indicator_zero C hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN) t ht
-
-end NearlyMinimax
+    𝔐 completeSourceMass_append_indicator_zero t ht

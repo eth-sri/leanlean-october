@@ -1,124 +1,121 @@
 module
 
 public import NearlyMinimax.GaussianSpatialDomination
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗍
 
 /-! Genuine Gamma moments and polynomial-exponential tail integrals. These
 are the analytic ingredients for the log-scale simplex tail in the spatial
 interpolation construction. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
+𝚫
+𝚪
+𝚨
+𝚩
 set_option maxHeartbeats 400000
 
+𝗃 𝔘 -(b * ἀ)
+𝗇 𝔄 𝔘 v
+𝗇 𝔔 𝙴₁
+𝗃 𝔙 v ^ ἀ * Real.exp 𝔄
 /-- The actual Gamma moment, with respect to Lebesgue measure on the positive
 half-line. -/
-theorem gamma_monomial_integrable {b : ℝ} (hb : 0 < b) (r : ℕ) :
-    IntegrableOn (fun v : ℝ => v ^ r * Real.exp (-(b * v))) (Ici 0) := by
+theorem gamma_monomial_integrable (hb : 𝔔) r :
+    IntegrableOn (fun v => 𝔙 r) $ Ici 0 := by
   rw [integrableOn_Ici_iff_integrableOn_Ioi]
-  have h := integrableOn_rpow_mul_exp_neg_mul_rpow (s := (r : ℝ)) (p := 1)
-    (b := b) (by exact lt_of_lt_of_le (by norm_num) (Nat.cast_nonneg r)) (by norm_num) hb
-  simpa only [Real.rpow_natCast, Real.rpow_one, neg_mul] using h
+  have h := integrableOn_rpow_mul_exp_neg_mul_rpow (s := r) (p := 1)
+      𝖡₄   𝖠₄  hb
+  simp_all
 
-theorem gamma_monomial_integral {b : ℝ} (hb : 0 < b) (r : ℕ) :
-    (∫ v : ℝ in Ici 0, v ^ r * Real.exp (-(b * v))) =
-      (r.factorial : ℝ) / b ^ (r + 1) := by
+𝗇 𝔖 𝘜₂
+theorem gamma_monomial_integral (hb : 𝔔) r :
+     ∫ v : ℝ in Ici 0, 𝔙 r =
+      r.factorial / b ^ 𝔖 := by
   rw [integral_Ici_eq_integral_Ioi]
-  have h := Real.integral_rpow_mul_exp_neg_mul_Ioi (a := (r : ℝ) + 1)
-    (r := b) (by positivity) hb
+  have h := Real.integral_rpow_mul_exp_neg_mul_Ioi (a := 𝔖)
+      𝖠₃  hb
   simp only [add_sub_cancel_right, Real.rpow_natCast, Real.Gamma_nat_eq_factorial] at h
   rw [h]
-  have he : (r : ℝ) + 1 = ((r + 1 : ℕ) : ℝ) := by norm_num
+  have he : 𝔖 = ((𝔖 : ℕ) : ℝ) := 𝖠₄
   rw [he, Real.rpow_natCast]
-  rw [div_pow, one_pow]
-  field_simp
+  ring
 
+𝗇 𝔅 A + v
+𝗇 𝔊 (measurePreserving_add_left volume A).restrict_preimage (s := Ici A) measurableSet_Ici
+𝗇 𝔐 (fun v => 𝔅) ⁻¹' Ici A = Ici 0
 /-- Translation of a genuine set integral; no integrability premise is
 needed to identify the two Bochner integrals. -/
-theorem integral_Ici_translate (A : ℝ) (f : ℝ → ℝ) :
-    (∫ v : ℝ in Ici 0, f (A + v)) = ∫ u : ℝ in Ici A, f u := by
-  have hp := (measurePreserving_add_left (volume : Measure ℝ) A).restrict_preimage
-    (s := Ici A) measurableSet_Ici
-  have hs : (fun v : ℝ => A + v) ⁻¹' Ici A = Ici 0 := by
-    ext v
-    simp only [mem_preimage, mem_Ici]
-    constructor <;> intro h <;> linarith
+theorem integral_Ici_translate A (f : 𝘓) :
+     ∫ v : ℝ in Ici 0, f 𝔅 = ∫ u : ℝ in Ici A, f u := by
+  have hp := 𝔊
+  have hs : 𝔐 := by
+    simp
   rw [hs] at hp
   exact hp.integral_comp (MeasurableEquiv.addLeft A).measurableEmbedding f
 
-theorem gamma_translated_monomial_integrable {b : ℝ} (hb : 0 < b)
-    (A : ℝ) (m : ℕ) :
-    IntegrableOn (fun v : ℝ => (A + v) ^ m * Real.exp (-(b * v))) (Ici 0) := by
-  have he : (fun v : ℝ => (A + v) ^ m * Real.exp (-(b * v))) =
-      fun v => ∑ l ∈ Finset.range (m + 1),
-        (A ^ l * (m.choose l : ℝ)) * (v ^ (m - l) * Real.exp (-(b * v))) := by
+𝗇 𝔈 m - l
+𝗇 𝔍 𝘻
+𝗇 𝔎 A ^ l * m.choose l
+𝗇 𝔏 ∑ l ∈ Finset.range 𝔍, 𝔎 * 𝔙 𝔈
+𝗇 𝔑 fun v => 𝔅 ^ m * Real.exp 𝔄
+𝗇 𝔒 fun l _ => (gamma_monomial_integrable hb 𝔈).const_mul _
+theorem gamma_translated_monomial_integrable (hb : 𝔔)
+    A m :
+    IntegrableOn 𝔑 $ Ici 0 := by
+  have he : 𝔑 =
+      fun v => 𝔏 := by
     funext v
     rw [add_pow, Finset.sum_mul]
-    apply Finset.sum_congr rfl
-    intro l _
-    ring
+    grind
   rw [he]
-  exact integrable_finsetSum _ fun l _ => (gamma_monomial_integrable hb (m - l)).const_mul _
+  exact integrable_finsetSum _ 𝔒
 
+𝗇 𝔇 𝔘 A
+𝗇 𝔉 u ^ m * Real.exp 𝔘 u / m.factorial
+𝗇 𝔓 𝔘 𝔅
+𝗇 𝔗 Real.exp 𝔇 / m.factorial
 /-- Exact exponential tail of an integer-shape Gamma density. The right-hand
 side is a finite polynomial, derived by translation and the binomial theorem. -/
-theorem gamma_polynomial_tail_integral {b : ℝ} (hb : 0 < b) (A : ℝ) (m : ℕ) :
-    (∫ u : ℝ in Ici A, u ^ m * Real.exp (-(b * u)) / (m.factorial : ℝ)) =
-      Real.exp (-(b * A)) *
-        ∑ l ∈ Finset.range (m + 1), A ^ l / ((l.factorial : ℝ) * b ^ (m + 1 - l)) := by
+theorem gamma_polynomial_tail_integral (hb : 𝔔) A m :
+     ∫ u : ℝ in Ici A, 𝔉 =
+      Real.exp 𝔇 *
+        ∑ l ∈ Finset.range 𝔍, A ^ l / (l.factorial * b ^ (𝔍 - l)) := by
   rw [← integral_Ici_translate A]
-  have he : (fun v : ℝ => (A + v) ^ m * Real.exp (-(b * (A + v))) / (m.factorial : ℝ)) =
-      fun v => (Real.exp (-(b * A)) / (m.factorial : ℝ)) *
-        ∑ l ∈ Finset.range (m + 1),
-          (A ^ l * (m.choose l : ℝ)) * (v ^ (m - l) * Real.exp (-(b * v))) := by
+  have he : (fun v => 𝔅 ^ m * Real.exp 𝔓 / m.factorial) =
+      fun v => 𝔗 *
+        𝔏 := by
     funext v
-    rw [show -(b * (A + v)) = -(b * A) + -(b * v) by ring, Real.exp_add,
+    rw [show 𝔓 = 𝔇 + 𝔄 by ring, Real.exp_add,
       add_pow, Finset.sum_mul, Finset.sum_div]
     rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro l _
-    ring
-  rw [he, integral_const_mul, integral_finsetSum _ (fun l _ =>
-    (gamma_monomial_integrable hb (m - l)).const_mul _)]
+    grind
+  rw [he, integral_const_mul, integral_finsetSum _ 𝔒]
   simp_rw [integral_const_mul, gamma_monomial_integral hb]
   rw [div_mul_eq_mul_div, div_eq_mul_inv, mul_assoc]
   congr 1
   rw [Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro l hl
-  have hlm : l ≤ m := Nat.le_of_lt_succ (Finset.mem_range.mp hl)
-  have hf : (m.factorial : ℝ) ≠ 0 := by positivity
-  have hfl : (l.factorial : ℝ) ≠ 0 := by positivity
-  have hfr : ((m - l).factorial : ℝ) ≠ 0 := by positivity
-  have hp : b ≠ 0 := ne_of_gt hb
-  have hchoose := Nat.cast_choose ℝ hlm
-  rw [hchoose]
-  have hn : m + 1 - l = (m - l) + 1 := by omega
-  rw [hn]
-  field_simp
+  have hf : (m.factorial : ℝ) ≠ 0 := 𝖠₃
+  have hfr : ((𝔈).factorial : ℝ) ≠ 0 := 𝖠₃
+  have hchoose := Nat.cast_choose ℝ $ Nat.le_of_lt_succ $ Finset.mem_range.mp hl
+  grind
 
 /-- The original tail integrand is genuinely integrable, including at an
 arbitrary translated boundary. -/
-theorem gamma_polynomial_tail_integrable {b : ℝ} (hb : 0 < b) (A : ℝ) (m : ℕ) :
-    IntegrableOn (fun u : ℝ => u ^ m * Real.exp (-(b * u)) / (m.factorial : ℝ))
-      (Ici A) := by
-  have hp := (measurePreserving_add_left (volume : Measure ℝ) A).restrict_preimage
-    (s := Ici A) measurableSet_Ici
-  have hs : (fun v : ℝ => A + v) ⁻¹' Ici A = Ici 0 := by
-    ext v
-    simp only [mem_preimage, mem_Ici]
-    constructor <;> intro h <;> linarith
+theorem gamma_polynomial_tail_integrable (hb : 𝔔) A m :
+    IntegrableOn (fun u => 𝔉)
+      $ Ici A := by
+  have hp := 𝔊
+  have hs : 𝔐 := by
+    simp
   rw [hs] at hp
   apply (hp.integrable_comp_emb (MeasurableEquiv.addLeft A).measurableEmbedding).mp
   have h := (gamma_translated_monomial_integrable hb A m).const_mul
-    (Real.exp (-(b * A)) / (m.factorial : ℝ))
+    𝔗
   convert h using 1
   funext v
-  simp only [Function.comp_apply]
-  rw [show -(b * (A + v)) = -(b * A) + -(b * v) by ring, Real.exp_add]
+  simp
+  rw [show 𝔓 = 𝔇 + 𝔄 by ring, Real.exp_add]
   ring
-
-end NearlyMinimax

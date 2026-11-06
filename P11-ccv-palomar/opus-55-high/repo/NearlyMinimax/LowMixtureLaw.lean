@@ -2,8 +2,10 @@ module
 
 public import NearlyMinimax.LowSmoothnessConstants
 public import NearlyMinimax.ParametricLower
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! # Actual probability laws of the low-smoothness mixture
 
@@ -12,83 +14,92 @@ This file proves the law identification and transfers its risks to the
 original model; it introduces no statistical risk premise.
 -/
 
-noncomputable section
-open MeasureTheory ProbabilityTheory Set
-open scoped ENNReal BigOperators
+𝚴
+𝚮
 
-namespace NearlyMinimax
+𝚨
 
-def responseIndexKernel {α : Type*} [MeasurableSpace α] (a V : ℝ)
-    (F : α → ℝ) (hF : Measurable F) : Kernel α (Fin 3) where
-  toFun x := ∑ y : Fin 3, ENNReal.ofReal (ternaryMass a (F x) V y) • Measure.dirac y
+𝗇 𝔈 ternaryMass a (F x) V y
+𝗇 𝔗 𝘬
+𝗃 𝔤 ἀ a V F hF
+𝗇 𝔙 𝔤 ternaryMass_measurable_comp y
+𝗇 𝔟 ∑ y : Fin 3, ENNReal.ofReal 𝔈 • Measure.dirac y
+def responseIndexKernel [MeasurableSpace α] (a V : ℝ)
+    (F : 𝔗) (hF : Measurable F) : Kernel α $ Fin 3 where
+  toFun x := 𝔟
   measurable' := by
     apply Measure.measurable_of_measurable_coe
     intro s hs
     simp only [Measure.finsetSum_apply, Measure.smul_apply, smul_eq_mul]
-    exact Finset.measurable_sum _ (fun y _ =>
-      (ENNReal.measurable_ofReal.comp (ternaryMass_measurable_comp a V F hF y)).mul_const _)
+    exact Finset.measurable_sum _ fun y _ =>
+      (ENNReal.measurable_ofReal.comp 𝔙).mul_const _
 
-theorem responseIndexKernel_apply {α : Type*} [MeasurableSpace α] (a V : ℝ)
-    (F : α → ℝ) (hF : Measurable F) (x : α) :
-    responseIndexKernel a V F hF x =
-      ∑ y : Fin 3, ENNReal.ofReal (ternaryMass a (F x) V y) • Measure.dirac y := rfl
+theorem responseIndexKernel_apply [MeasurableSpace α] a V
+    F hF (x : α) :
+    𝔤 responseIndexKernel x =
+      𝔟 := rfl
 
-theorem responseIndexKernel_markov {α : Type*} [MeasurableSpace α] (a V : ℝ)
-    (F : α → ℝ) (hF : Measurable F) (ha : a ≠ 0)
-    (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y) :
-    IsMarkovKernel (responseIndexKernel a V F hF) := by
+𝗇 𝔏 𝔤 responseIndexKernel
+𝗇 𝔛 ∀ x y, 0 ≤ 𝔈
+theorem responseIndexKernel_markov [MeasurableSpace α] a V
+    (F : 𝔗) hF (ha : 𝙞)
+    (hp : 𝔛) :
+    IsMarkovKernel 𝔏 := by
   constructor
   intro x
   constructor
   simp only [responseIndexKernel_apply, Measure.finsetSum_apply, Measure.smul_apply,
-    Measure.dirac_apply_of_mem (Set.mem_univ _), smul_eq_mul, mul_one]
-  rw [← ENNReal.ofReal_sum_of_nonneg (fun y _ => hp x y), ternary_normalized a (F x) V ha]
+    𝚉₁, smul_eq_mul, mul_one]
+  rw [← ENNReal.ofReal_sum_of_nonneg fun y _ => hp x y , ternary_normalized a (F x) V ha]
   simp
 
+𝗇 𝔅 𝔤 uniformTernaryParameter ha hp
+𝗇 𝔯 (z.1, ternaryValue a z.2)
+𝗃 𝔴 fun z => ἀ
+𝗇 𝔓 𝔴 𝔯
+𝗇 𝔔 𝔤 responseIndexKernel_markov ha hp
+𝗇 𝔚 (measurable_of_countable _).comp measurable_snd
+𝗇 𝔧 (cubeVolume d).compProd 𝔏
+𝗇 𝔨 (z.1, F z.1 + z.2)
 /-- Encoding the genuine conditional index law gives the original real-response
 observation law, including its covariate-dependent error kernel. -/
-theorem uniformTernaryParameter_observation_index_map {d : ℕ}
-    (a V : ℝ) (F : Covariate d → ℝ) (hF : Measurable F) (ha : a ≠ 0)
-    (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y) :
-    ((cubeVolume d).compProd (responseIndexKernel a V F hF)).map
-      (fun z : Covariate d × Fin 3 => (z.1, ternaryValue a z.2)) =
-      observationLaw (uniformTernaryParameter a V F hF ha hp) := by
+theorem uniformTernaryParameter_observation_index_map
+    a V F hF ha
+    hp :
+    (𝔧).map
+      𝔓 =
+      observationLaw 𝔅 := by
   let _ := cubeVolume_isProbability d
-  let _ := responseIndexKernel_markov a V F hF ha hp
-  let _ := ternaryErrorKernel_markov a V F hF ha hp
-  have hencode : Measurable (fun z : Covariate d × Fin 3 => (z.1, ternaryValue a z.2)) :=
-    measurable_fst.prodMk ((measurable_of_countable _).comp measurable_snd)
-  have hreal : Measurable (fun z : Covariate d × ℝ => (z.1, F z.1 + z.2)) :=
-    measurable_fst.prodMk ((hF.comp measurable_fst).add measurable_snd)
+  let _ := 𝔔
+  let _ := 𝔤 ternaryErrorKernel_markov ha hp
+  have hencode : Measurable fun z : Covariate d × Fin 3 => 𝔯 :=
+    measurable_fst.prodMk 𝔚
+  have hreal : Measurable fun z : 𝚛 => 𝔨 :=
+    measurable_fst.prodMk $ (hF.comp measurable_fst).add measurable_snd
   ext s hs
   rw [Measure.map_apply hencode hs, observationLaw]
-  change _ = (((designLaw (uniformTernaryParameter a V F hF ha hp)).compProd
-    (ternaryErrorKernel a V F hF)).map (fun z : Covariate d × ℝ => (z.1, F z.1 + z.2))) s
+  change _ = (((designLaw 𝔅).compProd
+    𝔤 ternaryErrorKernel).map 𝔴 𝔨) s
   rw [Measure.map_apply hreal hs]
   simp only [designLaw, uniformTernaryParameter, ENNReal.ofReal_one, withDensity_const, one_smul]
-  rw [Measure.compProd_apply (hs.preimage hencode), Measure.compProd_apply (hs.preimage hreal)]
+  rw [Measure.compProd_apply $ hs.preimage hencode , Measure.compProd_apply $ hs.preimage hreal ]
   apply lintegral_congr
   intro x
-  have hSreal : MeasurableSet {u : ℝ | (x, F x + u) ∈ s} :=
-    hs.preimage (measurable_const.prodMk (measurable_const.add measurable_id))
-  have hSindex : MeasurableSet {y : Fin 3 | (x, ternaryValue a y) ∈ s} :=
-    hs.preimage (measurable_const.prodMk (measurable_of_countable _))
-  simp only [responseIndexKernel_apply, ternaryErrorKernel_apply, Measure.finsetSum_apply,
-    Measure.smul_apply, smul_eq_mul]
+  simp only [responseIndexKernel_apply, ternaryErrorKernel_apply, Measure.finsetSum_apply]
   apply Finset.sum_congr rfl
   intro y _
-  congr 1
-  change Measure.dirac y {y | (x, ternaryValue a y) ∈ s} =
-    Measure.dirac (ternaryValue a y - F x) {u | (x, F x + u) ∈ s}
-  rw [Measure.dirac_apply' _ hSindex, Measure.dirac_apply' _ hSreal]
-  have he : F x + (ternaryValue a y - F x) = ternaryValue a y := by ring
-  by_cases h : (x, ternaryValue a y) ∈ s <;> simp [Set.indicator, he, h]
+  by_cases h : (x, 𝗐₂) ∈ s <;> simp [h]
 
+𝗇 𝔰 F $ x i
+𝗇 𝔄 ∏ i, ternaryMass a 𝔰 V (y i)
+𝗇 𝔇 𝙈
+𝗇 𝔖 𝔰
+𝗇 𝔘 𝚅₁
+𝗇 𝔡 ∑ y : 𝔇, ENNReal.ofReal 𝔄 • Measure.dirac y
 /-- The genuine conditional law of all finite response labels. -/
-def responseSampleIndexKernel {α : Type*} [MeasurableSpace α] (n : ℕ) (a V : ℝ)
-    (F : α → ℝ) (hF : Measurable F) : Kernel (Fin n → α) (Fin n → Fin 3) where
-  toFun x := ∑ y : Fin n → Fin 3,
-    ENNReal.ofReal (∏ i, ternaryMass a (F (x i)) V (y i)) • Measure.dirac y
+def responseSampleIndexKernel [MeasurableSpace α] (n : ℕ) (a V : ℝ)
+    (F : 𝔗) (hF : Measurable F) : Kernel 𝔘 𝔇 where
+  toFun x := 𝔡
   measurable' := by
     apply Measure.measurable_of_measurable_coe
     intro s hs
@@ -97,263 +108,259 @@ def responseSampleIndexKernel {α : Type*} [MeasurableSpace α] (n : ℕ) (a V :
     intro y _
     apply Measurable.mul_const
     apply ENNReal.measurable_ofReal.comp
-    exact Finset.measurable_prod _ (fun i _ =>
-      ternaryMass_measurable_comp a V (fun x : Fin n → α => F (x i))
-        (hF.comp (measurable_pi_apply i)) (y i))
+    exact Finset.measurable_prod _ fun i _ =>
+      ternaryMass_measurable_comp a V (fun x : 𝔘 => 𝔖)
+        (hF.comp $ measurable_pi_apply i ) $ y i
 
-theorem responseSampleIndexKernel_apply {α : Type*} [MeasurableSpace α]
-    (n : ℕ) (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (x : Fin n → α) :
-    responseSampleIndexKernel n a V F hF x =
-      ∑ y : Fin n → Fin 3,
-        ENNReal.ofReal (∏ i, ternaryMass a (F (x i)) V (y i)) • Measure.dirac y := rfl
+𝗃 𝔣 ἀ n a V F hF
+𝗇 𝔍 𝔣 responseSampleIndexKernel
+𝗇 𝔎 𝔣 responseSampleIndexKernel_markov ha hp
+𝗇 𝔑 𝖮
+𝗇 𝔜 𝔣 responseSampleIndexKernel x
+𝗇 𝔥 hp $ x i
+𝗇 𝔬 ternaryMass a 𝔖 V y
+section
 
-theorem responseSampleIndexKernel_markov {α : Type*} [MeasurableSpace α]
-    (n : ℕ) (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (ha : a ≠ 0)
-    (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y) :
-    IsMarkovKernel (responseSampleIndexKernel n a V F hF) := by
+variable [MeasurableSpace α]
+
+theorem responseSampleIndexKernel_apply n a V (F : 𝔗) hF x :
+    𝔜 =
+      𝔡 := rfl
+
+theorem responseSampleIndexKernel_markov n a V (F : 𝔗) hF (ha : 𝙞)
+    (hp : 𝔛) :
+    IsMarkovKernel 𝔍 := by
   constructor
   intro x
   constructor
   simp only [responseSampleIndexKernel_apply, Measure.finsetSum_apply, Measure.smul_apply,
-    Measure.dirac_apply_of_mem (Set.mem_univ _), smul_eq_mul, mul_one]
-  rw [← ENNReal.ofReal_sum_of_nonneg (fun y _ => Finset.prod_nonneg
-      (fun i _ => hp (x i) (y i))), ← Fintype.prod_sum]
+    𝚉₁, smul_eq_mul, mul_one]
+  rw [← ENNReal.ofReal_sum_of_nonneg fun y _ => Finset.prod_nonneg
+       fun i _ => 𝔥 $ y i , ← Fintype.prod_sum]
   simp [ternary_normalized a _ V ha]
 
+𝗇 𝔐 fun i => (z.1 i, z.2 i)
+𝗇 𝔩 𝘫
+𝗇 𝔪 𝔴 𝔐
 /-- The sample kernel, with designs drawn independently, is the same law as
 independent pairs from the one-observation kernel. -/
-theorem responseSampleIndexKernel_joint_map {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ]
-    (n : ℕ) (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (ha : a ≠ 0)
-    (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y) :
-    ((Measure.pi (fun _ : Fin n => μ)).compProd
-      (responseSampleIndexKernel n a V F hF)).map
-      (fun z : (Fin n → α) × (Fin n → Fin 3) => fun i => (z.1 i, z.2 i)) =
-      Measure.pi (fun _ : Fin n => μ.compProd (responseIndexKernel a V F hF)) := by
-  let _ := responseIndexKernel_markov a V F hF ha hp
-  let _ := responseSampleIndexKernel_markov n a V F hF ha hp
-  have hm : Measurable (fun z : (Fin n → α) × (Fin n → Fin 3) =>
-      fun i => (z.1 i, z.2 i)) := by fun_prop
+theorem responseSampleIndexKernel_joint_map (μ : Measure α) [IsProbabilityMeasure μ]
+    n a V F hF (ha : 𝙞)
+    (hp : 𝔛) :
+    ((Measure.pi 𝔩).compProd
+      𝔍).map
+      𝔪 =
+      Measure.pi fun _ => μ.compProd 𝔏 := by
+  let _ := 𝔔
+  let _ := 𝔎
+  have hm : Measurable fun z : 𝔘 × 𝔇 =>
+      𝔐 := 𝖦₃
   symm
   apply Measure.pi_eq
   intro s hs
-  rw [Measure.map_apply hm (MeasurableSet.univ_pi hs),
-    Measure.compProd_apply ((MeasurableSet.univ_pi hs).preimage hm)]
-  have hinner (x : Fin n → α) :
-      responseSampleIndexKernel n a V F hF x
-        (Prod.mk x ⁻¹' (fun z : (Fin n → α) × (Fin n → Fin 3) =>
-          fun i => (z.1 i, z.2 i)) ⁻¹' Set.pi Set.univ s) =
-        ∏ i, ∑ y : Fin 3, ENNReal.ofReal (ternaryMass a (F (x i)) V y) *
+  rw [Measure.map_apply hm $ MeasurableSet.univ_pi hs ,
+    Measure.compProd_apply $ (MeasurableSet.univ_pi hs).preimage hm ]
+  have hinner x :
+      𝔜
+        (Prod.mk x ⁻¹' 𝔪 ⁻¹' Set.pi Set.univ s) =
+        ∏ i, ∑ y : Fin 3, ENNReal.ofReal 𝔬 *
           (s i).indicator 1 (x i, y) := by
-    simp only [responseSampleIndexKernel_apply, Measure.finsetSum_apply,
-      Measure.smul_apply, smul_eq_mul]
-    simp_rw [ENNReal.ofReal_prod_of_nonneg (fun i _ => hp (x i) _)]
+    simp only [responseSampleIndexKernel_apply, Measure.finsetSum_apply]
+    simp_rw [ENNReal.ofReal_prod_of_nonneg fun i _ => 𝔥 _ ]
     rw [Fintype.prod_sum]
     apply Finset.sum_congr rfl
     intro y _
-    rw [Measure.dirac_apply' _ (((MeasurableSet.univ_pi hs).preimage hm).preimage measurable_prodMk_left)]
     by_cases h : ∀ i, (x i, y i) ∈ s i
-    · have hprod : ∏ i, (s i).indicator (1 : α × Fin 3 → ℝ≥0∞) (x i, y i) = 1 := by
-        simp [Set.indicator_of_mem, h]
-      simp [Set.indicator_of_mem, h, Set.mem_pi]
+    · simp_all
     · obtain ⟨i, hi⟩ := not_forall.mp h
-      have hz : (s i).indicator (1 : α × Fin 3 → ℝ≥0∞) (x i, y i) = 0 :=
-        Set.indicator_of_notMem hi _
       rw [Finset.prod_mul_distrib]
-      have hzero : ∏ j, (s j).indicator (1 : α × Fin 3 → ℝ≥0∞) (x j, y j) = 0 :=
-        Finset.prod_eq_zero (Finset.mem_univ i) hz
-      rw [hzero, mul_zero]
-      simp [Set.indicator_of_notMem, Set.mem_pi, h]
+      have hzero : ∏ j, (s j).indicator (1 : α × Fin 3 → 𝙉₁) (x j, y j) = 0 :=
+        𝗈₁ $ Set.indicator_of_notMem hi _
+      simp_all
   simp_rw [hinner]
-  let G : Fin n → α → ℝ≥0∞ := fun i x =>
-    ∑ y : Fin 3, ENNReal.ofReal (ternaryMass a (F x) V y) * (s i).indicator 1 (x, y)
-  have hG : ∀ i, Measurable (G i) := by
+  let G := fun i x =>
+    ∑ y : Fin 3, ENNReal.ofReal 𝔈 * (s i).indicator 1 𝔑
+  have hG : ∀ i, Measurable $ G i := by
     intro i
-    exact Finset.measurable_sum _ (fun y _ =>
-      (ENNReal.measurable_ofReal.comp (ternaryMass_measurable_comp a V F hF y)).mul
-        ((Measurable.indicator measurable_const (hs i)).comp (measurable_id.prodMk measurable_const)))
-  change (∫⁻ x, ∏ i, G i (x i) ∂Measure.pi (fun _ : Fin n => μ)) = _
-  rw [lintegral_prod_eq_prod_lintegral_of_indepFun _ _
-    (iIndepFun_pi (fun i => (hG i).aemeasurable))
-    (fun i => (hG i).comp (measurable_pi_apply i))]
+    exact Finset.measurable_sum _ fun y _ =>
+      (ENNReal.measurable_ofReal.comp 𝔙).mul
+        $ (Measurable.indicator measurable_const $ hs i ).comp $ measurable_id.prodMk measurable_const
+  rw [𝗒]
   apply Finset.prod_congr rfl
   intro i _
-  rw [(measurePreserving_eval (fun _ : Fin n => μ) i).lintegral_comp (hG i)]
-  rw [Measure.compProd_apply (hs i)]
+  rw [(measurePreserving_eval 𝔩 i).lintegral_comp $ hG i ]
+  rw [Measure.compProd_apply $ hs i ]
   apply lintegral_congr
   intro x
-  simp only [G, responseIndexKernel_apply, Measure.finsetSum_apply, Measure.smul_apply,
-    Measure.dirac_apply' _ ((hs i).preimage measurable_prodMk_left), smul_eq_mul]
-  apply Finset.sum_congr rfl
-  intro y _
+  simp only [responseIndexKernel_apply, Measure.finsetSum_apply, Measure.smul_apply,
+    Measure.dirac_apply' _ $ (hs i).preimage measurable_prodMk_left ]
   rfl
 
+end
+
 /-- Encode all finite response labels as the paper's real observations. -/
-def encodeDesignResponse {d n : ℕ} (a : ℝ) :
-    (Fin n → Covariate d) × (Fin n → Fin 3) → (Fin n → Observation d) :=
-  fun z i => (z.1 i, ternaryValue a (z.2 i))
+def encodeDesignResponse (a : ℝ) :
+    𝙇 × 𝔇 → 𝙌 :=
+  fun z i => (z.1 i, ternaryValue a $ z.2 i )
 
-theorem encodeDesignResponse_measurable {d n : ℕ} (a : ℝ) :
-    Measurable (encodeDesignResponse (d := d) (n := n) a) := by
-  exact (encodeResponse_measurable a).comp measurable_swap
+𝗃 𝔲 ἀ (d := d) (n := n) a
+theorem encodeDesignResponse_measurable a :
+    Measurable 𝔲 encodeDesignResponse := (encodeResponse_measurable a).comp measurable_swap
 
+𝗇 𝔉 Measure.pi 𝙮₁
+𝗇 𝔠 sampleLaw 𝔅 n
+𝗇 𝔭 (𝔉).compProd 𝔍
 /-- Identification with the complete iid sample law of the original model. -/
-theorem uniformTernaryParameter_sample_index_map {d : ℕ}
-    (n : ℕ) (a V : ℝ) (F : Covariate d → ℝ) (hF : Measurable F) (ha : a ≠ 0)
-    (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y) :
-    ((Measure.pi (fun _ : Fin n => cubeVolume d)).compProd
-      (responseSampleIndexKernel n a V F hF)).map (encodeDesignResponse a) =
-      sampleLaw (uniformTernaryParameter a V F hF ha hp) n := by
+theorem uniformTernaryParameter_sample_index_map
+    n a V F hF ha
+    hp :
+    (𝔭).map (encodeDesignResponse a) =
+      𝔠 := by
   let _ := cubeVolume_isProbability d
-  let _ := responseIndexKernel_markov a V F hF ha hp
-  let _ := responseSampleIndexKernel_markov n a V F hF ha hp
+  let _ := 𝔔
+  let _ := 𝔎
   have hsingle : MeasurePreserving
-      (fun z : Covariate d × Fin 3 => (z.1, ternaryValue a z.2))
-      ((cubeVolume d).compProd (responseIndexKernel a V F hF))
-      (observationLaw (uniformTernaryParameter a V F hF ha hp)) :=
-    ⟨measurable_fst.prodMk ((measurable_of_countable _).comp measurable_snd),
-      uniformTernaryParameter_observation_index_map a V F hF ha hp⟩
-  let _ : IsProbabilityMeasure (observationLaw (uniformTernaryParameter a V F hF ha hp)) := by
+      𝔓
+      𝔧
+      $ observationLaw 𝔅 :=
+    ⟨measurable_fst.prodMk 𝔚,
+      𝔤 uniformTernaryParameter_observation_index_map ha hp⟩
+  let _ : IsProbabilityMeasure $ observationLaw 𝔅 := by
     rw [← hsingle.map_eq]
     infer_instance
-  have h := (measurePreserving_pi _ _ (fun _ : Fin n => hsingle)).map_eq
+  have h := (measurePreserving_pi _ _ fun _ : Fin n => hsingle ).map_eq
   rw [← responseSampleIndexKernel_joint_map (cubeVolume d) n a V F hF ha hp,
     Measure.map_map] at h
   · exact h
-  · apply Measurable.of_eval
-    intro i
-    exact (measurable_fst.prodMk ((measurable_of_countable _).comp measurable_snd)).comp
-      (measurable_pi_apply i)
-  · fun_prop
+  all_goals fun_prop
 
 /-- Genuine finite conditional integrals, with no density representation
 assumption, equal the likelihood sums used by the score proof. -/
-theorem responseSampleIndexKernel_integral {α : Type*} [MeasurableSpace α]
-    (n : ℕ) (a V : ℝ) (F : α → ℝ) (hF : Measurable F) (x : Fin n → α)
-    (hp : ∀ i y, 0 ≤ ternaryMass a (F (x i)) V y)
-    (H : (Fin n → Fin 3) → ℝ) :
-    (∫ y, H y ∂responseSampleIndexKernel n a V F hF x) =
-      ∑ y, (∏ i, ternaryMass a (F (x i)) V (y i)) * H y := by
+theorem responseSampleIndexKernel_integral [MeasurableSpace α]
+    n a V (F : 𝔗) hF x
+    (hp : ∀ i y, 0 ≤ 𝔬)
+    (H : 𝔇 → ℝ) :
+     ∫ y, H y ∂𝔜 =
+      ∑ y, 𝔄 * H y := by
   rw [responseSampleIndexKernel_apply, integral_finsetSum_measure]
-  · simp only [integral_smul_measure, integral_dirac, smul_eq_mul]
+  · simp
     apply Finset.sum_congr rfl
     intro y _
-    rw [ENNReal.toReal_ofReal (Finset.prod_nonneg (fun i _ => hp i (y i)))]
+    rw [ENNReal.toReal_ofReal $ Finset.prod_nonneg fun i _ => 𝚗₁ ]
   · intro y _
     let _ := (Measure.dirac y).smul_finite
-      (c := ENNReal.ofReal (∏ i, ternaryMass a (F (x i)) V (y i))) ENNReal.ofReal_ne_top
+      (c := ENNReal.ofReal 𝔄) ENNReal.ofReal_ne_top
     exact Integrable.of_finite
 
+𝗇 𝔮 encodeDesignResponse a 𝔑
 /-- Bounded data-observable expectations in the genuine original sample law
 are exactly the design-integrated finite likelihood expectations. -/
-theorem uniformTernaryParameter_sample_integral {d : ℕ}
-    (n : ℕ) (a V : ℝ) (F : Covariate d → ℝ) (hF : Measurable F) (ha : a ≠ 0)
-    (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H)
-    (B : ℝ) (hB : ∀ z, |H z| ≤ B) :
-    (∫ z, H z ∂sampleLaw (uniformTernaryParameter a V F hF ha hp) n) =
-      ∫ x, ∑ y : Fin n → Fin 3,
-        (∏ i, ternaryMass a (F (x i)) V (y i)) * H (encodeDesignResponse a (x, y))
-        ∂Measure.pi (fun _ : Fin n => cubeVolume d) := by
+theorem uniformTernaryParameter_sample_integral
+    n a V F hF ha
+    hp
+    H (hH : Measurable H)
+    B (hB : ∀ z, |H z| ≤ B) :
+     ∫ z, H z ∂𝔠 =
+      ∫ x, ∑ y : 𝔇,
+        𝔄 * H 𝔮
+        ∂ 𝔉 := by
   let _ := cubeVolume_isProbability d
-  let _ := responseSampleIndexKernel_markov n a V F hF ha hp
-  have hm := encodeDesignResponse_measurable (d := d) (n := n) a
-  rw [← uniformTernaryParameter_sample_index_map n a V F hF ha hp,
+  let _ := 𝔎
+  have hm := 𝔲 encodeDesignResponse_measurable
+  rw [← 𝔣 uniformTernaryParameter_sample_index_map ha hp,
     integral_map hm.aemeasurable hH.aestronglyMeasurable]
-  have hi : Integrable (fun z => H (encodeDesignResponse a z))
-      ((Measure.pi (fun _ : Fin n => cubeVolume d)).compProd
-        (responseSampleIndexKernel n a V F hF)) :=
+  have hi : Integrable (fun z => H 𝗟₁)
+      𝔭 :=
     (integrable_const B).mono' (hH.comp hm).aestronglyMeasurable
-      (Filter.Eventually.of_forall (fun z => by simpa only [Real.norm_eq_abs] using hB _))
+      $ Filter.Eventually.of_forall fun z => 𝖤₄
   rw [Measure.integral_compProd hi]
   apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun x =>
-    responseSampleIndexKernel_integral n a V F hF x (fun i y => hp (x i) y) _)
+  exact Filter.Eventually.of_forall fun x =>
+    𝔣 responseSampleIndexKernel_integral x (fun i y => 𝔥 y) _
 
+𝗇 𝔫 (T.val z - V) ^ 2
 /-- Exact identification of the finite likelihood risk with the original
 model's ENNReal mean-squared risk for every bounded measurable estimator. -/
-theorem uniformTernaryParameter_risk_formula {d n : ℕ}
-    (a V : ℝ) (F : Covariate d → ℝ) (hF : Measurable F) (ha : a ≠ 0)
-    (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
-    (T : Estimator d n) (B : ℝ) (hB : ∀ z, |T.val z| ≤ B) :
-    ENNReal.ofReal (∫ x, ∑ y : Fin n → Fin 3,
-      (∏ i, ternaryMass a (F (x i)) V (y i)) *
-        (T.val (encodeDesignResponse a (x, y)) - V) ^ 2
-      ∂Measure.pi (fun _ : Fin n => cubeVolume d)) =
-      meanSquaredRisk T (uniformTernaryParameter a V F hF ha hp) := by
+theorem uniformTernaryParameter_risk_formula
+    a V F hF ha
+    hp
+    (T : 𝚠) B (hB : ∀ z, |T.val z| ≤ B) :
+    ENNReal.ofReal (∫ x, ∑ y : 𝔇,
+      𝔄 *
+        (T.val 𝔮 - V) ^ 2
+      ∂ 𝔉) =
+      meanSquaredRisk T 𝔅 := by
   let _ := cubeVolume_isProbability d
-  let _ := responseSampleIndexKernel_markov n a V F hF ha hp
-  let _ : IsProbabilityMeasure (sampleLaw (uniformTernaryParameter a V F hF ha hp) n) := by
-    rw [← uniformTernaryParameter_sample_index_map n a V F hF ha hp]
+  let _ := 𝔎
+  let _ : IsProbabilityMeasure 𝔠 := by
+    rw [← 𝔣 uniformTernaryParameter_sample_index_map ha hp]
     infer_instance
-  have hm : Measurable (fun z => (T.val z - V) ^ 2) := (T.property.sub_const V).pow_const 2
-  have hbound (z : Fin n → Observation d) : |(T.val z - V) ^ 2| ≤ (B + |V|) ^ 2 := by
-    have he := (abs_sub (T.val z) V).trans (add_le_add (hB z) (le_refl |V|))
-    rw [abs_of_nonneg (sq_nonneg _)]
-    simpa only [sq_abs] using pow_le_pow_left₀ (abs_nonneg _) he 2
-  have hint : Integrable (fun z => (T.val z - V) ^ 2)
-      (sampleLaw (uniformTernaryParameter a V F hF ha hp) n) :=
-    (integrable_const ((B + |V|) ^ 2)).mono' hm.aestronglyMeasurable
-      (Filter.Eventually.of_forall (fun z => by simpa only [Real.norm_eq_abs] using hbound z))
-  rw [← uniformTernaryParameter_sample_integral n a V F hF ha hp _ hm _ hbound]
+  have hm := (T.property.sub_const V).pow_const 2
+  have hbound z : |𝔫| ≤ (B + |V|) ^ 2 := by
+    rw [𝗤]
+    simpa only [sq_abs] using 𝗂 ((abs_sub (T.val z) V).trans $ add_le_add (hB z) $ le_refl |V| ) 2
+  have hint : Integrable 𝔴 𝔫
+      𝔠 :=
+    (integrable_const $ (B + |V|) ^ 2 ).mono' hm.aestronglyMeasurable
+      $ Filter.Eventually.of_forall fun z => 𝖤₄
+  rw [← 𝔣 uniformTernaryParameter_sample_integral ha hp _ hm _ hbound]
   exact ofReal_integral_eq_lintegral_ofReal hint
-    (Filter.Eventually.of_forall (fun z => sq_nonneg _))
+    $ Filter.Eventually.of_forall fun z => sq_nonneg _
 
+section
+
+𝛇
+
+𝗇 𝔊 P.v - 𝙎 * t
+𝗇 𝔱 indexedGridField d k η ξ
+𝗇 𝔒 fun ξ i => 𝔱 $ x i
+𝗇 𝔞 finiteResponseLikelihood (gridWindowCount d k) n P.a 𝔊 𝔒 ξ y
+𝗃 𝔢 ∫ x, ∑ y : 𝔇, 𝔞 * (ἀ (encodeDesignResponse P.a 𝔑) - 𝔊) ^ 2 ∂ 𝔉
+𝗃 𝔳 ἀ C P k η t ξ hη ht hfield hvariance
 /-- Exact risk formula for every concrete grid-prior state. -/
-theorem gridPathParameter_risk_formula {d n : ℕ}
-    (C : ModelConstants d) (P : LowSmoothnessTernaryConstants C)
-    (k : ℕ) (η t : ℝ) (ξ : Fin (gridWindowCount d k) → Fin 3)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
-    (T : Estimator d n) (B : ℝ) (hB : ∀ z, |T.val z| ≤ B) :
-    ENNReal.ofReal (∫ x, ∑ y : Fin n → Fin 3,
-      finiteResponseLikelihood (gridWindowCount d k) n P.a (P.v - η ^ 2 * t)
-        (fun ξ i => indexedGridField d k η ξ (x i)) ξ y *
-        (T.val (encodeDesignResponse P.a (x, y)) - (P.v - η ^ 2 * t)) ^ 2
-      ∂Measure.pi (fun _ : Fin n => cubeVolume d)) =
-      meanSquaredRisk T (gridPathParameter C P k η t ξ hη ht hfield hvariance) := by
-  have hf (x : Covariate d) : |indexedGridField d k η ξ x| ≤ P.ρ :=
-    (indexedGridField_abs_bound d k η hη ξ x).trans (by nlinarith)
-  have hp (x : Covariate d) (y : Fin 3) :
-      0 ≤ ternaryMass P.a (indexedGridField d k η ξ x) (P.v - η ^ 2 * t) y :=
-    P.c_pos.le.trans ((P.path_legality η t _ ht hvariance (hf x)).2.2.1 y)
+theorem gridPathParameter_risk_formula
+    P
+    k η t ξ
+    hη ht
+    hfield hvariance
+    T B (hB : ∀ z, |T.val z| ≤ B) :
+    ENNReal.ofReal 𝔢 T.val =
+      meanSquaredRisk T 𝔳 gridPathParameter := by
+  have hf x :=
+    (𝙼₂ x).trans 𝖥₃
+  have hp x y :=
+    P.c_pos.le.trans $ (P.path_legality η t _ ht hvariance $ hf x ).2.2.1 y
   simpa only [gridPathParameter, LowSmoothnessTernaryConstants.pathParameter,
     LowSmoothnessTernaryConstants.variancePath, finiteResponseLikelihood] using
-    uniformTernaryParameter_risk_formula P.a (P.v - η ^ 2 * t)
-      (indexedGridField d k η ξ) (indexedGridField_continuous d k η ξ).measurable
+    uniformTernaryParameter_risk_formula P.a 𝔊
+      𝔱 (indexedGridField_continuous d k η ξ).measurable
       P.a_pos.ne' hp T B hB
 
+𝗇 𝔦 𝖥
 /-- The prior risk contribution of every latent state is controlled by the
 original bounded estimator's worst-case risk. -/
-theorem gridPathParameter_finite_risk_le_worstCase {d n : ℕ}
-    (C : ModelConstants d) (P : LowSmoothnessTernaryConstants C)
-    (k : ℕ) (η b t : ℝ) (ξ : Fin (gridWindowCount d k) → Fin 3)
-    (hk : 1 ≤ k) (hs1 : C.smoothness ≤ 1) (hb : 0 ≤ b)
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
-    (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
-    (hscale : η = b / (k : ℝ) ^ C.smoothness)
-    (hholder : ((2 : ℝ) ^ d + 68 * (2 : ℝ) ^ d * (d + 1)) * b ≤ C.holderBound)
-    (T : BoundedEstimator C n) :
-    ENNReal.ofReal (∫ x, ∑ y : Fin n → Fin 3,
-      finiteResponseLikelihood (gridWindowCount d k) n P.a (P.v - η ^ 2 * t)
-        (fun ξ i => indexedGridField d k η ξ (x i)) ξ y *
-        (T.val.val (encodeDesignResponse P.a (x, y)) - (P.v - η ^ 2 * t)) ^ 2
-      ∂Measure.pi (fun _ : Fin n => cubeVolume d)) ≤ worstCaseRisk C T.val := by
-  have hB (z : Fin n → Observation d) : |T.val.val z| ≤ effectiveVarianceUpper C := by
-    rw [abs_of_nonneg (C.varianceLower_pos.le.trans (T.property z).1)]
-    exact (T.property z).2
-  rw [gridPathParameter_risk_formula C P k η t ξ hη ht hfield hvariance T.val _ hB]
-  exact le_iSup (fun θ : {θ // Admissible C θ} => meanSquaredRisk T.val θ.val)
+theorem gridPathParameter_finite_risk_le_worstCase
+    (P : LowSmoothnessTernaryConstants C)
+    (k : ℕ) η b t ξ
+    (hk : 𝗽₁) (hs1 : 𝘒₂) (hb : 𝘸)
+    (hη : 𝗼) (ht : t ∈ 𝗃)
+    (hfield : (𝔦 + 2) * η ≤ P.ρ) (hvariance : 𝙎 ≤ P.ρ)
+    (hscale : η = b / k ^ C.smoothness)
+    (hholder : (𝔦 + 68 * 𝔦 * 𝗞₁) * b ≤ C.holderBound)
+    (T : 𝖧₂) :
+    ENNReal.ofReal 𝔢 T.val.val ≤ 𝚡₂ := by
+  have hB z : |T.val.val z| ≤ effectiveVarianceUpper C := by
+    rw [𝗼₂]
+    grind
+  rw [𝔳 gridPathParameter_risk_formula T.val _ hB]
+  exact le_iSup (fun θ : {θ // 𝙟} => meanSquaredRisk T.val θ.val)
     ⟨_, gridPathParameter_admissible C P k η b t ξ hk hs1 hb hη ht hfield
       hvariance hscale hholder⟩
 
 /-- Clipped estimators have finite genuine worst-case risk, independently of
 which admissible parameter realizes that risk. -/
-theorem boundedEstimator_worstCaseRisk_ne_top {d n : ℕ} (C : ModelConstants d)
-    (T : BoundedEstimator C n) : worstCaseRisk C T.val ≠ ∞ := by
+theorem boundedEstimator_worstCaseRisk_ne_top (T : 𝖧₂) : 𝚡₂ ≠ ∞ := by
   apply ne_top_of_le_ne_top ENNReal.ofReal_ne_top
   apply iSup_le
   intro θ
   exact boundedEstimator_risk_le_diameter C T θ.val θ.property
-
-end NearlyMinimax

@@ -2,90 +2,95 @@ module
 
 public import NearlyMinimax.HighFrameCoefficientBridge
 public import NearlyMinimax.HighWindowGeometry
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Actual finite feature expansions and joint measurability of frame fields. -/
-noncomputable section
 open Set Function MeasureTheory MvPolynomial
 open scoped BigOperators ContDiff
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
-attribute [local instance] Classical.propDecidable
+𝚨
+𝚩
+𝚭
+𝚬
 
-def highFrameMonomial {d D : ℕ} (γ : HighFrameIndex d D) : MvPolynomial (Fin d) ℝ :=
+𝗇 𝔇 𝙮
+def highFrameMonomial (γ : 𝔇) : 𝙣 :=
   MvPolynomial.monomial (polynomialBoxExponent γ.val) 1
 
-theorem highFrameProfile_evaluation {d D : ℕ} (c : HighFrameIndex d D → ℝ) (x : Covariate d) :
-    highFrameProfile (highFramePolynomial c) x =
-      ∑ γ, c γ * highFrameProfile (highFrameMonomial γ) x := by
+𝗃 𝔊 ἀ $ highFrameMonomial γ
+𝗇 𝔉 𝔊 highFrameProfile
+𝗇 𝔍 𝔇 → ℝ
+𝗇 𝔎 highFrameProfile $ highFramePolynomial c
+theorem highFrameProfile_evaluation (c : 𝔍) x :
+    𝔎 x =
+      ∑ γ, c γ * 𝔉 x := by
   unfold highFrameProfile
   rw [highFramePolynomial_scaled_eval, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro γ hγ
-  have hm : MvPolynomial.eval x (frameScaledPolynomial (highFrameMonomial γ)) =
+  have hm : MvPolynomial.eval x 𝔊 frameScaledPolynomial =
       highFrameFeature x γ := by
     rw [frameScaledPolynomial_eval]
     unfold highFrameMonomial highFrameFeature
-    rw [MvPolynomial.eval_monomial, one_mul, Finsupp.prod_fintype _ _ (fun _ => pow_zero _)]
-    simp only [polynomial_box_exponent_apply]
-  rw [hm]
-  ring
+    rw [MvPolynomial.eval_monomial, one_mul, 𝗉₁]
+    rfl
+  grind
 
-theorem highPeriodizedFrame_evaluation (d k D : ℕ) (j : HighWindowLabels d k)
-    (c : HighFrameIndex d D → ℝ) (x : Covariate d) :
-    highPeriodizedChart d k j (highFrameProfile (highFramePolynomial c)) x =
-      ∑ γ, c γ * highPeriodizedChart d k j (highFrameProfile (highFrameMonomial γ)) x := by
-  have hfinite (γ : HighFrameIndex d D) : HasFiniteSupport (fun z : Fin d → ℤ =>
-      c γ * (if (∀ r, (z r : ZMod k) = j r) then
-        highFrameProfile (highFrameMonomial γ) (fun r => (k : ℝ) * x r - z r) else 0)) := by
-    apply HasFiniteSupport.mul_right (fun _ => c γ)
+𝗇 𝔈 𝗐₁
+𝗇 𝔄 c γ * if 𝔈 then 𝔉 fun r => 𝗋₂ else 0
+𝗇 𝔅 highPeriodizedChart d k j 𝔉
+𝗇 𝔏 𝚁₂
+theorem highPeriodizedFrame_evaluation d k D j
+    (c : 𝔍) x :
+    highPeriodizedChart d k j 𝔎 x =
+      ∑ γ, c γ * 𝔅 x := by
+  have hfinite γ : HasFiniteSupport fun z : 𝔏 =>
+      𝔄 := by
+    apply HasFiniteSupport.mul_right fun _ => c γ
     exact (highPeriodizedChart_locallyFinite d k j _
-      (highFrameProfile_zero_of_window_zero (highFrameMonomial γ))).point_finite x
+      𝔊 highFrameProfile_zero_of_window_zero).point_finite x
   unfold highPeriodizedChart
   calc
-    _ = ∑ᶠ z : Fin d → ℤ, ∑ γ : HighFrameIndex d D,
-        c γ * (if (∀ r, (z r : ZMod k) = j r) then
-          highFrameProfile (highFrameMonomial γ) (fun r => (k : ℝ) * x r - z r) else 0) := by
+    _ = ∑ᶠ z : 𝔏, ∑ γ : 𝔇,
+        𝔄 := by
       apply finsum_congr
       intro z
-      by_cases hz : ∀ r, (z r : ZMod k) = j r
+      by_cases hz : 𝔈
       · simp only [ite_eq_left hz]
         exact highFrameProfile_evaluation c _
-      · simp only [ite_eq_right hz, mul_zero, Finset.sum_const_zero]
-    _ = ∑ γ : HighFrameIndex d D, ∑ᶠ z : Fin d → ℤ,
-        c γ * (if (∀ r, (z r : ZMod k) = j r) then
-          highFrameProfile (highFrameMonomial γ) (fun r => (k : ℝ) * x r - z r) else 0) :=
-      (sum_finsum_comm Finset.univ _ (fun γ _ => hfinite γ)).symm
-    _ = _ := by simp_rw [← mul_finsum]
+      aesop
+    _ = ∑ γ : 𝔇, ∑ᶠ z : 𝔏,
+        𝔄 :=
+      (sum_finsum_comm Finset.univ _ fun γ _ => hfinite γ ).symm
+    𝘿 := by simp_rw [← mul_finsum]
 
-theorem highFrameField_finite_evaluation (d k D : ℕ) [NeZero k] (η : ℝ)
-    (c : HighWindowLabels d k → HighFrameIndex d D → ℝ) (x : Covariate d) :
-    highFrameField d k η (fun j => highFramePolynomial (c j)) x =
-      η * ∑ j, ∑ γ, c j γ * highPeriodizedChart d k j (highFrameProfile (highFrameMonomial γ)) x := by
+theorem highFrameField_finite_evaluation (d k D : ℕ) [NeZero k] η
+    (c : 𝙯 → 𝔍) x :
+    highFrameField d k η (fun j => highFramePolynomial $ c j ) x =
+      η * ∑ j, ∑ γ, c j γ * 𝔅 x := by
   unfold highFrameField
   simp_rw [highPeriodizedFrame_evaluation]
 
-theorem highFrameField_joint_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (d k D : ℕ) [NeZero k] (η : ℝ)
-    (c : Ω → HighWindowLabels d k → HighFrameIndex d D → ℝ) (hc : Measurable c) :
-    Measurable (fun ωx : Ω × Covariate d =>
-      highFrameField d k η (fun j => highFramePolynomial (c ωx.1 j)) ωx.2) := by
+𝗇 𝔐 Ω × Covariate d
+theorem highFrameField_joint_measurable [MeasurableSpace Ω]
+    (d k D : ℕ) [NeZero k] η
+    (c : Ω → 𝙯 → 𝔍) (hc : Measurable c) :
+    Measurable fun ωx : 𝔐 =>
+      highFrameField d k η (fun j => highFramePolynomial $ c ωx.1 j ) ωx.2 := by
   simp_rw [highFrameField_finite_evaluation]
   apply Measurable.const_mul
   apply Finset.measurable_sum
   intro j hj
   apply Finset.measurable_sum
   intro γ hγ
-  have hcoef : Measurable (fun ωx : Ω × Covariate d => c ωx.1 j γ) :=
-    ((measurable_pi_apply γ).comp ((measurable_pi_apply j).comp hc)).comp measurable_fst
-  have hchart : Measurable (fun ωx : Ω × Covariate d =>
-      highPeriodizedChart d k j (highFrameProfile (highFrameMonomial γ)) ωx.2) :=
-    (highPeriodizedChart_contDiff d k j _ (highFrameProfile_contDiff (highFrameMonomial γ))
-      (highFrameProfile_zero_of_window_zero (highFrameMonomial γ))).continuous.measurable.comp
+  have hcoef : Measurable fun ωx : 𝔐 => c ωx.1 j γ :=
+    ((measurable_pi_apply γ).comp $ 𝗹₂ hc ).comp measurable_fst
+  have hchart : Measurable fun ωx : 𝔐 =>
+      𝔅 ωx.2 :=
+    (highPeriodizedChart_contDiff d k j _ 𝔊 highFrameProfile_contDiff
+      𝔊 highFrameProfile_zero_of_window_zero).continuous.measurable.comp
         measurable_snd
   exact hcoef.mul hchart
-
-end NearlyMinimax

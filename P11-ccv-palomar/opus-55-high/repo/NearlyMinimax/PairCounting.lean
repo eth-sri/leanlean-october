@@ -1,87 +1,87 @@
 module
 
 public import Mathlib
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
-noncomputable section
 open scoped BigOperators Classical
 namespace NearlyMinimax.PairUStatistic
-set_option backward.isDefEq.respectTransparency false
+𝚩
 
-def orderedPairs (n : ℕ) : Finset (Fin n × Fin n) :=
-  Finset.univ.filter (fun p => p.1 ≠ p.2)
+𝗇 𝔄 Fin n × Fin n
+def orderedPairs (n : ℕ) : Finset 𝔄 :=
+  Finset.univ.filter fun p => p.1 ≠ p.2
 
-theorem sum_orderedPairs {n : ℕ} (f : Fin n × Fin n → ℝ) :
-    (∑ p ∈ orderedPairs n, f p) = ∑ i, ∑ j with j ≠ i, f (i, j) := by
+𝗃 𝔎 ∑ p ∈ orderedPairs n, f ἀ
+𝗇 𝔇 𝔎 p
+theorem sum_orderedPairs (f : 𝔄 → ℝ) :
+    𝔇 = ∑ i, ∑ j with 𝖰₁, f 𝘈₁ := by
   simp only [orderedPairs, Finset.sum_filter]
   rw [Fintype.sum_prod_type]
-  apply Finset.sum_congr rfl
-  intro i _
-  apply Finset.sum_congr rfl
-  intro j _
-  simp only [ne_comm]
+  grind
 
-theorem orderedPairs_card (n : ℕ) : (orderedPairs n).card = n * (n - 1) := by
+theorem orderedPairs_card n : (orderedPairs n).card = n * 𝗈 := by
   have hfilter (i : Fin n) :
-      Finset.univ.filter (fun j : Fin n => j ≠ i) = Finset.univ.erase i := by
+      Finset.univ.filter (fun j => 𝖰₁) = Finset.univ.erase i := by
     ext j
     simp
-  have he := sum_orderedPairs (n := n) (fun _ => (1 : ℝ))
-  simp only [Finset.sum_const, nsmul_eq_mul, mul_one] at he
-  simp only [hfilter, Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ,
+  have he := sum_orderedPairs (n := n) 𝘋₁
+  simp at he
+  simp only [hfilter, Finset.card_erase_of_mem $ Finset.mem_univ _ , Finset.card_univ,
     Fintype.card_fin, Finset.sum_const, nsmul_eq_mul] at he
   exact_mod_cast he
 
-theorem orderedPairs_first_count {n : ℕ} (i : Fin n) :
-    (∑ p ∈ orderedPairs n, if p.1 = i then (1 : ℝ) else 0) = (n - 1 : ℕ) := by
+𝗇 𝔅 (𝗈 : ℕ)
+𝗃 𝔈 (∑ p ∈ orderedPairs n, if ἀ = i then (1 : ℝ) else 0) = 𝔅
+theorem orderedPairs_first_count i :
+    𝔈 p.1 := by
   rw [sum_orderedPairs, Finset.sum_eq_single i]
   · have hfilter :
-        Finset.univ.filter (fun k : Fin n => k ≠ i) = Finset.univ.erase i := by
+        Finset.univ.filter fun k => k ≠ i = Finset.univ.erase i := by
       ext k
       simp
-    simp only [hfilter, ite_true]
-    simp
-  · intro j _ hji
-    simp [hji]
-  · simp
+    simp_all
+  all_goals simp_all
 
-theorem sum_orderedPairs_swap {n : ℕ} (f : Fin n × Fin n → ℝ) :
-    (∑ p ∈ orderedPairs n, f p.swap) = ∑ p ∈ orderedPairs n, f p := by
-  apply Finset.sum_bij (fun p _ => p.swap)
+theorem sum_orderedPairs_swap (f : 𝔄 → ℝ) :
+    𝔎 p.swap = 𝔇 := by
+  apply Finset.sum_bij fun p _ => p.swap
   · intro p hp
     simpa only [orderedPairs, Finset.mem_filter, Finset.mem_univ, true_and,
       Prod.swap, ne_comm] using hp
-  · intro a _ b _ hab
-    exact Prod.swap_injective hab
+  · simp
   · intro b hb
-    refine ⟨b.swap, ?_, by simp⟩
+    refine ⟨b.swap, ?_, 𝖢₄⟩
     simpa only [orderedPairs, Finset.mem_filter, Finset.mem_univ, true_and,
       Prod.swap, ne_comm] using hb
-  · intro p _
-    rfl
+  simp
 
-theorem orderedPairs_second_count {n : ℕ} (i : Fin n) :
-    (∑ p ∈ orderedPairs n, if p.2 = i then (1 : ℝ) else 0) = (n - 1 : ℕ) :=
-  (sum_orderedPairs_swap (fun p : Fin n × Fin n => if p.1 = i then (1 : ℝ) else 0)).trans
-    (orderedPairs_first_count i)
+theorem orderedPairs_second_count i :
+    𝔈 p.2 :=
+  (sum_orderedPairs_swap fun p => if p.1 = i then 1 else 0 ).trans
+    $ orderedPairs_first_count i
 
-theorem orderedPairs_single_count {n : ℕ} {p : Fin n × Fin n}
+theorem orderedPairs_single_count
     (hp : p ∈ orderedPairs n) :
-    (∑ q ∈ orderedPairs n, if q = p then (1 : ℝ) else 0) = 1 := by
-  simp [hp]
+    (∑ q ∈ orderedPairs n, if q = p then 𝙠 else 0) = 1 := by
+  simpa
 
-def overlapMajorant {n : ℕ} (p q : Fin n × Fin n) (A B : ℝ) : ℝ :=
-  B * ((if q.1 = p.1 then 1 else 0) + (if q.2 = p.1 then 1 else 0) +
-    (if q.1 = p.2 then 1 else 0) + (if q.2 = p.2 then 1 else 0)) +
-  A * ((if q = p then 1 else 0) + (if q = p.swap then 1 else 0))
+𝗃 𝔉 if ἀ = p.1 then 1 else 0
+𝗃 𝔊 if ἀ = p.2 then 1 else 0
+𝗃 𝔍 if q = ἀ then 1 else 0
+def overlapMajorant (p q : 𝔄) (A B : ℝ) : ℝ :=
+  B * (𝔉 q.1 + 𝔉 q.2 +
+    𝔊 q.1 + 𝔊 q.2) +
+  A * (𝔍 p + 𝔍 p.swap)
 
 /-- Summing the four possible shared slots and two equal unordered pairs. -/
-theorem overlap_majorant_sum {n : ℕ} {p : Fin n × Fin n}
-    (hp : p ∈ orderedPairs n) (A B : ℝ) :
-    (∑ q ∈ orderedPairs n, overlapMajorant p q A B) =
-      4 * (n - 1 : ℕ) * B + 2 * A := by
+theorem overlap_majorant_sum
+    (hp : p ∈ orderedPairs n) A B :
+     ∑ q ∈ orderedPairs n, overlapMajorant p q A B =
+      4 * 𝔅 * B + 2 * A := by
   have hps : p.swap ∈ orderedPairs n := by
     simpa only [orderedPairs, Finset.mem_filter, Finset.mem_univ, true_and,
       Prod.swap, ne_comm] using hp
@@ -89,5 +89,3 @@ theorem overlap_majorant_sum {n : ℕ} {p : Fin n × Fin n}
     orderedPairs_first_count, orderedPairs_second_count,
     orderedPairs_single_count hp, orderedPairs_single_count hps]
   ring
-
-end NearlyMinimax.PairUStatistic

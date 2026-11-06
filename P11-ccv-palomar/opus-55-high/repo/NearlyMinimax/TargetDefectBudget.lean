@@ -1,53 +1,58 @@
 module
 
 public import NearlyMinimax.LocalCutoffAlgebra
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗍
 
 /-! Genuine cutoff comparisons for selected and omitted target rows. -/
-noncomputable section
-namespace NearlyMinimax
+𝚨
 
-theorem target_cutoff_le_base {d : ℕ} (hd : 0 < d)
-    {N mu H : ℝ} (hN : 0 ≤ N) (hmuH : 0 ≤ mu * H) (hsmall : mu * H ≤ 1) (j : ℕ) :
-    N * (mu * H) ^ ((j : ℝ) / d) ≤ N := by
-  have h := Real.rpow_le_one hmuH hsmall (by positivity : 0 ≤ (j : ℝ) / d)
-  simpa only [mul_one] using mul_le_mul_of_nonneg_left h hN
+𝗇 𝔈 𝖭₁ / d
+𝗇 𝔉 mu * H
+theorem target_cutoff_le_base {d : ℕ} (hd : 𝗆)
+    {N mu H : ℝ} (hN : 0 ≤ N) (hmuH : 0 ≤ 𝔉) (hsmall : 𝔉 ≤ 1) (j : ℕ) :
+    N * 𝔉 ^ 𝔈 ≤ N := by
+  have h := Real.rpow_le_one hmuH hsmall (by positivity : 0 ≤ 𝔈)
+  bound
 
-theorem target_cutoff_defect_budget_le {d : ℕ} (hd : d ≠ 0)
-    {N mu : ℝ} (hN : 0 < N) (hmu : 0 < mu) (j : ℕ)
-    (hT : 1 ≤ N * (mu * (1 + Real.log N)) ^ ((j : ℝ) / d))
-    (hTN : N * (mu * (1 + Real.log N)) ^ ((j : ℝ) / d) ≤ N) :
-    (N * (mu * (1 + Real.log N)) ^ ((j : ℝ) / d)) ^ (-(d : ℝ)) *
-      (1 + Real.log (N * (mu * (1 + Real.log N)) ^ ((j : ℝ) / d))) ^ j ≤
-        N ^ (-(d : ℝ)) / mu ^ j := by
-  have hN1 : 1 ≤ N := hT.trans hTN
-  have hH : 0 < 1 + Real.log N := by linarith [Real.log_nonneg hN1]
-  have hlog : 1 + Real.log (N * (mu * (1 + Real.log N)) ^ ((j : ℝ) / d)) ≤ 1 + Real.log N := by
-    have ht : 0 < N * (mu * (1 + Real.log N)) ^ ((j : ℝ) / d) := by linarith only [hT]
-    have hh := Real.log_le_log ht hTN
-    linarith only [hh]
-  have hlog0 : 0 ≤ 1 + Real.log (N * (mu * (1 + Real.log N)) ^ ((j : ℝ) / d)) :=
-    add_nonneg (by norm_num) (Real.log_nonneg hT)
-  have hp : 0 ≤ (N * (mu * (1 + Real.log N)) ^ ((j : ℝ) / d)) ^ (-(d : ℝ)) :=
-    Real.rpow_nonneg (by positivity) _
-  have h := mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hlog0 hlog j) hp
-  exact h.trans_eq (target_cutoff_inverse_budget hd hN hmu hH j)
+𝗃 𝔍 1 + Real.log ἀ
+𝗇 𝔄 N * (mu * 𝔍 N) ^ 𝔈
+𝗇 𝔅 -𝙊
+𝗇 𝔇 𝔍 N
+section
 
-theorem omitted_target_inverse_budget_ge_one {d : ℕ} (hd : d ≠ 0)
-    {N mu : ℝ} (hN1 : 1 ≤ N) (hmu : 0 < mu) (j : ℕ)
-    (hT : N * (mu * (1 + Real.log N)) ^ ((j : ℝ) / d) < 1) :
-    1 ≤ N ^ (-(d : ℝ)) / mu ^ j := by
-  have hN : 0 < N := lt_of_lt_of_le (by norm_num) hN1
-  have hH : 0 < 1 + Real.log N := by linarith [Real.log_nonneg hN1]
-  have hTp : 0 < N * (mu * (1 + Real.log N)) ^ ((j : ℝ) / d) := by positivity
-  rw [← target_cutoff_inverse_budget hd hN hmu hH j]
+variable {d : ℕ}
+    (hd : 𝚙₂)
+    {N mu }
+
+include hd
+
+𝗇 𝔊 N ^ 𝔅 / mu ^ j
+theorem target_cutoff_defect_budget_le (hN : 𝘹) (hmu : 0 < mu) (j : ℕ)
+    (hT : 1 ≤ 𝔄)
+    (hTN : 𝔄 ≤ N) :
+    𝔄 ^ 𝔅 *
+      𝔍 𝔄 ^ j ≤
+        𝔊 := by
+  have hH : 0 < 𝔇 := by linarith [Real.log_nonneg $ hT.trans hTN ]
+  have hlog : 𝔍 𝔄 ≤ 𝔇 := by
+    bound
+  have hp : 0 ≤ 𝔄 ^ 𝔅 :=
+    Real.rpow_nonneg  𝖠₃  _
+  have h := mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (add_nonneg  𝖠₄  $ Real.log_nonneg hT ) hlog j) hp
+  exact h.trans_eq $ target_cutoff_inverse_budget hd hN hmu hH j
+
+theorem omitted_target_inverse_budget_ge_one (hN1 : 𝗭₁) (hmu : 0 < mu) (j : ℕ)
+    (hT : 𝔄 < 1) :
+    1 ≤ 𝔊 := by
+  have hH : 0 < 𝔇 := by linarith [Real.log_nonneg hN1]
+  have hTp : 0 < 𝔄 := 𝖠₃
+  rw [← target_cutoff_inverse_budget hd (lt_of_lt_of_le  𝖠₄  hN1) hmu hH j]
   have hp := Real.one_le_rpow_of_pos_of_le_one_of_nonpos hTp hT.le
-    (by exact neg_nonpos.mpr (Nat.cast_nonneg d))
-  have hH1 : 1 ≤ (1 + Real.log N) ^ j :=
-    one_le_pow₀ (by linarith [Real.log_nonneg hN1])
-  have h := mul_le_mul hp hH1 (by norm_num : (0 : ℝ) ≤ 1) (Real.rpow_nonneg hTp.le _)
-  simpa only [one_mul] using h
-
-end NearlyMinimax
+    $ neg_nonpos.mpr $ Nat.cast_nonneg d
+  have hH1 : 1 ≤ 𝔇 ^ j :=
+    one_le_pow₀ $ by linarith [Real.log_nonneg hN1]
+  simpa only [one_mul] using mul_le_mul hp hH1  𝖠₄  $ Real.rpow_nonneg hTp.le _

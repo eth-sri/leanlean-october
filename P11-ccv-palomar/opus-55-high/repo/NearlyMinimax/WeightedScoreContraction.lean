@@ -1,46 +1,48 @@
 module
 
 public import NearlyMinimax.MarginalLikelihood
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗍
 
 /-! Genuine posterior Fisher-energy contraction, proved by expanding a
 nonnegative weighted square. -/
-noncomputable section
-open MeasureTheory Filter Set
-namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
-variable {Ω : Type*} [MeasurableSpace Ω]
+𝛊
+𝚨
+𝚭
+𝚩
+𝛂
 
+𝗇 𝔄 ∫ ω, L ω ∂ν
+𝗇 𝔅 ∫ ω, D ω ∂ν
+𝗇 𝔇 (D ω - r * L ω)^2 / L ω
+𝗇 𝔈 D ω ^ 2 / L ω
+𝗇 𝔉 2*r
+𝗇 𝔊 𝘴₁
+𝗇 𝔍 ∫ ω, 𝔈 ∂ν
+𝗇 𝔎 ∫ ω, 𝔇 ∂ν
 /-- A marginal likelihood derivative has no more Fisher energy than
 its genuine latent likelihood derivative. -/
-theorem weighted_score_energy_contraction (ν : Measure Ω) (L D : Ω → ℝ)
+theorem weighted_score_energy_contraction (ν : Measure Ω) (L D : 𝘄)
     (hL : ∀ ω, 0 < L ω) (hiL : Integrable L ν) (hiD : Integrable D ν)
-    (hiE : Integrable (fun ω => D ω ^ 2 / L ω) ν)
-    (hmean : 0 < ∫ ω, L ω ∂ν) :
-    (∫ ω, D ω ∂ν)^2 / (∫ ω, L ω ∂ν) ≤ ∫ ω, D ω ^ 2 / L ω ∂ν := by
-  let r : ℝ := (∫ ω, D ω ∂ν) / (∫ ω, L ω ∂ν)
-  have he (ω : Ω) : (D ω - r * L ω)^2 / L ω =
-      D ω^2 / L ω - 2*r*D ω + r^2*L ω := by
-    field_simp [(hL ω).ne']
-    ring
-  have hn : 0 ≤ ∫ ω, (D ω - r * L ω)^2 / L ω ∂ν :=
-    integral_nonneg (fun ω => div_nonneg (sq_nonneg _) (hL ω).le)
-  have hv : (∫ ω, (D ω - r * L ω)^2 / L ω ∂ν) =
-      (∫ ω, D ω^2 / L ω ∂ν) - 2*r*(∫ ω, D ω ∂ν) + r^2*(∫ ω, L ω ∂ν) := by
+    (hiE : Integrable (fun ω => 𝔈) ν)
+    (hmean : 0 < 𝔄) :
+    𝔅^2 / 𝔄 ≤ 𝔍 := by
+  let r := 𝔅 / 𝔄
+  have he ω : 𝔇 =
+      𝔈 - 𝔉*D ω + 𝔊*L ω := by
+    grind
+  have hn : 0 ≤ 𝔎 :=
+    integral_nonneg fun ω => 𝚚₁ (hL ω).le
+  have hv : 𝔎 =
+      𝔍 - 𝔉*𝔅 + 𝔊*𝔄 := by
     simp_rw [he]
-    have hv1 := integral_add (hiE.sub (hiD.const_mul (2*r))) (hiL.const_mul (r^2))
-    rw [integral_sub' hiE (hiD.const_mul (2*r)), integral_const_mul, integral_const_mul] at hv1
-    simpa only [Pi.sub_apply] using hv1
-  rw [hv] at hn
-  have hr : -2*r*(∫ ω, D ω ∂ν) + r^2*(∫ ω, L ω ∂ν) =
-      -(∫ ω, D ω ∂ν)^2 / (∫ ω, L ω ∂ν) := by
-    dsimp only [r]
-    field_simp [hmean.ne']
-    ring
-  rw [neg_div] at hr
-  nlinarith [hn, hr]
-
-end NearlyMinimax
+    have hv1 := integral_add (hiE.sub $ hiD.const_mul 𝔉 ) $ hiL.const_mul 𝔊
+    rw [integral_sub' hiE $ hiD.const_mul 𝔉 , integral_const_mul, integral_const_mul] at hv1
+    assumption
+  have hr : -2*r*𝔅 + 𝔊*𝔄 =
+      -𝔅^2 / 𝔄 := by
+    grind
+  grind

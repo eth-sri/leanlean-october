@@ -1,61 +1,62 @@
 module
 
 public import NearlyMinimax.HighCompleteSourceSpatialTail
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Large-count factorial energy of the genuine canonical complete source
 in the original periodic-frame field. All source field guards are derived;
 the fixed tail constant precedes degree, count, history and spatial grid. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1500000
-attribute [local instance] Classical.propDecidable
-attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
+𝚫
+𝚪
+𝚨
+𝚩
+𝛈
+𝚬
+𝚿
 
-theorem crude_raw_square_energy_pointwise {d n : ℕ} (Chi η B : ℝ)
-    (hChi : 0 ≤ Chi) (hB : 0 ≤ B)
-    (R : (Fin n → Covariate d) → (Fin n → Fin 3) → ℝ)
-    (hcap : ∀ x y, |R x y| ≤ Chi^n*η^2*(B+1)) (x : Fin n → Covariate d) :
-    selectedRawSquareEnergy R x ≤ (3*Chi^2)^n*η^4*(B+1)^2 := by
-  have hp (y) : R x y ^ 2 ≤ Chi^(2*n)*η^4*(B+1)^2 := by
-    have hh := (sq_le_sq₀ (abs_nonneg _) (by positivity : 0 ≤ Chi^n*η^2*(B+1))).mpr (hcap x y)
-    simp only [sq_abs] at hh
+𝗇 𝔉 B+1
+𝗇 𝔄 𝚎₁^n*𝗩*𝔉^2
+𝗇 𝔅 Chi^𝘕₁*𝗩*𝔉^2
+𝗇 𝔊 𝙈
+𝗇 𝔇 ∑ y : 𝔊, R x y ^ 2
+theorem crude_raw_square_energy_pointwise Chi η B
+    (hChi : 0 ≤ Chi) (hB : 𝙐)
+    R
+    (hcap : ∀ x y, |R x y| ≤ Chi^n*𝙎*𝔉) (x : 𝙇) :
+    selectedRawSquareEnergy R x ≤ 𝔄 := by
+  have hp y : R x y ^ 2 ≤ 𝔅 := by
+    have hh := (𝘉 𝖠₃ ).mpr $ hcap x y
+    simp at hh
     convert hh using 1 <;> (try rw [mul_pow,mul_pow,←pow_mul]) <;> ring
-  have he : selectedRawSquareEnergy R x = ∑ y : Fin n → Fin 3, R x y ^ 2 := by
-    unfold selectedRawSquareEnergy
-    apply Finset.sum_congr (by ext y; simp)
-    intro y _
-    rfl
+  have he : selectedRawSquareEnergy R x = 𝔇 := by
+    apply Finset.sum_congr 𝖤₃
+    simp
   calc
-    _ = ∑ y : Fin n → Fin 3, R x y ^ 2 := he
-    _ ≤ ∑ _y : Fin n → Fin 3, Chi^(2*n)*η^4*(B+1)^2 :=
-      Finset.sum_le_sum (fun y _ => hp y)
-    _ = (3*Chi^2)^n*η^4*(B+1)^2 := by
-      simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fun, Fintype.card_fin,
-        Nat.cast_pow, Nat.cast_ofNat, nsmul_eq_mul, mul_pow, ←pow_mul]
+    _ = 𝔇 := he
+    _ ≤ ∑ _y : 𝔊, 𝔅 :=
+      Finset.sum_le_sum 𝘞₂
+    _ = 𝔄 := by
+      simp
       ring
 
 section Marked
-variable {d k D : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
-  [∀ i, MeasurableSpace (E i)] [∀ i, StandardBorelSpace (E i)]
-  [NeZero k] [LinearOrder (HighWindowLabels d k)]
+variable {d k D : ℕ} {I : Type*} [Fintype I] {E : 𝗀}
+  [𝙪] [𝖭]
+  [NeZero k] [LinearOrder 𝙯]
 
-def highUnionSourceMarkedNumerator (C : ModelConstants d) (R : HighUnionRowData d k D I E)
-    (n : ℕ) (a V η : ℝ) (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (x : Fin n → Covariate d) (y : Fin n → Fin 3) : ℝ :=
-  highMarkedSampleNumerator n (highUnionLaw R (highCenterMix C))
-    (highUnionActivation R (highCenterMix C)) a V η
-    (highUnionSourceDensity C R h) (highUnionSourceResetDensity C R j h)
-    (highUnionSourceResetCoefficient C R j h)
-    (highLocalFieldWithout d k D η (highUnionSourceState C R h).2 j)
+𝗇 𝔈 𝖯
+𝗃 𝔍 ἀ R $ highCenterMix C
+def highUnionSourceMarkedNumerator (C : ModelConstants d) (R : 𝙭₁ I E)
+    (n : ℕ) (a V η : ℝ) (j : 𝙯)
+    (h : HistoryMarked 𝖫 $ HighUnionMark E )
+    (x : 𝙇) (y : 𝔊) : ℝ :=
+  highMarkedSampleNumerator n 𝔍 highUnionLaw
+    𝔍 highUnionActivation a V η
+    𝙾 𝘖₁
+    𝚑₁
+    (highLocalFieldWithout d k D η 𝔈 j)
     (highPeriodicTensor d k j) (fun x => highLocalFrameFeature k j x)
-    ((highUnionSourceState C R h).2 j) x y
-
-end Marked
-
-end NearlyMinimax
+    (𝔈 j) x y

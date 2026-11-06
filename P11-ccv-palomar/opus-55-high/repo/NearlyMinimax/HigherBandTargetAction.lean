@@ -2,93 +2,102 @@ module
 
 public import NearlyMinimax.HighSourceRawDecomposition
 public import NearlyMinimax.HigherBandOmissions
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Actual target-count evaluation and physical sum of the selected
 higher signed rows. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
-attribute [local instance] Classical.propDecidable
+𝚫
+𝚪
+𝚨
+𝚩
+𝚭
+𝚬
 
-def higherBandPhysicalFirstAction {d n : ℕ} (ad bd lam ell N mu : ℝ)
-    (D M q : ℕ) (C : ℝ) (U : Fin n → Covariate d) (p : Fin n → ℝ)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ)
-    (i : Fin (D-2) × Bool) : ℝ :=
+𝗇 𝔑 higherBandFamilyGuardDegree M i
+𝗇 𝔒 higherBandFirstAction ad bd lam
+𝗃 𝔖 higherBandFamilyUpper d ell N mu ἀ
+𝗇 𝔄 𝔒 ell 𝔖 i (higherBandFamilyTarget i) 𝔑 D q C i.2 U p c Φ
+𝗇 𝔅 Fin 𝘐
+𝗇 𝔓 𝙮
+𝗇 𝔇 𝔓 → ℝ
+𝗇 𝔈 𝙇
+𝗇 𝔎 𝙔
+def higherBandPhysicalFirstAction (ad bd lam ell N mu : ℝ)
+    (D M q : ℕ) (C : ℝ) (U : 𝔈) (p : 𝔎)
+    (c : 𝔇) (Φ : 𝔇 → ℝ)
+    (i : 𝔅 × Bool) : ℝ :=
   if i.2 = true then
     if ell < higherBandTargetScale d (higherBandFamilyTarget i) N mu then
-      higherBandFirstAction ad bd lam ell (higherBandFamilyUpper d ell N mu i)
-        (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q C i.2 U p c Φ else 0
-  else higherBandFirstAction ad bd lam ell (higherBandFamilyUpper d ell N mu i)
-    (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q C i.2 U p c Φ
+      𝔄 else 0
+  else 𝔄
 
-theorem higherBandFamilyFirstAction_eq_physical {d n : ℕ} (ad bd lam ell N mu : ℝ)
-    (D M q : ℕ) (C : ℝ) (hell : 1 ≤ ell)
-    (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu)
-    (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)
-    (U : Fin n → Covariate d) (p : Fin n → ℝ)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
-    (∑ i : HigherBandFamilyIndex d D M q ad bd C lam ell N mu,
-      higherBandFirstAction ad bd lam ell (higherBandFamilyUpper d ell N mu i.val)
-        (higherBandFamilyTarget i.val) (higherBandFamilyGuardDegree M i.val) D q C i.val.2 U p c Φ) =
-      ∑ i : Fin (D-2) × Bool, higherBandPhysicalFirstAction ad bd lam ell N mu D M q C U p c Φ i := by
-  let F := fun (i : Fin (D-2) × Bool)
-      (e : HigherBandRowMark d (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q i.2) =>
-    highPacketObservable ad bd (higherBandFamilyGuardDegree M i) (higherBandFamilyTarget i) D q C c
+𝗇 𝔉 higherBandTargetScale d 𝙳 N mu
+𝗃 𝔔 ἀ d D M q ad bd C lam ell N mu
+theorem higherBandFamilyFirstAction_eq_physical ad bd lam ell N mu
+    D M q C (hell : 𝗲₁)
+    (hnu : ∀ j : 𝔅, 0 < 𝔉)
+    (hFine : ∀ j : 𝔅, ell < 𝔉 → 𝙳 ≤ M)
+    U (p : 𝔎)
+    (c : 𝔇) Φ :
+     ∑ i : 𝔔 HigherBandFamilyIndex,
+      𝔒 ell 𝔖 i.val
+        (higherBandFamilyTarget i.val) 𝚁 D q C i.val.2 U p c Φ =
+      ∑ i : 𝔅 × Bool, higherBandPhysicalFirstAction ad bd lam ell N mu D M q C U p c Φ i := by
+  let F := fun (i : 𝔅 × Bool)
+      e =>
+    highPacketObservable ad bd 𝔑 (higherBandFamilyTarget i) D q C c
       (fun ζ z eps => ∏ j, localDensityReset ad bd (higherBandFamilyTarget i) z eps p
-        (fun j l => higherBandCarrierFactor d (higherBandFamilyTarget i) lam i.2 ζ l (U j)) j) Φ e
-  exact higherBandFamily_signedIntegral_sum_eq_physical d D M q ad bd C lam ell N mu hell hnu hFine F
+        (fun j l => higherBandCarrierFactor d (higherBandFamilyTarget i) lam i.2 ζ l $ U j ) j) Φ e
+  exact 𝔔 higherBandFamily_signedIntegral_sum_eq_physical hell hnu hFine F
 
-theorem integrated_cardinal_matrix_fin_cast {d n m D : ℕ} (h : m = n) (lam T : ℝ)
-    (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
-    integratedCardinalMatrix lam T (U ∘ finCongr h) β β' = integratedCardinalMatrix lam T U β β' := by
+𝗇 𝔏 integratedCardinalMatrix lam T
+theorem integrated_cardinal_matrix_fin_cast (h : m = n) lam T
+    U (β β' : 𝔓) :
+    𝔏 (U ∘ finCongr h) β β' = 𝔏 U β β' := by
   subst n
   rfl
 
-theorem integrated_cardinal_matrix_full_subset {d n D : ℕ} (lam T : ℝ)
-    (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
-    integratedCardinalMatrix lam T (spatialSubsetConfiguration Finset.univ U) β β' =
-      integratedCardinalMatrix lam T U β β' := by
-  let S : Finset (Fin n) := Finset.univ
-  let h : S.card = n := by simp [S]
-  let e : Fin S.card ≃ S := (finCongr (Fintype.card_coe S).symm).trans (Fintype.equivFin S).symm
-  let v : S ≃ Fin n := ⟨Subtype.val, (fun j => ⟨j, Finset.mem_univ j⟩),
-    (by intro j; rfl), (by intro j; rfl)⟩
-  let τ : Equiv.Perm (Fin n) := ((finCongr h).symm.trans e).trans v
-  have hc : spatialSubsetConfiguration S U = (U ∘ τ) ∘ finCongr h := by
-    funext j
-    change U (e j).val = U (τ (finCongr h j))
-    dsimp [τ]
+𝗇 𝔊 𝙍
+𝗇 𝔐 spatialSubsetConfiguration Finset.univ U
+theorem integrated_cardinal_matrix_full_subset lam T
+    (U : 𝔈) (β β' : 𝔓) :
+    𝔏 𝔐 β β' =
+      𝔏 U β β' := by
+  let S : 𝔊 := Finset.univ
+  let h : S.card = n := 𝖨₄
+  let e := (finCongr (Fintype.card_coe S).symm).trans (Fintype.equivFin S).symm
+  let v : S ≃ Fin n := ⟨Subtype.val, fun j => ⟨j, Finset.mem_univ j⟩ ,
+     𝖤₃ , 𝖤₃ ⟩
+  let τ := ((finCongr h).symm.trans e).trans v
+  have hc : 𝖹₂ = (U ∘ τ) ∘ finCongr h := by
     rfl
   rw [hc, integrated_cardinal_matrix_fin_cast h]
   exact integrated_cardinal_matrix_perm τ lam T U β β'
 
-theorem higherBandActualMatrix_full_subset {d n D : ℕ} (lam L T : ℝ) (fine : Bool)
-    (U : Fin n → Covariate d) :
-    (higherBandActualMatrix lam L T fine (spatialSubsetConfiguration Finset.univ U) : HighFrameIndex d D → _ → ℝ) =
-      higherBandActualMatrix lam L T fine U := by
+𝗇 𝔍 higherBandActualMatrix lam L T fine
+theorem higherBandActualMatrix_full_subset lam L T fine
+    (U : 𝔈) :
+    (𝔍 𝔐 : 𝔓 → _ → ℝ) =
+      𝔍 U := by
   funext β β'
   cases fine <;> simp only [higherBandActualMatrix, Bool.false_eq_true, ite_false, ite_true,
     globalCardinalBandMatrix, integrated_cardinal_matrix_full_subset]
 
-theorem higherBandFirstAction_target_count {d n : ℕ} (ad bd lam L T : ℝ)
-    (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hL : 0 < L) (hT : 1 ≤ T)
-    (m D q : ℕ) (hn : 2 ≤ n) (hD : 1 ≤ D) (hnD : n ≤ D) (hnm : n ≤ m)
-    (C : ℝ) (fine : Bool) (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
-    (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
-    higherBandFirstAction ad bd lam L T n m D q C fine U p c Φ =
-      (∏ i, p i) * responseMatrixAction q C (higherBandActualMatrix lam L T fine U) c Φ := by
+theorem higherBandFirstAction_target_count ad bd lam L T
+    (ha : 𝖼) (hab : 𝖽) (hlam : 𝖺) (hL : 0 < L) (hT : 𝖹)
+    m D q (hn : 𝗏) (hD : 𝗮) (hnD : 𝖠₁) (hnm : n ≤ m)
+    C fine U (hU : ∀ i j, |𝗒₂| ≤ 2)
+    (p : 𝔎) (hp : 𝖳)
+    (c : 𝔇) Φ :
+    𝔒 L T n m D q C fine U p c Φ =
+      𝗊 * 𝗔 (𝔍 U) c Φ := by
   rw [higherBandFirstAction_actual_count_expansion ad bd lam L T ha hab hlam hL hT n m D q hn hD hnD
     C fine U hU p hp c Φ]
-  rw [densityCountCoefficient_exact ad bd ha hab m n n (by omega) le_rfl hnm]
-  have hS : (Finset.univ : Finset (Fin n)).powersetCard n = {Finset.univ} := by
-    simpa using Finset.powersetCard_self (Finset.univ : Finset (Fin n))
+  rw [densityCountCoefficient_exact ad bd ha hab m n n  𝖡₃  le_rfl hnm]
+  have hS : (Finset.univ : 𝔊).powersetCard n = {Finset.univ} := by
+    simpa using Finset.powersetCard_self (Finset.univ : 𝔊)
   simp only [ite_true, hS, Finset.sum_singleton, one_mul, higherBandActualMatrix_full_subset]
-
-end NearlyMinimax

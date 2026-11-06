@@ -2,139 +2,144 @@ module
 
 public import NearlyMinimax.ResponseOperators
 public import NearlyMinimax.PairWindowModel
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Localized fourth-moment control of the actual response operators. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-attribute [local instance] Classical.propDecidable
-set_option backward.isDefEq.respectTransparency false
+𝚫
+𝚪
+𝚨
+𝚬
+𝚩
 
 section Partition
 variable {E I : Type*} [MeasurableSpace E] [Fintype I] [MeasurableSpace I]
   [MeasurableSingletonClass I] [MeasurableEq I]
 variable (μ : Measure E) [IsProbabilityMeasure μ]
   (label : E → I) (hlabel : Measurable label)
-  (r : E → ℝ) (hmr : Measurable r)
+  (r : 𝙏) (hmr : Measurable r)
 include hlabel hmr
 
-def localizedResponseOperatorEnergy (V : ℝ) (z : E × E) : ℝ :=
-  sameLabelKernel label z * ‖pairScoreOperator V (r z.1) (r z.2)‖ ^ 2
+𝗃 𝔗 ἀ V (r z.1) $ r z.2
+def localizedResponseOperatorEnergy (V : ℝ) (z : 𝖸₂) : ℝ :=
+  sameLabelKernel label z * ‖𝔗 pairScoreOperator‖ ^ 2
 
-theorem localizedResponseOperatorEnergy_integrable (V : ℝ)
-    (hr4 : Integrable (fun x => r x ^ 4) μ) :
-    Integrable (localizedResponseOperatorEnergy label r V) (μ.prod μ) := by
-  let G := labelLocalizedKernel label (fun x => r x ^ 4)
-  have hG : Integrable G (μ.prod μ) := labelLocalizedKernel_integrable μ label hlabel _ hr4
-  have hGs : Integrable (fun z : E × E => G z.swap) (μ.prod μ) :=
+𝗇 𝔄 fun x => r x ^ 4
+𝗇 𝔎 6 + 8 * V ^ 2
+𝗇 𝔅 6 * G z + 6 * G z.swap + 𝔎 * sameLabelKernel label z
+𝗇 𝔇 (hG.const_mul 6).add $ hGs.const_mul 6
+𝗇 𝔍 𝔗 pairScoreOperator_norm_sq_le
+𝗇 𝔏 localizedResponseOperatorEnergy label r V
+𝗇 𝔐 (𝔇).add $ hq.const_mul _
+𝗃 𝔖 ἀ μ label hlabel
+𝗇 𝔓 (𝔖 sameLabelKernel_memLp).integrable
+theorem localizedResponseOperatorEnergy_integrable V
+    (hr4 : Integrable 𝔄 μ) :
+    Integrable 𝔏 $ μ.prod μ := by
+  let G := labelLocalizedKernel label 𝔄
+  have hG := 𝔖 labelLocalizedKernel_integrable _ hr4
+  have hGs :=
     integrable_swap_iff.mpr hG
-  have hq := (sameLabelKernel_memLp μ label hlabel).integrable (by norm_num)
-  have hi : Integrable (fun z : E × E =>
-      6 * G z + 6 * G z.swap + (6 + 8 * V ^ 2) * sameLabelKernel label z) (μ.prod μ) :=
-    ((hG.const_mul 6).add (hGs.const_mul 6)).add (hq.const_mul _)
-  have hm : Measurable (localizedResponseOperatorEnergy label r V) := by
+  have hq := 𝔓 𝖠₄
+  have hi : Integrable (fun z =>
+      𝔅) $ μ.prod μ :=
+    𝔐
+  have hm : Measurable 𝔏 := by
     apply (sameLabelKernel_measurable label hlabel).mul
-    exact (((pairScoreOperator_continuous V).measurable.comp
-      ((hmr.comp measurable_fst).prodMk (hmr.comp measurable_snd))).norm.pow_const 2)
+    exact ((pairScoreOperator_continuous V).measurable.comp
+      $ (hmr.comp measurable_fst).prodMk $ hmr.comp measurable_snd ).norm.pow_const 2
   apply hi.mono' hm.aestronglyMeasurable
   filter_upwards [] with z
   rw [Real.norm_eq_abs, abs_of_nonneg
-    (mul_nonneg (by unfold sameLabelKernel; split_ifs <;> norm_num) (sq_nonneg _))]
-  by_cases he : label z.1 = label z.2
-  · have hb := pairScoreOperator_norm_sq_le V (r z.1) (r z.2)
+    $ mul_nonneg (by unfold sameLabelKernel; positivity) $ sq_nonneg _ ]
+  by_cases he : 𝚌₁
+  · have hb := 𝔍
     simpa only [localizedResponseOperatorEnergy, sameLabelKernel, he, if_pos,
       labelLocalizedKernel, G, Prod.fst_swap, Prod.snd_swap, eq_comm, one_mul, mul_one] using
-      (show ‖pairScoreOperator V (r z.1) (r z.2)‖ ^ 2 ≤
-        6 * r z.2 ^ 4 + 6 * r z.1 ^ 4 + (6 + 8 * V ^ 2) by nlinarith [hb])
+        𝖡₄
   · simp [localizedResponseOperatorEnergy, sameLabelKernel, labelLocalizedKernel, G,
       he, Ne.symm he]
 
-theorem localizedResponseOperatorEnergy_integral_le (V B4 : ℝ)
-    (hr4 : Integrable (fun x => r x ^ 4) μ)
-    (hloc : ∀ i : I, (∫ x, (label ⁻¹' {i}).indicator (fun x => r x ^ 4) x ∂μ) ≤
-      B4 * μ.real (label ⁻¹' {i})) :
-    (∫ z, localizedResponseOperatorEnergy label r V z ∂μ.prod μ) ≤
-      (12 * B4 + 6 + 8 * V ^ 2) * ∑ i : I, μ.real (label ⁻¹' {i}) ^ 2 := by
-  let G := labelLocalizedKernel label (fun x => r x ^ 4)
-  have hG : Integrable G (μ.prod μ) := labelLocalizedKernel_integrable μ label hlabel _ hr4
-  have hGs : Integrable (fun z : E × E => G z.swap) (μ.prod μ) :=
+𝗇 𝔈 label ⁻¹' {i}
+𝗇 𝔉 ∫ z, 𝔏 z ∂μ.prod μ
+theorem localizedResponseOperatorEnergy_integral_le V B4
+    (hr4 : Integrable 𝔄 μ)
+    (hloc : ∀ i , ∫ x, (𝔈).indicator 𝔄 x ∂μ ≤
+      B4 * μ.real 𝔈) :
+    𝔉 ≤
+      (12 * B4 + 6 + 8 * V ^ 2) * ∑ i : I, μ.real 𝔈 ^ 2 := by
+  let G := labelLocalizedKernel label 𝔄
+  have hG := 𝔖 labelLocalizedKernel_integrable _ hr4
+  have hGs :=
     integrable_swap_iff.mpr hG
-  have hq := (sameLabelKernel_memLp μ label hlabel).integrable (by norm_num)
-  have hupper := labelLocalizedKernel_integral_le μ label hlabel _ hr4 B4 hloc
-  have hb : (∫ z, localizedResponseOperatorEnergy label r V z ∂μ.prod μ) ≤
-      ∫ z : E × E, 6 * G z + 6 * G z.swap +
-        (6 + 8 * V ^ 2) * sameLabelKernel label z ∂μ.prod μ := by
-    apply integral_mono (localizedResponseOperatorEnergy_integrable μ label hlabel r hmr V hr4)
-      (((hG.const_mul 6).add (hGs.const_mul 6)).add (hq.const_mul _))
+  have hq := 𝔓 𝖠₄
+  have hupper := 𝔖 labelLocalizedKernel_integral_le _ hr4 B4 hloc
+  have hb : 𝔉 ≤
+      ∫ z : 𝖸₂, 𝔅 ∂μ.prod μ := by
+    apply integral_mono (𝔖 localizedResponseOperatorEnergy_integrable r hmr V hr4)
+      𝔐
     intro z
-    simp only [Pi.add_apply, Pi.mul_apply]
-    by_cases he : label z.1 = label z.2
-    · have hb := pairScoreOperator_norm_sq_le V (r z.1) (r z.2)
+    simp
+    by_cases he : 𝚌₁
+    · have hb := 𝔍
       simp only [localizedResponseOperatorEnergy, sameLabelKernel, he, if_pos,
-        labelLocalizedKernel, G, Prod.fst_swap, Prod.snd_swap, eq_comm, one_mul]
-      nlinarith [hb]
-    · simp [localizedResponseOperatorEnergy, sameLabelKernel, labelLocalizedKernel, G,
-        he, Ne.symm he]
-  have ha := integral_add ((hG.const_mul 6).add (hGs.const_mul 6)) (hq.const_mul (6 + 8 * V ^ 2))
-  have ha' := integral_add (hG.const_mul 6) (hGs.const_mul 6)
-  simp only [Pi.add_apply, Pi.mul_apply] at ha ha'
+        labelLocalizedKernel, Prod.fst_swap, Prod.snd_swap]
+      nlinarith
+    · simp [localizedResponseOperatorEnergy, sameLabelKernel, labelLocalizedKernel, he, Ne.symm he]
+  have ha := integral_add 𝔇 $ hq.const_mul 𝔎
+  have ha' := integral_add (hG.const_mul 6) $ hGs.const_mul 6
+  simp at ha ha'
   rw [ha, ha', integral_const_mul, integral_const_mul, integral_const_mul,
-    integral_prod_swap G, sameLabelKernel_integral μ label hlabel] at hb
-  change (∫ z, G z ∂μ.prod μ) ≤ _ at hupper
+    integral_prod_swap G, 𝔖 sameLabelKernel_integral] at hb
   nlinarith
 
 end Partition
 
-def responseOperatorEnergyBound {d : ℕ} (C : ModelConstants d) : ℝ :=
+def responseOperatorEnergyBound (C : ModelConstants d) : ℝ :=
   12 * responseFourthBound C + 6 + 8 * C.varianceUpper ^ 2
 
-theorem responseOperatorEnergyBound_pos {d : ℕ} (C : ModelConstants d) :
+theorem responseOperatorEnergyBound_pos (C : ModelConstants d) :
     0 < responseOperatorEnergyBound C := by
   have h4 := responseFourthBound_pos C
   unfold responseOperatorEnergyBound
   positivity
 
-theorem regularResponseOperatorEnergy_integrable {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    Integrable (localizedResponseOperatorEnergy (regularObservationLabel k hk)
-      Prod.snd θ.variance) ((observationLaw θ).prod (observationLaw θ)) := by
-  let := observationLaw_isProbability C θ hθ
-  exact localizedResponseOperatorEnergy_integrable (observationLaw θ) _
-    (regularObservationLabel_measurable k hk) Prod.snd measurable_snd θ.variance
-      (observationLaw_response_fourth_integrable C θ hθ)
+𝗇 𝔊 𝖶
+𝗇 𝔑 localizedResponseOperatorEnergy (regularObservationLabel k hk) Prod.snd θ.variance
+𝗃 𝔒 ἀ C θ hθ
+𝗇 𝔔 regularObservationLabel_measurable k hk
+𝗃 𝔘 ἀ (observationLaw θ) _ 𝔔 Prod.snd measurable_snd θ.variance
+theorem regularResponseOperatorEnergy_integrable C
+    (θ : RegressionParameter d) (hθ : 𝙟) k hk :
+    Integrable 𝔑 𝔊 := by
+  let := 𝔒 observationLaw_isProbability
+  exact 𝔘 localizedResponseOperatorEnergy_integrable
+      𝔒 observationLaw_response_fourth_integrable
 
-theorem regularResponseOperatorEnergy_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    (∫ z, localizedResponseOperatorEnergy (regularObservationLabel k hk)
-      Prod.snd θ.variance z ∂(observationLaw θ).prod (observationLaw θ)) ≤
-      responseOperatorEnergyBound C * (C.densityUpper / (k : ℝ) ^ d) := by
-  let := observationLaw_isProbability C θ hθ
-  have hb := localizedResponseOperatorEnergy_integral_le (observationLaw θ) _
-    (regularObservationLabel_measurable k hk) Prod.snd measurable_snd θ.variance
-    (responseFourthBound C) (observationLaw_response_fourth_integrable C θ hθ) (by
+theorem regularResponseOperatorEnergy_le C
+    (θ : RegressionParameter d) (hθ : 𝙟) k hk :
+     ∫ z, 𝔑 z ∂𝔊 ≤
+      responseOperatorEnergyBound C * (C.densityUpper / 𝗋) := by
+  let := 𝔒 observationLaw_isProbability
+  have hb := 𝔘 localizedResponseOperatorEnergy_integral_le
+    (responseFourthBound C) 𝔒 observationLaw_response_fourth_integrable $ by
       intro i
-      rw [regularObservationLabel_mass C θ hθ k hk i, regularObservationLabel_fiber k hk i]
-      exact observationLaw_localized_fourth_integral_le C θ hθ _
-        ((measurableSet_singleton i).preimage (regular_grid_cell_measurable k hk)))
-  simp_rw [regularObservationLabel_mass C θ hθ k hk] at hb
-  have hV0 : 0 ≤ θ.variance := C.varianceLower_pos.le.trans hθ.2.2.2.2.2.1
+      rw [𝔒 regularObservationLabel_mass k hk i, regularObservationLabel_fiber k hk i]
+      exact 𝔒 observationLaw_localized_fourth_integral_le _
+        $ (measurableSet_singleton i).preimage $ regular_grid_cell_measurable k hk
+  simp_rw [𝔒 regularObservationLabel_mass k hk] at hb
+  have hV0 := C.varianceLower_pos.le.trans hθ.2.2.2.2.2.1
   have hVup := hθ.2.2.2.2.2.2.1
-  have hvsq : θ.variance ^ 2 ≤ C.varianceUpper ^ 2 := pow_le_pow_left₀ hV0 hVup 2
-  have hmass : 0 ≤ regularGridCollisionMass θ k hk := by
+  have hmass : 0 ≤ 𝘬₁ := by
     unfold regularGridCollisionMass
-    exact Finset.sum_nonneg (fun _ _ => sq_nonneg _)
-  change _ ≤ (12 * responseFourthBound C + 6 + 8 * θ.variance ^ 2) *
-    regularGridCollisionMass θ k hk at hb
+    positivity
   apply hb.trans
   calc
-    _ ≤ responseOperatorEnergyBound C * regularGridCollisionMass θ k hk := by
+    _ ≤ responseOperatorEnergyBound C * 𝘬₁ := by
       apply mul_le_mul_of_nonneg_right _ hmass
       unfold responseOperatorEnergyBound
       nlinarith
-    _ ≤ _ := mul_le_mul_of_nonneg_left (regularGridCollisionMass_upper C θ hθ k hk)
+    𝖦 := mul_le_mul_of_nonneg_left (𝔒 regularGridCollisionMass_upper k hk)
       (responseOperatorEnergyBound_pos C).le
-
-end NearlyMinimax

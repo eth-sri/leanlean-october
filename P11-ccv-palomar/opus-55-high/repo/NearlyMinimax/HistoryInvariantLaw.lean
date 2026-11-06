@@ -1,65 +1,67 @@
 module
 
 public import NearlyMinimax.HistoryInvariantObservable
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗍
 
 /-!
 # Invariant pushforward law from actual conditional signed update annihilation
 -/
 
-noncomputable section
-open MeasureTheory Filter Set
-namespace NearlyMinimax
+𝛊
+𝚨
 
-variable {J : Type*} [Fintype J] [LinearOrder J]
+𝚲
 
+𝗇 𝔄 𝙯₁ 𝖷₁
+𝗇 𝔅 (f ⁻¹' S).indicator
+𝗇 𝔇 𝘳 t π a
+𝗇 𝔈 𝚃₁
+𝗃 𝔉 ἀ dependent hrefl hsymm Δ hΔ hlabels
+𝗃 𝔊 ἀ $ hf hS
 /-- Actual weak transport and local signed annihilation prove equality of pushforward laws.
 The hypothesis is the local packet integral for indicators; law invariance is the conclusion. -/
-theorem historyMarkedPrior_invariant_law (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (T B : ℝ) (hT : 0 ≤ T) (hB : 0 ≤ B)
-    {E X : Type*} [MeasurableSpace E] [StandardBorelSpace E] [MeasurableSpace X]
-    (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Measurable a)
+theorem historyMarkedPrior_invariant_law (dependent : 𝙁)
+    (hrefl : 𝙂) (hsymm : 𝘼)
+    (Δ : ℕ) (hΔ : 𝙘) (hlabels : 𝘽)
+    (T B : ℝ) (hT : 𝚞) (hB : 𝙐)
+    [MeasurableSpace E] [StandardBorelSpace E] [MeasurableSpace X]
+    (π : Measure E) [IsProbabilityMeasure π] a (ha : Measurable a)
     (hcenter : ∫ e, a e ∂π = 0) (habound : ∀ e, |a e| ≤ B)
-    (hsmall : T * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    (f : HistoryMarked dependent E → X) (hf : Measurable f)
+    (hsmall : 𝚅₂ ≤ 𝙥)
+    f (hf : Measurable f)
     (hkill : ∀ j h S, MeasurableSet S →
-      ∫ e, (S.indicator (fun _ : X => (1 : ℝ)))
-        (f (historyMarkedAppend dependent hsymm j (h, e))) * a e ∂π = 0)
-    (t : ℝ) (ht : t ∈ Icc 0 T) :
-    Measure.map f (historyMarkedPrior dependent Δ t π a) =
-      Measure.map f (historyMarkedReference dependent Δ π) := by
+      ∫ e, (S.indicator fun _ : X => 1 )
+        (f 𝔄) * a e ∂π = 0)
+    t (ht : t ∈ 𝗺) :
+    Measure.map f 𝔇 =
+      Measure.map f 𝙤 := by
   have hi : Integrable a π := Integrable.of_bound ha.aestronglyMeasurable B
-    (Eventually.of_forall fun e => by simpa only [Real.norm_eq_abs] using habound e)
-  have hs : t * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2) :=
-    (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right ht.2 hB) (historyReferenceRho_pos Δ).le).trans hsmall
-  let := historyMarkedPrior_probability dependent hrefl hsymm Δ hΔ hlabels t B ht.1 hB π a hi hcenter habound hs
-  let := historyMarkedReference_probability dependent hrefl hsymm Δ hΔ hlabels π
+    $ Eventually.of_forall fun e => by simpa only [Real.norm_eq_abs] using habound e
+  let := 𝔉 historyMarkedPrior_probability t B ht.1 hB π a hi hcenter habound $ (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right ht.2 hB) 𝘤).trans hsmall
+  let := 𝔉 historyMarkedReference_probability π
   ext S hS
   rw [Measure.map_apply hf hS, Measure.map_apply hf hS]
-  apply (ENNReal.toReal_eq_toReal_iff' (measure_ne_top _ _) (measure_ne_top _ _)).1
-  let F := (f ⁻¹' S).indicator (fun _ : HistoryMarked dependent E => (1 : ℝ))
-  have hF : Measurable F := (measurable_const : Measurable (fun _ : HistoryMarked dependent E => (1 : ℝ))).indicator (hf hS)
+  apply (ENNReal.toReal_eq_toReal_iff' 𝔈 𝔈).1
+  let F := 𝔅 fun _ => 𝙠
   have hbound : ∀ h, |F h| ≤ 1 := by
     intro h
     by_cases hh : f h ∈ S <;> simp [F, hh]
-  have hzero : ∀ j h, ∫ e, F (historyMarkedAppend dependent hsymm j (h, e)) * a e ∂π = 0 := by
+  have hzero : ∀ j h, ∫ e, F 𝔄 * a e ∂π = 0 := by
     intro j h
-    have hFi : ∀ h : HistoryMarked dependent E, F h = S.indicator (fun _ : X => (1 : ℝ)) (f h) := by
+    have hFi : ∀ h : 𝙗, F h = S.indicator 𝙃 (f h) := by
       intro h
       by_cases hh : f h ∈ S <;> simp [F, hh]
     simp_rw [hFi]
     exact hkill j h S hS
-  have he := historyMarkedPrior_invariant_observable dependent hrefl hsymm Δ hΔ hlabels T B hT hB
-    π a ha habound hsmall F hF 1 (by norm_num) hbound hzero t ht
-  change (∫ h, (f ⁻¹' S).indicator (1 : HistoryMarked dependent E → ℝ) h
-    ∂historyMarkedPrior dependent Δ t π a) =
-      ∫ h, (f ⁻¹' S).indicator (1 : HistoryMarked dependent E → ℝ) h
-        ∂historyMarkedReference dependent Δ π at he
-  rw [integral_indicator_one (hf hS), integral_indicator_one (hf hS)] at he
+  have he := 𝔉 historyMarkedPrior_invariant_observable T B hT hB
+    π a ha habound hsmall F 𝔊 measurable_const.indicator 1  𝖠₄  hbound hzero t ht
+  change ∫ h, 𝔅 1 h
+    ∂𝔇 =
+      ∫ h, 𝔅 1 h
+        ∂𝙤 at he
+  rw [𝔊 integral_indicator_one, 𝔊 integral_indicator_one] at he
   exact he
-
-end NearlyMinimax

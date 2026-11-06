@@ -1,130 +1,137 @@
 module
 
 public import NearlyMinimax.HighLikelihoodDerivative
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Actual raw data observables and the mass-tilted original observation mean. -/
-noncomputable section
-open MeasureTheory ProbabilityTheory Filter Set
-open scoped ENNReal BigOperators
-namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
-variable {Ω : Type*} [MeasurableSpace Ω]
+𝚹
+𝛉
+𝚨
+𝚭
+𝚩
+𝛂
 
-def highRawObservable {d : ℕ} (n : ℕ) (a V : ℝ) (p F : Covariate d → ℝ)
-    (H : (Fin n → Observation d) → ℝ) : ℝ :=
-  ∫ z, H (encodeDesignResponse a z) * highRawSampleLikelihood n a V p F z
-    ∂highSampleReference d n
+𝗇 𝔄 𝙀
+𝗇 𝔍 𝘱
+𝗃 𝔓 ἀ n a V
+𝗃 𝔏 𝔓 ἀ p F
+𝗇 𝔐 𝙌 → ℝ
+𝗇 𝔒 𝗟₁
+𝗃 𝔖 ∫ z, H 𝔒 * 𝔏 ἀ z ∂𝔍
+def highRawObservable (n : ℕ) (a V : ℝ) (p F : 𝔄)
+    (H : 𝔐) : ℝ :=
+  𝔖 highRawSampleLikelihood
 
-def highRawObservableVarianceDerivative {d : ℕ} (n : ℕ) (a V : ℝ) (p F : Covariate d → ℝ)
-    (H : (Fin n → Observation d) → ℝ) : ℝ :=
-  ∫ z, H (encodeDesignResponse a z) * highRawSampleVarianceDerivative n a V p F z
-    ∂highSampleReference d n
+def highRawObservableVarianceDerivative (n : ℕ) (a V : ℝ) (p F : 𝔄)
+    (H : 𝔐) : ℝ :=
+  𝔖 highRawSampleVarianceDerivative
 
-theorem highRawObservable_measurable {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
-    (hF : Measurable (Function.uncurry F)) (H : (Fin n → Observation d) → ℝ)
-    (hH : Measurable H) : Measurable (fun ω => highRawObservable n a V (p ω) (F ω) H) := by
-  have h : Measurable (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-      H (encodeDesignResponse a z.2) * highRawSampleLikelihood n a V (p z.1) (F z.1) z.2) :=
-    ((hH.comp (encodeDesignResponse_measurable a)).comp measurable_snd).mul
-      (highRawSampleLikelihood_joint_measurable n a V p F hp hF)
+𝗇 𝔇 (hH.comp $ encodeDesignResponse_measurable a ).comp measurable_snd
+𝗇 𝔊 𝔓 highRawObservable (p ω) (F ω) H
+𝗃 𝔔 𝔏 ἀ hp hF
+𝗇 𝔎 𝔔 highRawSampleLikelihood_joint_measurable
+𝗃 𝔗 Measurable $ Function.uncurry ἀ
+theorem highRawObservable_measurable n a V
+    (p F : Ω → 𝔄) (hp : 𝔗 p)
+    (hF : 𝔗 F) H
+    (hH : Measurable H) : Measurable fun ω => 𝔊 := by
+  have h :=
+    (𝔇).mul
+      𝔎
   exact h.stronglyMeasurable.integral_prod_right'.measurable
 
-theorem highRawObservableVarianceDerivative_measurable {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
-    (hF : Measurable (Function.uncurry F)) (H : (Fin n → Observation d) → ℝ)
+theorem highRawObservableVarianceDerivative_measurable n a V
+    (p F : Ω → 𝔄) (hp : 𝔗 p)
+    (hF : 𝔗 F) H
     (hH : Measurable H) :
-    Measurable (fun ω => highRawObservableVarianceDerivative n a V (p ω) (F ω) H) := by
-  have h : Measurable (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-      H (encodeDesignResponse a z.2) * highRawSampleVarianceDerivative n a V (p z.1) (F z.1) z.2) :=
-    ((hH.comp (encodeDesignResponse_measurable a)).comp measurable_snd).mul
-      (highRawSampleVarianceDerivative_joint_measurable n a V p F hp hF)
+    Measurable fun ω => 𝔓 highRawObservableVarianceDerivative (p ω) (F ω) H := by
+  have h :=
+    (𝔇).mul
+      𝔔 highRawSampleVarianceDerivative_joint_measurable
   exact h.stronglyMeasurable.integral_prod_right'.measurable
 
-theorem highRawObservable_abs_le {d : ℕ} (n : ℕ) (a V P B : ℝ) (hP : 0 ≤ P) (hB : 0 ≤ B)
-    (p F : Covariate d → ℝ) (hp : ∀ x, |p x| ≤ P) (ha : a ≠ 0)
-    (hq : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
-    (H : (Fin n → Observation d) → ℝ) (hHb : ∀ z, |H z| ≤ B) :
-    |highRawObservable n a V p F H| ≤ B * P ^ n * (highSampleReference d n).real Set.univ := by
+𝗇 𝔉 𝗨
+theorem highRawObservable_abs_le n a V P B (hP : 𝚏) (hB : 𝙐)
+    (p F : 𝔄) (hp : ∀ x, |p x| ≤ P) (ha : 𝙞)
+    (hq : 𝔉)
+    H (hHb : ∀ z, |H z| ≤ B) :
+    |𝔏 highRawObservable H| ≤ B * 𝚗 * (𝔍).real Set.univ := by
   rw [highRawObservable, ← Real.norm_eq_abs]
   apply norm_integral_le_of_norm_le_const
   exact Eventually.of_forall fun z => by
     rw [Real.norm_eq_abs, abs_mul]
-    exact mul_le_mul (hHb _) (highRawSampleLikelihood_abs_le n a V P hP p F hp ha hq z)
+    exact 𝘣 (𝔓 highRawSampleLikelihood_abs_le P hP p F hp ha hq z)
       (abs_nonneg _) hB
 
-theorem highRawObservableVarianceDerivative_abs_le {d : ℕ} (n : ℕ) (a V P B : ℝ)
-    (ha : 0 < a) (hP : 0 ≤ P) (hB : 0 ≤ B)
-    (p F : Covariate d → ℝ) (hp : ∀ x, |p x| ≤ P)
-    (hq : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
-    (H : (Fin n → Observation d) → ℝ) (hHb : ∀ z, |H z| ≤ B) :
-    |highRawObservableVarianceDerivative n a V p F H| ≤
-      B * (P ^ n * ((n : ℝ) / a ^ 2)) * (highSampleReference d n).real Set.univ := by
+theorem highRawObservableVarianceDerivative_abs_le n a V P B
+    (ha : 𝙆) (hP : 𝚏) (hB : 𝙐)
+    (p F : 𝔄) (hp : ∀ x, |p x| ≤ P)
+    (hq : 𝔉)
+    H (hHb : ∀ z, |H z| ≤ B) :
+    |𝔏 highRawObservableVarianceDerivative H| ≤
+      B * (𝚗 * (n / 𝗅)) * (𝔍).real Set.univ := by
   rw [highRawObservableVarianceDerivative, ← Real.norm_eq_abs]
   apply norm_integral_le_of_norm_le_const
   exact Eventually.of_forall fun z => by
     rw [Real.norm_eq_abs, abs_mul]
-    exact mul_le_mul (hHb _) (highRawSampleVarianceDerivative_abs_le n a V P ha hP p F hp hq z)
+    exact 𝘣 (𝔓 highRawSampleVarianceDerivative_abs_le P ha hP p F hp hq z)
       (abs_nonneg _) hB
 
+𝗇 𝔅 𝙙
+𝗇 𝔈 𝙽₂
+𝗇 𝔑 fun z => 𝔈
 /-- The actual original real-data mean under the genuine mass tilt equals
 G_n^-1 times the raw-likelihood observable mean. -/
-theorem massPowerTilt_highReal_observable_mean {d : ℕ} (ν : Measure Ω) [IsProbabilityMeasure ν]
-    (n : ℕ) (a V : ℝ) (p F : Ω → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (aRaw bRaw : ℝ) (haRaw : 0 < aRaw)
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw) (ha : a ≠ 0)
-    (hq : ∀ ω x y, 0 ≤ ternaryMass a (F ω x) V y)
-    (H : (Fin n → Observation d) → ℝ) (hH : Measurable H)
-    (B : ℝ) (hB : 0 ≤ B) (hHb : ∀ z, |H z| ≤ B) :
-    (∫ ω, ∫ z, H z ∂highRealSampleKernel n a V p F hp hF ω
-      ∂massPowerTilt ν (fun ω => highRawDensityMass (p ω)) n) =
-      (massPowerNormalizer ν (fun ω => highRawDensityMass (p ω)) n)⁻¹ *
-        ∫ ω, highRawObservable n a V (p ω) (F ω) H ∂ν := by
-  let m : Ω → ℝ := fun ω => highRawDensityMass (p ω)
-  have hm : Measurable m := highRawDensityMass_joint_measurable p hp
-  have hbound (ω : Ω) : aRaw ≤ m ω ∧ m ω ≤ bRaw :=
-    highRawDensityMass_mem_Icc (p ω) hp.of_uncurry_left aRaw bRaw haRaw
-      (Eventually.of_forall (hraw ω))
+theorem massPowerTilt_highReal_observable_mean (ν : Measure Ω) [IsProbabilityMeasure ν]
+    (n : ℕ) (a V : ℝ) (p F : Ω → 𝔄)
+    hp hF
+    aRaw bRaw (haRaw : 𝙓)
+    (hraw : 𝙄) (ha : 𝙞)
+    (hq : ∀ ω x y, 0 ≤ 𝙅 V y)
+    H (hH : Measurable H)
+    B (hB : 𝙐) (hHb : ∀ z, |H z| ≤ B) :
+     ∫ ω, ∫ z, H z ∂𝔔 highRealSampleKernel ω
+      ∂massPowerTilt ν 𝔅 n =
+      (massPowerNormalizer ν 𝔅 n)⁻¹ *
+        ∫ ω, 𝔊 ∂ν := by
+  let m := 𝔅
+  have hm := 𝙨
+  have hbound ω :=
+    𝙕
   let _ := massPowerTilt_isProbability ν m hm n aRaw bRaw haRaw hbound
-  let _ := highSampleIndexKernel_markov n a V p F hp hF aRaw bRaw haRaw hraw ha hq
-  have hM : Measurable (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-      H (encodeDesignResponse a z.2)) := (hH.comp (encodeDesignResponse_measurable a)).comp measurable_snd
-  have hInt : Integrable (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-      H (encodeDesignResponse a z.2))
-      ((massPowerTilt ν m n).compProd (highSampleIndexKernel n a V p F hp hF)) := by
+  let _ := 𝔔 highSampleIndexKernel_markov aRaw bRaw haRaw hraw ha hq
+  have hM : Measurable fun z : Ω × 𝙇 × 𝙈 =>
+      𝔈 := 𝔇
+  have hInt : Integrable 𝔑
+      $ (massPowerTilt ν m n).compProd 𝔔 highSampleIndexKernel := by
     apply Integrable.of_bound hM.aestronglyMeasurable B
-    exact Eventually.of_forall fun z => by simpa only [Real.norm_eq_abs] using hHb _
-  have hpabs (ω : Ω) (x : Covariate d) : |p ω x| ≤ |bRaw| := by
-    rw [abs_of_nonneg (haRaw.le.trans (hraw ω x).1)]
-    exact (hraw ω x).2.trans (le_abs_self _)
-  have hIntRaw : Integrable (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-      highRawSampleLikelihood n a V (p z.1) (F z.1) z.2 * H (encodeDesignResponse a z.2))
-      (ν.prod (highSampleReference d n)) := by
-    apply Integrable.of_bound ((highRawSampleLikelihood_joint_measurable n a V p F hp hF).mul hM).aestronglyMeasurable
-      (|bRaw| ^ n * B)
+    simp_all
+  have hpabs ω x : |𝗃₁| ≤ |bRaw| := by
+    grind
+  have hIntRaw : Integrable (fun z =>
+      𝔓 highRawSampleLikelihood (p z.1) (F z.1) z.2 * 𝔈)
+      $ ν.prod 𝔍 := by
+    apply Integrable.of_bound ((𝔎).mul hM).aestronglyMeasurable
+      $ |bRaw| ^ n * B
     exact Eventually.of_forall fun z => by
       rw [Real.norm_eq_abs, Pi.mul_apply, abs_mul]
-      exact mul_le_mul (highRawSampleLikelihood_abs_le n a V |bRaw| (abs_nonneg _) (p z.1) (F z.1)
-        (hpabs z.1) ha (hq z.1) z.2) (hHb _) (abs_nonneg _) (pow_nonneg (abs_nonneg _) n)
+      exact mul_le_mul (𝔓 highRawSampleLikelihood_abs_le |bRaw| (abs_nonneg _) (p z.1) (F z.1)
+        (hpabs z.1) ha (hq z.1) z.2) (hHb _) (abs_nonneg _) $ pow_nonneg (abs_nonneg _) n
   have he := massPowerTilt_highSample_integral ν n a V p F hp hF aRaw bRaw haRaw hraw hq
-    (fun z => H (encodeDesignResponse a z.2))
+    𝔑
   rw [Measure.integral_compProd hInt, MeasureTheory.integral_prod _ hIntRaw] at he
   convert he using 1
   · apply integral_congr_ae
     exact Eventually.of_forall fun ω => by
-      dsimp only
+      dsimp
       rw [highRealSampleKernel_apply,
         integral_map_of_stronglyMeasurable (encodeDesignResponse_measurable a) hH.stronglyMeasurable]
   · congr 1
     apply integral_congr_ae
     exact Eventually.of_forall fun ω => by
       dsimp only [highRawObservable]
-      apply integral_congr_ae
-      exact Eventually.of_forall fun z => mul_comm _ _
-
-end NearlyMinimax
+      grind

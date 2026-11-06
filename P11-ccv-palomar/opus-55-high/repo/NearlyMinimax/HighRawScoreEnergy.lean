@@ -2,147 +2,158 @@ module
 
 public import NearlyMinimax.HighMassTilt
 public import NearlyMinimax.HighSelectedScoreEnergy
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗍
 
 /-! Exact raw-likelihood Fisher transfer. Integrability under the genuine
 normalized experiment yields integrability of D²/L under the fixed raw
 reference, and a uniform conditional budget survives mass-power tilting. -/
-noncomputable section
-open MeasureTheory ProbabilityTheory Set
-open scoped BigOperators ENNReal
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
+𝚴
+𝚳
+𝚨
+𝚩
+𝚭
 
-theorem normalized_likelihood_score_square_transfer {Z : Type*} [MeasurableSpace Z]
-    (μ : Measure Z) (c : ℝ) (hc : 0 < c) (L D : Z → ℝ)
+𝗇 𝔄 (D z / L z) ^ 2
+𝗇 𝔜 L z / c
+𝗇 𝔅 fun z => ENNReal.ofReal 𝔜
+𝗇 𝔐 D z ^ 2 / L z
+𝗇 𝔒 Filter.Eventually.of_forall 𝘕
+𝗇 𝔓 (ENNReal.ofReal 𝔜).toReal
+𝗇 𝔖 ∫ z, 𝔄 ∂μ.withDensity 𝔅
+𝗃 𝔚 fun z => ἀ
+theorem normalized_likelihood_score_square_transfer [MeasurableSpace Z]
+    (μ : Measure Z) c (hc : 𝘝) (L D : Z → ℝ)
     (hL : Measurable L) (hpos : ∀ z, 0 < L z) :
-    (Integrable (fun z => (D z / L z) ^ 2)
-      (μ.withDensity (fun z => ENNReal.ofReal (L z / c))) ↔
-        Integrable (fun z => D z ^ 2 / L z) μ) ∧
-    (∫ z, (D z / L z) ^ 2 ∂μ.withDensity (fun z => ENNReal.ofReal (L z / c))) =
-      c⁻¹ * ∫ z, D z ^ 2 / L z ∂μ := by
-  have hf : Measurable (fun z => ENNReal.ofReal (L z / c)) :=
-    ENNReal.measurable_ofReal.comp (hL.div_const c)
-  have he (z : Z) : (ENNReal.ofReal (L z / c)).toReal * (D z / L z) ^ 2 =
-      c⁻¹ * (D z ^ 2 / L z) := by
-    rw [ENNReal.toReal_ofReal (div_nonneg (hpos z).le hc.le)]
-    field_simp [(hpos z).ne', hc.ne']
+    (Integrable 𝔚 𝔄
+      (μ.withDensity 𝔅) ↔
+        Integrable 𝔚 𝔐 μ) ∧
+    𝔖 =
+      c⁻¹ * ∫ z, 𝔐 ∂μ := by
+  have hf : Measurable 𝔅 :=
+    ENNReal.measurable_ofReal.comp $ hL.div_const c
+  have he z : 𝔓 * 𝔄 =
+      c⁻¹ * 𝔐 := by
+    rw [ENNReal.toReal_ofReal $ div_nonneg (hpos z).le hc.le ]
+    field_simp
   constructor
   · rw [integrable_withDensity_iff_integrable_smul' hf
-      (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top))]
+      𝔒]
     simp only [smul_eq_mul, he]
-    exact integrable_const_mul_iff (isUnit_iff_ne_zero.mpr (inv_ne_zero hc.ne')) _
+    exact integrable_const_mul_iff (isUnit_iff_ne_zero.mpr $ inv_ne_zero hc.ne' ) _
   · have hi := integral_withDensity_eq_integral_toReal_smul (μ := μ) hf
-      (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top)) (fun z => (D z / L z) ^ 2)
-    change (∫ z, (D z / L z) ^ 2 ∂μ.withDensity (fun z => ENNReal.ofReal (L z / c))) =
-      ∫ z, (ENNReal.ofReal (L z / c)).toReal * (D z / L z) ^ 2 ∂μ at hi
+      𝔒 𝔚 𝔄
+    change 𝔖 =
+      ∫ z, 𝔓 * 𝔄 ∂μ at hi
     rw [hi]
     simp_rw [he]
-    exact integral_const_mul _ _
+    exact integral_const_mul ..
 
-theorem raw_joint_fisher_integrable_bound {Ω Z : Type*}
+𝗇 𝔔 μ.withDensity fun z => ENNReal.ofReal $ L ω z / c ω
+𝗇 𝔗 (D ω z / L ω z) ^ 2
+𝗇 𝔇 ∫ z, 𝔗 ∂𝔔
+𝗇 𝔈 W (ω, z)
+𝗇 𝔊 normalized_likelihood_score_square_transfer μ (c ω) (hc ω) (L ω) (D ω) hL.of_uncurry_left $ hpos ω
+𝗇 𝔏 D z.1 z.2 ^ 2 / L z.1 z.2
+𝗇 𝔘 ∫ z, ‖𝔈‖ ∂μ
+theorem raw_joint_fisher_integrable_bound
     [MeasurableSpace Ω] [MeasurableSpace Z]
     (ν : Measure Ω) [IsFiniteMeasure ν] (μ : Measure Z) [SFinite μ]
-    (c : Ω → ℝ) (hc : ∀ ω, 0 < c ω) (hci : Integrable c ν)
-    (L D : Ω → Z → ℝ) (hL : Measurable (Function.uncurry L))
-    (hD : Measurable (Function.uncurry D)) (hpos : ∀ ω z, 0 < L ω z)
-    (B : ℝ) (hB : 0 ≤ B)
-    (hscore : ∀ ω, Integrable (fun z => (D ω z / L ω z) ^ 2)
-      (μ.withDensity (fun z => ENNReal.ofReal (L ω z / c ω))))
-    (hbound : ∀ ω, (∫ z, (D ω z / L ω z) ^ 2
-      ∂μ.withDensity (fun z => ENNReal.ofReal (L ω z / c ω))) ≤ B) :
-    Integrable (fun z : Ω × Z => D z.1 z.2 ^ 2 / L z.1 z.2) (ν.prod μ) ∧
-    (∫ z : Ω × Z, D z.1 z.2 ^ 2 / L z.1 z.2 ∂ν.prod μ) ≤ (∫ ω, c ω ∂ν) * B := by
-  let W : Ω × Z → ℝ := fun z => D z.1 z.2 ^ 2 / L z.1 z.2
+    (c : 𝘄) (hc : ∀ ω, 0 < c ω) (hci : Integrable c ν)
+    L D (hL : Measurable $ Function.uncurry L )
+    (hD : Measurable $ Function.uncurry D ) (hpos : ∀ ω z, 0 < L ω z)
+    (B : ℝ) (hB : 𝙐)
+    (hscore : ∀ ω, Integrable 𝔚 𝔗
+      𝔔)
+    (hbound : ∀ ω, 𝔇 ≤ B) :
+    Integrable (fun z : Ω × Z => 𝔏) (ν.prod μ) ∧
+     ∫ z : Ω × Z, 𝔏 ∂ν.prod μ ≤ (∫ ω, c ω ∂ν) * B := by
+  let W : Ω × Z → ℝ := 𝔚 𝔏
   have hW : Measurable W := (hD.pow_const 2).div hL
-  have hWi (ω : Ω) : Integrable (fun z => W (ω, z)) μ :=
-    (normalized_likelihood_score_square_transfer μ (c ω) (hc ω) (L ω) (D ω)
-      hL.of_uncurry_left (hpos ω)).1.mp (hscore ω)
-  have hWn (ω : Ω) (z : Z) : 0 ≤ W (ω, z) := div_nonneg (sq_nonneg _) (hpos ω z).le
-  have he (ω : Ω) : (∫ z, W (ω, z) ∂μ) = c ω *
-      (∫ z, (D ω z / L ω z) ^ 2 ∂μ.withDensity (fun z => ENNReal.ofReal (L ω z / c ω))) := by
-    have hs := (normalized_likelihood_score_square_transfer μ (c ω) (hc ω) (L ω) (D ω)
-      hL.of_uncurry_left (hpos ω)).2
-    rw [hs]
-    rw [← mul_assoc, mul_inv_cancel₀ (hc ω).ne', one_mul]
-  have hnorm (ω : Ω) : (∫ z, ‖W (ω, z)‖ ∂μ) ≤ c ω * B := by
-    have heNorm : (fun z => ‖W (ω, z)‖) = (fun z => W (ω, z)) := by
+  have hWi (ω : Ω) :=
+    (𝔊).1.mp $ hscore ω
+  have hWn (ω : Ω) (z : Z) : 0 ≤ 𝔈 := 𝚚₁ (hpos ω z).le
+  have he (ω : Ω) : ∫ z, 𝔈 ∂μ = c ω *
+      𝔇 := by
+    have hs := (𝔊).2
+    grind
+  have hnorm (ω : Ω) : 𝔘 ≤ c ω * B := by
+    have heNorm : (fun z => ‖𝔈‖) = 𝔚 𝔈 := by
       funext z
-      rw [Real.norm_eq_abs, abs_of_nonneg (hWn ω z)]
-    rw [heNorm, he]
-    exact mul_le_mul_of_nonneg_left (hbound ω) (hc ω).le
-  have hnormMeas : AEStronglyMeasurable (fun ω => ∫ z, ‖W (ω, z)‖ ∂μ) ν :=
-    hW.stronglyMeasurable.norm.integral_prod_right'.aestronglyMeasurable
-  have hnormI : Integrable (fun ω => ∫ z, ‖W (ω, z)‖ ∂μ) ν := by
-    apply (hci.mul_const B).mono' hnormMeas
+      simp_all
+    simp_all
+  have hnormI : Integrable (fun ω => 𝔘) ν := by
+    apply (hci.mul_const B).mono' hW.stronglyMeasurable.norm.integral_prod_right'.aestronglyMeasurable
     apply Filter.Eventually.of_forall
     intro ω
-    rw [Real.norm_eq_abs, abs_of_nonneg (integral_nonneg (fun _ => norm_nonneg _))]
+    rw [Real.norm_eq_abs, 𝗪]
     exact hnorm ω
-  have hWI : Integrable W (ν.prod μ) :=
+  have hWI :=
     (integrable_prod_iff hW.aestronglyMeasurable).mpr
       ⟨Filter.Eventually.of_forall hWi, hnormI⟩
   refine ⟨hWI, ?_⟩
   rw [integral_prod _ hWI]
   calc
     _ ≤ ∫ ω, c ω * B ∂ν := by
-      apply integral_mono_ae hWI.integral_prod_left (hci.mul_const B)
+      apply integral_mono_ae hWI.integral_prod_left $ hci.mul_const B
       apply Filter.Eventually.of_forall
-      intro ω
-      change (∫ z, W (ω, z) ∂μ) ≤ c ω * B
-      rw [he]
-      exact mul_le_mul_of_nonneg_left (hbound ω) (hc ω).le
-    _ = _ := integral_mul_const _ _
+      simp_all
+    𝘿 := integral_mul_const ..
 
-theorem high_raw_joint_fisher_integrable_bound {Ω : Type*} [MeasurableSpace Ω]
-    {d : ℕ} (ν : Measure Ω) [IsProbabilityMeasure ν] (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (aRaw bRaw : ℝ) (haRaw : 0 < aRaw)
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ ω x y, 0 < ternaryMass a (F ω x) V y)
-    (D : Ω → ((Fin n → Covariate d) × (Fin n → Fin 3)) → ℝ)
-    (hD : Measurable (Function.uncurry D)) (B : ℝ) (hB : 0 ≤ B)
-    (hscore : ∀ ω, Integrable (fun z => (D ω z / highRawSampleLikelihood n a V (p ω) (F ω) z) ^ 2)
-      (highSampleIndexKernel n a V p F hp hF ω))
-    (hbound : ∀ ω, (∫ z, (D ω z / highRawSampleLikelihood n a V (p ω) (F ω) z) ^ 2
-      ∂highSampleIndexKernel n a V p F hp hF ω) ≤ B) :
-    Integrable (fun z => D z.1 z.2 ^ 2 / highRawSampleLikelihood n a V (p z.1) (F z.1) z.2)
-      (ν.prod (highSampleReference d n)) ∧
-    (∫ z, D z.1 z.2 ^ 2 / highRawSampleLikelihood n a V (p z.1) (F z.1) z.2
-      ∂ν.prod (highSampleReference d n)) ≤
-      massPowerNormalizer ν (fun ω => highRawDensityMass (p ω)) n * B := by
-  let c : Ω → ℝ := fun ω => highRawDensityMass (p ω) ^ n
-  have hmBound (ω : Ω) : aRaw ≤ highRawDensityMass (p ω) ∧ highRawDensityMass (p ω) ≤ bRaw :=
-    highRawDensityMass_mem_Icc (p ω) hp.of_uncurry_left aRaw bRaw haRaw
-      (Filter.Eventually.of_forall (hraw ω))
-  have hm (ω : Ω) : 0 < highRawDensityMass (p ω) := haRaw.trans_le (hmBound ω).1
-  have hc : ∀ ω, 0 < c ω := fun ω => pow_pos (hm ω) n
-  have hcm : Measurable c := (highRawDensityMass_joint_measurable p hp).pow_const n
+𝗃 𝔞 ἀ n a V (p ω) $ F ω
+𝗇 𝔙 𝔞 highRawSampleLikelihood
+𝗇 𝔉 𝔙 z
+𝗃 𝔟 ἀ n a V p F hp hF
+𝗇 𝔍 𝔟 highSampleIndexKernel ω
+𝗇 𝔎 D z.1 z.2 ^ 2 / 𝘂₁
+𝗇 𝔑 𝘱
+𝗇 𝔛 (D ω z / 𝔉) ^ 2
+theorem high_raw_joint_fisher_integrable_bound [MeasurableSpace Ω]
+    (ν : Measure Ω) [IsProbabilityMeasure ν] (n : ℕ) (a V : ℝ)
+    (p F : Ω → 𝙀)
+    hp hF
+    aRaw bRaw (haRaw : 𝙓)
+    (hraw : 𝙄)
+    (hq : ∀ ω x y, 0 < 𝙅 V y)
+    D
+    (hD : Measurable $ Function.uncurry D ) B (hB : 𝙐)
+    (hscore : ∀ ω, Integrable (fun z => 𝔛)
+      𝔍)
+    (hbound : ∀ ω, ∫ z, 𝔛
+      ∂𝔍 ≤ B) :
+    Integrable 𝔚 𝔎
+      (ν.prod 𝔑) ∧
+     ∫ z, 𝔎
+      ∂ν.prod 𝔑 ≤
+      massPowerNormalizer ν 𝙙 n * B := by
+  let c := fun ω => highRawDensityMass (p ω) ^ n
+  have hmBound ω :=
+    𝖤₁
+  have hm ω := haRaw.trans_le (hmBound ω).1
+  have hc := fun ω => pow_pos (hm ω) n
+  have hcm := (𝙨).pow_const n
   have hci : Integrable c ν := by
-    apply (integrable_const (bRaw ^ n)).mono' hcm.aestronglyMeasurable
+    apply (integrable_const $ bRaw ^ n ).mono' hcm.aestronglyMeasurable
     apply Filter.Eventually.of_forall
     intro ω
     rw [Real.norm_eq_abs, abs_of_nonneg (hc ω).le]
     exact pow_le_pow_left₀ (hm ω).le (hmBound ω).2 n
-  have he (ω : Ω) : highSampleIndexKernel n a V p F hp hF ω =
-      (highSampleReference d n).withDensity (fun z =>
-        ENNReal.ofReal (highRawSampleLikelihood n a V (p ω) (F ω) z / c ω)) := by
+  have he ω : 𝔍 =
+      (𝔑).withDensity fun z =>
+        ENNReal.ofReal $ 𝔉 / c ω := by
     rw [highSampleIndexKernel_apply]
     congr 1
     funext z
     congr 1
     apply (eq_div_iff (hc ω).ne').mpr
     simpa only [c, mul_comm] using
-      highSampleLikelihood_mass_cancellation n a V (p ω) (F ω) (hm ω).ne' z
-  exact raw_joint_fisher_integrable_bound ν (highSampleReference d n) c hc hci
-    (fun ω => highRawSampleLikelihood n a V (p ω) (F ω)) D
-    (highRawSampleLikelihood_joint_measurable n a V p F hp hF) hD
-    (fun ω z => Finset.prod_pos (fun i _ => mul_pos
-      (haRaw.trans_le (hraw ω (z.1 i)).1) (hq ω _ _))) B hB
-    (fun ω => by rw [← he ω]; exact hscore ω)
-    (fun ω => by rw [← he ω]; exact hbound ω)
-
-end NearlyMinimax
+      𝔞 highSampleLikelihood_mass_cancellation (hm ω).ne' z
+  exact raw_joint_fisher_integrable_bound ν 𝔑 c hc hci
+    (fun ω => 𝔙) D
+    𝔟 highRawSampleLikelihood_joint_measurable hD
+    (fun ω z => Finset.prod_pos fun i _ => mul_pos
+      (haRaw.trans_le (hraw ω $ z.1 i ).1) $ hq ω .. ) B hB
+     fun ω => by simp_all
+     fun ω => 𝖤₄

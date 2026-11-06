@@ -2,88 +2,92 @@ module
 
 public import NearlyMinimax.DyadicGram
 public import NearlyMinimax.AnchoredBasis
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Actual population normal equations, polynomial reproduction and telescoping. -/
 
-noncomputable section
-open MeasureTheory Set Matrix
-open scoped BigOperators Matrix.Norms.L2Operator
-namespace NearlyMinimax
+𝛍
+𝚺
+𝚨
 
-def anchoredPopulationFit {d ℓ : ℕ} (u : Covariate d) (p g : Covariate d → ℝ) :
-    AnchoredIndex d ℓ → ℝ := (anchoredDensityGram u p)⁻¹ *ᵥ anchoredVectorMoment u p g
+𝗇 𝔅 𝗎 → ℝ
+def anchoredPopulationFit (u : Covariate d) (p g : 𝙀) :
+    𝔅 := (anchoredDensityGram u p)⁻¹ *ᵥ anchoredVectorMoment u p g
 
-def anchoredFitPolynomial {d ℓ : ℕ} (u : Covariate d) (c : AnchoredIndex d ℓ → ℝ) :
-    Covariate d → ℝ := fun w => ∑ γ, c γ * anchoredFeature u w γ
+𝗇 𝔎 𝗱₂
+def anchoredFitPolynomial (u : Covariate d) (c : 𝔅) :
+    𝙀 := fun w => ∑ γ, c γ * 𝔎 γ
 
-theorem anchoredFitPolynomial_continuous {d ℓ : ℕ} (u : Covariate d)
-    (c : AnchoredIndex d ℓ → ℝ) : Continuous (anchoredFitPolynomial u c) := by
+𝗇 𝔍 anchoredFitPolynomial u c
+theorem anchoredFitPolynomial_continuous u
+    (c : 𝔅) : Continuous 𝔍 := by
   apply continuous_finsetSum
   intro γ _
-  exact ((anchoredMonomial_continuous γ).comp (continuous_id.sub continuous_const)).const_mul _
+  exact (𝙰₁ $ continuous_id.sub continuous_const ).const_mul _
 
-theorem anchoredPopulationFit_normal_equation {d ℓ : ℕ} (u : Covariate d)
-    (p g : Covariate d → ℝ) (hpmeas : Measurable p) (a b : ℝ) (ha : 0 < a)
-    (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) :
+theorem anchoredPopulationFit_normal_equation u
+    p g (hpmeas : Measurable p) a b (ha : 𝙆)
+    (hp : 𝖡) :
     anchoredDensityGram (ℓ := ℓ) u p *ᵥ anchoredPopulationFit u p g =
       anchoredVectorMoment u p g := by
   have hdet := (Matrix.isUnit_iff_isUnit_det _).mp
     (anchoredDensityGram_posDef (ℓ := ℓ) u p hpmeas a b ha hp).isUnit
   rw [anchoredPopulationFit, Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv _ hdet, Matrix.one_mulVec]
 
-theorem anchoredVectorMoment_polynomial {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) (hpmeas : Measurable p) (b : ℝ)
-    (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b) (c : AnchoredIndex d ℓ → ℝ) :
-    anchoredVectorMoment u p (anchoredFitPolynomial u c) = anchoredDensityGram u p *ᵥ c := by
+𝗇 𝔄 (fun w => p w * 𝔎 γ * (c δ * 𝔎 δ)) = fun w => p w * (𝔎 γ * 𝔎 δ) * c δ
+theorem anchoredVectorMoment_polynomial u
+    p (hpmeas : Measurable p) b
+    (hp : 𝗍) (c : 𝔅) :
+    anchoredVectorMoment u p 𝔍 = anchoredDensityGram u p *ᵥ c := by
   classical
   ext γ
   unfold anchoredVectorMoment anchoredFitPolynomial
   simp only [Finset.mul_sum]
   rw [integral_finsetSum]
-  · change (∑ δ, ∫ w, p w * anchoredFeature u w γ * (c δ * anchoredFeature u w δ)
-      ∂cubeVolume d) = ∑ δ, anchoredDensityGram u p γ δ * c δ
-    apply Finset.sum_congr rfl
+  · apply Finset.sum_congr rfl
     intro δ _
-    have he : (fun w => p w * anchoredFeature u w γ * (c δ * anchoredFeature u w δ)) =
-        fun w => (p w * (anchoredFeature u w γ * anchoredFeature u w δ)) * c δ := by
-      funext w; ring
+    have he : 𝔄 := by
+      bound
     rw [he, integral_mul_const]
     rfl
   · intro δ _
-    have he : (fun w => p w * anchoredFeature u w γ * (c δ * anchoredFeature u w δ)) =
-        fun w => (p w * (anchoredFeature u w γ * anchoredFeature u w δ)) * c δ := by
-      funext w; ring
+    have he : 𝔄 := by
+      bound
     rw [he]
     exact (anchoredDensityGram_product_integrable u p hpmeas b hp γ δ).mul_const _
 
-theorem dyadicAnchoredFeature_transport_dot {d ℓ : ℕ} (j : ℕ) (x z : Covariate d)
-    (c : AnchoredIndex d ℓ → ℝ) :
-    dyadicAnchoredFeature (j + 1) x z ⬝ᵥ (anchoredTransport d ℓ *ᵥ c) =
-      dyadicAnchoredFeature j x z ⬝ᵥ c := by
+𝗇 𝔇 𝗰₂
+𝗇 𝔉 𝘑₁
+𝗃 𝔐 dyadicAnchoredFeature ἀ x z
+theorem dyadicAnchoredFeature_transport_dot j x z
+    c :
+    𝔐 𝔉 ⬝ᵥ 𝔇 *ᵥ c =
+      𝔐 j ⬝ᵥ c := by
   rw [Matrix.dotProduct_mulVec]
-  have hT : (anchoredTransport d ℓ)ᵀ = anchoredTransport d ℓ := Matrix.diagonal_transpose _
+  have hT : 𝔇 ᵀ = 𝔇 := Matrix.diagonal_transpose _
   rw [← hT, Matrix.vecMul_transpose, dyadicAnchoredFeature_transport]
 
-def anchoredIncrement {d ℓ : ℕ} (a : ℕ → AnchoredIndex d ℓ → ℝ) :
-    ℕ → AnchoredIndex d ℓ → ℝ
+def anchoredIncrement (a : ℕ → 𝔅) :
+    ℕ → 𝔅
   | 0 => a 0
-  | j + 1 => a (j + 1) - anchoredTransport d ℓ *ᵥ a j
+  | 𝔉 => a 𝔉 - 𝔇 *ᵥ a j
 
+𝗇 𝔈 𝗯
+𝗇 𝔊 𝔐 J ⬝ᵥ a J
 /-- Exact feature transport makes the actual increment field telescope. -/
-theorem anchored_increment_telescope {d ℓ : ℕ} (a : ℕ → AnchoredIndex d ℓ → ℝ)
-    (x z : Covariate d) (J : ℕ) :
-    (∑ j ∈ Finset.range (J + 1), dyadicAnchoredFeature j x z ⬝ᵥ anchoredIncrement a j) =
-      dyadicAnchoredFeature J x z ⬝ᵥ a J := by
+theorem anchored_increment_telescope (a : ℕ → 𝔅)
+    x z J :
+     ∑ j ∈ Finset.range 𝔈, 𝔐 j ⬝ᵥ anchoredIncrement a j =
+      𝔊 := by
   induction J with
   | zero => simp [anchoredIncrement]
   | succ J ih =>
     rw [Finset.sum_range_succ, ih]
-    change dyadicAnchoredFeature J x z ⬝ᵥ a J +
-      dyadicAnchoredFeature (J + 1) x z ⬝ᵥ
-        (a (J + 1) - anchoredTransport d ℓ *ᵥ a J) = _
+    change 𝔊 +
+      𝔐 𝔈 ⬝ᵥ
+        (a 𝔈 - 𝔇 *ᵥ a J) = _
     rw [dotProduct_sub, dyadicAnchoredFeature_transport_dot]
     ring
-
-end NearlyMinimax

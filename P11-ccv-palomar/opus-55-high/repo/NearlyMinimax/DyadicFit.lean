@@ -2,108 +2,103 @@ module
 
 public import NearlyMinimax.AnchoredFitError
 public import NearlyMinimax.DyadicPilotPopulation
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Genuine original-law local polynomial fits and their Taylor approximation. -/
 
-noncomputable section
 open MeasureTheory Set Matrix MvPolynomial
-open scoped BigOperators Matrix.Norms.L2Operator
-namespace NearlyMinimax
+𝚺
+𝚨
 
-def dyadicRegressionDifference {d : ℕ} (θ : RegressionParameter d) (j : ℕ)
-    (x : Covariate d) : Covariate d → ℝ :=
-  fun w => θ.regression (dyadicCellAffine j x w) - θ.regression x
+𝗇 𝔇 dyadicCellAffine j x
+def dyadicRegressionDifference (θ : RegressionParameter d) (j : ℕ)
+    (x : Covariate d) : 𝙀 :=
+  fun w => θ.regression (𝔇 w) - θ.regression x
 
 /-- The actual local fit, formed from original-law response and density means. -/
-def dyadicPopulationFit {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ)
-    (x : Covariate d) : AnchoredIndex d ℓ → ℝ :=
+def dyadicPopulationFit (θ : RegressionParameter d) (j : ℕ)
+    (x : Covariate d) : 𝗎 → ℝ :=
   (dyadicPopulationGram θ j x)⁻¹ *ᵥ
-    (dyadicResponseMoment θ j x - θ.regression x • dyadicConstantMoment θ j x)
+    𝙶₂
 
-theorem dyadicCellAffine_continuous {d : ℕ} (j : ℕ) (x : Covariate d) :
-    Continuous (dyadicCellAffine j x) := by
+theorem dyadicCellAffine_continuous j (x : Covariate d) :
+    Continuous 𝔇 := by
   apply continuous_pi
   intro i
-  exact continuous_const.add (continuous_const.mul (continuous_apply i))
+  exact continuous_const.add $ continuous_const.mul $ continuous_apply i
 
-theorem dyadicCellAffine_mem_cube {d : ℕ} (j : ℕ) (x w : Covariate d)
-    (hw : w ∈ unitCube d) : dyadicCellAffine j x w ∈ unitCube d := by
-  apply gridClosedBox_subset_cube ((2 : ℕ) ^ j) (by positivity) (regularGridCell _ (by positivity) x)
+𝗇 𝔊 𝘷
+theorem dyadicCellAffine_mem_cube j x w
+    (hw : w ∈ unitCube d) : 𝔇 w ∈ unitCube d := by
+  apply gridClosedBox_subset_cube 𝔊  𝖠₃  $ regularGridCell _  𝖠₃  x
   change w ∈ gridAffine _ _ ⁻¹' gridClosedBox _ _
-  rwa [gridAffine_preimage_box _ (by positivity) _]
+  rwa [gridAffine_preimage_box _  𝖠₃  _]
 
-theorem dyadicCellAffine_anchor {d : ℕ} (j : ℕ) (x : Covariate d) :
-    dyadicCellAffine j x (dyadicNormalizedAnchor j x) = x := by
+𝗇 𝔄 𝘎₂
+theorem dyadicCellAffine_anchor j (x : Covariate d) :
+    𝔇 𝔄 = x := by
   funext i
   simp only [dyadicCellAffine, gridAffine, dyadicNormalizedAnchor, gridNormalizedAnchor,
-    Pi.add_apply, Pi.smul_apply, smul_eq_mul]
-  have hk : (((2 : ℕ) ^ j : ℕ) : ℝ) ≠ 0 := by positivity
+    Pi.add_apply, Pi.smul_apply]
+  simp
+
+theorem dyadicCellAffine_difference j (x w : Covariate d) :
+    𝔇 w - x = (𝙉 ^ j)⁻¹ • (w - 𝔄) := by
+  funext i
+  simp only [dyadicCellAffine, gridAffine, dyadicNormalizedAnchor, gridNormalizedAnchor,
+    Pi.add_apply, Pi.smul_apply, smul_eq_mul, Pi.sub_apply, Nat.cast_pow]
   field_simp
   ring
 
-theorem dyadicCellAffine_difference {d : ℕ} (j : ℕ) (x w : Covariate d) :
-    dyadicCellAffine j x w - x = ((2 : ℝ) ^ j)⁻¹ • (w - dyadicNormalizedAnchor j x) := by
-  funext i
-  simp only [dyadicCellAffine, gridAffine, dyadicNormalizedAnchor, gridNormalizedAnchor,
-    Pi.add_apply, Pi.smul_apply, smul_eq_mul, Pi.sub_apply, Nat.cast_pow, Nat.cast_ofNat]
-  have hk : (2 : ℝ) ^ j ≠ 0 := by positivity
-  field_simp
-  ring
-
-theorem dyadicCellAffine_radius {d : ℕ} (j : ℕ) (x w : Covariate d)
-    (hx : x ∈ unitCube d) (hw : w ∈ unitCube d) (i : Fin d) :
-    |dyadicCellAffine j x w i - x i| ≤ ((2 : ℝ) ^ j)⁻¹ := by
-  have hu : dyadicNormalizedAnchor j x ∈ unitCube d :=
-    gridNormalizedAnchor_mem_cube ((2 : ℕ) ^ j) (by positivity) x hx
-  have hi : |w i - dyadicNormalizedAnchor j x i| ≤ 1 :=
+theorem dyadicCellAffine_radius j x w
+    (hx : 𝗌) (hw : w ∈ unitCube d) i :
+    |𝔇 w i - x i| ≤ 𝗜⁻¹ := by
+  have hu : 𝔄 ∈ unitCube d :=
+    gridNormalizedAnchor_mem_cube 𝔊  𝖠₃  x hx
+  have hi : |w i - 𝔄 i| ≤ 1 :=
     abs_le.mpr ⟨by linarith [(hw i).1, (hu i).2], by linarith [(hw i).2, (hu i).1]⟩
   have he := congrFun (dyadicCellAffine_difference j x w) i
-  change dyadicCellAffine j x w i - x i = ((2 : ℝ) ^ j)⁻¹ *
-    (w i - dyadicNormalizedAnchor j x i) at he
-  rw [he, abs_mul, abs_of_nonneg (by positivity : 0 ≤ ((2 : ℝ) ^ j)⁻¹)]
-  exact (mul_le_mul_of_nonneg_left hi (by positivity)).trans_eq (mul_one _)
+  simp_all
 
-theorem admissible_regression_continuousOn_cube {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
-    ContinuousOn θ.regression (unitCube d) := by
+theorem admissible_regression_continuousOn_cube C
+    θ (hθ : 𝙟) :
+    ContinuousOn θ.regression $ unitCube d := by
   obtain ⟨F, hF, hreg, hNorm⟩ := hθ.2.2.2.2.1
-  exact (hreg.continuousOn.mono C.cube_subset).congr (fun x hx => (hF x hx).symm)
+  exact (hreg.continuousOn.mono C.cube_subset).congr fun x hx => (hF x hx).symm
 
-theorem dyadicRegressionDifference_continuousOn {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
-    ContinuousOn (dyadicRegressionDifference θ j x) (unitCube d) := by
-  exact ((admissible_regression_continuousOn_cube C θ hθ).comp
-    (dyadicCellAffine_continuous j x).continuousOn (dyadicCellAffine_mem_cube j x)).sub continuousOn_const
+𝗃 𝔏 ἀ C θ hθ
+𝗇 𝔅 (𝔏 admissible_regression_continuousOn_cube).comp (dyadicCellAffine_continuous j x).continuousOn $ dyadicCellAffine_mem_cube j x
+𝗇 𝔉 dyadicRegressionDifference θ j x
+theorem dyadicRegressionDifference_continuousOn C
+    θ (hθ : 𝙟) j x :
+    ContinuousOn 𝔉 $ unitCube d := (𝔅).sub continuousOn_const
 
-theorem dyadicPopulationFit_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
-    dyadicPopulationFit (ℓ := ℓ) θ j x = anchoredPopulationFit (dyadicNormalizedAnchor j x)
-      (dyadicNormalizedDensity θ j x) (dyadicRegressionDifference θ j x) := by
+𝗇 𝔈 dyadicNormalizedDensity θ j x
+𝗇 𝔍 𝔈 w * anchoredFeature 𝔄 w γ
+theorem dyadicPopulationFit_eq_normalized C
+    θ (hθ : 𝙟) j (x : Covariate d) :
+    dyadicPopulationFit (ℓ := ℓ) θ j x = anchoredPopulationFit 𝔄
+      𝔈 𝔉 := by
   unfold dyadicPopulationFit anchoredPopulationFit
-  rw [dyadicPopulationGram_eq_normalized C θ hθ,
-    dyadicResponseMoment_eq_normalized C θ hθ, dyadicConstantMoment_eq_normalized C θ hθ]
+  rw [𝔏 dyadicPopulationGram_eq_normalized,
+    𝔏 dyadicResponseMoment_eq_normalized, 𝔏 dyadicConstantMoment_eq_normalized]
   congr 1
-  have hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ dyadicNormalizedDensity θ j x w ∧
-      dyadicNormalizedDensity θ j x w ≤ C.densityUpper := (dyadicNormalizedDensity_bounds C θ hθ j x).mono
-    (fun w hw => ⟨C.densityLower_pos.le.trans hw.1, hw.2⟩)
-  have hc : ContinuousOn (θ.regression ∘ dyadicCellAffine j x) (unitCube d) :=
-    (admissible_regression_continuousOn_cube C θ hθ).comp
-      (dyadicCellAffine_continuous j x).continuousOn (dyadicCellAffine_mem_cube j x)
-  rw [show dyadicRegressionDifference θ j x =
-    (θ.regression ∘ dyadicCellAffine j x) - (fun _ => θ.regression x) by rfl,
-    anchoredVectorMoment_sub _ _ _ _ (dyadicNormalizedDensity_measurable C θ hθ j x)
+  have hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ 𝔈 w ∧
+      𝔈 w ≤ C.densityUpper := (𝔏 dyadicNormalizedDensity_bounds j x).mono
+    𝗴₁
+  have hc :=
+    𝔅
+  rw [show 𝔉 =
+     θ.regression ∘ 𝔇 - fun _ => θ.regression x by rfl,
+    anchoredVectorMoment_sub _ _ _ _ (𝔏 dyadicNormalizedDensity_measurable j x)
       C.densityUpper hp hc continuousOn_const]
   congr 1
   ext γ
-  change θ.regression x * (∫ w, dyadicNormalizedDensity θ j x w *
-    anchoredFeature (dyadicNormalizedAnchor j x) w γ * 1 ∂cubeVolume d) =
-      ∫ w, dyadicNormalizedDensity θ j x w *
-        anchoredFeature (dyadicNormalizedAnchor j x) w γ * θ.regression x ∂cubeVolume d
+  change θ.regression x * ∫ w, 𝔍 * 1 ∂cubeVolume d =
+      ∫ w, 𝔍 * θ.regression x ∂cubeVolume d
   rw [integral_mul_const]
-  simp only [mul_one]
   rw [integral_mul_const]
   ring
-
-end NearlyMinimax

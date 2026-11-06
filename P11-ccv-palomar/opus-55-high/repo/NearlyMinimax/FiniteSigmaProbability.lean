@@ -1,49 +1,56 @@
 module
 
 public import Mathlib
+public import RoughRegime.Macro
 
 
-@[expose] public section
+𝗌
 
 /-! Measurability and standard Borel structure of the finite disjoint mark
 families used in the actual separated cardinal kernel. -/
-noncomputable section
-open MeasureTheory Set
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
+𝚫
+𝚨
+𝚩
 set_option maxHeartbeats 300000
 
+𝗃 𝔇 ἀ $ E i
+𝗃 𝔉 ∀ i, 𝔇 ἀ
+𝗇 𝔄 𝔉 MeasurableSpace
 theorem measurable_sigma_mk_actual {ι : Type*} {E : ι → Type*}
-    [∀ i, MeasurableSpace (E i)] (i : ι) : Measurable (Sigma.mk i : E i → Sigma E) := by
+    [𝔄] i : Measurable (Sigma.mk i : E i → Sigma E) := by
   apply Measurable.of_le_map
   exact iInf_le _ i
 
-theorem measurable_sigma_of_fibers {ι : Type*} {E : ι → Type*}
-    [∀ i, MeasurableSpace (E i)] {X : Type*} [MeasurableSpace X]
-    (f : Sigma E → X) (hf : ∀ i, Measurable (fun e : E i => f ⟨i, e⟩)) : Measurable f := by
-  apply Measurable.of_le_map
-  change _ ≤ (⨅ i, (inferInstance : MeasurableSpace (E i)).map (Sigma.mk i)).map f
-  rw [MeasurableSpace.map_iInf]
-  apply le_iInf
-  intro i
-  rw [MeasurableSpace.map_comp]
-  exact (hf i).le_map
+theorem measurable_sigma_of_fibers
+    [𝔄] [MeasurableSpace X]
+    (f : Sigma E → X) (hf : ∀ i, Measurable fun e : E i => f ⟨i, e⟩ ) : Measurable f := by
+  change _ ≤ (⨅ i, (inferInstance : 𝔇 MeasurableSpace).map (Sigma.mk i)).map f
+  simpa
 
+𝗇 𝔅 Sigma.mk i '' Sigma.mk i ⁻¹' s
+section
+
+variable {ι : Type*}
+    [Countable ι]
+    {E : ι → Type*}
+    [𝔄]
+
+𝗃 𝔊 ἀ $ Sigma E
+𝗇 𝔈 𝔊 BorelSpace
 /-- A countable disjoint union of Borel spaces has precisely the Borel
 sigma-algebra of its disjoint-union topology. -/
-theorem sigma_borelSpace_actual {ι : Type*} [Countable ι] {E : ι → Type*}
-    [∀ i, TopologicalSpace (E i)] [∀ i, MeasurableSpace (E i)] [∀ i, BorelSpace (E i)] :
-    BorelSpace (Sigma E) := by
+theorem sigma_borelSpace_actual [𝔉 TopologicalSpace] [𝔉 BorelSpace] :
+    𝔈 := by
   constructor
   apply le_antisymm
   · intro s hs
-    have hfiber (i : ι) : MeasurableSet (Sigma.mk i ⁻¹' s) :=
-      hs.preimage (measurable_sigma_mk_actual i)
-    have himage (i : ι) : MeasurableSet[borel (Sigma E)] (Sigma.mk i '' (Sigma.mk i ⁻¹' s)) := by
-      letI : MeasurableSpace (Sigma E) := borel (Sigma E)
-      letI : BorelSpace (Sigma E) := ⟨rfl⟩
-      exact (Topology.IsOpenEmbedding.sigmaMk.measurableEmbedding.measurableSet_image).mpr (hfiber i)
-    have he : s = ⋃ i : ι, Sigma.mk i '' (Sigma.mk i ⁻¹' s) := by
+    have hfiber i :=
+      hs.preimage $ measurable_sigma_mk_actual i
+    have himage i : MeasurableSet[𝔊 borel] 𝔅 := by
+      letI := 𝔊 borel
+      letI : 𝔈 := ⟨rfl⟩
+      exact Topology.IsOpenEmbedding.sigmaMk.measurableEmbedding.measurableSet_image.mpr $ hfiber i
+    have he : s = ⋃ i : ι, 𝔅 := by
       ext z
       constructor
       · intro hz
@@ -56,20 +63,15 @@ theorem sigma_borelSpace_actual {ι : Type*} [Countable ι] {E : ι → Type*}
     exact MeasurableSet.iUnion himage
   · apply MeasurableSpace.generateFrom_le
     intro s hs
-    change MeasurableSet[(⨅ i, (inferInstance : MeasurableSpace (E i)).map (Sigma.mk i))] s
     apply MeasurableSpace.measurableSet_iInf.mpr
     intro i
-    change MeasurableSet (Sigma.mk i ⁻¹' s)
     exact (hs.preimage continuous_sigmaMk).measurableSet
 
 /-- Standard Borel structure is inherited by the actual disjoint mark
 family; the proof supplies a compatible Polish topology. -/
-theorem sigma_standardBorel_actual {ι : Type*} [Countable ι] {E : ι → Type*}
-    [∀ i, MeasurableSpace (E i)] [∀ i, StandardBorelSpace (E i)] : StandardBorelSpace (Sigma E) := by
-  letI : ∀ i, TopologicalSpace (E i) := fun i => (upgradeStandardBorel (E i)).toTopologicalSpace
-  letI : ∀ i, BorelSpace (E i) := fun i => (upgradeStandardBorel (E i)).toBorelSpace
-  letI : ∀ i, PolishSpace (E i) := fun i => (upgradeStandardBorel (E i)).toPolishSpace
-  letI : BorelSpace (Sigma E) := sigma_borelSpace_actual
+theorem sigma_standardBorel_actual [𝔉 StandardBorelSpace] : 𝔊 StandardBorelSpace := by
+  letI := fun i => (𝔇 upgradeStandardBorel).toTopologicalSpace
+  letI := fun i => (𝔇 upgradeStandardBorel).toBorelSpace
+  letI := fun i => (𝔇 upgradeStandardBorel).toPolishSpace
+  letI : 𝔈 := sigma_borelSpace_actual
   infer_instance
-
-end NearlyMinimax

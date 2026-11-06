@@ -2,113 +2,128 @@ module
 
 public import NearlyMinimax.CardinalProductDesign
 public import NearlyMinimax.ExponentialSpatialKernels
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Exact finite-product marginalization and subset kernel lifting on Q^k. -/
-noncomputable section
-open MeasureTheory Set
-open scoped ENNReal BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
+𝚫
+𝛉
+𝚨
+𝚩
 
-theorem pi_finset_subtype_instance_eq {I E : Type*} [Fintype I] [DecidableEq I]
+𝗃 𝔚 fun _ => ἀ
+𝗇 𝔄 𝔚 μ
+𝗇 𝔇 fun i => i ∈ s
+𝗇 𝔈 𝔚 E
+theorem pi_finset_subtype_instance_eq [Fintype I] [DecidableEq I]
     [MeasurableSpace E] (μ : Measure E) (s : Finset I) :
-    (@Measure.pi s (fun _ => E) (Subtype.fintype (fun i => i ∈ s))
-      (fun _ => inferInstance) (fun _ => μ)) = Measure.pi (fun _ : s => μ) := by
+     @Measure.pi s 𝔈 (Subtype.fintype 𝔇)
+      𝔚 inferInstance 𝔄 = Measure.pi 𝔄 := by
   congr 1
-  exact Subsingleton.elim _ _
+  exact Subsingleton.elim ..
 
-theorem finite_pi_subset_integral {I E : Type*} [Fintype I] [DecidableEq I]
-    [MeasurableSpace E] (μ : Measure E) [IsFiniteMeasure μ]
-    (s : Finset I) (f : (s → E) → ℝ) :
-    (∫ U : I → E, f (fun j : s => U j.val) ∂Measure.pi (fun _ : I => μ)) =
-      μ.real univ ^ (Fintype.card I - s.card) * ∫ V, f V ∂Measure.pi (fun _ : s => μ) := by
-  let e := MeasurableEquiv.piEquivPiSubtypeProd (fun _ : I => E) (fun i => i ∈ s)
-  have hp := measurePreserving_piEquivPiSubtypeProd (fun _ : I => μ) (fun i => i ∈ s)
+𝗇 𝔅 f fun j => U j.val
+𝗃 𝔛 ἀ → E
+𝗇 𝔏 𝔛 s
+𝗇 𝔑 {i : I // i ∉ s}
+𝗇 𝔓 ∫ U : 𝔛 I, 𝔅 ∂Measure.pi 𝔄
+𝗇 𝔖 ∫ V, f V ∂Measure.pi 𝔄
+section
+
+variable [Fintype I]
+    [DecidableEq I]
+    [MeasurableSpace E]
+    (μ : Measure E)
+    [IsFiniteMeasure μ]
+    (s : Finset I)
+    (f : 𝔏 → ℝ)
+
+include μ s
+
+𝗇 𝔔 μ.real univ ^ (Fintype.card I - s.card)
+theorem finite_pi_subset_integral :
+    𝔓 =
+      𝔔 * 𝔖 := by
+  let e := MeasurableEquiv.piEquivPiSubtypeProd 𝔈 𝔇
+  have hp := measurePreserving_piEquivPiSubtypeProd 𝔄 𝔇
   rw [pi_finset_subtype_instance_eq μ s] at hp
-  have he : (∫ U : I → E, f (fun j : s => U j.val) ∂Measure.pi (fun _ : I => μ)) =
-      ∫ z : (s → E) × ({i : I // i ∉ s} → E), f z.1
-        ∂(Measure.pi (fun _ : s => μ)).prod (Measure.pi (fun _ : {i : I // i ∉ s} => μ)) := by
-    have h := hp.symm.integral_comp' (fun U : I → E => f (fun j : s => U j.val))
-    have hf (z : (s → E) × ({i : I // i ∉ s} → E)) :
-        (fun j : s => e.symm z j.val) = z.1 := by
-      funext j
-      change (if h : j.val ∈ s then z.1 ⟨j.val, h⟩ else z.2 ⟨j.val, h⟩) = z.1 j
-      simp [j.property]
-    change (∫ z : (s → E) × ({i : I // i ∉ s} → E), f (fun j : s => e.symm z j.val)
-      ∂(Measure.pi (fun _ : s => μ)).prod (Measure.pi (fun _ : {i : I // i ∉ s} => μ))) = _ at h
-    simp_rw [hf] at h
-    exact h.symm
+  have he : 𝔓 =
+      ∫ z : 𝔏 × 𝔛 𝔑, f z.1
+        ∂(Measure.pi 𝔄).prod (Measure.pi 𝔄) := by
+    have h := hp.symm.integral_comp' fun U => 𝔅
+    simp_all
   rw [he, integral_fun_fst]
-  have hc : (Measure.pi (fun _ : {i : I // i ∉ s} => μ)).real univ =
-      μ.real univ ^ (Fintype.card I - s.card) := by
-    simp only [measureReal_def, Measure.pi_univ, Finset.prod_const, Finset.card_univ,
-      ENNReal.toReal_pow]
-    rw [Fintype.card_subtype_compl]
+  have hc : (Measure.pi fun _ : 𝔑 => μ ).real univ =
+      𝔔 := by
+    simp only [measureReal_def, Measure.pi_univ]
     simp
-  rw [hc]
-  rfl
+  simp_all
 
-theorem finite_pi_subset_integrable {I E : Type*} [Fintype I] [DecidableEq I]
-    [MeasurableSpace E] (μ : Measure E) [IsFiniteMeasure μ]
-    (s : Finset I) (f : (s → E) → ℝ) (hf : Integrable f (Measure.pi (fun _ : s => μ))) :
-    Integrable (fun U : I → E => f (fun j : s => U j.val)) (Measure.pi (fun _ : I => μ)) := by
-  have hp := measurePreserving_piEquivPiSubtypeProd (fun _ : I => μ) (fun i => i ∈ s)
+theorem finite_pi_subset_integrable (hf : Integrable f $ Measure.pi 𝔄 ) :
+    Integrable (fun U : 𝔛 I => 𝔅) $ Measure.pi 𝔄 := by
+  have hp := measurePreserving_piEquivPiSubtypeProd 𝔄 𝔇
   rw [pi_finset_subtype_instance_eq μ s] at hp
-  have hi : Integrable (fun z : (s → E) × ({i : I // i ∉ s} → E) => f z.1)
-      ((Measure.pi (fun _ : s => μ)).prod (Measure.pi (fun _ : {i : I // i ∉ s} => μ))) :=
-    hf.comp_fst _
-  exact hp.integrable_comp_of_integrable hi
+  exact hp.integrable_comp_of_integrable $ hf.comp_fst _
 
-theorem spatial_subset_square_integral {d k : ℕ} (s : Finset (Fin k))
+end
+
+𝗇 𝔉 𝘓₂
+𝗇 𝔊 Fin k → Covariate d
+𝗇 𝔘 k - s.card
+𝗇 𝔍 2 ^ (d * 𝔘)
+𝗇 𝔎 𝖪
+𝗇 𝔙 f V ^ 2
+𝗇 𝔐 fun V => 𝔙
+theorem spatial_subset_square_integral (s : 𝔉)
     (f : (s → Covariate d) → ℝ) :
-    (∫ U : Fin k → Covariate d, f (fun j : s => U j.val) ^ 2 ∂fullSpatialPatchDesign d k) =
-      (2 : ℝ) ^ (d * (k - s.card)) *
-        ∫ V, f V ^ 2 ∂Measure.pi (fun _ : s => volume.restrict (spatialPatchBox d)) := by
+     ∫ U : 𝔊, 𝔅 ^ 2 ∂fullSpatialPatchDesign d k =
+      𝔍 *
+        ∫ V, 𝔙 ∂Measure.pi 𝔚 𝔎 := by
   rw [fullSpatialPatchDesign, finite_pi_subset_integral
-    (volume.restrict (spatialPatchBox d)) s (fun V => f V ^ 2)]
+    𝔎 s 𝔐]
   simp only [measureReal_def, Measure.restrict_apply_univ, Fintype.card_fin]
-  change (volume.real (spatialPatchBox d)) ^ (k - s.card) * _ = _
+  change 𝗮₁ ^ 𝔘 * _ = _
   rw [spatialPatchBox_real_volume, ← pow_mul]
 
-def spatialSubsetConfiguration {d k : ℕ} (s : Finset (Fin k))
-    (U : Fin k → Covariate d) : Fin s.card → Covariate d :=
-  fun j => U ((Fintype.equivFin s).symm (Fin.cast (Fintype.card_coe s).symm j)).val
+𝗇 𝔗 Fin s.card → Covariate d
+def spatialSubsetConfiguration (s : 𝔉)
+    (U : 𝔊) : 𝔗 :=
+  fun j => U ((Fintype.equivFin s).symm $ Fin.cast (Fintype.card_coe s).symm j ).val
 
-theorem spatialSubsetConfiguration_measurable {d k : ℕ} (s : Finset (Fin k)) :
-    Measurable (spatialSubsetConfiguration (d := d) s) := by
+theorem spatialSubsetConfiguration_measurable (s : 𝔉) :
+    Measurable $ spatialSubsetConfiguration (d := d) s := by
   apply Measurable.of_eval
   intro j
   exact measurable_pi_apply _
 
-theorem finite_pi_reindex_integral {I J E : Type*} [Fintype I] [Fintype J]
-    [MeasurableSpace E] (μ : Measure E) [SigmaFinite μ] (e : I ≃ J) (f : (J → E) → ℝ) :
-    (∫ U : I → E, f (fun j => U (e.symm j)) ∂Measure.pi (fun _ : I => μ)) =
-      ∫ V, f V ∂Measure.pi (fun _ : J => μ) := by
-  have h := (measurePreserving_piCongrLeft (fun _ : J => μ) e).integral_comp' f
-  have he (U : I → E) : (Equiv.piCongrLeft (fun _ : J => E) e) U =
-      fun j => U (e.symm j) := by
+𝗃 𝔜 fun j => ἀ $ e.symm j
+𝗇 𝔒 𝔜 U
+theorem finite_pi_reindex_integral [Fintype I] [Fintype J]
+    [MeasurableSpace E] (μ : Measure E) [SigmaFinite μ] (e : I ≃ J) (f : 𝔛 J → ℝ) :
+     ∫ U : 𝔛 I, f 𝔒 ∂Measure.pi 𝔄 =
+      𝔖 := by
+  have h := (measurePreserving_piCongrLeft 𝔄 e).integral_comp' f
+  have he U : (Equiv.piCongrLeft 𝔈 e) U =
+      𝔒 := by
     funext j
     simp only [Equiv.piCongrLeft_apply_eq_cast, cast_eq]
   simp only [MeasurableEquiv.coe_piCongrLeft] at h
-  simp_rw [he] at h
-  exact h
+  simp_all
 
-theorem spatial_subset_square_integral_enumerated {d k : ℕ} (s : Finset (Fin k))
-    (f : (Fin s.card → Covariate d) → ℝ) :
-    (∫ U : Fin k → Covariate d, f (spatialSubsetConfiguration s U) ^ 2
-      ∂fullSpatialPatchDesign d k) = (2 : ℝ) ^ (d * (k - s.card)) *
-        ∫ V, f V ^ 2 ∂fullSpatialPatchDesign d s.card := by
-  let e : s ≃ Fin s.card := (Fintype.equivFin s).trans (finCongr (Fintype.card_coe s))
-  have he (U : Fin k → Covariate d) : spatialSubsetConfiguration s U =
-      fun j => (fun l : s => U l.val) (e.symm j) := by
+theorem spatial_subset_square_integral_enumerated (s : 𝔉)
+    (f : 𝔗 → ℝ) :
+     ∫ U : 𝔊, f (spatialSubsetConfiguration s U) ^ 2
+      ∂fullSpatialPatchDesign d k = 𝔍 *
+        ∫ V, 𝔙 ∂fullSpatialPatchDesign d s.card := by
+  let e := (Fintype.equivFin s).trans $ finCongr $ Fintype.card_coe s
+  have he (U : 𝔊) : spatialSubsetConfiguration s U =
+      fun j => (fun l => U l.val) $ e.symm j := by
     funext j
     rfl
   simp_rw [he]
-  rw [spatial_subset_square_integral s (fun V => f (fun j => V (e.symm j)))]
-  rw [finite_pi_reindex_integral (volume.restrict (spatialPatchBox d)) e (fun V => f V ^ 2)]
+  rw [spatial_subset_square_integral s fun V => f 𝔜 V ]
+  rw [finite_pi_reindex_integral 𝔎 e 𝔐]
   rfl
-
-end NearlyMinimax

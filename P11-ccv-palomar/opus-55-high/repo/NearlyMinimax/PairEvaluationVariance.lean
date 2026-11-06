@@ -2,145 +2,143 @@ module
 
 public import NearlyMinimax.PairPilotAssumptions
 public import NearlyMinimax.FieldPairVariance
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Full two-stage variance of the paper's actual score and denominator. -/
-noncomputable section
-open MeasureTheory ProbabilityTheory
+𝚵
 open scoped ENNReal RealInnerProductSpace
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 200000
-set_option maxHeartbeats 800000
+𝚨
+𝚩
+𝛃
+𝚱
 
-def pairEvaluationCoefficient {d : ℕ} (C : ModelConstants d) (m k : ℕ) : ℝ :=
-  C.densityUpper / (m : ℝ) + (k : ℝ) ^ d / (2 * (m : ℝ) * (m - 1 : ℕ))
+𝗇 𝔏 𝙦 ^ d
+def pairEvaluationCoefficient (C : ModelConstants d) (m k : ℕ) : ℝ :=
+  C.densityUpper / 𝘏₂ + 𝔏 / (2 * 𝘏₂ * (m - 1 : ℕ))
 
-def pairPilotVarianceBase {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
-    (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) (μ : Measure Ω)
-    (bar : Covariate d × Covariate d → PairVector)
-    (η : Ω → Covariate d × Covariate d → PairVector) : ℝ :=
-  2 * (∫ w, ‖bar w‖ ^ 2 ∂regularPairDesignMeasure θ k hk) +
-    ∫ z : Ω × (Covariate d × Covariate d), ‖η z.1 z.2‖ ^ 2
-      ∂μ.prod (regularPairDesignMeasure θ k hk)
+𝗇 𝔟 𝙩
+𝗇 𝔈 𝔟 → PairVector
+𝗃 𝔗 ἀ θ k hk
+def pairPilotVarianceBase [MeasurableSpace Ω]
+    (θ : RegressionParameter d) (k : ℕ) (hk : 𝖰) (μ : Measure Ω)
+    (bar : 𝔈)
+    (η : Ω → 𝔈) : ℝ :=
+  2 * ∫ w, ‖bar w‖ ^ 2 ∂𝔗 regularPairDesignMeasure +
+    ∫ z : Ω × 𝔟, ‖𝘭₂‖ ^ 2
+      ∂μ.prod 𝔗 regularPairDesignMeasure
 
-theorem pairPilotVarianceBase_nonneg {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
-    (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) (μ : Measure Ω)
-    (bar : Covariate d × Covariate d → PairVector)
-    (η : Ω → Covariate d × Covariate d → PairVector) :
-    0 ≤ pairPilotVarianceBase θ k hk μ bar η := by
+𝗃 𝔡 𝔗 ἀ μ bar η
+𝗇 𝔅 𝔡 pairPilotVarianceBase
+theorem pairPilotVarianceBase_nonneg [MeasurableSpace Ω]
+    (θ : RegressionParameter d) k hk (μ : Measure Ω)
+    bar
+    η :
+    0 ≤ 𝔅 := by
   unfold pairPilotVarianceBase
   positivity
 
 section
 variable {Ω Ξ : Type*} [MeasurableSpace Ω] [MeasurableSpace Ξ]
-variable (μ : Measure Ω) (ν : Measure Ξ) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
-variable {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
-variable (k : ℕ) (hk : 0 < k)
-variable (bar : Covariate d × Covariate d → PairVector)
-variable (η : Ω → Covariate d × Covariate d → PairVector) (Cp W lam : ℝ)
-variable (hp : PairPilotAssumptions θ k hk μ bar η Cp W lam)
-variable {m : ℕ} (hm : 2 ≤ m) (X : Fin m → Ξ → Observation d)
-variable (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν (observationLaw θ))
+𝛟
+𝛗
+𝛘
+variable (bar : 𝔈)
+variable (η : Ω → 𝔈) (Cp W lam : ℝ)
+variable (hp : 𝔡 PairPilotAssumptions Cp W lam)
+𝛠
+variable (hind : iIndepFun X ν) (hX : 𝗯₁)
 include hθ hp hm hind hX
 
+𝗇 𝔄 (2 * Cp ^ 2 + 2 * Cp * W) ^ 2
+𝗇 𝔇 𝗳₂ ^ 2
+𝗃 𝔖 ἀ μ C θ hθ k hk bar η Cp W lam hp
+𝗇 𝔉 𝔖 pairPilotAssumptions_meanConditions
+𝗇 𝔊 pairEvaluationCoefficient C m k
+𝗇 𝔞 𝖳₁
+𝗇 𝔍 𝔞 𝖶
+𝗇 𝔎 pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp
+𝗇 𝔐 𝚎 × 𝗰
+𝗇 𝔑 𝗋
+𝗇 𝔒 3 / 4 * lam * 𝔇 * 𝔅
+𝗇 𝔓 𝔗 pairPilotScoreKernel bar η
+𝗃 𝔘 ἀ C θ hθ k hk
+𝗃 𝔙 PairUStatistic.fieldPairAverage_centered_sq_le (G := ἀ) hm X hind hX (regularObservationLabel k hk) (regularObservationLabel_measurable k hk) hmeas
+𝗇 𝔚 𝔄 * responseOperatorEnergyBound C * C.densityUpper
+𝗇 𝔛 div_nonneg hpplus hkp.le
+𝗃 𝔠 𝔑 * ∫ z : 𝔐, ἀ z.1 z.2 ^ 2 ∂𝔍
+𝗃 𝔢 ∫ p, 𝔗 ἀ bar η p ∂μ.prod μ
+𝗃 𝔣 2 * 𝔊 * _ + 2 * ἀ ≤ _
 theorem pairPilotScoreEstimate_centered_sq_le :
-    (∫ z, (PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d)
-      (pairPilotScoreKernel θ k hk bar η) X z -
-        ∫ p, pairPilotScoreMean θ k hk bar η p ∂μ.prod μ) ^ 2 ∂(μ.prod μ).prod ν) ≤
-      2 * pairEvaluationCoefficient C m k *
-        ((2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * responseOperatorEnergyBound C * C.densityUpper) +
-      (3 / 2) * lam * (2 * C.holderBound ^ 2 + 1) ^ 2 *
-        pairPilotVarianceBase θ k hk μ bar η := by
-  let := observationLaw_isProbability C θ hθ
-  have hM := pairPilotAssumptions_meanConditions μ C θ hθ k hk bar η Cp W lam hp
-  obtain ⟨hmean, hvar⟩ := pairPilotScoreMean_variance_le C θ hθ k hk μ bar η Cp lam hM
-  have hmeas := rawModelPairScore_measurable θ k hk
-    (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
-  have hL2 := pairPilotScoreKernel_memLp μ C θ hθ k hk bar η Cp W lam hp
-  have hkp : 0 < (k : ℝ) ^ d := pow_pos (by exact_mod_cast hk) d
+     ∫ z, (PairUStatistic.fieldPairAverage m 𝔑
+      𝔓 X z -
+        𝔢 pairPilotScoreMean) ^ 2 ∂𝔞 ν ≤
+      2 * 𝔊 *
+        𝔚 +
+      𝗞 * lam * 𝔇 *
+        𝔅 := by
+  let := 𝙱
+  obtain ⟨hmean, hvar⟩ := 𝔘 pairPilotScoreMean_variance_le μ bar η Cp lam 𝔉
+  have hmeas := 𝔗 rawModelPairScore_measurable
+    𝔎
+  have hkp : 0 < 𝔏 := pow_pos (by exact_mod_cast hk) d
   have hpplus : 0 ≤ C.densityUpper := by linarith [C.one_lt_densityUpper]
-  have hd0 : 0 ≤ (3 / 4) * lam * (2 * C.holderBound ^ 2 + 1) ^ 2 *
-      pairPilotVarianceBase θ k hk μ bar η := by
-    have hb := pairPilotVarianceBase_nonneg θ k hk μ bar η
+  have hd0 : 0 ≤ 𝔒 := by
+    have hb := 𝔡 pairPilotVarianceBase_nonneg
     have hl := hp.lamNonnegative
     positivity
-  have hr := PairUStatistic.fieldPairAverage_centered_sq_le
-    (π := μ.prod μ) (ν := ν) (μ := observationLaw θ)
-    (G := pairPilotScoreKernel θ k hk bar η)
-    (cap := C.densityUpper / (k : ℝ) ^ d) (bound := C.densityUpper) hm X hind hX
-    (regularObservationLabel (d := d) k hk) (regularObservationLabel_measurable (d := d) k hk)
-    hmeas hL2
-    (fun p x y hxy => by simp [rawModelPairScore, pairPilotScoreKernel, pairScoreFieldKernel,
-      regularObservationLabel, pairCovariates, sameLabelKernel] at hxy ⊢; exact hxy.elim)
-    hkp (div_nonneg hpplus hkp.le)
-    (fun i => by
-      rw [regularObservationLabel_mass C θ hθ k hk i]
-      exact regularGridProbability_cap C θ hθ k hk i)
+  have hr := 𝔙 𝔓 𝔖 pairPilotScoreKernel_memLp
+     fun p x y hxy => by simp [pairPilotScoreKernel, pairScoreFieldKernel,
+      sameLabelKernel] at hxy ⊢; exact hxy.elim
+    hkp 𝔛
+     fun i => by
+      rw [𝔘 regularObservationLabel_mass i]
+      exact 𝔘 regularGridProbability_cap i
     (by rw [mul_div_cancel₀ _ hkp.ne']) hd0 hmean hvar
-  have he := pairPilotScoreKernel_energy_le μ C θ hθ k hk bar η Cp W lam hp
-  have hE : (k : ℝ) ^ d *
-      (∫ z : (Ω × Ω) × (Observation d × Observation d),
-        pairPilotScoreKernel θ k hk bar η z.1 z.2 ^ 2
-          ∂(μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) ≤
-      (2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * responseOperatorEnergyBound C * C.densityUpper := by
-    apply (mul_le_mul_of_nonneg_left he hkp.le).trans_eq
+  have hE : 𝔠 𝔓 ≤
+      𝔚 := by
+    apply (mul_le_mul_of_nonneg_left 𝔖 pairPilotScoreKernel_energy_le hkp.le).trans_eq
     field_simp
-  have heval : 0 ≤ pairEvaluationCoefficient C m k := by unfold pairEvaluationCoefficient; positivity
+  have heval : 0 ≤ 𝔊 := by unfold pairEvaluationCoefficient; positivity
   apply hr.trans
-  change 2 * pairEvaluationCoefficient C m k * _ + 2 *
-    ((3 / 4) * lam * (2 * C.holderBound ^ 2 + 1) ^ 2 * pairPilotVarianceBase θ k hk μ bar η) ≤ _
-  have h := mul_le_mul_of_nonneg_left hE (by positivity : 0 ≤ 2 * pairEvaluationCoefficient C m k)
+  change 𝔣 𝔒
   nlinarith
 
+𝗇 𝔔 𝖪₂
+𝗇 𝔜 3 * lam * 𝔅
 theorem pairPilotNoiseEstimate_centered_sq_le :
-    (∫ z, (PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d)
-      (pairPilotNoiseKernel k hk bar η) X z -
-        ∫ p, pairPilotNoiseMean θ k hk bar η p ∂μ.prod μ) ^ 2 ∂(μ.prod μ).prod ν) ≤
-      8 * pairEvaluationCoefficient C m k *
-        ((2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * C.densityUpper) +
-      6 * lam * pairPilotVarianceBase θ k hk μ bar η := by
-  let := observationLaw_isProbability C θ hθ
-  have hM := pairPilotAssumptions_meanConditions μ C θ hθ k hk bar η Cp W lam hp
-  obtain ⟨hmean, hvar⟩ := pairPilotNoiseMean_variance_le C θ hθ k hk μ bar η Cp lam hM
+     ∫ z, (PairUStatistic.fieldPairAverage m 𝔑
+      𝔔 X z -
+        𝔢 pairPilotNoiseMean) ^ 2 ∂𝔞 ν ≤
+      8 * 𝔊 *
+        (𝔄 * C.densityUpper) +
+      6 * lam * 𝔅 := by
+  let := 𝙱
+  obtain ⟨hmean, hvar⟩ := 𝔘 pairPilotNoiseMean_variance_le μ bar η Cp lam 𝔉
   have hmeas := rawModelPairNoise_measurable k hk
-    (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
-  have hL2 := pairPilotNoiseKernel_memLp μ C θ hθ k hk bar η Cp W lam hp
-  have hkp : 0 < (k : ℝ) ^ d := pow_pos (by exact_mod_cast hk) d
+    𝔎
+  have hkp : 0 < 𝔏 := pow_pos (by exact_mod_cast hk) d
   have hpplus : 0 ≤ C.densityUpper := by linarith [C.one_lt_densityUpper]
-  have hd0 : 0 ≤ 3 * lam * pairPilotVarianceBase θ k hk μ bar η := by
-    have hb := pairPilotVarianceBase_nonneg θ k hk μ bar η
+  have hd0 : 0 ≤ 𝔜 := by
+    have hb := 𝔡 pairPilotVarianceBase_nonneg
     have hl := hp.lamNonnegative
     positivity
-  have hr := PairUStatistic.fieldPairAverage_centered_sq_le
-    (π := μ.prod μ) (ν := ν) (μ := observationLaw θ)
-    (G := pairPilotNoiseKernel k hk bar η)
-    (cap := C.densityUpper / (k : ℝ) ^ d) (bound := C.densityUpper) hm X hind hX
-    (regularObservationLabel (d := d) k hk) (regularObservationLabel_measurable (d := d) k hk)
-    hmeas hL2
-    (fun p x y hxy => by simp [rawModelPairNoise, pairPilotNoiseKernel, pairNoiseFieldKernel,
-      regularObservationLabel, pairCovariates, sameLabelKernel] at hxy ⊢; exact hxy.elim)
-    hkp (div_nonneg hpplus hkp.le)
-    (fun i => by
-      rw [regularObservationLabel_mass C θ hθ k hk i]
-      exact regularGridProbability_cap C θ hθ k hk i)
+  have hr := 𝔙 𝔔 𝔖 pairPilotNoiseKernel_memLp
+     fun p x y hxy => by simp [pairPilotNoiseKernel, pairNoiseFieldKernel,
+      sameLabelKernel] at hxy ⊢; exact hxy.elim
+    hkp 𝔛
+     fun i => by
+      rw [𝔘 regularObservationLabel_mass i]
+      exact 𝔘 regularGridProbability_cap i
     (by rw [mul_div_cancel₀ _ hkp.ne']) hd0 hmean hvar
-  have he := pairPilotNoiseKernel_energy_le μ C θ hθ k hk bar η Cp W lam hp
-  have hE : (k : ℝ) ^ d *
-      (∫ z : (Ω × Ω) × (Observation d × Observation d),
-        pairPilotNoiseKernel k hk bar η z.1 z.2 ^ 2
-          ∂(μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) ≤
-      4 * (2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * C.densityUpper := by
-    apply (mul_le_mul_of_nonneg_left he hkp.le).trans_eq
+  have hE : 𝔠 𝔔 ≤
+      4 * 𝔄 * C.densityUpper := by
+    apply (mul_le_mul_of_nonneg_left 𝔖 pairPilotNoiseKernel_energy_le hkp.le).trans_eq
     field_simp
-  have heval : 0 ≤ pairEvaluationCoefficient C m k := by unfold pairEvaluationCoefficient; positivity
+  have heval : 0 ≤ 𝔊 := by unfold pairEvaluationCoefficient; positivity
   apply hr.trans
-  change 2 * pairEvaluationCoefficient C m k * _ + 2 *
-    (3 * lam * pairPilotVarianceBase θ k hk μ bar η) ≤ _
-  have h := mul_le_mul_of_nonneg_left hE (by positivity : 0 ≤ 2 * pairEvaluationCoefficient C m k)
+  change 𝔣 𝔜
   nlinarith
-
-end
-end NearlyMinimax

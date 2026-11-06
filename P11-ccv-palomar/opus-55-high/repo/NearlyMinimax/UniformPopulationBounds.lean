@@ -1,493 +1,542 @@
 module
 
 public import NearlyMinimax.PopulationPairBounds
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+public section
 
 /-! Uniform extension-domain constants for the actual population upper proof.
 Numerical witnesses are chosen before the open domain; no extension theorem
 or fixed-domain admissibility transfer is assumed. -/
-noncomputable section
-open MeasureTheory Set Matrix
-open scoped BigOperators RealInnerProductSpace Matrix.Norms.L2Operator
-namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
+𝛍
+𝚨
 
-theorem uniform_domain_admissible_dyadicPopulationFit_taylor_coefficients {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ D : ℝ, 0 < D ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ x ∈ unitCube d, ∃ c : AnchoredIndex d C.order → ℝ, ∀ j : ℕ,
-      ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm
-        (dyadicPopulationFit θ j x - dyadicTaylorCoefficients c j)‖ ≤
-          D * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness := by
-  obtain ⟨D, hD, hfit⟩ := anchoredPopulationFit_coefficient_error (d := d) (ℓ := C.order)
-    C.densityLower C.densityUpper C.densityLower_pos (by linarith [C.one_lt_densityUpper])
-  let E := max 1 (D * (taylorErrorFactor C * C.holderBound))
-  refine ⟨E, zero_lt_one.trans_le (le_max_left _ _), ?_⟩
+𝗇 𝔴 𝘷
+𝗇 𝔄 𝔴 ⁻¹
+𝗇 𝔉 𝗣
+𝗇 𝔊 Admissible (C.withDomain Udom) θ
+𝗇 𝔍 euclideanNorm 𝙪₁
+𝗇 𝔐 𝘮
+𝗃 𝕳 ἀ (C.withDomain Udom) θ hθ
+𝗃 𝖌 𝕳 ἀ j x
+𝗇 𝔒 𝖌 dyadicNormalizedDensity_bounds
+𝗇 𝔓 𝖌 dyadicNormalizedDensity_measurable
+𝗇 𝔔 C.smoothness - 1
+𝗇 𝔚 𝘠
+𝗇 𝔡 𝚎₂
+𝗇 𝔢 0 < E
+𝗃 𝕴 ἀ (ℓ := C.order)
+𝗃 𝖊 ἀ j x
+𝗇 𝔣 𝖊 dyadicAnchoredFeature y ⬝ᵥ 𝕴 dyadicPopulationIncrement θ x j
+𝗇 𝔤 𝘘
+𝗇 𝔨 𝖊 dyadicNormalizedAnchor
+𝗇 𝔳 E * 𝔍
+𝗇 𝔜 dyadicPopulationPolynomial C θ j x
+𝗇 𝔷 𝕳 admissible_regression_value_bound
+𝗇 𝕬 𝕳 dyadicNormalizedDensity_measurable
+𝗇 𝕭 𝕳 dyadicNormalizedDensity_bounds
+𝗇 𝕯 𝕴 dyadicFinPilotMoments θ
+𝗇 𝕲 𝖊 dyadicPilotRow y
+𝗃 𝕵 ἀ (d := d) (ℓ := C.order)
+𝗃 𝖑 ἀ Udom θ hθ
+𝗃 𝕶 𝖑 ἀ j x hx
+𝗃 𝕸 ἀ θ j x
+𝗇 𝖆 𝔄 ^ 𝔔
+𝗃 𝖋 (ἀ ..).trans
+𝗃 𝖐 ἀ 𝔐 x
+𝗃 𝖒 ἀ θ 𝔐 x
+section
+
+variable (C : ModelConstants d)
+    [Nonempty 𝔤]
+
+𝗃 𝖎 ( 2 ^ ἀ)⁻¹
+𝗇 𝔑 𝖎 j
+𝗇 𝖈 𝙷₂
+𝗃 𝖔 D * ἀ
+𝗇 𝔗 𝖔 𝖈
+𝗇 𝔥 𝘏
+𝗇 𝔦 𝕳 dyadicPopulationFit_eq_normalized
+𝗇 𝔧 𝖌 dyadicRegressionDifference_continuousOn
+𝗇 𝔭 mul_nonneg (taylorErrorFactor_pos C).le C.holderBound_pos.le
+𝗇 𝔠 𝔄 ^ C.smoothness
+𝗇 𝔅 (EuclideanSpace.equiv 𝘘 ℝ).symm
+𝗇 𝔶 𝕵 anchoredPopulationFit_coefficient_error C.densityLower C.densityUpper C.densityLower_pos
+𝗇 𝕹 dyadicTaylorCoefficients c j
+𝗇 𝕺 mul_le_mul_of_nonneg_right $ le_max_right ..
+𝗃 𝖍 ἀ * 𝔠
+theorem uniform_domain_admissible_dyadicPopulationFit_taylor_coefficients :
+    ∃ D , 𝙱₁ ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ x ∈ unitCube d, ∃ c , ∀ j ,
+      ‖𝔅
+        (𝕸 dyadicPopulationFit - 𝕹)‖ ≤
+          D * 𝔑 ^ C.smoothness := by
+  obtain ⟨D, hD, hfit⟩ := 𝔶 $ by linarith [C.one_lt_densityUpper]
+  let E := max 1 𝔗
+  refine ⟨E, 𝔥, ?_⟩
   intro Udom θ hθ x hx
-  obtain ⟨c, hc⟩ := admissible_dyadic_taylor_family (C.withDomain Udom) θ hθ x hx
+  obtain ⟨c, hc⟩ := 𝕳 admissible_dyadic_taylor_family x hx
   refine ⟨c, ?_⟩
   intro j
-  let R := taylorErrorFactor C * C.holderBound * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness
-  have hR : 0 ≤ R := mul_nonneg (mul_nonneg (taylorErrorFactor_pos C).le C.holderBound_pos.le)
-    (Real.rpow_nonneg (by positivity) _)
-  rw [dyadicPopulationFit_eq_normalized (C.withDomain Udom) θ hθ]
-  have h := hfit _ (gridNormalizedAnchor_mem_cube _ (by positivity) x hx)
-    _ _ (dyadicNormalizedDensity_measurable (C.withDomain Udom) θ hθ j x) (dyadicNormalizedDensity_bounds (C.withDomain Udom) θ hθ j x)
-    (dyadicRegressionDifference_continuousOn (C.withDomain Udom) θ hθ j x) (dyadicTaylorCoefficients c j)
-    R hR (fun w hw => (hc j w hw).1)
+  let R := 𝖍 𝖈
+  have hR : 𝖡₂ := mul_nonneg 𝔭
+    $ Real.rpow_nonneg  𝖠₃  _
+  rw [𝔦]
+  have h := hfit _ (gridNormalizedAnchor_mem_cube _  𝖠₃  x hx)
+    _ _ 𝔓 𝔒
+    𝔧 𝕹
+    R hR fun w hw => (hc j w hw).1
   apply h.trans
   calc
-    D * R = (D * (taylorErrorFactor C * C.holderBound)) * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness := by dsimp [R]; ring
-    _ ≤ E * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness :=
-      mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.rpow_nonneg (by positivity) _)
+    𝖔 R = 𝖍 𝔗 := 𝖢₃
+    _ ≤ 𝖍 E :=
+      𝕺 $ Real.rpow_nonneg  𝖠₃  _
 
 
-theorem uniform_domain_admissible_dyadicPopulationFit_spatial_error {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ w ∈ unitCube d,
-      |dyadicRegressionDifference θ j x w - anchoredFitPolynomial (dyadicNormalizedAnchor j x)
-        (dyadicPopulationFit (ℓ := C.order) θ j x) w| ≤
-          E * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness * euclideanNorm (w - dyadicNormalizedAnchor j x) := by
-  obtain ⟨D, hD, hpoint⟩ := anchoredPopulationFit_pointwise_error (d := d) (ℓ := C.order)
-    C.densityLower C.densityUpper C.densityLower_pos (by linarith [C.one_lt_densityUpper])
-  let T := (d : ℝ) ^ C.order * (2 * C.holderBound) / C.order.factorial
-  have hT : 0 ≤ T := div_nonneg (mul_nonneg (pow_nonneg (Nat.cast_nonneg d) _)
-    (mul_nonneg (by norm_num) C.holderBound_pos.le)) (Nat.cast_nonneg _)
-  let E := max 1 (T * max 1 ((Real.sqrt (d : ℝ)) ^ C.smoothness) + D * (taylorErrorFactor C * C.holderBound))
-  refine ⟨E, zero_lt_one.trans_le (le_max_left _ _), ?_⟩
+𝗇 𝔏 euclideanNorm $ w - 𝖊 dyadicNormalizedAnchor
+𝗇 𝔟 max 1 $ Real.sqrt d ^ C.smoothness
+𝗇 𝔩 2 * C.holderBound
+𝗇 𝔮 𝕴 dyadicPopulationFit θ j x
+𝗇 𝕻 T * 𝔟 + 𝔗
+theorem uniform_domain_admissible_dyadicPopulationFit_spatial_error :
+    ∃ E , 𝔢 ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ j , ∀ x ∈ unitCube d, ∀ w ∈ unitCube d,
+      |𝕸 dyadicRegressionDifference w - anchoredFitPolynomial 𝔨
+        𝔮 w| ≤
+          E * 𝔑 ^ C.smoothness * 𝔏 := by
+  obtain ⟨D, hD, hpoint⟩ := 𝕵 anchoredPopulationFit_pointwise_error
+    C.densityLower C.densityUpper C.densityLower_pos $ by linarith [C.one_lt_densityUpper]
+  let T := d ^ C.order * 𝔩 / C.order.factorial
+  have hT : 𝚞 := div_nonneg (mul_nonneg 𝘑₂
+    $ mul_nonneg  𝖠₄  C.holderBound_pos.le ) $ Nat.cast_nonneg _
+  let E := max 1 𝕻
+  refine ⟨E, 𝔥, ?_⟩
   intro Udom θ hθ j x hx w hw
-  obtain ⟨c, hc⟩ := admissible_dyadic_taylor_family (C.withDomain Udom) θ hθ x hx
-  let R := taylorErrorFactor C * C.holderBound * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness
-  have hR : 0 ≤ R := mul_nonneg (mul_nonneg (taylorErrorFactor_pos C).le C.holderBound_pos.le)
-    (Real.rpow_nonneg (by positivity) _)
-  have hu : dyadicNormalizedAnchor j x ∈ unitCube d := gridNormalizedAnchor_mem_cube _ (by positivity) x hx
-  have hp := hpoint _ hu _ _ (dyadicNormalizedDensity_measurable (C.withDomain Udom) θ hθ j x)
-    (dyadicNormalizedDensity_bounds (C.withDomain Udom) θ hθ j x) (dyadicRegressionDifference_continuousOn (C.withDomain Udom) θ hθ j x)
-    (dyadicTaylorCoefficients c j) R hR (fun v hv => (hc j v hv).1) w hw
-  rw [dyadicPopulationFit_eq_normalized (C.withDomain Udom) θ hθ]
+  obtain ⟨c, hc⟩ := 𝕳 admissible_dyadic_taylor_family x hx
+  let R := 𝖍 𝖈
+  have hR : 𝖡₂ := mul_nonneg 𝔭
+    $ Real.rpow_nonneg  𝖠₃  _
+  have hu : 𝔨 ∈ unitCube d := gridNormalizedAnchor_mem_cube _  𝖠₃  x hx
+  have hp := hpoint _ hu _ _ 𝔓
+    𝔒 𝔧
+    𝕹 R hR (fun v hv => (hc j v hv).1) w hw
+  rw [𝔦]
   apply hp.trans
-  have hrad : euclideanNorm (w - dyadicNormalizedAnchor j x) ≤ Real.sqrt (d : ℝ) := by
-    have h := euclideanNorm_le_coordinate_radius (w - dyadicNormalizedAnchor j x) 1 (by norm_num)
-      (fun i => by
-        change |w i - dyadicNormalizedAnchor j x i| ≤ 1
-        exact abs_le.mpr ⟨by linarith [(hw i).1, (hu i).2], by linarith [(hw i).2, (hu i).1]⟩)
-    simpa only [mul_one] using h
+  have hrad : 𝔏 ≤ Real.sqrt d := by
+    have h := euclideanNorm_le_coordinate_radius (w - 𝔨) 1  𝖠₄ 
+       fun i => by
+        change |w i - 𝖊 dyadicNormalizedAnchor i| ≤ 1
+        exact abs_le.mpr ⟨by linarith [(hw i).1, (hu i).2], by linarith [(hw i).2, (hu i).1]⟩
+    linarith
   have hs : 1 ≤ C.smoothness := by
-    obtain ⟨γ⟩ := (inferInstance : Nonempty (AnchoredIndex d C.order))
-    have ho : 1 ≤ C.order := γ.property.1.trans_le γ.property.2
-    have hor : (1 : ℝ) ≤ C.order := by exact_mod_cast ho
+    obtain ⟨γ⟩ := (inferInstance : Nonempty 𝔤)
+    have hor : 𝙠 ≤ C.order := by exact_mod_cast γ.property.1.trans_le γ.property.2
     exact hor.trans C.order_lt.le
-  have hr0 : 0 ≤ euclideanNorm (w - dyadicNormalizedAnchor j x) := by unfold euclideanNorm; positivity
+  have hr0 : 0 ≤ 𝔏 := by unfold euclideanNorm; positivity
   have hpow := bounded_rpow_le_linear _ _ _ hr0 hrad hs
   calc
-    _ ≤ T * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness *
-        euclideanNorm (w - dyadicNormalizedAnchor j x) ^ C.smoothness +
-        D * R * euclideanNorm (w - dyadicNormalizedAnchor j x) := add_le_add (hc j w hw).2 le_rfl
-    _ ≤ T * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness *
-        (max 1 ((Real.sqrt (d : ℝ)) ^ C.smoothness) * euclideanNorm (w - dyadicNormalizedAnchor j x)) +
-        D * R * euclideanNorm (w - dyadicNormalizedAnchor j x) := by gcongr
-    _ = (T * max 1 ((Real.sqrt (d : ℝ)) ^ C.smoothness) + D * (taylorErrorFactor C * C.holderBound)) *
-        (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness * euclideanNorm (w - dyadicNormalizedAnchor j x) := by dsimp [R]; ring
-    _ ≤ E * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness * euclideanNorm (w - dyadicNormalizedAnchor j x) := by
-      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_max_right _ _)
-        (Real.rpow_nonneg (by positivity) _)) hr0
+    _ ≤ 𝖍 T *
+        𝔏 ^ C.smoothness +
+        𝖔 R * 𝔏 := add_le_add (hc j w hw).2 le_rfl
+    _ ≤ 𝖍 T *
+        (𝔟 * 𝔏) +
+        𝖔 R * 𝔏 := 𝖩₃
+    _ = 𝖍 𝕻 * 𝔏 := 𝖢₃
+    _ ≤ 𝖍 E * 𝔏 := mul_le_mul_of_nonneg_right (𝕺
+        $ Real.rpow_nonneg  𝖠₃  _ ) hr0
 
-theorem uniform_domain_admissible_dyadicPopulationIncrement_successor_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ x ∈ unitCube d, ∀ j : ℕ,
-      ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm (dyadicPopulationIncrement θ x (j + 1))‖ ≤
-        E * (((2 : ℝ) ^ (j + 1))⁻¹) ^ C.smoothness := by
+𝗇 𝔙 𝘑₁
+𝗇 𝔲 anchoredTransport d C.order *ᵥ e j
+𝗇 𝖁 𝔅 $ e 𝔙
+theorem uniform_domain_admissible_dyadicPopulationIncrement_successor_bound :
+    ∃ E , 𝔢 ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ x ∈ unitCube d, ∀ j ,
+      ‖𝔅 (dyadicPopulationIncrement θ x 𝔙)‖ ≤
+        E * 𝖎 𝔙 ^ C.smoothness := by
   obtain ⟨D, hD, hcoeff⟩ := uniform_domain_admissible_dyadicPopulationFit_taylor_coefficients C
-  let E := D * (1 + (1 / 2) * (2 : ℝ) ^ C.smoothness)
-  refine ⟨E, mul_pos hD (by positivity), ?_⟩
+  let E := D * (1 + 𝙖 * 2 ^ C.smoothness)
+  refine ⟨E, mul_pos hD 𝖠₃ , ?_⟩
   intro Udom θ hθ x hx j
-  obtain ⟨c, hc⟩ := hcoeff Udom θ hθ x hx
+  obtain ⟨c, hc⟩ := 𝖑 hcoeff x hx
   let e := fun i => dyadicPopulationFit θ i x - dyadicTaylorCoefficients c i
   rw [dyadicPopulationIncrement_error_identity θ x c j]
-  have hsub : ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm
-      (e (j + 1) - anchoredTransport d C.order *ᵥ e j)‖ ≤
-      ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm (e (j + 1))‖ +
-      ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm (anchoredTransport d C.order *ᵥ e j)‖ := by
+  have hsub : ‖𝔅
+      (e 𝔙 - 𝔲)‖ ≤
+      ‖𝖁‖ +
+      ‖𝔅 𝔲‖ := by
     simpa [EuclideanSpace.equiv] using norm_sub_le
-      ((EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm (e (j + 1)))
-      ((EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm (anchoredTransport d C.order *ᵥ e j))
+      𝖁
+      $ 𝔅 𝔲
   apply hsub.trans
-  have ht := anchoredTransport_euclidean_norm (e j)
-  have ht' := ht.trans (mul_le_mul_of_nonneg_left (hc j) (by norm_num : (0 : ℝ) ≤ 1 / 2))
-  apply (add_le_add (hc (j + 1)) ht').trans_eq
-  rw [dyadic_inverse_scale_succ j, Real.mul_rpow (by norm_num) (by positivity)]
-  dsimp [E]
+  have ht := anchoredTransport_euclidean_norm $ e j
+  apply (add_le_add (hc 𝔙) $ ht.trans $ mul_le_mul_of_nonneg_left (hc j) 𝖠₄ ).trans_eq
+  rw [dyadic_inverse_scale_succ j, Real.mul_rpow  𝖠₄  𝖠₃ ]
   ring
 
-theorem uniform_domain_admissible_dyadicPopulationIncrement_root_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
+𝗃 𝖏 ἀ 0 x
+theorem uniform_domain_admissible_dyadicPopulationIncrement_root_bound :
+    ∃ E : ℝ, 𝔢 ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, 𝔊 →
       ∀ x ∈ unitCube d,
-      ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm (dyadicPopulationIncrement θ x 0)‖ ≤ E := by
-  obtain ⟨D, hD, hfit⟩ := anchoredPopulationFit_coefficient_error (d := d) (ℓ := C.order)
-    C.densityLower C.densityUpper C.densityLower_pos (by linarith [C.one_lt_densityUpper])
-  let E := max 1 (D * (2 * C.holderBound))
-  refine ⟨E, zero_lt_one.trans_le (le_max_left _ _), ?_⟩
+      ‖𝔅 (dyadicPopulationIncrement θ x 0)‖ ≤ E := by
+  obtain ⟨D, hD, hfit⟩ := 𝔶 $ by linarith [C.one_lt_densityUpper]
+  let E := max 1 𝖔 𝔩
+  refine ⟨E, 𝔥, ?_⟩
   intro Udom θ hθ x hx
   have hres : ∀ w ∈ unitCube d, |dyadicRegressionDifference θ 0 x w -
-      anchoredFitPolynomial (dyadicNormalizedAnchor 0 x) (0 : AnchoredIndex d C.order → ℝ) w| ≤
-        2 * C.holderBound := by
+      anchoredFitPolynomial 𝖏 dyadicNormalizedAnchor (0 : 𝔤 → ℝ) w| ≤
+        𝔩 := by
     intro w hw
     simp only [anchoredFitPolynomial, Pi.zero_apply, zero_mul, Finset.sum_const_zero, sub_zero]
-    exact (abs_sub _ _).trans (by
-      have ha := admissible_regression_value_bound (C.withDomain Udom) θ hθ _ (dyadicCellAffine_mem_cube 0 x w hw)
-      have hb := admissible_regression_value_bound (C.withDomain Udom) θ hθ x hx
-      change |θ.regression (dyadicCellAffine 0 x w)| + |θ.regression x| ≤ _
+    exact 𝖋 abs_sub $ by
+      have ha := 𝔷 _ $ 𝖏 dyadicCellAffine_mem_cube w hw
+      have hb := 𝔷 x hx
       dsimp [ModelConstants.withDomain] at ha hb
-      linarith)
-  have h := hfit _ (gridNormalizedAnchor_mem_cube _ (by positivity) x hx) _ _
-    (dyadicNormalizedDensity_measurable (C.withDomain Udom) θ hθ 0 x) (dyadicNormalizedDensity_bounds (C.withDomain Udom) θ hθ 0 x)
-    (dyadicRegressionDifference_continuousOn (C.withDomain Udom) θ hθ 0 x) 0 (2 * C.holderBound)
-    (mul_nonneg (by norm_num) C.holderBound_pos.le) hres
-  change ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm (dyadicPopulationFit θ 0 x)‖ ≤ E
-  rw [dyadicPopulationFit_eq_normalized (C.withDomain Udom) θ hθ]
-  simpa only [sub_zero, dyadicNormalizedAnchor, E] using h.trans (le_max_right 1 _)
+      linarith
+  have h := hfit _ (gridNormalizedAnchor_mem_cube _  𝖠₃  x hx) _ _
+    𝖏 𝕬 𝖏 𝕭
+    (𝕳 dyadicRegressionDifference_continuousOn 0 x) 0 𝔩
+    (mul_nonneg  𝖠₄  C.holderBound_pos.le) hres
+  change ‖𝔅 (dyadicPopulationFit θ 0 x)‖ ≤ E
+  rw [𝔦]
+  aesop
 
 
-theorem uniform_domain_admissible_dyadicPopulationIncrement_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ x ∈ unitCube d, ∀ j : ℕ,
-      ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm (dyadicPopulationIncrement θ x j)‖ ≤
-        E * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness := by
+𝗇 𝕮 dyadicPopulationIncrement θ x j
+theorem uniform_domain_admissible_dyadicPopulationIncrement_bound :
+    ∃ E , 𝔢 ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ x ∈ unitCube d, ∀ j ,
+      ‖𝔅 𝕮‖ ≤
+        E * 𝔑 ^ C.smoothness := by
   obtain ⟨E0, hE0, hroot⟩ := uniform_domain_admissible_dyadicPopulationIncrement_root_bound C
   obtain ⟨E1, hE1, hsucc⟩ := uniform_domain_admissible_dyadicPopulationIncrement_successor_bound C
-  refine ⟨max E0 E1, hE0.trans_le (le_max_left _ _), ?_⟩
+  refine ⟨max E0 E1, hE0.trans_le $ le_max_left .. , ?_⟩
   intro Udom θ hθ x hx j
   cases j with
-  | zero => simpa using (hroot Udom θ hθ x hx).trans (le_max_left E0 E1)
+  | zero => simpa using (𝖑 hroot x hx).trans $ le_max_left E0 E1
   | succ j =>
-    exact (hsucc Udom θ hθ x hx j).trans
-      (mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.rpow_nonneg (by positivity) _))
+    exact (𝖑 hsucc x hx j).trans
+      $ 𝕺 $ Real.rpow_nonneg  𝖠₃  _
 
-theorem uniform_domain_admissible_dyadicPopulationFit_physical_error {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y ∈ unitCube d, y ∈ dyadicPilotCell j x →
-      |θ.regression y - θ.regression x - dyadicAnchoredFeature j x y ⬝ᵥ dyadicPopulationFit (ℓ := C.order) θ j x| ≤
-        E * euclideanNorm (y - x) * (((2 : ℝ) ^ j)⁻¹) ^ (C.smoothness - 1) := by
+theorem uniform_domain_admissible_dyadicPopulationFit_physical_error :
+    ∃ E , 𝔢 ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ j , ∀ x ∈ unitCube d, ∀ y ∈ unitCube d, y ∈ 𝖊 dyadicPilotCell →
+      |θ.regression y - θ.regression x - 𝖊 dyadicAnchoredFeature y ⬝ᵥ 𝔮| ≤
+        𝔳 * 𝔑 ^ 𝔔 := by
   obtain ⟨E, hE, hfit⟩ := uniform_domain_admissible_dyadicPopulationFit_spatial_error C
   refine ⟨E, hE, ?_⟩
   intro Udom θ hθ j x hx y hy hcell
-  have hw : dyadicNormalizedAnchor j y ∈ unitCube d := gridNormalizedAnchor_mem_cube _ (by positivity) y hy
-  have he := dyadicCellAffine_same_cell j x y hcell
-  have h := hfit Udom θ hθ j x hx _ hw
-  rw [dyadicPopulationFit_physical_evaluation j x y hcell] at h
+  have hw : dyadicNormalizedAnchor j y ∈ unitCube d := gridNormalizedAnchor_mem_cube _  𝖠₃  y hy
+  have he := 𝖊 dyadicCellAffine_same_cell y hcell
+  have h := 𝕶 hfit _ hw
+  rw [𝖊 dyadicPopulationFit_physical_evaluation y hcell] at h
   unfold dyadicRegressionDifference at h
   rw [he] at h
   apply h.trans_eq
-  have hd := dyadicCellAffine_euclidean_distance j x (dyadicNormalizedAnchor j y)
+  have hd := 𝖊 dyadicCellAffine_euclidean_distance $ dyadicNormalizedAnchor j y
   rw [he] at hd
-  rw [mul_assoc, positive_rpow_times_distance _ _ _ (by positivity), ← hd]
+  rw [mul_assoc, positive_rpow_times_distance _ _ _ 𝖠₃ , ← hd]
   ring
 
 
-theorem uniform_domain_admissible_dyadic_increment_polynomial_error {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
+𝗇 𝔇 (𝙉 ^ j)⁻¹ ^ C.smoothness
+𝗇 𝔈 Real.exp $ -𝘏₂ * exteriorTau ((C.densityLower + C.densityUpper) / (C.densityUpper - C.densityLower))
+𝗇 𝔎 (𝘻 : ℕ)
+𝗇 𝖉 anchoredFinNormalizedGram v q
+𝗇 𝔘 𝖼₁ *ᵥ 𝖉⁻¹ *ᵥ (V false - θ.regression x • V true)
+𝗇 𝔫 U false - θ.regression x • U true
+𝗇 𝔰 𝕴 anchoredFinNormalizedGram u p
+𝗇 𝔪 (𝔎 : ℝ) ^ 𝔉
+𝗇 𝕰 𝕳 dyadicFinPilotGram_eq_normalized
+𝗇 𝕼 (EuclideanSpace.equiv (Fin 𝔉) ℝ).symm
+𝗇 𝕽 𝖔 𝔇
+𝗇 𝖂 𝖼₁
+𝗇 𝖃 E * 𝔇 * 𝔪 * 𝔈
+𝗇 𝖄 E₀ * D
+𝗇 𝖅 anchoredFinNormalizedGram u p
+𝗃 𝖓 ἀ ⁻¹ *ᵥ 𝔫 - 𝔘
+theorem uniform_domain_admissible_dyadic_increment_polynomial_error :
+    ∃ E : ℝ, 𝔢 ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, 𝔊 →
       ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ m : ℕ,
-      ‖(EuclideanSpace.equiv (Fin (anchoredDimension d C.order)) ℝ).symm
-        (incrementFinVector (anchoredDimension d C.order) C.densityLower C.densityUpper
-          (anchoredFinTransport d C.order) (θ.regression x) m (dyadicIncrementRawMean θ j x) -
-            anchoredFinVector (dyadicPopulationIncrement θ x j))‖ ≤
-        E * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness * ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order *
-          Real.exp (-(m : ℝ) * exteriorTau ((C.densityLower + C.densityUpper) / (C.densityUpper - C.densityLower))) := by
-  obtain ⟨χ, hχ, hcond⟩ := anchoredFinSimilarityUnit_uniform_condition (d := d) (ℓ := C.order)
+      ‖𝕼
+        (incrementFinVector 𝔉 C.densityLower C.densityUpper
+          𝖂 (θ.regression x) m 𝕸 dyadicIncrementRawMean -
+            anchoredFinVector 𝕮)‖ ≤
+        𝖃 := by
+  obtain ⟨χ, hχ, hcond⟩ := 𝕵 anchoredFinSimilarityUnit_uniform_condition
   obtain ⟨D, hD, hinc⟩ := uniform_domain_admissible_dyadicPopulationIncrement_bound C
-  let E₀ := χ ^ 2 * C.densityUpper ^ (anchoredDimension d C.order + 1) *
-    parentInverseErrorConstant C.densityLower C.densityUpper (anchoredDimension d C.order)
-  let E := max 1 (E₀ * D)
-  refine ⟨E, zero_lt_one.trans_le (le_max_left _ _), ?_⟩
+  let E₀ := χ ^ 2 * C.densityUpper ^ (𝔉 + 1) *
+    parentInverseErrorConstant C.densityLower C.densityUpper 𝔉
+  let E := max 1 𝖄
+  refine ⟨E, zero_lt_one.trans_le 𝚂₁, ?_⟩
   intro Udom θ hθ j x hx m
-  let u := dyadicNormalizedAnchor j x
-  let v := dyadicNormalizedAnchor (j - 1) x
-  let p := dyadicNormalizedDensity θ j x
-  let q := if j = 0 then (fun _ : Covariate d => (1 : ℝ)) else dyadicNormalizedDensity θ (j - 1) x
-  let U := dyadicFinPilotMoments (ℓ := C.order) θ j x
-  let V := if j = 0 then 0 else dyadicFinPilotMoments (ℓ := C.order) θ (j - 1) x
+  let u := 𝔨
+  let v := 𝖐 dyadicNormalizedAnchor
+  let p := 𝕸 dyadicNormalizedDensity
+  let q := if 𝔚 then fun _ : Covariate d => 𝙠 else 𝖒 dyadicNormalizedDensity
+  let U := 𝖊 𝕯
+  let V := if 𝔚 then 0 else 𝖐 𝕯
   have hqmeas : Measurable q := by
-    by_cases hj : j = 0
-    · simpa [q, hj, ModelConstants.withDomain] using (measurable_const : Measurable (fun _ : Covariate d => (1 : ℝ)))
-    · simpa [q, hj, ModelConstants.withDomain] using dyadicNormalizedDensity_measurable (C.withDomain Udom) θ hθ (j - 1) x
-  have hqb : ∀ᵐ w ∂cubeVolume d, C.densityLower ≤ q w ∧ q w ≤ C.densityUpper := by
-    by_cases hj : j = 0
-    · exact Filter.Eventually.of_forall (fun _ => by
-        simpa [q, hj, ModelConstants.withDomain] using And.intro C.densityLower_lt_one.le C.one_lt_densityUpper.le)
-    · simpa [q, hj, ModelConstants.withDomain] using dyadicNormalizedDensity_bounds (C.withDomain Udom) θ hθ (j - 1) x
-  have hparent : anchoredFinNormalizedGram (ℓ := C.order) v q =
-      if j = 0 then 1 else dyadicFinPilotGram θ (j - 1) x := by
-    by_cases hj : j = 0
+    by_cases hj : 𝔚
+    · aesop
+    · simpa [q, hj, ModelConstants.withDomain] using 𝖐 𝕬
+  have hqb : 𝔡 := by
+    by_cases hj : 𝔚
+    · exact Filter.Eventually.of_forall fun _ => by
+        simpa [q, hj, ModelConstants.withDomain] using And.intro C.densityLower_lt_one.le C.one_lt_densityUpper.le
+    · simpa [q, hj, ModelConstants.withDomain] using 𝖐 𝕭
+  have hparent : 𝕴 anchoredFinNormalizedGram v q =
+      if 𝔚 then 1 else 𝖒 dyadicFinPilotGram := by
+    by_cases hj : 𝔚
     · simp [q, hj, anchoredFinNormalizedGram_one]
     · simp only [q, hj, ite_false]
-      exact (dyadicFinPilotGram_eq_normalized (C.withDomain Udom) θ hθ (j - 1) x).symm
-  have hactual : (anchoredFinNormalizedGram (ℓ := C.order) u p)⁻¹ *ᵥ
-      (U false - θ.regression x • U true) - anchoredFinTransport d C.order *ᵥ
-        ((anchoredFinNormalizedGram v q)⁻¹ *ᵥ (V false - θ.regression x • V true)) =
-        anchoredFinVector (dyadicPopulationIncrement θ x j) := by
-    rw [hparent, ← dyadicFinPilotGram_eq_normalized (C.withDomain Udom) θ hθ j x]
-    exact dyadicFinite_increment_eq_actual (C.withDomain Udom) θ hθ j x hx
-  have hsmall : ‖(EuclideanSpace.equiv (Fin (anchoredDimension d C.order)) ℝ).symm
-      ((anchoredFinNormalizedGram u p)⁻¹ *ᵥ (U false - θ.regression x • U true) -
-        anchoredFinTransport d C.order *ᵥ
-          ((anchoredFinNormalizedGram v q)⁻¹ *ᵥ (V false - θ.regression x • V true)))‖ ≤
-      D * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness := by
+      exact (𝖐 𝕰).symm
+  have hactual : 𝖓 𝔰 =
+        anchoredFinVector 𝕮 := by
+    rw [hparent, ← 𝖊 𝕰]
+    exact 𝖌 dyadicFinite_increment_eq_actual hx
+  have hsmall : ‖𝕼
+      𝖓 𝖅‖ ≤
+      𝕽 := by
     rw [hactual, anchoredFinVector_norm]
-    exact hinc Udom θ hθ x hx j
+    bound
   have he := anchoredNormalized_increment_error u v p q
-    (dyadicNormalizedDensity_measurable (C.withDomain Udom) θ hθ j x) hqmeas
-    C.densityLower C.densityUpper χ (D * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness)
+    𝔓 hqmeas
+    C.densityLower C.densityUpper χ 𝕽
     C.densityLower_pos (C.densityLower_lt_one.trans C.one_lt_densityUpper)
-    (dyadicNormalizedDensity_bounds (C.withDomain Udom) θ hθ j x) hqb
-    (hcond u (gridNormalizedAnchor_mem_cube _ (by positivity) x hx))
-    U V (θ.regression x) (anchoredFinTransport d C.order) hsmall m
+    𝔒 hqb
+    (hcond u $ gridNormalizedAnchor_mem_cube _  𝖠₃  x hx )
+    U V (θ.regression x) 𝖂 hsmall m
   rw [hactual] at he
-  have hval : dyadicIncrementRawMean (ℓ := C.order) θ j x = fun a =>
-      incrementValuation (anchoredFinNormalizedGram u p) (anchoredFinNormalizedGram v q) U V
-        ((Fintype.equivFin (incrementVariables (anchoredDimension d C.order))).symm a) := by
-    rw [dyadicIncrementRawMean_eq_population (C.withDomain Udom) θ hθ j x hx]
-    have hcurrent : anchoredFinNormalizedGram (ℓ := C.order) u p = dyadicFinPilotGram θ j x :=
-      (dyadicFinPilotGram_eq_normalized (C.withDomain Udom) θ hθ j x).symm
+  have hval : 𝕴 dyadicIncrementRawMean θ j x = fun a =>
+      incrementValuation 𝖅 𝖉 U V
+        $ (Fintype.equivFin $ incrementVariables 𝔉 ).symm a := by
+    rw [𝖌 dyadicIncrementRawMean_eq_population hx]
+    have hcurrent : 𝔰 = 𝕸 dyadicFinPilotGram :=
+      (𝖊 𝕰).symm
     simp only [dyadicIncrementPopulation, hparent, hcurrent]
     rfl
   rw [hval, incrementFinVector_eval_population]
   calc
-    _ ≤ E₀ * (D * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness) * ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order *
-        Real.exp (-(m : ℝ) * exteriorTau ((C.densityLower + C.densityUpper) / (C.densityUpper - C.densityLower))) := he
-    _ = (E₀ * D) * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness * ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order *
-        Real.exp (-(m : ℝ) * exteriorTau ((C.densityLower + C.densityUpper) / (C.densityUpper - C.densityLower))) := by ring
-    _ ≤ E * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness * ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order *
-        Real.exp (-(m : ℝ) * exteriorTau ((C.densityLower + C.densityUpper) / (C.densityUpper - C.densityLower))) := by
-      gcongr
-      exact le_max_right _ _
+    _ ≤ E₀ * 𝕽 * 𝔪 *
+        𝔈 := he
+    _ = 𝖄 * 𝔇 * 𝔪 *
+        𝔈 := 𝖢₃
+    _ ≤ 𝖃 := by
+      bound
 
-theorem uniform_domain_admissible_dyadic_polynomial_row_error {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y ∈ unitCube d, y ∈ dyadicPilotCell j x → ∀ m : ℕ,
-      |dyadicPilotRow j x y ⬝ᵥ dyadicPopulationPolynomial C θ j x (θ.regression x) m -
-        dyadicAnchoredFeature j x y ⬝ᵥ dyadicPopulationIncrement (ℓ := C.order) θ x j| ≤
-      E * euclideanNorm (y - x) * (((2 : ℝ) ^ j)⁻¹) ^ (C.smoothness - 1) *
-        ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order * Real.exp (-(m : ℝ) * paperTau C) := by
+𝗇 𝔖 Real.exp $ -m * paperTau C
+𝗇 𝔵 B * 𝔉
+𝗇 𝕾 𝔎 ^ 𝔉
+theorem uniform_domain_admissible_dyadic_polynomial_row_error :
+    ∃ E , 𝔢 ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ j , ∀ x ∈ unitCube d, ∀ y ∈ unitCube d, y ∈ 𝖊 dyadicPilotCell → ∀ m ,
+      |𝕲 ⬝ᵥ 𝔜 (θ.regression x) m -
+        𝔣| ≤
+      𝔳 * 𝔑 ^ 𝔔 *
+        𝕾 * 𝔖 := by
   obtain ⟨B, hB, herror⟩ := uniform_domain_admissible_dyadic_increment_polynomial_error C
-  let E := max 1 (B * (anchoredDimension d C.order : ℝ))
-  refine ⟨E, zero_lt_one.trans_le (le_max_left _ _), ?_⟩
+  let E := max 1 𝔵
+  refine ⟨E, 𝔥, ?_⟩
   intro Udom θ hθ j x hx y hy hcell m
-  have hnorm := herror Udom θ hθ j x hx m
+  have hnorm := 𝕶 herror m
   rw [exteriorTau_sqrt_ratio C.densityLower C.densityUpper C.densityLower_pos
-    (C.densityLower_lt_one.trans C.one_lt_densityUpper)] at hnorm
-  change ‖(EuclideanSpace.equiv (Fin (anchoredDimension d C.order)) ℝ).symm
-    (dyadicPopulationPolynomial C θ j x (θ.regression x) m -
-      anchoredFinVector (dyadicPopulationIncrement θ x j))‖ ≤
-    B * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness * ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order *
-      Real.exp (-(m : ℝ) * paperTau C) at hnorm
+    $ C.densityLower_lt_one.trans C.one_lt_densityUpper ] at hnorm
   rw [← dyadicPilotRow_dot_coefficients, ← dotProduct_sub]
-  apply (finite_row_abs_dot_le_euclidean_norm _ _).trans
-  have hr := dyadicPilotRow_sum_abs_le_distance (ℓ := C.order) j x y hx hy hcell
-  have hd : 0 ≤ euclideanNorm (y - x) := by unfold euclideanNorm; positivity
+  apply 𝖋 finite_row_abs_dot_le_euclidean_norm
+  have hd : 0 ≤ 𝔍 := by unfold euclideanNorm; positivity
   calc
-    _ ≤ ((anchoredDimension d C.order : ℝ) * (2 : ℝ) ^ j * euclideanNorm (y - x)) *
-        (B * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness * ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order *
-          Real.exp (-(m : ℝ) * paperTau C)) := mul_le_mul hr hnorm (norm_nonneg _) (by positivity)
-    _ = (B * (anchoredDimension d C.order : ℝ)) * euclideanNorm (y - x) *
-        ((2 : ℝ) ^ j * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness) *
-          ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order * Real.exp (-(m : ℝ) * paperTau C) := by ring
-    _ = (B * (anchoredDimension d C.order : ℝ)) * euclideanNorm (y - x) *
-        (((2 : ℝ) ^ j)⁻¹) ^ (C.smoothness - 1) *
-          ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order * Real.exp (-(m : ℝ) * paperTau C) := by
+    _ ≤ 𝔉 * 𝔴 * 𝔍 *
+        (𝖍 B * 𝕾 *
+          𝔖) := mul_le_mul (𝕴 dyadicPilotRow_sum_abs_le_distance j x y hx hy hcell) hnorm (norm_nonneg _) 𝖠₃
+    _ = 𝔵 * 𝔍 *
+        𝖍 𝔴 *
+          𝕾 * 𝔖 := 𝖢₃
+    _ = 𝔵 * 𝔍 *
+        𝖆 *
+          𝕾 * 𝔖 := by
       rw [dyadic_scale_rpow_cancel]
-    _ ≤ E * euclideanNorm (y - x) * (((2 : ℝ) ^ j)⁻¹) ^ (C.smoothness - 1) *
-        ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order * Real.exp (-(m : ℝ) * paperTau C) := by
-      gcongr
-      exact le_max_right _ _
+    _ ≤ 𝔳 * 𝖆 *
+        𝕾 * 𝔖 := by
+      bound
 
-theorem uniform_domain_admissible_dyadicPopulationResidual_bound {d : ℕ} (C : ModelConstants d)
-    (hs : 1 < C.smoothness) :
-    ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ J : ℕ, ∀ m : ℕ → ℕ, ∀ x ∈ unitCube d, ∀ y ∈ unitCube d,
-      y ∈ dyadicPilotCell J x →
-        |dyadicPopulationResidual C θ J m x y| ≤
-          E * euclideanNorm (y - x) * dyadicPopulationBiasBudget C J m := by
+end
+
+𝗇 𝔛 Finset.range 𝗯
+𝗇 𝔬 - m j * paperTau C
+𝗇 𝔯 (2 ^ J)⁻¹
+𝗃 𝕷 ἀ C θ J m
+𝗇 𝕿 y ∈ dyadicPilotCell J x
+𝗇 𝖇 𝘎
+theorem uniform_domain_admissible_dyadicPopulationResidual_bound C
+    (hs : 𝖇) :
+    ∃ E , 𝔢 ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ J , ∀ m , ∀ x ∈ unitCube d, ∀ y ∈ unitCube d,
+      𝕿 →
+        |𝕷 dyadicPopulationResidual x y| ≤
+          𝔳 * dyadicPopulationBiasBudget C J m := by
   let := anchoredIndex_nonempty_of_one_lt_smoothness C hs
   obtain ⟨A, hA, hfit⟩ := uniform_domain_admissible_dyadicPopulationFit_physical_error C
   obtain ⟨B, hB, hpoly⟩ := uniform_domain_admissible_dyadic_polynomial_row_error C
   let E := max A B
-  refine ⟨E, hA.trans_le (le_max_left _ _), ?_⟩
+  refine ⟨E, hA.trans_le $ le_max_left .. , ?_⟩
   intro Udom θ hθ J m x hx y hy hcell
-  have hd : 0 ≤ euclideanNorm (y - x) := by unfold euclideanNorm; positivity
-  have heq : dyadicPopulationResidual C θ J m x y =
-      (θ.regression y - θ.regression x - dyadicAnchoredFeature J x y ⬝ᵥ dyadicPopulationFit (ℓ := C.order) θ J x) +
-      ∑ j ∈ Finset.range (J + 1), (dyadicAnchoredFeature j x y ⬝ᵥ dyadicPopulationIncrement (ℓ := C.order) θ x j -
-        dyadicPilotRow j x y ⬝ᵥ dyadicPopulationPolynomial C θ j x (θ.regression x) (m j)) := by
+  have hd : 0 ≤ 𝔍 := by unfold euclideanNorm; positivity
+  have heq : 𝕷 dyadicPopulationResidual x y =
+       θ.regression y - θ.regression x - dyadicAnchoredFeature J x y ⬝ᵥ 𝕴 dyadicPopulationFit θ J x +
+      ∑ j ∈ 𝔛, (𝔣 -
+        𝕲 ⬝ᵥ 𝔜 (θ.regression x) (m j)) := by
     rw [dyadicPopulationIncrement_telescope, Finset.sum_sub_distrib]
     unfold dyadicPopulationResidual
     ring
   rw [heq]
-  apply (abs_add_le _ _).trans
-  apply (add_le_add (hfit Udom θ hθ J x hx y hy hcell) (Finset.abs_sum_le_sum_abs _ _)).trans
+  apply 𝖋 abs_add_le
+  apply (add_le_add (𝖑 hfit J x hx y hy hcell) $ Finset.abs_sum_le_sum_abs .. ).trans
   calc
-    _ ≤ A * euclideanNorm (y - x) * (((2 : ℝ) ^ J)⁻¹) ^ (C.smoothness - 1) +
-        ∑ j ∈ Finset.range (J + 1), B * euclideanNorm (y - x) *
-          (((2 : ℝ) ^ j)⁻¹) ^ (C.smoothness - 1) * ((m j + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order *
-            Real.exp (-(m j : ℝ) * paperTau C) := by
+    _ ≤ A * 𝔍 * 𝔯 ^ 𝔔 +
+        ∑ j ∈ 𝔛, B * 𝔍 *
+          𝖆 * (m j + 1 : ℕ) ^ 𝔉 *
+            Real.exp 𝔬 := by
       apply add_le_add le_rfl
       apply Finset.sum_le_sum
       intro j hj
       rw [abs_sub_comm]
-      exact hpoly Udom θ hθ j x hx y hy
-        (dyadicPilotCell_subset_coarser j J (by exact Nat.le_of_lt_succ (Finset.mem_range.mp hj)) x hcell) (m j)
-    _ ≤ E * euclideanNorm (y - x) * (((2 : ℝ) ^ J)⁻¹) ^ (C.smoothness - 1) +
-        ∑ j ∈ Finset.range (J + 1), E * euclideanNorm (y - x) *
-          (((2 : ℝ) ^ j)⁻¹) ^ (C.smoothness - 1) * ((m j + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order *
-            Real.exp (-(m j : ℝ) * paperTau C) := by
-      apply add_le_add
-      · gcongr
-        exact le_max_left _ _
-      · apply Finset.sum_le_sum
-        intro j _
-        gcongr
-        exact le_max_right _ _
-    _ = E * euclideanNorm (y - x) * dyadicPopulationBiasBudget C J m := by
+      exact 𝕶 hpoly y hy
+        (dyadicPilotCell_subset_coarser j J (Nat.le_of_lt_succ $ Finset.mem_range.mp hj ) x hcell) $ m j
+    _ ≤ 𝔳 * 𝔯 ^ 𝔔 +
+        ∑ j ∈ 𝔛, 𝔳 *
+          𝖆 * ( m j + 1 ) ^ 𝔉 *
+            Real.exp 𝔬 := by
+      bound
+    _ = 𝔳 * dyadicPopulationBiasBudget C J m := by
       unfold dyadicPopulationBiasBudget
       rw [mul_add, Finset.mul_sum]
-      congr 1
-      apply Finset.sum_congr rfl
-      intro j _
-      ring
+      grind
 
 
-theorem uniform_domain_admissible_dyadicFinPilotMoments_uniform_bound {d : ℕ} (C : ModelConstants d) :
-    ∃ W : ℝ, 0 < W ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ t : Bool,
-        ‖dyadicFinPilotMoments (ℓ := C.order) θ j x t‖ ≤ W := by
-  obtain ⟨W, hW, hb⟩ := anchoredFinMomentFamilies_uniform_bound (d := d) (ℓ := C.order)
+section
+
+𝛇
+
+theorem uniform_domain_admissible_dyadicFinPilotMoments_uniform_bound :
+    ∃ W , 0 < W ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ j , ∀ x ∈ unitCube d, ∀ t ,
+        ‖𝖊 𝕯 t‖ ≤ W := by
+  obtain ⟨W, hW, hb⟩ := anchoredFinMomentFamilies_uniform_bound
     C.densityUpper C.holderBound (zero_le_one.trans C.one_lt_densityUpper.le) C.holderBound_pos.le
   refine ⟨W, hW, ?_⟩
   intro Udom θ hθ j x hx t
-  rw [dyadicFinPilotMoments_eq_anchored (C.withDomain Udom) θ hθ j x hx]
-  exact hb _ (gridNormalizedAnchor_mem_cube _ (by positivity) x hx) _ _
-    ((dyadicNormalizedDensity_bounds (C.withDomain Udom) θ hθ j x).mono
-      (fun w hw => ⟨C.densityLower_pos.le.trans hw.1, hw.2⟩))
-    (fun w hw => admissible_regression_value_bound (C.withDomain Udom) θ hθ _ (dyadicCellAffine_mem_cube j x w hw)) t
+  rw [𝖌 dyadicFinPilotMoments_eq_anchored hx]
+  exact hb _ (gridNormalizedAnchor_mem_cube _  𝖠₃  x hx) _ _
+    ((𝔒).mono
+      𝗴₁)
+    (fun w hw => 𝔷 _ $ 𝖊 dyadicCellAffine_mem_cube w hw ) t
 
-theorem uniform_domain_admissible_dyadicPopulationPolynomial_uniform_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (Y : ℝ) (hY : 0 ≤ Y) :
-    ∃ B : ℝ, 0 < B ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ Y → ∀ m : ℕ,
-        ‖dyadicPopulationPolynomial C θ j x y m‖ ≤ B := by
+theorem uniform_domain_admissible_dyadicPopulationPolynomial_uniform_bound
+    [Nonempty 𝔤] Y (hY : 0 ≤ Y) :
+    ∃ B , 𝘶₁ ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ j , ∀ x ∈ unitCube d, ∀ y , |y| ≤ Y → ∀ m ,
+        ‖𝔜 y m‖ ≤ B := by
   obtain ⟨W, hW, hmom⟩ := uniform_domain_admissible_dyadicFinPilotMoments_uniform_bound C
-  obtain ⟨B, A, hB, hA, hder⟩ := anchored_population_inverse_derivatives
-    (d := d) (ℓ := C.order) C.densityLower C.densityUpper W Y C.densityLower_pos
+  obtain ⟨B, A, hB, hA, hder⟩ := 𝕵 anchored_population_inverse_derivatives C.densityLower C.densityUpper W Y C.densityLower_pos
     (C.densityLower_lt_one.trans C.one_lt_densityUpper) hW.le hY
   refine ⟨B, hB, ?_⟩
   intro Udom θ hθ j x hx y hy m
-  let q := if j = 0 then (fun _ : Covariate d => (1 : ℝ)) else dyadicNormalizedDensity θ (j - 1) x
+  let q := if 𝔚 then 𝙃 else 𝖒 dyadicNormalizedDensity
   have hqm : Measurable q := by
-    by_cases hj : j = 0
-    · simpa [q, hj, ModelConstants.withDomain] using (measurable_const : Measurable (fun _ : Covariate d => (1 : ℝ)))
-    · simpa [q, hj, ModelConstants.withDomain] using dyadicNormalizedDensity_measurable (C.withDomain Udom) θ hθ (j - 1) x
-  have hqb : ∀ᵐ w ∂cubeVolume d, C.densityLower ≤ q w ∧ q w ≤ C.densityUpper := by
-    by_cases hj : j = 0
-    · exact Filter.Eventually.of_forall (fun _ => by
-        simpa [q, hj, ModelConstants.withDomain] using And.intro C.densityLower_lt_one.le C.one_lt_densityUpper.le)
-    · simpa [q, hj, ModelConstants.withDomain] using dyadicNormalizedDensity_bounds (C.withDomain Udom) θ hθ (j - 1) x
-  have hV (t : Bool) : ‖(if j = 0 then (0 : Bool → Fin (anchoredDimension d C.order) → ℝ)
-      else dyadicFinPilotMoments θ (j - 1) x) t‖ ≤ W := by
-    by_cases hj : j = 0
+    by_cases hj : 𝔚
+    · simpa [q, hj, ModelConstants.withDomain] using measurable_const
+    · simpa [q, hj, ModelConstants.withDomain] using 𝖐 𝕬
+  have hqb : 𝔡 := by
+    by_cases hj : 𝔚
+    · exact Filter.Eventually.of_forall fun _ => by
+        simpa [q, hj, ModelConstants.withDomain] using And.intro C.densityLower_lt_one.le C.one_lt_densityUpper.le
+    · simpa [q, hj, ModelConstants.withDomain] using 𝖐 𝕭
+  have hV t : ‖(if 𝔚 then (0 : Bool → Fin 𝔉 → ℝ)
+      else 𝖒 dyadicFinPilotMoments) t‖ ≤ W := by
+    by_cases hj : 𝔚
     · simpa [hj] using hW.le
-    · simpa only [hj, ite_false] using hmom Udom θ hθ (j - 1) x hx t
-  have hd := hder (dyadicNormalizedAnchor j x) (dyadicNormalizedAnchor (j - 1) x)
-    (gridNormalizedAnchor_mem_cube ((2 : ℕ) ^ j) (by positivity) x hx)
-    (gridNormalizedAnchor_mem_cube ((2 : ℕ) ^ (j - 1)) (by positivity) x hx)
-    (dyadicNormalizedDensity θ j x) q
-    (dyadicNormalizedDensity_measurable (C.withDomain Udom) θ hθ j x) hqm
-    (dyadicNormalizedDensity_bounds (C.withDomain Udom) θ hθ j x) hqb
-    (dyadicFinPilotMoments θ j x) (if j = 0 then 0 else dyadicFinPilotMoments θ (j - 1) x)
-    (hmom Udom θ hθ j x hx) hV y hy m 0 (fun i => Fin.elim0 i)
-  rw [← dyadicIncrementRawMean_eq_with_virtual_parent (C.withDomain Udom) θ hθ j x hx] at hd
+    grind
+  have hd := hder 𝔨 𝖐 dyadicNormalizedAnchor
+    (gridNormalizedAnchor_mem_cube 𝔴  𝖠₃  x hx)
+    (gridNormalizedAnchor_mem_cube (2 ^ 𝔐)  𝖠₃  x hx)
+    𝕸 dyadicNormalizedDensity q
+    𝔓 hqm
+    𝔒 hqb
+    𝕸 dyadicFinPilotMoments (if 𝔚 then 0 else 𝖒 dyadicFinPilotMoments)
+    𝕶 hmom hV y hy m 0 Fin.elim0
+  rw [← 𝖌 dyadicIncrementRawMean_eq_with_virtual_parent hx] at hd
   simpa only [dyadicPopulationPolynomial, iteratedFDeriv_zero_apply, Nat.factorial_zero, Nat.cast_one, pow_zero, mul_one,
     Fin.prod_univ_zero] using hd
 
-theorem uniform_domain_admissible_dyadicPopulationRawPolynomial_uniform_bound {d : ℕ} (C : ModelConstants d)
-    (hs : 1 < C.smoothness) :
-    ∃ B : ℝ, 0 < B ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ t : Bool, ∀ m : ℕ,
-        ‖dyadicPopulationRawPolynomial C θ j x t m‖ ≤ B := by
+end
+
+𝗇 𝕱 𝕶 hb
+𝗇 𝖀 dyadicPopulationRawPolynomial C θ j x
+theorem uniform_domain_admissible_dyadicPopulationRawPolynomial_uniform_bound C
+    (hs : 𝖇) :
+    ∃ B , 𝘶₁ ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ j , ∀ x ∈ unitCube d, ∀ t , ∀ m ,
+        ‖𝖀 t m‖ ≤ B := by
   let := anchoredIndex_nonempty_of_one_lt_smoothness C hs
   obtain ⟨B, hB, hb⟩ := uniform_domain_admissible_dyadicPopulationPolynomial_uniform_bound C 1 zero_le_one
-  refine ⟨2 * B, mul_pos (by norm_num) hB, ?_⟩
+  refine ⟨2 * B, mul_pos  𝖠₄  hB, ?_⟩
   intro Udom θ hθ j x hx t m
-  have h0 := hb Udom θ hθ j x hx 0 (by norm_num) m
-  have h1 := hb Udom θ hθ j x hx 1 (by norm_num) m
-  have he0 : dyadicPopulationRawPolynomial C θ j x false m = dyadicPopulationPolynomial C θ j x 0 m := by
+  have h0 := 𝕱 0  𝖠₄  m
+  have h1 := 𝕱 1  𝖠₄  m
+  have he0 : 𝖀 false m = 𝔜 0 m := by
     rw [dyadicPopulationPolynomial_affine, zero_smul, sub_zero]
   cases t
-  · have hf : ‖dyadicPopulationRawPolynomial C θ j x false m‖ ≤ B := by rw [he0]; exact h0
-    exact hf.trans (by linarith)
-  · have he : dyadicPopulationRawPolynomial C θ j x true m =
-        dyadicPopulationPolynomial C θ j x 0 m - dyadicPopulationPolynomial C θ j x 1 m := by
+  · grind
+  · have he : 𝖀 true m =
+        𝔜 0 m - 𝔜 1 m := by
       rw [dyadicPopulationPolynomial_affine, dyadicPopulationPolynomial_affine]
-      simp only [zero_smul, sub_zero, one_smul]
-      abel
+      simp
     rw [he]
-    exact (norm_sub_le _ _).trans (by linarith)
+    exact 𝖋 norm_sub_le 𝖡₄
 
-theorem uniform_domain_admissible_dyadicPopulationPilotSum_uniform_bound {d : ℕ} (C : ModelConstants d)
-    (hs : 1 < C.smoothness) :
-    ∃ R : ℝ, 0 ≤ R ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ J : ℕ, ∀ m : ℕ → ℕ, ∀ x ∈ unitCube d, ∀ y ∈ unitCube d,
-      y ∈ dyadicPilotCell J x → ∀ t : Bool, |dyadicPopulationPilotSum C θ J m t (x, y)| ≤ R := by
+𝗇 𝔱 𝖮
+theorem uniform_domain_admissible_dyadicPopulationPilotSum_uniform_bound C
+    (hs : 𝖇) :
+    ∃ R , 𝖡₂ ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ J , ∀ m , ∀ x ∈ unitCube d, ∀ y ∈ unitCube d,
+      𝕿 → ∀ t , |𝕷 dyadicPopulationPilotSum t 𝔱| ≤ R := by
   obtain ⟨B, hB, hb⟩ := uniform_domain_admissible_dyadicPopulationRawPolynomial_uniform_bound C hs
-  let R := (2 * (anchoredDimension d C.order : ℝ) * Real.sqrt (d : ℝ)) * B
-  refine ⟨R, by dsimp [R]; positivity, ?_⟩
+  let R := 2 * 𝔉 * Real.sqrt d * B
+  refine ⟨R, 𝖠₃, ?_⟩
   intro Udom θ hθ J m x hx y hy hcell t
-  unfold dyadicPopulationPilotSum
-  apply (Finset.abs_sum_le_sum_abs _ _).trans
+  apply 𝖋 Finset.abs_sum_le_sum_abs
   calc
-    _ ≤ ∑ j ∈ Finset.range (J + 1), (∑ i, |dyadicPilotRow (ℓ := C.order) j x y i|) * B := by
+    _ ≤ ∑ j ∈ 𝔛, (∑ i, |𝕲 i|) * B := by
       apply Finset.sum_le_sum
       intro j hj
-      exact (finite_row_abs_dot_le_pi_norm _ _).trans
-        (mul_le_mul_of_nonneg_left (hb Udom θ hθ j x hx t (m j)) (Finset.sum_nonneg (fun _ _ => abs_nonneg _)))
-    _ = (∑ j ∈ Finset.range (J + 1), ∑ i, |dyadicPilotRow (ℓ := C.order) j x y i|) * B := by
+      exact 𝖋 finite_row_abs_dot_le_pi_norm
+        $ mul_le_mul_of_nonneg_left (𝕱 t $ m j ) $ Finset.sum_nonneg 𝖢
+    _ = (∑ j ∈ 𝔛, ∑ i, |𝕲 i|) * B := by
       rw [Finset.sum_mul]
     _ ≤ R := mul_le_mul_of_nonneg_right (dyadicPilotRow_total_abs_le J x y hx hy hcell) hB.le
 
-theorem uniform_domain_admissible_dyadicPopulationCoefficients_uniform_bound {d : ℕ} (C : ModelConstants d)
-    (hs : 1 < C.smoothness) :
-    ∃ Cp : ℝ, 0 < Cp ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
-      ∀ J : ℕ, ∀ m : ℕ → ℕ, ∀ x ∈ unitCube d, ∀ y ∈ unitCube d,
-      y ∈ dyadicPilotCell J x → ‖dyadicPopulationCoefficients C θ J m (x, y)‖ ≤ Cp := by
+𝗇 𝔞 1 + R
+theorem uniform_domain_admissible_dyadicPopulationCoefficients_uniform_bound C
+    (hs : 𝖇) :
+    ∃ Cp , 0 < Cp ∧ ∀ Udom , ∀ θ , 𝔊 →
+      ∀ J , ∀ m , ∀ x ∈ unitCube d, ∀ y ∈ unitCube d,
+      𝕿 → ‖𝕷 dyadicPopulationCoefficients 𝔱‖ ≤ Cp := by
   obtain ⟨R, hR, hb⟩ := uniform_domain_admissible_dyadicPopulationPilotSum_uniform_bound C hs
-  refine ⟨Real.sqrt 3 * (1 + R), mul_pos (by positivity) (by positivity), ?_⟩
+  refine ⟨Real.sqrt 3 * 𝔞, mul_pos  𝖠₃  𝖠₃ , ?_⟩
   intro Udom θ hθ J m x hx y hy hc
-  have ht := hb Udom θ hθ J m x hx y hy hc true
-  have hf := hb Udom θ hθ J m x hx y hy hc false
-  have hcoord (i : Fin 3) : |dyadicPopulationCoefficients C θ J m (x, y) i| ≤ 1 + R := by
+  have hcoord i : |𝕷 dyadicPopulationCoefficients 𝔱 i| ≤ 𝔞 := by
     fin_cases i
     · simpa [dyadicPopulationCoefficients] using hR
-    · change |-1 + dyadicPopulationPilotSum C θ J m true (x, y)| ≤ 1 + R
-      exact (abs_add_le _ _).trans (by simpa using add_le_add_left ht 1)
-    · change |-dyadicPopulationPilotSum C θ J m false (x, y)| ≤ 1 + R
-      rw [abs_neg]
-      exact hf.trans (by linarith)
+    · change |-1 + 𝕷 dyadicPopulationPilotSum true 𝔱| ≤ 𝔞
+      grind
+    · change |-𝕷 dyadicPopulationPilotSum false 𝔱| ≤ 𝔞
+      grind
   rw [EuclideanSpace.norm_eq, Real.sqrt_le_iff]
-  refine ⟨by positivity, ?_⟩
+  refine ⟨𝖠₃, ?_⟩
   calc
-    (∑ i : Fin 3, ‖dyadicPopulationCoefficients C θ J m (x, y) i‖ ^ 2) ≤ ∑ _i : Fin 3, (1 + R) ^ 2 := by
-      apply Finset.sum_le_sum
-      intro i _
-      exact pow_le_pow_left₀ (norm_nonneg _) (by simpa only [Real.norm_eq_abs] using hcoord i) 2
-    _ = 3 * (1 + R) ^ 2 := by simp
-    _ = (Real.sqrt 3 * (1 + R)) ^ 2 := by rw [mul_pow, Real.sq_sqrt (by norm_num)]
-
-end NearlyMinimax
+     ∑ i : Fin 3, ‖𝕷 dyadicPopulationCoefficients 𝔱 i‖ ^ 2 ≤ ∑ _i : Fin 3, 𝔞 ^ 2 := by
+      bound
+    _ = 3 * 𝔞 ^ 2 := 𝖢₄
+    _ = (Real.sqrt 3 * 𝔞) ^ 2 := 𝖤₃

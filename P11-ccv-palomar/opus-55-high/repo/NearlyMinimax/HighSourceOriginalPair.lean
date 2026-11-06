@@ -1,70 +1,76 @@
 module
 
 public import NearlyMinimax.HighSourceOriginalResponse
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Actual count-two radial cancellation in the original canonical
 periodic-field source, with all response positivity guards derived. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
+𝚫
+𝚪
+𝚨
+𝚩
 set_option maxHeartbeats 1600000
-attribute [local instance] Classical.propDecidable
-attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
+𝚬
+𝚿
 
-theorem completeSource_original_count_two {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) :
-    ∃ Cfr0 eta0 : ℝ, 1 ≤ Cfr0 ∧ 0 < eta0 ∧
-      ∀ k D M q : ℕ, ∀ (_ : NeZero k), ∀ (_ : LinearOrder (HighWindowLabels d k)),
-      4 ≤ k → 3 ≤ D → 2 ≤ q → highCenterResolutionThreshold C ≤ (M : ℝ) →
-      ∀ Cfr lam ell N mu cf : ℝ, Cfr0 ≤ Cfr → 0 < ell → ell < N → 0 ≤ cf →
-      cf*(k : ℝ)^(-C.smoothness) ≤ eta0 →
-      ∀ V : ℝ, |V-Q.v| ≤ Q.ρ → ∀ j : HighWindowLabels d k,
-      ∀ h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-        (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-          (C.densityUpper-1/(M : ℝ)) Cfr lam ell N mu)),
-      ∀ x : Fin 2 → Covariate d, (∀ i, x i ∈ highTorusPatch d k j) →
-      ∀ y : Fin 2 → Fin 3,
-      let R := completeSourceRows C k D M q Cfr lam ell N mu
-      let eta := cf*(k : ℝ)^(-C.smoothness)
-      let c := (highUnionSourceState C R h).2
-      let U := fun i : Fin 2 => highLocalCoordinates d k j (x i)
-      let g := fun i : Fin 2 => highLocalFieldWithout d k D eta c j (x i)
-      let w := fun i : Fin 2 => highPeriodicTensor d k j (x i)
+𝗇 𝔄 coefficientRegression eta g w 𝙬 $ c j
+𝗇 𝔅 𝖿
+𝗇 𝔇 fun i => highLocalFieldWithout d k D eta c j $ x i
+𝗇 𝔈 N*𝙹
+𝗇 𝔉 𝖻 lam ell N mu
+𝗃 𝔎 ἀ d k j $ x i
+𝗇 𝔊 fun i => 𝔎 highLocalCoordinates
+𝗇 𝔍 fun i => 𝔎 highPeriodicTensor
+𝗇 𝔏 𝖯
+𝗇 𝔐 𝙾
+theorem completeSource_original_count_two [NeZero d]
+    C (Q : LowSmoothnessTernaryConstants C) :
+    ∃ Cfr0 eta0 , 𝚣₂ ∧ 𝖴₁ ∧
+      ∀ k D M q : ℕ, ∀ (_ : NeZero k), ∀ (_ : LinearOrder 𝙯),
+      𝗑 → 𝗕 → 𝖯₂ → 𝘧 →
+      ∀ Cfr lam ell N mu cf : ℝ, Cfr0 ≤ Cfr → 𝚁₁ → 𝘈₂ → 𝚐₁ →
+      𝔅 ≤ eta0 →
+      ∀ V , |𝖮₂| ≤ Q.ρ → ∀ j ,
+      ∀ h ,
+      ∀ x , (∀ i, x i ∈ 𝘋) →
+      ∀ y ,
+      let R := 𝔉
+      let eta := 𝔅
+      let c := 𝔏
+      let U := 𝔊
+      let g := 𝔇
+      let w := 𝔍
       highUnionSourceMarkedNumerator C R 2 Q.a V eta j h x y =
-        eta^2*w 0*w 1*highUnionSourceDensity C R h (x 0)*highUnionSourceDensity C R h (x 1)*
-        ((1+N*exactEuclideanDistance (U 0) (U 1))*Real.exp (-(N*exactEuclideanDistance (U 0) (U 1))))*
-        ternaryMeanDerivative Q.a (coefficientRegression eta g w (fun i => highFrameFeature (U i)) (c j) 0) (y 0)*
-        ternaryMeanDerivative Q.a (coefficientRegression eta g w (fun i => highFrameFeature (U i)) (c j) 1) (y 1) := by
+        eta^2*w 0*w 1*𝔐 (x 0)*𝔐 (x 1)*
+        ((1+𝔈)*Real.exp (-𝔈))*
+        ternaryMeanDerivative Q.a (𝔄 0) (y 0)*
+        ternaryMeanDerivative Q.a (𝔄 1) (y 1) := by
   obtain ⟨Cfr0,eta0,hfr0,heta0,hresponse⟩ := completeSource_original_response_exact_and_low_counts C Q
   refine ⟨Cfr0,eta0,hfr0,heta0,?_⟩
   intro k D M q hk0 horder hk hD hq hM Cfr lam ell N mu cf hfr hell hellN hcf heta V hV j h x hx y
   letI := hk0
   letI := horder
-  let R := completeSourceRows C k D M q Cfr lam ell N mu
-  let eta := cf*(k : ℝ)^(-C.smoothness)
-  let c := (highUnionSourceState C R h).2
-  let U := fun i : Fin 2 => highLocalCoordinates d k j (x i)
-  let p := fun i : Fin 2 => highUnionSourceDensity C R h (x i)
-  let g := fun i : Fin 2 => highLocalFieldWithout d k D eta c j (x i)
-  let w := fun i : Fin 2 => highPeriodicTensor d k j (x i)
-  have he := (hresponse k D M q hk0 horder hk hD (by omega) hM Cfr lam ell N mu cf
+  let R := 𝔉
+  let eta := 𝔅
+  let c := 𝔏
+  let U := 𝔊
+  let p := fun i => 𝔐 $ x i
+  let g := 𝔇
+  let w := 𝔍
+  have he := (hresponse k D M q hk0 horder hk hD  𝖡₃  hM Cfr lam ell N mu cf
     hfr hell hellN hcf heta V hV j h 2 x hx y).1
-  have G := completeSourceRows_guards C k D M q hD (by omega) hM Cfr lam ell N mu
+  have G := completeSourceRows_guards C k D M q hD  𝖡₃  hM Cfr lam ell N mu
     (hfr0.trans hfr) hell hellN
-  obtain ⟨ha,hab⟩ := high_source_interval_numeric C (M : ℝ) hM
-  have hM2 : 2 ≤ M := by exact_mod_cast (highCenterResolution_guards C (M : ℝ) hM).1
-  have hp (i : Fin 2) : p i ∈ Icc (C.densityLower+1/(M : ℝ)) (C.densityUpper-1/(M : ℝ)) :=
-    highUnionSourceDensity_interval C R G h (x i)
+  obtain ⟨ha,hab⟩ := 𝗌₁
+  have hp (i : Fin 2) :=
+    𝘄₁
   have hU (i : Fin 2) (r : Fin d) : |U i r| ≤ 2 :=
-    (highLocalCoordinates_abs_le_one d k j (x i) r).trans (by norm_num)
-  have hQ (i : Fin 2) : U i ∈ hyperplaneCube d :=
-    highLocalCoordinates_abs_le_one d k j (x i)
-  exact he.trans (completeSourceRawNumerator_count_two _ _ lam ell N mu ha hab hell.le hellN.le
-    D M q hD hM2 hq Cfr Q.a V eta (by linarith) U hU hQ p g w hp (c j) y)
-
-end NearlyMinimax
+    (𝔎 highLocalCoordinates_abs_le_one r).trans 𝖠₄
+  have hQ (i : Fin 2) :=
+    𝔎 highLocalCoordinates_abs_le_one
+  exact he.trans $ completeSourceRawNumerator_count_two _ _ lam ell N mu ha hab hell.le hellN.le
+    D M q hD (by exact_mod_cast (𝚀₁ hM).1) hq Cfr Q.a V eta  𝖡₄  U hU hQ p g w hp (c j) y

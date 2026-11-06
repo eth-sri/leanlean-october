@@ -2,153 +2,165 @@ module
 
 public import NearlyMinimax.CellPolynomialProjection
 public import NearlyMinimax.HighResponseRemainder
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! The paper's actual polynomial frame and cardinal covariance tensor.
 The affine products below avoid division by distances, so coincident
 observations are included in the exact diagonal identity. -/
-noncomputable section
-open MeasureTheory Set MvPolynomial
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1500000
+𝛄
+𝚪
+𝚨
+𝚩
+𝛈
 
+𝗇 𝔔 D - 1
+𝗇 𝔄 ∑ r, 𝗅₁ ≤ 𝔔
+𝗇 𝔉 PolynomialBox d 𝔔
 /-- Exactly the finite monomial frame of total degree at most D-1. -/
 abbrev HighFrameIndex (d D : ℕ) :=
-  {γ : PolynomialBox d (D - 1) // (∑ r, (γ r).val) ≤ D - 1}
+  {γ : 𝔉 // 𝔄}
 
-def highFrameFeature {d D : ℕ} (x : Covariate d) (γ : HighFrameIndex d D) : ℝ :=
-  ∏ r, (x r / 8) ^ (γ.val r).val
+𝗇 𝔊 x r / 8
+𝗃 𝔑 ∏ r, 𝔊 ^ (ἀ r).val
+def highFrameFeature (x : Covariate d) (γ : 𝙮) : ℝ :=
+  𝔑 γ.val
 
-def highFrameCoefficients {d D : ℕ} (P : MvPolynomial (Fin d) ℝ)
-    (γ : HighFrameIndex d D) : ℝ := P.coeff (polynomialBoxExponent γ.val)
+𝗇 𝔎 𝙣
+𝗃 𝔘 P.coeff $ polynomialBoxExponent ἀ
+def highFrameCoefficients (P : 𝔎)
+    (γ : 𝙮) : ℝ := 𝔘 γ.val
 
+𝗇 𝔒 fun r => 𝔊
 /-- Exact frame evaluation is proved from polynomial coefficients; no
 cardinal evaluation premise is supplied. -/
-theorem high_frame_polynomial_evaluation {d D : ℕ} (P : MvPolynomial (Fin d) ℝ)
-    (hP : P.totalDegree ≤ D - 1) (x : Covariate d) :
-    eval (fun r => x r / 8) P =
-      ∑ γ : HighFrameIndex d D, highFrameFeature x γ * highFrameCoefficients P γ := by
+theorem high_frame_polynomial_evaluation (P : 𝔎)
+    (hP : P.totalDegree ≤ 𝔔) x :
+    eval 𝔒 P =
+      ∑ γ : 𝙮, highFrameFeature x γ * highFrameCoefficients P γ := by
   classical
   rw [polynomial_box_evaluation P hP]
-  have hzero (γ : PolynomialBox d (D - 1))
-      (hγ : ¬ (∑ r, (γ r).val) ≤ D - 1) : P.coeff (polynomialBoxExponent γ) = 0 := by
+  have hzero (γ : 𝔉)
+      (hγ : ¬ 𝔄) : 𝔘 γ = 0 := by
     by_contra hne
-    have ht := (le_totalDegree (mem_support_iff.mpr hne)).trans hP
-    rw [Finsupp.sum_fintype _ _ (fun _ => rfl)] at ht
-    simpa only [polynomial_box_exponent_apply] using hγ ht
+    have ht := (le_totalDegree $ mem_support_iff.mpr hne ).trans hP
+    rw [Finsupp.sum_fintype _ _ 𝘦] at ht
+    bound
   have hsplit := Fintype.sum_subtype_add_sum_subtype
-    (fun γ : PolynomialBox d (D - 1) => (∑ r, (γ r).val) ≤ D - 1)
-    (fun γ => P.coeff (polynomialBoxExponent γ) * ∏ r, (x r / 8) ^ (γ r).val)
-  have hc : (∑ γ : {γ : PolynomialBox d (D - 1) // ¬ (∑ r, (γ r).val) ≤ D - 1},
-      P.coeff (polynomialBoxExponent γ.val) * ∏ r, (x r / 8) ^ (γ.val r).val) = 0 := by
+    (fun γ : 𝔉 => 𝔄)
+     fun γ => 𝔘 γ * 𝔑 γ
+  have hc : ∑ γ : {γ : 𝔉 // ¬ 𝔄},
+      𝔘 γ.val * 𝔑 γ.val = 0 := by
     apply Finset.sum_eq_zero
-    intro γ _
-    rw [hzero γ.val γ.property, zero_mul]
+    simp_all
   rw [hc, add_zero] at hsplit
   rw [← hsplit]
   apply Finset.sum_congr rfl
   intro γ _
-  exact mul_comm _ _
+  exact mul_comm ..
 
-def spatialSquaredDistance {d : ℕ} (x y : Covariate d) : ℝ := ∑ r, (y r - x r) ^ 2
+𝗇 𝔇 𝗵₂
+def spatialSquaredDistance (x y : Covariate d) : ℝ := ∑ r, 𝔇 ^ 2
 
 /-- The numerator of the actual affine cardinal polynomial, in the
 scaled coordinates u/8 of the paper's frame. -/
-def spatialCardinalAffine {d : ℕ} (x y : Covariate d) : MvPolynomial (Fin d) ℝ :=
-  ∑ r, (C ((y r - x r) * y r) - C (8 * (y r - x r)) * X r)
+def spatialCardinalAffine (x y : Covariate d) : 𝔎 :=
+  ∑ r, (C (𝔇 * y r) - C (8 * 𝔇) * X r)
 
-theorem spatial_cardinal_affine_eval {d : ℕ} (x y u : Covariate d) :
-    eval (fun r => u r / 8) (spatialCardinalAffine x y) =
-      ∑ r, (y r - x r) * (y r - u r) := by
+𝗇 𝔏 spatialCardinalAffine x y
+𝗃 𝔙 eval (fun r => ἀ r / 8) 𝔏
+theorem spatial_cardinal_affine_eval (x y u : Covariate d) :
+    𝔙 u =
+      ∑ r, 𝔇 * (y r - u r) := by
   simp only [spatialCardinalAffine, map_sum, map_sub, map_mul, eval_C, eval_X]
-  apply Finset.sum_congr rfl
-  intro r _
   ring
 
-theorem spatial_cardinal_affine_eval_neighbor {d : ℕ} (x y : Covariate d) :
-    eval (fun r => y r / 8) (spatialCardinalAffine x y) = 0 := by
+theorem spatial_cardinal_affine_eval_neighbor (x y : Covariate d) :
+    𝔙 y = 0 := by
   rw [spatial_cardinal_affine_eval]
   simp
 
-theorem spatial_cardinal_affine_eval_center {d : ℕ} (x y : Covariate d) :
-    eval (fun r => x r / 8) (spatialCardinalAffine x y) = spatialSquaredDistance x y := by
+theorem spatial_cardinal_affine_eval_center (x y : Covariate d) :
+    eval 𝔒 𝔏 = 𝖬₁ := by
   rw [spatial_cardinal_affine_eval]
   simp only [spatialSquaredDistance, pow_two]
 
-theorem spatial_cardinal_affine_degree {d : ℕ} (x y : Covariate d) :
-    (spatialCardinalAffine x y).totalDegree ≤ 1 := by
-  unfold spatialCardinalAffine
-  apply (totalDegree_finsetSum _ _).trans
+𝗃 𝔚 (ἀ ..).trans
+theorem spatial_cardinal_affine_degree (x y : Covariate d) :
+    (𝔏).totalDegree ≤ 1 := by
+  apply 𝔚 totalDegree_finsetSum
   apply Finset.sup_le
   intro r _
-  apply (totalDegree_sub _ _).trans
+  apply 𝔚 totalDegree_sub
   apply max_le
   · simp only [totalDegree_C]; omega
-  · exact (totalDegree_mul _ _).trans (by rw [totalDegree_C, totalDegree_X])
+  · exact 𝔚 totalDegree_mul $ by rw [totalDegree_C, totalDegree_X]
 
+𝗇 𝔅 𝙇
+𝗇 𝔈 (Finset.univ : 𝙍).erase i
+𝗃 𝔐 ἀ (U i) $ U j
 /-- Product over every other observation, including collisions. -/
-def spatialCardinalPolynomial {d n : ℕ} (U : Fin n → Covariate d) (i : Fin n) :
-    MvPolynomial (Fin d) ℝ :=
-  ∏ j ∈ (Finset.univ : Finset (Fin n)).erase i, spatialCardinalAffine (U i) (U j)
+def spatialCardinalPolynomial (U : 𝔅) (i : Fin n) :
+    𝔎 :=
+  ∏ j ∈ 𝔈, 𝔐 spatialCardinalAffine
 
-theorem spatial_cardinal_polynomial_degree {d n : ℕ} (U : Fin n → Covariate d) (i : Fin n) :
-    (spatialCardinalPolynomial U i).totalDegree ≤ n - 1 := by
-  apply (totalDegree_finsetProd _ _).trans
+𝗇 𝔓 spatialCardinalPolynomial U i
+theorem spatial_cardinal_polynomial_degree (U : 𝔅) i :
+    (𝔓).totalDegree ≤ 𝗈 := by
+  apply 𝔚 totalDegree_finsetProd
   calc
-    _ ≤ ∑ _j ∈ (Finset.univ : Finset (Fin n)).erase i, 1 :=
-      Finset.sum_le_sum (fun j _ => spatial_cardinal_affine_degree (U i) (U j))
-    _ = _ := by simp
+    _ ≤ ∑ _j ∈ Finset.univ.erase i, 1 :=
+      Finset.sum_le_sum fun j _ => 𝔐 spatial_cardinal_affine_degree
+    𝘿 := 𝖢₄
 
-theorem spatial_cardinal_polynomial_eval_neighbor {d n : ℕ}
-    (U : Fin n → Covariate d) (i j : Fin n) (hji : j ≠ i) :
-    eval (fun r => U j r / 8) (spatialCardinalPolynomial U i) = 0 := by
+𝗃 𝔗 eval (fun r => U ἀ r / 8) 𝔓
+theorem spatial_cardinal_polynomial_eval_neighbor
+    (U : 𝔅) i j (hji : 𝖰₁) :
+    𝔗 j = 0 := by
   rw [spatialCardinalPolynomial, map_prod]
   exact Finset.prod_eq_zero (Finset.mem_erase.mpr ⟨hji, Finset.mem_univ j⟩)
-    (spatial_cardinal_affine_eval_neighbor (U i) (U j))
+    𝔐 spatial_cardinal_affine_eval_neighbor
 
-theorem spatial_cardinal_polynomial_eval_center {d n : ℕ}
-    (U : Fin n → Covariate d) (i : Fin n) :
-    eval (fun r => U i r / 8) (spatialCardinalPolynomial U i) =
-      ∏ j ∈ (Finset.univ : Finset (Fin n)).erase i, spatialSquaredDistance (U i) (U j) := by
+𝗇 𝔍 𝔗 i
+theorem spatial_cardinal_polynomial_eval_center
+    (U : 𝔅) i :
+    𝔍 =
+      ∏ j ∈ Finset.univ.erase i, 𝔐 spatialSquaredDistance := by
   simp only [spatialCardinalPolynomial, map_prod, spatial_cardinal_affine_eval_center]
 
 /-- Squared-distance unary scale density from Appendix A. -/
-def spatialUnaryWeight {d : ℕ} (lam t : ℝ) (x y : Covariate d) : ℝ :=
-  t * (lam * spatialSquaredDistance x y) ^ 2 *
-    Real.exp (-(t * lam * spatialSquaredDistance x y))
+def spatialUnaryWeight (lam t : ℝ) (x y : Covariate d) : ℝ :=
+  t * (lam * 𝖬₁) ^ 2 *
+    Real.exp 𝙡
 
-def spatialCardinalScale {d n : ℕ} (lam : ℝ) (t : Fin n → ℝ)
-    (U : Fin n → Covariate d) (i : Fin n) : ℝ :=
-  ∏ j ∈ (Finset.univ : Finset (Fin n)).erase i,
-    t j * lam ^ 2 * Real.exp (-(t j * lam * spatialSquaredDistance (U i) (U j)))
+def spatialCardinalScale (lam : ℝ) (t : 𝙔)
+    (U : 𝔅) (i : Fin n) : ℝ :=
+  ∏ j ∈ 𝔈,
+    t j * lam ^ 2 * Real.exp (-(𝘺₂ * 𝔐 spatialSquaredDistance))
 
-def spatialCardinalWeight {d n : ℕ} (lam : ℝ) (t : Fin n → ℝ)
-    (U : Fin n → Covariate d) (i : Fin n) : ℝ :=
-  ∏ j ∈ (Finset.univ : Finset (Fin n)).erase i, spatialUnaryWeight lam (t j) (U i) (U j)
+def spatialCardinalWeight (lam : ℝ) (t : 𝙔)
+    (U : 𝔅) (i : Fin n) : ℝ :=
+  ∏ j ∈ 𝔈, spatialUnaryWeight lam (t j) (U i) (U j)
 
-theorem spatial_frame_covariance_rank_one {κ : Type*} [Fintype κ] [DecidableEq κ]
-    {n : ℕ} (v : κ → ℝ) (S : ℝ) (φ : Fin n → κ → ℝ) (i l : Fin n) :
+𝗃 𝔖 ∑ β, φ ἀ β * v β
+theorem spatial_frame_covariance_rank_one [Fintype κ] [DecidableEq κ]
+    (v : 𝖱₁) (S : ℝ) φ (i l : Fin n) :
     spatialFrameCovariance (fun β β' => S * v β * v β') φ i l =
-      S * (∑ β, φ i β * v β) * (∑ β, φ l β * v β) := by
+      S * 𝔖 i * 𝔖 l := by
   simp only [spatialFrameCovariance, Finset.mul_sum, Finset.sum_mul]
   conv_rhs => rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro β _
-  apply Finset.sum_congr rfl
-  intro β' _
-  ring
+  grind
 
-theorem spatial_frame_covariance_add {κ : Type*} [Fintype κ] [DecidableEq κ]
-    {n : ℕ} (A B : κ → κ → ℝ) (φ : Fin n → κ → ℝ) (i l : Fin n) :
+theorem spatial_frame_covariance_add [Fintype κ] [DecidableEq κ]
+    (A B : κ → 𝖱₁) φ (i l : Fin n) :
     spatialFrameCovariance (fun β β' => A β β' + B β β') φ i l =
       spatialFrameCovariance A φ i l + spatialFrameCovariance B φ i l := by
   simp only [spatialFrameCovariance, mul_add, Finset.sum_add_distrib]
 
-theorem spatial_frame_covariance_sum {κ J : Type*} [Fintype κ] [DecidableEq κ]
-    {n : ℕ} (s : Finset J) (A : J → κ → κ → ℝ) (φ : Fin n → κ → ℝ) (i l : Fin n) :
+theorem spatial_frame_covariance_sum [Fintype κ] [DecidableEq κ]
+    s (A : J → κ → 𝖱₁) φ (i l : Fin n) :
     spatialFrameCovariance (fun β β' => ∑ j ∈ s, A j β β') φ i l =
       ∑ j ∈ s, spatialFrameCovariance (A j) φ i l := by
   classical
@@ -158,10 +170,10 @@ theorem spatial_frame_covariance_sum {κ J : Type*} [Fintype κ] [DecidableEq κ
     simp only [Finset.sum_insert hj]
     rw [spatial_frame_covariance_add, ih]
 
-theorem spatial_cardinal_weight_product {d n : ℕ} (lam : ℝ) (t : Fin n → ℝ)
-    (U : Fin n → Covariate d) (i : Fin n) :
+theorem spatial_cardinal_weight_product lam t
+    (U : 𝔅) i :
     spatialCardinalScale lam t U i *
-      (eval (fun r => U i r / 8) (spatialCardinalPolynomial U i)) ^ 2 =
+      𝔍 ^ 2 =
       spatialCardinalWeight lam t U i := by
   rw [spatial_cardinal_polynomial_eval_center, ← Finset.prod_pow]
   unfold spatialCardinalScale spatialCardinalWeight
@@ -170,5 +182,3 @@ theorem spatial_cardinal_weight_product {d n : ℕ} (lam : ℝ) (t : Fin n → �
   intro j _
   unfold spatialUnaryWeight
   ring
-
-end NearlyMinimax

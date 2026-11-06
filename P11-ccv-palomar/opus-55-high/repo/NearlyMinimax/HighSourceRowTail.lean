@@ -2,146 +2,171 @@ module
 
 public import NearlyMinimax.HighResponseTensorTail
 public import NearlyMinimax.CompleteSourceMassAnnihilation
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! All-count response bounds on every actual row of the complete source
 family. The density factors may depend on the full spatial carrier and
 density atom, and are independent only of the response atom. -/
-noncomputable section
-open Set MeasureTheory
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1500000
-attribute [local instance] Classical.propDecidable
+𝚸
+𝚪
+𝚨
+𝚩
+𝛈
+𝚬
 
+𝗇 𝔅 𝘀
+𝗇 𝔐 𝙸
+𝗇 𝔑 𝗳
+𝗇 𝔜 𝙔
+𝗇 𝔟 pPlus^n*highSeparatedDerivativeBudget a ρ
+𝗃 𝔡 fun e => reset e ἀ
+𝗃 𝔢 0 ≤ ἀ
+𝗃 𝔤 ∑ γ, φ ἀ γ*v γ
 section Packet
 variable {Z ι : Type*} [MeasurableSpace Z] [Fintype ι] [DecidableEq ι]
   [MeasurableSpace ι] [MeasurableSingletonClass ι]
 
-theorem highPacket_reference_all_count_bound {n : ℕ}
-    (σ : Measure Z) [IsFiniteMeasure σ] (ad bd : ℝ) (m r D q : ℕ) (hn : 1 ≤ n)
-    (C a V η ρ pPlus : ℝ) (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η)
-    (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2) (hpPlus : 0 ≤ pPlus)
-    (A : Z → ι → ι → ℝ) (hA : ∀ γ δ, Measurable (fun ζ => A ζ γ δ))
-    (hcost : Integrable (separatedMatrixCost A) σ)
-    (hpos : 0 < highPacketMarkMass σ ad bd m r D q C A)
-    (reset : Z × HighDensityMarkIndex m r D → Fin n → ℝ)
-    (hmReset : ∀ i, Measurable (fun e => reset e i))
+𝗇 𝔇 𝔟*𝚍*𝙎
+𝗇 𝔈 fun e i => (hmReset i).comp $ measurable_id.prodMk measurable_const
+𝗇 𝔉 fun ζ e i => hReset 𝘕₂ i
+𝗇 𝔊 ∀ γ δ, Measurable fun ζ => A ζ γ δ
+𝗇 𝔍 fun ζ e => reset 𝘕₂
+𝗇 𝔎 fun e => reset 𝘆₂
+𝗇 𝔏 ∀ i, Measurable 𝔡 i
+𝗃 𝔗 ἀ σ ad bd m r D q C A
+𝗇 𝔓 𝔗 highPacketMarkMass
+𝗇 𝔖 responseTensor_reference_all_count_bound σ q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
+𝗇 𝔙 𝔤 i
+theorem highPacket_reference_all_count_bound
+    (σ : Measure Z) [IsFiniteMeasure σ] (ad bd : ℝ) (m r D q : ℕ) (hn : 𝗚)
+    C a V η ρ pPlus (hC : 𝙴) (ha : 𝙆) (hη : 𝔢 η)
+    (hρ : 𝔢 ρ) (hηρ : η ≤ 𝔐) (hpPlus : 𝔢 pPlus)
+    A (hA : 𝔊)
+    (hcost : 𝙧)
+    (hpos : 0 < 𝔓)
+    (reset : Z × HighDensityMarkIndex m r D → 𝔜)
+    (hmReset : 𝔏)
     (hReset : ∀ e i, |reset e i| ≤ pPlus)
-    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
-    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (hφ : ∀ v : ι → ℝ, (∑ γ, |v γ|) ≤ C⁻¹ → ∀ i, |∑ γ, φ i γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
-    |highMarkedResponseAction (highPacketAbsoluteLaw σ ad bd m r D q C A)
-      (highPacketActivation σ ad bd m r D q C A) a V η
-      (fun e => reset (e.1,e.2.1))
-      (fun e => coefficientReset c (highResponseMarkAtom C q e.2.2).2
-        (highResponseMarkAtom 0 q e.2.2).1) g w φ y| ≤
-      (pPlus^n*highSeparatedDerivativeBudget a ρ*(n : ℝ)^2*η^2)*
-        highPacketMarkMass σ ad bd m r D q C A := by
-  exact responseTensor_reference_all_count_bound σ q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
+    g w φ c
+    (hc : ∑ γ, |c γ| ≤ 𝔑) (hg : ∀ i, |g i| ≤ 𝔐) (hw : ∀ i, |w i| ≤ 1)
+    (hφ : ∀ v : 𝙛, ∑ γ, |v γ| ≤ 𝔑 → ∀ i, |𝔙| ≤ 1)
+    (hp : ∀ f , |f| ≤ ρ → 𝔅) y :
+    |highMarkedResponseAction 𝔗 highPacketAbsoluteLaw
+      𝔗 highPacketActivation a V η
+      𝔎
+      (fun e => coefficientReset c 𝗻₁
+        𝗼₁) g w φ y| ≤
+      𝔇*
+        𝔓 := 𝔖
     (densityPacketWeight ad bd m r D) A
     (highPacketMarkWeight_measurable ad bd m r D q C A hA)
-    (highPacketMarkWeight_integrable σ ad bd m r D q C A hA hcost) hpos
-    (fun ζ e => reset (ζ,e))
-    (fun e i => (hmReset i).comp (measurable_id.prodMk measurable_const))
-    (fun ζ e i => hReset (ζ,e) i) g w φ c hc hg hw hφ hp y
+    (𝔗 highPacketMarkWeight_integrable hA hcost) hpos
+    𝔍
+    𝔈
+    𝔉 g w φ c hc hg hw hφ hp y
 
-theorem finePairPacket_reference_all_count_bound {n : ℕ}
-    (σ : Measure Z) [IsFiniteMeasure σ] (ad bd : ℝ) (M q : ℕ) (hn : 1 ≤ n)
-    (C a V η ρ pPlus : ℝ) (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η)
-    (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2) (hpPlus : 0 ≤ pPlus)
-    (A : Z → ι → ι → ℝ) (hA : ∀ γ δ, Measurable (fun ζ => A ζ γ δ))
-    (hcost : Integrable (separatedMatrixCost A) σ)
-    (hpos : 0 < finePairPacketMarkMass σ ad bd M q C A)
-    (reset : Z × FinePairDensityIndex M → Fin n → ℝ)
-    (hmReset : ∀ i, Measurable (fun e => reset e i))
+𝗃 𝔘 ἀ σ ad bd M q C A
+theorem finePairPacket_reference_all_count_bound
+    (σ : Measure Z) [IsFiniteMeasure σ] (ad bd : ℝ) (M q : ℕ) (hn : 𝗚)
+    C a V η ρ pPlus (hC : 𝙴) (ha : 𝙆) (hη : 𝔢 η)
+    (hρ : 𝔢 ρ) (hηρ : η ≤ 𝔐) (hpPlus : 𝔢 pPlus)
+    A (hA : 𝔊)
+    (hcost : 𝙧)
+    (hpos : 0 < 𝔘 finePairPacketMarkMass)
+    (reset : Z × FinePairDensityIndex M → 𝔜)
+    (hmReset : 𝔏)
     (hReset : ∀ e i, |reset e i| ≤ pPlus)
-    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
-    (hc : ∑ γ, |c γ| ≤ C⁻¹) (hg : ∀ i, |g i| ≤ ρ/2) (hw : ∀ i, |w i| ≤ 1)
-    (hφ : ∀ v : ι → ℝ, (∑ γ, |v γ|) ≤ C⁻¹ → ∀ i, |∑ γ, φ i γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
-    |highMarkedResponseAction (finePairPacketAbsoluteLaw σ ad bd M q C A)
-      (finePairPacketActivation σ ad bd M q C A) a V η
-      (fun e => reset (e.1,e.2.1))
+    g w φ c
+    (hc : ∑ γ, |c γ| ≤ 𝔑) (hg : ∀ i, |g i| ≤ 𝔐) (hw : ∀ i, |w i| ≤ 1)
+    (hφ : ∀ v : 𝙛, ∑ γ, |v γ| ≤ 𝔑 → ∀ i, |𝔙| ≤ 1)
+    (hp : ∀ f , |f| ≤ ρ → 𝔅) y :
+    |highMarkedResponseAction 𝔘 finePairPacketAbsoluteLaw
+      𝔘 finePairPacketActivation a V η
+      𝔎
       (fun e => coefficientReset c (finePairPacketResponseVector M q C e)
-        (finePairPacketResponseTime M q e)) g w φ y| ≤
-      (pPlus^n*highSeparatedDerivativeBudget a ρ*(n : ℝ)^2*η^2)*
-        finePairPacketMarkMass σ ad bd M q C A := by
-  exact responseTensor_reference_all_count_bound σ q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
+        $ finePairPacketResponseTime M q e ) g w φ y| ≤
+      𝔇*
+        𝔘 finePairPacketMarkMass := 𝔖
     (finePairDensityWeight ad bd M) A
     (finePairPacketWeight_measurable ad bd M q C A hA)
-    (finePairPacketWeight_integrable σ ad bd M q C A hA hcost) hpos
-    (fun ζ e => reset (ζ,e))
-    (fun e i => (hmReset i).comp (measurable_id.prodMk measurable_const))
-    (fun ζ e i => hReset (ζ,e) i) g w φ c hc hg hw hφ hp y
+    (𝔘 finePairPacketWeight_integrable hA hcost) hpos
+    𝔍
+    𝔈
+    𝔉 g w φ c hc hg hw hφ hp y
 
 end Packet
 
+𝗇 𝔄 𝙴₂ ad bd C lam ℓ N μ
+𝗇 𝔒 finePairTimeMatrix d 𝗀₂
+𝗇 𝔔 𝗻
+𝗇 𝔚 𝗱
+𝗇 𝔛 highPacket_reference_all_count_bound 𝖶₁ ad bd D
+𝗇 𝔞 𝖼₂
+𝗃 𝔠 ἀ d D M q ad bd C lam ℓ N μ i
+𝗃 𝔣 ἀ d r D lam i.val.2
 /-- All rows of the actual complete source satisfy the same Taylor cap,
 with their own true variation masses. In particular this holds for sample
 counts exceeding the exterior selector degree. -/
-theorem sourceRow_reference_all_count_bound {n : ℕ}
-    (d : ℕ) [NeZero d] (k D M q : ℕ) (hn : 1 ≤ n)
+theorem sourceRow_reference_all_count_bound
+    (d : ℕ) [NeZero d] (k D M q : ℕ) (hn : 𝗚)
     (ad bd C lam ℓ N μ a V η ρ pPlus : ℝ)
-    (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
-    (hηρ : η ≤ ρ/2) (hpPlus : 0 ≤ pPlus)
-    (hpos : ∀ i, 0 < (sourceRowData d k D M q ad bd C lam ℓ N μ).rowMass i)
-    (i : SourceRowIndex d D M q ad bd C lam ℓ N μ)
-    (reset : SourceRowDensityMark d D M q ad bd C lam ℓ N μ i → Fin n → ℝ)
-    (hmReset : ∀ u, Measurable (fun e => reset e u))
+    (hC : 𝙴) (ha : 𝙆) (hη : 𝔢 η) (hρ : 𝔢 ρ)
+    (hηρ : η ≤ 𝔐) (hpPlus : 𝔢 pPlus)
+    (hpos : ∀ i, 0 < (𝔄).rowMass i)
+    i
+    (reset : 𝔠 SourceRowDensityMark → 𝔜)
+    (hmReset : ∀ u, Measurable 𝔡 u)
     (hReset : ∀ e u, |reset e u| ≤ pPlus)
-    (g w : Fin n → ℝ) (φ : Fin n → HighFrameIndex d D → ℝ)
-    (c : HighFrameIndex d D → ℝ) (hc : ∑ γ, |c γ| ≤ C⁻¹)
-    (hg : ∀ u, |g u| ≤ ρ/2) (hw : ∀ u, |w u| ≤ 1)
-    (hφ : ∀ v : HighFrameIndex d D → ℝ, (∑ γ, |v γ|) ≤ C⁻¹ →
-      ∀ u, |∑ γ, φ u γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
-    |highMarkedResponseAction ((sourceRowData d k D M q ad bd C lam ℓ N μ).rowLaw i)
-      ((sourceRowData d k D M q ad bd C lam ℓ N μ).rowActivation i) a V η
-      (fun e => reset (sourceRowDensityProj d D M q ad bd C lam ℓ N μ i e))
+    g w φ
+    c (hc : ∑ γ, |c γ| ≤ 𝔑)
+    (hg : ∀ u, |g u| ≤ 𝔐) (hw : ∀ u, |w u| ≤ 1)
+    (hφ : ∀ v : 𝙮 → ℝ, ∑ γ, |v γ| ≤ 𝔑 →
+      ∀ u, |𝔤 u| ≤ 1)
+    (hp : ∀ f : ℝ, |f| ≤ ρ → 𝔅) y :
+    |highMarkedResponseAction ((𝔄).rowLaw i)
+      ((𝔄).rowActivation i) a V η
+      (fun e => reset $ 𝔠 sourceRowDensityProj e )
       (fun e => coefficientReset c
-        ((sourceRowData d k D M q ad bd C lam ℓ N μ).rowVector i e)
-        ((sourceRowData d k D M q ad bd C lam ℓ N μ).rowTime i e)) g w φ y| ≤
-      (pPlus^n*highSeparatedDerivativeBudget a ρ*(n : ℝ)^2*η^2)*
-        (sourceRowData d k D M q ad bd C lam ℓ N μ).rowMass i := by
+        ((𝔄).rowVector i e)
+        $ (𝔄).rowTime i e ) g w φ y| ≤
+       𝔟*𝙒^2*𝙎 *
+        (𝔄).rowMass i := by
   cases i with
   | inl p =>
     cases p
-    · exact highPacket_reference_all_count_bound (Measure.dirac ()) ad bd D 2 D q hn
+    · exact 𝔛 2 D q hn
         C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
-        (fun _ => finePairUnitMatrix d D) (fun _ _ => measurable_const) (integrable_const _)
-        (hpos (.inl .unit)) reset hmReset hReset g w φ c hc hg hw hφ hp y
+        𝔔 𝔚 (integrable_const _)
+        (hpos $ .inl .unit ) reset hmReset hReset g w φ c hc hg hw hφ hp y
     · exact highPacket_reference_all_count_bound (finePairTimeFieldMeasure d 0 ℓ) ad bd D 2 D q hn
         C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
-        (finePairTimeMatrix d (finePairDistanceMatrix d D))
-        (finePairTimeMatrix_measurable d _) (finePairTimeMatrix_cost_integrable d 0 ℓ _)
-        (hpos (.inl .coarse)) reset hmReset hReset g w φ c hc hg hw hφ hp y
+        𝔒
+        𝔞 (finePairTimeMatrix_cost_integrable d 0 ℓ _)
+        (hpos $ .inl .coarse ) reset hmReset hReset g w φ c hc hg hw hφ hp y
     · exact finePairPacket_reference_all_count_bound (finePairTimeFieldMeasure d ℓ N) ad bd M q hn
         C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
-        (finePairTimeMatrix d (finePairDistanceMatrix d D))
-        (finePairTimeMatrix_measurable d _) (finePairTimeMatrix_cost_integrable d ℓ N _)
-        (hpos (.inl .fine)) reset hmReset hReset g w φ c hc hg hw hφ hp y
+        𝔒
+        𝔞 (finePairTimeMatrix_cost_integrable d ℓ N _)
+        (hpos $ .inl .fine ) reset hmReset hReset g w φ c hc hg hw hφ hp y
   | inr i =>
     cases i with
     | inl _ =>
-      exact highPacket_reference_all_count_bound (Measure.dirac ()) ad bd D 1 D q hn
+      exact 𝔛 1 D q hn
         C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
-        (fun _ => finePairUnitMatrix d D) (fun _ _ => measurable_const) (integrable_const _)
-        (hpos (.inr (.inl ()))) reset hmReset hReset g w φ c hc hg hw hφ hp y
+        𝔔 𝔚 (integrable_const _)
+        (hpos 𝘊₁) reset hmReset hReset g w φ c hc hg hw hφ hp y
     | inr i =>
       let r := higherBandFamilyTarget i.val
-      let m := higherBandFamilyGuardDegree M i.val
-      let T := higherBandFamilyUpper d ℓ N μ i.val
+      let m := 𝚁
+      let T := 𝙽
       letI := higherBandCarrierMeasure_finite d r ℓ T i.property.1 i.val.2
       exact highPacket_reference_all_count_bound (higherBandCarrierMeasure d r ℓ T i.val.2)
         ad bd m r D q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
-        (higherBandCarrierAmplitude d r D lam i.val.2)
-        (higherBandCarrierAmplitude_measurable d r D lam i.val.2)
+        𝔣 higherBandCarrierAmplitude
+        𝔣 higherBandCarrierAmplitude_measurable
         (higherBandCarrierAmplitude_cost_integrable d r D lam ℓ T i.property.1 i.val.2)
-        (hpos (.inr (.inr i))) reset hmReset hReset g w φ c hc hg hw hφ hp y
-
-end NearlyMinimax
+        (hpos 𝗱₁) reset hmReset hReset g w φ c hc hg hw hφ hp y

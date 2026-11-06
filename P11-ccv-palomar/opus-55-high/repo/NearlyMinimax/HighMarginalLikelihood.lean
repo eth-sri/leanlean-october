@@ -1,80 +1,93 @@
 module
 
 public import NearlyMinimax.MarginalLikelihood
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! The exact marginal data density of the actual high mass-tilted experiment. -/
-noncomputable section
-open MeasureTheory ProbabilityTheory Filter Set
-open scoped ENNReal
-namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
-variable {Ω : Type*} [MeasurableSpace Ω]
+𝚹
+𝚮
+𝚨
+𝚭
+𝚩
+𝛂
 
-def highMarginalRawLikelihood {d : ℕ} (ν : Measure Ω) (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
-  ∫ ω, highRawSampleLikelihood n a V (p ω) (F ω) z ∂ν
+𝗇 𝔅 𝙇 × 𝙈
+𝗇 𝔇 Ω → 𝙀
+𝗃 𝔏 ἀ n a V
+def highMarginalRawLikelihood (ν : Measure Ω) (n : ℕ) (a V : ℝ)
+    (p F : 𝔇) (z : 𝔅) : ℝ :=
+  ∫ ω, 𝔏 highRawSampleLikelihood (p ω) (F ω) z ∂ν
 
-theorem highMarginalRawLikelihood_measurable {d : ℕ} (ν : Measure Ω) [SFinite ν]
-    (n : ℕ) (a V : ℝ) (p F : Ω → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) :
-    Measurable (highMarginalRawLikelihood ν n a V p F) :=
-  (highRawSampleLikelihood_joint_measurable n a V p F hp hF).stronglyMeasurable.integral_prod_left'.measurable
+𝗇 𝔈 highMarginalRawLikelihood ν n a V p F
+𝗇 𝔉 𝔏 highRawSampleLikelihood_joint_measurable p F hp hF
+𝗇 𝔊 𝗃₁
+𝗇 𝔍 𝙅 V y
+section
 
-theorem highMarginalRawLikelihood_pos {d : ℕ} (ν : Measure Ω) [IsProbabilityMeasure ν]
-    (n : ℕ) (a V P : ℝ) (hP : 0 ≤ P) (ha : a ≠ 0)
-    (p F : Ω → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (hpp : ∀ ω x, 0 < p ω x) (hpb : ∀ ω x, |p ω x| ≤ P)
-    (hq : ∀ ω x y, 0 < ternaryMass a (F ω x) V y)
-    (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
-    0 < highMarginalRawLikelihood ν n a V p F z := by
+variable (ν : Measure Ω)
+    (n : ℕ)
+
+include n
+
+𝗃 𝔐 Measurable $ Function.uncurry ἀ
+theorem highMarginalRawLikelihood_measurable [SFinite ν]
+    (a V : ℝ) (p F : 𝔇)
+    (hp : 𝔐 p) (hF : 𝔐 F) :
+    Measurable 𝔈 :=
+  (𝔉).stronglyMeasurable.integral_prod_left'.measurable
+
+theorem highMarginalRawLikelihood_pos [IsProbabilityMeasure ν]
+    (a V P : ℝ) (hP : 𝚏) (ha : 𝙞)
+    (p F : 𝔇)
+    (hp : 𝔐 p) (hF : 𝔐 F)
+    (hpp : ∀ ω x, 0 < 𝔊) (hpb : ∀ ω x, |𝔊| ≤ P)
+    (hq : ∀ ω x y, 0 < 𝔍)
+    z :
+    0 < 𝔈 z := by
   apply integral_likelihood_pos ν _
-    (highRawSampleLikelihood_joint_measurable n a V p F hp hF).of_uncurry_right (P^n)
-  · exact fun ω => highRawSampleLikelihood_pos n a V p F hpp hq ω z
-  · exact fun ω => (le_abs_self _).trans
-      (highRawSampleLikelihood_abs_le n a V P hP _ _ (hpb ω) ha
-        (fun x y => (hq ω x y).le) z)
+    (𝔉).of_uncurry_right 𝚗
+  · exact fun ω => 𝔏 highRawSampleLikelihood_pos p F hpp hq ω z
+  · exact fun ω => 𝚕₁
+      $ 𝔏 highRawSampleLikelihood_abs_le P hP _ _ (hpb ω) ha
+        (fun x y => (hq ω x y).le) z
 
+end
+
+𝗇 𝔄 𝙙
+𝗇 𝔎 𝖡₁
 /-- The genuine mixture sample density, with the actual constant G_n. -/
-theorem highMassTilt_index_marginal_density {d : ℕ} (ν : Measure Ω) [IsProbabilityMeasure ν]
-    (n : ℕ) (a V : ℝ) (p F : Ω → Covariate d → ℝ)
-    (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
-    (aRaw bRaw : ℝ) (haRaw : 0 < aRaw) (ha : a ≠ 0)
-    (hraw : ∀ ω x, aRaw ≤ p ω x ∧ p ω x ≤ bRaw)
-    (hq : ∀ ω x y, 0 ≤ ternaryMass a (F ω x) V y) :
-    (highSampleIndexKernel n a V p F hp hF) ∘ₘ
-        (massPowerTilt ν (fun ω => highRawDensityMass (p ω)) n) =
-      (highSampleReference d n).withDensity (fun z => ENNReal.ofReal
-        (highMarginalRawLikelihood ν n a V p F z /
-          massPowerNormalizer ν (fun ω => highRawDensityMass (p ω)) n)) := by
-  let m : Ω → ℝ := fun ω => highRawDensityMass (p ω)
-  have hm : Measurable m := highRawDensityMass_joint_measurable p hp
-  have hb (ω : Ω) : aRaw ≤ m ω ∧ m ω ≤ bRaw :=
-    highRawDensityMass_mem_Icc (p ω) hp.of_uncurry_left aRaw bRaw haRaw
-      (Eventually.of_forall (hraw ω))
-  have hG := massPowerNormalizer_pos ν m hm n aRaw bRaw haRaw hb
+theorem highMassTilt_index_marginal_density (ν : Measure Ω) [IsProbabilityMeasure ν]
+    (n : ℕ) (a V : ℝ) (p F : 𝔇)
+    hp hF
+    aRaw bRaw (haRaw : 𝙓) (ha : 𝙞)
+    (hraw : ∀ ω x, aRaw ≤ 𝔊 ∧ 𝔊 ≤ bRaw)
+    (hq : ∀ ω x y, 0 ≤ 𝔍) :
+     𝔏 highSampleIndexKernel p F hp hF ∘ₘ
+         massPowerTilt ν 𝔄 n =
+      (𝘱).withDensity fun z => ENNReal.ofReal
+        $ 𝔈 z /
+          massPowerNormalizer ν 𝔄 n := by
+  let m := 𝔄
+  have hm := 𝙨
+  have hb ω :=
+    𝙕
+  have hG := 𝘰₁ hb
   let _ := massPowerTilt_isProbability ν m hm n aRaw bRaw haRaw hb
-  have hpabs (ω : Ω) (x : Covariate d) : |p ω x| ≤ |bRaw| := by
-    rw [abs_of_nonneg (haRaw.le.trans (hraw ω x).1)]
-    exact (hraw ω x).2.trans (le_abs_self _)
-  let L : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) → ℝ := fun z =>
-    highRawSampleLikelihood n a V (p z.1) (F z.1) z.2 / massPowerNormalizer ν m n
-  have hL : Measurable L := (highRawSampleLikelihood_joint_measurable n a V p F hp hF).div_const _
-  have hLb (z) : 0 ≤ L z ∧ L z ≤ |bRaw|^n / massPowerNormalizer ν m n := by
-    have hl0 : 0 ≤ highRawSampleLikelihood n a V (p z.1) (F z.1) z.2 :=
-      Finset.prod_nonneg (fun i _ => mul_nonneg (haRaw.le.trans (hraw z.1 _).1) (hq z.1 _ _))
-    have hlb := highRawSampleLikelihood_abs_le n a V |bRaw| (abs_nonneg _) _ _ (hpabs z.1) ha (hq z.1) z.2
-    exact ⟨div_nonneg hl0 hG.le, div_le_div_of_nonneg_right ((le_abs_self _).trans hlb) hG.le⟩
+  have hpabs ω x : |𝔊| ≤ |bRaw| := by
+    grind
+  let L : Ω × 𝔅 → ℝ := fun z =>
+    𝔏 highRawSampleLikelihood (p z.1) (F z.1) z.2 / 𝔎
+  have hLb z : 0 ≤ L z ∧ L z ≤ |bRaw|^n / 𝔎 := by
+    have hlb := 𝔏 highRawSampleLikelihood_abs_le |bRaw| (abs_nonneg _) _ _ (hpabs z.1) ha (hq z.1) z.2
+    exact ⟨div_nonneg (Finset.prod_nonneg fun i _ => mul_nonneg (haRaw.le.trans (hraw z.1 _).1) $ hq z.1 _ _ ) hG.le, div_le_div_of_nonneg_right (𝚕₁ hlb) hG.le⟩
   rw [← Measure.snd_compProd, Measure.snd,
     massPowerTilt_highSample_compProd ν n a V p F hp hF aRaw bRaw haRaw hraw]
-  rw [map_snd_prod_withDensity_ofReal ν (highSampleReference d n) L hL
-    (|bRaw|^n / massPowerNormalizer ν m n) (by positivity) hLb]
+  rw [map_snd_prod_withDensity_ofReal ν 𝘱 L ((𝔉).div_const _)
+    (|bRaw|^n / 𝔎)  𝖠₃  hLb]
   congr 1
   funext z
   simp only [L, integral_div, highMarginalRawLikelihood, m]
-
-end NearlyMinimax

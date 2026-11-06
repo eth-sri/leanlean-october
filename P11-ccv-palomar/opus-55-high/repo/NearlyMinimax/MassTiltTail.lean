@@ -1,211 +1,228 @@
 module
 
 public import NearlyMinimax.HighMassTilt
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+public section
 
 /-!
 # Genuine mass-power tilt tail from an exponential moment bound
 -/
 
-noncomputable section
-open MeasureTheory ProbabilityTheory Set Filter
-namespace NearlyMinimax
+𝛏
+𝚨
 
-variable {Ω : Type*} [MeasurableSpace Ω]
+𝛂
 
+𝗇 𝔅 m ω - 1
+𝗇 𝔇 ∀ ω, l ≤ m ω ∧ m ω ≤ b
+𝗇 𝔊 ∫ ω, m ω ∂μ = 1
+𝗇 𝔍 hl.le.trans (hbound ω).1
+𝗃 𝔣 ἀ μ m hm n l b hl hbound
+𝗇 𝔎 𝔣 massPower_integrable
+𝗇 𝔐 (him.sub $ integrable_const 1 ).const_mul n
+𝗇 𝔒 0 < l
+𝗃 𝔬 ἀ * 𝔅
+𝗇 𝔜 𝔬 n
 /-- The source mean-one power normalizer is at least one, by the actual tangent inequality. -/
 theorem massPowerNormalizer_one_le (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1) :
+    m (hm : Measurable m) n l b (hl : 𝔒)
+    (hbound : 𝔇) (hmean : 𝔊) :
     1 ≤ massPowerNormalizer μ m n := by
   have hi := massPower_integrable μ m hm 1 l b hl hbound
-  have him : Integrable m μ := by simpa only [pow_one] using hi
-  have hip := massPower_integrable μ m hm n l b hl hbound
-  have hh : (∫ ω, 1 + (n : ℝ) * (m ω - 1) ∂μ) ≤ ∫ ω, m ω ^ n ∂μ :=
-    integral_mono ((integrable_const 1).add ((him.sub (integrable_const 1)).const_mul (n : ℝ))) hip
-      (fun ω => one_add_mul_sub_le_pow ((by norm_num : (-1 : ℝ) ≤ 0).trans (hl.le.trans (hbound ω).1)) n)
-  have he : (∫ ω, 1 + (n : ℝ) * (m ω - 1) ∂μ) = 1 := by
+  have him : Integrable m μ := 𝖤₄
+  have hh :=
+    integral_mono ((integrable_const 1).add 𝔐) 𝔎
+       fun ω => one_add_mul_sub_le_pow ((by norm_num : 𝚆₂ ≤ 0).trans 𝔍) n
+  have he : ∫ ω, 1 + 𝔜 ∂μ = 1 := by
     calc
-      _ = (∫ _ : Ω, (1 : ℝ) ∂μ) + ∫ ω, (n : ℝ) * (m ω - 1) ∂μ :=
-        integral_add (integrable_const 1) ((him.sub (integrable_const 1)).const_mul (n : ℝ))
-      _ = 1 := by rw [integral_const_mul, integral_sub him (integrable_const 1), hmean]; simp
-  rw [he] at hh
-  exact hh
+      _ = ∫ _ : Ω, 1 ∂μ + ∫ ω, 𝔜 ∂μ :=
+        integral_add (integrable_const 1) 𝔐
+      𝚘₂ := by rw [integral_const_mul, integral_sub him $ integrable_const 1 , hmean]; simp
+  aesop
 
+𝗇 𝔉 (massPowerTilt μ m n).real
+𝗇 𝔔 m ω ^ n
 /-- The true mass-power tilt of a measurable event is its normalized weighted indicator integral. -/
 theorem massPowerTilt_real_apply (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (S : Set Ω) (hS : MeasurableSet S) :
-    (massPowerTilt μ m n).real S =
-      ∫ ω, S.indicator (fun ω => m ω ^ n / massPowerNormalizer μ m n) ω ∂μ := by
-  let := massPowerTilt_isProbability μ m hm n l b hl hbound
-  have hG := massPowerNormalizer_pos μ m hm n l b hl hbound
+    m (hm : Measurable m) n l b (hl : 𝔒)
+    (hbound : 𝔇) S (hS : MeasurableSet S) :
+    𝔉 S =
+      ∫ ω, S.indicator (fun ω => 𝔔 / massPowerNormalizer μ m n) ω ∂μ := by
+  let := 𝔣 massPowerTilt_isProbability
+  have hG := 𝔣 massPowerNormalizer_pos
   rw [← integral_indicator_one hS, massPowerTilt,
     integral_withDensity_eq_integral_toReal_smul ((hm.pow_const n).div_const _).ennreal_ofReal
-      (Eventually.of_forall fun _ => ENNReal.ofReal_lt_top)]
+      $ Eventually.of_forall 𝘕 ]
   apply integral_congr_ae
   apply Eventually.of_forall
   intro ω
-  have hp : 0 ≤ m ω ^ n / massPowerNormalizer μ m n :=
-    div_nonneg (pow_nonneg (hl.le.trans (hbound ω).1) _) hG.le
-  by_cases hω : ω ∈ S <;> simp [hω, ENNReal.toReal_ofReal hp, smul_eq_mul]
+  by_cases hω : ω ∈ S <;> simp [hω, ENNReal.toReal_ofReal $ div_nonneg (pow_nonneg 𝔍 _) hG.le ]
 
+𝗇 𝔞 Real.exp 𝔬 u
 /-- A positive bounded mass has an integrable exponential at every real parameter. -/
 theorem boundedMass_exp_integrable (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (u : ℝ) :
-    Integrable (fun ω => Real.exp (u * (m ω - 1))) μ := by
-  apply Integrable.of_bound (Real.measurable_exp.comp (measurable_const.mul (hm.sub measurable_const))).aestronglyMeasurable
-    (Real.exp (|u| * (|b| + 1)))
+    m (hm : Measurable m) l b (hl : 𝔒)
+    (hbound : 𝔇) u :
+    Integrable (fun ω => 𝔞) μ := by
+  apply Integrable.of_bound (Real.measurable_exp.comp $ measurable_const.mul $ hm.sub measurable_const ).aestronglyMeasurable
+    $ Real.exp $ |u| * (|b| + 1)
   apply Eventually.of_forall
   intro ω
-  change ‖Real.exp (u * (m ω - 1))‖ ≤ _
-  rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+  change ‖𝔞‖ ≤ _
+  rw [Real.norm_eq_abs, 𝚖]
   apply Real.exp_le_exp.2
-  have hmabs : |m ω| ≤ |b| := by
-    rw [abs_of_pos (hl.trans_le (hbound ω).1)]
-    exact (hbound ω).2.trans (le_abs_self b)
-  have hz : |m ω - 1| ≤ |b| + 1 := by
-    have hh := abs_sub (m ω) 1
-    norm_num only [abs_one] at hh
-    linarith
-  exact (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_left hz (abs_nonneg u))
+  have hz : |𝔅| ≤ |b| + 1 := by
+    grind
+  exact 𝚕₁ $ by rw [abs_mul]; bound
 
+𝗇 𝔑 𝔣 massPowerNormalizer_one_le hmean
+𝗇 𝔓 𝔣 massPowerTilt_real_apply S hS
+𝗇 𝔖 (hI.div_const _).indicator hS
+𝗇 𝔤 -u * ε
+𝗇 𝔥 boundedMass_exp_integrable μ m hm l b hl hbound
+𝗇 𝔦 ε < 𝔅
+𝗇 𝔧 n + u
+𝗇 𝔨 pow_nonneg hm0 n
+𝗇 𝔩 𝖦
 /-- The positive-side event under a true mass-power tilt satisfies a genuine Chernoff bound. -/
 theorem massPowerTilt_right_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
-    (ε u : ℝ) (hu : 0 ≤ u) :
-    (massPowerTilt μ m n).real {ω | ε < m ω - 1} ≤
-      Real.exp (-u * ε) * ∫ ω, Real.exp (((n : ℝ) + u) * (m ω - 1)) ∂μ := by
-  let S := {ω | ε < m ω - 1}
-  have hS : MeasurableSet S := measurableSet_lt measurable_const (hm.sub measurable_const)
-  have hG := massPowerNormalizer_one_le μ m hm n l b hl hbound hmean
-  have hGpos := massPowerNormalizer_pos μ m hm n l b hl hbound
-  have hI := massPower_integrable μ m hm n l b hl hbound
-  rw [massPowerTilt_real_apply μ m hm n l b hl hbound S hS, ← integral_const_mul]
-  apply integral_mono ((hI.div_const _).indicator hS)
-    ((boundedMass_exp_integrable μ m hm l b hl hbound ((n : ℝ) + u)).const_mul _)
+    m (hm : Measurable m) n l b (hl : 𝔒)
+    (hbound : 𝔇) (hmean : 𝔊)
+    ε u (hu : 0 ≤ u) :
+    𝔉 {ω | 𝔦} ≤
+      Real.exp 𝔤 * ∫ ω, Real.exp 𝔬 𝔧 ∂μ := by
+  let S := {ω | 𝔦}
+  have hS : MeasurableSet S := measurableSet_lt measurable_const $ hm.sub measurable_const
+  have hI := 𝔎
+  rw [𝔓, ← integral_const_mul]
+  apply integral_mono 𝔖
+    $ (𝔥 𝔧).const_mul _
   intro ω
   by_cases hω : ω ∈ S
   · simp only [Set.indicator_of_mem hω]
-    have hm0 : 0 ≤ m ω := hl.le.trans (hbound ω).1
-    have hpow : m ω ^ n ≤ Real.exp ((n : ℝ) * (m ω - 1)) := by
-      have hbase : m ω ≤ Real.exp (m ω - 1) := by
-        have hh := Real.add_one_le_exp (m ω - 1)
+    have hm0 := 𝔍
+    have hpow : 𝔔 ≤ Real.exp 𝔜 := by
+      have hbase : m ω ≤ Real.exp 𝔅 := by
+        have hh := Real.add_one_le_exp 𝔅
         linarith
       calc
-        _ ≤ Real.exp (m ω - 1) ^ n := pow_le_pow_left₀ hm0 hbase n
-        _ = _ := (Real.exp_nat_mul _ _).symm
+        _ ≤ Real.exp 𝔅 ^ n := pow_le_pow_left₀ hm0 hbase n
+        𝘿 := (Real.exp_nat_mul ..).symm
     calc
-      _ ≤ m ω ^ n := div_le_self (pow_nonneg hm0 n) hG
-      _ ≤ Real.exp ((n : ℝ) * (m ω - 1)) := hpow
-      _ ≤ _ := by
+      _ ≤ 𝔔 := div_le_self 𝔨 𝔑
+      _ ≤ Real.exp 𝔜 := hpow
+      𝔩 := by
         rw [← Real.exp_add]
         apply Real.exp_le_exp.2
-        have hh : ε ≤ m ω - 1 := hω.le
-        nlinarith [mul_nonneg hu (sub_nonneg.2 hh)]
+        have hh : ε ≤ 𝔅 := hω.le
+        nlinarith
   · simp only [Set.indicator_of_notMem hω]
     positivity
 
+𝗇 𝔠 𝔅 < -ε
+𝗃 𝔫 ∫ ω, Real.exp ( -ἀ * 𝔅) ∂μ
 /-- The negative-side Chernoff bound uses the true mass-power tilt and m^n≤1 on the lower event. -/
 theorem massPowerTilt_left_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
-    (ε u : ℝ) (hε : 0 ≤ ε) (hu : 0 ≤ u) :
-    (massPowerTilt μ m n).real {ω | m ω - 1 < -ε} ≤
-      Real.exp (-u * ε) * ∫ ω, Real.exp ((-u) * (m ω - 1)) ∂μ := by
-  let S := {ω | m ω - 1 < -ε}
+    m (hm : Measurable m) n l b (hl : 𝔒)
+    (hbound : 𝔇) (hmean : 𝔊)
+    ε u (hε : 0 ≤ ε) (hu : 0 ≤ u) :
+    𝔉 {ω | 𝔠} ≤
+      Real.exp 𝔤 * 𝔫 u := by
+  let S := {ω | 𝔠}
   have hS : MeasurableSet S := measurableSet_lt (hm.sub measurable_const) measurable_const
-  have hG := massPowerNormalizer_one_le μ m hm n l b hl hbound hmean
-  have hI := massPower_integrable μ m hm n l b hl hbound
-  rw [massPowerTilt_real_apply μ m hm n l b hl hbound S hS, ← integral_const_mul]
-  apply integral_mono ((hI.div_const _).indicator hS)
-    ((boundedMass_exp_integrable μ m hm l b hl hbound (-u)).const_mul _)
+  have hG := 𝔑
+  have hI := 𝔎
+  rw [𝔓, ← integral_const_mul]
+  apply integral_mono 𝔖
+    $ (𝔥 $ -u ).const_mul _
   intro ω
   by_cases hω : ω ∈ S
   · simp only [Set.indicator_of_mem hω]
-    have hm0 : 0 ≤ m ω := hl.le.trans (hbound ω).1
-    have hm1 : m ω ≤ 1 := by have hh : m ω - 1 < -ε := hω; linarith
+    have hm0 := 𝔍
     calc
-      _ ≤ m ω ^ n := div_le_self (pow_nonneg hm0 n) hG
-      _ ≤ 1 := pow_le_one₀ hm0 hm1
-      _ ≤ _ := by
+      _ ≤ 𝔔 := div_le_self 𝔨 hG
+      _ ≤ 1 := pow_le_one₀ hm0 𝖤₃
+      𝔩 := by
         rw [← Real.exp_add]
         apply Real.one_le_exp_iff.2
-        have hh : m ω - 1 ≤ -ε := hω.le
-        nlinarith [mul_nonneg hu (sub_nonneg.2 hh)]
+        have hh : 𝔅 ≤ -ε := hω.le
+        nlinarith
   · simp only [Set.indicator_of_notMem hω]
     positivity
 
+𝗇 𝔄 ε / (2 * a)
+𝗇 𝔈 8 * a
+𝗇 𝔏 ε ^ 2
+𝗇 𝔘 𝔄 - n
+𝗇 𝔙 -𝔏 / 𝔈
+𝗇 𝔟 𝔏 / 𝔈
+𝗇 𝔪 n + 𝔘
+𝗇 𝔡 a * 𝔪 ^ 2
+𝗇 𝔢 -𝔘 * ε
 /-- The exact source ε≥8an guard controls the positive-side tilted exponent. -/
-theorem massTilt_exponent_right (a ε : ℝ) (n : ℕ) (ha : 0 < a)
-    (hε : 8 * a * (n : ℝ) ≤ ε) :
-    0 ≤ ε / (2 * a) - (n : ℝ) ∧
-      -(ε / (2 * a) - (n : ℝ)) * ε + a * ((n : ℝ) + (ε / (2 * a) - (n : ℝ))) ^ 2 ≤
-        -ε ^ 2 / (8 * a) := by
-  have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  have he0 : 0 ≤ ε := (by positivity : (0 : ℝ) ≤ 8 * a * (n : ℝ)).trans hε
-  have hu : 0 ≤ ε / (2 * a) - (n : ℝ) := by
+theorem massTilt_exponent_right a ε (n : ℕ) (ha : 𝙆)
+    (hε : 𝔈 * 𝙒 ≤ ε) :
+    0 ≤ 𝔘 ∧
+      𝔢 + 𝔡 ≤
+        𝔙 := by
+  have he0 := (by positivity : 0 ≤ 𝔈 * n).trans hε
+  have hu : 0 ≤ 𝔘 := by
     apply sub_nonneg.2
-    apply (le_div_iff₀ (by positivity : (0 : ℝ) < 2 * a)).2
+    apply (le_div_iff₀ 𝖠₃ ).2
     nlinarith
-  have he : (n : ℝ) * ε ≤ ε ^ 2 / (8 * a) := by
-    apply (le_div_iff₀ (by positivity : (0 : ℝ) < 8 * a)).2
-    nlinarith [mul_nonneg he0 (sub_nonneg.2 hε)]
-  have hid : -(ε / (2 * a) - (n : ℝ)) * ε + a * ((n : ℝ) + (ε / (2 * a) - (n : ℝ))) ^ 2 =
-      (n : ℝ) * ε - 2 * (ε ^ 2 / (8 * a)) := by field_simp; ring
-  exact ⟨hu, by rw [hid]; simp only [neg_div]; linarith⟩
+  have he : n * ε ≤ 𝔟 := by
+    apply (le_div_iff₀ 𝖠₃ ).2
+    nlinarith
+  have hid : 𝔢 + 𝔡 =
+      n * ε - 2 * 𝔟 := by field_simp; ring
+  grind
 
+𝗇 𝔚 a * (-𝔄) ^ 2
+𝗇 𝔛 -𝔄 * ε
 /-- The exact source lower-tail exponent before weakening its constant. -/
-theorem massTilt_exponent_left (a ε : ℝ) (ha : 0 < a) :
-    -(ε / (2 * a)) * ε + a * (-(ε / (2 * a))) ^ 2 ≤ -ε ^ 2 / (8 * a) := by
-  have hid : -(ε / (2 * a)) * ε + a * (-(ε / (2 * a))) ^ 2 =
-      -2 * (ε ^ 2 / (8 * a)) := by field_simp; ring
-  rw [hid]
+theorem massTilt_exponent_left (a ε : ℝ) (ha : 𝙆) :
+    𝔛 + 𝔚 ≤ 𝔙 := by
+  have hid : 𝔛 + 𝔚 =
+      -2 * 𝔟 := by field_simp; ring
   simp only [neg_div]
-  have hn : 0 ≤ ε ^ 2 / (8 * a) := div_nonneg (sq_nonneg _) (by positivity)
+  have hn : 0 ≤ 𝔟 := 𝚚₁ 𝖠₃
   linarith
 
+𝗇 𝔗 mul_le_mul_of_nonneg_left (hmgf _) 𝙫
 /-- The source mass-power tilted exceptional tail follows from its actual mean-one MGF.
 This is a probability lemma; the history MGF is established independently from finite label blocks. -/
 theorem massPowerTilt_abs_tail (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
-    (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
-    (a ε : ℝ) (ha : 0 < a)
-    (hmgf : ∀ u : ℝ, (∫ ω, Real.exp (u * (m ω - 1)) ∂μ) ≤ Real.exp (a * u ^ 2))
-    (hε : 8 * a * (n : ℝ) ≤ ε) :
-    (massPowerTilt μ m n).real {ω | ε < |m ω - 1|} ≤ 2 * Real.exp (-ε ^ 2 / (8 * a)) := by
-  let := massPowerTilt_isProbability μ m hm n l b hl hbound
-  have he0 : 0 ≤ ε := (by positivity : (0 : ℝ) ≤ 8 * a * (n : ℝ)).trans hε
-  have hr : (massPowerTilt μ m n).real {ω | ε < m ω - 1} ≤ Real.exp (-ε ^ 2 / (8 * a)) := by
+    m (hm : Measurable m) (n : ℕ) l b (hl : 𝔒)
+    (hbound : 𝔇) (hmean : 𝔊)
+    a ε (ha : 𝙆)
+    (hmgf : ∀ u , ∫ ω, 𝔞 ∂μ ≤ Real.exp (a * 𝙟₁))
+    (hε : 𝔈 * n ≤ ε) :
+    𝔉 {ω | ε < |𝔅|} ≤ 2 * Real.exp 𝔙 := by
+  let := 𝔣 massPowerTilt_isProbability
+  have he0 := (by positivity : 0 ≤ 𝔈 * n).trans hε
+  have hr : 𝔉 {ω | 𝔦} ≤ Real.exp 𝔙 := by
     have hs := massTilt_exponent_right a ε n ha hε
     calc
-      _ ≤ Real.exp (-(ε / (2 * a) - (n : ℝ)) * ε) *
-          ∫ ω, Real.exp (((n : ℝ) + (ε / (2 * a) - (n : ℝ))) * (m ω - 1)) ∂μ :=
-        massPowerTilt_right_chernoff μ m hm n l b hl hbound hmean ε _ hs.1
-      _ ≤ Real.exp (-(ε / (2 * a) - (n : ℝ)) * ε) *
-          Real.exp (a * ((n : ℝ) + (ε / (2 * a) - (n : ℝ))) ^ 2) :=
-        mul_le_mul_of_nonneg_left (hmgf _) (Real.exp_pos _).le
-      _ ≤ _ := by rw [← Real.exp_add]; exact Real.exp_le_exp.2 hs.2
-  have hlower : (massPowerTilt μ m n).real {ω | m ω - 1 < -ε} ≤ Real.exp (-ε ^ 2 / (8 * a)) := by
+      _ ≤ Real.exp 𝔢 *
+          ∫ ω, Real.exp 𝔬 𝔪 ∂μ :=
+        𝔣 massPowerTilt_right_chernoff hmean ε _ hs.1
+      _ ≤ Real.exp 𝔢 *
+          Real.exp 𝔡 :=
+        𝔗
+      𝔩 := by rw [← Real.exp_add]; exact Real.exp_le_exp.2 hs.2
+  have hlower : 𝔉 {ω | 𝔠} ≤ Real.exp 𝔙 := by
     calc
-      _ ≤ Real.exp (-(ε / (2 * a)) * ε) * ∫ ω, Real.exp ((-(ε / (2 * a))) * (m ω - 1)) ∂μ :=
-        massPowerTilt_left_chernoff μ m hm n l b hl hbound hmean ε _ he0 (div_nonneg he0 (by positivity))
-      _ ≤ Real.exp (-(ε / (2 * a)) * ε) * Real.exp (a * (-(ε / (2 * a))) ^ 2) :=
-        mul_le_mul_of_nonneg_left (hmgf _) (Real.exp_pos _).le
-      _ ≤ _ := by rw [← Real.exp_add]; exact Real.exp_le_exp.2 (massTilt_exponent_left a ε ha)
-  have hset : {ω | ε < |m ω - 1|} = {ω | ε < m ω - 1} ∪ {ω | m ω - 1 < -ε} := by
+      _ ≤ Real.exp 𝔛 * 𝔫 𝔄 :=
+        𝔣 massPowerTilt_left_chernoff hmean ε _ he0 $ div_nonneg he0 𝖠₃
+      _ ≤ Real.exp 𝔛 * Real.exp 𝔚 :=
+        𝔗
+      𝔩 := by rw [← Real.exp_add]; exact Real.exp_le_exp.2 $ massTilt_exponent_left a ε ha
+  have hset : {ω | ε < |𝔅|} = {ω | 𝔦} ∪ {ω | 𝔠} := by
     ext ω
     simp only [Set.mem_ofPred_eq, Set.mem_union, lt_abs]
-    constructor <;> intro h <;> rcases h with h | h
-    · exact Or.inl h
-    · exact Or.inr (by linarith)
-    · exact Or.inl h
-    · exact Or.inr (by linarith)
+    bound
   rw [hset]
-  exact (measureReal_union_le _ _).trans (by linarith)
-
-end NearlyMinimax
+  exact (measureReal_union_le ..).trans 𝖡₄

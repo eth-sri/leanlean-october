@@ -4,193 +4,209 @@ public import NearlyMinimax.HigherBandTargetAction
 public import NearlyMinimax.HighSourceCountCancellation
 public import NearlyMinimax.HighSourceFineAliasIdentification
 public import NearlyMinimax.OrdinaryFineAliasAggregation
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Exact matched-target and ordinary-fine-alias decomposition of the
 actual selected higher family. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
+𝚫
+𝚨
+𝚩
 set_option maxHeartbeats 1400000
-attribute [local instance] Classical.propDecidable
+𝚬
 
+𝗇 𝔞 fun _ _ => 0
 section Matrix
-variable {ι : Type*} [Fintype ι] [DecidableEq ι]
-theorem responseMatrixAction_matrix_zero (q : ℕ) (C : ℝ)
-    (c : ι → ℝ) (Φ : (ι → ℝ) → ℝ) : responseMatrixAction q C (fun _ _ => 0) c Φ = 0 := by
+𝛑
+theorem responseMatrixAction_matrix_zero q C
+    (c : 𝙛) Φ : 𝗔 𝔞 c Φ = 0 := by
   simp [responseMatrixAction, covarianceAction, covarianceWeight]
 end Matrix
 
-def higherBandCoarseFirstAction {d n : ℕ} (ad bd lam ell N mu : ℝ)
-    (r D q : ℕ) (C : ℝ) (U : Fin n → Covariate d) (p : Fin n → ℝ)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) : ℝ :=
-  higherBandFirstAction ad bd lam ell (min ell (higherBandTargetScale d r N mu)) r D D q C false U p c Φ
+𝗇 𝔊 𝙮 → ℝ
+𝗃 𝔨 higherBandTargetScale d ἀ N mu
+𝗇 𝔎 𝔨 r
+𝗇 𝔏 𝙔
+𝗃 𝔜 ἀ ad bd lam ell
+def higherBandCoarseFirstAction (ad bd lam ell N mu : ℝ)
+    (r D q : ℕ) (C : ℝ) (U : 𝙇) (p : 𝔏)
+    (c : 𝔊) (Φ : 𝔊 → ℝ) : ℝ :=
+  𝔜 higherBandFirstAction (min ell 𝔎) r D D q C false U p c Φ
 
-def higherBandFineFirstAction {d n : ℕ} (ad bd lam ell N mu : ℝ)
-    (r M D q : ℕ) (C : ℝ) (U : Fin n → Covariate d) (p : Fin n → ℝ)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) : ℝ :=
-  if ell < higherBandTargetScale d r N mu then
-    higherBandFirstAction ad bd lam ell (higherBandTargetScale d r N mu) r M D q C true U p c Φ else 0
+def higherBandFineFirstAction (ad bd lam ell N mu : ℝ)
+    (r M D q : ℕ) (C : ℝ) (U : 𝙇) (p : 𝔏)
+    (c : 𝔊) (Φ : 𝔊 → ℝ) : ℝ :=
+  if ell < 𝔎 then
+    𝔜 higherBandFirstAction 𝔎 r M D q C true U p c Φ else 0
 
-theorem higherBandFamilyFirstAction_coarse_fine {d n : ℕ} (ad bd lam ell N mu : ℝ)
-    (D M q : ℕ) (C : ℝ) (hell : 1 ≤ ell)
-    (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu)
-    (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)
-    (U : Fin n → Covariate d) (p : Fin n → ℝ)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
-    higherBandFamilyFirstAction ad bd lam ell N mu D M q C U p c Φ =
-      (∑ j : Fin (D-2), higherBandCoarseFirstAction ad bd lam ell N mu (j.val+3) D q C U p c Φ) +
-      (∑ j : Fin (D-2), higherBandFineFirstAction ad bd lam ell N mu (j.val+3) M D q C U p c Φ) := by
-  rw [higherBandFamilyFirstAction, higherBandFamilyFirstAction_eq_physical ad bd lam ell N mu D M q C hell hnu hFine U p c Φ,
+𝗃 𝔥 𝔜 ἀ N mu
+𝗇 𝔛 𝔥 higherBandFineFirstAction
+𝗇 𝔄 𝔛 𝙳 M D q C U p c Φ
+𝗇 𝔅 Fin 𝘐
+𝗇 𝔇 𝙳
+𝗇 𝔐 𝔥 higherBandFamilyFirstAction D M q C U p c Φ
+𝗇 𝔚 𝔥 higherBandCoarseFirstAction
+𝗃 𝔦 𝔚 ἀ D q C U p c Φ
+𝗇 𝔓 ∑ j : 𝔅, 𝔦 𝔇
+𝗇 𝔖 ∀ j : 𝔅, ell < 𝔨 𝔇 → 𝔇 ≤ M
+𝗇 𝔗 ∀ j : 𝔅, 0 < 𝔨 𝔇
+𝗃 𝔩 ∑ j : 𝔅, ἀ
+𝗇 𝔙 𝔩 𝔄
+𝗇 𝔟 𝗲₁
+𝗃 𝔫 𝔥 ἀ D M q C hell hnu hFine U p c Φ
+theorem higherBandFamilyFirstAction_coarse_fine ad bd lam ell N mu
+    D M q C (hell : 𝔟)
+    (hnu : 𝔗)
+    (hFine : 𝔖)
+    U (p : 𝔏)
+    (c : 𝔊) Φ :
+    𝔐 =
+      𝔓 +
+      𝔙 := by
+  rw [higherBandFamilyFirstAction, 𝔫 higherBandFamilyFirstAction_eq_physical,
     Fintype.sum_prod_type]
   simp only [Fintype.sum_bool, higherBandPhysicalFirstAction, higherBandFamilyTarget,
     higherBandFamilyUpper, higherBandFamilyGuardDegree, Bool.false_eq_true, ite_false, ite_true,
     higherBandCoarseFirstAction, higherBandFineFirstAction, Finset.sum_add_distrib]
-  exact add_comm _ _
+  ring
 
-theorem higherBandCoarseFirstAction_zero_other_count {d n : ℕ}
-    (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hell : 0 < ell)
-    (r D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hnD : n ≤ D) (hne : n ≠ r)
-    (hnu : 0 < higherBandTargetScale d r N mu) (C : ℝ)
-    (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
-    (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
-    higherBandCoarseFirstAction ad bd lam ell N mu r D q C U p c Φ = 0 := by
+𝗇 𝔍 𝖳
+𝗇 𝔠 𝖼
+𝗇 𝔡 𝖽
+𝗇 𝔢 𝗮
+𝗇 𝔣 𝖠₁
+𝗇 𝔤 𝗒₂
+𝗃 𝔧 higherBand_coarse_below_one_signed_zero d ἀ D D q ad bd C lam ell _
+theorem higherBandCoarseFirstAction_zero_other_count
+    ad bd lam ell N mu (ha : 𝔠) (hab : 𝔡) (hell : 𝚁₁)
+    r D q (hr : 𝘗) (hD : 𝔢) (hnD : 𝔣) (hne : n ≠ r)
+    (hnu : 0 < 𝔎) C
+    U (hU : ∀ i j, |𝔤| ≤ 2)
+    (p : 𝔏) (hp : 𝔍)
+    (c : 𝔊) Φ :
+    𝔦 r = 0 := by
   unfold higherBandCoarseFirstAction
-  by_cases hT : 1 ≤ min ell (higherBandTargetScale d r N mu)
-  · exact higherBandFirstAction_zero_other_count ad bd lam ell _ ha hab hT r D D q hr hD hnD hnD hne C false U hU p hp c Φ
+  by_cases hT : 1 ≤ min ell 𝔎
+  · exact 𝔜 higherBandFirstAction_zero_other_count _ ha hab hT r D D q hr hD hnD hnD hne C false U hU p hp c Φ
   · unfold higherBandFirstAction
-    rw [higherBand_coarse_below_one_signed_zero d r D D q ad bd C lam ell _ (lt_min hell hnu) (not_le.mp hT)]
+    rw [𝔧 r (lt_min hell hnu) $ not_le.mp hT ]
     simp
 
-theorem higherBandFineFirstAction_zero_small_count {d n : ℕ}
-    (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hell : 1 ≤ ell)
-    (r M D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hnD : n ≤ D) (hnr : n < r) (C : ℝ)
-    (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
-    (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
-    higherBandFineFirstAction ad bd lam ell N mu r M D q C U p c Φ = 0 := by
+𝗃 𝔪 𝔛 ἀ M D q C U p c Φ
+theorem higherBandFineFirstAction_zero_small_count
+    ad bd lam ell N mu (ha : 𝔠) (hab : 𝔡) (hell : 𝔟)
+    r M D q (hr : 𝘗) (hD : 𝔢) (hnD : 𝔣) (hnr : n < r) C
+    U (hU : ∀ i j, |𝔤| ≤ 2)
+    (p : 𝔏) (hp : 𝔍)
+    (c : 𝔊) Φ :
+    𝔪 r = 0 := by
   unfold higherBandFineFirstAction
   split_ifs with hactive
-  · exact higherBandFirstAction_zero_small_count ad bd lam ell _ ha hab (hell.trans hactive.le)
+  · exact 𝔜 higherBandFirstAction_zero_small_count _ ha hab (hell.trans hactive.le)
       r M D q hr hD hnD hnr C true U hU p hp c Φ
   · rfl
 
-theorem higherBand_matched_coarse_fine {d n : ℕ}
-    (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hell : 1 ≤ ell)
-    (M D q : ℕ) (hn : 2 ≤ n) (hD : 1 ≤ D) (hnD : n ≤ D)
-    (hnu : 0 < higherBandTargetScale d n N mu)
-    (hFine : ell < higherBandTargetScale d n N mu → n ≤ M) (C : ℝ)
-    (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
-    (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
-    higherBandCoarseFirstAction ad bd lam ell N mu n D q C U p c Φ +
-      higherBandFineFirstAction ad bd lam ell N mu n M D q C U p c Φ =
-      (∏ i, p i) * responseMatrixAction q C (integratedCardinalMatrix lam (higherBandTargetScale d n N mu) U) c Φ := by
-  have hell0 : 0 < ell := by linarith
-  by_cases hT : 1 ≤ higherBandTargetScale d n N mu
-  · have hc := higherBandFirstAction_target_count ad bd lam ell (min ell (higherBandTargetScale d n N mu))
+𝗇 𝔈 𝔪 n
+𝗇 𝔉 𝔨 n
+𝗇 𝔑 𝔦 n
+𝗇 𝔔 𝗊 * 𝗔 (integratedCardinalMatrix lam 𝔉 U) c Φ
+theorem higherBand_matched_coarse_fine
+    (ad bd lam ell N mu : ℝ) (ha : 𝔠) (hab : 𝔡) (hlam : 𝖺) (hell : 𝔟)
+    (M D q : ℕ) (hn : 𝗏) (hD : 𝔢) (hnD : 𝔣)
+    (hnu : 0 < 𝔉)
+    (hFine : ell < 𝔉 → n ≤ M) (C : ℝ)
+    U (hU : ∀ i j, |𝔤| ≤ 2)
+    (p : 𝔏) (hp : 𝔍)
+    (c : 𝔊) Φ :
+    𝔑 +
+      𝔈 =
+      𝔔 := by
+  have hell0 : 𝚁₁ := 𝖡₄
+  by_cases hT : 1 ≤ 𝔉
+  · have hc := 𝔜 higherBandFirstAction_target_count (min ell 𝔉)
       ha hab hlam hell0 (le_min hell hT) D D q hn hD hnD hnD C false U hU p hp c Φ
     unfold higherBandCoarseFirstAction higherBandFineFirstAction
     rw [hc]
-    by_cases hactive : ell < higherBandTargetScale d n N mu
-    · rw [ite_eq_left hactive, higherBandFirstAction_target_count ad bd lam ell _ ha hab hlam hell0 hT
+    by_cases hactive : ell < 𝔉
+    · rw [ite_eq_left hactive, 𝔜 higherBandFirstAction_target_count _ ha hab hlam hell0 hT
         M D q hn hD hnD (hFine hactive) C true U hU p hp c Φ]
       simp only [higherBandActualMatrix, Bool.false_eq_true, ite_false, ite_true,
-        min_eq_left hactive.le, globalCardinalBandMatrix]
+        min_eq_left hactive.le]
       rw [← mul_add, ← responseMatrixAction_matrix_add]
       congr 2
       funext i j
       unfold globalCardinalBandMatrix
       ring
     · rw [ite_eq_right hactive]
-      simp only [higherBandActualMatrix, Bool.false_eq_true, ite_false, min_eq_right (le_of_not_gt hactive), add_zero]
+      aesop
   · have hTlt := not_le.mp hT
-    have hmin : min ell (higherBandTargetScale d n N mu) = higherBandTargetScale d n N mu :=
-      min_eq_right (hTlt.le.trans hell)
+    have hmin :=
+      min_eq_right $ hTlt.le.trans hell
     unfold higherBandCoarseFirstAction higherBandFineFirstAction higherBandFirstAction
-    rw [higherBand_coarse_below_one_signed_zero d n D D q ad bd C lam ell _ (lt_min hell0 hnu)
-      (by rw [hmin]; exact hTlt)]
-    have hactive : ¬ell < higherBandTargetScale d n N mu := by linarith
-    rw [ite_eq_right hactive]
+    rw [𝔧 n (lt_min hell0 hnu)
+      𝖡₄ ]
+    rw [ite_eq_right 𝖡₄ ]
     simp only [VectorMeasure.integral_zero_vectorMeasure, add_zero]
-    have hmat : (integratedCardinalMatrix lam (higherBandTargetScale d n N mu) U : HighFrameIndex d D → _ → ℝ) =
-        fun _ _ => 0 := by
+    have hmat : (integratedCardinalMatrix lam 𝔉 U : 𝙮 → _ → ℝ) =
+        𝔞 := by
       funext i j
-      exact integrated_cardinal_matrix_below_one_eq_zero ⟨0, by omega⟩ lam hnu hTlt U i j
+      exact integrated_cardinal_matrix_below_one_eq_zero ⟨0, 𝖡₃⟩ lam hnu hTlt U i j
     rw [hmat, responseMatrixAction_matrix_zero, mul_zero]
 
+𝗇 𝔒 if 𝔇 < n then 𝔄 else 0
+𝗇 𝔘 if j = b then 𝔈 else 0
 /-- The selected genuine higher family is exactly its matched full target
 plus ordinary fine rows with strictly smaller target counts. -/
-theorem higherBandFamilyFirstAction_matched_and_fine_below {d n : ℕ}
-    (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hell : 1 ≤ ell)
-    (D M q : ℕ) (hn : 3 ≤ n) (hnD : n ≤ D)
-    (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu)
-    (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)
-    (C : ℝ) (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
-    (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
-    higherBandFamilyFirstAction ad bd lam ell N mu D M q C U p c Φ =
-      (∏ i, p i) * responseMatrixAction q C (integratedCardinalMatrix lam (higherBandTargetScale d n N mu) U) c Φ +
-      ∑ j : Fin (D-2), if j.val+3 < n then
-        higherBandFineFirstAction ad bd lam ell N mu (j.val+3) M D q C U p c Φ else 0 := by
-  have hD : 1 ≤ D := by omega
-  have hell0 : 0 < ell := by linarith
-  let b : Fin (D-2) := ⟨n-3, by omega⟩
-  have hb : b.val+3 = n := by dsimp [b]; omega
-  have hcSum : (∑ j : Fin (D-2), higherBandCoarseFirstAction ad bd lam ell N mu (j.val+3) D q C U p c Φ) =
-      higherBandCoarseFirstAction ad bd lam ell N mu n D q C U p c Φ := by
+theorem higherBandFamilyFirstAction_matched_and_fine_below
+    (ad bd lam ell N mu : ℝ) (ha : 𝔠) (hab : 𝔡) (hlam : 𝖺) (hell : 𝔟)
+    (D M q : ℕ) (hn : 𝖬₂) (hnD : 𝔣)
+    (hnu : 𝔗)
+    (hFine : 𝔖)
+    (C : ℝ) U (hU : ∀ i j, |𝔤| ≤ 2)
+    (p : 𝔏) (hp : 𝔍)
+    (c : 𝔊) Φ :
+    𝔐 =
+      𝔔 +
+      𝔩 𝔒 := by
+  have hD : 𝔢 := 𝖡₃
+  let b : 𝔅 := ⟨n-3, 𝖡₃⟩
+  have hb : b.val+3 = n := 𝖤₃
+  have hcSum : 𝔓 =
+      𝔑 := by
     calc
-      _ = higherBandCoarseFirstAction ad bd lam ell N mu (b.val+3) D q C U p c Φ := by
+      _ = 𝔚 (b.val+3) D q C U p c Φ := by
         apply Finset.sum_eq_single b
         · intro j _ hj
-          have hne : n ≠ j.val+3 := by
-            intro h
-            apply hj
-            apply Fin.ext
-            dsimp [b]
+          have hne : n ≠ 𝔇 := by
             omega
-          exact higherBandCoarseFirstAction_zero_other_count ad bd lam ell N mu ha hab hell0
-            (j.val+3) D q (by omega) hD hnD hne (hnu j) C U hU p hp c Φ
-        · intro hb'
-          exact False.elim (hb' (Finset.mem_univ b))
-      _ = _ := by rw [hb]
-  have hfPoint (j : Fin (D-2)) :
-      higherBandFineFirstAction ad bd lam ell N mu (j.val+3) M D q C U p c Φ =
-        (if j = b then higherBandFineFirstAction ad bd lam ell N mu n M D q C U p c Φ else 0) +
-        (if j.val+3 < n then higherBandFineFirstAction ad bd lam ell N mu (j.val+3) M D q C U p c Φ else 0) := by
+          exact 𝔥 higherBandCoarseFirstAction_zero_other_count ha hab  𝖡₄ 
+            𝔇 D q  𝖡₃  hD hnD hne (hnu j) C U hU p hp c Φ
+        simp
+      𝘿 := 𝖤₄
+  have hfPoint j :
+      𝔄 =
+        𝔘 +
+        𝔒 := by
     by_cases hj : j = b
-    · subst j
-      simp only [hb, ite_true, lt_self_iff_false, ite_false, add_zero]
-    · by_cases hlt : j.val+3 < n
-      · simp only [ite_eq_right hj, ite_eq_left hlt, zero_add]
-      · have hgt : n < j.val+3 := by
-          have hne : j.val+3 ≠ n := by
-            intro he
-            apply hj
-            apply Fin.ext
-            dsimp [b]
-            omega
+    · simp_all
+    · by_cases hlt : 𝔇 < n
+      · simp_all
+      · have hgt : n < 𝔇 := by
           omega
-        have hz := higherBandFineFirstAction_zero_small_count ad bd lam ell N mu ha hab hell
-          (j.val+3) M D q (by omega) hD hnD hgt C U hU p hp c Φ
-        simp only [ite_eq_right hj, ite_eq_right hlt, add_zero, hz]
-  have hfSum : (∑ j : Fin (D-2), higherBandFineFirstAction ad bd lam ell N mu (j.val+3) M D q C U p c Φ) =
-      higherBandFineFirstAction ad bd lam ell N mu n M D q C U p c Φ +
-      ∑ j : Fin (D-2), if j.val+3 < n then
-        higherBandFineFirstAction ad bd lam ell N mu (j.val+3) M D q C U p c Φ else 0 := by
+        have hz := 𝔥 higherBandFineFirstAction_zero_small_count ha hab hell
+          𝔇 M D q  𝖡₃  hD hnD hgt C U hU p hp c Φ
+        simp_all
+  have hfSum : 𝔙 =
+      𝔈 +
+      𝔩 𝔒 := by
     calc
-      _ = ∑ j : Fin (D-2), ((if j = b then higherBandFineFirstAction ad bd lam ell N mu n M D q C U p c Φ else 0) +
-        (if j.val+3 < n then higherBandFineFirstAction ad bd lam ell N mu (j.val+3) M D q C U p c Φ else 0)) :=
-          Finset.sum_congr rfl (fun j _ => hfPoint j)
-      _ = _ := by rw [Finset.sum_add_distrib]; simp
-  have hnupos : 0 < higherBandTargetScale d n N mu := by simpa only [hb] using hnu b
-  have hFineN : ell < higherBandTargetScale d n N mu → n ≤ M := by simpa only [hb] using hFine b
-  rw [higherBandFamilyFirstAction_coarse_fine ad bd lam ell N mu D M q C hell hnu hFine U p c Φ, hcSum, hfSum,
-    ← add_assoc, higherBand_matched_coarse_fine ad bd lam ell N mu ha hab hlam hell M D q (by omega) hD hnD hnupos hFineN C U hU p hp c Φ]
-
-end NearlyMinimax
+      _ = ∑ j : 𝔅, (𝔘 +
+        𝔒) :=
+          Finset.sum_congr rfl fun j _ => hfPoint j
+      𝘿 := by rw [Finset.sum_add_distrib]; simp
+  have hnupos : 0 < 𝔉 := by simpa only [hb] using hnu b
+  rw [𝔫 higherBandFamilyFirstAction_coarse_fine, hcSum, hfSum,
+    ← add_assoc, 𝔥 higherBand_matched_coarse_fine ha hab hlam hell M D q  𝖡₃  hD hnD hnupos (by simpa only [hb] using hFine b) C U hU p hp c Φ]

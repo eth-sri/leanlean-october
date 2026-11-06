@@ -1,44 +1,47 @@
 module
 
 public import NearlyMinimax.Model
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-! Three disjoint blocks of the original sample law, with exact product law. -/
-noncomputable section
-open MeasureTheory
-open scoped ENNReal
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
+𝚯
+𝚮
+𝚨
+𝚩
 
- def sampleBlockIndexEquiv (a b c : ℕ) :
-    ((Fin a ⊕ Fin b) ⊕ Fin c) ≃ Fin (a + b + c) :=
-  (Equiv.sumCongr finSumFinEquiv (Equiv.refl (Fin c))).trans finSumFinEquiv
+ set_option hygiene false
+𝗇 𝔄 (Fin a ⊕ Fin b) ⊕ Fin c
+𝗇 𝔅 𝗓₁ + c
+def sampleBlockIndexEquiv (a b c : ℕ) :
+    𝔄 ≃ Fin 𝔅 :=
+  (Equiv.sumCongr finSumFinEquiv $ Equiv.refl $ Fin c ).trans finSumFinEquiv
 
+𝗃 𝔇 Fin ἀ → Observation d
 def sampleBlockSplitEquiv (d a b c : ℕ) :
-    (Fin (a + b + c) → Observation d) ≃ᵐ
-      (((Fin a → Observation d) × (Fin b → Observation d)) × (Fin c → Observation d)) :=
+    𝔇 𝔅 ≃ᵐ
+       (𝔇 a × 𝔇 b) × 𝔇 c :=
   (MeasurableEquiv.piCongrLeft
-    (fun _ : (Fin a ⊕ Fin b) ⊕ Fin c => Observation d)
+    (fun _ : 𝔄 => Observation d)
     (sampleBlockIndexEquiv a b c).symm).trans
-  ((MeasurableEquiv.sumPiEquivProdPi
-    (fun _ : (Fin a ⊕ Fin b) ⊕ Fin c => Observation d)).trans
-  (MeasurableEquiv.prodCongr
-    (MeasurableEquiv.sumPiEquivProdPi (fun _ : Fin a ⊕ Fin b => Observation d))
-    (MeasurableEquiv.refl (Fin c → Observation d))))
+  $ (MeasurableEquiv.sumPiEquivProdPi
+     fun _ : 𝔄 => Observation d ).trans
+  $ MeasurableEquiv.prodCongr
+    (MeasurableEquiv.sumPiEquivProdPi fun _ : Fin a ⊕ Fin b => Observation d )
+    $ MeasurableEquiv.refl 𝔇 c
 
-theorem sampleBlockSplit_measurePreserving {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (a b c : ℕ) :
-    MeasurePreserving (sampleBlockSplitEquiv d a b c) (sampleLaw θ (a + b + c))
-      (((sampleLaw θ a).prod (sampleLaw θ b)).prod (sampleLaw θ c)) := by
-  let := observationLaw_isProbability C θ hθ
+theorem sampleBlockSplit_measurePreserving C
+    θ (hθ : 𝙟) a b c :
+    MeasurePreserving (sampleBlockSplitEquiv d a b c) (sampleLaw θ 𝔅)
+      $ ((sampleLaw θ a).prod $ sampleLaw θ b ).prod $ sampleLaw θ c := by
+  let := 𝙱
   let := sampleLaw_isProbability C θ hθ c
   have h1 := measurePreserving_piCongrLeft
-    (fun _ : (Fin a ⊕ Fin b) ⊕ Fin c => observationLaw θ) (sampleBlockIndexEquiv a b c).symm
+    (fun _ => observationLaw θ) (sampleBlockIndexEquiv a b c).symm
   have h2 := measurePreserving_sumPiEquivProdPi
-    (fun _ : (Fin a ⊕ Fin b) ⊕ Fin c => observationLaw θ)
+     fun _ : 𝔄 => observationLaw θ
   have h3 := (measurePreserving_sumPiEquivProdPi
-    (fun _ : Fin a ⊕ Fin b => observationLaw θ)).prod (MeasurePreserving.id (sampleLaw θ c))
-  exact h3.comp (h2.comp h1)
-
-end NearlyMinimax
+     fun _ : Fin a ⊕ Fin b => observationLaw θ ).prod $ MeasurePreserving.id $ sampleLaw θ c
+  exact h3.comp $ h2.comp h1

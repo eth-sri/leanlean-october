@@ -1,143 +1,153 @@
 module
 
 public import RoughRegime.MatrixDeterminant
+public import RoughRegime.Macro
 
 
-@[expose] public section
+𝗌
 
 /-! The exact entry polynomials for the matrix-inverse/determinant product in
 Lemma 5(a), with all matrix entries represented as independent variables. -/
 
-noncomputable section
-open scoped BigOperators
+𝚪
 
 namespace RoughRegime.CombinedPolynomial
 
 open MatrixDeterminant MatrixUpper Upper
 
-abbrev Variables {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) :=
-  (Fin n0 × Fin n0) ⊕ ((i : Fin N) × (Fin (dims i) × Fin (dims i)))
+𝗇 𝔅 Fin N → ℕ
+𝗇 𝔈 Fin $ dims i
+𝗇 𝔓 Fin n0 × Fin n0
+abbrev Variables (n0 : ℕ) (dims : 𝔅) :=
+  𝔓 ⊕ (i : Fin N) × 𝔈 × 𝔈
 
-def inverseVariableSeries {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (a b : Fin n0) : PowerSeries (MvPolynomial (Variables n0 dims) ℝ) :=
+𝗇 𝔘 Variables n0 dims
+𝗇 𝔇 MvPolynomial 𝔘 ℝ
+def inverseVariableSeries (n0 : ℕ) (dims : 𝔅) (lo hi : ℝ)
+    (a b : Fin n0) : PowerSeries 𝔇 :=
   PowerSeries.map (MvPolynomial.rename
-    (fun ab : Fin n0 × Fin n0 => (Sum.inl ab : Variables n0 dims))).toRingHom
-    (variableKernelSeries lo hi a b)
+     fun ab : 𝔓 => (Sum.inl ab : 𝔘) ).toRingHom
+    $ variableKernelSeries lo hi a b
 
-def determinantVariableSeries {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (i : Fin N) : PowerSeries (MvPolynomial (Variables n0 dims) ℝ) :=
+def determinantVariableSeries (n0 : ℕ) (dims : 𝔅) (lo hi : ℝ)
+    (i : Fin N) : PowerSeries 𝔇 :=
   PowerSeries.map (MvPolynomial.rename
-    (fun ab : Fin (dims i) × Fin (dims i) => (Sum.inr ⟨i, ab⟩ : Variables n0 dims))).toRingHom
-    (variableKernelSeries lo hi (n := Fin (dims i))).det
+     fun ab : 𝔈 × 𝔈 => (Sum.inr ⟨i, ab⟩ : 𝔘) ).toRingHom
+    (variableKernelSeries lo hi (n := 𝔈)).det
 
-def combinedVariableSeries {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (a b : Fin n0) : PowerSeries (MvPolynomial (Variables n0 dims) ℝ) :=
-  inverseVariableSeries n0 dims lo hi a b * ∏ i, determinantVariableSeries n0 dims lo hi i
+𝗃 𝔚 ἀ n0 dims lo hi
+𝗃 𝔒 𝔚 ἀ a b
+𝗇 𝔍 𝔒 inverseVariableSeries
+𝗇 𝔏 𝔚 determinantVariableSeries i
+def combinedVariableSeries (n0 : ℕ) (dims : 𝔅) (lo hi : ℝ)
+    (a b : Fin n0) : PowerSeries 𝔇 :=
+  𝔍 * ∏ i, 𝔏
 
-def combinedCoefficientPolynomial {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (a b : Fin n0) (k : ℕ) : MvPolynomial (Variables n0 dims) ℝ :=
-  PowerSeries.coeff k (combinedVariableSeries n0 dims lo hi a b)
+𝗇 𝔐 𝔒 combinedVariableSeries
+def combinedCoefficientPolynomial (n0 : ℕ) (dims : 𝔅) (lo hi : ℝ)
+    (a b : Fin n0) (k : ℕ) : 𝔇 :=
+  PowerSeries.coeff k 𝔐
 
-lemma inverseVariableSeries_degree {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (a b : Fin n0) (k : ℕ) :
-    (PowerSeries.coeff k (inverseVariableSeries n0 dims lo hi a b)).totalDegree ≤ k := by
+theorem inverseVariableSeries_degree n0 (dims : 𝔅) lo hi
+    a b k :
+    (PowerSeries.coeff k 𝔍).totalDegree ≤ k := by
   rw [inverseVariableSeries, PowerSeries.coeff_map]
-  apply (MvPolynomial.totalDegree_rename_le _ _).trans
+  apply (MvPolynomial.totalDegree_rename_le ..).trans
   simp only [variableKernelSeries, PowerSeries.coeff_mk]
-  exact (matrixEntryPolynomial_degree _ a b).trans (kernelCoefficientPolynomial_natDegree lo hi k)
+  exact (matrixEntryPolynomial_degree _ a b).trans $ kernelCoefficientPolynomial_natDegree lo hi k
 
-lemma determinantVariableSeries_degree {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (i : Fin N) (k : ℕ) :
-    (PowerSeries.coeff k (determinantVariableSeries n0 dims lo hi i)).totalDegree ≤ k := by
-  rw [determinantVariableSeries, PowerSeries.coeff_map]
-  exact (MvPolynomial.totalDegree_rename_le _ _).trans
-    (determinantCoefficientPolynomial_totalDegree lo hi k)
+theorem determinantVariableSeries_degree n0 dims lo hi
+    (i : Fin N) k :
+    (PowerSeries.coeff k 𝔏).totalDegree ≤ k := (MvPolynomial.totalDegree_rename_le ..).trans
+    $ determinantCoefficientPolynomial_totalDegree lo hi k
 
-theorem combinedCoefficientPolynomial_degree {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (a b : Fin n0) (k : ℕ) :
-    (combinedCoefficientPolynomial n0 dims lo hi a b k).totalDegree ≤ k := by
+𝗇 𝔎 𝔒 combinedCoefficientPolynomial k
+theorem combinedCoefficientPolynomial_degree n0 (dims : 𝔅) lo hi
+    a b k :
+    (𝔎).totalDegree ≤ k := by
   apply coeff_totalDegree_mul_le
-  · exact inverseVariableSeries_degree n0 dims lo hi a b
+  · exact 𝔒 inverseVariableSeries_degree
   · intro j
     exact coeff_totalDegree_prod_le Finset.univ _
-      (fun i _ => determinantVariableSeries_degree n0 dims lo hi i) j
+      (fun i _ => 𝔚 determinantVariableSeries_degree i) j
 
-def truncationEntryPolynomial {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (a b : Fin n0) (m : ℕ) : MvPolynomial (Variables n0 dims) ℝ :=
-  MvPolynomial.C ((intervalGeometricMean lo hi ^ ((∑ i, dims i) + 1))⁻¹) *
-    ∑ k ∈ Finset.range (m + 1), combinedCoefficientPolynomial n0 dims lo hi a b k
+𝗇 𝔊 (intervalGeometricMean lo hi ^ ( ∑ i, dims i + 1))⁻¹
+𝗇 𝔔 m + 1
+def truncationEntryPolynomial (n0 : ℕ) (dims : 𝔅) (lo hi : ℝ)
+    (a b : Fin n0) (m : ℕ) : 𝔇 :=
+  MvPolynomial.C 𝔊 *
+    ∑ k ∈ Finset.range 𝔔, 𝔎
 
-theorem truncationEntryPolynomial_degree {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (a b : Fin n0) (m : ℕ) :
-    (truncationEntryPolynomial n0 dims lo hi a b m).totalDegree ≤ m := by
-  apply (MvPolynomial.totalDegree_mul _ _).trans
-  simp only [MvPolynomial.totalDegree_C, zero_add]
+𝗇 𝔑 𝔒 truncationEntryPolynomial m
+theorem truncationEntryPolynomial_degree n0 (dims : 𝔅) lo hi
+    a b m :
+    (𝔑).totalDegree ≤ m := by
+  apply (MvPolynomial.totalDegree_mul ..).trans
+  simp
   apply MvPolynomial.totalDegree_finsetSum_le
   intro k hk
-  exact (combinedCoefficientPolynomial_degree n0 dims lo hi a b k).trans
-    (Nat.le_of_lt_succ (Finset.mem_range.mp hk))
+  exact (𝔒 combinedCoefficientPolynomial_degree k).trans
+    $ Nat.le_of_lt_succ $ Finset.mem_range.mp hk
 
-def entryValuation {N : ℕ} {n0 : ℕ} {dims : Fin N → ℕ}
+def entryValuation
     (M0 : Matrix (Fin n0) (Fin n0) ℝ)
-    (M : (i : Fin N) → Matrix (Fin (dims i)) (Fin (dims i)) ℝ) : Variables n0 dims → ℝ
+    (M : (i : Fin N) → Matrix 𝔈 𝔈 ℝ) : 𝔘 → ℝ
   | Sum.inl ab => M0 ab.1 ab.2
   | Sum.inr ⟨i, ab⟩ => M i ab.1 ab.2
 
-lemma eval_renamed_series {V W : Type*} (f : V → W) (values : W → ℝ)
-    (P : PowerSeries (MvPolynomial V ℝ)) :
+theorem eval_renamed_series (f : V → W) values
+    (P : PowerSeries $ MvPolynomial V ℝ ) :
     PowerSeries.map (MvPolynomial.eval₂Hom (RingHom.id ℝ) values)
       (PowerSeries.map (MvPolynomial.rename f).toRingHom P) =
-    PowerSeries.map (MvPolynomial.eval₂Hom (RingHom.id ℝ) (values ∘ f)) P := by
+    PowerSeries.map (MvPolynomial.eval₂Hom (RingHom.id ℝ) $ values ∘ f ) P := by
   ext k
-  rw [PowerSeries.coeff_map, PowerSeries.coeff_map, PowerSeries.coeff_map]
-  change MvPolynomial.eval values (MvPolynomial.rename f (PowerSeries.coeff k P)) = _
   exact MvPolynomial.eval_rename f values _
 
-lemma inverseVariableSeries_eval {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (M0 : Matrix (Fin n0) (Fin n0) ℝ)
-    (M : (i : Fin N) → Matrix (Fin (dims i)) (Fin (dims i)) ℝ) (a b : Fin n0) :
-    PowerSeries.map (MvPolynomial.eval₂Hom (RingHom.id ℝ) (entryValuation M0 M))
-      (inverseVariableSeries n0 dims lo hi a b) = kernelSeries lo hi M0 a b := by
+𝗇 𝔉 MvPolynomial.eval₂Hom (RingHom.id ℝ) $ entryValuation M0 M
+theorem inverseVariableSeries_eval n0 (dims : 𝔅) lo hi
+    M0
+    M a b :
+    PowerSeries.map 𝔉
+      𝔍 = kernelSeries lo hi M0 a b := by
   rw [inverseVariableSeries, eval_renamed_series]
-  exact congrArg (fun A => A a b) (variableKernelSeries_map_eval lo hi M0)
+  exact congrArg (fun A => A a b) $ variableKernelSeries_map_eval lo hi M0
 
-lemma determinantVariableSeries_eval {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (M0 : Matrix (Fin n0) (Fin n0) ℝ)
-    (M : (i : Fin N) → Matrix (Fin (dims i)) (Fin (dims i)) ℝ) (i : Fin N) :
-    PowerSeries.map (MvPolynomial.eval₂Hom (RingHom.id ℝ) (entryValuation M0 M))
-      (determinantVariableSeries n0 dims lo hi i) = (kernelSeries lo hi (M i)).det := by
+𝗇 𝔗 (kernelSeries lo hi $ M i ).det
+theorem determinantVariableSeries_eval n0 dims lo hi
+    M0
+    M (i : Fin N) :
+    PowerSeries.map 𝔉
+      𝔏 = 𝔗 := by
   rw [determinantVariableSeries, eval_renamed_series]
   ext k
-  rw [PowerSeries.coeff_map]
   exact determinantCoefficientPolynomial_eval lo hi (M i) k
 
-theorem combinedVariableSeries_eval {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (M0 : Matrix (Fin n0) (Fin n0) ℝ)
-    (M : (i : Fin N) → Matrix (Fin (dims i)) (Fin (dims i)) ℝ) (a b : Fin n0) :
-    PowerSeries.map (MvPolynomial.eval₂Hom (RingHom.id ℝ) (entryValuation M0 M))
-      (combinedVariableSeries n0 dims lo hi a b) =
-      kernelSeries lo hi M0 a b * ∏ i, (kernelSeries lo hi (M i)).det := by
+𝗇 𝔄 kernelSeries lo hi M0 a b * ∏ i, 𝔗
+theorem combinedVariableSeries_eval n0 (dims : 𝔅) lo hi
+    M0
+    M a b :
+    PowerSeries.map 𝔉
+      𝔐 =
+      𝔄 := by
   simp only [combinedVariableSeries, map_mul, map_prod,
     inverseVariableSeries_eval, determinantVariableSeries_eval]
 
-theorem combinedCoefficientPolynomial_eval {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (M0 : Matrix (Fin n0) (Fin n0) ℝ)
-    (M : (i : Fin N) → Matrix (Fin (dims i)) (Fin (dims i)) ℝ) (a b : Fin n0) (k : ℕ) :
-    MvPolynomial.eval (entryValuation M0 M)
-      (combinedCoefficientPolynomial n0 dims lo hi a b k) =
-      PowerSeries.coeff k (kernelSeries lo hi M0 a b * ∏ i, (kernelSeries lo hi (M i)).det) := by
-  have he := congrArg (fun P : PowerSeries ℝ => PowerSeries.coeff k P)
-    (combinedVariableSeries_eval n0 dims lo hi M0 M a b)
-  rw [PowerSeries.coeff_map] at he
-  exact he
+𝗇 𝔖 entryValuation M0 M
+theorem combinedCoefficientPolynomial_eval n0 (dims : 𝔅) lo hi
+    M0
+    M a b k :
+    MvPolynomial.eval 𝔖
+      𝔎 =
+      PowerSeries.coeff k 𝔄 := by
+  have he := congrArg ( PowerSeries.coeff k )
+    $ 𝔚 combinedVariableSeries_eval M0 M a b
+  assumption
 
-theorem truncationEntryPolynomial_eval {N : ℕ} (n0 : ℕ) (dims : Fin N → ℕ) (lo hi : ℝ)
-    (M0 : Matrix (Fin n0) (Fin n0) ℝ)
-    (M : (i : Fin N) → Matrix (Fin (dims i)) (Fin (dims i)) ℝ) (a b : Fin n0) (m : ℕ) :
-    MvPolynomial.eval (entryValuation M0 M) (truncationEntryPolynomial n0 dims lo hi a b m) =
-      (intervalGeometricMean lo hi ^ ((∑ i, dims i) + 1))⁻¹ *
-        ∑ k ∈ Finset.range (m + 1),
-          PowerSeries.coeff k (kernelSeries lo hi M0 a b * ∏ i, (kernelSeries lo hi (M i)).det) := by
+theorem truncationEntryPolynomial_eval n0 (dims : 𝔅) lo hi
+    M0
+    M a b m :
+    MvPolynomial.eval 𝔖 𝔑 =
+      𝔊 *
+        ∑ k ∈ Finset.range 𝔔,
+          PowerSeries.coeff k 𝔄 := by
   simp [truncationEntryPolynomial, combinedCoefficientPolynomial_eval]
-
-end RoughRegime.CombinedPolynomial

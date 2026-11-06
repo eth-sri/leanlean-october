@@ -2,50 +2,59 @@ module
 
 public import NearlyMinimax.HighSourceRowTail
 public import NearlyMinimax.HighUnionScorePrimitives
+public import RoughRegime.Macro
 
 
 @[expose] public section
+set_option hygiene false
 
 /-! The genuine complete-source all-count raw response numerator bound.
 Every source row is integrated on its actual positive reference law;
 the variance derivative is subtracted exactly once after their union. -/
 noncomputable section
-open Set MeasureTheory
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency true
+𝚸
+𝚨
+𝛀
 set_option maxHeartbeats 1800000
-attribute [local instance] Classical.propDecidable
-attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
+𝚬
+𝚿
 
-def highMarkedLocalScoreNumerator {ι E : Type*} [Fintype ι] [MeasurableSpace E] {n : ℕ}
+𝗇 𝔖 Fin n → ℝ
+𝗇 𝔣 ι → ℝ
+𝗇 𝔤 η^2
+def highMarkedLocalScoreNumerator [Fintype ι] [MeasurableSpace E]
     (π : Measure E) (activation : E → ℝ) (a V η : ℝ)
-    (p : Fin n → ℝ) (pReset : E → Fin n → ℝ) (cReset : E → ι → ℝ)
-    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3) : ℝ :=
+    (p : 𝔖) (pReset : E → 𝔖) (cReset : E → 𝔣)
+    (g w : 𝔖) (φ : Fin n → 𝔣) (c : 𝔣) (y : Fin n → Fin 3) : ℝ :=
   highMarkedResponseAction π activation a V η pReset cReset g w φ y -
-    η^2*(∏ u, p u)*∑ u, (w u)^2*highResponseVarianceTerm a V η g w φ c y u
+    𝔤*(∏ u, p u)*∑ u, w u ^2*highResponseVarianceTerm a V η g w φ c y u
 
-theorem highResponseProduct_ball_abs_le_one {ι : Type*} [Fintype ι]
-    {n : ℕ} (C a V η ρ : ℝ) (ha : a ≠ 0) (hη : 0 ≤ η) (hηρ : η ≤ ρ/2)
-    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ)
-    (hg : ∀ u, |g u| ≤ ρ/2) (hw : ∀ u, |w u| ≤ 1)
-    (hφ : ∀ v : ι → ℝ, (∑ γ, |v γ|) ≤ C⁻¹ → ∀ u, |∑ γ, φ u γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y)
-    (v : ι → ℝ) (hv : ∑ γ, |v γ| ≤ C⁻¹) (y : Fin n → Fin 3) :
-    |highResponseProduct a V η g w φ v y| ≤ 1 := by
+𝗃 𝔬 ∑ γ, φ u γ*ἀ γ
+𝗇 𝔇 𝔬 v
+𝗇 𝔏 ∀ y, 0 ≤ ternaryMass a f V y
+𝗇 𝔔 ρ/2
+𝗇 𝔚 highResponseProduct a V η g w φ
+𝗇 𝔨 η*w u
+theorem highResponseProduct_ball_abs_le_one [Fintype ι]
+    (C a V η ρ : ℝ) (ha : a ≠ 0) (hη : 0 ≤ η) (hηρ : η ≤ 𝔔)
+    (g w : 𝔖) φ
+    (hg : ∀ u, |g u| ≤ 𝔔) (hw : ∀ u, |w u| ≤ 1)
+    (hφ : ∀ v : 𝔣, ∑ γ, |v γ| ≤ C⁻¹ → ∀ u, |𝔇| ≤ 1)
+    (hp : ∀ f , |f| ≤ ρ → 𝔏)
+    v (hv : ∑ γ, |v γ| ≤ C⁻¹) y :
+    |𝔚 v y| ≤ 1 := by
   apply highMarkedResponseProduct_abs_le_one a V η ha g w φ v
   intro u b
   apply hp _
-  have hpv := hφ v hv u
-  change |g u+η*w u*(∑ γ, φ u γ*v γ)| ≤ ρ
-  have hh : |η*w u*(∑ γ, φ u γ*v γ)| ≤ η := by
+  change |g u+𝔨*𝔇| ≤ ρ
+  have hh : |𝔨*𝔇| ≤ η := by
     rw [abs_mul,abs_mul,abs_of_nonneg hη]
-    have ht := mul_le_mul (hw u) hpv (abs_nonneg _) (by norm_num : (0 : ℝ) ≤ 1)
-    nlinarith [mul_le_mul_of_nonneg_left ht hη]
-  exact (abs_add_le _ _).trans (by linarith [hg u])
+    have ht := mul_le_mul (hw u) (hφ v hv u) (abs_nonneg _) $ by norm_num
+    nlinarith
+  grind
 
 section Complete
-variable {d k D M q n : ℕ} [NeZero d] [NeZero k] [LinearOrder (HighWindowLabels d k)]
+variable {d k D M q n : ℕ} [NeZero d] [NeZero k] [LinearOrder $ HighWindowLabels d k ]
   (C : ModelConstants d) (hD : 3 ≤ D) (hq : 1 ≤ q)
   (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
   (Cfr lam ℓ N μ : ℝ) (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
@@ -53,90 +62,100 @@ variable {d k D M q n : ℕ} [NeZero d] [NeZero k] [LinearOrder (HighWindowLabel
 local notation "R" => completeSourceRows C k D M q Cfr lam ℓ N μ
 include hD hq hM hCfr hℓ hℓN
 
+𝗃 𝔭 ἀ C R
+𝗇 𝔦 𝔭 highUnionSourceResetDensity j h
+𝗇 𝔙 𝔦 e $ x u
+𝗇 𝔄 fun e u => 𝔙
+set_option hygiene false
+𝗃 𝔞 ἀ d D M q ad bd Cfr lam ℓ N μ
+𝗇 𝔅 𝔞 sourceRowDensityProj i e
+𝗇 𝔉 highUnionLaw R $ highCenterMix C
+𝗇 𝔊 highUnionActivation R $ highCenterMix C
+𝗇 𝔍 𝔭 highUnionSourceResetCoefficient j h
+𝗇 𝔎 (lt_trans zero_lt_one C.one_lt_densityUpper).le
+𝗇 𝔐 completeSourceRows_guards C k D M q hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN
+𝗇 𝔑 (𝔭 highUnionSourceState h).2 j
+𝗇 𝔒 ∏ u, 𝔙
+𝗇 𝔜 𝔞 sourceRowDensityLift r₀ i
+𝗇 𝔗 𝔜 𝔅
+𝗇 𝔘 highMarkedResponseAction 𝔉 𝔊 a V η 𝔄 𝔍 g w φ y
+𝗇 𝔟 HighFrameIndex d D
+𝗇 𝔠 C.densityUpper^n
+𝗇 𝔡 highRowTotalMass (R).rowMass
+𝗇 𝔢 (highUnionSourceResetDensity_measurable C R G j h).comp
+𝗇 𝔥 x u ∈ highTorusPatch d k j
+𝗃 𝔪 ἀ d k D M q
+𝗃 𝔫 (R).rowSlope j i ἀ (x u)*_
+𝗃 𝔮 𝔪 ἀ ad bd Cfr lam ℓ N μ r₀
 theorem completeSourceResponseAction_all_count_bound (hn : 1 ≤ n)
-    (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-      (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-        (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ)))
-    (a V η ρ : ℝ) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2)
-    (x : Fin n → Covariate d) (g w : Fin n → ℝ)
-    (φ : Fin n → HighFrameIndex d D → ℝ)
-    (hg : ∀ u, |g u| ≤ ρ/2) (hw : ∀ u, |w u| ≤ 1)
-    (hφ : ∀ v : HighFrameIndex d D → ℝ, (∑ γ, |v γ|) ≤ Cfr⁻¹ →
-      ∀ u, |∑ γ, φ u γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
-    |highMarkedResponseAction (highUnionLaw R (highCenterMix C))
-      (highUnionActivation R (highCenterMix C)) a V η
-      (fun e u => highUnionSourceResetDensity C R j h e (x u))
-      (highUnionSourceResetCoefficient C R j h) g w φ y| ≤
-      (C.densityUpper^n*highSeparatedDerivativeBudget a ρ*(n : ℝ)^2*η^2)*
-        highRowTotalMass (R).rowMass := by
-  let ad := C.densityLower+1/(M : ℝ)
-  let bd := C.densityUpper-1/(M : ℝ)
-  let G := completeSourceRows_guards C k D M q hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN
+    j
+    h
+    a V η ρ (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ 𝔔)
+    (x : Fin n → Covariate d) g w
+    φ
+    (hg : ∀ u, |g u| ≤ 𝔔) (hw : ∀ u, |w u| ≤ 1)
+    (hφ : ∀ v : 𝔟 → ℝ, ∑ γ, |v γ| ≤ Cfr⁻¹ →
+      ∀ u, |𝔇| ≤ 1)
+    (hp : ∀ f , |f| ≤ ρ → 𝔏) y :
+    |𝔘| ≤
+       𝔠*highSeparatedDerivativeBudget a ρ*n^2*𝔤 *
+        𝔡 := by
+  let ad := C.densityLower+1/M
+  let bd := C.densityUpper-1/M
+  let G := 𝔐
   have hCf : 0 < Cfr := by linarith
-  obtain ⟨had,hadbd⟩ := high_source_interval_numeric C (M : ℝ) hM
-  have hpos := sourceRowMass_positive_actual d k D M q hD hq ad bd had hadbd Cfr hCf
+  obtain ⟨had,hadbd⟩ := high_source_interval_numeric C M hM
+  have hpos := 𝔪 sourceRowMass_positive_actual hD hq ad bd had hadbd Cfr hCf
     lam ℓ N μ hℓ hℓN
-  letI : StandardBorelSpace (HighUnionMark (SourceRowMark d D M q ad bd Cfr lam ℓ N μ)) :=
+  letI : StandardBorelSpace $ HighUnionMark 𝔞 SourceRowMark :=
     highUnionMark_standardBorel
-  let c := (highUnionSourceState C R h).2 j
-  have hc : ∑ γ, |c γ| ≤ Cfr⁻¹ := highUnionSourceState_coefficient_ball C R G h j
-  let β₀ : HighFrameIndex d D := ⟨fun _ => 0,by simp⟩
-  let r₀ : HighResponseMarkIndex (HighFrameIndex d D) q := ((β₀,β₀),(false,false),0)
-  let reset : (i : SourceRowIndex d D M q ad bd Cfr lam ℓ N μ) →
-      SourceRowDensityMark d D M q ad bd Cfr lam ℓ N μ i → Fin n → ℝ :=
-    fun i z u => highUnionSourceResetDensity C R j h
-      (Sum.inl ⟨i,sourceRowDensityLift d D M q ad bd Cfr lam ℓ N μ r₀ i z⟩) (x u)
-  have hresetMeas (i) (u) : Measurable (fun z => reset i z u) := by
-    exact (highUnionSourceResetDensity_measurable C R G j h).comp
-      (((measurable_inl.comp ((rowSigmaMk_measurable i).comp
-        (sourceRowDensityLift_measurable d D M q ad bd Cfr lam ℓ N μ r₀ i))).prodMk measurable_const))
+  let c := 𝔑
+  have hc := 𝔭 highUnionSourceState_coefficient_ball G h j
+  let β₀ : 𝔟 := ⟨fun _ => 0,by simp⟩
+  let r₀ : HighResponseMarkIndex 𝔟 q := ((β₀,β₀),(false,false),0)
+  let reset :=
+    fun i z u => 𝔦
+      (Sum.inl ⟨i,𝔜 z⟩) $ x u
+  have hresetMeas (i) (u) : Measurable fun z => reset i z u := 𝔢
+      $ (measurable_inl.comp $ (rowSigmaMk_measurable i).comp
+        $ 𝔞 sourceRowDensityLift_measurable r₀ i ).prodMk measurable_const
   have hresetBound (i) (z) (u) : |reset i z u| ≤ C.densityUpper :=
-    highUnionSourceResetDensity_abs_le C R G j h _ _
-  have hirrel (i) (e : SourceRowMark d D M q ad bd Cfr lam ℓ N μ i) (u) :
-      highUnionSourceResetDensity C R j h (Sum.inl ⟨i,e⟩) (x u) =
-      reset i (sourceRowDensityProj d D M q ad bd Cfr lam ℓ N μ i e) u := by
+    highUnionSourceResetDensity_abs_le C R G j h ..
+  have hirrel (i) e (u) :
+      𝔦 (Sum.inl ⟨i,e⟩) (x u) =
+      reset i 𝔅 u := by
     dsimp only [reset]
     unfold highUnionSourceResetDensity
     unfold highUnionSourceDensity
-    change (highUnionSourceState C R _).1 (x u) = (highUnionSourceState C R _).1 (x u)
     rw [highUnionSourceState_append,highUnionSourceState_append]
-    change (if x u ∈ highTorusPatch d k j then (R).rowSlope j i e (x u)*_+(R).rowIntercept i e else _) =
-      (if x u ∈ highTorusPatch d k j then (R).rowSlope j i
-        (sourceRowDensityLift d D M q ad bd Cfr lam ℓ N μ r₀ i
-          (sourceRowDensityProj d D M q ad bd Cfr lam ℓ N μ i e)) (x u)*_+
-        (R).rowIntercept i (sourceRowDensityLift d D M q ad bd Cfr lam ℓ N μ r₀ i
-          (sourceRowDensityProj d D M q ad bd Cfr lam ℓ N μ i e)) else _)
+    change (if 𝔥 then 𝔫 e+(R).rowIntercept i e else _) =
+       if 𝔥 then 𝔫 𝔗+
+        (R).rowIntercept i 𝔗 else _
     simp only [completeSourceRows]
-    rw [sourceRow_density_projection_slope d k D M q ad bd Cfr lam ℓ N μ r₀ j i e (x u),
-      sourceRow_density_projection_intercept d k D M q ad bd Cfr lam ℓ N μ r₀ i e]
-  let O := fun e => (∏ u, highUnionSourceResetDensity C R j h e (x u))*
-    highResponseProduct a V η g w φ (highUnionSourceResetCoefficient C R j h e) y
-  have hmO : Measurable O := (Finset.measurable_fun_prod _ (fun u _ =>
-    (highUnionSourceResetDensity_measurable C R G j h).comp
-      (measurable_id.prodMk measurable_const))).mul
-        (highMarkedResponseProduct_measurable a V η _
-          (highUnionSourceResetCoefficient_measurable C R G j h) g w φ y)
-  have hOb (e) : ‖O e‖ ≤ C.densityUpper^n := by
-    have hcReset := highUnionResponseReset_ball R Cfr hCf G.vector_ball G.time_interval e c hc
+    rw [𝔮 sourceRow_density_projection_slope j i e $ x u ,
+      𝔮 sourceRow_density_projection_intercept i e]
+  let O := fun e => 𝔒*
+    𝔚 (𝔭 highUnionSourceResetCoefficient j h e) y
+  have hmO : Measurable O := (Finset.measurable_fun_prod _ fun u _ =>
+    𝔢
+      $ measurable_id.prodMk measurable_const ).mul
+        $ highMarkedResponseProduct_measurable a V η _
+          (highUnionSourceResetCoefficient_measurable C R G j h) g w φ y
+  have hOb (e) : ‖O e‖ ≤ 𝔠 := by
     have hResponse := highResponseProduct_ball_abs_le_one Cfr a V η ρ ha.ne' hη hηρ
-      g w φ hg hw hφ hp _ hcReset y
-    change |(∏ u, highUnionSourceResetDensity C R j h e (x u))*highResponseProduct a V η g w φ _ y| ≤ _
+      g w φ hg hw hφ hp _ (highUnionResponseReset_ball R Cfr hCf G.vector_ball G.time_interval e c hc) y
+    change |𝔒*𝔚 _ y| ≤ _
     rw [abs_mul]
-    exact (mul_le_mul (finite_density_product_abs_bound _ C.densityUpper (lt_trans zero_lt_one C.one_lt_densityUpper).le
-      (fun u => highUnionSourceResetDensity_abs_le C R G j h e (x u))) hResponse
-        (abs_nonneg _) (pow_nonneg (lt_trans zero_lt_one C.one_lt_densityUpper).le _)).trans_eq (mul_one _)
-  have he : highMarkedResponseAction (highUnionLaw R (highCenterMix C))
-      (highUnionActivation R (highCenterMix C)) a V η
-      (fun e u => highUnionSourceResetDensity C R j h e (x u))
-      (highUnionSourceResetCoefficient C R j h) g w φ y =
+    exact (mul_le_mul (finite_density_product_abs_bound _ C.densityUpper 𝔎
+       fun u => highUnionSourceResetDensity_abs_le C R G j h e $ x u ) hResponse
+        (abs_nonneg _) $ pow_nonneg 𝔎 _ ).trans_eq $ mul_one _
+  have he : 𝔘 =
       ∑ i, highMarkedResponseAction ((R).rowLaw i) ((R).rowActivation i) a V η
-        (fun e => reset i (sourceRowDensityProj d D M q ad bd Cfr lam ℓ N μ i e))
-        (fun e => coefficientReset c ((R).rowVector i e) ((R).rowTime i e)) g w φ y := by
+        (fun e => reset i 𝔅)
+        (fun e => coefficientReset c ((R).rowVector i e) $ (R).rowTime i e ) g w φ y := by
     unfold highMarkedResponseAction
     simp_rw [mul_assoc]
-    rw [highUnionSource_bounded_action C R G hpos O hmO (C.densityUpper^n) hOb]
+    rw [𝔭 highUnionSource_bounded_action G hpos O hmO 𝔠 hOb]
     apply Finset.sum_congr rfl
     intro i _
     apply integral_congr_ae
@@ -144,68 +163,56 @@ theorem completeSourceResponseAction_all_count_bound (hn : 1 ≤ n)
     simp only [O,hirrel,highUnionSourceResetCoefficient,highUnionResponseReset,
       highUnionResponseVector,highUnionResponseTime,Sum.elim_inl,c]
   rw [he]
-  apply (Finset.abs_sum_le_sum_abs _ _).trans
-  apply (Finset.sum_le_sum (fun i _ =>
-    sourceRow_reference_all_count_bound d k D M q hn ad bd Cfr lam ℓ N μ a V η ρ C.densityUpper
-      hCf ha hη hρ hηρ (lt_trans zero_lt_one C.one_lt_densityUpper).le hpos i (reset i) (hresetMeas i) (hresetBound i)
-      g w φ c hc hg hw hφ hp y)).trans_eq
-  exact (Finset.mul_sum _ _ _).symm
+  apply (Finset.abs_sum_le_sum_abs ..).trans
+  apply (Finset.sum_le_sum fun i _ =>
+    𝔪 sourceRow_reference_all_count_bound hn ad bd Cfr lam ℓ N μ a V η ρ C.densityUpper
+      hCf ha hη hρ hηρ 𝔎 hpos i (reset i) (hresetMeas i) (hresetBound i)
+      g w φ c hc hg hw hφ hp y ).trans_eq
+  exact (Finset.mul_sum ..).symm
 
+𝗇 𝔧 𝔭 highUnionSourceDensity h $ x u
+𝗇 𝔈 fun u => 𝔧
+𝗇 𝔓 𝔨*𝔬 c
+𝗇 𝔛 highMarkedLocalScoreNumerator 𝔉 𝔊 a V η 𝔈 𝔄 𝔍 g w φ
 theorem completeSourceNumerator_all_count_exponential_bound (hn : 1 ≤ n)
-    (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i)
-      (HighUnionMark (SourceRowMark d D M q (C.densityLower+1/(M : ℝ))
-        (C.densityUpper-1/(M : ℝ)) Cfr lam ℓ N μ)))
-    (a V η ρ : ℝ) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2)
-    (x : Fin n → Covariate d) (g w : Fin n → ℝ)
-    (φ : Fin n → HighFrameIndex d D → ℝ)
-    (hg : ∀ u, |g u| ≤ ρ/2) (hw : ∀ u, |w u| ≤ 1)
-    (hφ : ∀ v : HighFrameIndex d D → ℝ, (∑ γ, |v γ|) ≤ Cfr⁻¹ →
-      ∀ u, |∑ γ, φ u γ*v γ| ≤ 1)
-    (hp : ∀ f : ℝ, |f| ≤ ρ → ∀ y, 0 ≤ ternaryMass a f V y) (y : Fin n → Fin 3) :
-    |highMarkedLocalScoreNumerator (highUnionLaw R (highCenterMix C))
-      (highUnionActivation R (highCenterMix C)) a V η
-      (fun u => highUnionSourceDensity C R h (x u))
-      (fun e u => highUnionSourceResetDensity C R j h e (x u))
-      (highUnionSourceResetCoefficient C R j h) g w φ ((highUnionSourceState C R h).2 j) y| ≤
-      (highSeparatedScoreExponentialConstant a ρ C.densityUpper 1 1)^n *
-        η^2*(highRowTotalMass (R).rowMass+1) := by
-  let G := completeSourceRows_guards C k D M q hD hq hM Cfr lam ℓ N μ hCfr hℓ hℓN
-  let c := (highUnionSourceState C R h).2 j
-  let B := highRowTotalMass (R).rowMass
-  have hc := highUnionSourceState_coefficient_ball C R G h j
+    j
+    h
+    a V η ρ (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ 𝔔)
+    (x : Fin n → Covariate d) g w
+    φ
+    (hg : ∀ u, |g u| ≤ 𝔔) (hw : ∀ u, |w u| ≤ 1)
+    (hφ : ∀ v : 𝔟 → ℝ, ∑ γ, |v γ| ≤ Cfr⁻¹ →
+      ∀ u, |𝔇| ≤ 1)
+    (hp : ∀ f : ℝ, |f| ≤ ρ → 𝔏) y :
+    |𝔛 𝔑 y| ≤
+       highSeparatedScoreExponentialConstant a ρ C.densityUpper 1 1 ^n *
+        𝔤*(𝔡+1) := by
+  let G := 𝔐
+  let c := 𝔑
+  let B := 𝔡
+  have hc := 𝔭 highUnionSourceState_coefficient_ball G h j
   have hpCurrent (u) (b) : 0 ≤ ternaryMass a (coefficientRegression η g w φ c u) V b := by
     apply hp _
     have hv := hφ c hc u
-    change |g u+η*w u*(∑ γ, φ u γ*c γ)| ≤ ρ
-    have hh : |η*w u*(∑ γ, φ u γ*c γ)| ≤ η := by
+    change |g u+𝔓| ≤ ρ
+    have hh : |𝔓| ≤ η := by
       rw [abs_mul,abs_mul,abs_of_nonneg hη]
-      have ht := mul_le_mul (hw u) hv (abs_nonneg _) (by norm_num : (0 : ℝ) ≤ 1)
-      nlinarith [mul_le_mul_of_nonneg_left ht hη]
-    exact (abs_add_le _ _).trans (by linarith [hg u])
-  have hIncoming (u) : |highUnionSourceDensity C R h (x u)| ≤ C.densityUpper := by
-    have hi := highUnionSourceDensity_coarse_interval C R G h (x u)
-    rw [abs_of_nonneg (C.densityLower_pos.le.trans hi.1)]
+      have ht := mul_le_mul (hw u) hv (abs_nonneg _) $ by norm_num
+      nlinarith
+    grind
+  have hIncoming (u) : |𝔧| ≤ C.densityUpper := by
+    have hi := 𝔭 highUnionSourceDensity_coarse_interval G h $ x u
+    rw [abs_of_nonneg $ C.densityLower_pos.le.trans hi.1 ]
     exact hi.2
   have haction := completeSourceResponseAction_all_count_bound C hD hq hM Cfr lam ℓ N μ
     hCfr hℓ hℓN hn j h a V η ρ ha hη hρ hηρ x g w φ hg hw hφ hp y
   have hcorrection := high_response_variance_correction_abs_bound hn a V η C.densityUpper
-    ha (lt_trans zero_lt_one C.one_lt_densityUpper).le (fun u => highUnionSourceDensity C R h (x u)) g w φ c
+    ha 𝔎 𝔈 g w φ c
     hw hIncoming hpCurrent y
-  have hraw : |highMarkedLocalScoreNumerator (highUnionLaw R (highCenterMix C))
-      (highUnionActivation R (highCenterMix C)) a V η
-      (fun u => highUnionSourceDensity C R h (x u))
-      (fun e u => highUnionSourceResetDensity C R j h e (x u))
-      (highUnionSourceResetCoefficient C R j h) g w φ c y| ≤
-      C.densityUpper^n*(highSeparatedDerivativeBudget a ρ*B+1/a^2)*(n : ℝ)^2*η^2 := by
+  have hraw : |𝔛 c y| ≤
+      𝔠*(highSeparatedDerivativeBudget a ρ*B+1/a^2)*n^2*𝔤 := by
     unfold highMarkedLocalScoreNumerator
-    apply (abs_sub _ _).trans
-    apply (add_le_add haction hcorrection).trans_eq
-    dsimp [B]
-    ring
+    grind
   apply hraw.trans
   simpa only [mul_one,div_one] using highSeparated_score_budget_absorb n hn a ρ C.densityUpper
-    1 1 η B (lt_trans zero_lt_one C.one_lt_densityUpper).le (by norm_num) (by norm_num) G.total_positive.le
-
-end Complete
-end NearlyMinimax
+    1 1 η B 𝔎 (by norm_num) (by norm_num) G.total_positive.le

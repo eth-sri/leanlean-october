@@ -1,56 +1,57 @@
 module
 
 public import NearlyMinimax.DyadicFitBounds
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗍
 
 /-! U2's approximation bound in the original physical cell coordinates. -/
 
-noncomputable section
 open Set Matrix
-open scoped BigOperators Matrix.Norms.L2Operator
-namespace NearlyMinimax
+𝚺
+𝚨
 
-theorem dyadicCellAffine_same_cell {d : ℕ} (j : ℕ) (x y : Covariate d)
-    (hcell : y ∈ dyadicPilotCell j x) :
-    dyadicCellAffine j x (dyadicNormalizedAnchor j y) = y := by
-  have hc : regularGridCell ((2 : ℕ) ^ j) (by positivity) y =
-      regularGridCell ((2 : ℕ) ^ j) (by positivity) x := hcell
+𝗇 𝔄 dyadicNormalizedAnchor j y
+𝗇 𝔇 𝘷
+𝗃 𝔊 ἀ j x
+theorem dyadicCellAffine_same_cell j (x y : Covariate d)
+    (hcell : y ∈ 𝔊 dyadicPilotCell) :
+    𝔊 dyadicCellAffine 𝔄 = y := by
+  have hc : regularGridCell 𝔇  𝖠₃  y =
+      regularGridCell 𝔇  𝖠₃  x := hcell
   simpa only [dyadicCellAffine, hc] using dyadicCellAffine_anchor j y
 
-theorem dyadicPopulationFit_physical_evaluation {d ℓ : ℕ} (j : ℕ)
-    (x y : Covariate d) (hcell : y ∈ dyadicPilotCell j x) (c : AnchoredIndex d ℓ → ℝ) :
-    anchoredFitPolynomial (dyadicNormalizedAnchor j x) c (dyadicNormalizedAnchor j y) =
-      dyadicAnchoredFeature j x y ⬝ᵥ c := by
-  have he := dyadicCellAffine_same_cell j x y hcell
-  unfold anchoredFitPolynomial dotProduct
+𝗇 𝔈 𝔊 dyadicNormalizedAnchor
+theorem dyadicPopulationFit_physical_evaluation j
+    x y (hcell : y ∈ 𝔊 dyadicPilotCell) (c : 𝗎 → ℝ) :
+    anchoredFitPolynomial 𝔈 c 𝔄 =
+      𝔊 dyadicAnchoredFeature y ⬝ᵥ c := by
   apply Finset.sum_congr rfl
   intro γ _
-  have h := dyadicAnchoredFeature_affine j x (dyadicNormalizedAnchor j y) γ
-  change dyadicAnchoredFeature j x (dyadicCellAffine j x (dyadicNormalizedAnchor j y)) γ = _ at h
-  rw [he] at h
-  change dyadicAnchoredFeature j x y γ =
-    anchoredFeature (dyadicNormalizedAnchor j x) (dyadicNormalizedAnchor j y) γ at h
-  rw [h]
-  ring
+  have h := 𝔊 dyadicAnchoredFeature_affine 𝔄 γ
+  change 𝔊 dyadicAnchoredFeature (𝔊 dyadicCellAffine 𝔄) γ = _ at h
+  rw [ 𝔊 dyadicCellAffine_same_cell y hcell ] at h
+  change 𝔊 dyadicAnchoredFeature y γ =
+    anchoredFeature 𝔈 𝔄 γ at h
+  grind
 
+𝗇 𝔉 s - 1
 theorem positive_rpow_times_distance (h s r : ℝ) (hh : 0 < h) :
-    h ^ s * r = (h * r) * h ^ (s - 1) := by
-  have he : s = (s - 1) + 1 := by ring
+    h ^ s * r = h * r * h ^ 𝔉 := by
+  have he : s = 𝔉 + 1 := 𝖢₃
   conv_lhs => rw [he, Real.rpow_add hh, Real.rpow_one]
   ring
 
+𝗇 𝔅 𝔊 dyadicKnownGram
 /-- The known preconditioner cancels in the genuine inverse population fit. -/
-theorem dyadicPopulationFit_preconditioner_cancels {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
+theorem dyadicPopulationFit_preconditioner_cancels C
+    θ (hθ : 𝙟) j (x : Covariate d) :
     (dyadicPreconditionedGram (ℓ := ℓ) θ j x)⁻¹ *ᵥ
-      ((dyadicKnownGram j x)⁻¹ *ᵥ (dyadicResponseMoment θ j x - θ.regression x • dyadicConstantMoment θ j x)) =
+       𝔅⁻¹ *ᵥ 𝙶₂ =
         dyadicPopulationFit θ j x := by
-  have hB := (Matrix.isUnit_iff_isUnit_det _).mp (dyadicKnownGram_posDef (ℓ := ℓ) j x).isUnit
   letI := (dyadicKnownGram_posDef (ℓ := ℓ) j x).isUnit.invertible
   unfold dyadicPreconditionedGram dyadicPopulationFit
   rw [Matrix.mul_inv_rev, Matrix.inv_inv_of_invertible, Matrix.mulVec_mulVec,
-    Matrix.mul_assoc _ (dyadicKnownGram j x) (dyadicKnownGram j x)⁻¹,
-    Matrix.mul_nonsing_inv _ hB, Matrix.mul_one]
-
-end NearlyMinimax
+    Matrix.mul_assoc _ 𝔅 𝔅⁻¹,
+    Matrix.mul_nonsing_inv _ $ (Matrix.isUnit_iff_isUnit_det _).mp (𝔊 dyadicKnownGram_posDef).isUnit , Matrix.mul_one]

@@ -1,112 +1,126 @@
 module
 
 public import NearlyMinimax.HistoryPriorWeakTransport
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+public section
 
 /-!
 # Endpoint regularity and absolute continuity of the actual history prior
 -/
 
-noncomputable section
-set_option backward.isDefEq.respectTransparency false
-open MeasureTheory Filter Set
-namespace NearlyMinimax
+𝛊
+𝚨
 
-variable {J : Type*} [Fintype J] [LinearOrder J]
+𝚲
 
+𝗇 𝔄 𝙥
+𝗇 𝔚 𝗞 ^ Fintype.card J
+𝗇 𝔅 𝗑₁ * 𝔚
+𝗇 𝔇 𝘼
+𝗇 𝔈 𝘽
+𝗇 𝔊 𝙂
+𝗇 𝔍 𝙁
+𝗇 𝔎 𝙗
+𝗇 𝔏 (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2 hB) hρ.le).trans hsmall
+𝗃 𝔔 historyMarkedDensity dependent ρ ἀ a h
+𝗇 𝔐 𝔔 t
+𝗃 𝔛 ἀ * B / ρ ≤ 𝔄
+𝗇 𝔒 𝔛 T
+𝗃 𝔓 ἀ dependent hrefl hsymm Δ hlabels ρ
+𝗇 𝔖 𝗺
+𝗇 𝔗 𝘢₁
+𝗇 𝔘 𝙐
 /-- The actual finite density has a Lipschitz constant uniform over unbounded histories. -/
-theorem historyMarkedDensity_lipschitzOn (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (ρ T B : ℝ) (hρ : 0 < ρ) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E]
-    (a : E → ℝ) (habound : ∀ e, |a e| ≤ B)
-    (hsmall : T * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2)) (h : HistoryMarked dependent E) :
-    LipschitzOnWith ⟨ρ⁻¹ * (Fintype.card J : ℝ) * B * (3 / 2 : ℝ) ^ Fintype.card J, by positivity⟩
-      (fun t => historyMarkedDensity dependent ρ t a h) (Icc 0 T) := by
-  apply (convex_Icc (0 : ℝ) T).lipschitzOnWith_of_nnnorm_hasDerivWithin_le
-    (fun u hu => (historyMarkedDensity_hasDerivAt dependent ρ u a h).hasDerivWithinAt)
+theorem historyMarkedDensity_lipschitzOn (dependent : 𝔍)
+    (hrefl : 𝔊) (hsymm : 𝔇)
+    (Δ : ℕ) (hlabels : 𝔈)
+    (ρ T B : ℝ) (hρ : 𝔗) (hB : 𝔘) [MeasurableSpace E]
+    a (habound : ∀ e, |a e| ≤ B)
+    (hsmall : 𝔒) (h : 𝔎) :
+    LipschitzOnWith ⟨𝔅, 𝖠₃⟩
+      (fun t => 𝔐) 𝔖 := by
+  apply (convex_Icc 0 T).lipschitzOnWith_of_nnnorm_hasDerivWithin_le
+     fun u hu => (historyMarkedDensity_hasDerivAt dependent ρ u a h).hasDerivWithinAt
   intro u hu
-  apply NNReal.coe_le_coe.1
-  change ‖historyMarkedDensityDerivative dependent ρ u a h‖ ≤ _
-  rw [Real.norm_eq_abs]
-  exact historyMarkedDensityDerivative_bound dependent hrefl hsymm Δ hlabels ρ u B hρ hu.1 hB a habound
-    ((div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2 hB) hρ.le).trans hsmall) h
+  exact 𝔓 historyMarkedDensityDerivative_bound u B hρ hu.1 hB a habound
+    𝔏 h
 
 /-- Every bounded observable-density product is integrable, including the endpoints. -/
-theorem historyMarkedDensityObservable_integrable (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B)
-    {E : Type*} [MeasurableSpace E] (μ : Measure (HistoryMarked dependent E)) [IsFiniteMeasure μ]
-    (a : E → ℝ) (ha : Measurable a) (habound : ∀ e, |a e| ≤ B)
-    (hsmall : t * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    (F : HistoryMarked dependent E → ℝ) (hF : Measurable F)
-    (M : ℝ) (hM : 0 ≤ M) (hFbound : ∀ h, |F h| ≤ M) :
-    Integrable (fun h => F h * historyMarkedDensity dependent ρ t a h) μ := by
-  apply Integrable.of_bound (hF.mul (historyMarkedDensity_measurable dependent ρ t a ha)).aestronglyMeasurable
-    (M * (3 / 2 : ℝ) ^ Fintype.card J)
+theorem historyMarkedDensityObservable_integrable (dependent : 𝔍)
+    (hrefl : 𝔊) (hsymm : 𝔇)
+    (Δ : ℕ) (hlabels : 𝔈)
+    (ρ t B : ℝ) (hρ : 𝔗) (ht : 𝘈) (hB : 𝔘)
+    [MeasurableSpace E] (μ : Measure 𝔎) [IsFiniteMeasure μ]
+    a (ha : Measurable a) (habound : ∀ e, |a e| ≤ B)
+    (hsmall : 𝔛 t)
+    F (hF : Measurable F)
+    M (hM : 𝙷) (hFbound : ∀ h, |F h| ≤ M) :
+    Integrable (fun h => F h * 𝔐) μ := by
+  apply Integrable.of_bound (hF.mul $ historyMarkedDensity_measurable dependent ρ t a ha ).aestronglyMeasurable
+    $ M * 𝔚
   apply Eventually.of_forall
   intro h
-  change ‖F h * historyMarkedDensity dependent ρ t a h‖ ≤ _
+  change ‖F h * 𝔐‖ ≤ _
   rw [Real.norm_eq_abs, abs_mul]
-  have hb := historyMarkedDensity_bounds dependent hrefl hsymm Δ hlabels ρ t B hρ ht hB a habound hsmall h
-  have hp : 0 ≤ historyMarkedDensity dependent ρ t a h :=
-    (by positivity : (0 : ℝ) ≤ (1 / 2 : ℝ) ^ Fintype.card J).trans hb.1
+  have hb := 𝔓 historyMarkedDensity_bounds t B hρ ht hB a habound hsmall h
+  have hp :=
+    (by positivity : 0 ≤ (𝙖 : ℝ) ^ Fintype.card J).trans hb.1
   rw [abs_of_nonneg hp]
   exact mul_le_mul (hFbound h) hb.2 hp hM
 
+𝗇 𝔉 F h * 𝔔 u - F h * 𝔔 v
+𝗇 𝔑 historyMarkedExpectation dependent ρ μ a F
+𝗇 𝔙 M * D * dist u v
 /-- Actual history expectations are Lipschitz on the closed source interval. -/
-theorem historyMarkedExpectation_lipschitzOn (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (ρ T B : ℝ) (hρ : 0 < ρ) (hB : 0 ≤ B)
-    {E : Type*} [MeasurableSpace E] (μ : Measure (HistoryMarked dependent E)) [IsProbabilityMeasure μ]
-    (a : E → ℝ) (ha : Measurable a) (habound : ∀ e, |a e| ≤ B)
-    (hsmall : T * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    (F : HistoryMarked dependent E → ℝ) (hF : Measurable F)
-    (M : ℝ) (hM : 0 ≤ M) (hFbound : ∀ h, |F h| ≤ M) :
-    LipschitzOnWith ⟨M * (ρ⁻¹ * (Fintype.card J : ℝ) * B * (3 / 2 : ℝ) ^ Fintype.card J), by positivity⟩
-      (historyMarkedExpectation dependent ρ μ a F) (Icc 0 T) := by
-  let D : ℝ := ρ⁻¹ * (Fintype.card J : ℝ) * B * (3 / 2 : ℝ) ^ Fintype.card J
-  have hs : ∀ u ∈ Icc 0 T, u * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2) := by
+theorem historyMarkedExpectation_lipschitzOn (dependent : 𝔍)
+    (hrefl : 𝔊) (hsymm : 𝔇)
+    (Δ : ℕ) (hlabels : 𝔈)
+    (ρ T B : ℝ) (hρ : 𝔗) (hB : 𝔘)
+    [MeasurableSpace E] (μ : Measure 𝔎) [IsProbabilityMeasure μ]
+    a (ha : Measurable a) (habound : ∀ e, |a e| ≤ B)
+    (hsmall : 𝔒)
+    F (hF : Measurable F)
+    M (hM : 𝙷) (hFbound : ∀ h, |F h| ≤ M) :
+    LipschitzOnWith ⟨M * 𝔅, 𝖠₃⟩
+      𝔑 𝔖 := by
+  let D := 𝔅
+  have hs : ∀ u ∈ 𝔖, 𝔛 u := by
     intro u hu
-    exact (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2 hB) hρ.le).trans hsmall
-  have hi : ∀ u ∈ Icc 0 T, Integrable (fun h => F h * historyMarkedDensity dependent ρ u a h) μ :=
-    fun u hu => historyMarkedDensityObservable_integrable dependent hrefl hsymm Δ hlabels ρ u B hρ hu.1 hB
+    exact 𝔏
+  have hi :=
+    fun u hu => 𝔓 historyMarkedDensityObservable_integrable u B hρ hu.1 hB
       μ a ha habound (hs u hu) F hF M hM hFbound
   apply LipschitzOnWith.of_dist_le_mul
   intro u hu v hv
-  rw [Real.dist_eq, historyMarkedExpectation, historyMarkedExpectation, ← integral_sub (hi u hu) (hi v hv)]
-  change ‖∫ h, F h * historyMarkedDensity dependent ρ u a h - F h * historyMarkedDensity dependent ρ v a h ∂μ‖ ≤
-    M * D * dist u v
-  have hb : ∀ᵐ h ∂μ, ‖F h * historyMarkedDensity dependent ρ u a h - F h * historyMarkedDensity dependent ρ v a h‖ ≤
-      M * D * dist u v := by
+  rw [Real.dist_eq, historyMarkedExpectation, historyMarkedExpectation, ← 𝚘₁]
+  change ‖∫ h, 𝔉 ∂μ‖ ≤
+    𝔙
+  have hb : ∀ᵐ h ∂μ, ‖𝔉‖ ≤
+      𝔙 := by
     apply Eventually.of_forall
     intro h
     rw [← mul_sub, norm_mul, Real.norm_eq_abs]
-    have hl := (historyMarkedDensity_lipschitzOn dependent hrefl hsymm Δ hlabels ρ T B hρ hB a habound hsmall h).dist_le_mul u hu v hv
-    rw [dist_eq_norm] at hl
-    change ‖historyMarkedDensity dependent ρ u a h - historyMarkedDensity dependent ρ v a h‖ ≤ D * dist u v at hl
-    exact (mul_le_mul_of_nonneg_right (hFbound h) (norm_nonneg _)).trans
-      (by simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hl hM)
+    have hl := (𝔓 historyMarkedDensity_lipschitzOn T B hρ hB a habound hsmall h).dist_le_mul u hu v hv
+    change ‖𝔔 u - 𝔔 v‖ ≤ D * dist u v at hl
+    exact (mul_le_mul_of_nonneg_right (hFbound h) $ norm_nonneg _ ).trans
+      $ by simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hl hM
   simpa using norm_integral_le_of_norm_le_const hb
 
 /-- In particular, expectation regularity on the entire interval is proved, not assumed. -/
-theorem historyMarkedExpectation_absolutelyContinuous (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (ρ T B : ℝ) (hρ : 0 < ρ) (hT : 0 ≤ T) (hB : 0 ≤ B)
-    {E : Type*} [MeasurableSpace E] (μ : Measure (HistoryMarked dependent E)) [IsProbabilityMeasure μ]
-    (a : E → ℝ) (ha : Measurable a) (habound : ∀ e, |a e| ≤ B)
-    (hsmall : T * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    (F : HistoryMarked dependent E → ℝ) (hF : Measurable F)
-    (M : ℝ) (hM : 0 ≤ M) (hFbound : ∀ h, |F h| ≤ M) :
-    AbsolutelyContinuousOnInterval (historyMarkedExpectation dependent ρ μ a F) 0 T := by
-  have hl := historyMarkedExpectation_lipschitzOn dependent hrefl hsymm Δ hlabels ρ T B hρ hB
+theorem historyMarkedExpectation_absolutelyContinuous (dependent : 𝔍)
+    (hrefl : 𝔊) (hsymm : 𝔇)
+    (Δ : ℕ) (hlabels : 𝔈)
+    (ρ T B : ℝ) (hρ : 𝔗) (hT : 𝚞) (hB : 𝔘)
+    [MeasurableSpace E] (μ : Measure 𝔎) [IsProbabilityMeasure μ]
+    a (ha : Measurable a) (habound : ∀ e, |a e| ≤ B)
+    (hsmall : 𝔒)
+    F (hF : Measurable F)
+    M (hM : 𝙷) (hFbound : ∀ h, |F h| ≤ M) :
+    AbsolutelyContinuousOnInterval 𝔑 0 T := by
+  have hl := 𝔓 historyMarkedExpectation_lipschitzOn T B hρ hB
     μ a ha habound hsmall F hF M hM hFbound
   rw [← uIcc_of_le hT] at hl
   exact hl.absolutelyContinuousOnInterval
-
-end NearlyMinimax

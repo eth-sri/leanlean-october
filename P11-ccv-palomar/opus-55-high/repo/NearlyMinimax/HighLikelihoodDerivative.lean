@@ -3,107 +3,118 @@ module
 public import NearlyMinimax.HighMassTiltObservable
 public import NearlyMinimax.HighObservableProductRule
 public import NearlyMinimax.LowSmoothnessVariance
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗌
 
 /-! Actual raw ternary likelihood derivatives for the high-prior observable product rule. -/
-noncomputable section
-open MeasureTheory ProbabilityTheory Filter Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option maxHeartbeats 800000
-set_option backward.isDefEq.respectTransparency false
-variable {Ω : Type*} [MeasurableSpace Ω]
+𝚹
+𝚪
+𝚨
+𝚱
+𝚩
+𝛂
 
-def highRawSampleVarianceDerivative {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
-  (∏ i, p (z.1 i)) * ∑ i, (∏ j ∈ Finset.univ.erase i,
-    ternaryMass a (F (z.1 j)) V (z.2 j)) * ternaryVarianceDerivative a (z.2 i)
+𝗇 𝔄 ∏ j ∈ Finset.univ.erase i, ternaryMass a (F $ z.1 j ) V (z.2 j)
+𝗇 𝔅 𝙇 × 𝙈
+𝗃 𝔔 ἀ $ z.1 i
+𝗇 𝔇 𝔔 p
+𝗇 𝔉 𝙀
+𝗇 𝔊 ternaryVarianceDerivative a $ z.2 i
+𝗇 𝔑 ∏ i, 𝔇
+def highRawSampleVarianceDerivative (n : ℕ) (a V : ℝ)
+    (p F : 𝔉) (z : 𝔅) : ℝ :=
+  𝔑 * ∑ i, 𝔄 * 𝔊
 
-theorem highRawSampleLikelihood_hasDerivAt_variance {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
+𝗇 𝔎 highRawSampleVarianceDerivative n a V p F z
+𝗇 𝔏 𝔔 F
+theorem highRawSampleLikelihood_hasDerivAt_variance n a V
+    (p F : 𝔉) z :
     HasDerivAt (fun W => highRawSampleLikelihood n a W p F z)
-      (highRawSampleVarianceDerivative n a V p F z) V := by
-  have h := (HasDerivAt.fun_finsetProd (u := (Finset.univ : Finset (Fin n)))
-    (fun i _ => ternary_hasDerivAt_variance a (F (z.1 i)) V (z.2 i))).const_mul
-      (∏ i, p (z.1 i))
+      𝔎 V := by
+  have h := (HasDerivAt.fun_finsetProd (u := Finset.univ)
+     fun i _ => ternary_hasDerivAt_variance a 𝔏 V $ z.2 i ).const_mul
+      𝔑
   simpa only [highRawSampleLikelihood, highRawSampleVarianceDerivative,
     Finset.prod_mul_distrib, smul_eq_mul] using h
 
-theorem highRawSampleLikelihood_hasDerivAt_path {d : ℕ} (n : ℕ) (a v η t : ℝ)
-    (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
-    HasDerivAt (fun u => highRawSampleLikelihood n a (v - η ^ 2 * u) p F z)
-      (-η ^ 2 * highRawSampleVarianceDerivative n a (v - η ^ 2 * t) p F z) t := by
-  have h := (highRawSampleLikelihood_hasDerivAt_variance n a (v - η ^ 2 * t) p F z).comp t
-    ((hasDerivAt_const t v).sub ((hasDerivAt_id t).const_mul (η ^ 2)))
+𝗇 𝔍 𝙎
+𝗇 𝔐 v - 𝔍 * t
+theorem highRawSampleLikelihood_hasDerivAt_path n a v η t
+    (p F : 𝔉) z :
+    HasDerivAt (fun u => highRawSampleLikelihood n a (v - 𝔍 * u) p F z)
+      (-𝔍 * highRawSampleVarianceDerivative n a 𝔐 p F z) t := by
+  have h := (highRawSampleLikelihood_hasDerivAt_variance n a 𝔐 p F z).comp t
+    $ (hasDerivAt_const t v).sub $ (hasDerivAt_id t).const_mul 𝔍
   simpa only [Function.comp_def, Pi.sub_apply, id_eq, zero_sub, mul_one, mul_comm] using h
 
-theorem highRawSampleLikelihood_abs_le {d : ℕ} (n : ℕ) (a V P : ℝ) (hP : 0 ≤ P)
-    (p F : Covariate d → ℝ) (hp : ∀ x, |p x| ≤ P) (ha : a ≠ 0)
-    (hq : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
-    (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
-    |highRawSampleLikelihood n a V p F z| ≤ P ^ n := by
+𝗇 𝔈 𝗨
+𝗃 𝔓 ternary_mass_le_one a _ V ἀ (hq _) _
+theorem highRawSampleLikelihood_abs_le n a V P (hP : 𝚏)
+    (p F : 𝔉) (hp : ∀ x, |p x| ≤ P) (ha : 𝙞)
+    (hq : 𝔈)
+    z :
+    |highRawSampleLikelihood n a V p F z| ≤ 𝚗 := by
   unfold highRawSampleLikelihood
   rw [Finset.abs_prod]
   calc
     _ ≤ ∏ _i : Fin n, P := by
-      apply Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _)
+      apply Finset.prod_le_prod₀ 𝖢
       intro i _
-      rw [abs_mul, abs_of_nonneg (hq (z.1 i) (z.2 i))]
+      rw [abs_mul, abs_of_nonneg $ 𝔔 hq $ z.2 i ]
       calc
-        |p (z.1 i)| * ternaryMass a (F (z.1 i)) V (z.2 i) ≤ P * 1 :=
-          mul_le_mul (hp _) (ternary_mass_le_one a _ V ha (hq _) _) (hq _ _) hP
+        |𝔇| * ternaryMass a 𝔏 V (z.2 i) ≤ P * 1 :=
+          mul_le_mul (hp _) 𝔓 ha (hq ..) hP
         _ = P := mul_one _
-    _ = _ := by simp
+    𝘿 := 𝖢₄
 
-theorem highRawSampleVarianceDerivative_abs_le {d : ℕ} (n : ℕ) (a V P : ℝ)
-    (ha : 0 < a) (hP : 0 ≤ P) (p F : Covariate d → ℝ)
-    (hp : ∀ x, |p x| ≤ P) (hq : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
-    (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
-    |highRawSampleVarianceDerivative n a V p F z| ≤ P ^ n * ((n : ℝ) / a ^ 2) := by
-  have hpp : |∏ i : Fin n, p (z.1 i)| ≤ P ^ n := by
+𝗇 𝔒 n / 𝗅
+theorem highRawSampleVarianceDerivative_abs_le n a V P
+    (ha : 𝙆) (hP : 𝚏) (p F : 𝔉)
+    (hp : ∀ x, |p x| ≤ P) (hq : 𝔈)
+    z :
+    |𝔎| ≤ 𝚗 * 𝔒 := by
+  have hpp : |∏ i : Fin n, 𝔇| ≤ 𝚗 := by
     rw [Finset.abs_prod]
-    simpa using Finset.prod_le_prod₀ (fun i (_ : i ∈ Finset.univ) => abs_nonneg (p (z.1 i)))
-      (fun i (_ : i ∈ Finset.univ) => hp (z.1 i))
-  have hqprod (i : Fin n) :
-      |∏ j ∈ Finset.univ.erase i, ternaryMass a (F (z.1 j)) V (z.2 j)| ≤ 1 := by
+    simpa using Finset.prod_le_prod₀ (fun i _ => abs_nonneg 𝔇)
+       fun i (_ : i ∈ Finset.univ) => 𝔔 hp
+  have hqprod i :
+      |𝔄| ≤ 1 := by
     rw [Finset.abs_prod]
-    exact Finset.prod_le_one₀ (fun j _ => abs_nonneg _) (fun j _ => by
-      rw [abs_of_nonneg (hq (z.1 j) (z.2 j))]
-      exact ternary_mass_le_one a _ V ha.ne' (hq _) _)
-  have hs : |∑ i : Fin n, (∏ j ∈ Finset.univ.erase i,
-      ternaryMass a (F (z.1 j)) V (z.2 j)) * ternaryVarianceDerivative a (z.2 i)| ≤
-        (n : ℝ) / a ^ 2 := by
+    exact Finset.prod_le_one₀ (fun j _ => abs_nonneg _) fun j _ => by
+      rw [abs_of_nonneg $ hq (z.1 j) $ z.2 j ]
+      exact 𝔓 ha.ne'
+  have hs : |∑ i : Fin n, 𝔄 * 𝔊| ≤
+        𝔒 := by
     calc
-      _ ≤ ∑ i : Fin n, |(∏ j ∈ Finset.univ.erase i,
-          ternaryMass a (F (z.1 j)) V (z.2 j)) * ternaryVarianceDerivative a (z.2 i)| :=
-        Finset.abs_sum_le_sum_abs _ _
-      _ ≤ ∑ _i : Fin n, 1 / a ^ 2 := by
+      _ ≤ ∑ i : Fin n, |𝔄 * 𝔊| :=
+        Finset.abs_sum_le_sum_abs ..
+      _ ≤ ∑ _i : Fin n, 1 / 𝗅 := by
         apply Finset.sum_le_sum
         intro i _
         rw [abs_mul]
-        exact (mul_le_mul (hqprod i) (ternary_variance_derivative_abs_bound a ha (z.2 i))
-          (abs_nonneg _) zero_le_one).trans_eq (one_mul _)
-      _ = _ := by simp [div_eq_mul_inv]
+        exact (mul_le_mul (hqprod i) (ternary_variance_derivative_abs_bound a ha $ z.2 i )
+          (abs_nonneg _) zero_le_one).trans_eq $ one_mul _
+      𝘿 := 𝖨₄
   rw [highRawSampleVarianceDerivative, abs_mul]
-  exact mul_le_mul hpp hs (abs_nonneg _) (pow_nonneg hP n)
+  bound
 
-theorem highRawSampleVarianceDerivative_joint_measurable {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
-    (hF : Measurable (Function.uncurry F)) :
-    Measurable (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-      highRawSampleVarianceDerivative n a V (p z.1) (F z.1) z.2) := by
-  have hx (i : Fin n) : Measurable
-      (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) => (z.1, z.2.1 i)) :=
-    measurable_fst.prodMk ((measurable_pi_apply i).comp (measurable_fst.comp measurable_snd))
-  have hy (i : Fin n) : Measurable
-      (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) => z.2.2 i) :=
-    (measurable_pi_apply i).comp (measurable_snd.comp measurable_snd)
-  exact (Finset.measurable_prod _ (fun i _ => hp.comp (hx i))).mul
-    (Finset.measurable_sum _ (fun i _ =>
-      (Finset.measurable_prod _ (fun j _ =>
-        (ternaryMass_joint_measurable a V (Function.uncurry F) hF).comp ((hx j).prodMk (hy j)))).mul
-      ((measurable_of_countable (ternaryVarianceDerivative a)).comp (hy i))))
-
-end NearlyMinimax
+𝗃 𝔖 (measurable_pi_apply i).comp $ ἀ measurable_snd
+theorem highRawSampleVarianceDerivative_joint_measurable n a V
+    p F (hp : 𝘍)
+    (hF : 𝗴) :
+    Measurable fun z : Ω × 𝔅 =>
+      highRawSampleVarianceDerivative n a V (p z.1) (F z.1) z.2 := by
+  have hx i : Measurable
+       fun z : Ω × 𝔅 => (z.1, z.2.1 i) :=
+    measurable_fst.prodMk 𝔖 measurable_fst.comp
+  have hy i : Measurable
+       fun z : Ω × 𝔅 => z.2.2 i :=
+    𝔖 measurable_snd.comp
+  exact (Finset.measurable_prod _ fun i _ => hp.comp $ hx i ).mul
+    $ Finset.measurable_sum _ fun i _ =>
+      (Finset.measurable_prod _ fun j _ =>
+        (ternaryMass_joint_measurable a V (Function.uncurry F) hF).comp $ (hx j).prodMk $ hy j ).mul
+      $ (measurable_of_countable $ ternaryVarianceDerivative a ).comp $ hy i

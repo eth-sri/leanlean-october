@@ -1,20 +1,24 @@
 module
 
 public import NearlyMinimax.HistoryDensityTransport
+public import RoughRegime.Macro
 
 
-@[expose] public section
+𝗍
 
 /-!
 # Exact polynomial transport through actual order embeddings
 -/
 
-noncomputable section
-namespace NearlyMinimax
+𝚨
 
 variable {A B : Type*} [PartialOrder A] [PartialOrder B] [DecidableEq A] [DecidableEq B]
 
-theorem historyMaximalPieces_orderEmbedding_map (f : A ↪o B) (S : Finset A) :
+section
+
+variable (f : A ↪o B)
+
+theorem historyMaximalPieces_orderEmbedding_map S :
     historyMaximalPieces (S.map f.toEmbedding) = (historyMaximalPieces S).map f.toEmbedding := by
   classical
   ext b
@@ -24,19 +28,20 @@ theorem historyMaximalPieces_orderEmbedding_map (f : A ↪o B) (S : Finset A) :
     obtain ⟨x, hx, rfl⟩ := Finset.mem_map.1 hb
     refine Finset.mem_map.2 ⟨x, mem_historyMaximalPieces.2 ⟨hx, ?_⟩, rfl⟩
     intro y hy hxy
-    exact f.injective (hm (f y) (Finset.mem_map.2 ⟨y, hy, rfl⟩) (f.monotone hxy))
+    exact f.injective $ hm (f y) (Finset.mem_map.2 ⟨y, hy, rfl⟩) $ f.monotone hxy
   · intro hb
     obtain ⟨x, hx, rfl⟩ := Finset.mem_map.1 hb
     obtain ⟨hx, hm⟩ := mem_historyMaximalPieces.1 hx
     refine mem_historyMaximalPieces.2 ⟨Finset.mem_map.2 ⟨x, hx, rfl⟩, ?_⟩
     intro c hc hxc
     obtain ⟨y, hy, rfl⟩ := Finset.mem_map.1 hc
-    exact congrArg f (hm y hy (f.le_iff_le.1 hxc))
+    exact congrArg f $ hm y hy $ f.le_iff_le.1 hxc
 
-theorem historyDeletionCoefficient_orderEmbedding_map (f : A ↪o B) (weight : B → ℝ)
-    (k : ℕ) (S : Finset A) :
+𝗇 𝔄 weight ∘ f
+theorem historyDeletionCoefficient_orderEmbedding_map weight
+    k S :
     historyDeletionCoefficient weight k (S.map f.toEmbedding) =
-      historyDeletionCoefficient (weight ∘ f) k S := by
+      historyDeletionCoefficient 𝔄 k S := by
   induction k generalizing S with
   | zero => rfl
   | succ k ih =>
@@ -47,9 +52,9 @@ theorem historyDeletionCoefficient_orderEmbedding_map (f : A ↪o B) (weight : B
     rw [← Finset.map_erase, ih]
     rfl
 
-theorem historyUpperDensity_orderEmbedding_map (f : A ↪o B) (weight : B → ℝ)
-    (S : Finset A) (t : ℝ) :
-    historyUpperDensity weight (S.map f.toEmbedding) t = historyUpperDensity (weight ∘ f) S t := by
+theorem historyUpperDensity_orderEmbedding_map weight
+    S t :
+    historyUpperDensity weight (S.map f.toEmbedding) t = historyUpperDensity 𝔄 S t := by
   rw [historyUpperDensity_eq_deletionPolynomial, historyUpperDensity_eq_deletionPolynomial]
   unfold historyDeletionPolynomial
   rw [Finset.card_map]
@@ -57,11 +62,7 @@ theorem historyUpperDensity_orderEmbedding_map (f : A ↪o B) (weight : B → �
   intro k hk
   rw [historyDeletionCoefficient_orderEmbedding_map]
 
-theorem historyScaledUpperDensity_orderEmbedding_map (f : A ↪o B) (weight : B → ℝ)
-    (ρ : ℝ) (S : Finset A) (t : ℝ) :
+theorem historyScaledUpperDensity_orderEmbedding_map weight
+    ρ S t :
     historyScaledUpperDensity weight ρ (S.map f.toEmbedding) t =
-      historyScaledUpperDensity (weight ∘ f) ρ S t := by
-  unfold historyScaledUpperDensity
-  exact historyUpperDensity_orderEmbedding_map f _ S t
-
-end NearlyMinimax
+      historyScaledUpperDensity 𝔄 ρ S t := historyUpperDensity_orderEmbedding_map f _ S t

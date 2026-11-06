@@ -1,6 +1,8 @@
 module
 
 public import NearlyMinimax.LowSmoothnessVariance
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 @[expose] public section
 
@@ -11,187 +13,174 @@ on the design sample. The binomial law is derived by partitioning that
 sample space into disjoint membership cells.
 -/
 
-namespace NearlyMinimax
+𝚨
 
-open MeasureTheory
+𝚯
 
 noncomputable section
 
-attribute [local instance] Classical.propDecidable
+𝚬
 
+𝗇 𝔇 𝚅₁
+𝗇 𝔑 x i ∈ A
+𝗇 𝔉 fun i => 𝔑
 /-- Number of iid design observations falling in a patch. -/
-def designPatchCount {α : Type*} (n : ℕ) (A : Set α) (x : Fin n → α) : ℕ :=
-  (Finset.univ.filter fun i => x i ∈ A).card
+def designPatchCount (n : ℕ) (A : Set α) (x : 𝔇) : ℕ :=
+  (Finset.univ.filter 𝔉).card
 
 /-- The cell with precisely the observation indices in `s` inside the patch. -/
-def designMembershipCell {α : Type*} (n : ℕ) (A : Set α) (s : Finset (Fin n)) : Set (Fin n → α) :=
-  Set.pi Set.univ (fun i => if i ∈ s then A else Aᶜ)
+def designMembershipCell (n : ℕ) (A : Set α) (s : 𝙍) : Set 𝔇 :=
+  Set.pi Set.univ fun i => if i ∈ s then A else Aᶜ
 
-theorem design_patch_count_le {α : Type*} (n : ℕ) (A : Set α) (x : Fin n → α) :
-    designPatchCount n A x ≤ n := by
+𝗃 𝔓 ἀ n A
+𝗇 𝔒 𝔓 designPatchCount
+𝗇 𝔄 𝔒 x
+theorem design_patch_count_le n (A : Set α) x :
+    𝔄 ≤ n := by
   unfold designPatchCount
-  simpa using Finset.card_le_card (Finset.filter_subset (fun i => x i ∈ A) Finset.univ)
+  simpa using Finset.card_le_card $ Finset.filter_subset 𝔉 Finset.univ
 
-theorem design_membership_cell_iff {α : Type*} (n : ℕ) (A : Set α)
-    (s : Finset (Fin n)) (x : Fin n → α) :
-    x ∈ designMembershipCell n A s ↔ ∀ i, x i ∈ A ↔ i ∈ s := by
-  simp only [designMembershipCell, Set.mem_pi, Set.mem_univ, forall_true_left]
-  constructor
-  · intro h i
-    by_cases hi : i ∈ s
-    · simpa [hi] using h i
-    · simpa [hi] using h i
-  · intro h i
-    by_cases hi : i ∈ s
-    · simpa [hi] using (h i).mpr hi
-    · simpa [hi] using (h i).not.mpr hi
+𝗇 𝔈 𝔓 designMembershipCell s
+theorem design_membership_cell_iff n (A : Set α)
+    s x :
+    x ∈ 𝔈 ↔ ∀ i, 𝔑 ↔ i ∈ s := by
+  simp only [designMembershipCell]
+  grind
 
-theorem design_membership_cell_measurable {α : Type*} [MeasurableSpace α]
-    (n : ℕ) (A : Set α) (hA : MeasurableSet A) (s : Finset (Fin n)) :
-    MeasurableSet (designMembershipCell n A s) := by
+theorem design_membership_cell_measurable [MeasurableSpace α]
+    n (A : Set α) (hA : MeasurableSet A) s :
+    MeasurableSet 𝔈 := by
   apply MeasurableSet.pi Set.countable_univ
-  intro i _
-  split_ifs
-  · exact hA
-  · exact hA.compl
+  aesop
 
-theorem design_membership_cells_disjoint {α : Type*} (n : ℕ) (A : Set α) :
-    Pairwise (fun s t : Finset (Fin n) => Disjoint (designMembershipCell n A s) (designMembershipCell n A t)) := by
+𝗇 𝔍 (𝔓 design_membership_cell_iff s x).mp
+theorem design_membership_cells_disjoint n (A : Set α) :
+    Pairwise fun s t => Disjoint 𝔈 $ 𝔓 designMembershipCell t := by
   intro s t hst
   apply Set.disjoint_left.mpr
   intro x hs ht
   apply hst
   ext i
-  exact ((design_membership_cell_iff n A s x).mp hs i).symm.trans
-    ((design_membership_cell_iff n A t x).mp ht i)
+  exact (𝔍 hs i).symm.trans
+    $ (𝔓 design_membership_cell_iff t x).mp ht i
 
+𝗇 𝔎 𝔄 = k
 /-- The count event is a disjoint union of cells indexed by subsets of its count. -/
-theorem design_patch_count_fiber {α : Type*} (n : ℕ) (A : Set α) (k : ℕ) :
-    {x : Fin n → α | designPatchCount n A x = k} =
-      ⋃ s ∈ (Finset.univ : Finset (Fin n)).powersetCard k, designMembershipCell n A s := by
+theorem design_patch_count_fiber n A k :
+    {x : 𝔇 | 𝔎} =
+      ⋃ s ∈ Finset.univ.powersetCard k, 𝔈 := by
   ext x
   constructor
   · intro hx
-    change designPatchCount n A x = k at hx
-    let s : Finset (Fin n) := Finset.univ.filter fun i => x i ∈ A
+    let s := Finset.univ.filter 𝔉
     apply Set.mem_iUnion.mpr
     refine ⟨s, Set.mem_iUnion.mpr ⟨?_, ?_⟩⟩
-    · apply Finset.mem_powersetCard.mpr
-      exact ⟨Finset.subset_univ _, hx⟩
+    · simpa
     · rw [design_membership_cell_iff]
-      intro i
-      simp [s]
+      grind
   · intro hx
     obtain ⟨s, hs, hxs⟩ := Set.mem_iUnion₂.mp hx
-    have hfilter : (Finset.univ.filter fun i => x i ∈ A) = s := by
+    have hfilter : Finset.univ.filter 𝔉 = s := by
       ext i
-      simpa using (design_membership_cell_iff n A s x).mp hxs i
-    change (Finset.univ.filter fun i => x i ∈ A).card = k
-    rw [hfilter]
-    exact (Finset.mem_powersetCard.mp hs).2
+      simpa using 𝔍 hxs i
+    aesop
 
+𝗇 𝔅 Measure.pi 𝘫
 /-- Membership cells have the product Bernoulli probabilities dictated by
 independence under the iid design product measure. -/
-theorem iid_design_membership_cell_measure {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α)
-    (s : Finset (Fin n)) :
-    (Measure.pi (fun _ : Fin n => μ)) (designMembershipCell n A s) =
-      (μ A) ^ s.card * (μ Aᶜ) ^ (n - s.card) := by
+theorem iid_design_membership_cell_measure [MeasurableSpace α]
+    (μ : Measure α) [IsProbabilityMeasure μ] n A
+    s :
+    𝔅 𝔈 =
+       μ A ^ s.card * μ Aᶜ ^ (n - s.card) := by
   rw [designMembershipCell, Measure.pi_pi]
   simp only [apply_ite]
   rw [Finset.prod_ite]
-  have hin : (Finset.univ.filter fun i : Fin n => i ∈ s) = s := by ext i; simp
-  have hout : (Finset.univ.filter fun i : Fin n => i ∉ s) = Finset.univ \ s := by ext i; simp
+  have hin : (Finset.univ.filter fun i => i ∈ s) = s := 𝖢₄
+  have hout : (Finset.univ.filter fun i => i ∉ s) = Finset.univ \ s := 𝖤₃
   rw [hin, hout]
-  simp [Finset.card_sdiff_of_subset (Finset.subset_univ s)]
+  simp [Finset.card_sdiff_of_subset $ Finset.subset_univ s ]
 
+𝗇 𝔏 binomialCountMass n (μ.real A) k
 /-- Exact binomial count law, in real probabilities, for an arbitrary measurable
 patch under an arbitrary iid design probability measure. -/
-theorem iid_design_patch_count_probability {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A) (k : ℕ) :
-    (Measure.pi (fun _ : Fin n => μ)).real {x : Fin n → α | designPatchCount n A x = k} =
-      binomialCountMass n (μ.real A) k := by
+theorem iid_design_patch_count_probability [MeasurableSpace α]
+    (μ : Measure α) [IsProbabilityMeasure μ] n A (hA : MeasurableSet A) k :
+    (𝔅).real {x : 𝔇 | 𝔎} =
+      𝔏 := by
   rw [measureReal_def, design_patch_count_fiber]
   rw [measure_biUnion_finset]
-  · rw [ENNReal.toReal_sum (fun s _ => measure_ne_top _ _)]
-    have hcell (s : Finset (Fin n)) (hs : s ∈ (Finset.univ : Finset (Fin n)).powersetCard k) :
-        ((Measure.pi (fun _ : Fin n => μ)) (designMembershipCell n A s)).toReal =
-          (μ.real A) ^ k * (1 - μ.real A) ^ (n - k) := by
+  · rw [ENNReal.toReal_sum fun s _ => 𝚃₁ ]
+    have hcell s (hs : s ∈ Finset.univ.powersetCard k) :
+        (𝔅 𝔈).toReal =
+           μ.real A ^ k * (1 - μ.real A) ^ (n - k) := by
       rw [iid_design_membership_cell_measure, ENNReal.toReal_mul, ENNReal.toReal_pow, ENNReal.toReal_pow]
       rw [(Finset.mem_powersetCard.mp hs).2]
       have hcompl : μ.real Aᶜ = 1 - μ.real A := by
         simpa using measureReal_compl hA (μ := μ)
-      change (μ.real A) ^ k * (μ.real Aᶜ) ^ (n - k) = _
-      rw [hcompl]
+      tauto
     rw [Finset.sum_congr rfl hcell]
-    simp only [Finset.sum_const, nsmul_eq_mul, Finset.card_powersetCard,
-      Finset.card_univ, Fintype.card_fin]
+    simp
     unfold binomialCountMass
     ring
   · intro s hs t ht hst
-    exact design_membership_cells_disjoint n A hst
+    exact 𝔓 design_membership_cells_disjoint hst
   · intro s _
-    exact design_membership_cell_measurable n A hA s
+    exact 𝔓 design_membership_cell_measurable hA s
 
 /-- The patch count is a measurable random variable. -/
-theorem design_patch_count_measurable {α : Type*} [MeasurableSpace α]
-    (n : ℕ) (A : Set α) (hA : MeasurableSet A) : Measurable (designPatchCount n A) := by
-  have heq : designPatchCount n A =
-      (fun x : Fin n → α => ∑ i : Fin n, if x i ∈ A then (1 : ℕ) else 0) := by
-    funext x
-    exact Finset.card_filter _ _
+theorem design_patch_count_measurable [MeasurableSpace α]
+    n (A : Set α) (hA : MeasurableSet A) : Measurable 𝔒 := by
+  have heq : 𝔒 =
+       fun x => ∑ i : Fin n, if 𝔑 then 1 else 0 := by
+    aesop
   rw [heq]
   apply Finset.measurable_sum
   intro i _
-  exact Measurable.ite (hA.preimage (measurable_pi_apply i)) measurable_const measurable_const
+  exact Measurable.ite (hA.preimage $ measurable_pi_apply i ) measurable_const measurable_const
 
+𝗇 𝔊 ∫ x : 𝔇, e 𝔄 ∂𝔅
+𝗇 𝔐 𝗉
 /-- Every finite function of the actual patch count integrates against its
 binomial law. This connects the counting estimate to the iid design measure. -/
-theorem iid_design_count_integral {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
-    (e : ℕ → ℝ) :
-    (∫ x : Fin n → α, e (designPatchCount n A x) ∂Measure.pi (fun _ : Fin n => μ)) =
-      ∑ k ∈ Finset.range (n + 1), binomialCountMass n (μ.real A) k * e k := by
-  let ν := Measure.pi (fun _ : Fin n => μ)
-  have hm (k : ℕ) : MeasurableSet {x : Fin n → α | designPatchCount n A x = k} :=
-    (measurableSet_singleton k).preimage (design_patch_count_measurable n A hA)
-  have hdecomp (x : Fin n → α) : e (designPatchCount n A x) =
-      ∑ k ∈ Finset.range (n + 1),
-        ({x : Fin n → α | designPatchCount n A x = k}).indicator (fun _ => e k) x := by
+theorem iid_design_count_integral [MeasurableSpace α]
+    (μ : Measure α) [IsProbabilityMeasure μ] n A (hA : MeasurableSet A)
+    (e : 𝙜) :
+    𝔊 =
+      ∑ k ∈ Finset.range 𝔐, 𝔏 * e k := by
+  let ν := 𝖲₂
+  have hm k : MeasurableSet {x : 𝔇 | 𝔎} :=
+    (measurableSet_singleton k).preimage $ 𝔓 design_patch_count_measurable hA
+  have hdecomp x : e 𝔄 =
+      ∑ k ∈ Finset.range 𝔐,
+        ({x : 𝔇 | 𝔎}).indicator (fun _ => e k) x := by
     symm
     calc
-      _ = ({x : Fin n → α | designPatchCount n A x = designPatchCount n A x}).indicator
-          (fun _ => e (designPatchCount n A x)) x := by
-        apply Finset.sum_eq_single (designPatchCount n A x)
+      _ = ({x : 𝔇 | 𝔄 = 𝔄}).indicator
+          (fun _ => e 𝔄) x := by
+        apply Finset.sum_eq_single 𝔄
         · intro k _ hk
           simp [Ne.symm hk]
         · intro hn
-          exact False.elim (hn (Finset.mem_range.mpr
-            (Nat.lt_succ_iff.mpr (design_patch_count_le n A x))))
-      _ = e (designPatchCount n A x) := by simp
-  have hfun : (fun x : Fin n → α => e (designPatchCount n A x)) =
-      (fun x => ∑ k ∈ Finset.range (n + 1),
-        ({x : Fin n → α | designPatchCount n A x = k}).indicator (fun _ => e k) x) := funext hdecomp
-  rw [hfun, integral_finset_sum]
+          exact False.elim $ hn $ Finset.mem_range.mpr
+            $ Nat.lt_succ_iff.mpr $ 𝔓 design_patch_count_le x
+      _ = e 𝔄 := 𝖢₄
+  rw [ funext hdecomp , integral_finset_sum]
   · apply Finset.sum_congr rfl
     intro k _
-    rw [integral_indicator_const (e k) (hm k), iid_design_patch_count_probability μ n A hA k]
-    simp [smul_eq_mul]
+    rw [integral_indicator_const (e k) $ hm k , iid_design_patch_count_probability μ n A hA k]
+    simp
   · intro k _
-    exact (integrable_const (e k)).indicator (hm k)
+    exact (integrable_const $ e k ).indicator $ hm k
 
 /-- Integration of a genuine iid patch count gives the quadratic collision
 energy bound, without assuming a binomial count law as a hypothesis. -/
-theorem iid_design_collision_energy_bound {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
-    (C η : ℝ) (e : ℕ → ℝ) (hC : 0 ≤ C) (hmean : n * μ.real A ≤ 1)
-    (he0 : e 0 = 0) (he1 : e 1 = 0) (he : ∀ k, 2 ≤ k → e k ≤ C ^ k * η ^ 4) :
-    (∫ x : Fin n → α, e (designPatchCount n A x) ∂Measure.pi (fun _ : Fin n => μ)) ≤
-      C ^ 2 * Real.exp C * η ^ 4 * (n * μ.real A) ^ 2 := by
+theorem iid_design_collision_energy_bound [MeasurableSpace α]
+    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) A (hA : MeasurableSet A)
+    C η (e : 𝙜) (hC : 𝖺₁) (hmean : n * μ.real A ≤ 1)
+    (he0 : e 0 = 0) (he1 : e 1 = 0) (he : ∀ k, 𝚂 → e k ≤ C ^ k * 𝗩) :
+    𝔊 ≤
+      C ^ 2 * Real.exp C * 𝗩 * (n * μ.real A) ^ 2 := by
   rw [iid_design_count_integral μ n A hA e]
   exact binomial_collision_energy_bound n (μ.real A) C η e measureReal_nonneg
     measureReal_le_one hC hmean he0 he1 he
-
-end
-
-end NearlyMinimax

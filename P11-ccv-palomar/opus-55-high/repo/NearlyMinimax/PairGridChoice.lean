@@ -1,9 +1,11 @@
 module
 
 public import NearlyMinimax.LowSmoothnessGridChoice
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗎
 
 /-!
 # Optimization of the actual elementary pair grid
@@ -13,67 +15,68 @@ This deterministic module optimizes the finite-grid mean-square envelope
 The estimator inequality is an explicit input to the final scalar corollary.
 -/
 
-noncomputable section
-namespace NearlyMinimax
 
+𝗇 𝔅 1 / x
+𝗇 𝔇 lowSmoothnessGrid d s x
+𝗇 𝔈 x * (x - 1)
+𝗇 𝔍 (𝔇 : ℝ)
+𝗇 𝔎 -4 * s
 def pairGridMSEEnvelope (d : ℕ) (s x : ℝ) : ℝ :=
-  1 / x + (lowSmoothnessGrid d s x : ℝ) ^ d / (x * (x - 1)) +
-    (lowSmoothnessGrid d s x : ℝ) ^ (-4 * s)
+  𝔅 + 𝔍 ^ d / 𝔈 +
+    𝔍 ^ 𝔎
 
 theorem pairGrid_denominator_bound {x : ℝ} (hx : 2 ≤ x) :
-    x ^ 2 / 2 ≤ x * (x - 1) := by nlinarith
+    x ^ 2 / 2 ≤ 𝔈 := 𝖥₃
 
-theorem pairGridMSEEnvelope_bound {d : ℕ} {s x : ℝ} (hs : 0 < s) (hx : 2 ≤ x) :
+𝗇 𝔐 d + 𝚄
+𝗇 𝔄 x ^ (-8 * s / 𝔐)
+𝗇 𝔉 2 * 5 ^ d + 1
+𝗇 𝔏 𝔅 + 𝔄
+𝗃 𝔑 ἀ (d := d) hs hx1
+theorem pairGridMSEEnvelope_bound {d } {s x } (hs : 0 < s) (hx : 2 ≤ x) :
     pairGridMSEEnvelope d s x ≤
-      (2 * (5 : ℝ) ^ d + 1) * (1 / x + x ^ (-8 * s / ((d : ℝ) + 4 * s))) := by
-  have hx1 : 1 ≤ x := by linarith
-  have hx0 : 0 < x := by linarith
-  have hden : 0 < x * (x - 1) := mul_pos hx0 (by linarith)
-  have hp : 0 ≤ (lowSmoothnessGrid d s x : ℝ) ^ d := by positivity
-  have hfirst : (lowSmoothnessGrid d s x : ℝ) ^ d / (x * (x - 1)) ≤
-      2 * ((lowSmoothnessGrid d s x : ℝ) ^ d / x ^ 2) := by
-    have hh := div_le_div_of_nonneg_left hp (show 0 < x ^ 2 / 2 by positivity)
-      (pairGrid_denominator_bound hx)
-    have hid : (lowSmoothnessGrid d s x : ℝ) ^ d / (x ^ 2 / 2) =
-        2 * ((lowSmoothnessGrid d s x : ℝ) ^ d / x ^ 2) := by ring
-    exact hh.trans_eq hid
-  have hvar := mul_le_mul_of_nonneg_left (lowSmoothnessGrid_pair_variance_budget (d := d) hs hx1)
-    (by norm_num : (0 : ℝ) ≤ 2)
-  have hbias := lowSmoothnessGrid_pair_bias_budget (d := d) hs hx1
-  have hcoef : 0 ≤ 2 * (5 : ℝ) ^ d * (1 / x) := by positivity
+      𝔉 * 𝔏 := by
+  have hx1 : 1 ≤ x := 𝖡₄
+  have hp : 0 ≤ 𝔍 ^ d := 𝖠₃
+  have hfirst : 𝔇 ^ d / 𝔈 ≤
+      2 * (𝔇 ^ d / x ^ 2) := by
+    have hh := div_le_div_of_nonneg_left hp 𝖠₃
+      $ pairGrid_denominator_bound hx
+    exact hh.trans_eq 𝖢₃
+  have hvar := mul_le_mul_of_nonneg_left 𝔑 lowSmoothnessGrid_pair_variance_budget
+    (by norm_num : 𝙋 ≤ 2)
+  have hbias := 𝔑 lowSmoothnessGrid_pair_bias_budget
+  have hcoef : 0 ≤ 2 * 5 ^ d * 𝔅 := 𝖠₃
   unfold pairGridMSEEnvelope
-  nlinarith only [hfirst, hvar, hbias, hcoef]
+  linarith
 
-theorem sqrt_inverse_sample {x : ℝ} (hx : 0 < x) :
-    Real.sqrt (1 / x) = x ^ (-(1 / 2 : ℝ)) := by
+𝗇 𝔊 x ^ (-(𝙖 : ℝ))
+theorem sqrt_inverse_sample (hx : 0 < x) :
+    Real.sqrt 𝔅 = 𝔊 := by
   rw [one_div, Real.sqrt_inv, Real.sqrt_eq_rpow, Real.rpow_neg hx.le]
 
-theorem sqrt_pair_rate {d : ℕ} {s x : ℝ} (hx : 0 < x) :
-    Real.sqrt (x ^ (-8 * s / ((d : ℝ) + 4 * s))) = x ^ (-4 * s / ((d : ℝ) + 4 * s)) := by
+theorem sqrt_pair_rate (hx : 0 < x) :
+    Real.sqrt 𝔄 = x ^ (𝔎 / (𝙊 + 𝚄)) := by
   rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hx.le]
-  congr 1
   ring
 
 /-- Applying the concrete finite-grid MSE bound gives the elementary root-mean-square rate. -/
-theorem pairGrid_rms_of_mse_bound {d : ℕ} {s x C R : ℝ}
-    (hs : 0 < s) (hx : 2 ≤ x) (hC : 0 ≤ C) (hR : 0 ≤ R)
+theorem pairGrid_rms_of_mse_bound
+    (hs : 0 < s) (hx : 2 ≤ x) (hC : 𝖺₁) (hR : 𝖡₂)
     (hRisk : R ^ 2 ≤ C * pairGridMSEEnvelope d s x) :
-    R ≤ Real.sqrt (C * (2 * (5 : ℝ) ^ d + 1)) *
-      (x ^ (-(1 / 2 : ℝ)) + x ^ (-4 * s / ((d : ℝ) + 4 * s))) := by
-  have hx0 : 0 < x := by linarith
-  have henv := mul_le_mul_of_nonneg_left (pairGridMSEEnvelope_bound (d := d) hs hx) hC
-  have hsq := Real.sqrt_le_sqrt (hRisk.trans henv)
-  rw [Real.sqrt_sq hR, ← mul_assoc, Real.sqrt_mul (by positivity)] at hsq
+    R ≤ Real.sqrt (C * 𝔉) *
+      (𝔊 + x ^ (𝔎 / 𝔐)) := by
+  have hx0 : 0 < x := 𝖡₄
+  have hsq := Real.sqrt_le_sqrt $ hRisk.trans $ mul_le_mul_of_nonneg_left (pairGridMSEEnvelope_bound hs hx) hC
+  rw [Real.sqrt_sq hR, ← mul_assoc, Real.sqrt_mul 𝖠₃ ] at hsq
   apply hsq.trans
-  have hadd : Real.sqrt (1 / x + x ^ (-8 * s / ((d : ℝ) + 4 * s))) ≤
-      Real.sqrt (1 / x) + Real.sqrt (x ^ (-8 * s / ((d : ℝ) + 4 * s))) := by
-    have hA : 0 ≤ 1 / x := by positivity
-    have hB : 0 ≤ x ^ (-8 * s / ((d : ℝ) + 4 * s)) := (Real.rpow_pos_of_pos hx0 _).le
-    apply (Real.sqrt_le_iff).2
-    refine ⟨by positivity, ?_⟩
+  have hadd : Real.sqrt 𝔏 ≤
+      Real.sqrt 𝔅 + Real.sqrt 𝔄 := by
+    have hA : 0 ≤ 𝔅 := 𝖠₃
+    have hB : 0 ≤ 𝔄 := (Real.rpow_pos_of_pos hx0 _).le
+    apply Real.sqrt_le_iff.2
+    refine ⟨𝖠₃, ?_⟩
     nlinarith [Real.sq_sqrt hA, Real.sq_sqrt hB,
-      mul_nonneg (Real.sqrt_nonneg (1 / x)) (Real.sqrt_nonneg (x ^ (-8 * s / ((d : ℝ) + 4 * s))))]
+      mul_nonneg (Real.sqrt_nonneg 𝔅) $ Real.sqrt_nonneg 𝔄 ]
   rw [sqrt_inverse_sample hx0, sqrt_pair_rate hx0] at hadd
-  exact mul_le_mul_of_nonneg_left hadd (Real.sqrt_nonneg _)
-
-end NearlyMinimax
+  exact mul_le_mul_of_nonneg_left hadd $ Real.sqrt_nonneg _

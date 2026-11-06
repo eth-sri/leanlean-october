@@ -1,100 +1,98 @@
 module
 
 public import NearlyMinimax.PopulationMomentDerivatives
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗎
 
 /-! Scalar feature-row derivative bounds for the actual population inverse pilots. -/
 
-noncomputable section
-namespace NearlyMinimax
 open Matrix MeasureTheory
-open scoped BigOperators Matrix.Norms.L2Operator
+𝚺
 
-def rowFunctional {r : ℕ} (row : Fin r → ℝ) : (Fin r → ℝ) →L[ℝ] ℝ :=
-  ∑ i, row i • (ContinuousLinearMap.proj i : (Fin r → ℝ) →L[ℝ] ℝ)
+𝗇 𝔅 𝗢
+𝗇 𝔊 𝔅 →L[ℝ] ℝ
+def rowFunctional (row : 𝔅) : 𝔊 :=
+  ∑ i, row i • (ContinuousLinearMap.proj i : 𝔊)
 
-@[simp] theorem rowFunctional_apply {r : ℕ} (row z : Fin r → ℝ) :
+@[simp] theorem rowFunctional_apply (row z : 𝔅) :
     rowFunctional row z = row ⬝ᵥ z := by
-  simp [rowFunctional, dotProduct, ContinuousLinearMap.sum_apply, smul_eq_mul]
+  simp [rowFunctional, dotProduct]
 
-theorem rowFunctional_norm_le {r : ℕ} (row : Fin r → ℝ) :
+theorem rowFunctional_norm_le (row : 𝔅) :
     ‖rowFunctional row‖ ≤ ∑ i, |row i| := by
   apply ContinuousLinearMap.opNorm_le_bound
-  · exact Finset.sum_nonneg (fun i _ => abs_nonneg _)
+  · positivity
   intro z
   rw [rowFunctional_apply, dotProduct]
   calc
-    ‖∑ i, row i * z i‖ ≤ ∑ i, ‖row i * z i‖ := norm_sum_le _ _
+    ‖∑ i, row i * z i‖ ≤ ∑ i, ‖row i * z i‖ := norm_sum_le ..
     _ ≤ ∑ i, |row i| * ‖z‖ := by
       apply Finset.sum_le_sum
       intro i _
       rw [norm_mul, Real.norm_eq_abs]
-      exact mul_le_mul_of_nonneg_left (norm_le_pi_norm z i) (abs_nonneg _)
+      exact mul_le_mul_of_nonneg_left (norm_le_pi_norm z i) $ abs_nonneg _
     _ = (∑ i, |row i|) * ‖z‖ := by rw [Finset.sum_mul]
 
-def incrementFinScalar (r : ℕ) (lo hi : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
-    (y : ℝ) (m : ℕ) (row : Fin r → ℝ) :
-    (Fin (Fintype.card (incrementVariables r)) → ℝ) → ℝ :=
-  fun x => row ⬝ᵥ incrementFinVector r lo hi T y m x
+𝗃 𝔏 ἀ r lo hi T y m
+𝗇 𝔇 𝔏 incrementFinVector
+def incrementFinScalar (r : ℕ) (lo hi : ℝ) (T : 𝗲 ℝ)
+    (y : ℝ) (m : ℕ) (row : 𝔅) :
+    (𝚕 → ℝ) → ℝ :=
+  fun x => row ⬝ᵥ 𝔇 x
 
-theorem incrementFinScalar_iteratedFDeriv (r : ℕ) [NeZero r] (lo hi : ℝ)
-    (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (m k : ℕ) (row : Fin r → ℝ)
-    (x : Fin (Fintype.card (incrementVariables r)) → ℝ)
-    (v : Fin k → Fin (Fintype.card (incrementVariables r)) → ℝ) :
-    iteratedFDeriv ℝ k (incrementFinScalar r lo hi T y m row) x v =
-      rowFunctional row (iteratedFDeriv ℝ k (incrementFinVector r lo hi T y m) x v) := by
+𝗇 𝔈 𝔏 incrementFinScalar row
+𝗇 𝔍 𝗸₁
+theorem incrementFinScalar_iteratedFDeriv (r : ℕ) [NeZero r] lo hi
+    T y m k row
+    x
+    v :
+    𝔍 𝔈 x v =
+      rowFunctional row (𝔍 𝔇 x v) := by
   have h := (rowFunctional row).iteratedFDeriv_comp_left (x := x)
-    (incrementFinVector_contDiff r lo hi T y m).contDiffAt (show (k : WithTop ℕ∞) ≤ ⊤ from le_top)
-  have hFun : (rowFunctional row) ∘ incrementFinVector r lo hi T y m =
-      incrementFinScalar r lo hi T y m row := by
-    funext z
-    exact rowFunctional_apply row _
-  rw [hFun] at h
-  have he := congrArg (fun D => D v) h
-  change iteratedFDeriv ℝ k (incrementFinScalar r lo hi T y m row) x v =
-    rowFunctional row (iteratedFDeriv ℝ k (incrementFinVector r lo hi T y m) x v) at he
-  exact he
+    (𝔏 incrementFinVector_contDiff).contDiffAt $ show 𝘪₂ from le_top
+  have hFun : rowFunctional row ∘ 𝔇 =
+      𝔈 := by
+    aesop
+  simp_all
 
+𝗃 𝔉 ἀ d ℓ
+𝗇 𝔄 fun j => incrementValuation (anchoredFinNormalizedGram u p) (anchoredFinNormalizedGram v q) (anchoredFinMomentFamilies u p f) (anchoredFinMomentFamilies v q g) $ (Fintype.equivFin $ incrementVariables 𝔉 anchoredDimension ).symm j
+𝗇 𝔎 ∏ j, ‖directions j‖
+𝗃 𝔐 ἀ 𝔉 anchoredDimension a b 𝔉 anchoredFinTransport y m
 /-- Passing to a scalar row and to the genuine derivative operator norm costs
 only a fixed finite row factor. Constants still do not depend on polynomial
 degree, derivative order, anchor, density, response, or the moment center. -/
-theorem anchored_actual_population_row_derivative_operator_bound {d ℓ : ℕ}
-    [Nonempty (AnchoredIndex d ℓ)] (a b F Y : ℝ)
-    (ha : 0 < a) (hab : a < b) (hF : 0 ≤ F) (hY : 0 ≤ Y) :
-    ∃ C A : ℝ, 0 < C ∧ 0 < A ∧
-      ∀ u v : Covariate d, u ∈ unitCube d → v ∈ unitCube d →
-      ∀ p q f g : Covariate d → ℝ, Measurable p → Measurable q →
-      (∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) →
-      (∀ᵐ w ∂cubeVolume d, a ≤ q w ∧ q w ≤ b) →
+theorem anchored_actual_population_row_derivative_operator_bound
+    [Nonempty 𝔉 AnchoredIndex] a b F Y
+    (ha : 𝙆) (hab : 𝙭) (hF : 0 ≤ F) (hY : 0 ≤ Y) :
+    ∃ C A , 𝙴 ∧ 𝘪 ∧
+      ∀ u v , 𝘨₁ → v ∈ unitCube d →
+      ∀ p q f g , Measurable p → Measurable q →
+      𝖡 →
+      𝗭 →
       (∀ w ∈ unitCube d, |f w| ≤ F) → (∀ w ∈ unitCube d, |g w| ≤ F) →
-      ∀ y : ℝ, |y| ≤ Y → ∀ m k : ℕ,
-      ∀ row : Fin (anchoredDimension d ℓ) → ℝ,
-        ‖iteratedFDeriv ℝ k
-          (incrementFinScalar (anchoredDimension d ℓ) a b (anchoredFinTransport d ℓ) y m row)
-          (fun j => incrementValuation (anchoredFinNormalizedGram u p) (anchoredFinNormalizedGram v q)
-            (anchoredFinMomentFamilies u p f) (anchoredFinMomentFamilies v q g)
-            ((Fintype.equivFin (incrementVariables (anchoredDimension d ℓ))).symm j))‖ ≤
-          (∑ i, |row i|) * C * (k.factorial : ℝ) * A ^ k := by
+      ∀ y , |y| ≤ Y → ∀ m k ,
+      ∀ row ,
+        ‖𝔍
+          (𝔐 incrementFinScalar row)
+          𝔄‖ ≤
+          (∑ i, |row i|) * C * k.factorial * 𝚇₁ := by
   obtain ⟨C, A, hC, hA, hDer⟩ := anchored_actual_population_inverse_derivatives
     (d := d) (ℓ := ℓ) a b F Y ha hab hF hY
   refine ⟨C, A, hC, hA, ?_⟩
   intro u v hu hv p q f g hpmeas hqmeas hp hq hf hg y hy m k row
-  have hRow : 0 ≤ ∑ i, |row i| := Finset.sum_nonneg (fun i _ => abs_nonneg _)
-  apply ContinuousMultilinearMap.opNorm_le_bound (by positivity)
+  apply ContinuousMultilinearMap.opNorm_le_bound 𝖠₃
   intro directions
   rw [incrementFinScalar_iteratedFDeriv]
   calc
-    _ ≤ ‖rowFunctional row‖ * ‖iteratedFDeriv ℝ k
-        (incrementFinVector (anchoredDimension d ℓ) a b (anchoredFinTransport d ℓ) y m)
-        (fun j => incrementValuation (anchoredFinNormalizedGram u p) (anchoredFinNormalizedGram v q)
-          (anchoredFinMomentFamilies u p f) (anchoredFinMomentFamilies v q g)
-          ((Fintype.equivFin (incrementVariables (anchoredDimension d ℓ))).symm j)) directions‖ :=
+    _ ≤ ‖rowFunctional row‖ * ‖𝔍
+        𝔐 incrementFinVector
+        𝔄 directions‖ :=
       (rowFunctional row).le_opNorm _
-    _ ≤ (∑ i, |row i|) * (C * (k.factorial : ℝ) * A ^ k * ∏ j, ‖directions j‖) := by
+    _ ≤ (∑ i, |row i|) * (C * k.factorial * 𝚇₁ * 𝔎) := by
       apply mul_le_mul (rowFunctional_norm_le row)
         (hDer u v hu hv p q f g hpmeas hqmeas hp hq hf hg y hy m k directions)
-        (norm_nonneg _) hRow
-    _ = ((∑ i, |row i|) * C * (k.factorial : ℝ) * A ^ k) * ∏ j, ‖directions j‖ := by ring
-
-end NearlyMinimax
+        (norm_nonneg _) 𝘑
+    _ = (∑ i, |row i|) * C * k.factorial * 𝚇₁ * 𝔎 := 𝖢₃

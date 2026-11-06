@@ -1,59 +1,62 @@
 module
 
 public import NearlyMinimax.CardinalSeparatedBand
+public import RoughRegime.Macro
 
 
-@[expose] public section
+𝗍
 
 /-! Genuine joint Borel spatial factors of the Gaussian cardinal rows. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 500000
+𝚫
+𝚪
+𝚨
+𝚩
+𝚽
 
-theorem gaussianPrimitiveLeft_continuous {d : ℕ} (lam t : ℝ) (e : GaussianPrimitiveMark d) :
-    Continuous (gaussianPrimitiveLeft lam t e) := by
+theorem gaussianPrimitiveLeft_continuous lam t (e : GaussianPrimitiveMark d) :
+    Continuous $ gaussianPrimitiveLeft lam t e := by
   unfold gaussianPrimitiveLeft gaussianTrig
   split_ifs <;> unfold gaussianPhase <;> fun_prop
 
-theorem gaussianPrimitiveRight_continuous {d : ℕ} (lam t : ℝ) (e : GaussianPrimitiveMark d) :
-    Continuous (gaussianPrimitiveRight lam t e) := by
+theorem gaussianPrimitiveRight_continuous lam t (e : GaussianPrimitiveMark d) :
+    Continuous $ gaussianPrimitiveRight lam t e := by
   unfold gaussianPrimitiveRight gaussianTrig gaussianAffineFactor
   split_ifs <;> unfold gaussianPhase <;> fun_prop
 
-theorem centered_cardinal_factor_continuous {d n : ℕ} (i : Fin n) (lam : ℝ)
-    (z : CenteredCardinalMark d n i) (l : Fin n) : Continuous (centeredCardinalFactor i lam z l) := by
+theorem centered_cardinal_factor_continuous (i : Fin n) lam
+    (z : CenteredCardinalMark d n i) l : Continuous $ centeredCardinalFactor i lam z l := by
   unfold centeredCardinalFactor
   split_ifs
-  · exact gaussianPrimitiveRight_continuous _ _ _
-  · exact continuous_finset_prod _ (fun _ _ => gaussianPrimitiveLeft_continuous _ _ _)
+  · exact gaussianPrimitiveRight_continuous ..
+  · exact continuous_finset_prod _ fun _ _ => gaussianPrimitiveLeft_continuous ..
 
-theorem cardinal_separated_factor_continuous {d n : ℕ} (lam : ℝ)
-    (z : CardinalSeparatedMark d n) (l : Fin n) : Continuous (cardinalSeparatedFactor lam z l) :=
+𝗃 𝔅 ἀ lam z l
+theorem cardinal_separated_factor_continuous lam
+    (z : CardinalSeparatedMark d n) l : Continuous 𝔅 cardinalSeparatedFactor :=
   centered_cardinal_factor_continuous z.1 lam z.2 l
 
-theorem cardinal_band_factor_continuous {d n : ℕ} (lam : ℝ)
-    (z : CardinalBandMark d n) (l : Fin n) : Continuous (cardinalBandFactor lam z l) :=
+theorem cardinal_band_factor_continuous lam
+    (z : CardinalBandMark d n) l : Continuous 𝔅 cardinalBandFactor :=
   cardinal_separated_factor_continuous lam z.2 l
 
-theorem cardinal_separated_factor_joint_measurable {d n : ℕ} (lam : ℝ) (l : Fin n) :
-    Measurable (fun zx : CardinalSeparatedMark d n × Covariate d =>
-      cardinalSeparatedFactor lam zx.1 l zx.2) := by
-  have h := measurable_uncurry_of_continuous_of_measurable
-    (u := fun (x : Covariate d) (z : CardinalSeparatedMark d n) => cardinalSeparatedFactor lam z l x)
-    (fun z => cardinal_separated_factor_continuous lam z l)
-    (fun x => cardinal_separated_factor_measurable lam l x)
+section
+
+variable (lam)
+    (l : Fin n)
+
+𝗃 𝔄 measurable_uncurry_of_continuous_of_measurable (u := fun (x : Covariate d) z => 𝔅 ἀ x)
+theorem cardinal_separated_factor_joint_measurable :
+    Measurable fun zx : CardinalSeparatedMark d n × Covariate d =>
+      cardinalSeparatedFactor lam zx.1 l zx.2 := by
+  have h := 𝔄 cardinalSeparatedFactor
+    (fun z => 𝔅 cardinal_separated_factor_continuous)
+    $ cardinal_separated_factor_measurable lam l
   exact h.comp measurable_swap
 
-theorem cardinal_band_factor_joint_measurable {d n : ℕ} (lam : ℝ) (l : Fin n) :
-    Measurable (fun zx : CardinalBandMark d n × Covariate d =>
-      cardinalBandFactor lam zx.1 l zx.2) := by
-  have h := measurable_uncurry_of_continuous_of_measurable
-    (u := fun (x : Covariate d) (z : CardinalBandMark d n) => cardinalBandFactor lam z l x)
-    (fun z => cardinal_band_factor_continuous lam z l)
-    (fun x => cardinal_band_factor_measurable lam l x)
+theorem cardinal_band_factor_joint_measurable :
+    Measurable fun zx : CardinalBandMark d n × Covariate d =>
+      cardinalBandFactor lam zx.1 l zx.2 := by
+  have h := 𝔄 cardinalBandFactor
+    (fun z => 𝔅 cardinal_band_factor_continuous)
+    $ cardinal_band_factor_measurable lam l
   exact h.comp measurable_swap
-
-end NearlyMinimax

@@ -3,8 +3,10 @@ module
 public import NearlyMinimax.HighCanonicalDensityMean
 public import NearlyMinimax.HistoryMassConcentration
 public import NearlyMinimax.MassTiltTail
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-@[expose] public section
+𝗌
 
 /-!
 # Concentration of the actual balanced-packet history mass
@@ -14,50 +16,45 @@ actual torus patch geometry, and independent label blocks prove the infinite
 reference MGF. The true mass-power tilt then has the exceptional tail bound.
 -/
 
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators ENNReal
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
+𝚫
+𝚳
+𝚨
+𝚩
+𝚰
 
+𝗇 𝔄 𝘅
 /-- The exact bounded-differences coefficient for the actual torus labels. -/
 def highHistoryMassParameter (d k : ℕ) (a b : ℝ) : ℝ :=
-  (k : ℝ)^d * ((2 / (k : ℝ))^d * (b-a))^2 / 8
+  𝙦^d * ((2 / 𝙦)^d * 𝔄)^2 / 8
 
-theorem highHistoryMassParameter_pos (d k : ℕ) (a b : ℝ) (hk : 0 < k) (hab : a < b) :
+theorem highHistoryMassParameter_pos d k a b (hk : 𝖰) (hab : 𝙭) :
     0 < highHistoryMassParameter d k a b := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
   unfold highHistoryMassParameter
   positivity
 
 /-- The exact parameter has the paper's inverse-grid-cardinality dependence. -/
-theorem highHistoryMassParameter_eq (d k : ℕ) (a b : ℝ) (hk : 0 < k) :
-    highHistoryMassParameter d k a b = (2 : ℝ)^(2*d) * (b-a)^2 / (8 * (k : ℝ)^d) := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
-  have hp : (k : ℝ)^d ≠ 0 := ne_of_gt (pow_pos hkR d)
+theorem highHistoryMassParameter_eq d k a b (hk : 𝖰) :
+    highHistoryMassParameter d k a b = 2 ^𝖩₁ * 𝔄^2 / (8 * 𝗋) := by
   unfold highHistoryMassParameter
   rw [div_pow, mul_pow, Nat.mul_comm 2 d, pow_mul]
   field_simp
 
 section ActualPacket
+𝗇 𝔅 𝙯
 variable {Z : Type*} [MeasurableSpace Z] [StandardBorelSpace Z]
-  (d k F m r D q : ℕ) [NeZero k] [LinearOrder (HighWindowLabels d k)]
-  (dependent : HighWindowLabels d k → HighWindowLabels d k → Prop)
+  (d k F m r D q : ℕ) [NeZero k] [LinearOrder 𝔅]
+  (dependent : 𝔅 → 𝔅 → Prop)
   (σ : Measure Z) [IsFiniteMeasure σ] (a b C δ : ℝ)
-  (A : Z → HighFrameIndex d F → HighFrameIndex d F → ℝ)
-  (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
-  (hcost : Integrable (separatedMatrixCost A) σ)
-  (hpos : 0 < highPacketMarkMass σ a b m r D q C A)
-  (ha : 0 < a) (hab : a < b) (hr : 1 ≤ r) (hδ0 : 0 ≤ δ) (hδ1 : δ < 1)
+  (A : Z → HighFrameIndex d F → 𝖲)
+  (hA : 𝙚)
+  (hcost : 𝙧)
+  (hpos : 0 < 𝗎₁)
+  (ha : 𝙆) (hab : 𝙭) (hr : 𝘗) (hδ0 : 𝚈) (hδ1 : δ < 1)
   (radius width : ℝ) (hR : 0 < radius) (ha1 : a + radius ≤ 1) (hb1 : 1 + radius ≤ b)
-  (hW : b - a ≤ width) (hδW : δ * width ≤ radius / 2)
-  (B : HighWindowLabels d k → Z → Covariate d → Fin r → ℝ)
-  (hmB : ∀ j l, Measurable (fun zx : Z × Covariate d => B j zx.1 zx.2 l))
+  (hW : 𝔄 ≤ width) (hδW : δ * width ≤ radius / 2)
+  (B : 𝔅 → Z → Covariate d → 𝗢)
+  (hmB : 𝘲)
   (hB : ∀ j ζ x l, |B j ζ x l| ≤ 1)
-  (initial : HighRawState d k F) (hinit : ∀ x, initial.1 x = 1)
+  (initial : HighRawState d k F) (hinit : 𝗅₂)
 
 include hA hcost hpos ha hab hr hδ0 hδ1 hR ha1 hb1 hW hδW hmB hB hinit
-
-end ActualPacket
-end NearlyMinimax

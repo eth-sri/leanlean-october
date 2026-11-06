@@ -2,93 +2,97 @@ module
 
 public import NearlyMinimax.FinePairRows
 public import NearlyMinimax.FinePairTimeCost
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
 
-@[expose] public section
+𝗍
 
 /-! Nondegeneracy and exact activity costs of the actual fine-pair rows. -/
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 700000
+𝚫
+𝚪
+𝚨
+𝚩
+𝚾
 
-theorem response_absolute_cost_ge_one (q : ℕ) (hq : 1 ≤ q) :
-    (1 : ℝ) ≤ ∑ j : Fin (2*q+2), |responseWeight q j| := by
+𝗇 𝔄 Fin 𝖵
+𝗇 𝔉 responseNode q j ^ 2
+𝗇 𝔑 responseWeight q j
+theorem response_absolute_cost_ge_one q (hq : 𝗘) :
+     1 ≤ ∑ j : 𝔄, |𝔑| := by
   calc
-    (1 : ℝ) = |∑ j : Fin (2*q+2), responseWeight q j * responseNode q j ^ 2| := by
+    1 = |∑ j : 𝔄, 𝔑 * 𝔉| := by
       rw [response_second_moment q hq]; norm_num
-    _ ≤ ∑ j : Fin (2*q+2), |responseWeight q j * responseNode q j ^ 2| :=
-      Finset.abs_sum_le_sum_abs _ _
-    _ ≤ ∑ j : Fin (2*q+2), |responseWeight q j| := by
+    _ ≤ ∑ j : 𝔄, |𝔑 * 𝔉| :=
+      Finset.abs_sum_le_sum_abs ..
+    _ ≤ ∑ j : 𝔄, |𝔑| := by
       apply Finset.sum_le_sum
       intro j _
-      have he : |responseNode q j ^ 2| = responseNode q j ^ 2 := abs_of_nonneg (sq_nonneg _)
+      have he : |𝔉| = 𝔉 := 𝗤
       rw [abs_mul, he]
-      apply mul_le_of_le_one_right (abs_nonneg _)
+      apply mul_le_of_le_one_right $ abs_nonneg _
       have hj := responseNode_mem_unit q j
-      nlinarith [hj.1, hj.2, sq_nonneg (responseNode q j)]
+      nlinarith [hj.1, hj.2]
 
-theorem ordinary_density_absolute_cost_pos (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (D : ℕ) :
-    0 < ∑ h : HighDensityMarkIndex D 2 D, |densityPacketWeight a b D 2 D h| := by
-  rw [densityPacketWeight_variation a b ha hab D 2 D (by norm_num)]
-  have hb : b ≠ 0 := (ha.trans hab).ne'
-  have hθ := densityMargin_zero_ne a b ha hab
-  have hp : densityPacketPrefactor a b 2 ≠ 0 := by
-    change (2 : ℝ)^2 / (2 : ℝ) * (b / densityMargin a b 0)^2 ≠ 0
-    exact mul_ne_zero (by norm_num) (pow_ne_zero _ (div_ne_zero hb hθ))
-  have hn : 0 < (derivativeOrder D : ℝ) := by
-    have he : 0 < derivativeOrder D := by unfold derivativeOrder; omega
-    exact_mod_cast he
-  exact mul_pos (mul_pos (abs_pos.mpr hp) (Real.cosh_pos _)) (pow_pos hn _)
+𝗃 𝔔 ἀ a b
+𝗇 𝔊 𝔔 densityPacketWeight D 2 D h
+𝗇 𝔒 HighDensityMarkIndex D 2 D
+𝗇 𝔓 𝔔 densityMargin_zero_ne ha hab
+theorem ordinary_density_absolute_cost_pos a b (ha : 𝙆) (hab : 𝙭)
+    D :
+    0 < ∑ h : 𝔒, |𝔊| := by
+  rw [𝔔 densityPacketWeight_variation ha hab D 2 D 𝖠₄ ]
+  have hb := (ha.trans hab).ne'
+  have hθ := 𝔓
+  have hp : 𝔔 densityPacketPrefactor 2 ≠ 0 := by
+    change 2^2 / 2 * (b / 𝔔 densityMargin 0)^2 ≠ 0
+    positivity
+  have hn : 0 < derivativeOrder D := by
+    bound
+  positivity
 
-theorem fine_density_absolute_cost_pos (a b : ℝ) (ha : 0 < a) (hab : a < b) (M : ℕ) :
-    0 < ∑ h : FinePairDensityIndex M, |finePairDensityWeight a b M h| := by
-  rw [finePairDensityWeight_variation a b ha hab M]
-  have hp : finePairDensityPrefactor a b ≠ 0 :=
-    div_ne_zero (pow_ne_zero _ (ha.trans hab).ne') (pow_ne_zero _ (densityMargin_zero_ne a b ha hab))
-  exact mul_pos (mul_pos (by norm_num) (abs_pos.mpr hp)) (Real.cosh_pos _)
+theorem fine_density_absolute_cost_pos a b (ha : 𝙆) (hab : 𝙭) M :
+    0 < ∑ h : FinePairDensityIndex M, |𝔔 finePairDensityWeight M h| := by
+  rw [𝔔 finePairDensityWeight_variation ha hab M]
+  have hp : 𝔔 finePairDensityPrefactor ≠ 0 :=
+    div_ne_zero (pow_ne_zero _ (ha.trans hab).ne') $ pow_ne_zero _ 𝔓
+  positivity
 
-theorem finePairRowMass_unit (d : ℕ) (D M q : ℕ) (a b C T₀ N : ℝ) :
-    finePairRowMass d D M q a b C T₀ N .unit =
-      (∑ h : HighDensityMarkIndex D 2 D, |densityPacketWeight a b D 2 D h|) *
-      (∑ h : Fin (2*q+2), |responseWeight q h|) * (2*C^2) *
-      (∑ i, ∑ j, |finePairUnitMatrix d D i j|) := by
-  rw [finePairRowMass, highPacketMarkMass_eq_variation (Measure.dirac ()) a b D 2 D q C
-      (fun _ => finePairUnitMatrix d D)
-      (fun _ _ => measurable_const) (integrable_const _),
-    highPacketSignedMeasure_totalVariation (Measure.dirac ()) a b D 2 D q C
-      (fun _ => finePairUnitMatrix d D)
-      (fun _ _ => measurable_const) (integrable_const _)]
-  simp only [separatedMatrixCost, integral_dirac]
+𝗇 𝔅 finePairRowMass d D M q a b C T₀ N
+𝗇 𝔇 𝘖
+𝗇 𝔍 𝗻
+𝗃 𝔎 ἀ (Measure.dirac ()) a b D 2 D q C 𝔍 (fun _ _ => measurable_const) $ integrable_const _
+theorem finePairRowMass_unit d D M q a b C T₀ N :
+    𝔅 .unit =
+      (∑ h : 𝔒, |𝔊|) *
+      (∑ h : 𝔄, |𝘐₁|) * 𝔇 *
+       ∑ i, ∑ j, |finePairUnitMatrix d D i j| := by
+  rw [finePairRowMass, 𝔎 highPacketMarkMass_eq_variation,
+    𝔎 highPacketSignedMeasure_totalVariation]
+  aesop
 
-theorem finePairRowMass_coarse (d : ℕ) [NeZero d] (D M q : ℕ) (a b C T₀ N : ℝ)
+𝗇 𝔈 𝖼₂
+𝗃 𝔏 ἀ _ _ _ _ _ _ _ _ _ 𝔈 $ finePairTimeMatrix_cost_integrable d 0 T₀ _
+theorem finePairRowMass_coarse (d : ℕ) [NeZero d] D M q a b C T₀ N
     (hT : 0 ≤ T₀) :
-    finePairRowMass d D M q a b C T₀ N .coarse =
-      (∑ h : HighDensityMarkIndex D 2 D, |densityPacketWeight a b D 2 D h|) *
-      (∑ h : Fin (2*q+2), |responseWeight q h|) * (2*C^2) *
-      ((∑ i, ∑ j, |finePairDistanceMatrix d D i j|) * (T₀^2/2)) := by
-  rw [finePairRowMass, highPacketMarkMass_eq_variation _ _ _ _ _ _ _ _ _
-      (finePairTimeMatrix_measurable d _) (finePairTimeMatrix_cost_integrable d 0 T₀ _),
-    highPacketSignedMeasure_totalVariation _ _ _ _ _ _ _ _ _
-      (finePairTimeMatrix_measurable d _) (finePairTimeMatrix_cost_integrable d 0 T₀ _),
+    𝔅 .coarse =
+      (∑ h : 𝔒, |𝔊|) *
+      (∑ h : 𝔄, |𝘐₁|) * 𝔇 *
+      ((∑ i, ∑ j, |𝗀₂ i j|) * (T₀^2/2)) := by
+  rw [finePairRowMass, 𝔏 highPacketMarkMass_eq_variation,
+    𝔏 highPacketSignedMeasure_totalVariation,
     finePairTimeMatrix_cost_integral d 0 T₀ le_rfl hT]
-  simp only [zero_pow (by norm_num : (2 : ℕ) ≠ 0), sub_zero]
+  simp
 
-theorem finePairRowMass_fine (d : ℕ) [NeZero d] (D M q : ℕ) (a b C T₀ N : ℝ)
+𝗃 𝔐 ἀ _ a b M q C _ 𝔈 $ finePairTimeMatrix_cost_integrable d T₀ N _
+theorem finePairRowMass_fine (d : ℕ) [NeZero d] D M q a b C T₀ N
     (hT : 0 ≤ T₀) (hTN : T₀ ≤ N) :
-    finePairRowMass d D M q a b C T₀ N .fine =
-      (∑ h : FinePairDensityIndex M, |finePairDensityWeight a b M h|) *
-      (∑ h : Fin (2*q+2), |responseWeight q h|) * (2*C^2) *
-      ((∑ i, ∑ j, |finePairDistanceMatrix d D i j|) * ((N^2-T₀^2)/2)) := by
+    𝔅 .fine =
+      (∑ h : FinePairDensityIndex M, |𝔔 finePairDensityWeight M h|) *
+      (∑ h : 𝔄, |𝘐₁|) * 𝔇 *
+      ((∑ i, ∑ j, |𝗀₂ i j|) * ((𝘚₂-T₀^2)/2)) := by
   rw [finePairRowMass, finePairPacketMarkMass]
-  rw [signedMarkMass_eq_variation _ _ (finePairPacketWeight_integrable _ a b M q C _
-    (finePairTimeMatrix_measurable d _) (finePairTimeMatrix_cost_integrable d T₀ N _))]
+  rw [signedMarkMass_eq_variation _ _ 𝔐 finePairPacketWeight_integrable]
   change ((finePairPacketSignedMeasure _ a b M q C _).variation univ).toReal = _
-  rw [finePairPacketSignedMeasure_totalVariation _ a b M q C _
-    (finePairTimeMatrix_measurable d _) (finePairTimeMatrix_cost_integrable d T₀ N _),
+  rw [𝔐 finePairPacketSignedMeasure_totalVariation,
     finePairTimeMatrix_cost_integral d T₀ N hT hTN]
-
-end NearlyMinimax

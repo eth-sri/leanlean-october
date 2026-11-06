@@ -2,195 +2,193 @@ module
 
 public import NearlyMinimax.AnchoredMoments
 public import NearlyMinimax.DyadicPilotFeatures
+public import RoughRegime.Macro
+public import RoughRegime.Notation
 
-
-@[expose] public section
+𝗌
 
 /-! Exact changes of variables for the actual regular-grid cells. -/
 
-noncomputable section
-open MeasureTheory Set Matrix
-open scoped BigOperators ENNReal
-namespace NearlyMinimax
+𝛍
+𝚳
+𝚨
 
-def gridAffine {d : ℕ} (k : ℕ) (c : Fin d → Fin k) (w : Covariate d) : Covariate d :=
-  regularGridCorner k c + (k : ℝ)⁻¹ • w
+𝗇 𝔄 𝙦⁻¹
+𝗇 𝔎 regularGridCorner k c
+𝗇 𝔔 𝙯₂
+def gridAffine (k : ℕ) (c : 𝔔) (w : Covariate d) : Covariate d :=
+  𝔎 + 𝔄 • w
 
-def gridClosedBox {d : ℕ} (k : ℕ) (c : Fin d → Fin k) : Set (Covariate d) :=
-  Icc (regularGridCorner k c) (regularGridCorner k c + fun _ => (k : ℝ)⁻¹)
+def gridClosedBox (k : ℕ) (c : 𝔔) : 𝘶 :=
+  Icc 𝔎 $ 𝔎 + fun _ => 𝔄
 
-def gridAffineEquiv {d : ℕ} (k : ℕ) (hk : 0 < k) (c : Fin d → Fin k) :
+𝗇 𝔍 𝖰
+def gridAffineEquiv (k : ℕ) (hk : 𝔍) (c : 𝔔) :
     Covariate d ≃ᵐ Covariate d :=
-  ((Homeomorph.smul (Units.mk0 ((k : ℝ)⁻¹) (by positivity))).trans
-    (Homeomorph.addLeft (regularGridCorner k c))).toMeasurableEquiv
+  ((Homeomorph.smul $ Units.mk0 𝔄 𝖠₃ ).trans
+    $ Homeomorph.addLeft 𝔎 ).toMeasurableEquiv
 
-@[simp] theorem gridAffineEquiv_apply {d : ℕ} (k : ℕ) (hk : 0 < k)
-    (c : Fin d → Fin k) (w : Covariate d) : gridAffineEquiv k hk c w = gridAffine k c w := rfl
+𝗇 𝔊 gridAffine k c w
+𝗃 𝔚 ἀ k hk
+𝗃 𝔑 𝔚 ἀ c
+@[simp] theorem gridAffineEquiv_apply k hk
+    c (w : Covariate d) : 𝔑 gridAffineEquiv w = 𝔊 := rfl
 
-theorem gridAffine_preimage_box {d : ℕ} (k : ℕ) (hk : 0 < k) (c : Fin d → Fin k) :
-    gridAffine k c ⁻¹' gridClosedBox k c = unitCube d := by
-  have hkr : 0 < (k : ℝ) := by exact_mod_cast hk
+𝗇 𝔅 gridAffine k c
+𝗇 𝔇 gridClosedBox k c
+𝗇 𝔉 regularGridCorner k c i
+theorem gridAffine_preimage_box k (hk : 𝔍) c :
+    𝔅 ⁻¹' 𝔇 = unitCube d := by
   ext w
-  change ((∀ i, regularGridCorner k c i ≤ regularGridCorner k c i + (k : ℝ)⁻¹ * w i) ∧
-    (∀ i, regularGridCorner k c i + (k : ℝ)⁻¹ * w i ≤ regularGridCorner k c i + (k : ℝ)⁻¹)) ↔
+  change ((∀ i, 𝔉 ≤ 𝔉 + 𝔄 * w i) ∧
+     ∀ i, 𝔉 + 𝔄 * w i ≤ 𝔉 + 𝔄 ) ↔
     ∀ i, 0 ≤ w i ∧ w i ≤ 1
-  constructor
-  · intro hw i
-    constructor
-    · exact (mul_nonneg_iff_of_pos_left (inv_pos.mpr hkr)).mp (by linarith [hw.1 i])
-    · apply (mul_le_mul_iff_of_pos_left (inv_pos.mpr hkr)).mp
-      simpa using (show (k : ℝ)⁻¹ * w i ≤ (k : ℝ)⁻¹ by linarith [hw.2 i])
-  · intro hw
-    constructor <;> intro i
-    · linarith [mul_nonneg (inv_nonneg.mpr hkr.le) (hw i).1]
-    · have := mul_le_mul_of_nonneg_left (hw i).2 (inv_nonneg.mpr hkr.le)
-      linarith
+  aesop
 
-theorem gridClosedBox_subset_cube {d : ℕ} (k : ℕ) (hk : 0 < k)
-    (c : Fin d → Fin k) : gridClosedBox k c ⊆ unitCube d := by
-  have hkr : 0 < (k : ℝ) := by exact_mod_cast hk
+𝗇 𝔗 c i / k + 𝔄
+theorem gridClosedBox_subset_cube k (hk : 𝔍)
+    c : 𝔇 ⊆ unitCube d := by
   intro z hz i
-  refine ⟨(regular_grid_corner_mem_cube k hk c i).1.trans (hz.1 i), ?_⟩
+  refine ⟨(𝔑 regular_grid_corner_mem_cube i).1.trans $ hz.1 i , ?_⟩
   apply (hz.2 i).trans
-  change (c i : ℝ) / k + (k : ℝ)⁻¹ ≤ 1
+  change 𝔗 ≤ 1
   have hc : ((c i).val : ℝ) + 1 ≤ k := by exact_mod_cast (c i).isLt
-  have he : (c i : ℝ) / k + (k : ℝ)⁻¹ = ((c i : ℝ) + 1) / k := by ring
+  have he : 𝔗 = ( c i + 1) / k := 𝖢₃
   rw [he]
-  exact (div_le_one hkr).2 hc
+  bound
 
-theorem gridAffine_map_volume {d : ℕ} (k : ℕ) (hk : 0 < k) (c : Fin d → Fin k) :
-    (volume : Measure (Covariate d)).map (gridAffine k c) =
-      ENNReal.ofReal ((k : ℝ) ^ d) • volume := by
-  have hkr : 0 < (k : ℝ) := by exact_mod_cast hk
-  rw [show gridAffine k c = (fun z => regularGridCorner k c + z) ∘
-    (fun w => (k : ℝ)⁻¹ • w) by rfl,
-    ← Measure.map_map (by fun_prop) (by fun_prop),
-    Measure.map_addHaar_smul volume (inv_ne_zero hkr.ne'),
-    Measure.map_smul _ (by fun_prop), map_add_left_eq_self]
-  simp [Module.finrank_pi, abs_of_nonneg (pow_nonneg hkr.le d)]
+𝗇 𝔏 𝙦
+𝗇 𝔐 𝗋
+theorem gridAffine_map_volume k (hk : 𝔍) c :
+    (volume : 𝘹₁).map 𝔅 =
+      ENNReal.ofReal 𝔐 • volume := by
+  have hkr : 0 < 𝔏 := by exact_mod_cast hk
+  rw [show 𝔅 = (fun z => 𝔎 + z) ∘
+     fun w => 𝔄 • w by rfl,
+    ← Measure.map_map  𝖦₃  𝖦₃ ,
+    Measure.map_addHaar_smul volume $ inv_ne_zero hkr.ne' ,
+    Measure.map_smul _ 𝖦₃ , map_add_left_eq_self]
+  simp
 
+𝗇 𝔒 (cubeVolume d).map 𝔅
 /-- The Jacobian is the exact number of regular-grid cells. -/
-theorem gridAffine_map_cubeVolume {d : ℕ} (k : ℕ) (hk : 0 < k) (c : Fin d → Fin k) :
-    (cubeVolume d).map (gridAffine k c) =
-      ENNReal.ofReal ((k : ℝ) ^ d) • volume.restrict (gridClosedBox k c) := by
-  let e := gridAffineEquiv k hk c
-  have hpre : e ⁻¹' gridClosedBox k c = unitCube d := gridAffine_preimage_box k hk c
-  have h := e.restrict_map (volume : Measure (Covariate d)) (gridClosedBox k c)
+theorem gridAffine_map_cubeVolume k (hk : 𝔍) c :
+    𝔒 =
+      ENNReal.ofReal 𝔐 • volume.restrict 𝔇 := by
+  let e := 𝔑 gridAffineEquiv
+  have hpre : e ⁻¹' 𝔇 = unitCube d := 𝔑 gridAffine_preimage_box
+  have h := e.restrict_map volume 𝔇
   rw [hpre] at h
-  change ((volume.restrict (unitCube d)).map e) = _
+  change (volume.restrict $ unitCube d ).map e = _
   rw [← h]
-  change ((volume : Measure (Covariate d)).map (gridAffine k c)).restrict _ = _
-  rw [gridAffine_map_volume k hk c, Measure.restrict_smul]
+  change (volume.map 𝔅).restrict _ = _
+  rw [𝔑 gridAffine_map_volume, Measure.restrict_smul]
 
-theorem gridAffine_integral {d : ℕ} (k : ℕ) (hk : 0 < k) (c : Fin d → Fin k)
-    (f : Covariate d → ℝ) :
-    (∫ w, f (gridAffine k c w) ∂cubeVolume d) =
-      (k : ℝ) ^ d * ∫ z in gridClosedBox k c, f z := by
-  have h := integral_map_equiv (μ := cubeVolume d) (gridAffineEquiv k hk c) f
-  simp only [gridAffineEquiv_apply] at h
+𝗇 𝔓 ∫ w, f 𝔊 ∂cubeVolume d
+theorem gridAffine_integral k (hk : 𝔍) c
+    (f : 𝙀) :
+    𝔓 =
+      𝔐 * ∫ z in 𝔇, f z := by
+  have h := integral_map_equiv (μ := cubeVolume d) 𝔑 gridAffineEquiv f
+  simp at h
   rw [← h]
-  change (∫ z, f z ∂(cubeVolume d).map (gridAffine k c)) = _
-  rw [gridAffine_map_cubeVolume k hk c, integral_smul_measure, ENNReal.toReal_ofReal (by positivity)]
+  change ∫ z, f z ∂𝔒 = _
+  rw [𝔑 gridAffine_map_cubeVolume, integral_smul_measure, ENNReal.toReal_ofReal 𝖠₃ ]
   rfl
 
-theorem gridAffine_ae_pullback {d : ℕ} (k : ℕ) (hk : 0 < k) (c : Fin d → Fin k)
+theorem gridAffine_ae_pullback {d } k (hk : 𝔍) c
     {P : Covariate d → Prop} (hP : ∀ᵐ z ∂cubeVolume d, P z) :
-    ∀ᵐ w ∂cubeVolume d, P (gridAffine k c w) := by
-  apply ae_of_ae_map (gridAffineEquiv k hk c).measurable.aemeasurable
-  change ∀ᵐ z ∂(cubeVolume d).map (gridAffine k c), P z
-  rw [gridAffine_map_cubeVolume k hk c]
+    ∀ᵐ w ∂cubeVolume d, P 𝔊 := by
+  apply ae_of_ae_map (𝔑 gridAffineEquiv).measurable.aemeasurable
+  change ∀ᵐ z ∂𝔒, P z
+  rw [𝔑 gridAffine_map_cubeVolume]
   exact Measure.ae_smul_measure
-    (ae_restrict_of_ae_restrict_of_subset (gridClosedBox_subset_cube k hk c) hP) _
+    (ae_restrict_of_ae_restrict_of_subset 𝔑 gridClosedBox_subset_cube hP) _
 
-def gridNormalizedAnchor {d : ℕ} (k : ℕ) (hk : 0 < k) (x : Covariate d) : Covariate d :=
-  fun i => (k : ℝ) * (x i - regularGridCorner k (regularGridCell k hk x) i)
+𝗇 𝔙 𝔚 regularGridCell
+def gridNormalizedAnchor (k : ℕ) (hk : 𝔍) (x : Covariate d) : Covariate d :=
+  fun i => 𝔏 * (x i - regularGridCorner k (𝔙 x) i)
 
-theorem gridNormalizedAnchor_mem_cube {d : ℕ} (k : ℕ) (hk : 0 < k)
-    (x : Covariate d) (hx : x ∈ unitCube d) : gridNormalizedAnchor k hk x ∈ unitCube d := by
-  have hkr : 0 < (k : ℝ) := by exact_mod_cast hk
+𝗃 𝔛 𝔚 ἀ x hx i
+theorem gridNormalizedAnchor_mem_cube k hk
+    x (hx : 𝗌) : 𝔚 gridNormalizedAnchor x ∈ unitCube d := by
+  have hkr : 0 < 𝔏 := by exact_mod_cast hk
   intro i
-  have hlo := regular_grid_cell_corner_le k hk x hx i
-  have hhi := (abs_le.mp (regular_grid_cell_radius k hk x hx i)).2
+  have hhi := (abs_le.mp 𝔛 regular_grid_cell_radius).2
   constructor
-  · exact mul_nonneg hkr.le (sub_nonneg.mpr hlo)
-  · change (k : ℝ) * (x i - regularGridCorner k (regularGridCell k hk x) i) ≤ 1
-    exact (mul_le_mul_of_nonneg_left hhi hkr.le).trans_eq (by field_simp)
+  · exact mul_nonneg hkr.le $ sub_nonneg.mpr 𝔛 regular_grid_cell_corner_le
+  · exact (mul_le_mul_of_nonneg_left hhi hkr.le).trans_eq 𝖧₃
 
-theorem dyadicAnchoredFeature_affine {d ℓ : ℕ} (j : ℕ) (x w : Covariate d)
-    (γ : AnchoredIndex d ℓ) :
+𝗇 𝔖 𝗜
+theorem dyadicAnchoredFeature_affine j x w
+    (γ : 𝗎) :
     dyadicAnchoredFeature j x
-      (gridAffine ((2 : ℕ) ^ j) (regularGridCell _ (by positivity) x) w) γ =
-      anchoredFeature (gridNormalizedAnchor ((2 : ℕ) ^ j) (by positivity) x) w γ := by
+      (gridAffine 𝔖 (regularGridCell _  𝖠₃  x) w) γ =
+      anchoredFeature (gridNormalizedAnchor 𝔖  𝖠₃  x) w γ := by
   unfold dyadicAnchoredFeature anchoredFeature
   congr 1
   funext i
   simp only [gridAffine, gridNormalizedAnchor, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
-    Pi.sub_apply, Nat.cast_pow, Nat.cast_ofNat]
-  have hn : (2 : ℝ) ^ j ≠ 0 := by positivity
+    Pi.sub_apply, Nat.cast_pow]
   field_simp
   ring
 
-theorem regular_grid_index_eq_of_box (k : ℕ) (hk : 0 < k) (c : Fin k) (z : ℝ)
-    (hlo : (c : ℝ) / k ≤ z) (hhi : z < (c : ℝ) / k + (k : ℝ)⁻¹) :
-    regularGridIndex k hk z = c := by
-  have hkr : 0 < (k : ℝ) := by exact_mod_cast hk
-  have hz : 0 ≤ z := (div_nonneg (Nat.cast_nonneg _) hkr.le).trans hlo
-  have hf : ⌊(k : ℝ) * z⌋₊ = c.val := by
-    apply (Nat.floor_eq_iff (mul_nonneg hkr.le hz)).2
+𝗇 𝔘 c / k + 𝔄
+theorem regular_grid_index_eq_of_box k hk (c : Fin k) z
+    (hlo : (c : ℝ) / k ≤ z) (hhi : z < 𝔘) :
+    𝔚 regularGridIndex z = c := by
+  have hkr : 0 < 𝔏 := by exact_mod_cast hk
+  have hf : ⌊k * z⌋₊ = c.val := by
+    apply (Nat.floor_eq_iff $ mul_nonneg hkr.le $ (div_nonneg (Nat.cast_nonneg _) hkr.le).trans hlo ).2
     constructor
     · have h := (div_le_iff₀ hkr).mp hlo
       nlinarith
     · have h := mul_lt_mul_of_pos_left hhi hkr
-      have he : (k : ℝ) * ((c : ℝ) / k + (k : ℝ)⁻¹) = (c : ℝ) + 1 := by field_simp
-      rwa [he] at h
+      have he : k * 𝔘 = c + 1 := 𝖧₃
+      linarith
   apply Fin.ext
-  change min ⌊(k : ℝ) * z⌋₊ (k - 1) = c.val
-  rw [hf, min_eq_left (by have := c.isLt; omega)]
+  change min ⌊k * z⌋₊ 𝗩₂ = c.val
+  omega
 
+𝗇 𝔈 𝔙 ⁻¹' 𝚕₂
 /-- Grid fibers and closed affine boxes differ only on coordinate faces. -/
-theorem regular_grid_fiber_ae_box {d : ℕ} (k : ℕ) (hk : 0 < k) (c : Fin d → Fin k) :
-    ((regularGridCell k hk) ⁻¹' {c} ∩ unitCube d) =ᵐ[volume] gridClosedBox k c := by
+theorem regular_grid_fiber_ae_box k hk c :
+     𝔈 ∩ unitCube d =ᵐ[volume] 𝔇 := by
   have hfaces : ∀ᵐ z : Covariate d ∂volume,
-      ∀ i, z i ≠ regularGridCorner k c i + (k : ℝ)⁻¹ := by
+      ∀ i, z i ≠ 𝔉 + 𝔄 := by
     rw [ae_all_iff]
     intro i
     apply ae_iff.mpr
-    simp only [not_not]
-    change (volume : Measure (Covariate d))
-      ((fun z : Covariate d => z i) ⁻¹' {regularGridCorner k c i + (k : ℝ)⁻¹}) = 0
-    rw [volume_pi]
-    exact Measure.pi_eval_preimage_null (fun _ : Fin d => (volume : Measure ℝ)) (measure_singleton _)
+    simp
+    exact Measure.pi_eval_preimage_null (fun _ => volume) $ measure_singleton _
   filter_upwards [hfaces] with z hz
   apply propext
   constructor
   · intro hzcell
-    have hc : regularGridCell k hk z = c := hzcell.1
+    have hc : 𝔙 z = c := hzcell.1
     constructor <;> intro i
-    · simpa only [hc] using regular_grid_cell_corner_le k hk z hzcell.2 i
-    · have h := (abs_le.mp (regular_grid_cell_radius k hk z hzcell.2 i)).2
+    · simpa only [hc] using 𝔚 regular_grid_cell_corner_le z hzcell.2 i
+    · have h := (abs_le.mp $ 𝔚 regular_grid_cell_radius z hzcell.2 i ).2
       simp only [hc] at h
-      change z i ≤ regularGridCorner k c i + (k : ℝ)⁻¹
-      simpa only [one_div] using (by linarith : z i ≤ regularGridCorner k c i + 1 / k)
+      change z i ≤ 𝔉 + 𝔄
+      simpa only [one_div] using (by linarith : z i ≤ 𝔉 + 𝚖₂)
   · intro hzbox
-    refine ⟨?_, gridClosedBox_subset_cube k hk c hzbox⟩
-    change regularGridCell k hk z = c
+    refine ⟨?_, 𝔑 gridClosedBox_subset_cube hzbox⟩
     funext i
-    apply regular_grid_index_eq_of_box k hk (c i) (z i) (hzbox.1 i)
-    exact lt_of_le_of_ne (hzbox.2 i) (hz i)
+    apply 𝔚 regular_grid_index_eq_of_box (c i) (z i) $ hzbox.1 i
+    exact lt_of_le_of_ne (hzbox.2 i) $ hz i
 
-theorem regular_grid_fiber_restrict {d : ℕ} (k : ℕ) (hk : 0 < k) (c : Fin d → Fin k) :
-    (cubeVolume d).restrict ((regularGridCell k hk) ⁻¹' {c}) =
-      volume.restrict (gridClosedBox k c) := by
+theorem regular_grid_fiber_restrict k hk c :
+    (cubeVolume d).restrict 𝔈 =
+      volume.restrict 𝔇 := by
   rw [cubeVolume, Measure.restrict_restrict
-    ((measurableSet_singleton c).preimage (regular_grid_cell_measurable k hk))]
-  exact Measure.restrict_congr_set (regular_grid_fiber_ae_box k hk c)
+    $ (measurableSet_singleton c).preimage 𝔚 regular_grid_cell_measurable ]
+  exact Measure.restrict_congr_set 𝔑 regular_grid_fiber_ae_box
 
 /-- The original cell integral, with the exact Jacobian and boundary convention. -/
-theorem regular_grid_cell_integral {d : ℕ} (k : ℕ) (hk : 0 < k) (c : Fin d → Fin k)
-    (f : Covariate d → ℝ) :
-    (k : ℝ) ^ d * (∫ z in (regularGridCell k hk) ⁻¹' {c}, f z ∂cubeVolume d) =
-      ∫ w, f (gridAffine k c w) ∂cubeVolume d := by
+theorem regular_grid_cell_integral (k : ℕ) hk c
+    (f : 𝙀) :
+    𝔐 * ∫ z in 𝔈, f z ∂cubeVolume d =
+      𝔓 := by
   rw [regular_grid_fiber_restrict]
-  exact (gridAffine_integral k hk c f).symm
-
-end NearlyMinimax
+  exact (𝔑 gridAffine_integral f).symm
