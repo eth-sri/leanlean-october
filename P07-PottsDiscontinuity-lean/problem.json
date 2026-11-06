@@ -1,0 +1,81 @@
+{
+  "problem_idx": 7,
+  "id": "PALOMAR-2026-10-21-000001-v1",
+  "title": "Discontinuity of the phase transition for the planar random-cluster and Potts models with q > 4 (Theorems 1.1 and 1.2)",
+  "abstract": "A complete Lean 4 / Mathlib formalization of Theorems 1.1 and 1.2 of Duminil-Copin, Gagnebin, Harel, Manolescu and Tassion (arXiv:1611.09877v2). For the q-state Potts model on the square lattice with q > 4, at beta_c = log(1 + sqrt q), the q + 1 box-limit Gibbs measures are distinct and ergodic, each monochromatic measure gives its own colour probability greater than 1/q at the origin, and the inverse correlation length in the diagonal direction is lambda + 2 sum_{k >= 1} (-1)^k tanh(k lambda) / k, where cosh lambda = sqrt(q) / 2, a positive number. For the random-cluster model on the square lattice with q > 4 at p_c = sqrt(q) / (1 + sqrt q), the free and wired box-limit measures differ, the wired measure has an infinite cluster almost surely, the free two-point function between 0 and the diagonal site x_n decays at the same exact rate, and that rate equals sum_{k >= 0} 4 / ((2k + 1) sinh(pi^2 (2k + 1) / (2 lambda))), which is equivalent to 8 exp(-pi^2 / sqrt(q - 4)) as q decreases to 4. The external results the paper cites and the proof uses (Edwards-Sokal coupling, FKG and comparison inequalities, finite energy, ergodicity and the 0-1 law for infinite clusters, planar self-duality, the coordinate Bethe ansatz of the companion paper arXiv:1611.09909, Perron-Frobenius, the analytic implicit function theorem) are proved or taken from Mathlib; uniqueness of the infinite cluster is not needed, and Brouwer's fixed-point theorem comes from a vendored library. The only axioms are propext, Classical.choice and Quot.sound.",
+  "authors": [
+    "Zijie Zhuang"
+  ],
+  "repository": "zijie123123/PottsDiscontinuity-lean",
+  "repository_url": "https://github.com/zijie123123/PottsDiscontinuity-lean",
+  "commit": "435fb57856860eda7a65c8fec9e5fb29eff2b46b",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc3",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "XL",
+  "baseline_tokens": 1054327,
+  "lean_files": 880,
+  "protected_theorem_names": [
+    "PottsDiscontinuity.potts_theorem_1_1",
+    "PottsDiscontinuity.rc_theorem_1_2",
+    "PottsDiscontinuity.rc_theorem_1_2_positivity_eq_1_3"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.PR",
+    "math-ph"
+  ],
+  "msc2020": [
+    "82B20",
+    "82B26",
+    "82B43",
+    "60K35",
+    "82B23"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "Discontinuity of the phase transition for the planar random-cluster and Potts models with q > 4",
+      "authors": [
+        "Hugo Duminil-Copin",
+        "Maxime Gagnebin",
+        "Matan Harel",
+        "Ioan Manolescu",
+        "Vincent Tassion"
+      ],
+      "type": "article",
+      "identifier": "arXiv:1611.09877v2",
+      "location": "Theorem 1.1 (p. 2); Theorem 1.2 with equations (1.2) and (1.3) (p. 4); proofs in Sections 2-4",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "The Bethe ansatz for the six-vertex and XXZ models: an exposition",
+      "authors": [
+        "Hugo Duminil-Copin",
+        "Maxime Gagnebin",
+        "Matan Harel",
+        "Ioan Manolescu",
+        "Vincent Tassion"
+      ],
+      "type": "article",
+      "identifier": "arXiv:1611.09909v1",
+      "location": "the coordinate Bethe ansatz for the six-vertex transfer matrix, the Perron-Frobenius property of its blocks and the trace formula (cited as [8] in the main paper)",
+      "relationship": "formalizes"
+    }
+  ],
+  "dependency_graph_nodes": 6866,
+  "dependency_graph_edges": 50992,
+  "project_path": "repos/PALOMAR-2026-10-21-000001-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-21-000001-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-21-000001-v1/LICENSE"
+}
