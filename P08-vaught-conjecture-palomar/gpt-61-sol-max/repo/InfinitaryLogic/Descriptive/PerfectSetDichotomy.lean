@@ -1,0 +1,2 @@
+module
+public import InfinitaryLogic.Descriptive.FiniteCarrier

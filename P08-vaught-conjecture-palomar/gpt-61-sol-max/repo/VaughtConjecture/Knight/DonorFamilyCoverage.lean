@@ -1,0 +1,3 @@
+module
+public import VaughtConjecture.Knight.LocalCapBounds
+public import VaughtConjecture.Knight.MixedIndexConstraints

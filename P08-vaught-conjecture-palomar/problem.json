@@ -1,0 +1,60 @@
+{
+  "problem_idx": 8,
+  "id": "PALOMAR-2026-10-07-000001-v1",
+  "title": "A counterexample to Vaught's conjecture for infinitary logic",
+  "abstract": "There is a counterexample to Vaught's conjecture for L_{omega_1,omega}. This formalization is based on an unpublished draft by Robin Knight. It constructs a sentence in a countable relational language with exactly aleph-one isomorphism classes of countable models and no nonempty perfect set of pairwise nonisomorphic model codes. This is not a counterexample to the first-order Vaught conjecture.",
+  "authors": [
+    "Nathanael Ackerman",
+    "Cameron Freer",
+    "Robin Knight"
+  ],
+  "repository": "cameronfreer/vaught-conjecture-palomar",
+  "repository_url": "https://github.com/cameronfreer/vaught-conjecture-palomar",
+  "commit": "032ccb7a25b0ff6227128aa0aeba549c5901ea9a",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc3",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "XL",
+  "baseline_tokens": 1043844,
+  "lean_files": 911,
+  "protected_theorem_names": [
+    "PalomarChallenge.independent_challenge"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Palomar.Challenge",
+  "challenge_path": "Palomar/Challenge.lean",
+  "solution_module": "Palomar.Solution",
+  "solution_path": "Palomar/Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.LO"
+  ],
+  "msc2020": [
+    "03C15",
+    "03C75",
+    "03E15"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "Unpublished draft on a counterexample to infinitary Vaught's conjecture",
+      "authors": [
+        "Robin Knight"
+      ],
+      "type": "paper",
+      "identifier": null,
+      "location": null,
+      "relationship": "formalizes"
+    }
+  ],
+  "dependency_graph_nodes": 11054,
+  "dependency_graph_edges": 158534,
+  "project_path": "repos/PALOMAR-2026-10-07-000001-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-07-000001-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-07-000001-v1/LICENSE"
+}

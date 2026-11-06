@@ -1,0 +1,6 @@
+module
+public import InfinitaryLogic.Descriptive.RankedThinness
+public import InfinitaryLogic.Descriptive.StructureIsoSetoid
+public import InfinitaryLogic.Descriptive.Polish
+public import InfinitaryLogic.Descriptive.PerfectSetDichotomy
+public import VaughtConjecture.Spectrum.Sentence
