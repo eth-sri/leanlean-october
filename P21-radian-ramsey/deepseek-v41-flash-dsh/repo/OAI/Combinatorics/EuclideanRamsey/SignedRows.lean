@@ -18,22 +18,9 @@ universe uAlpha uBeta
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
-open scoped BigOperators
 namespace EuclideanRamsey
 
 lemma integerize_finsupp {α : Type uAlpha} (f : α →₀ ℚ) :
@@ -61,11 +48,9 @@ def negativeCount {α : Type uAlpha} (z : α →₀ ℤ) : α →₀ ℕ := z.ma
 
 lemma positiveCount_cast {α : Type uAlpha} (z : α →₀ ℤ) (a : α) :
     (positiveCount z a : ℝ) = max (z a:ℝ) 0 := by
-  change ((z a).toNat:ℝ) = _
   exact_mod_cast Int.toNat_eq_max (z a)
 lemma negativeCount_cast {α : Type uAlpha} (z : α →₀ ℤ) (a : α) :
     (negativeCount z a : ℝ) = max (-(z a:ℝ)) 0 := by
-  change ((-(z a)).toNat:ℝ) = _
   exact_mod_cast Int.toNat_eq_max (-(z a))
 
 lemma count_difference {α : Type uAlpha} (z : α →₀ ℤ) (a : α) :
@@ -99,7 +84,6 @@ lemma multiset_map_equiv {α : Type uAlpha} {β : Type uBeta} [DecidableEq α] [
   have ht := (n.mapEquiv f).apply_symm_apply ((Multiset.cast h) (m.mapEquiv f x))
   have hh := congrArg (fun y : n.map f => (y : β)) ht
   simp only [Multiset.mapEquiv_apply] at hh
-  change f (e x) = (m.mapEquiv f x : β) at hh
   exact hh.trans (Multiset.mapEquiv_apply m f x)
 
 lemma count_difference_finsupp {α : Type uAlpha} (f : α →₀ ℚ) (M : ℕ) (z : α →₀ ℤ)
@@ -108,7 +92,6 @@ lemma count_difference_finsupp {α : Type uAlpha} (f : α →₀ ℚ) (M : ℕ) 
       (negativeCount z).mapRange (Nat.cast : ℕ → ℝ) (by simp) =
       (M:ℝ) • f.mapRange (Rat.cast : ℚ → ℝ) (by simp) := by
   ext a
-  simp only [Finsupp.sub_apply,Finsupp.mapRange_apply,Finsupp.smul_apply,smul_eq_mul]
   exact (count_difference z a).trans (hz a)
 
 lemma equal_count_pushforward {α : Type uAlpha} {β : Type uBeta} (f : α →₀ ℚ) (M : ℕ) (z : α →₀ ℤ)
@@ -165,7 +148,6 @@ lemma sum_counts_negative {α : Type uAlpha} [DecidableEq α]
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open Matrix
 
 theorem normalized_signed_rows {α : Type} [DecidableEq α] {d s : ℕ} (hs : 0 < s)
     (a : Fin s → Fin d → ℝ) (v : α → ℝ) (g : α → Fin d → ℝ)
@@ -189,9 +171,7 @@ theorem normalized_signed_rows {α : Type} [DecidableEq α] {d s : ℕ} (hs : 0 
   let c := (Real.sqrt ((M:ℝ)*ζ))⁻¹
   have hMp : (0:ℝ)<M := by exact_mod_cast hM
   have hsq : c^2*((M:ℝ)*ζ)=1 := by
-    dsimp [c]
     rw [inv_pow,Real.sq_sqrt (by positivity),inv_mul_cancel₀ (by positivity)]
-  have hc : 0 ≤ c^2 := sq_nonneg _
   let U : Matrix (Fin d) m ℝ := fun j x => c*g x j
   let V : Matrix (Fin d) m ℝ := fun j x => c*g (e₀ x) j
   have hu (j l : Fin d) : (U*U.transpose) j l = c^2*∑ x : m,g x j*g x l := by

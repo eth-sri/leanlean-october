@@ -18,12 +18,6 @@ namespace OAI
 noncomputable section
 namespace EuclideanRamsey.CircleConsequence
 
-def secantRow {s : ℕ} (a : Fin s → Space 2) (i j : Fin s) :
-    Option (Fin 2) → Coeff a
-  | none => coordinate a i 0 * coordinate a j 1 - coordinate a j 0 * coordinate a i 1
-  | some k => if k = 0 then coordinate a i 1 - coordinate a j 1
-      else coordinate a j 0 - coordinate a i 0
-
 def secantValue {s : ℕ} (a : Fin s → Space 2) (i j k : Fin s) : Coeff a :=
   (coordinate a j 0-coordinate a i 0)*(coordinate a k 1-coordinate a i 1) -
   (coordinate a j 1-coordinate a i 1)*(coordinate a k 0-coordinate a i 0)

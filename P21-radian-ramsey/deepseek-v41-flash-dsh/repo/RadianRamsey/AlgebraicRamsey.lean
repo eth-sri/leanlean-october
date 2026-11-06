@@ -47,17 +47,15 @@ lemma sphere_equation_descends
   have hreal : ∀ i, ∑ j, a i j * a i j + ∑ j, (-2 * c j) * a i j
       + (∑ j, c j * c j - ρ ^ 2) = 0 := by
     intro i
-    have h1 := hρ i
-    rw [EuclideanSpace.dist_eq] at h1
-    have hnn : 0 ≤ ∑ j, dist (a i j) (c j) ^ 2 := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
-    have h2 : ∑ j, dist (a i j) (c j) ^ 2 = ρ ^ 2 := by
-      rw [← h1, Real.sq_sqrt hnn]
-    simp only [Real.dist_eq, sq_abs] at h2
-    have : ∑ j, (a i j - c j) ^ 2
+    have h1 : ∑ j, (a i j - c j) ^ 2 = ρ ^ 2 := by
+      have h := hρ i
+      rw [EuclideanSpace.dist_eq] at h
+      have h2 : ∑ j, dist (a i j) (c j) ^ 2 = ρ ^ 2 := by rw [← h, Real.sq_sqrt (by positivity)]
+      simpa [Real.dist_eq, sq_abs] using h2
+    have h2 : ∑ j, (a i j - c j) ^ 2
         = ∑ j, a i j * a i j + ∑ j, (-2 * c j) * a i j + ∑ j, c j * c j := by
       rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
-      refine Finset.sum_congr rfl (fun j _ => ?_)
-      ring
+      exact Finset.sum_congr rfl (fun j _ => by ring)
     linarith
   -- an F-linear retraction ℝ → F
   let ι : Coeff a →ₗ[Coeff a] ℝ := Algebra.linearMap (Coeff a) ℝ
@@ -89,8 +87,6 @@ theorem fieldCriterion_of_algebraic
     FieldCriterion a := by
   -- `F` is a number field, hence unramified over `ℚ`
   have : FiniteDimensional ℚ (Coeff a) := by
-    unfold Coeff coordinateField
-    have : Finite (Set.range (fun ij : Fin s × Fin d => a ij.1 ij.2)) := Set.finite_range _
     refine IntermediateField.finiteDimensional_adjoin (fun x hx => ?_)
     obtain ⟨ij, rfl⟩ := hx
     exact (halg ij.1 ij.2).isIntegral

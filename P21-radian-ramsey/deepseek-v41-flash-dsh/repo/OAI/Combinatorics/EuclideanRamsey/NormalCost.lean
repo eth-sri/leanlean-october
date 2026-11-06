@@ -18,27 +18,10 @@ universe uGroup uAction uPoint uAlpha
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
-open Set
+open Real Filter Topology MeasureTheory Polynomial Matrix Set
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology commutatorElement
 
 namespace EuclideanRamsey
-open scoped BigOperators commutatorElement
 variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X]
 
 def SameOrbit (x y : X) : Prop := ∃ h : H,h • x=y
@@ -62,7 +45,6 @@ structure NormalCost (L : Subgroup G) where
   mul : ∀ g∈L,∀ h∈L,cost (g*h)≤cost g+cost h
 namespace NormalCost
 variable {L : Subgroup G} [L.Normal] (c : NormalCost L)
-omit [L.Normal] in
 lemma list_bound (l : List G) (h : ∀ g∈l,g∈L) :
     c.cost l.prod ≤ (l.map c.cost).sum := by
   induction l with
@@ -71,7 +53,6 @@ lemma list_bound (l : List G) (h : ∀ g∈l,g∈L) :
     have hg := h g (by simp)
     have hl : ∀ x∈l,x∈L := fun x hx => h x (by simp [hx])
     exact (c.mul g hg l.prod (L.list_prod_mem hl)).trans (by simpa using add_le_add_left (ih hl) (c.cost g))
-omit [L.Normal] in
 lemma list_bound_const (l : List G) (h : ∀ g∈l,g∈L) (B : ℝ) (hB : ∀ g∈l,c.cost g≤B) :
     c.cost l.prod ≤ (l.length:ℝ)*B := by
   refine (c.list_bound l h).trans ?_
@@ -116,11 +97,9 @@ lemma product_difference_mem {N : Subgroup G} [N.Normal] {α : Type uAlpha}
   simpa only [div_eq_mul_inv] using h j hj
 
 noncomputable def groupList (H : Type uAction) [Fintype H] : List H := (Finset.univ : Finset H).toList
-omit [Group H] in
 lemma groupList_mem [Fintype H] (h : H) : h∈groupList H := by
   classical
   simp [groupList]
-omit [Group H] in
 lemma groupList_length [Fintype H] : (groupList H).length=Fintype.card H := by
   classical
   simp [groupList]

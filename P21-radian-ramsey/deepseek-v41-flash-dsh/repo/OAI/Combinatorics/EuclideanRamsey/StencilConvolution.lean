@@ -18,22 +18,10 @@ universe uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
 namespace EuclideanRamsey
-open scoped BigOperators
 
 lemma stencil_taylor_uniform {ι : Type uIndex} {k : ℕ} (S : Finset ι)
     (q : ι → ℝ) (v : ι → (Fin k → ℝ)) (C : Matrix (Fin k) (Fin k) ℝ)
@@ -98,8 +86,6 @@ lemma stencil_taylor_uniform {ι : Type uIndex} {k : ℕ} (S : Finset ι)
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open MeasureTheory Filter
-open scoped BigOperators Topology
 
 lemma stencilDifferential_continuous {k : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
     {b : (Fin k → ℝ) → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b) :
@@ -215,8 +201,6 @@ lemma stencil_weighted_riemann {ι : Type uIndex} {k d : ℕ} (S : Finset ι)
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open Filter MeasureTheory
-open scoped BigOperators Topology
 
 theorem exists_discrete_smoothing {k d : ℕ} (S : Finset (Fin k → ℤ))
     (q : (Fin k → ℤ) → ℝ) (C : Matrix (Fin k) (Fin k) ℝ) (U : Matrix (Fin d) (Fin k) ℝ)
@@ -236,7 +220,6 @@ theorem exists_discrete_smoothing {k d : ℕ} (S : Finset (Fin k → ℤ))
   obtain ⟨n,hn,hp,he⟩ := (eventually_ge_atTop 1 |>.and (hp.and he)).exists
   let a := fun γ : Fin k → ℤ => b (latticeSample n γ)
   have hnf : (0:ℝ) < n := by exact_mod_cast (by omega : 0 < n)
-  have ha : Function.HasFiniteSupport a := latticeSample_finite_support (by omega) hbc
   have hshift (δ γ : Fin k → ℤ) : latticeSample n δ+(-(n:ℝ)⁻¹) • (fun j => (γ j:ℝ)) =
       latticeSample n (δ-γ) := by
     ext j
@@ -251,8 +234,7 @@ theorem exists_discrete_smoothing {k d : ℕ} (S : Finset (Fin k → ℤ))
   change (∑' δ,max (-((n:ℝ)^2*∑ γ ∈ S,q γ*a (δ-γ))) 0*
     gradientWeight U (latticeSample n δ))/(n:ℝ)^k < η*((∑' γ,a γ)/(n:ℝ)^k) at he
   simp only [hscale,tsum_mul_left] at he
-  have hp' : 0 < ∑' γ,a γ := (div_pos_iff_of_pos_right (pow_pos hnf k)).mp hp
-  refine ⟨n,a,hn,ha,div_pos hp' (sq_pos_of_pos hnf),?_⟩
+  refine ⟨n,a,hn,(latticeSample_finite_support (by omega) hbc),div_pos ((div_pos_iff_of_pos_right (pow_pos hnf k)).mp hp) (sq_pos_of_pos hnf),?_⟩
   have hh : (n:ℝ)^2*(∑' δ,max (-(∑ γ ∈ S,q γ*a (δ-γ))) 0*
       gradientWeight U (latticeSample n δ)) < η*(∑' γ,a γ) := by
     apply (div_lt_div_iff_of_pos_right (pow_pos hnf k)).mp
@@ -264,7 +246,6 @@ theorem exists_discrete_smoothing {k d : ℕ} (S : Finset (Fin k → ℤ))
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open scoped BigOperators
 
 lemma cosetPushforward_mul {k : ℕ} (Λ : AddSubgroup (Lattice k)) (ν b : LatticeRing k)
     (hν : cosetPushforward Λ ν = 0) : cosetPushforward Λ (ν*b) = 0 := by
@@ -291,7 +272,6 @@ theorem rational_smoothing {k d s : ℕ} (hd : 1 ≤ d)
   classical
   have hC' : (C.map (Rat.cast : ℚ → ℝ)).IsSymm := by
     ext j l
-    change (C l j:ℝ) = (C j l:ℝ)
     exact congrArg Rat.cast (congrFun (congrFun hC j) l)
   obtain ⟨b,hb,hbc,hb0,hbI,hbη⟩ := compact_smoothing k d hd (C.map (Rat.cast : ℚ → ℝ)) U hC' hU η hη
   have hz : ∑ γ ∈ ν.coeff.support,(ν.coeff γ:ℝ) = 0 := by
@@ -315,7 +295,6 @@ theorem rational_smoothing {k d s : ℕ} (hd : 1 ≤ d)
     simp [firstMoment_mul,hzero,hfirst]
   · intro j l
     simp only [secondMoment_mul,hzero,hfirst,hsecond,zero_mul,zero_add,add_zero]
-    dsimp [ζ]
     ring
   · simpa only [hζ,mass] using hpη
 

@@ -18,13 +18,9 @@ universe uDomain uAction uVertical uCodomain
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators
 
-open scoped BigOperators
-open Matrix MeasureTheory
 namespace EuclideanRamsey
 
 section Operator
@@ -36,7 +32,6 @@ def secondOperator (C : Matrix (Fin k) (Fin k) ℝ) (v : Fin k → E)
 
 lemma secondOperator_continuous (C : Matrix (Fin k) (Fin k) ℝ) (v : Fin k → E)
     {f : E → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) : Continuous (secondOperator C v f) := by
-  unfold secondOperator
   apply continuous_const.mul
   apply continuous_finsetSum
   intro j hj
@@ -93,12 +88,9 @@ lemma split_differential
   dsimp only
   let et := e.trans (scaleVertical H V t ht)
   let b := (fun y : H×V => f y.1*g y.2) ∘ et
-  change secondOperator C (fun j => Pi.single j 1) b x = _
-  have hfg : ContDiff ℝ (⊤ : ℕ∞) (fun y : H×V => f y.1*g y.2) :=
-    (hf.comp contDiff_fst).mul (hg.comp contDiff_snd)
   have hb (v w : Fin k → ℝ) : hessianB b x v w =
       hessianB (fun y : H×V => f y.1*g y.2) (et x) (et v) (et w) :=
-    hessianB_linear_comp hfg et.toContinuousLinearMap x v w
+    hessianB_linear_comp ((hf.comp contDiff_fst).mul (hg.comp contDiff_snd)) et.toContinuousLinearMap x v w
   have hhr (j : Fin d) : et (fun l => R l j) = (eh j,0) := by simp [et,hR]
   have hhz (j : Fin k) : et (fun l => Z l j) = (0,t • z j) := by simp [et,hZ]
   have hhor : ∑ j, hessianB b x (fun l => R l j) (fun l => R l j) =
@@ -132,7 +124,6 @@ lemma split_differential
 end SplitDifferential
 end EuclideanRamsey
 
-open MeasureTheory
 namespace EuclideanRamsey
 
 lemma haar_linear_change {E : Type uDomain} {F : Type uCodomain}
@@ -145,8 +136,7 @@ lemma haar_linear_change {E : Type uDomain} {F : Type uCodomain}
       (∫ x, f (e x) ∂μ) = c * ∫ y, f y ∂ν := by
   let : (μ.map e).IsAddHaarMeasure := e.isAddHaarMeasure_map μ
   let c := (μ.map e).addHaarScalarFactor ν
-  have hc : 0 < c := Measure.addHaarScalarFactor_pos_of_isAddHaarMeasure _ _
-  refine ⟨c, by exact_mod_cast hc, ?_⟩
+  refine ⟨c, by exact_mod_cast (Measure.addHaarScalarFactor_pos_of_isAddHaarMeasure _ _), ?_⟩
   intro f hf
   rw [← integral_map e.continuous.measurable.aemeasurable hf.aestronglyMeasurable,
     Measure.isAddLeftInvariant_eq_smul (μ.map e) ν]
@@ -164,7 +154,6 @@ lemma compact_prod_mul {E : Type uDomain} {F : Type uCodomain} [TopologicalSpace
 
 end EuclideanRamsey
 
-open MeasureTheory
 namespace EuclideanRamsey
 
 lemma product_negative_integral_bound {E : Type uDomain} {F : Type uCodomain}
@@ -208,8 +197,6 @@ lemma product_negative_integral_bound {E : Type uDomain} {F : Type uCodomain}
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open MeasureTheory Matrix
-open scoped BigOperators
 
 lemma halfLaplacian_continuous {H : Type uAction} [NormedAddCommGroup H]
     [InnerProductSpace ℝ H] [FiniteDimensional ℝ H] {f : H → ℝ}
@@ -249,74 +236,67 @@ lemma halfLaplacian_compact {H : Type uAction} [NormedAddCommGroup H]
   let μV : Measure V := Measure.addHaar
   obtain ⟨f,hfs,hfc,hfp,hfm,hfsmall⟩ := exists_radial_smoothing μH hn (η := η/2) (by positivity)
   let g₀ : ContDiffBump (0:V) := ⟨1,2,by norm_num,by norm_num⟩
-  let g : V → ℝ := g₀
-  have hgs : ContDiff ℝ (⊤ : ℕ∞) g := g₀.contDiff
-  have hgc : HasCompactSupport g := g₀.hasCompactSupport
-  have hgp : ∀ y, 0 ≤ g y := g₀.nonneg'
-  have hgm : 0 < ∫ y, g y ∂μV := g₀.integral_pos
+  have hgs : ContDiff ℝ (⊤ : ℕ∞) g₀ := g₀.contDiff
+  have hgc : HasCompactSupport g₀ := g₀.hasCompactSupport
+  have hgp : ∀ y, 0 ≤ g₀ y := g₀.nonneg'
+  have hgm : 0 < ∫ y, g₀ y ∂μV := g₀.integral_pos
   let a := halfLaplacian f
-  let bV := secondOperator C z g
+  let bV := secondOperator C z g₀
   have hac : Continuous a := halfLaplacian_continuous hfs
   have hak : HasCompactSupport a := halfLaplacian_compact hfc
   have hbc : Continuous bV := secondOperator_continuous C z hgs
   have hbk : HasCompactSupport bV := secondOperator_compact C z hgc
-  have haI : Integrable (fun x => max (-a x) 0*‖x‖^2) μH := by
-    have hk : HasCompactSupport (fun x => max (-a x) 0) :=
-      hak.comp_left (g := fun r : ℝ => max (-r) 0) (by simp)
-    exact ((hac.neg.max continuous_const).mul (continuous_norm.pow 2)).integrable_of_hasCompactSupport hk.mul_right
+  have haI : Integrable (fun x => max (-a x) 0*‖x‖^2) μH :=
+    ((hac.neg.max continuous_const).mul (continuous_norm.pow 2)).integrable_of_hasCompactSupport
+      (hak.comp_left (g := fun r : ℝ => max (-r) 0) (by simp)).mul_right
   have hfI : Integrable (fun x => f x*‖x‖^2) μH :=
     (hfs.continuous.mul (continuous_norm.pow 2)).integrable_of_hasCompactSupport hfc.mul_right
-  have hgI : Integrable g μV := hgs.continuous.integrable_of_hasCompactSupport hgc
+  have hgI : Integrable g₀ μV := hgs.continuous.integrable_of_hasCompactSupport hgc
   have hbI : Integrable (fun y => |bV y|) μV :=
     hbc.abs.integrable_of_hasCompactSupport hbk.abs
   let K := (∫ x, f x*‖x‖^2 ∂μH)*(∫ y, |bV y| ∂μV)
   have hK : 0 ≤ K := mul_nonneg
-    (integral_nonneg (fun x => mul_nonneg (hfp x) (sq_nonneg _)))
-    (integral_nonneg (fun y => abs_nonneg _))
+    (integral_nonneg fun x => mul_nonneg (hfp x) (sq_nonneg _))
+    (integral_nonneg fun y => abs_nonneg _)
   obtain ⟨t₀,ht₀,htsmall⟩ := exists_pos_mul_lt
     (mul_pos (mul_pos (show 0 < η/2 by positivity) hfm) hgm) (K+1)
   let t := min t₀ 1
   have ht : 0 < t := lt_min ht₀ zero_lt_one
   have ht1 : t ≤ 1 := min_le_right _ _
   have htt₀ : t ≤ t₀ := min_le_left _ _
-  have hsmall : t^2*K < (η/2)*(∫ x,f x ∂μH)*(∫ y,g y ∂μV) := by
-    have h : (K+1)*t ≤ (K+1)*t₀ := mul_le_mul_of_nonneg_left htt₀ (by linarith)
+  have hsmall : t^2*K < (η/2)*(∫ x,f x ∂μH)*(∫ y,g₀ y ∂μV) := by
     have hsq : t^2 ≤ t := by nlinarith
-    have hsqK := mul_le_mul_of_nonneg_right hsq hK
-    nlinarith
+    nlinarith [mul_le_mul_of_nonneg_left htt₀ (by linarith : (0:ℝ) ≤ K+1),
+      mul_le_mul_of_nonneg_right hsq hK]
   let et := e.trans (scaleVertical H V t ht.ne')
-  let b := (fun y : H×V => f y.1*g y.2) ∘ et
-  have hfgs : ContDiff ℝ (⊤ : ℕ∞) (fun y : H×V => f y.1*g y.2) :=
+  let b := (fun y : H×V => f y.1*g₀ y.2) ∘ et
+  have hfgs : ContDiff ℝ (⊤ : ℕ∞) (fun y : H×V => f y.1*g₀ y.2) :=
     (hfs.comp contDiff_fst).mul (hgs.comp contDiff_snd)
   have hbs : ContDiff ℝ (⊤ : ℕ∞) b := hfgs.comp et.contDiff
   have hbk' : HasCompactSupport b := (compact_prod_mul hfc hgc).comp_homeomorph et.toHomeomorph
   obtain ⟨c,hc,hchange⟩ := haar_linear_change et volume (μH.prod μV)
-  have hmass : (∫ x,b x) = c*((∫ x,f x ∂μH)*(∫ y,g y ∂μV)) := by
-    change (∫ x, f (et x).1*g (et x).2) = _
+  have hmass : (∫ x,b x) = c*((∫ x,f x ∂μH)*(∫ y,g₀ y ∂μV)) := by
+    change (∫ x, f (et x).1*g₀ (et x).2) = _
     rw [hchange _ hfgs.continuous, integral_prod_mul]
   have hetfst (x : Fin k → ℝ) : (et x).1 = (e x).1 := rfl
   have hdiff (x : Fin k → ℝ) : secondOperator C (fun j => Pi.single j 1) b x =
-      g (et x).2*a (et x).1+t^2*f (et x).1*bV (et x).2 :=
-    split_differential C R Z hsplit e eh z hR hZ f g hfs hgs t ht.ne' x
-  let φ : H×V → ℝ := fun y => max (-(g y.2*a y.1+t^2*f y.1*bV y.2)) 0*‖y.1‖^2
+      g₀ (et x).2*a (et x).1+t^2*f (et x).1*bV (et x).2 :=
+    split_differential C R Z hsplit e eh z hR hZ f g₀ hfs hgs t ht.ne' x
+  let φ : H×V → ℝ := fun y => max (-(g₀ y.2*a y.1+t^2*f y.1*bV y.2)) 0*‖y.1‖^2
   have hφ : Continuous φ := by
-    dsimp [φ]
-    exact ((((hgs.continuous.comp continuous_snd).mul (hac.comp continuous_fst)).add
-      ((continuous_const.mul (hfs.continuous.comp continuous_fst)).mul
-        (hbc.comp continuous_snd))).neg.max continuous_const).mul ((continuous_fst.norm).pow 2)
+    fun_prop
   have hneg : (∫ x, max (-secondOperator C (fun j => Pi.single j 1) b x) 0*‖(e x).1‖^2) =
       c*∫ y, φ y ∂μH.prod μV := by
     conv_lhs => arg 2; intro x; rw [hdiff, ← hetfst]
     exact hchange φ hφ
-  have hbound := product_negative_integral_bound μH μV f a (fun x => ‖x‖^2) g bV t
+  have hbound := product_negative_integral_bound μH μV f a (fun x => ‖x‖^2) g₀ bV t
     hfp hgp (fun x => sq_nonneg _) haI hfI hgI hbI
-  have hfinal : (∫ y,φ y ∂μH.prod μV) < η*((∫ x,f x ∂μH)*(∫ y,g y ∂μV)) := by
+  have hfinal : (∫ y,φ y ∂μH.prod μV) < η*((∫ x,f x ∂μH)*(∫ y,g₀ y ∂μV)) := by
     have hh := mul_lt_mul_of_pos_right hfsmall hgm
     change _ < η/2 * _ * _ at hh
     rw [mul_assoc (t^2)] at hbound
     change _ ≤ _ + t^2*K at hbound
     change _ < _ at hsmall
-    dsimp only [φ] at *
     nlinarith
   refine ⟨b,hbs,hbk',fun x => mul_nonneg (hfp _) (hgp _),?_,?_⟩
   · rw [hmass]; positivity

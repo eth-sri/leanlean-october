@@ -18,23 +18,9 @@ universe uIndex uRow uColor
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
-open Matrix
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
 namespace EuclideanRamsey
 lemma trace_gram_complement {ι : Type uIndex} [Fintype ι] [DecidableEq ι]
     (B : Matrix ι ι ℝ) (hB : B.PosSemidef) (η : ℝ) (hη : B.trace ≤ η) :
@@ -44,8 +30,6 @@ lemma trace_gram_complement {ι : Type uIndex} [Fintype ι] [DecidableEq ι]
     apply le_trans _ hη
     rw [hB.1.trace_eq_sum_eigenvalues]
     simpa using (Finset.single_le_sum (fun j _ => hB.eigenvalues_nonneg j) (Finset.mem_univ i))
-  have hD : (diagonal (fun i => η-hB.1.eigenvalues i)).PosSemidef :=
-    posSemidef_diagonal_iff.mpr (fun i => sub_nonneg.mpr (he i))
   have hd : e (diagonal (fun i => η-hB.1.eigenvalues i)) = η • 1-B := by
     have hr : diagonal (fun i => η-hB.1.eigenvalues i) =
         η • (1 : Matrix ι ι ℝ)-diagonal hB.1.eigenvalues := by
@@ -55,15 +39,14 @@ lemma trace_gram_complement {ι : Type uIndex} [Fintype ι] [DecidableEq ι]
     congr 1
     exact hB.1.spectral_theorem.symm
   rw [← hd]
-  exact hD.mul_mul_conjTranspose_same _
+  exact (posSemidef_diagonal_iff.mpr (fun i => sub_nonneg.mpr (he i))).mul_mul_conjTranspose_same _
 
 lemma exists_gram_sqrt {ι : Type uIndex} [Fintype ι] [DecidableEq ι]
     (P : Matrix ι ι ℝ) (hP : P.PosSemidef) :
     ∃ R : Matrix ι ι ℝ,R*R.transpose=P := by
   let R := CFC.sqrt P
-  have hr : R.PosSemidef := Matrix.nonneg_iff_posSemidef.mp (CFC.sqrt_nonneg P)
   refine ⟨R,?_⟩
-  rw [← Matrix.conjTranspose_eq_transpose_of_trivial,hr.1.eq]
+  rw [← Matrix.conjTranspose_eq_transpose_of_trivial,(Matrix.nonneg_iff_posSemidef.mp (CFC.sqrt_nonneg P)).1.eq]
   exact CFC.sqrt_mul_sqrt_self P hP.nonneg
 
 lemma gram_fromCols {ι : Type uIndex} {τ : Type uRow} {κ : Type uColor} [Fintype τ] [Fintype κ]
@@ -81,7 +64,7 @@ theorem complete_gram_pair {d : ℕ} {τ : Type uRow} [Fintype τ]
       (c • (U.fromCols R))*(c • (U.fromCols R)).transpose=1 ∧
       (c • (V.fromCols R))*(c • (V.fromCols R)).transpose=
         (η/(1+η)) • (1 : Matrix (Fin d) (Fin d) ℝ) := by
-  have hB : (V*V.transpose).PosSemidef := by
+  have hB :=  by
     simpa only [Matrix.conjTranspose_eq_transpose_of_trivial] using
       Matrix.posSemidef_self_mul_conjTranspose V
   obtain ⟨R,hR⟩ := exists_gram_sqrt _ (trace_gram_complement _ hB η htrace.le)
@@ -92,7 +75,6 @@ theorem complete_gram_pair {d : ℕ} {τ : Type uRow} [Fintype τ]
       ((Real.sqrt (1+η))⁻¹ • A.fromCols R).transpose =
       (1/(1+η)) • (A*A.transpose+R*R.transpose) := by
     rw [Matrix.transpose_smul,Matrix.smul_mul,Matrix.mul_smul,smul_smul,gram_fromCols]
-    congr 1
     rw [← _root_.mul_inv_rev,← sq,Real.sq_sqrt (by linarith)]
     simp
   rw [he,he,hR]
@@ -104,12 +86,10 @@ theorem complete_gram_pair {d : ℕ} {τ : Type uRow} [Fintype τ]
   · rfl
   · have hv : V*V.transpose+(η • 1-V*V.transpose)=η • (1 : Matrix (Fin d) (Fin d) ℝ) := by abel
     rw [hv,smul_smul]
-    congr 1
     ring
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open Matrix
 lemma row_gram_distance {d : ℕ} {τ : Type uRow} [Fintype τ]
     (v : τ → ℝ) (U : Matrix (Fin d) τ ℝ) (q : ℝ)
     (hU : U*U.transpose=q • (1 : Matrix (Fin d) (Fin d) ℝ))
@@ -168,8 +148,7 @@ theorem two_scale_of_signed_rows {α : Type} [DecidableEq α] {d s : ℕ}
   let e := Fintype.equivFin (τ ⊕ Fin d)
   let fp (i : Fin s) : EuclideanSpace ℝ (Fin ℓ) := WithLp.toLp 2 (fun x => ip i (e.symm x))
   let fn (i : Fin s) : EuclideanSpace ℝ (Fin ℓ) := WithLp.toLp 2 (fun x => ineg i (e.symm x))
-  have hd' : Nonempty (τ ⊕ Fin d) := ⟨Sum.inr ⟨0,hd⟩⟩
-  refine ⟨ℓ,Fintype.card_pos_iff.mpr hd',fp,fn,?_,?_,?_⟩
+  refine ⟨ℓ,Fintype.card_pos_iff.mpr (⟨Sum.inr ⟨0,hd⟩⟩),fp,fn,?_,?_,?_⟩
   · intro i j
     have h := row_gram_distance cp Up 1 (by simpa only [one_smul] using hR1) (a i) (a j)
     rw [one_mul] at h
@@ -191,7 +170,6 @@ theorem two_scale_of_signed_rows {α : Type} [DecidableEq α] {d s : ℕ}
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open scoped BigOperators
 lemma evaluation_coset_pushforward {k : ℕ} (φ : Lattice k →+ ℝ)
     (μ : LatticeRing k) (hμ : cosetPushforward φ.ker μ=0) (n : ℝ) :
     μ.coeff.mapDomain (fun x => φ x/n)=0 := by

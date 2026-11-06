@@ -18,27 +18,10 @@ universe uGroup uAction uPoint
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
-open Set
+open Real Filter Topology MeasureTheory Polynomial Matrix Set
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X]
 
 inductive OrbitWords (letter : X → G) : (X → G) → ℕ → Prop
@@ -146,12 +129,10 @@ lemma contraction_bound [Fintype H] {L : Subgroup G} [L.Normal] (c : NormalCost 
     have := congrArg List.length he
     rw [groupList_length] at this
     exact_mod_cast (by simpa [List.length_append,add_assoc,add_comm,add_left_comm] using this)
-  calc
-    _ ≤ c.cost a+c.cost b := by simpa [c.conj b hb'] using c.mul a ha _ hc
+  calc _ ≤ c.cost a+c.cost b := by simpa [c.conj b hb'] using c.mul a ha _ hc
     _ ≤ _ := by rw [hn]; nlinarith
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X] [Fintype H]
 
 inductive Evolution : (X → G) → ℕ → (X → G) → ℕ → Prop
@@ -267,12 +248,11 @@ lemma contraction_rate (h m : ℕ) (hh : 0 < h) (hm : 0 < m) (B δ : ℝ) (hB : 
     have : (1:ℝ)≤h := by exact_mod_cast hh
     linarith
   have hsmall : 2*B*((h-1:ℝ)^k/(h:ℝ)^k) ≤ δ*m := by nlinarith
-  have he := (div_le_iff₀ (pow_pos hh' k)).mp (by
-    simpa only [← mul_div_assoc] using hsmall)
-  simpa only [Nat.cast_mul,Nat.cast_pow] using (show 2*(B*(h-1:ℝ)^k)≤δ*((h:ℝ)^k*m) by nlinarith [he])
+  have he := (div_le_iff₀ (pow_pos hh' k)).mp (by simpa only [← mul_div_assoc] using hsmall)
+  simpa only [Nat.cast_mul,Nat.cast_pow] using
+    (show 2*(B*(h-1:ℝ)^k)≤δ*((h:ℝ)^k*m) by nlinarith [he])
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X] [Fintype H] [Fintype X]
 
 lemma orbit_make_small {L : Subgroup G} [L.Normal] (c : NormalCost L)
@@ -283,11 +263,9 @@ lemma orbit_make_small {L : Subgroup G} [L.Normal] (c : NormalCost L)
   let w₀ : X → G := fun y => w y*(w x)⁻¹
   let B : ℝ := ∑ y,c.cost (w₀ y)
   have hB : 0≤B := Finset.sum_nonneg (fun y _ => c.nonneg _)
-  have hmem : ∀ y,SameOrbit (H:=H) x y → w₀ y∈L :=
-    fun y hy => hw y x hy (SameOrbit.refl x)
-  have hbound : ∀ y,SameOrbit (H:=H) x y → c.cost (w₀ y)≤B := by
-    intro y _
-    exact Finset.single_le_sum (fun z _ => c.nonneg _) (Finset.mem_univ y)
+  have hmem : ∀ y,SameOrbit (H:=H) x y → w₀ y∈L := fun y hy => hw y x hy (SameOrbit.refl x)
+  have hbound : ∀ y,SameOrbit (H:=H) x y → c.cost (w₀ y)≤B := fun y _ =>
+    Finset.single_le_sum (fun z _ => c.nonneg _) (Finset.mem_univ y)
   obtain ⟨k,hk⟩ := contraction_rate (Fintype.card H) m Fintype.card_pos hm B δ hB hδ
   obtain ⟨v,hev,hvm,hvb⟩ := contraction_iterate c w₀ m x B hmem hbound k
   refine ⟨v,(Fintype.card H)^k*m,(Evolution.normalize (.refl w m) (w x)⁻¹).trans hev,?_,?_⟩
@@ -296,7 +274,7 @@ lemma orbit_make_small {L : Subgroup G} [L.Normal] (c : NormalCost L)
   · intro y z hy hz
     have hcm := c.mul (v y) (hvm y hy) (v z)⁻¹ (L.inv_mem (hvm z hz))
     rw [c.inv _ (hvm z hz)] at hcm
-    exact hcm.trans ((add_le_add (hvb y hy) (hvb z hz)).trans (by linarith))
+    linarith [hcm, hvb y hy, hvb z hz]
 
 theorem finite_group_averaging (N : Subgroup G) [N.Normal] (r : ℕ)
     (c : NormalCost (Derived N r)) (letter : X → G)

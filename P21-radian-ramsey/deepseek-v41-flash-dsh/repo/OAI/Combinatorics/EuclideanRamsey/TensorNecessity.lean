@@ -58,15 +58,8 @@ theorem floor_coloring_obstruction {X : Type uPoint} {s : ℕ} (hs : 0 < s)
     apply Finset.sum_congr rfl
     intro i _
     exact congrFun (hmono i) i
-  have hdvd : (K : ℤ) ∣ B - A := (ZMod.intCast_eq_intCast_iff_dvd_sub A B K).mp hAB
   obtain ⟨hxlo, hxhi⟩ := sum_floor_bounds hs x
   obtain ⟨hylo, hyhi⟩ := sum_floor_bounds hs y
-  change (∑ i, x i) - s < (A : ℝ) at hxlo
-  change (A : ℝ) ≤ ∑ i, x i at hxhi
-  change (∑ i, y i) - s < (B : ℝ) at hylo
-  change (B : ℝ) ≤ ∑ i, y i at hyhi
-  rw [hx] at hxlo hxhi
-  rw [hy] at hylo hyhi
   have hK : (K : ℝ) = 2 * (s : ℝ) + 1 := by simp [K]
   have hpos : (0 : ℤ) < B - A := by
     have : (0 : ℝ) < (B : ℝ) - (A : ℝ) := by linarith
@@ -74,7 +67,7 @@ theorem floor_coloring_obstruction {X : Type uPoint} {s : ℕ} (hs : 0 < s)
   have hlt : B - A < (K : ℤ) := by
     have : (B : ℝ) - (A : ℝ) < (K : ℝ) := by linarith
     exact_mod_cast this
-  exact (not_le_of_gt hlt) (Int.le_of_dvd hpos hdvd)
+  exact (not_le_of_gt hlt) (Int.le_of_dvd hpos ((ZMod.intCast_eq_intCast_iff_dvd_sub A B K).mp hAB))
 
 abbrev RealTensor := ℝ ⊗[ℚ] ℝ
 abbrev RealArray (d : ℕ) := Matrix (Option (Fin d)) (Option (Fin d)) RealTensor
@@ -231,7 +224,6 @@ theorem separated_copy_sum {s d D : ℕ} (a : Fin s → Space d)
     convert h using 2
     apply Finset.sum_congr rfl
     intro i _
-    congr 1
     simp only [PiLp.add_apply, affineEvaluation, isometryRows_apply]
   rw [Finset.sum_comm]
   simp only [heach, Finset.sum_neg_distrib, ← map_sum, hrows, hL]

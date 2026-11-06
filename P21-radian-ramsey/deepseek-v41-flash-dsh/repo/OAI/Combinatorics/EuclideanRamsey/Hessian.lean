@@ -18,12 +18,9 @@ universe uDomain uCodomain uIndex uColor uAction
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators
 
-open scoped BigOperators
-open Matrix MeasureTheory
 namespace EuclideanRamsey
 
 section Hessian
@@ -45,9 +42,7 @@ lemma hessianB_linear_comp {f : F → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
       (fun y => (fderiv ℝ f (L y)).comp L) := by
     funext y
     exact ((hf.differentiable (by simp) (L y)).hasFDerivAt.comp y L.hasFDerivAt).fderiv
-  have hd : Differentiable ℝ (fun y => fderiv ℝ f y) :=
-    (hf.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiable (by simp)
-  have h := (((hd (L x)).hasFDerivAt.comp x L.hasFDerivAt).clm_comp
+  have h := (((((hf.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiable (by simp)) (L x)).hasFDerivAt.comp x L.hasFDerivAt).clm_comp
     (hasFDerivAt_const L x))
   dsimp only [Function.comp_def] at h
   unfold hessianB
@@ -65,12 +60,8 @@ lemma hessianB_mul {f g : E → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
       (fun y => f y • fderiv ℝ g y + g y • fderiv ℝ f y) := by
     funext y
     exact ((hf' y).mul (hg' y)).fderiv
-  have hfd : Differentiable ℝ (fun y => fderiv ℝ f y) :=
-    (hf.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiable (by simp)
-  have hgd : Differentiable ℝ (fun y => fderiv ℝ g y) :=
-    (hg.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiable (by simp)
-  have hd := ((hf' x).smul (hgd x).hasFDerivAt).add
-    ((hg' x).smul (hfd x).hasFDerivAt)
+  have hd := ((hf' x).smul (((hg.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiable (by simp)) x).hasFDerivAt).add
+    ((hg' x).smul (((hf.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiable (by simp)) x).hasFDerivAt)
   unfold hessianB
   rw [hG]
   change ((fderiv ℝ ((f • fun y => fderiv ℝ g y) + g • fun y => fderiv ℝ f y) x) v) w = _

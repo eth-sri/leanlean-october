@@ -18,28 +18,10 @@ universe uModule uColor
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
-open Set
+open Real Filter Topology MeasureTheory Polynomial Matrix Set
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
 namespace EuclideanRamsey
-open Filter
-open scoped BigOperators
 attribute [local instance] Ultrafilter.mul Ultrafilter.semigroup
 
 lemma exists_ultra_color {M : Type uModule} {κ : Type uColor} [Finite κ] (U : Ultrafilter M) (c : M → κ) :
@@ -65,7 +47,6 @@ lemma exists_corner_map : ∃ (p : Ultrafilter Strings) (Ψ : LetterGroup →ₙ
   let v : Corner p →ₙ* Ultrafilter Strings := { toFun := Subtype.val, map_mul' _ _ := rfl }
   refine ⟨p,v.comp ψ.toMulHom,?_⟩
   intro z
-  change (ψ (FreeGroup.of z)).val=_
   exact congrArg (fun x : Corner p => x.val) (FreeGroup.lift_apply_of (f:=letter) (x:=z))
 
 theorem paths_monochromatic {s : ℕ} (a : Fin s → FiniteEuclidean)
@@ -91,8 +72,7 @@ theorem paths_monochromatic {s : ℕ} (a : Fin s → FiniteEuclidean)
     apply Finset.card_pos.mpr
     obtain ⟨j,hj⟩ := line.proper
     exact ⟨j,by simp [S,hj]⟩
-  have htn : t ≤ Fintype.card β+1 := le_trans (Finset.card_le_univ S) (Nat.le_succ _)
-  obtain ⟨qs,hqs,hqe⟩ := (hW t ht htn).expand Ψ p hgen
+  obtain ⟨qs,hqs,hqe⟩ := (hW t ht (le_trans (Finset.card_le_univ S) (Nat.le_succ _))).expand Ψ p hgen
   let q (j : β) : List (UltraColumn (Fin s) Strings) :=
     (line.idxFun j).elim qs (fun i => [.common (Ψ (W i))])
   let u (j : β) : ℝ := if line.idxFun j=none then 1/(t:ℝ) else 0
@@ -134,8 +114,6 @@ theorem paths_monochromatic {s : ℕ} (a : Fin s → FiniteEuclidean)
 end EuclideanRamsey
 namespace EuclideanRamsey
 namespace FiniteEuclidean
-open Filter
-open scoped BigOperators
 noncomputable def truncate (d : ℕ) (x : FiniteEuclidean) : EuclideanSpace ℝ (Fin d) :=
   WithLp.toLp 2 (fun i => coords x i)
 

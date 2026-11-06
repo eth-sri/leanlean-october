@@ -18,26 +18,10 @@ universe uIndex uAlpha
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {ι : Type uIndex} {a : ι → FiniteEuclidean}
 
 def scaleGroup (c : ℝ) : LetterGroup →* LetterGroup := FreeGroup.map (fun z => Real.sqrt c • z)
@@ -98,7 +82,6 @@ lemma synchronized_chain {w : ι → LetterGroup} {ρ : ℝ} (hp : Path a w 1)
           intro j hj
           simp only [u,c,ite_eq_right (not_lt_of_ge (Finset.mem_Ico.mp hj).1)]
         _ = _ := by
-          congr 1
           rw [Finset.sum_Ico_eq_sub _ hk,Finset.sum_range_sub',Finset.sum_range_sub']
           ring
     rw [hleft,hright,hv0,hvn]
@@ -115,8 +98,7 @@ theorem synchronize_paths (n : ℕ) (hn : 1 ≤ n) {w : ι → LetterGroup} {lmb
     (hratio : μ/lmb < 1/(n:ℝ)) :
     ∃ W,∀ t : ℕ,1 ≤ t → t ≤ n → Path a W (1/(t:ℝ)) := by
   let ρ := μ/lmb
-  have hn' : (0:ℝ)<n := Nat.cast_pos.mpr (by omega)
-  have hρ : ρ<1 := lt_of_lt_of_le hratio (by exact (div_le_one hn').mpr (by exact_mod_cast hn))
+  have hρ : ρ<1 := lt_of_lt_of_le hratio (by exact (div_le_one (Nat.cast_pos.mpr (by omega))).mpr (by exact_mod_cast hn))
   have hnorm : Path a (fun i => scaleGroup lmb⁻¹ (w i)) 1 := by
     simpa [inv_mul_cancel₀ hlmb.ne'] using hp.scale lmb⁻¹ (inv_nonneg.mpr hlmb.le)
   have hnorm' : Path a (fun i => scaleGroup lmb⁻¹ (w i)) ρ := by
@@ -126,7 +108,6 @@ theorem synchronize_paths (n : ℕ) (hn : 1 ≤ n) {w : ι → LetterGroup} {lmb
     (by simp [v]) (by
       intro j hj
       dsimp [v]
-      rw [ite_eq_left hj]
       split_ifs with hj'
       · apply one_div_le_one_div_of_le (by positivity)
         exact_mod_cast (by omega : j+1≤j+1+1)

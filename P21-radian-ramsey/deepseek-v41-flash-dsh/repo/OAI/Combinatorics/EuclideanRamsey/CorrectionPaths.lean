@@ -18,27 +18,10 @@ universe uGroup uIndex uAction uPoint
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
-open Set
+open Real Filter Topology MeasureTheory Polynomial Matrix Set
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {G : Type uGroup} {ι : Type uIndex} [Group G] [Fintype ι] [DecidableEq ι]
 namespace GradedPaths
 variable (P : GradedPaths ι G) (L : Subgroup G) [L.Normal]
@@ -69,7 +52,6 @@ noncomputable def normalCost : NormalCost L where
     exact (P.singleCost_mul i (hL i hg) (hL i hh)).trans
       (add_le_add (P.single_le_maxCost i g) (P.single_le_maxCost i h))
 
-omit [Fintype ι] in
 lemma prod_single_eq (l : List ι) (hl : l.Nodup) (g : ι → G) (i : ι) :
     ((l.map (fun j => Pi.mulSingle j (g j))).prod) i=if i∈l then g i else 1 := by
   induction l with
@@ -82,7 +64,6 @@ lemma prod_single_eq (l : List ι) (hl : l.Nodup) (g : ι → G) (i : ι) :
     · simp [h]
 
 include hL in
-omit [L.Normal] in
 lemma bounded_tuple (g : ι → G) (hg : ∀ i,g i∈L) :
     P.BoundedFraction g (∑ i,P.singleCost i (g i)) := by
   classical
@@ -94,7 +75,6 @@ lemma bounded_tuple (g : ι → G) (hg : ∀ i,g i∈L) :
   rw [he] at hb
   simpa using hb
 
-omit [L.Normal] in
 lemma correction_cost (g : ι → G) (hg : ∀ i,g i∈L) (B : ℝ)
     (hc : ∀ i,(P.normalCost L hL).cost (g i)≤B) :
     ∃ u v m n,P.Holds u m ∧ P.Holds v n ∧ g=u*v⁻¹ ∧
@@ -109,11 +89,9 @@ lemma correction_cost (g : ι → G) (hg : ∀ i,g i∈L) (B : ℝ)
 end GradedPaths
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {ι : Type uIndex} {H : Type uAction} {X : Type uPoint} [Fintype ι] [DecidableEq ι]
 variable [Group H] [MulAction H X] [Fintype H] [Fintype X]
 
-omit [Fintype ι] [DecidableEq ι] [Fintype H] [Fintype X] in
 lemma OrbitWords.path {a : ι → FiniteEuclidean} (z : X → FiniteEuclidean)
     (f : ι → X) (q : ℝ) (hq : ∀ h : H,CopyPath a q (fun i => z (h • f i)))
     {w : X → LetterGroup} {m : ℕ} (hw : OrbitWords (H:=H) (fun x => FreeGroup.of (z x)) w m) :
@@ -143,7 +121,6 @@ theorem averaged_equal_endpoints (a : ι → FiniteEuclidean) (ha : Function.Inj
   let Dp : ι → LetterGroup := fun i => w (f i)
   let Dm : ι → LetterGroup := fun i => w (g i)
   have hp : Path a Dp (m:ℝ) := by simpa using hw.path z f 1 hf
-  have hn : Path a Dm (q*m) := hw.path z g q hg
   let r : ι → LetterGroup := Dp⁻¹*Dm
   have hrc : ∀ i,r i∈L ∧ c.cost (r i) ≤ δ*m := by
     intro i
@@ -160,8 +137,7 @@ theorem averaged_equal_endpoints (a : ι → FiniteEuclidean) (ha : Function.Inj
     have ht := congrArg (fun t => Dp*t*v) he
     simpa [r,mul_assoc] using ht.symm
   have h₁ : Path a (Dp*u) ((m:ℝ)+b) := hp.mul (UnitWords.path hu)
-  have h₂ : Path a (Dp*u) (q*m+e) := by rw [heq]; exact hn.mul (UnitWords.path hv)
-  have hm' : (0:ℝ) < m := Nat.cast_pos.mpr hm
+  have h₂ : Path a (Dp*u) (q*m+e) := by rw [heq]; exact (hw.path z g q hg).mul (UnitWords.path hv)
   have hb : (0:ℝ) ≤ b := Nat.cast_nonneg _
   have he' : (0:ℝ) ≤ e := Nat.cast_nonneg _
   refine ⟨_,_,_,h₁,h₂,by positivity,by positivity,?_⟩
@@ -171,7 +147,6 @@ theorem averaged_equal_endpoints (a : ι → FiniteEuclidean) (ha : Function.Inj
   nlinarith
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 
 noncomputable def permute {ℓ : ℕ} (σ : Equiv.Perm (Fin ℓ)) :
     EuclideanSpace ℝ (Fin ℓ) ≃ₗᵢ[ℝ] EuclideanSpace ℝ (Fin ℓ) :=
@@ -180,9 +155,6 @@ noncomputable def permute {ℓ : ℕ} (σ : Equiv.Perm (Fin ℓ)) :
     (x : EuclideanSpace ℝ (Fin ℓ)) (j : Fin ℓ) : permute σ x j=x (σ.symm j) := rfl
 lemma permute_mul {ℓ : ℕ} (σ τ : Equiv.Perm (Fin ℓ)) (x : EuclideanSpace ℝ (Fin ℓ)) :
     permute (σ*τ) x=permute σ (permute τ x) := by ext j; rfl
-@[simp] lemma permute_one {ℓ : ℕ} (x : EuclideanSpace ℝ (Fin ℓ)) :
-    permute 1 x=x := by ext j; rfl
-
 theorem permutation_equal_endpoints {s d ℓ : ℕ} (a : Fin s → EuclideanSpace ℝ (Fin d))
     (ha : Function.Injective a) (f g : Fin s → EuclideanSpace ℝ (Fin ℓ))
     (q δ : ℝ) (hq : 0 < q) (hδ : 0 < δ)

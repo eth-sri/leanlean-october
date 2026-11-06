@@ -18,26 +18,13 @@ universe uRing uGroup uSemigroup uModule uModuleTarget uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
+open Real Filter Topology MeasureTheory Polynomial Matrix Finset
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
-open scoped TensorProduct
 namespace EuclideanRamsey
 
 section NilpotentLog
 variable {R : Type uRing} [CommRing R] [Algebra ℚ R]
-open Finset
 
 lemma nil_exp_quadratic {a : R} (ha : IsNilpotent a) :
     ∃ b : R, IsNilpotent b ∧ IsNilpotent.exp a = 1 + a * (1 + b) := by
@@ -87,11 +74,9 @@ lemma nil_exp_sub_one_sub_mem {J : Ideal R} {a : R} (ha : IsNilpotent a) (hJ : a
 lemma nil_exp_sub_one_mem {J : Ideal R} {a : R} (ha : IsNilpotent a) (hJ : a ∈ J) :
     IsNilpotent.exp a - 1 ∈ J := by
   have h2 := nil_exp_sub_one_sub_mem ha hJ
-  have hle : J ^ 2 ≤ J := Ideal.pow_le_self (by omega)
-  have := J.add_mem (hle h2) hJ
+  have := J.add_mem ((Ideal.pow_le_self (by omega)) h2) hJ
   simpa only [sub_add_cancel] using this
 
-omit [Algebra ℚ R] in
 lemma nilpotent_of_mem_nil_ideal {I : Ideal R} {n : ℕ} (hI : I ^ n = ⊥)
     {x : R} (hx : x ∈ I) : IsNilpotent x := by
   refine ⟨n, ?_⟩
@@ -218,7 +203,7 @@ lemma adic_kernel_lifting (I : Ideal R) (f : M →ₗ[R] N) (q : ℕ) :
   rw [hk (k + q) (by omega), Nat.add_sub_cancel_left] at hfx
   have hle : I ^ q • (I ^ k • (⊤ : Submodule R N) ⊓ LinearMap.range f) ≤
       I ^ q • LinearMap.range f := smul_mono_right _ inf_le_right
-  have hf' : f x ∈ I ^ q • LinearMap.range f := hle hfx
+  have hf' := hle hfx
   have hm : I ^ q • LinearMap.range f = Submodule.map f (I ^ q • (⊤ : Submodule R M)) := by
     rw [Submodule.map_smul'']
     simp
@@ -401,15 +386,12 @@ lemma finite_order_log_lifts (N : ℕ) (hN : 2 ≤ N)
     change q (l a - z) ∈ Ideal.map q (I ^ 2)
     rw [Ideal.map_pow]
     have hn := nilpotent_of_mem_nil_ideal (quotient_nil_augmentation N) (hf (Pi.single a 1))
-    have hr : IsNilpotent.exp (f (Pi.single a 1)) - 1 - f (Pi.single a 1) ∈ M ^ 2 :=
-      nil_exp_sub_one_sub_mem hn (hf _)
     have hre : q (l a - z) = -(IsNilpotent.exp (f (Pi.single a 1)) - 1 - f (Pi.single a 1)) := by
       rw [hfexp, map_sub, hl]
-      dsimp [z, q]
       rw [map_sub, map_one]
       ring
     rw [hre]
-    exact (M ^ 2).neg_mem hr
+    exact (M ^ 2).neg_mem (nil_exp_sub_one_sub_mem hn (hf _))
   have hj := augmentation_sq_le_jetOne hdiff
   have hjb := hj.2 b
   simp only [firstMoment_sub, sub_eq_zero] at hjb

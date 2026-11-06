@@ -18,10 +18,9 @@ universe uDomain
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-
-open scoped BigOperators
 open Real Filter Topology MeasureTheory Polynomial
+open scoped TensorProduct RealInnerProductSpace BigOperators
+
 namespace EuclideanRamsey
 
 def smoothPositivePart (t : ℝ) : ℝ := t * expNegInvGlue t
@@ -35,7 +34,7 @@ lemma smoothPositivePart_contDiff : ContDiff ℝ (⊤ : ℕ∞) smoothPositivePa
 
 lemma smoothPositivePart_hasDerivAt (t : ℝ) :
     HasDerivAt smoothPositivePart (smoothPositivePart' t) t := by
-  have hg : HasDerivAt expNegInvGlue (t⁻¹ ^ 2 * expNegInvGlue t) t := by
+  have hg :=  by
     simpa using expNegInvGlue.hasDerivAt_polynomial_eval_inv_mul (1 : ℝ[X]) t
   have h := (hasDerivAt_id t).mul hg
   change HasDerivAt smoothPositivePart _ t at h
@@ -50,7 +49,6 @@ lemma smoothPositivePart'_hasDerivAt (t : ℝ) :
     HasDerivAt smoothPositivePart' (smoothPositivePart'' t) t := by
   have h := expNegInvGlue.hasDerivAt_polynomial_eval_inv_mul (1 + X : ℝ[X]) t
   simp only [Polynomial.eval_add, Polynomial.eval_one, Polynomial.eval_X] at h
-  change HasDerivAt smoothPositivePart' _ t at h
   apply h.congr_deriv
   simp [smoothPositivePart'']
   left
@@ -71,14 +69,12 @@ lemma smoothPositivePart'_bounds (t : ℝ) :
     0 ≤ smoothPositivePart' t ∧ smoothPositivePart' t ≤ 1 := by
   by_cases ht : t ≤ 0
   · simp [smoothPositivePart', expNegInvGlue.zero_of_nonpos ht]
-  have ht0 : 0 < t := lt_of_not_ge ht
-  constructor
-  · exact mul_nonneg (by positivity) (expNegInvGlue.nonneg _)
-  · unfold smoothPositivePart'
-    rw [expNegInvGlue, ite_eq_right ht, show -t⁻¹ = -1 / t by ring,
-      show -1 / t = -(t⁻¹) by ring, Real.exp_neg]
-    rw [← div_eq_mul_inv, div_le_one (Real.exp_pos _)]
-    simpa [add_comm] using Real.add_one_le_exp (t⁻¹)
+  have ht0 := lt_of_not_ge ht
+  refine ⟨mul_nonneg (by positivity) (expNegInvGlue.nonneg _), ?_⟩
+  unfold smoothPositivePart'
+  rw [expNegInvGlue, ite_eq_right ht, show -t⁻¹ = -(t⁻¹) by ring, Real.exp_neg,
+    ← div_eq_mul_inv, div_le_one (Real.exp_pos _)]
+  simpa [add_comm] using Real.add_one_le_exp (t⁻¹)
 
 lemma smoothPositivePart''_nonneg (t : ℝ) : 0 ≤ smoothPositivePart'' t := by
   by_cases ht : t ≤ 0
@@ -101,11 +97,7 @@ lemma radialPower_hasFDerivAt {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
       ((2*p*(a+‖x‖^2)^(p-1)) • innerSL ℝ x) x := by
   have h := ((hasStrictFDerivAt_norm_sq x).hasFDerivAt.const_add a).rpow_const
     (p := p) (Or.inl (ne_of_gt (add_pos_of_pos_of_nonneg ha (sq_nonneg _))))
-  change HasFDerivAt (radialPower a p) _ x at h
-  apply h.congr_fderiv
-  ext v
-  simp only [_root_.smul_apply, smul_eq_mul]
-  ring
+  refine h.congr_fderiv (by ext v; simp only [_root_.smul_apply, smul_eq_mul]; ring)
 
 lemma radialPower_hessian {a : ℝ} (ha : 0 < a) (p : ℝ) (x v w : E) :
     iteratedFDeriv ℝ 2 (radialPower a p) x ![v,w] =
@@ -138,10 +130,8 @@ lemma scalarComposition_hessian {f : E → ℝ} {g g' g'' : ℝ → ℝ}
       (fun y => g' (f y) • fderiv ℝ f y) := by
     funext y
     exact ((hg (f y)).comp_hasFDerivAt y (hf' y)).fderiv
-  have hfd : Differentiable ℝ (fun y => fderiv ℝ f y) :=
-    (hf.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiable (by simp)
   have hd := ((hg' (f x)).comp_hasFDerivAt x (hf' x)).smul
-    (hfd x).hasFDerivAt
+    (((hf.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiable (by simp)) x).hasFDerivAt
   change HasFDerivAt (fun y => g' (f y) • fderiv ℝ f y) _ x at hd
   rw [iteratedFDeriv_succ_apply_right, iteratedFDeriv_one_apply]
   change ((fderiv ℝ (fun y => fderiv ℝ (g ∘ f) y) x) v) w = _
@@ -164,18 +154,15 @@ lemma radialPower_halfLaplacian {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
         ((Module.finrank ℝ E : ℝ)*a + (Module.finrank ℝ E + 2*p-2)*‖x‖^2) := by
   classical
   let e := stdOrthonormalBasis ℝ E
-  have hsum : (∑ i, inner ℝ x (e i) * inner ℝ x (e i)) = ‖x‖^2 := by
-    simpa only [real_inner_comm (e _), real_inner_self_eq_norm_sq] using
-      e.sum_inner_mul_inner x x
   unfold halfLaplacian
   simp_rw [radialPower_hessian ha]
   simp only [(stdOrthonormalBasis ℝ E).inner_eq_ite, ite_eq_left, mul_one, Finset.sum_add_distrib]
+  have hsum : (∑ i, inner ℝ x (e i) * inner ℝ x (e i)) = ‖x‖^2 := by
+    simpa only [real_inner_comm (e _), real_inner_self_eq_norm_sq] using e.sum_inner_mul_inner x x
   have hsum' : (∑ i, 4*p*(p-1)*(a+‖x‖^2)^(p-2)*inner ℝ x (e i)*inner ℝ x (e i)) =
       4*p*(p-1)*(a+‖x‖^2)^(p-2)*‖x‖^2 := by
     rw [← hsum, Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro i _
-    ring
+    exact Finset.sum_congr rfl fun i _ => by ring
   change (1/2 : ℝ) * ((∑ i, 4*p*(p-1)*(a+‖x‖^2)^(p-2)*inner ℝ x (e i)*inner ℝ x (e i)) +
     ∑ _ : Fin (Module.finrank ℝ E), 2*p*(a+‖x‖^2)^(p-1)) = _
   rw [hsum']
@@ -188,12 +175,10 @@ lemma radialPower_halfLaplacian {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
 def radialBump (a p : ℝ) (x : E) : ℝ :=
   smoothPositivePart (radialPower a p x - 1)
 
-omit [FiniteDimensional ℝ E] in
 lemma radialBump_contDiff {a : ℝ} (ha : 0 < a) (p : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (radialBump (E := E) a p) :=
   smoothPositivePart_contDiff.comp ((radialPower_contDiff ha p).sub contDiff_const)
 
-omit [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] in
 lemma radialBump_nonneg (a p : ℝ) (x : E) : 0 ≤ radialBump a p x :=
   smoothPositivePart_nonneg _
 
@@ -201,10 +186,10 @@ lemma radialBump_compact {a p : ℝ} (ha : 0 < a) (hp : p < 0) :
     HasCompactSupport (radialBump (E := E) a p) := by
   refine HasCompactSupport.intro (isCompact_closedBall (0 : E) 1) ?_
   intro x hx
-  apply smoothPositivePart_zero
-  have hx1 : 1 < ‖x‖ := by simpa [Metric.mem_closedBall, dist_zero_right] using hx
-  have hq : 1 ≤ a+‖x‖^2 := by nlinarith
-  exact sub_nonpos.mpr (Real.rpow_le_one_of_one_le_of_nonpos hq hp.le)
+  refine smoothPositivePart_zero (sub_nonpos.mpr
+    (Real.rpow_le_one_of_one_le_of_nonpos ?_ hp.le))
+  have hx1 :=  by simpa [Metric.mem_closedBall, dist_zero_right] using hx
+  nlinarith
 
 lemma radialBump_halfLaplacian {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
     halfLaplacian (radialBump a p) x =
@@ -212,8 +197,6 @@ lemma radialBump_halfLaplacian {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
       2 * smoothPositivePart'' (radialPower a p x-1) * p^2 *
         ((a+‖x‖^2)^(p-1))^2 * ‖x‖^2 := by
   classical
-  have hf : ContDiff ℝ (⊤ : ℕ∞) (fun y : E => radialPower a p y - 1) :=
-    (radialPower_contDiff ha p).sub contDiff_const
   have he (v w : E) :
       iteratedFDeriv ℝ 2 (radialBump a p) x ![v,w] =
         smoothPositivePart'' (radialPower a p x-1) *
@@ -222,11 +205,9 @@ lemma radialBump_halfLaplacian {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
         smoothPositivePart' (radialPower a p x-1) *
           iteratedFDeriv ℝ 2 (radialPower a p) x ![v,w] := by
     change iteratedFDeriv ℝ 2 (smoothPositivePart ∘ fun y => radialPower a p y-1) x _ = _
-    rw [scalarComposition_hessian hf smoothPositivePart_hasDerivAt smoothPositivePart'_hasDerivAt]
+    rw [scalarComposition_hessian ((radialPower_contDiff ha p).sub contDiff_const) smoothPositivePart_hasDerivAt smoothPositivePart'_hasDerivAt]
     simp only [fderiv_sub_const, (radialPower_hasFDerivAt ha p x).fderiv,
       _root_.smul_apply, innerSL_apply_apply,  smul_eq_mul]
-    congr 1
-    congr 1
     rw [iteratedFDeriv_succ_apply_right, iteratedFDeriv_one_apply,
       iteratedFDeriv_succ_apply_right, iteratedFDeriv_one_apply]
     simp only [fderiv_sub_const]
@@ -252,15 +233,13 @@ lemma radialBump_halfLaplacian {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
   ring
 
 lemma smoothPositivePart_monotone : Monotone smoothPositivePart :=
-  monotone_of_hasDerivAt_nonneg smoothPositivePart_hasDerivAt
-    (fun t => (smoothPositivePart'_bounds t).1)
+  monotone_of_hasDerivAt_nonneg smoothPositivePart_hasDerivAt fun t =>
+    (smoothPositivePart'_bounds t).1
 
-omit [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] in
 lemma radialBump_antitone_parameter {a b p : ℝ} (ha : 0 < a) (hab : a ≤ b)
-    (hp : p ≤ 0) (x : E) : radialBump b p x ≤ radialBump a p x := by
-  apply smoothPositivePart_monotone
-  exact sub_le_sub_right (Real.rpow_le_rpow_of_nonpos
-    (by positivity) (by linarith) hp) 1
+    (hp : p ≤ 0) (x : E) : radialBump b p x ≤ radialBump a p x :=
+  smoothPositivePart_monotone (sub_le_sub_right (Real.rpow_le_rpow_of_nonpos
+    (by positivity) (by linarith) hp) 1)
 
 lemma radialBump_negative_le {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
     max (-halfLaplacian (radialBump a p) x) 0 ≤
@@ -268,8 +247,8 @@ lemma radialBump_negative_le {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
   rw [radialBump_halfLaplacian ha]
   have hb := smoothPositivePart'_bounds (radialPower a p x-1)
   have hc : 0 ≤ 2 * smoothPositivePart'' (radialPower a p x-1) * p^2 *
-      ((a+‖x‖^2)^(p-1))^2 * ‖x‖^2 := by
-    exact mul_nonneg (mul_nonneg (mul_nonneg
+      ((a+‖x‖^2)^(p-1))^2 * ‖x‖^2 :=
+    mul_nonneg (mul_nonneg (mul_nonneg
       (mul_nonneg (by norm_num) (smoothPositivePart''_nonneg _)) (sq_nonneg _))
       (sq_nonneg _)) (sq_nonneg _)
   apply max_le
@@ -299,7 +278,6 @@ lemma radialPower_laplacian_lower {a : ℝ} (ha : 0 < a)
   have hn0 : 0 ≤ n := Nat.cast_nonneg _
   have hbracket : n + 2*p-2 = -(3/2:ℝ) := by unfold p n smoothingExponent; ring
   rw [radialPower_halfLaplacian ha]
-  change p*n*a^(p-1) ≤ p*(a+‖x‖^2)^(p-2)*(n*a+(n+2*p-2)*‖x‖^2)
   rw [hbracket]
   have hpow := Real.rpow_le_rpow_of_nonpos ha
     (show a ≤ a+‖x‖^2 by nlinarith [sq_nonneg ‖x‖]) (show p-2 ≤ 0 by linarith)
@@ -326,15 +304,12 @@ lemma radialPower_laplacian_nonneg_outside {ε : ℝ} (hε : 0 < ε)
   have hn0 : 0 ≤ n := Nat.cast_nonneg _
   have hbracket : n + 2*p-2 = -(3/2:ℝ) := by unfold p n smoothingExponent; ring
   rw [radialPower_halfLaplacian (sq_pos_of_pos hε)]
-  change 0 ≤ p*(ε^2+‖x‖^2)^(p-2)*(n*ε^2+(n+2*p-2)*‖x‖^2)
   rw [hbracket]
   apply mul_nonneg_of_nonpos_of_nonpos
   · exact mul_nonpos_of_nonpos_of_nonneg hp.le (Real.rpow_nonneg (by positivity) _)
-  · have hs : ((n+1)*ε)^2 ≤ ‖x‖^2 := sq_le_sq₀ (by positivity) (norm_nonneg _) |>.mpr hx
-    have he : 0 ≤ ε^2 := sq_nonneg _
-    have hnn : n ≤ (n+1)^2 := by nlinarith [sq_nonneg n]
-    have hnn' := mul_le_mul_of_nonneg_right hnn he
-    nlinarith
+  · have hs : ((n+1)*ε)^2 ≤ ‖x‖^2 := (sq_le_sq₀ (by positivity) (norm_nonneg _)).mpr hx
+    nlinarith [mul_le_mul_of_nonneg_right (show n ≤ (n+1)^2 by nlinarith [sq_nonneg n])
+      (sq_nonneg ε)]
 
 lemma radialBump_weighted_negative_bound {ε : ℝ} (hε : 0 < ε)
     (hn : 1 ≤ Module.finrank ℝ E) (x : E) :
@@ -345,28 +320,23 @@ lemma radialBump_weighted_negative_bound {ε : ℝ} (hε : 0 < ε)
   classical
   let p := smoothingExponent E
   let n : ℝ := Module.finrank ℝ E
-  have hp : p < 0 := smoothingExponent_neg hn
-  have hn0 : 0 ≤ n := Nat.cast_nonneg _
   have hε2 : 0 < ε^2 := sq_pos_of_pos hε
   have hle := radialBump_negative_le hε2 p x
   by_cases hx : x ∈ Metric.closedBall (0 : E) ((n+1)*ε)
   · rw [Set.indicator_of_mem hx]
     have hx' : ‖x‖ ≤ (n+1)*ε := by simpa [Metric.mem_closedBall, dist_zero_right] using hx
-    have hs : ‖x‖^2 ≤ ((n+1)*ε)^2 := (sq_le_sq₀ (norm_nonneg _) (by positivity)).mpr hx'
     have hlower := radialPower_laplacian_lower hε2 hn x
     have hK : 0 ≤ (-p)*n*(ε^2)^(p-1) :=
-      mul_nonneg (mul_nonneg (neg_nonneg.mpr hp.le) hn0) (Real.rpow_nonneg hε2.le _)
+      mul_nonneg (mul_nonneg (neg_nonneg.mpr (smoothingExponent_neg hn).le) (Nat.cast_nonneg _)) (Real.rpow_nonneg hε2.le _)
     have hmax : max (-halfLaplacian (radialPower (ε^2) p) x) 0 ≤
         (-p)*n*(ε^2)^(p-1) := max_le (by linarith) hK
     calc
       _ ≤ ((-p)*n*(ε^2)^(p-1))*((n+1)*ε)^2 :=
-        mul_le_mul (hle.trans hmax) hs (sq_nonneg _) hK
+        mul_le_mul (hle.trans hmax) ((sq_le_sq₀ (norm_nonneg _) (by positivity)).mpr hx') (sq_nonneg _) hK
       _ = _ := by
         have hpow : (ε^2)^(p-1)*(ε^2) = (ε^2)^p := by
-          calc
-            _ = (ε^2)^(p-1)*(ε^2)^(1:ℝ) := by rw [Real.rpow_one]
+          calc _ = (ε^2)^(p-1)*(ε^2)^(1:ℝ) := by rw [Real.rpow_one]
             _ = _ := by rw [← Real.rpow_add hε2]; congr 1; ring
-        change (-p)*n*(ε^2)^(p-1)*((n+1)*ε)^2 = (-p)*n*(n+1)^2*(ε^2)^p
         rw [← hpow]
         ring
   · rw [Set.indicator_of_notMem hx]
@@ -374,10 +344,7 @@ lemma radialBump_weighted_negative_bound {ε : ℝ} (hε : 0 < ε)
       have := hx
       simp only [Metric.mem_closedBall, dist_zero_right, not_le] at this
       exact this.le
-    have hnonneg := radialPower_laplacian_nonneg_outside hε hn x hx'
-    have hzero : max (-halfLaplacian (radialPower (ε^2) p) x) 0 = 0 :=
-      max_eq_right (neg_nonpos.mpr hnonneg)
-    rw [hzero] at hle
+    rw [max_eq_right (neg_nonpos.mpr (radialPower_laplacian_nonneg_outside hε hn x hx'))] at hle
     exact mul_nonpos_of_nonpos_of_nonneg hle (sq_nonneg _)
 
 section Integration
@@ -390,7 +357,6 @@ lemma radialBump_integral_pos (hn : 1 ≤ Module.finrank ℝ E) :
     (radialBump_compact (by norm_num) (smoothingExponent_neg hn))
     (radialBump_nonneg _ _)
   apply ne_of_gt (smoothPositivePart_pos (t := radialPower (1/4) (smoothingExponent E) (0:E)-1) _)
-  simp only [radialPower, norm_zero, sq, mul_zero, add_zero]
   exact sub_pos.mpr (Real.one_lt_rpow_of_pos_of_lt_one_of_neg
     (by norm_num) (by norm_num) (smoothingExponent_neg hn))
 
@@ -405,14 +371,11 @@ lemma radialBump_integral_lower {a : ℝ} (ha : 0 < a) (ha' : a ≤ 1/4)
       (radialBump_compact ha (smoothingExponent_neg hn))
   · exact fun x => radialBump_antitone_parameter ha ha' (smoothingExponent_neg hn).le x
 
-omit [MeasurableSpace E] [BorelSpace E] in
 lemma radial_weight_exponent {ε : ℝ} (hε : 0 < ε) :
     ε^(Module.finrank ℝ E) * (ε^2)^(smoothingExponent E) = Real.sqrt ε := by
   rw [Real.sqrt_eq_rpow, ← Real.rpow_natCast, ← Real.rpow_natCast_mul hε.le 2,
     ← Real.rpow_add hε]
-  congr 1
   unfold smoothingExponent
-  push_cast
   ring
 
 lemma radialBump_integral_negative_bound {ε : ℝ} (hε : 0 < ε)
@@ -435,7 +398,6 @@ lemma radialBump_integral_negative_bound {ε : ℝ} (hε : 0 < ε)
   rw [integral_indicator_const _ measurableSet_closedBall, smul_eq_mul]
   rw [Measure.real_def, μ.addHaar_closedBall (0:E) hR, ENNReal.toReal_mul,
     ENNReal.toReal_ofReal (pow_nonneg hR _)]
-  dsimp [R,K,n,p]
   rw [mul_pow]
   have he := radial_weight_exponent (E := E) hε
   have he' : ε^(Module.finrank ℝ E)*(ε^2)^(smoothingExponent E) = Real.sqrt ε := he
@@ -457,7 +419,6 @@ theorem exists_radial_smoothing (hn : 1 ≤ Module.finrank ℝ E) {η : ℝ} (h�
   have hm : 0 < m := radialBump_integral_pos μ hn
   have hp : p < 0 := smoothingExponent_neg hn
   have hK : 0 ≤ K := by
-    dsimp [K]
     exact mul_nonneg (mul_nonneg (mul_nonneg (ENNReal.toReal_nonneg)
       (neg_nonneg.mpr hp.le)) (Nat.cast_nonneg _)) (by positivity)
   obtain ⟨t,ht,ht'⟩ := exists_pos_mul_lt (mul_pos hη hm) (K+1)
@@ -466,22 +427,18 @@ theorem exists_radial_smoothing (hn : 1 ≤ Module.finrank ℝ E) {η : ℝ} (h�
   have hδt : δ ≤ t := min_le_left _ _
   have hδhalf : δ ≤ 1/2 := min_le_right _ _
   have hsmall : K*δ < η*m := by
-    have := mul_le_mul_of_nonneg_left hδt (show 0 ≤ K+1 by linarith)
-    nlinarith
+    nlinarith [mul_le_mul_of_nonneg_left hδt (show 0 ≤ K+1 by linarith)]
   let ε := δ^2
   have hε : 0 < ε := sq_pos_of_pos hδ
   have hεlimit : ε^2 ≤ 1/4 := by
     have hs : δ^2 ≤ 1/4 := by nlinarith
-    dsimp [ε]
-    calc
-      (δ^2)^2 ≤ (1/4:ℝ)^2 := (sq_le_sq₀ (sq_nonneg _) (by norm_num)).mpr hs
+    calc (δ^2)^2 ≤ (1/4:ℝ)^2 := (sq_le_sq₀ (sq_nonneg _) (by norm_num)).mpr hs
       _ ≤ 1/4 := by norm_num
   refine ⟨radialBump (ε^2) p, radialBump_contDiff (sq_pos_of_pos hε) p,
     radialBump_compact (sq_pos_of_pos hε) hp, radialBump_nonneg _ _, ?_, ?_⟩
   · exact hm.trans_le (radialBump_integral_lower μ (sq_pos_of_pos hε) hεlimit hn)
   · have hupper := radialBump_integral_negative_bound μ hε hn
     have hroot : Real.sqrt ε = δ := by dsimp [ε]; rw [Real.sqrt_sq hδ.le]
-    change _ ≤ K*Real.sqrt ε at hupper
     rw [hroot] at hupper
     exact hupper.trans_lt (hsmall.trans_le (mul_le_mul_of_nonneg_left
       (radialBump_integral_lower μ (sq_pos_of_pos hε) hεlimit hn) hη.le))

@@ -146,7 +146,7 @@ def G (z w : K) : Matrix (Fin 9) (Fin 9) K := fun k j =>
 
 theorem clear_rv (z : K) (hz : 1 + z ^ 2 ≠ 0) (n : ℕ) (a : Fin 3) :
     (1 + z ^ 2) ^ n * rv z n a = qv z n a := by
-  have hzn : (1 + z ^ 2) ^ n ≠ 0 := pow_ne_zero n hz
+  have hzn := pow_ne_zero n hz
   fin_cases a <;> simp [rv, qv] <;> field_simp
 
 theorem Ecl_eq (z w : K) (hz : 1 + z ^ 2 ≠ 0) (hw : 1 + w ^ 2 ≠ 0) :

@@ -25,7 +25,7 @@ namespace EuclideanRamsey.NineLinearObstruction
 theorem vector_eq_zero_of_det_ne_zero {J K : Type*} [Fintype J]
     [DecidableEq J] [Field K] (M : Matrix J J K) (hM : M.det ≠ 0)
     (v : J → K) (hv : M.mulVec v = 0) : v = 0 := by
-  have hu : IsUnit M := M.isUnit_iff_isUnit_det.mpr (isUnit_iff_ne_zero.mpr hM)
+  have hu := M.isUnit_iff_isUnit_det.mpr (isUnit_iff_ne_zero.mpr hM)
   apply (Matrix.mulVec_injective_iff_isUnit.mpr hu)
   simpa using hv
 

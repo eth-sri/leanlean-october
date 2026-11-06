@@ -18,26 +18,10 @@ universe uVector
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
-open scoped TensorProduct RealInnerProductSpace
 namespace EuclideanRamsey
-
-end EuclideanRamsey
-namespace EuclideanRamsey
-open scoped TensorProduct BigOperators
 
 abbrev AffineVector (d : ℕ) := Option (Fin d) → ℝ
 
@@ -97,7 +81,6 @@ lemma spatialMultiply_comm {d : ℕ} (T : AffineVector d ⊗[ℚ] AffineVector d
 
 end EuclideanRamsey
 
-open scoped TensorProduct BigOperators
 namespace EuclideanRamsey
 
 theorem exists_symmetric_tensor_presentation {W : Type uVector} [AddCommGroup W] [Module ℚ W]
@@ -140,12 +123,7 @@ theorem exists_symmetric_tensor_presentation {W : Type uVector} [AddCommGroup W]
 
 end EuclideanRamsey
 
-open scoped TensorProduct
 namespace EuclideanRamsey
-
-end EuclideanRamsey
-namespace EuclideanRamsey
-open scoped TensorProduct
 
 lemma rational_lattice_kernel {k : ℕ} (f : RationalSpace k →ₗ[ℚ] ℝ) :
     latticeSpan (AddMonoidHom.ker (f.toAddMonoidHom.comp rationalize)) = f.ker := by
@@ -168,10 +146,8 @@ lemma rational_lattice_kernel {k : ℕ} (f : RationalSpace k →ₗ[ℚ] ℝ) :
       change f (rationalize γ) = 0
       rw [he,map_smul]
       exact smul_eq_zero_of_right _ hx
-    have hm : rationalize γ ∈ latticeSpan (AddMonoidHom.ker (f.toAddMonoidHom.comp rationalize)) :=
-      Submodule.subset_span ⟨γ,hγ,rfl⟩
     have := Submodule.smul_mem (latticeSpan (AddMonoidHom.ker (f.toAddMonoidHom.comp rationalize)))
-      (A.den:ℚ)⁻¹ hm
+      (A.den:ℚ)⁻¹ (Submodule.subset_span ⟨γ,hγ,rfl⟩)
     simpa only [he,smul_smul,inv_mul_cancel₀ hden,one_smul] using this
 
 lemma quotientTensor_zero_of_evaluation {k : ℕ} (f : RationalSpace k →ₗ[ℚ] ℝ)
@@ -181,9 +157,8 @@ lemma quotientTensor_zero_of_evaluation {k : ℕ} (f : RationalSpace k →ₗ[�
   change TensorProduct.map _ _ T = 0
   rw [rational_lattice_kernel]
   let e := f.quotKerEquivRange
-  let j : (RationalSpace k ⧸ f.ker) →ₗ[ℚ] ℝ := f.range.subtype.comp e.toLinearMap
-  have hj : Function.Injective j := f.range.subtype_injective.comp e.injective
-  obtain ⟨r,hr⟩ := j.exists_leftInverse_of_injective (LinearMap.ker_eq_bot.mpr hj)
+  let j := f.range.subtype.comp e.toLinearMap
+  obtain ⟨r,hr⟩ := j.exists_leftInverse_of_injective (LinearMap.ker_eq_bot.mpr (f.range.subtype_injective.comp e.injective))
   have hpre : j.comp f.ker.mkQ = f := by
     ext x
     rfl
@@ -196,7 +171,6 @@ lemma quotientTensor_zero_of_evaluation {k : ℕ} (f : RationalSpace k →ₗ[�
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open scoped TensorProduct BigOperators
 
 lemma matrixTensor_map_family {k : ℕ} {W : Type uVector} [AddCommGroup W] [Module ℚ W]
     (w : Fin k → W) (C : Matrix (Fin k) (Fin k) ℚ) :
@@ -233,7 +207,7 @@ theorem realCriterion_lattice {s d : ℕ} (a : Fin s → Space d) (hd : 1 ≤ d)
         (matrixTensor C) = 0 := by
   classical
   obtain ⟨P,hP,hG⟩ := h
-  let T : AffineVector d ⊗[ℚ] AffineVector d := affineArray.symm P
+  let T := affineArray.symm P
   have hT : affineArray T = P := affineArray.apply_symm_apply P
   obtain ⟨k,w,C,hC,hrep⟩ := exists_symmetric_tensor_presentation T
   have hs : spatialMultiply (affineArray (∑ j,∑ l,C j l • (w j ⊗ₜ[ℚ] w l))) = 1 := by

@@ -18,21 +18,10 @@ universe uGroup uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
 namespace EuclideanRamsey
-open MeasureTheory Filter
-open scoped BigOperators Pointwise Topology
 
 lemma bounded_grid_finite {k n : ℕ} (hn : n ≠ 0) {s : Set (Fin k → ℝ)}
     (hs : Bornology.IsBounded s) :
@@ -92,7 +81,6 @@ theorem lattice_riemann_perturb {k : ℕ} (f : (Fin k → ℝ) → ℝ)
 
 end EuclideanRamsey
 
-open scoped BigOperators Pointwise
 namespace EuclideanRamsey
 
 lemma rational_convolution_coeff {G : Type uGroup} [AddCommGroup G] [DecidableEq G]
@@ -113,7 +101,6 @@ lemma rational_convolution_coeff {G : Type uGroup} [AddCommGroup G] [DecidableEq
 
 end EuclideanRamsey
 
-open scoped BigOperators Topology
 namespace EuclideanRamsey
 
 lemma rational_vector_strict {ι : Type uIndex} [Fintype ι]
@@ -122,13 +109,10 @@ lemma rational_vector_strict {ι : Type uIndex} [Fintype ι]
     ∃ q : ι → ℚ, 0 < ζ (fun i => q i) ∧ N (fun i => q i) < η*ζ (fun i => q i) := by
   have hDense : DenseRange (fun q : ι → ℚ => fun i => (q i : ℝ)) := by
     exact DenseRange.piMap (fun _ => Rat.denseRange_cast)
-  have hopen : IsOpen {d : ι → ℝ | 0 < ζ d ∧ N d < η*ζ d} :=
-    (isOpen_lt continuous_const hζ).inter (isOpen_lt hN (continuous_const.mul hζ))
-  exact hDense.exists_mem_open hopen ⟨d,hp,hn⟩
+  exact hDense.exists_mem_open ((isOpen_lt continuous_const hζ).inter (isOpen_lt hN (continuous_const.mul hζ))) ⟨d,hp,hn⟩
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open scoped BigOperators Pointwise
 
 lemma rationalize_convolution {G : Type uGroup} [AddCommGroup G] [DecidableEq G]
     (ν : AddMonoidAlgebra ℚ G) (w : G → ℝ) (t η : ℝ)

@@ -71,16 +71,6 @@ def rightMap : Rat ι →ₐ[ℚ] JointField ι :=
   exact IsFractionRing.lift_algebraMap (K := Rat ι)
     (g := (rightPolynomialMap ι).toRingHom) (rightPolynomialMap_injective ι) p
 
-@[simp] theorem leftMap_X (i : ι) :
-    leftMap ι (algebraMap (Poly ι) (Rat ι) (MvPolynomial.X i)) =
-      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.X (Sum.inl i)) := by
-  simp
-
-@[simp] theorem rightMap_X (i : ι) :
-    rightMap ι (algebraMap (Poly ι) (Rat ι) (MvPolynomial.X i)) =
-      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.X (Sum.inr i)) := by
-  simp
-
 /-- The map to the joint rational-function field. -/
 def tensorEmbedding : Rat ι ⊗[ℚ] Rat ι →ₐ[ℚ] JointField ι :=
   Algebra.TensorProduct.lift (leftMap ι) (rightMap ι) (fun _ _ => Commute.all _ _)
@@ -88,18 +78,6 @@ def tensorEmbedding : Rat ι ⊗[ℚ] Rat ι →ₐ[ℚ] JointField ι :=
 @[simp] theorem tensorEmbedding_tmul (x y : Rat ι) :
     tensorEmbedding ι (x ⊗ₜ[ℚ] y) = leftMap ι x * rightMap ι y := by
   rfl
-
-@[simp] theorem tensorEmbedding_X_tmul_one (i : ι) :
-    tensorEmbedding ι
-      ((algebraMap (Poly ι) (Rat ι) (MvPolynomial.X i)) ⊗ₜ[ℚ] 1) =
-      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.X (Sum.inl i)) := by
-  simp
-
-@[simp] theorem tensorEmbedding_one_tmul_X (i : ι) :
-    tensorEmbedding ι
-      (1 ⊗ₜ[ℚ] (algebraMap (Poly ι) (Rat ι) (MvPolynomial.X i))) =
-      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.X (Sum.inr i)) := by
-  simp
 
 def localizeLeft : Poly ι ⊗[ℚ] Poly ι →ₐ[ℚ] Rat ι ⊗[ℚ] Poly ι :=
   Algebra.TensorProduct.map (polyToRat ι) (AlgHom.id ℚ (Poly ι))

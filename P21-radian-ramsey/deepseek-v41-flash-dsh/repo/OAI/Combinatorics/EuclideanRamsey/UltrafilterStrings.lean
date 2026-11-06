@@ -18,24 +18,9 @@ universe uModule uIndex uAlpha
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
-open Filter
 namespace EuclideanRamsey
 attribute [local instance] Ultrafilter.mul Ultrafilter.semigroup
 
@@ -45,13 +30,11 @@ variable {M : Type uModule} [Monoid M]
     (pure x : Ultrafilter M)*V = V.map (x*·) := by
   apply Ultrafilter.coe_inj.mp
   apply Filter.ext'
-  intro p
   simp [Ultrafilter.eventually_mul]
 @[simp] lemma mul_pure_ultra (U : Ultrafilter M) (y : M) :
     U*(pure y : Ultrafilter M) = U.map (·*y) := by
   apply Ultrafilter.coe_inj.mp
   apply Filter.ext'
-  intro p
   simp [Ultrafilter.eventually_mul]
 
 @[instance_reducible] def ultrafilterMonoid : Monoid (Ultrafilter M) where
@@ -59,11 +42,9 @@ variable {M : Type uModule} [Monoid M]
   one := pure 1
   one_mul U := by
     change (pure (1:M) : Ultrafilter M)*U=U
-    rw [pure_mul_ultra]
     simp
   mul_one U := by
     change U*(pure (1:M) : Ultrafilter M)=U
-    rw [mul_pure_ultra]
     simp
 
 end Ultrafilters
@@ -122,7 +103,6 @@ theorem simultaneously_realize [Finite ι] [Monoid M] (qs : List (UltraColumn ι
 end UltraColumn
 end EuclideanRamsey
 namespace EuclideanRamsey
-open Filter
 attribute [local instance] Ultrafilter.mul Ultrafilter.semigroup
 variable {ι : Type uIndex}
 
@@ -150,14 +130,13 @@ lemma ColumnPath.realizes {a : ι → FiniteEuclidean} {qs u} (h : ColumnPath a 
     cases hx with
     | cons hx hn =>
       cases hn
-      change _ = _ at hx
       subst hx
       simpa using StringFamily.single hb
   | @append p q u v _ _ ihp ihq =>
-    have hp : List.Forall₂ UltraColumn.Realizes p (xs.take p.length) := by
+    have hp :=  by
       have hh := List.forall₂_take p.length hx
       simpa only [List.take_left] using hh
-    have hq : List.Forall₂ UltraColumn.Realizes q (xs.drop p.length) := by
+    have hq :=  by
       have hh := List.forall₂_drop p.length hx
       simpa only [List.drop_left] using hh
     have hmul := (ihp (xs.take p.length) hp).mul (ihq (xs.drop p.length) hq)

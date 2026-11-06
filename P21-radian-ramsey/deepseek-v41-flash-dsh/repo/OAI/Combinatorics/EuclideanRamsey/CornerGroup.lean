@@ -18,25 +18,9 @@ universe uSemigroup
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
+open Real Filter Topology MeasureTheory Polynomial Matrix Set
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
-open Set
 namespace EuclideanRamsey
 
 theorem exists_group_corner {S : Type uSemigroup} [Nonempty S] [Semigroup S]
@@ -72,9 +56,7 @@ theorem exists_group_corner {S : Type uSemigroup} [Nonempty S] [Semigroup S]
     hN.prop.2.1 hN.prop.1.isCompact (fun x _ y hy => hN.prop.2.2 x y hy)
   refine ⟨p,hp,?_⟩
   intro y hpy hyp
-  have hyN : y∈N := hyp ▸ hN.prop.2.2 y p hpN
-  have hpr : p ∈ Set.range (·*y) := hprincipal y hyN ▸ hpN
-  obtain ⟨v,hv⟩ := hpr
+  obtain ⟨v,hv⟩ := (hprincipal y (hyp ▸ hN.prop.2.2 y p hpN) ▸ hpN)
   change v*y=p at hv
   refine ⟨p*v*p,?_,?_,?_⟩
   · simp only [← mul_assoc,hp]
@@ -91,7 +73,6 @@ instance : Mul (Corner p) := ⟨fun x y => ⟨x.val*y.val, by
   constructor
   · rw [← mul_assoc,x.property.1]
   · rw [mul_assoc,y.property.2]⟩⟩
-@[simp] lemma val_mul (x y : Corner p) : (x*y).val=x.val*y.val := rfl
 instance : Semigroup (Corner p) where
   mul_assoc _x _y _z := Subtype.ext (mul_assoc _ _ _)
 

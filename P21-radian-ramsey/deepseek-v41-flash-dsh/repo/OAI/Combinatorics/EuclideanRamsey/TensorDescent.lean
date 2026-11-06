@@ -18,7 +18,7 @@ universe uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
+open scoped TensorProduct RealInnerProductSpace BigOperators
 
 namespace EuclideanRamsey
 
@@ -138,7 +138,6 @@ theorem ramsey_fieldCriterion {s d : ℕ} (a : Fin s → Space d)
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open scoped TensorProduct BigOperators
 
 theorem fieldCriterion_realCriterion {s d : ℕ} (a : Fin s → Space d)
     (h : FieldCriterion a) : RealCriterion a := by

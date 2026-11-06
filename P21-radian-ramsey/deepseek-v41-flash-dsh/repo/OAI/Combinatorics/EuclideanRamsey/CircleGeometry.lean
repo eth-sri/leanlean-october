@@ -74,7 +74,6 @@ theorem secant_nonzero
     have ht : x₀+t*(y₀-x₀) = z₀ := by dsimp [t]; field_simp; ring
     have hty : x₁+t*(y₁-x₁) = z₁ := by
       dsimp [t]
-      apply (mul_right_cancel₀ hdx)
       field_simp
       nlinarith [hdet]
     have he := circle_parameter_eq_zero_or_one x₀ x₁ y₀ y₁ c₀ c₁ R t hx hy

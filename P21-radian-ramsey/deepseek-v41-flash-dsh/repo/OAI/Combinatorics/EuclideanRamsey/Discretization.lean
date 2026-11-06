@@ -18,18 +18,9 @@ universe uDomain uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
-open MeasureTheory
-open scoped BigOperators
 namespace EuclideanRamsey
 
 lemma compact_taylor_bound {E : Type uDomain} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -72,7 +63,6 @@ lemma compact_taylor_bound {E : Type uDomain} [NormedAddCommGroup E] [NormedSpac
 
 end EuclideanRamsey
 
-open scoped BigOperators
 namespace EuclideanRamsey
 
 lemma linear_moment_contract {ι : Type uIndex} {k : ℕ}
@@ -121,8 +111,6 @@ lemma bilinear_moment_contract {ι : Type uIndex} {k : ℕ}
 
 end EuclideanRamsey
 
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
 namespace EuclideanRamsey
 
 abbrev realLattice (k : ℕ) := Submodule.span ℤ (Set.range (Pi.basisFun ℝ (Fin k)))
@@ -133,13 +121,11 @@ lemma latticeSample_injective {k n : ℕ} (hn : n ≠ 0) :
   intro γ δ h
   funext j
   have he := congr_fun h j
-  dsimp [latticeSample] at he
   exact_mod_cast (div_left_inj' (show (n:ℝ) ≠ 0 by exact_mod_cast hn)).mp he
 
 lemma latticeSample_mem_grid {k n : ℕ} (hn : n ≠ 0) (γ : Fin k → ℤ) :
     latticeSample n γ ∈ (n:ℝ)⁻¹ • (realLattice k : Set (Fin k → ℝ)) := by
   let : NeZero n := ⟨hn⟩
-  rw [← Submodule.coe_pointwise_smul]
   apply BoxIntegral.unitPartition.mem_smul_span_iff.mpr
   intro j
   refine ⟨γ j,?_⟩

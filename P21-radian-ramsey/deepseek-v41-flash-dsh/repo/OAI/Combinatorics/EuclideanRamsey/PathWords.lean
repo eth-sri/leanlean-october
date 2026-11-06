@@ -18,25 +18,10 @@ universe uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
 namespace EuclideanRamsey
-open scoped BigOperators
 abbrev LetterGroup := FreeGroup FiniteEuclidean
 variable {ι : Type uIndex}
 
@@ -64,12 +49,6 @@ lemma UnitWords.path {a : ι → FiniteEuclidean} {w n} (h : UnitWords a w n) : 
   | copy b hb =>
     simpa only [Nat.cast_one] using (Path.copy (a:=a) (u:=1) b ⟨zero_le_one,by intro i j; simp [hb i j]⟩)
   | mul _ _ ihu ihv => simpa only [Nat.cast_add] using ihu.mul ihv
-lemma Path.nonneg {a : ι → FiniteEuclidean} {w lmb} (h : Path a w lmb) : 0≤lmb := by
-  induction h with
-  | diag => exact le_rfl
-  | copy _ h => exact h.1
-  | mul _ _ ih1 ih2 => exact add_nonneg ih1 ih2
-
 lemma extend_pair_E (a : ι → FiniteEuclidean) (i j : ι) (z z' : FiniteEuclidean)
     (h : ‖z'-z‖=‖a j-a i‖) :
     ∃ b : ι → FiniteEuclidean,b i=z ∧ b j=z' ∧ ∀ k l,‖b k-b l‖=‖a k-a l‖ := by
@@ -86,7 +65,6 @@ lemma extend_pair_E (a : ι → FiniteEuclidean) (i j : ι) (z z' : FiniteEuclid
 lemma unit_pair_inverse (a : ι → FiniteEuclidean) : PairInverse (unitGraded a).monoid := by
   intro i j _ u hu
   obtain ⟨m,hm⟩ := hu
-  change UnitWords a u m at hm
   suffices ∃ v n,UnitWords a v n ∧ v i=(u i)⁻¹ ∧ v j=(u j)⁻¹ by
     obtain ⟨v,n,hv,hi,hj⟩ := this
     exact ⟨v,⟨n,hv⟩,by rw [hi]; exact mul_inv_cancel _,by rw [hj]; exact mul_inv_cancel _⟩
@@ -154,21 +132,19 @@ lemma pairLeft_edge (a : ι → FiniteEuclidean) (i j : ι) (hij : i≠j)
 lemma unit_pair_coverage (a : ι → FiniteEuclidean) (ha : Function.Injective a) :
     PairCoverage (unitGraded a).monoid (AugKernel FiniteEuclidean) := by
   intro i j hij g hg h hh
-  have hr : 0<‖a i-a j‖ := norm_pos_iff.mpr (sub_ne_zero.mpr (fun he => hij (ha he)))
   have hle : AugKernel FiniteEuclidean≤pairLeft a i j hij := by
     apply augmentation_kernel_le 0
     intro x y
-    apply FiniteEuclidean.unit_distance_constant _ hr
+    apply FiniteEuclidean.unit_distance_constant _ (norm_pos_iff.mpr (sub_ne_zero.mpr (fun he => hij (ha he))))
       (fun z => (QuotientGroup.mk' (pairLeft a i j hij)) (FreeGroup.of z))
     intro x y hxy
     apply QuotientGroup.eq_iff_div_mem.mpr
     simpa only [div_eq_mul_inv] using pairLeft_edge a i j hij x y hxy
-  have hleft : (g,1)∈pairGroup a i j hij := hle hg
   have hright : (1,h)∈pairGroup a i j hij := by
     have h := (pairGroup a i j hij).mul_mem (pairGroup_diag a i j hij h)
       (hle ((AugKernel FiniteEuclidean).inv_mem hh))
     simpa using h
-  have hp := (pairGroup a i j hij).mul_mem hleft hright
+  have hp := (pairGroup a i j hij).mul_mem (hle hg) hright
   have hp' : (g,h)∈(unitGraded a).monoid.map (pairHom i j) := by
     change (g,h)∈pairGroup a i j hij
     simpa using hp
@@ -176,7 +152,6 @@ lemma unit_pair_coverage (a : ι → FiniteEuclidean) (ha : Function.Injective a
   exact ⟨v,hv,congrArg Prod.fst hv',congrArg Prod.snd hv'⟩
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 abbrev Strings := FreeMonoid FiniteEuclidean
 
 def stringEnergy : List FiniteEuclidean → List FiniteEuclidean → ℝ
@@ -205,11 +180,10 @@ lemma stringEnergy_eq_sum (l k : List FiniteEuclidean) (h : l.length=k.length) :
     cases k with
     | nil => simp at h
     | cons y k =>
-      have h' : l.length=k.length := Nat.add_right_cancel h
       change _ = ∑ i : Fin (l.length+1), ‖(x::l).get i-(y::k).get (i.cast h)‖^2
       rw [Fin.sum_univ_succ]
       simpa only [stringEnergy,List.get_eq_getElem,List.getElem_cons_zero,List.getElem_cons_succ,
-        Fin.val_zero,Fin.val_succ,Fin.val_cast] using congrArg (fun t => ‖x-y‖^2+t) (ih k h')
+        Fin.val_zero,Fin.val_succ,Fin.val_cast] using congrArg (fun t => ‖x-y‖^2+t) (ih k (Nat.add_right_cancel h))
 
 lemma flatten_energy (l k : List FiniteEuclidean) (h : l.length=k.length) :
     ‖FiniteEuclidean.flatten l-FiniteEuclidean.flatten k‖^2=stringEnergy l k := by

@@ -69,13 +69,7 @@ theorem trig_rot {θ : ℝ} (hc : Real.cos (θ / 2) ≠ 0) (n : ℕ) :
   | zero => simp [rot]
   | succ n ih =>
     obtain ⟨i1, i2⟩ := ih
-    have hca : Real.cos (((n + 1 : ℕ) : ℝ) * θ) =
-        Real.cos (n * θ) * Real.cos θ - Real.sin (n * θ) * Real.sin θ := by
-      rw [Nat.cast_succ, add_mul, one_mul, Real.cos_add]
-    have hsa : Real.sin (((n + 1 : ℕ) : ℝ) * θ) =
-        Real.sin (n * θ) * Real.cos θ + Real.cos (n * θ) * Real.sin θ := by
-      rw [Nat.cast_succ, add_mul, one_mul, Real.sin_add]
-    rw [hca, hsa]
+    rw [Nat.cast_succ, add_mul, one_mul, Real.cos_add, Real.sin_add]
     simp only [rot]
     constructor
     · linear_combination ((1 + Real.tan (θ / 2) ^ 2) * Real.cos θ) * i1 +
@@ -353,7 +347,7 @@ theorem algebraic_of_tan {θ : ℝ} (h : IsAlgebraic ℚ (Real.tan (θ / 2))) :
     norm_num
   · have hA : Real.tan (θ / 2) ∈ A := mem_algebraicClosure_iff.mpr h
     obtain ⟨h1, h2⟩ := half_angle hc
-    have hd : 1 + Real.tan (θ / 2) ^ 2 ∈ A := A.add_mem A.one_mem (A.pow_mem hA 2)
+    have hd := A.add_mem A.one_mem (A.pow_mem hA 2)
     have hcos : Real.cos θ = (1 - Real.tan (θ / 2) ^ 2) / (1 + Real.tan (θ / 2) ^ 2) := by
       rw [eq_div_iff (one_add_tan_sq_ne θ), mul_comm, h1]
     have hsin : Real.sin θ = (2 * Real.tan (θ / 2)) / (1 + Real.tan (θ / 2) ^ 2) := by

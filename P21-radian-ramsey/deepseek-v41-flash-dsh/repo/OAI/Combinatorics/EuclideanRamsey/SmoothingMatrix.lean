@@ -16,14 +16,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator
 
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
 namespace EuclideanRamsey
 
 lemma covariance_splitting {k d : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
@@ -32,7 +27,6 @@ lemma covariance_splitting {k d : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
     let R := C * U.transpose
     let Z := 1 - R * U
     U * R = 1 ∧ U * Z = 0 ∧ C = R * R.transpose + Z * C * Z.transpose := by
-  dsimp only
   let R := C * U.transpose
   have hR : U * R = 1 := by simpa only [R, ← Matrix.mul_assoc] using hU
   have hRt : R.transpose = U * C := by simp only [R, Matrix.transpose_mul,
@@ -56,8 +50,6 @@ lemma covariance_splitting {k d : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
 
 end EuclideanRamsey
 
-open scoped BigOperators
-open MeasureTheory Matrix
 namespace EuclideanRamsey
 
 def stencilDifferential {k : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
@@ -78,8 +70,6 @@ def CompactSmoothing : Prop :=
 
 end EuclideanRamsey
 namespace EuclideanRamsey
-open MeasureTheory Matrix
-open scoped BigOperators
 
 theorem compact_smoothing : CompactSmoothing := by
   intro k d hd C U hC hU η hη

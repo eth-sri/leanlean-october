@@ -16,24 +16,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
-open Set
+open Real Filter Topology MeasureTheory Polynomial Matrix Set
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
 namespace EuclideanRamsey
 
@@ -41,50 +25,33 @@ theorem fieldCriterion_ramsey {s d : ℕ} (a : Fin s → Space d)
     (hs : 2 ≤ s) (hd : 1 ≤ d) (ha : Function.Injective a)
     (h : FieldCriterion a) : Ramsey a := by
   have hreal := fieldCriterion_realCriterion a h
-  have hpaths : ∀ n : ℕ,1 ≤ n → ∃ w lmb μ,
+  have key : ∀ n : ℕ, 1 ≤ n → ∃ w lmb μ,
       Path (fun i => FiniteEuclidean.embed d (a i)) w lmb ∧
       Path (fun i => FiniteEuclidean.embed d (a i)) w μ ∧
       0 < lmb ∧ μ/lmb < 1/(n:ℝ) := by
     intro n hn
-    have hn' : (0:ℝ)<n := Nat.cast_pos.mpr (by omega)
-    have hs' : (0:ℝ)<s := Nat.cast_pos.mpr (by omega)
-    let η : ℝ := 1/(4*n)
-    let δ : ℝ := 1/(4*n*s)
-    have hη : 0<η := by dsimp [η]; positivity
-    have hδ : 0<δ := by dsimp [δ]; positivity
-    obtain ⟨ℓ,hℓ,f,g,hf,hg,hperm⟩ := realCriterion_two_scale a hd (by omega) hreal η hη
-    have hq : 0<η/(1+η) := div_pos hη (by linarith)
+    obtain ⟨ℓ,hℓ,f,g,hf,hg,hperm⟩ :=
+      realCriterion_two_scale a hd (by omega) hreal (1/(4*n)) (by positivity)
     obtain ⟨w,lmb,μ,hp,hm,hlmb,hμ,hr⟩ :=
-      permutation_equal_endpoints a ha f g (η/(1+η)) δ hq hδ hf hg hperm
+      permutation_equal_endpoints a ha f g ((1/(4*n))/(1+1/(4*n))) (1/(4*n*s))
+        (by positivity) (by positivity) hf hg hperm
     refine ⟨w,lmb,μ,hp,hm,hlmb,lt_of_le_of_lt hr ?_⟩
-    have hq' : η/(1+η)<η := (div_lt_iff₀ (by linarith : 0<1+η)).mpr (by nlinarith)
-    have he : η+(s:ℝ)*δ=1/(2*n) := by
-      dsimp [η,δ]
+    have hs' : (0:ℝ) < s := by positivity
+    have h1 : (1/(4*(n:ℝ)))/(1+1/(4*(n:ℝ))) < 1/(4*(n:ℝ)) := by
+      rw [div_lt_iff₀ (by positivity)]
+      nlinarith [show (0:ℝ) < 1/(4*(n:ℝ)) by positivity]
+    have h2 : (s:ℝ) * (1/(4*(n:ℝ)*(s:ℝ))) = 1/(4*(n:ℝ)) := by field_simp
+    have h3 : (1:ℝ)/(4*(n:ℝ)) + 1/(4*(n:ℝ)) < 1/(n:ℝ) := by
       field_simp
-      ring
-    have hhalf : (1:ℝ)/(2*n)<1/n := by
-      apply one_div_lt_one_div_of_lt hn'
       nlinarith
-    rw [← he] at hhalf
     linarith
   intro r hr
   obtain ⟨D,hD,hmono⟩ := finite_coloring_compactness
     (fun i => FiniteEuclidean.embed d (a i)) r
-    (fun c => paths_monochromatic _ hpaths c)
-  refine ⟨D,hD,?_⟩
-  intro c
+    (fun c => paths_monochromatic _ key c)
+  refine ⟨D,hD,fun c => ?_⟩
   obtain ⟨b,hb,k,hk⟩ := hmono c
-  refine ⟨b,?_,k,hk⟩
-  intro i j
-  rw [dist_eq_norm,dist_eq_norm,hb,← map_sub,LinearIsometry.norm_map]
-
-end EuclideanRamsey
-
-namespace EuclideanRamsey
-
-end EuclideanRamsey
-
-namespace EuclideanRamsey
+  exact ⟨b, fun i j => by rw [dist_eq_norm,dist_eq_norm,hb,← map_sub,LinearIsometry.norm_map], k,hk⟩
 
 end EuclideanRamsey
 

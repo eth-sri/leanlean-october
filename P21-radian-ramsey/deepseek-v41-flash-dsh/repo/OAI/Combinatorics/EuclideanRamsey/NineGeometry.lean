@@ -8,7 +8,6 @@ changed; see docs/PORT-LOG.md.
 -/
 module
 
-public import OAI.Combinatorics.EuclideanRamsey.CircleExtension
 public import OAI.Combinatorics.EuclideanRamsey.CircleSpan
 public import Mathlib.RingTheory.AlgebraicIndependent.Basic
 
@@ -20,17 +19,6 @@ namespace OAI
 
 noncomputable section
 namespace EuclideanRamsey.NineGeometry
-
-def circlePoint (x : ℝ) : Space 2 :=
-  CircleConsequence.stereographic (0 : Space 2) 1 x
-
-@[simp] theorem circlePoint_zero (x : ℝ) :
-    circlePoint x 0 = (1 - x^2) / (1 + x^2) := by
-  simp [circlePoint, CircleConsequence.stereographic]
-
-@[simp] theorem circlePoint_one (x : ℝ) :
-    circlePoint x 1 = (2*x) / (1 + x^2) := by
-  simp [circlePoint, CircleConsequence.stereographic]
 
 /-- Restriction to the first five points. -/
 def firstFive (i : Fin 5) : Fin 9 := ⟨i.val, by omega⟩

@@ -46,13 +46,10 @@ theorem circle_five_affineSpan (a : Fin 5 → Space 2)
   have hcomb : α • u + β • v = w := by
     ext j
     fin_cases j <;>
-      simp only [PiLp.add_apply, PiLp.smul_apply, smul_eq_mul] <;>
       dsimp [α, β] <;>
       field_simp [hD] <;>
       dsimp [D] <;> ring
-  have hm : α • u + β • v ∈ A.direction :=
-    A.direction.add_mem (A.direction.smul_mem α hu) (A.direction.smul_mem β hv)
-  have he := AffineSubspace.vadd_mem_of_mem_direction hm (hp 0)
+  have he := AffineSubspace.vadd_mem_of_mem_direction (A.direction.add_mem (A.direction.smul_mem α hu) (A.direction.smul_mem β hv)) (hp 0)
   simpa [hcomb, w, vadd_eq_add] using he
 end EuclideanRamsey.CircleConsequence
 

@@ -39,24 +39,17 @@ theorem linearIsometry_of_equal_gram {ι : Type uIndex} {E : Type uDomain} {F : 
     have h := hinner c c
     rw [real_inner_self_eq_norm_sq, real_inner_self_eq_norm_sq] at h
     nlinarith [norm_nonneg (B c), norm_nonneg (A c)]
-  have hsurj : LinearMap.range A = ⊤ := by
-    rw [Fintype.range_linearCombination]
-    exact hspan
+  have hsurj : LinearMap.range A = ⊤ := by rw [Fintype.range_linearCombination, hspan]
   obtain ⟨R, hR⟩ := A.exists_rightInverse_of_surjective hsurj
   have hR' (z : E) : A (R z) = z := congrArg (fun L : E →ₗ[ℝ] E => L z) hR
   let L : E →ₗ[ℝ] F := B.comp R
   have hLnorm (z : E) : ‖L z‖ = ‖z‖ := by
-    change ‖B (R z)‖ = ‖z‖
-    rw [hnorm, hR']
+    rw [show L z = B (R z) from rfl, hnorm, hR']
   have hfactor (c : ι → ℝ) : L (A c) = B c := by
     have hzero : A (R (A c) - c) = 0 := by rw [map_sub, hR', sub_self]
-    have : B (R (A c) - c) = 0 := by
-      apply norm_eq_zero.mp
-      rw [hnorm, hzero, norm_zero]
+    have : B (R (A c) - c) = 0 := by rw [← norm_eq_zero, hnorm, hzero, norm_zero]
     simpa only [map_sub, L, LinearMap.comp_apply, sub_eq_zero] using this
-  refine ⟨⟨L, hLnorm⟩, ?_⟩
-  intro i
-  simpa [A, B] using hfactor (Pi.single i 1)
+  exact ⟨⟨L, hLnorm⟩, fun i => by simpa [A, B] using hfactor (Pi.single i 1)⟩
 
 theorem congruent_linearIsometry {s d D : ℕ} (a : Fin s → Space d)
     (b : Fin s → Space D) (i₀ : Fin s)
@@ -78,8 +71,7 @@ theorem congruent_linearIsometry {s d D : ℕ} (a : Fin s → Space d)
   refine ⟨Q, b i₀ - Q (a i₀), fun i => ?_⟩
   have hi := hQ i
   rw [map_sub] at hi
-  calc
-    b i = (b i - b i₀) + b i₀ := (sub_add_cancel _ _).symm
+  calc b i = (b i - b i₀) + b i₀ := (sub_add_cancel _ _).symm
     _ = (Q (a i) - Q (a i₀)) + b i₀ := by rw [hi]
     _ = b i₀ - Q (a i₀) + Q (a i) := by abel
 

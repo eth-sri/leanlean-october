@@ -18,16 +18,9 @@ universe uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator
 
-open scoped TensorProduct
 namespace EuclideanRamsey
 
 abbrev Lattice (k : ℕ) := Fin k → ℤ
@@ -180,16 +173,9 @@ lemma secondMoment_mul (x y : LatticeRing k) (a b : Fin k) :
     secondMoment (x-y) a b = secondMoment x a b - secondMoment y a b := by
   have hh := congrFun (secondMoment_linear a b)
   simp only [hh, map_sub]
-@[simp] lemma mass_one : mass (1 : LatticeRing k) = 1 := by
-  change mass (AddMonoidAlgebra.single 0 1) = 1
-  simp
 @[simp] lemma firstMoment_one (a : Fin k) : firstMoment (1 : LatticeRing k) a = 0 := by
   change firstMoment (AddMonoidAlgebra.single 0 1) a = 0
   simp
-@[simp] lemma secondMoment_one (a b : Fin k) : secondMoment (1 : LatticeRing k) a b = 0 := by
-  change secondMoment (AddMonoidAlgebra.single 0 1) a b = 0
-  simp
-
 lemma mem_augmentationIdeal (x : LatticeRing k) :
     x ∈ augmentationIdeal ↔ mass x = 0 := by
   change augmentation x = 0 ↔ _
@@ -200,7 +186,6 @@ def jetOne : Ideal (LatticeRing k) where
   zero_mem' := by simp
   add_mem' hx hy := by simp [hx.1, hx.2, hy.1, hy.2]
   smul_mem' r x hx := by
-    change mass (r*x) = 0 ∧ ∀ a, firstMoment (r*x) a = 0
     simp [firstMoment_mul, hx.1, hx.2]
 
 def jetTwo : Ideal (LatticeRing k) where
@@ -208,7 +193,6 @@ def jetTwo : Ideal (LatticeRing k) where
   zero_mem' := by simp
   add_mem' hx hy := by simp [hx.1, hx.2.1, hx.2.2, hy.1, hy.2.1, hy.2.2]
   smul_mem' r x hx := by
-    change mass (r*x) = 0 ∧ (∀ a, firstMoment (r*x) a = 0) ∧ ∀ a b, secondMoment (r*x) a b = 0
     simp [firstMoment_mul, secondMoment_mul, hx.1, hx.2.1, hx.2.2]
 
 lemma augmentation_sq_le_jetOne : (augmentationIdeal : Ideal (LatticeRing k)) ^ 2 ≤ jetOne := by

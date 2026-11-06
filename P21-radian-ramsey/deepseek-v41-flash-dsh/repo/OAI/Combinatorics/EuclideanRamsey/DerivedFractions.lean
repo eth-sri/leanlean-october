@@ -18,25 +18,10 @@ universe uGroup uIndex uColor uPoint
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology commutatorElement
 
 namespace EuclideanRamsey
-open scoped commutatorElement
 variable {G : Type uGroup} [Group G]
 
 def Derived (N : Subgroup G) : ℕ → Subgroup G
@@ -110,7 +95,6 @@ lemma fraction_card_le_two {ι : Type uIndex} [Fintype ι] [DecidableEq ι]
     (hc : PairCoverage M N) (hcard : Fintype.card ι ≤ 2) (i : ι) :
     N ≤ singleFractions M hd i := by
   intro a ha
-  change RightFraction M (Pi.mulSingle i a)
   by_cases h : ∃ j : ι,j≠i
   · obtain ⟨j,hji⟩ := h
     obtain ⟨z,hz,hzi,hzj⟩ := hc i j (Ne.symm hji) a ha 1 N.one_mem
@@ -155,8 +139,7 @@ theorem derived_subset_single (N : Subgroup G) [N.Normal] (n : ℕ) :
         · have hkj : k=j := by by_contra hkj; exact hh ⟨k,hki,hkj⟩
           simp [hkj]
       have hh := Finset.card_le_card he
-      have hh' : Fintype.card ι ≤ 2 := hh.trans (Finset.card_insert_le _ _ |>.trans (by simp))
-      exact hsmall hh'
+      exact hsmall (hh.trans (Finset.card_insert_le _ _ |>.trans (by simp)))
     obtain ⟨k,hki,hkj⟩ := hek
     change ⁅Derived N n,Derived N n⁆ ≤ _
     apply Subgroup.commutator_le.mpr

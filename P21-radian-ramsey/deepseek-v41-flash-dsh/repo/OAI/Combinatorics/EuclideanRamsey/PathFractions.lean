@@ -18,24 +18,9 @@ universe uGroup uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
+open Real Filter Topology MeasureTheory Polynomial Matrix
+open scoped TensorProduct RealInnerProductSpace BigOperators MatrixOrder Matrix.Norms.L2Operator Pointwise Topology
 
-open scoped BigOperators
 namespace EuclideanRamsey
 section Fractions
 variable {G : Type uGroup} {ι : Type uIndex} [Group G] [DecidableEq ι]
@@ -48,15 +33,12 @@ def HasDiagonal (M : Submonoid (ι → G)) : Prop := ∀ g : G,(fun _ => g)∈M
 def PairInverse (M : Submonoid (ι → G)) : Prop :=
   ∀ i j : ι,i≠j → ∀ v∈M,∃ b∈M,v i*b i=1 ∧ v j*b j=1
 
-omit [DecidableEq ι] in
 lemma RightFraction.one (M : Submonoid (ι → G)) : RightFraction M 1 :=
   ⟨1,M.one_mem,1,M.one_mem,by simp⟩
-omit [DecidableEq ι] in
 lemma RightFraction.inv {M : Submonoid (ι → G)} {z : ι → G}
     (h : RightFraction M z) : RightFraction M z⁻¹ := by
   obtain ⟨u,hu,v,hv,rfl⟩ := h
   exact ⟨v,hv,u,hu,by group⟩
-omit [DecidableEq ι] in
 lemma RightFraction.conjugate {M : Submonoid (ι → G)} (hM : HasDiagonal M)
     {z : ι → G} (h : RightFraction M z) (g : G) :
     RightFraction M (fun i => g*z i*g⁻¹) := by
@@ -130,7 +112,6 @@ lemma RightFraction.mul_pair {M : Submonoid (ι → G)} (hM : PairInverse M)
 end Fractions
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {G : Type uGroup} {ι : Type uIndex} [Group G] [DecidableEq ι]
 
 structure GradedPaths (ι : Type uIndex) (G : Type uGroup) [Group G] where
@@ -143,25 +124,20 @@ def monoid : Submonoid (ι → G) where
   carrier := {u | ∃ n,P.Holds u n}
   one_mem' := ⟨0,P.diag 1⟩
   mul_mem' := by rintro u v ⟨m,hm⟩ ⟨n,hn⟩; exact ⟨m+n,P.mul hm hn⟩
-omit [DecidableEq ι] in
 lemma diagonal : HasDiagonal P.monoid := fun g => ⟨0,P.diag g⟩
 
 def BoundedFraction (z : ι → G) (c : ℕ) : Prop :=
   ∃ (u v : ι → G) (m n : ℕ),P.Holds u m ∧ P.Holds v n ∧ z=u*v⁻¹ ∧ m+n≤c
-omit [DecidableEq ι] in
 lemma bounded_exists {z : ι → G} (h : RightFraction P.monoid z) :
     ∃ c,P.BoundedFraction z c := by
   obtain ⟨u,⟨m,hm⟩,v,⟨n,hn⟩,he⟩ := h
   exact ⟨m+n,u,v,m,n,hm,hn,he,le_rfl⟩
-omit [DecidableEq ι] in
 lemma bounded_one : P.BoundedFraction 1 0 :=
   ⟨1,1,0,0,P.diag 1,P.diag 1,by simp,le_rfl⟩
-omit [DecidableEq ι] in
 lemma bounded_inv {z : ι → G} {c : ℕ} (h : P.BoundedFraction z c) :
     P.BoundedFraction z⁻¹ c := by
   obtain ⟨u,v,m,n,hm,hn,rfl,hc⟩ := h
   exact ⟨v,u,n,m,hn,hm,by group,by omega⟩
-omit [DecidableEq ι] in
 lemma bounded_conjugate {z : ι → G} {c : ℕ} (h : P.BoundedFraction z c) (g : G) :
     P.BoundedFraction (fun i => g*z i*g⁻¹) c := by
   obtain ⟨u,v,m,n,hm,hn,rfl,hc⟩ := h
